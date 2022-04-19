@@ -5,7 +5,7 @@ upstream pruebas_app {
 server {
  
     listen   80;
-    server_name multiplay-group.com;
+    server_name 186.64.122.149;
  
     access_log /webapps/sistema_django_postgresql/logs/nginx-access.log;
     error_log /webapps/sistema_django_postgresql/logs/nginx-error.log;
