@@ -13,7 +13,7 @@
                     <i class="fs-5 bi-house"></i><span class="ms-1 d-sm-inline">Home</span>
                 </a>
 
-                <a href="{% url 'usuario:historico_usuarios' %}" class="nav-link text-white text-truncate">
+                <a href="{% url 'usuario_app:historico_usuarios' %}" class="nav-link text-white text-truncate">
                     <i class="fs-5 bi-house"></i><span class="ms-1 d-sm-inline">Historico</span>
                 </a>
 
@@ -44,8 +44,8 @@
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                 {% if user.username != None %}
                 <li><a href="#" class="dropdown-item">Logout</a></li>
-                <li><a href="{% url 'usuario:actualizar_datos' %}" class="dropdown-item">Actualizar Datos</a></li>
-                <li><a href="{% url 'usuario:actualizar_contraseña' %}" class="dropdown-item">Actualizar Contraseña</a></li>
+                <li><a href="{% url 'usuario_app:actualizar_datos' %}" class="dropdown-item">Actualizar Datos</a></li>
+                <li><a href="{% url 'usuario_app:actualizar_contraseña' %}" class="dropdown-item">Actualizar Contraseña</a></li>
                 </li>
                 {% else %}
                 <li><a href="#" class="dropdown-item">Iniciar Sesión</a></li>

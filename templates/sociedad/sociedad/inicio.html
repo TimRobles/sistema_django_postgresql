@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Sociedades
+{% endblock titulo %}
+
+{% block contenido %}
+    <h1>Sociedades</h1>
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'sociedad/sociedad/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

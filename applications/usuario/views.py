@@ -1,9 +1,5 @@
 from applications.importaciones import *
 
-from django.urls.base import reverse_lazy
-
-from django.http.response import HttpResponse
-
 from .models import (
     DatosUsuario,
     HistoricoUser,
@@ -98,7 +94,7 @@ class HistoricoUserDarBajaView(BSModalUpdateView):
     model = HistoricoUser
     template_name = "includes/formulario generico.html"
     form_class = HistoricoUserDarBajaForm
-    success_url = reverse_lazy('usuario:historico_usuarios')
+    success_url = reverse_lazy('usuario_app:historico_usuarios')
 
     def form_valid(self, form):
         form.instance.estado = 2
@@ -115,7 +111,7 @@ class HistoricoUserDarBajaView(BSModalUpdateView):
 class HistoricoUserDarAltaView(BSModalCreateView):
     template_name = "includes/formulario generico.html"
     form_class = HistoricoUserDarAltaForm
-    success_url = reverse_lazy('usuario:historico_usuarios')
+    success_url = reverse_lazy('usuario_app:historico_usuarios')
 
     def form_valid(self, form):
         usuario = get_user_model()

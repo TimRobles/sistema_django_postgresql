@@ -11,7 +11,7 @@ from applications.usuario.views import(
     HistoricoUserDarAltaView,
 )
 
-app_name='usuario'
+app_name='usuario_app'
 
 urlpatterns = [
     path('actualizar-datos/',DatosUsuarioView.as_view(), name='actualizar_datos'),   

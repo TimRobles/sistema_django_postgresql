@@ -36,7 +36,9 @@ DJANGO_APPS = (
 LOCAL_APPS = (
     'applications.home',
     'applications.usuario',
+    'applications.sociedad',
 )
+
 THIRD_PARTY_APPS = (
     'phonenumber_field',
     'bootstrap_modal_forms',
