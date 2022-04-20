@@ -9,3 +9,5 @@ django-colorfield
 django-bootstrap-modal-forms
 phonenumbers
 dataclasses
+simplejson
+requests

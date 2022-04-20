@@ -23,8 +23,6 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import Permission
 from django.template.loader import render_to_string
 
-'''from .mixins import *'''
-
 from bootstrap_modal_forms.generic import (
     BSModalCreateView,
     BSModalDeleteView,
@@ -36,7 +34,10 @@ from bootstrap_modal_forms.generic import (
 from bootstrap_modal_forms.utils import is_ajax
 from django.contrib import messages
 
+from django.http import HttpResponse
+
 from .variables import *
 
-from django.http import HttpResponse
-'''from applications.pdf import generarPDF'''
+from datetime import date
+
+import simplejson
