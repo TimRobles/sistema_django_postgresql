@@ -1,8 +1,9 @@
+auto-py-to-exe
 wheel
 Django==3.2.12
 unipath
 Pillow
-psycopg2
+psycopg2-binary
 django-phonenumber-field
 django-widget-tweaks
 django-colorfield
