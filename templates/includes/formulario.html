@@ -1,0 +1,15 @@
+{% for field in form %}
+    <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
+        {% if field.help_text %}
+        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+        {% endif %}
+        >
+        {% if 'Boton' not in field.label %}
+        <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% endif %}
+        {{ field }}
+    </div>
+    {% for error in field.errors %}
+        <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+    {% endfor %}
+{% endfor %}

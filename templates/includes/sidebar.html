@@ -1,0 +1,58 @@
+<div class="offcanvas offcanvas-start text-white bg-dark" tabindex="-1" id="offcanvas" data-bs-keyboard="false" data-bs-backdrop="false">
+    <div class="offcanvas-header">
+        <h6 class="offcanvas-title d-sm-block" id="offcanvas">Aplicaciones</h6>
+        <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <hr>
+    </div>
+    <div class="offcanvas-body px-0">
+
+
+        <ul class="nav nav-pills flex-column align-items-start" id="menu">
+            <li class="nav-item">
+                <a href="{% url 'home_app:home' %}" class="nav-link text-white text-truncate">
+                    <i class="fs-5 bi-house"></i><span class="ms-1 d-sm-inline">Home</span>
+                </a>
+
+                <a href="{% url 'usuario:historico_usuarios' %}" class="nav-link text-white text-truncate">
+                    <i class="fs-5 bi-house"></i><span class="ms-1 d-sm-inline">Historico</span>
+                </a>
+
+
+            </li>
+
+
+        </ul>
+    </div>
+    <div class="offcanvas-footer mb-3">
+        <hr>
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                
+                {% if user.avatar == 'False' or not user.avatar %}
+                <img src="{{ MEDIA_URL }}img/Avatars/default-avatar.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
+                {% else %}
+                <img src="{{ MEDIA_URL }}{{user.avatar}}" alt="" width="32" height="32" class="rounded-circle me-2">
+                {% endif %}
+                
+                {% if user.username %}
+                <strong>{{user.username}}</strong>
+                {% else %}
+                <strong>Anónimo</strong>
+                {% endif %}
+                    
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                {% if user.username != None %}
+                <li><a href="#" class="dropdown-item">Logout</a></li>
+                <li><a href="{% url 'usuario:actualizar_datos' %}" class="dropdown-item">Actualizar Datos</a></li>
+                <li><a href="{% url 'usuario:actualizar_contraseña' %}" class="dropdown-item">Actualizar Contraseña</a></li>
+                </li>
+                {% else %}
+                <li><a href="#" class="dropdown-item">Iniciar Sesión</a></li>
+                <li><a href="#" class="dropdown-item">Registrar</a></li>
+                {% endif %}
+                
+            </ul>
+        </div>
+    </div>
+</div>

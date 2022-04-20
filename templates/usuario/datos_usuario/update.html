@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    {% include 'includes/header.html' %}
+{% endblock header %}
+    
+{% block titulo %}
+    Lista datos usuario
+{% endblock titulo %}
+
+
+{% block contenido %}
+    <h2>Editar Actualizar</h2>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{form.as_p}}
+        <input class="btn btn-primary mb-3" type="submit" value="Actualizar">
+
+    </form>
+        
+{% endblock contenido %}
+    

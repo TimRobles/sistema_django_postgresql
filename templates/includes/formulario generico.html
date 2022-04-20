@@ -1,0 +1,26 @@
+{% load widget_tweaks %}
+
+<form id="formulario" action="" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {% block arriba %}
+        {% endblock arriba %}
+            
+        {% include 'includes/formulario.html' %}
+
+        {% block abajo %}
+        {% endblock abajo %}            
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
+
+{% block js %}
+{% endblock js %}
+    

@@ -1,0 +1,19 @@
+{% extends 'base.html'  %}
+
+{% block header %}
+    {% include 'includes/header.html' %}
+{% endblock header %}
+
+{% block titulo %}
+    Cambio de Contraseña
+{% endblock titulo %}
+
+{% block contenido %}
+    <h1>Cambio de Contraseña</h1>
+    <form action="" enctype="multipart/form-data" method="post" >
+        {% csrf_token %}
+        {% include 'includes/formulario.html' %}
+        <input class="btn btn-primary mb-5" type="submit" value="Guardar">
+    </form>
+{% endblock contenido %}
+    

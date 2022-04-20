@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% include 'includes/header.html' %}
+{% endblock header %}
+
+{% block titulo %}
+    Historico de Usuarios
+{% endblock titulo %}
+
+
+{% block contenido %}
+<h2> Historico de Usuarios </h2>
+<div class="table-responsive" id="tabla">
+    {% include 'usuario/historico_user/list_tabla.html' %}
+</div>
+
+{% endblock contenido %}
+
+    
+   
