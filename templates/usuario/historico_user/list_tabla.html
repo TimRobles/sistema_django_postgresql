@@ -21,15 +21,15 @@
                          
             <td>
             {% if historicouser.estado == 1 %}                   
-                <button data-form-url="{% url 'usuario:baja_usuarios' historicouser.id %}"
-                    data-table-url="{% url 'usuario:historico_usuarios_tabla' %}"
+                <button data-form-url="{% url 'usuario_app:baja_usuarios' historicouser.id %}"
+                    data-table-url="{% url 'usuario_app:historico_usuarios_tabla' %}"
                     class="update btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
                     <i class="bi bi-hand-thumbs-down-fill"></i>
                 </button>
             {% else %}
-                <button data-form-url="{% url 'usuario:alta_usuarios' historicouser.usuario.id %}"
-                    data-table-url="{% url 'usuario:historico_usuarios_tabla' %}"
+                <button data-form-url="{% url 'usuario_app:alta_usuarios' historicouser.usuario.id %}"
+                    data-table-url="{% url 'usuario_app:historico_usuarios_tabla' %}"
                     class="update btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
                     <i class="bi bi-hand-thumbs-up-fill"></i>
