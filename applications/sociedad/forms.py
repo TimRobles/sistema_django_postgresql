@@ -14,6 +14,7 @@ class SociedadForm(BSModalModelForm):
             'direccion_legal',
             'ubigeo',
             'estado_sunat',
+            'condicion',
             )
 
     def __init__(self, *args, **kwargs):
