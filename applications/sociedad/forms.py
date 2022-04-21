@@ -15,6 +15,8 @@ class SociedadForm(BSModalModelForm):
             'ubigeo',
             'estado_sunat',
             'condicion_sunat',
+            'logo',
+            'color',
             )
 
     def __init__(self, *args, **kwargs):
@@ -54,14 +56,14 @@ class RepresentanteLegalForm(BSModalModelForm):
                     'type':'date',
                     },
                 format = '%Y-%m-%d',
-                ), 
+                ),
         }
 
     def clean_fecha_registro(self):
         fecha_registro = self.cleaned_data.get('fecha_registro')
         if fecha_registro > date.today():
             self.add_error('fecha_registro', 'La fecha de registro no puede ser mayor a la fecha de hoy.')
-    
+
         return fecha_registro
 
     def __init__(self, *args, **kwargs):
@@ -83,14 +85,14 @@ class RepresentanteLegalDarBajaForm(BSModalModelForm):
                     'type':'date',
                     },
                 format = '%Y-%m-%d',
-                ), 
+                ),
         }
 
     def clean_fecha_baja(self):
         fecha_baja = self.cleaned_data.get('fecha_baja')
         if fecha_baja < self.instance.fecha_registro:
             self.add_error('fecha_baja', 'La fecha de baja no puede ser menor a la fecha de registro.')
-    
+
         return fecha_baja
 
     def __init__(self, *args, **kwargs):
@@ -98,5 +100,3 @@ class RepresentanteLegalDarBajaForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
-
-
