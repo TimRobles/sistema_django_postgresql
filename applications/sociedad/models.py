@@ -14,7 +14,7 @@ class Sociedad(models.Model):
     direccion_legal = models.CharField('Dirección Legal', max_length=100)
     ubigeo = models.CharField('Ubigeo', max_length=6)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT, default=1)
-    condicion = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
+    condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
     logo = models.ImageField('Logo', upload_to='img/sociedad', height_field=None, width_field=None, max_length=None, blank=True, null=True, editable=False)
     color = ColorField(default='#FF0000', editable=False)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
