@@ -13,15 +13,21 @@ class SociedadAdmin(admin.ModelAdmin):
         'direccion_legal',
         'ubigeo',
         'estado_sunat',
+        'condicion_sunat',
+        'logo',
+        'color',
         )
     exclude = (
         'estado_sunat',
-    )
+        'condicion_sunat',
+        'logo',
+        'color',
+        )
 
     ordering = (
         'razon_social',
         )
-    
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -36,7 +42,7 @@ class DocumentoAdmin(admin.ModelAdmin):
         'descripcion_documento',
         'documento',
         )
-    
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -64,7 +70,6 @@ class RepresentanteLegalAdmin(admin.ModelAdmin):
         'fecha_registro',
         'fecha_baja',
         'estado',
-
         )
 
     def save_model(self, request, obj, form, change):
