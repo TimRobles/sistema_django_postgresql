@@ -98,7 +98,8 @@ class HistoricoUserDarBajaView(BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.estado = 2
-
+        registro_guardar(form.instance, self.request)
+        
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
@@ -125,6 +126,8 @@ class HistoricoUserDarAltaView(BSModalCreateView):
             historico.estado = 3
             historico.save()
 
+        registro_guardar(form.instance, self.request)
+        
         return super().form_valid(form)
 
     def get_form_kwargs(self):

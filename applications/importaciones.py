@@ -41,3 +41,8 @@ from .variables import *
 from datetime import date
 
 import simplejson
+
+def registro_guardar(form, request):
+    if form.created_by == None:
+        form.created_by = request.user
+    form.updated_by = request.user
