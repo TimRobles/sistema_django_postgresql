@@ -36,6 +36,14 @@ function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+function setSelectedValueText(selectObj, valueToSet) {
+    for (var i = 0; i < selectObj.options.length; i++) {
+        if (selectObj.options[i].text.toLowerCase() == valueToSet.toLowerCase()) {
+            selectObj.options[i].selected = true;
+            return;
+        }
+    }
+}
 
 function setSelectedValue(selectObj, valueToSet) {
     for (var i = 0; i < selectObj.options.length; i++) {
@@ -159,7 +167,6 @@ $(function () {
     readModalForm();
 
     function reinstantiateModalForms() {
-        console.log("reinstantiateModalForms")
         createAsyncModalForm();
         readModalForm();
         updateModalForm();
@@ -211,7 +218,6 @@ $(function () {
     };
 
     function funcionesDentroModal() {
-        console.log("Funciones");
         spinner();
         checkbox_div();
     }

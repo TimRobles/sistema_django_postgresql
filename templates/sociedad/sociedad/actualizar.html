@@ -1,0 +1,17 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block arriba %}
+    <div class="input-group">
+        <input type="text" value="{{ruc}}" id="ruc" class="form-control">
+        <button type="button" id="consultar-ruc" class="input-group-text bg-success">
+            Consultar Ruc
+        </button>
+    </div>
+{% endblock arriba %}
+
+{% block js %}
+    <script src="{% static 'js/sociedad/sociedad/actualizar.js' %}"></script>
+{% endblock js %}
+    
+    
