@@ -124,6 +124,7 @@ class HistoricoUserDarAltaView(BSModalCreateView):
         if historico:
             historico = historico.latest('id')
             historico.estado = 3
+            registro_guardar(historico, self.request)
             historico.save()
 
         registro_guardar(form.instance, self.request)
