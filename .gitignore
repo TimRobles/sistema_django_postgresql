@@ -3,3 +3,4 @@ supervisor.conf
 db.sqlite3
 supervisor.conf
 nginx_server
+media

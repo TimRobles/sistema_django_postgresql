@@ -18,7 +18,7 @@ class NivelDos(models.Model):
     orden = models.IntegerField()
     nombre = models.CharField('Nombre de Nivel Dos', max_length=50)
     app_name = models.CharField('Nombre de App', max_length=50)
-    nivel_uno = models.ForeignKey(NivelUno, on_delete=models.CASCADE)
+    nivel_uno = models.ForeignKey(NivelUno, on_delete=models.CASCADE, related_name="NivelDos_nivel_uno")
     icono = models.ImageField('Icono PNG o SVG', upload_to='img/programas/icono', height_field=None, width_field=None, max_length=None, blank=True, null=True, validators=[FileExtensionValidator(['svg', 'png'])])
 
     class Meta:
@@ -32,8 +32,8 @@ class NivelDos(models.Model):
 class NivelTres(models.Model):
     orden = models.IntegerField()
     nombre = models.CharField('Nombre de Nivel Tres', max_length=50)
-    url_name = models.CharField('Nombre de URL', max_length=50)
-    nivel_dos = models.ForeignKey(NivelDos, on_delete=models.CASCADE)
+    url_name = models.CharField('Nombre de URL', max_length=50, blank=True, null=True)
+    nivel_dos = models.ForeignKey(NivelDos, on_delete=models.CASCADE, related_name='NivelTres_nivel_dos')
     icono = models.ImageField('Icono PNG o SVG', upload_to='img/programas/icono', height_field=None, width_field=None, max_length=None, blank=True, null=True, validators=[FileExtensionValidator(['svg', 'png'])])
 
     class Meta:
@@ -48,7 +48,7 @@ class NivelCuatro(models.Model):
     orden = models.IntegerField()
     nombre = models.CharField('Nombre de Nivel Cuatro', max_length=50)
     url_name = models.CharField('Nombre de URL', max_length=50)
-    nivel_tres = models.ForeignKey(NivelTres, on_delete=models.CASCADE)
+    nivel_tres = models.ForeignKey(NivelTres, on_delete=models.CASCADE, related_name='NivelCuatro_nivel_tres')
     icono = models.ImageField('Icono PNG o SVG', upload_to='img/programas/icono', height_field=None, width_field=None, max_length=None, blank=True, null=True, validators=[FileExtensionValidator(['svg', 'png'])])
  
     class Meta:

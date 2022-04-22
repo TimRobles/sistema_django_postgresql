@@ -10,6 +10,42 @@
 
 
 {% block contenido %}
-<h2>Página de Inicio
-</h2>
+<h2>Página de Inicio</h2>
+
+<ul>
+    {% for programa_uno in programa_nivel_uno %}
+    <li>{{programa_uno}}</li>
+    <ul>
+        {% for programa_dos in programa_uno.NivelDos_nivel_uno.all %}
+            <li>{{ programa_dos }}</li>
+            <ul>
+                {% for programa_tres in programa_dos.NivelTres_nivel_dos.all %}
+                    {% if programa_tres.url_name %}
+                    <li>
+                        {% with programa_dos.app_name|add:':'|add:programa_tres.url_name as url_compuesta %}
+                        <a href="{% url url_compuesta %}">{{ programa_tres.nombre }}</a>
+                        {% endwith %}
+                    </li>
+                    {% else %}
+                        <li>
+                            {{ programa_tres.nombre }}
+                        </li>
+                        <ul>
+                            {% for programa_cuatro in programa_tres.NivelCuatro_nivel_tres.all %}
+                                <li>
+                                    {% with programa_dos.app_name|add:':'|add:programa_cuatro.url_name as url_compuesta %}
+                                    <a href="{% url url_compuesta %}">{{ programa_cuatro.nombre }}</a>
+                                    {% endwith %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}    
+            </ul>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+</ul>
+    
+
 {% endblock contenido %}

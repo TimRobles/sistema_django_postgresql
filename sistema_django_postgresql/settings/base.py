@@ -37,7 +37,7 @@ LOCAL_APPS = (
     'applications.home',
     'applications.usuario',
     'applications.sociedad',
-    'applications.programas'
+    'applications.programas',
 )
 
 THIRD_PARTY_APPS = (
@@ -74,6 +74,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
 
                 'django.template.context_processors.media',
+
+                'applications.programas.context.contexto_menu',
             ],
         },
     },

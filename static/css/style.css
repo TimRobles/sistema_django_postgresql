@@ -12,7 +12,21 @@
     height: 2em;
     width: 2em;
     margin: 0.1em;
-    filter: invert(32%) sepia(83%) saturate(7437%) hue-rotate(354deg) brightness(94%) contrast(124%);
+    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7427%) hue-rotate(23deg) brightness(118%) contrast(118%);
+}
+
+.logo-sub-menu{
+    height: 1.5em;
+    width: 1.5em;
+    margin: 0.1em;
+    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7427%) hue-rotate(23deg) brightness(118%) contrast(118%);
+}
+
+.logo-link{
+    height: 1em;
+    width: 1em;
+    margin: 0.1em;
+    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7427%) hue-rotate(23deg) brightness(118%) contrast(118%);
 }
 
 .nobull {
