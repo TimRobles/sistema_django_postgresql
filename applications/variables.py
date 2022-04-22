@@ -8,6 +8,12 @@ TIPO_DOCUMENTO_CHOICES = (
         ('0', 'NO DOMICILIADO, SIN RUC (EXPORTACIÓN)'),
     )
 
+CONDICION_SUNAT = (
+        (1, 'Habido'),
+        (2, 'No hallado'),
+        (3, 'No habido'),
+        )
+
 ESTADO_SUNAT = (
         (1, 'Activo'),
         (2, 'Suspensión temporal'),
