@@ -1,0 +1,13 @@
+{% extends 'includes/base.html' %}
+
+{% block title %}
+    Panel de trabajo
+{% endblock title %}
+
+{% block content %}
+    <h4>No posees permiso para ver esta página</h4>
+    <p>{{ previous }}</p>
+    <a href="{{ previous }}" class="btn btn-danger">Regresar</a>
+    
+{% endblock content %}
+    

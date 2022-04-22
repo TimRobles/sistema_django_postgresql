@@ -1,0 +1,18 @@
+{% extends 'includes/base login.html' %}
+
+{% block title %}
+    Iniciar Sesión
+{% endblock title %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-4 login mx-auto">
+            <h1>Bienvenido</h1>
+            <form action="" method="post">{% csrf_token %}
+                {% include 'includes/formulario.html' %}
+                <input class="col-12 mt-2 btn btn-primary" type="submit" value="Login">
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+    
