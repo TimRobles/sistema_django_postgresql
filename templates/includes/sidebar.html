@@ -97,7 +97,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                 {% if user.username != None %}
-                <li><a href="#" class="dropdown-item">Logout</a></li>
+                <li><a href="{% url 'home_app:logout' %}" class="dropdown-item">Cerrar Sesión</a></li>
                 <li><a href="{% url 'usuario_app:actualizar_datos' %}" class="dropdown-item">Actualizar Datos</a></li>
                 <li><a href="{% url 'usuario_app:actualizar_contraseña' %}" class="dropdown-item">Actualizar Contraseña</a></li>
                 </li>
