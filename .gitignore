@@ -2,6 +2,6 @@ gunicorn_start
 supervisor.conf
 supervisor.conf
 nginx_server
-*.sqlite3
+db.sqlite3
 media/
 **/__pycache__/
