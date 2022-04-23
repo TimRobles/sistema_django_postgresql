@@ -1,7 +1,8 @@
 from applications.funciones import consulta_dni, consulta_ruc
 from applications.importaciones import *
 from .forms import UserLoginForm
-
+from .forms import OlvideContrasenaForm
+from .forms import RecuperarContrasenaForm
 
 class InicioView(FormView):
     template_name = "home/inicio.html"
@@ -52,7 +53,71 @@ class SinPermisoView(TemplateView):
         else:
             context['previous'] = reverse_lazy('home_app:home')
         return context
-    
+
+
+class OlvideContrasenaView(FormView):
+    template_name = "home/olvide contraseña.html"
+    form_class = OlvideContrasenaForm
+    success_url = reverse_lazy('home:recuperar_contraseña')
+
+    def form_valid(self, form):
+        User = get_user_model()
+        correo = form.cleaned_data['correo']
+
+        try:
+            usuario_buscar = User.objects.get(email=correo)
+        except:
+            form.add_error('correo', 'El correo %s no existe.' % correo)
+            return super(OlvideContrasenaView, self).form_invalid(form)
+        
+        datos_usuario = usuario_buscar.usuario_datos_usuario
+        password = get_random_string(length=10)
+        datos_usuario.recuperar_password = password
+        datos_usuario.save()
+
+        asunto = "Recuperación de Contraseña"
+        mensaje = "Hola %s\nEl código de recuperación de tu cuenta es: %s\n\nUna vez que ingreses este código, esa será tu nueva contraseña.\nSi no solicitaste el cambio de contraseña, puedes ignorar este correo." % (usuario_buscar.username, password)
+        email_remitente = 'no-responder@multiplay.com.pe'
+        send_mail(asunto, mensaje, email_remitente, [correo,])
+
+        return super(OlvideContrasenaView, self).form_valid(form)
+
+
+class RecuperarContrasenaView(FormView):
+    template_name = "home/recuperar contraseña.html"
+    form_class = RecuperarContrasenaForm
+    success_url = reverse_lazy('home:home')
+
+    def form_valid(self, form):
+        User = get_user_model()
+        correo = form.cleaned_data['correo']
+        password = form.cleaned_data['password']
+        
+        try:
+            usuario_buscar = User.objects.get(email=correo)
+        except:
+            form.add_error('correo', 'El correo %s no existe.' % correo)
+            return super(RecuperarContrasenaView, self).form_invalid(form)
+
+        datos_usuario = usuario_buscar.usuario_datos_usuario
+        if datos_usuario.recuperar_password == password:
+            datos_usuario.recuperar_password = None
+            datos_usuario.save()
+            usuario_buscar.set_password(password)
+            usuario_buscar.save()
+
+            asunto = "Cambio de Contraseña"
+            mensaje = "Hola %s\nTu contraseña fue actualizada con éxito, te recordamos tu nueva contraseña: %s\n\nPuedes cambiar esta contraseña en cualquier momento." % (usuario_buscar.username, password)
+            email_remitente = 'no-responder@multiplay.com.pe'
+            send_mail(asunto, mensaje, email_remitente, [correo,])
+
+            messages.success(self.request, 'Contraseña cambiada exitosamente. Nueva contraseña: %s' % password)
+        else:
+            form.add_error('password', 'El código ingresado es incorrecto.')
+            return super(RecuperarContrasenaView, self).form_invalid(form)
+            
+        return super(RecuperarContrasenaView, self).form_valid(form)
+
 
 
 def ConsultaRucView(request, ruc):

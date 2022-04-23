@@ -100,3 +100,21 @@ class UserUpdateForm(forms.Form):
         super(UserUpdateForm , self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class OlvideContrasenaForm(forms.Form):
+    correo = forms.EmailField()
+
+    def __init__(self, *args, **kwargs):
+        super(OlvideContrasenaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class RecuperarContrasenaForm(forms.Form):
+    correo = forms.EmailField()
+    password = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super(RecuperarContrasenaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

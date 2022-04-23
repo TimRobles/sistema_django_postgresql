@@ -1,0 +1,20 @@
+{% extends 'includes/base login.html' %}
+
+{% block title %}
+    Iniciar Sesión
+{% endblock title %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-4 login mx-auto">
+            <h1>Olvidé mi contraseña</h1>
+            <form id="formulario" action="" method="post">{% csrf_token %}
+                <p>Ingrese su correo para recuperar su clave:</p>
+                {% include 'includes/formulario.html' %}
+                <input class="col-12 mt-2 btn btn-primary" type="submit" value="Enviar">
+                <a href="{% url 'home_app:login' %}" class="col-12 mt-2 btn btn-secondary">Regresar</a>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+    
