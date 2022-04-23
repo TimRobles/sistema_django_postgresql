@@ -37,6 +37,7 @@ LOCAL_APPS = (
     'applications.home',
     'applications.usuario',
     'applications.sociedad',
+    'applications.programas',
 )
 
 THIRD_PARTY_APPS = (
@@ -73,12 +74,16 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
 
                 'django.template.context_processors.media',
+
+                'applications.programas.context.contexto_menu',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'sistema_django_postgresql.wsgi.application'
+
+LOGIN_URL = '/login/'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -118,7 +123,9 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR.child('static')]
+STATICFILES_DIRS = [
+    BASE_DIR.child('static'),
+    ]
 STATIC_ROOT = BASE_DIR
 
 MEDIA_URL = '/media/'

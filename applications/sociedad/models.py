@@ -1,7 +1,7 @@
 from email.policy import default
 from django.db import models
 from django.conf import settings
-from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_CHOICES
+from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_CHOICES, CONDICION_SUNAT
 from colorfield.fields import ColorField
 
 # Create your models here.
@@ -14,8 +14,9 @@ class Sociedad(models.Model):
     direccion_legal = models.CharField('Dirección Legal', max_length=100)
     ubigeo = models.CharField('Ubigeo', max_length=6)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT, default=1)
-    logo = models.ImageField('Logo', upload_to='img/sociedad', height_field=None, width_field=None, max_length=None, blank=True, null=True, editable=False)
-    color = ColorField(default='#FF0000', editable=False)
+    condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
+    logo = models.ImageField('Logo', upload_to='img/sociedad', height_field=None, width_field=None, max_length=None, blank=True, null=True)
+    color = ColorField(default='#FF0000')
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Sociedad_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -78,7 +79,7 @@ class RepresentanteLegal(models.Model):
     tipo_representante_legal = models.ForeignKey(TipoRepresentanteLegal, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoRepresentanteLegal')
     fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_baja= models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADO,default='1')
+    estado = models.IntegerField('Estado', choices=ESTADO,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RepresentanteLegal_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)

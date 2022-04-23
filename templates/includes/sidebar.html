@@ -1,26 +1,80 @@
+{% load reemplazar %}
+
 <div class="offcanvas offcanvas-start text-white bg-dark" tabindex="-1" id="offcanvas" data-bs-keyboard="false" data-bs-backdrop="false">
     <div class="offcanvas-header">
         <h6 class="offcanvas-title d-sm-block" id="offcanvas">Aplicaciones</h6>
         <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         <hr>
     </div>
+    
     <div class="offcanvas-body px-0">
-
-
         <ul class="nav nav-pills flex-column align-items-start" id="menu">
             <li class="nav-item">
-                <a href="{% url 'home_app:home' %}" class="nav-link text-white text-truncate">
-                    <i class="fs-5 bi-house"></i><span class="ms-1 d-sm-inline">Home</span>
-                </a>
-
-                <a href="{% url 'usuario_app:historico_usuarios' %}" class="nav-link text-white text-truncate">
-                    <i class="fs-5 bi-house"></i><span class="ms-1 d-sm-inline">Historico</span>
-                </a>
-
-
+                <li>
+                    <a href="{% url 'home_app:home' %}" class="nav-link text-white text-truncate">
+                        <i class="fs-5 bi-house"></i><span class="ms-1 d-sm-inline">Home</span>
+                    </a>    
+                </li>
+                {% for programa_uno in programa_nivel_uno %}
+                <li>
+                    <button class="text-white btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{ programa_uno.nombre|espacio_guion }}" aria-expanded="false">
+                        <img class="logo-menu" src="{{ MEDIA_URL }}{{ programa_uno.icono }}" alt="{{ programa_uno.nombre }}" width="32" height="32">
+                        {{ programa_uno.nombre }}
+                    </button>
+                    <div class="collapse" id="{{ programa_uno.nombre|espacio_guion }}">
+                        <ul>
+                            {% for programa_dos in programa_uno.NivelDos_nivel_uno.all %}
+                                <li class="nav-link">
+                                    <img class="logo-sub-menu" src="{{ MEDIA_URL }}{{ programa_dos.icono }}" alt="{{ programa_dos.nombre }}" width="32" height="32">
+                                    <button class="text-white btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{ programa_dos.nombre|espacio_guion }}" aria-expanded="false">
+                                        {{ programa_dos.nombre }}
+                                    </button>
+                                    <div class="collapse" id="{{ programa_dos.nombre|espacio_guion }}">
+                                        <ul>
+                                            {% for programa_tres in programa_dos.NivelTres_nivel_dos.all %}
+                                                {% if programa_tres.url_name %}
+                                                <li class="nav-link">
+                                                    {% with programa_dos.app_name|add:':'|add:programa_tres.url_name as url_compuesta %}
+                                                    <a href="{% url url_compuesta %}"
+                                                    class="nav-link text-white text-truncate">
+                                                        <img class="logo-link" src="{{ MEDIA_URL }}img/enter.png" alt="flecha" width="32" height="32">
+                                                        {{ programa_tres.nombre }}
+                                                    </a>
+                                                    {% endwith %}
+                                                </li>
+                                                {% else %}
+                                                <li class="nav-link">
+                                                    <img class="logo-sub-menu" src="{{ MEDIA_URL }}{{ programa_tres.icono }}" alt="{{ programa_tres.nombre }}" width="32" height="32">
+                                                    <button class="text-white btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{ programa_tres.nombre|espacio_guion }}" aria-expanded="false">
+                                                        {{ programa_tres.nombre }}
+                                                    </button>
+                                                    <div class="collapse" id="{{ programa_tres.nombre|espacio_guion }}">
+                                                        <ul>
+                                                            {% for programa_cuatro in programa_tres.NivelCuatro_nivel_tres.all %}
+                                                                <li class="nav-link">
+                                                                    {% with programa_dos.app_name|add:':'|add:programa_cuatro.url_name as url_compuesta %}
+                                                                    <a href="{% url url_compuesta %}"
+                                                                    class="nav-link text-white text-truncate">
+                                                                        <img class="logo-link" src="{{ MEDIA_URL }}img/enter.png" alt="flecha" width="32" height="32">
+                                                                        {{ programa_cuatro.nombre }}
+                                                                    </a>
+                                                                    {% endwith %}
+                                                                </li>
+                                                            {% endfor %}    
+                                                        </ul>
+                                                    </div>
+                                                </li>
+                                                {% endif %}
+                                            {% endfor %}    
+                                        </ul>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
+                {% endfor %}
             </li>
-
-
         </ul>
     </div>
     <div class="offcanvas-footer mb-3">

@@ -36,14 +36,15 @@ def SociedadTabla(request):
 
 class SociedadUpdateView(BSModalUpdateView):
     model = Sociedad
-    template_name = "includes/formulario generico.html"
+    template_name = "sociedad/sociedad/actualizar.html"
     form_class = SociedadForm
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
 
     def get_context_data(self, **kwargs):
         context = super(SociedadUpdateView, self).get_context_data(**kwargs)
-        context['accion']="Actualizar"
-        context['titulo']="Sociedad"
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Sociedad"
+        context['ruc'] = self.object.ruc
         return context
 
 class SociedadDarBajaView(BSModalDeleteView):
