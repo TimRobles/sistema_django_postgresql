@@ -30,3 +30,4 @@ function ConsultarRuc() {
 $(document).unbind().on('click', '#consultar-ruc', function (e) {
     ConsultarRuc();
 });
+

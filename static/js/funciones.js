@@ -220,6 +220,7 @@ $(function () {
     function funcionesDentroModal() {
         spinner();
         checkbox_div();
+        jscolor.install();
     }
 
     $('#modal').on('shown.bs.modal', function (e) {
