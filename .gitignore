@@ -3,4 +3,5 @@ supervisor.conf
 supervisor.conf
 nginx_server
 db.sqlite3
-**/__pycache__
+media/
+**/__pycache__/
