@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from .models import NivelCuatro, NivelTres, NivelDos, NivelUno
+from .models import Moneda, Magnitud, Unidad, Area, Cargo
 
-# Register your models here.
-class NivelUnoAdmin(admin.ModelAdmin):
+class MonedaAdmin(admin.ModelAdmin):
     list_display = (
-        'orden',
         'nombre',
-        'icono',
+        'abreviatura',
+        'simbolo',
+        'estado',
         )
 
     def save_model(self, request, obj, form, change):
@@ -16,13 +16,29 @@ class NivelUnoAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
-class NivelDosAdmin(admin.ModelAdmin):
+
+class MagnitudAdmin(admin.ModelAdmin):
     list_display = (
-        'orden',
         'nombre',
-        'app_name',
-        'nivel_uno',
-        'icono',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+        
+
+class UnidadAdmin(admin.ModelAdmin):
+    list_display = (
+        'magnitud',
+        'nombre',
+        'simbolo',
+        'unidad_sunat',
         )
 
     def save_model(self, request, obj, form, change):
@@ -31,13 +47,14 @@ class NivelDosAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
-class NivelTresAdmin(admin.ModelAdmin):
+class AreaAdmin(admin.ModelAdmin):
     list_display = (
-        'orden',
         'nombre',
-        'url_name',
-        'nivel_dos',
-        'icono',
+        'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -46,13 +63,13 @@ class NivelTresAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
-class NivelCuatroAdmin(admin.ModelAdmin):
+class CargoAdmin(admin.ModelAdmin):
     list_display = (
-        'orden',
         'nombre',
-        'url_name',
-        'nivel_tres',
-        'icono',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -61,7 +78,8 @@ class NivelCuatroAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
-admin.site.register(NivelUno, NivelUnoAdmin)
-admin.site.register(NivelDos, NivelDosAdmin)
-admin.site.register(NivelTres, NivelTresAdmin)
-admin.site.register(NivelCuatro, NivelCuatroAdmin)
+admin.site.register(Moneda, MonedaAdmin)
+admin.site.register(Magnitud, MagnitudAdmin)
+admin.site.register(Unidad, UnidadAdmin)
+admin.site.register(Area, AreaAdmin)
+admin.site.register(Cargo, CargoAdmin)
