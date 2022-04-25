@@ -59,6 +59,7 @@ class Unidad(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Area(models.Model):
     '''Solo por Admin'''
 
@@ -77,9 +78,11 @@ class Area(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Cargo(models.Model):
     '''Solo por Admin'''
-    
+
+    area = models.ForeignKey(Area, on_delete=models.PROTECT)
     nombre = models.CharField('Nombre', max_length=50)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cargo_created_by', editable=False)
@@ -93,3 +96,82 @@ class Cargo(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class TipoInterlocutor(models.Model):
+    '''Solo por Admin'''
+
+    nombre = models.CharField('Nombre', max_length=50)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoInterlocutor_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoInterlocutor_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Tipo de Interlocutor'
+        verbose_name_plural = 'Tipos de Interlocutor'
+        ordering = ['nombre',]
+
+    def __str__(self):
+        return self.nombre
+
+class Departamento(models.Model):
+    '''Solo por Admin'''
+
+    codigo = models.CharField('Código', max_length=2)
+    nombre = models.CharField('Nombre', max_length=50)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Departamento_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Departamento_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Departamento'
+        verbose_name_plural = 'Departamentos'
+        ordering = ['nombre',]
+
+    def __str__(self):
+        return self.nombre
+
+
+class Provincia(models.Model):
+    '''Solo por Admin'''
+
+    codigo = models.CharField('Código', max_length=2)
+    nombre = models.CharField('Nombre', max_length=50)
+    departamento = models.ForeignKey(Departamento, on_delete=models.PROTECT)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Provincia_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Provincia_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Provincia'
+        verbose_name_plural = 'Provincias'
+        ordering = ['nombre',]
+
+    def __str__(self):
+        return self.nombre
+
+
+class Distrito(models.Model):
+    '''Solo por Admin'''
+
+    codigo = models.CharField('Código', max_length=2)
+    nombre = models.CharField('Nombre', max_length=50)
+    provincia = models.ForeignKey(Provincia, on_delete=models.PROTECT)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Distrito_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Distrito_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Distrito'
+        verbose_name_plural = 'Distritos'
+        ordering = ['nombre',]
+
+    def __str__(self):
+        return self.nombre
+
+
+
