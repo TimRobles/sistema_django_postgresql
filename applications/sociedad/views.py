@@ -47,6 +47,13 @@ class SociedadUpdateView(BSModalUpdateView):
         context['ruc'] = self.object.ruc
         return context
 
+    def form_valid(self, form):
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        
+        return super().form_valid(form)
+
 class SociedadDarBajaView(BSModalDeleteView):
     model = Sociedad
     template_name = "includes/eliminar generico.html"
@@ -55,6 +62,7 @@ class SociedadDarBajaView(BSModalDeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.estado_sunat = 7
+        registro_guardar(self.object, self.request)
         self.object.save()
         messages.success(request, MENSAJE_DAR_BAJA)
         return HttpResponseRedirect(self.get_success_url())
@@ -67,6 +75,7 @@ class SociedadDarBajaView(BSModalDeleteView):
         context['item'] = self.object.razon_social
         return context
 
+
 class SociedadDarAltaView(BSModalDeleteView):
     model = Sociedad
     template_name = "includes/eliminar generico.html"
@@ -75,6 +84,7 @@ class SociedadDarAltaView(BSModalDeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.estado_sunat = 1
+        registro_guardar(self.object, self.request)
         self.object.save()
         messages.success(request, MENSAJE_DAR_BAJA)
         return HttpResponseRedirect(self.get_success_url())
@@ -117,7 +127,7 @@ def SociedadDetailTabla(request, pk):
         )
         return JsonResponse(data)
 
-    
+
 class DocumentoCreateView(BSModalCreateView):
     model = Documento
     template_name = "includes/formulario generico.html"
@@ -128,6 +138,10 @@ class DocumentoCreateView(BSModalCreateView):
 
     def form_valid(self, form):
         form.instance.sociedad = Sociedad.objects.get(id = self.kwargs['sociedad_id'])
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -161,7 +175,11 @@ class RepresentanteCreateView(BSModalCreateView):
     def form_valid(self, form):
         form.instance.sociedad = Sociedad.objects.get(id = self.kwargs['sociedad_id'])
 
+        form.instance.usuario = self.request.user
+       
         form.instance.estado = 1
+        registro_guardar(form.instance, self.request)
+
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -180,6 +198,7 @@ class RepresentanteLegalDarBajaView(BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
