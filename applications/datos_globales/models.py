@@ -1,7 +1,9 @@
-from django.db import models
+from applications.variables import ESTADOS
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from applications.variables import ESTADOS
+from applications.sociedad.models import Sociedad
+from django.db import models
+
 
 class Moneda(models.Model):
     '''Solo por Admin'''
@@ -267,3 +269,115 @@ class RangoDocumentoFisico(models.Model):
     def __str__(self):
         return self.modelo
 
+
+class CuentaBancariaSociedad(models.Model):
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
+    banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
+    moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20)
+    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20)
+    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaSociedad_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaSociedad_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Cuenta Bancaria Sociedad'
+        verbose_name_plural = 'Cuentas Bancarias Sociedad'
+
+    def __str__(self):
+        return str(self.sociedad) + ' ' + str(self.numero_cuenta)
+
+
+class CuentaBancariaPersonal(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='User')
+    banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
+    moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20)
+    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20)
+    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaPersonal_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaPersonal_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Cuenta Bancaria Personal'
+        verbose_name_plural = 'Cuentas Bancarias Personal'
+
+    def __str__(self):
+        return str(self.usuario) + ' ' + str(self.numero_cuenta)
+
+
+class SegmentoSunat(models.Model):
+    codigo = models.CharField('Código', max_length=10)
+    descripcion = models.CharField('Descripción', max_length=50)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SegmentoSunat_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SegmentoSunat_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Segmento Sunat'
+        verbose_name_plural = 'Segmentos Sunat'
+
+    def __str__(self):
+        return self.descripcion
+
+
+class FamiliaSunat(models.Model):
+    codigo = models.CharField('Código', max_length=10)
+    descripcion = models.CharField('Descripción', max_length=50)
+    segmento = models.ForeignKey(SegmentoSunat, on_delete=models.CASCADE)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='FamiliaSunat_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='FamiliaSunat_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Familia Sunat'
+        verbose_name_plural = 'Familias Sunat'
+
+    def __str__(self):
+        return self.descripcion
+
+
+class ClaseSunat(models.Model):
+    codigo = models.CharField('Código', max_length=10)
+    descripcion = models.CharField('Descripción', max_length=50)
+    familia = models.ForeignKey(FamiliaSunat, on_delete=models.CASCADE)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClaseSunat_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClaseSunat_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Clase Sunat'
+        verbose_name_plural = 'Clases Sunat'
+
+    def __str__(self):
+        return self.descripcion
+
+
+class ProductoSunat(models.Model):
+    codigo = models.CharField('Código', max_length=10)
+    descripcion = models.CharField('Descripción', max_length=50)
+    clase = models.ForeignKey(ClaseSunat, on_delete=models.CASCADE)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ProductoSunat_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ProductoSunat_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Producto Sunat'
+        verbose_name_plural = 'Productos Sunat'
+
+    def __str__(self):
+        return self.descripcion
