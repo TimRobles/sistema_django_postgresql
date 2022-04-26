@@ -24,4 +24,9 @@ ESTADO_SUNAT = (
         (7, 'Baja interna'),
         )
 
+ESTADOS = (
+        (1, 'Alta'),
+        (2, 'Baja'),
+        )
+
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'

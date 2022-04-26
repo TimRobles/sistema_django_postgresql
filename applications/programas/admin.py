@@ -10,6 +10,12 @@ class NivelUnoAdmin(admin.ModelAdmin):
         'icono',
         )
 
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 class NivelDosAdmin(admin.ModelAdmin):
     list_display = (
         'orden',
@@ -18,6 +24,12 @@ class NivelDosAdmin(admin.ModelAdmin):
         'nivel_uno',
         'icono',
         )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 class NivelTresAdmin(admin.ModelAdmin):
     list_display = (
@@ -28,6 +40,12 @@ class NivelTresAdmin(admin.ModelAdmin):
         'icono',
         )
 
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 class NivelCuatroAdmin(admin.ModelAdmin):
     list_display = (
         'orden',
@@ -36,6 +54,12 @@ class NivelCuatroAdmin(admin.ModelAdmin):
         'nivel_tres',
         'icono',
         )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 admin.site.register(NivelUno, NivelUnoAdmin)
 admin.site.register(NivelDos, NivelDosAdmin)
