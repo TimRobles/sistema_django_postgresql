@@ -174,4 +174,22 @@ class Distrito(models.Model):
         return self.nombre
 
 
+class Banco(models.Model):
+    '''Solo por Admin'''
+
+    nombre = models.CharField('Nombre', max_length=50)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Banco_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Banco_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Banco'
+        verbose_name_plural = 'Bancos'
+
+    def __str__(self):
+        return self.nombre
+
+
 

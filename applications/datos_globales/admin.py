@@ -10,6 +10,7 @@ from .models import (
     Departamento, 
     Provincia, 
     Distrito,
+    Banco,
 )
 
 class MonedaAdmin(admin.ModelAdmin):
@@ -158,6 +159,23 @@ class DistritoAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+
+class BancoAdmin(admin.ModelAdmin):
+    list_display = (
+        'nombre',
+        'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 admin.site.register(Moneda, MonedaAdmin)
 admin.site.register(Magnitud, MagnitudAdmin)
 admin.site.register(Unidad, UnidadAdmin)
@@ -167,3 +185,4 @@ admin.site.register(TipoInterlocutor, TipoInterlocutorAdmin)
 admin.site.register(Departamento, DepartamentoAdmin)
 admin.site.register(Provincia, ProvinciaAdmin)
 admin.site.register(Distrito, DistritoAdmin)
+admin.site.register(Banco, BancoAdmin)
