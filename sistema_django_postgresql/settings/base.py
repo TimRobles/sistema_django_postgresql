@@ -122,12 +122,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR.child('static'),
-    ]
-STATIC_ROOT = BASE_DIR
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR.child('media')

@@ -25,8 +25,8 @@
                         <ul>
                             {% for programa_dos in programa_uno.NivelDos_nivel_uno.all %}
                                 <li class="nav-link">
-                                    <img class="logo-sub-menu" src="{{ MEDIA_URL }}{{ programa_dos.icono }}" alt="{{ programa_dos.nombre }}" width="32" height="32">
                                     <button class="text-white btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{ programa_dos.nombre|espacio_guion }}" aria-expanded="false">
+                                        <img class="logo-sub-menu" src="{{ MEDIA_URL }}{{ programa_dos.icono }}" alt="{{ programa_dos.nombre }}" width="32" height="32">
                                         {{ programa_dos.nombre }}
                                     </button>
                                     <div class="collapse" id="{{ programa_dos.nombre|espacio_guion }}">
@@ -44,8 +44,8 @@
                                                 </li>
                                                 {% else %}
                                                 <li class="nav-link">
-                                                    <img class="logo-sub-menu" src="{{ MEDIA_URL }}{{ programa_tres.icono }}" alt="{{ programa_tres.nombre }}" width="32" height="32">
                                                     <button class="text-white btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{ programa_tres.nombre|espacio_guion }}" aria-expanded="false">
+                                                        <img class="logo-sub-menu" src="{{ MEDIA_URL }}{{ programa_tres.icono }}" alt="{{ programa_tres.nombre }}" width="32" height="32">
                                                         {{ programa_tres.nombre }}
                                                     </button>
                                                     <div class="collapse" id="{{ programa_tres.nombre|espacio_guion }}">
