@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from applications.variables import ESTADOS
 
 class Moneda(models.Model):
@@ -192,4 +193,77 @@ class Banco(models.Model):
         return self.nombre
 
 
+class DocumentoProceso(models.Model):
+    nombre = models.CharField('Nombre', max_length=50)
+    descripcion = models.CharField('Descripción', max_length=250, blank=True, null=True)
+    modelo = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DocumentoProceso_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DocumentoProceso_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Documento de Proceso'
+        verbose_name_plural = 'Documentos de Proceso'
+
+    def __str__(self):
+        print("*******************************")
+        print(self.nombre, type(self.nombre))
+        print(self.modelo, type(self.modelo))
+        print(self.modelo.id, type(self.modelo.id))
+        print(self.modelo.app_label, type(self.modelo.app_label))
+        print(self.modelo.model, type(self.modelo.model))
+        print(self.modelo.model_class().objects.get(id = 1), type(self.modelo.model_class().objects.get(id = 1)))
+        print("*******************************")
+        return self.nombre
+
+class DocumentoFisico(models.Model):
+    nombre = models.CharField('Nombre', max_length=50)
+    descripcion = models.CharField('Descripción', max_length=250, blank=True, null=True)
+    modelo = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DocumentoFisico_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DocumentoFisico_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Documento Físico'
+        verbose_name_plural = 'Documentos Físicos'
+
+    def __str__(self):
+        return self.nombre
+
+
+class RangoDocumentoProceso(models.Model):
+    modelo = models.ForeignKey(DocumentoProceso, on_delete=models.CASCADE)
+    serie = models.CharField('Serie', max_length=10)
+    rango_inicial = models.CharField('Rango Inicial', max_length=15)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RangoDocumentoProceso_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RangoDocumentoProceso_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Rango de Documento de Proceso'
+        verbose_name_plural = 'Rangos de Documentos de Proceso'
+
+    def __str__(self):
+        return self.modelo
+
+
+class RangoDocumentoFisico(models.Model):
+    modelo = models.ForeignKey(DocumentoFisico, on_delete=models.CASCADE)
+    serie = models.CharField('Serie', max_length=10)
+    rango_inicial = models.CharField('Rango Inicial', max_length=15)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RangoDocumentoFisico_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RangoDocumentoFisico_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Rango de Documento Físico'
+        verbose_name_plural = 'Rangos de Documentos Físicos'
+
+    def __str__(self):
+        return self.modelo
 
