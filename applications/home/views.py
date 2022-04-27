@@ -79,10 +79,10 @@ def ConsultaRucView(request, ruc):
         )
         return JsonResponse(data)
 
-def ConsultaDniView(request, ruc):
+def ConsultaDniView(request, dni):
     data = dict()
     if request.method == 'GET':
-        datos_persona = consulta_dni(ruc)
+        datos_persona = consulta_dni(dni)
         informacion = simplejson.dumps({
                             'nombre_completo' : datos_persona['cliente'],
                         })
