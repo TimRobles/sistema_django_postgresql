@@ -209,14 +209,14 @@ class DocumentoProceso(models.Model):
         verbose_name_plural = 'Documentos de Proceso'
 
     def __str__(self):
-        print("*******************************")
+        """ print("*******************************")
         print(self.nombre, type(self.nombre))
         print(self.modelo, type(self.modelo))
         print(self.modelo.id, type(self.modelo.id))
         print(self.modelo.app_label, type(self.modelo.app_label))
         print(self.modelo.model, type(self.modelo.model))
         print(self.modelo.model_class().objects.get(id = 1), type(self.modelo.model_class().objects.get(id = 1)))
-        print("*******************************")
+        print("*******************************") """
         return self.nombre
 
 class DocumentoFisico(models.Model):
