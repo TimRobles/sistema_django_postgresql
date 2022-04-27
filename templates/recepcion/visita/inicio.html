@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Visitas
+{% endblock titulo %}
+
+{% block contenido %}
+    <div class="table-responsive" id="tabla">
+        {% include 'recepcion/visita/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

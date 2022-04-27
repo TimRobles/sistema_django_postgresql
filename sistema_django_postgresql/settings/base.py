@@ -38,7 +38,8 @@ LOCAL_APPS = (
     'applications.usuario',
     'applications.sociedad',
     'applications.programas',
-    'applications.datos_globales'
+    'applications.datos_globales',
+    'applications.recepcion',
 )
 
 THIRD_PARTY_APPS = (
