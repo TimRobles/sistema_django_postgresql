@@ -25,8 +25,22 @@
             <td>{{ visita.numero_documento }}</td>
             <td>{{ visita.motivo_visita }}</td>
             <td>{{ visita.hora_ingreso }}</td>
-            <td>{{ visita.hora_salida }}</td>
-            <td>{{ visita.empresa_cliente }}</td>
+            <td>
+                
+                {% if visita.hora_salida %}
+                {{ visita.hora_salida }}
+                    
+                {% endif %}
+                    
+            </td>
+            <td>
+                
+                {% if visita.empresa_cliente %}
+                {{ visita.empresa_cliente }}
+                    
+                {% endif %}
+                    
+            </td>
 
         </tr>
         {% endfor %}
