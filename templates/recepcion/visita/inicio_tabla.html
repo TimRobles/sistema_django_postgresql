@@ -9,7 +9,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Nombre Completo</th>
+            <th>Nombre</th>
             <th>Número de Documento</th>
             <th>Motivo de Visita</th>
             <th>Hora de Ingreso</th>
@@ -41,7 +41,19 @@
                 {% endif %}
                     
             </td>
-
+            <td class="text-center text-nowrap">
+                
+                {% if visita.hora_salida == None %}
+                <button data-form-url="{% url 'visita_app:visita_registrar_salida' visita.id %}"1
+                    data-table-url="{% url 'visita_app:visita_tabla' %}"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                
+                {% endif %}
+                    
+            </td>
         </tr>
         {% endfor %}
     </tbody>
