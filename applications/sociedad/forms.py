@@ -1,5 +1,6 @@
 from datetime import date
 from django import forms
+from django.contrib.auth import get_user_model
 
 from .models import Documento, Sociedad, RepresentanteLegal
 
@@ -68,6 +69,7 @@ class RepresentanteLegalForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(RepresentanteLegalForm, self).__init__(*args, **kwargs)
+        self.fields['usuario'].queryset = get_user_model().objects.exclude(first_name = "")
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True

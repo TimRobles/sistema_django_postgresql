@@ -36,7 +36,7 @@ class NivelDos(models.Model):
         ordering = ['nivel_uno__orden', 'orden',]
 
     def __str__(self):
-        return str(self.orden) + ' - ' + self.nombre  + str(self.nivel_uno)
+        return str(self.orden) + ' - ' + self.nombre + ' | ' + str(self.nivel_uno)
 
 class NivelTres(models.Model):
     orden = models.IntegerField()
@@ -55,7 +55,7 @@ class NivelTres(models.Model):
         ordering = ['nivel_dos__orden', 'orden',]
 
     def __str__(self):
-        return str(self.orden) + ' - ' + self.nombre + str(self.nivel_dos)
+        return str(self.orden) + ' - ' + self.nombre + ' | ' + str(self.nivel_dos)
 
 class NivelCuatro(models.Model):
     orden = models.IntegerField()
@@ -74,4 +74,4 @@ class NivelCuatro(models.Model):
         ordering = ['nivel_tres__orden', 'orden',]
 
     def __str__(self):
-        return str(self.orden) + ' - ' + self.nombre + str(self.nivel_tres)
+        return str(self.orden) + ' - ' + self.nombre + ' | ' + str(self.nivel_tres)

@@ -174,10 +174,6 @@ class RepresentanteCreateView(BSModalCreateView):
 
     def form_valid(self, form):
         form.instance.sociedad = Sociedad.objects.get(id = self.kwargs['sociedad_id'])
-
-        form.instance.usuario = self.request.user
-       
-        form.instance.estado = 1
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)

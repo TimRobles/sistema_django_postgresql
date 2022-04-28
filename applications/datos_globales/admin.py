@@ -174,7 +174,8 @@ class DistritoAdmin(admin.ModelAdmin):
 
 class BancoAdmin(admin.ModelAdmin):
     list_display = (
-        'nombre',
+        'razon_social',
+        'nombre_comercial',
         'estado',
         'created_by',
         'created_at',

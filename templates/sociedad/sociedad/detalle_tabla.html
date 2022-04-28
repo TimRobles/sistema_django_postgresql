@@ -52,7 +52,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Usuario</th>
+                <th>Representante Legal</th>
                 <th>Tipo Representante Legal</th>
                 <th>Fecha Registro</th>
                 <th>Estado</th>
@@ -62,7 +62,13 @@
         <tbody>
             {% for representante in representantes %}
             <tr>
-                <td>{{ representante.usuario }}</td>
+                <td>
+                    {% if representante.usuario.first_name %}
+                    {{ representante.usuario.first_name }} {{ representante.usuario.last_name }}
+                    {% else %}
+                    {{ representante.usuario }}
+                    {% endif %}
+                </td>
                 <td>{{ representante.tipo_representante_legal }}</td>
                 <td>{{ representante.fecha_registro|date:'d/m/Y'}}</td>
                 <td>{{ representante.get_estado_display}}</td>
