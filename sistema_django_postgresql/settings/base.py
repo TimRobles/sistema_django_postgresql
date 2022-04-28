@@ -38,7 +38,8 @@ LOCAL_APPS = (
     'applications.usuario',
     'applications.sociedad',
     'applications.programas',
-    'applications.datos_globales'
+    'applications.datos_globales',
+    'applications.recepcion',
 )
 
 THIRD_PARTY_APPS = (
@@ -110,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es-mx'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
