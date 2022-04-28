@@ -21,7 +21,7 @@ class Moneda(models.Model):
         verbose_name = 'Moneda'
         verbose_name_plural = 'Monedas'
         ordering = ['nombre',]
-    
+
     def save(self):
         self.nombre = self.nombre.upper()
         self.abreviatura = self.abreviatura.upper()
@@ -30,7 +30,7 @@ class Moneda(models.Model):
     def __str__(self):
         return str(self.nombre)
 
-        
+
 class Magnitud(models.Model):
     '''Solo por Admin'''
 
@@ -43,7 +43,7 @@ class Magnitud(models.Model):
     class Meta:
         verbose_name = 'Magnitud'
         verbose_name_plural = 'Magnitudes'
-    
+
     def save(self):
         self.nombre = self.nombre.upper()
         return super().save()
