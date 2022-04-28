@@ -7,7 +7,7 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.child('db.sqlite3'),
+        'NAME': BASE_DIR.ancestor(1).child('sistema_django_postgresql.sqlite3'),
     },
     'prod': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -18,3 +18,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR.ancestor(1).child('media_sistema_django_postgresql')

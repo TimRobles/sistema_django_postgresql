@@ -13,7 +13,10 @@
     <form action="" enctype="multipart/form-data" method="post" >
         {% csrf_token %}
         {% include 'includes/formulario.html' %}
+
         <input class="btn btn-primary mb-5" type="submit" value="Guardar">
+        
+        
     </form>
 {% endblock contenido %}
     

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle de usuario e historico
+{% endblock titulo %}
+
+{% block contenido %}
+<h1>Ver Detalle</h1>
+<div class="row justify-content-around">
+    <div class="table-responsive col-lg-6">
+        <table class="table">
+            <tbody>
+
+                <tr>
+                    <th>Fecha de Cumpleaños</th>
+                    <td class="text-center">{{ contexto_historicouser.fecha_nacimiento|date:'d/m/Y' }}</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+
+
+{% endblock contenido  %}

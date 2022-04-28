@@ -1,7 +1,1 @@
-gunicorn_start
-supervisor.conf
-supervisor.conf
-nginx_server
-db.sqlite3
-media/
 **/__pycache__/
