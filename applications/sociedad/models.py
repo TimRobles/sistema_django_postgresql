@@ -8,7 +8,7 @@ from colorfield.fields import ColorField
 
 class Sociedad(models.Model):
     tipo_documento = models.CharField('Tipo de Documento', choices=TIPO_DOCUMENTO_CHOICES, max_length=1)
-    ruc = models.CharField('RUC', max_length=15)
+    ruc = models.CharField('RUC', max_length=11, unique=True)
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=100)
     direccion_legal = models.CharField('Dirección Legal', max_length=100)
@@ -74,12 +74,12 @@ class RepresentanteLegal(models.Model):
     (2, 'BAJA'),
     )
 
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Usuario')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Usuario', verbose_name='Representante Legal')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True, related_name='Sociedad', editable=False)
     tipo_representante_legal = models.ForeignKey(TipoRepresentanteLegal, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoRepresentanteLegal')
     fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_baja= models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADO,default=1)
+    estado = models.IntegerField('Estado', choices=ESTADO, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RepresentanteLegal_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)

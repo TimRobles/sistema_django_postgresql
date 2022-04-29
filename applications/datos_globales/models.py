@@ -8,8 +8,8 @@ from django.db import models
 class Moneda(models.Model):
     '''Solo por Admin'''
 
-    nombre = models.CharField('Nombre', max_length=50)
-    abreviatura = models.CharField('Abreviatura', max_length=5)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
+    abreviatura = models.CharField('Abreviatura', max_length=5, unique=True)
     simbolo = models.CharField('Símbolo', max_length=5)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -22,14 +22,19 @@ class Moneda(models.Model):
         verbose_name_plural = 'Monedas'
         ordering = ['nombre',]
 
+    def save(self):
+        self.nombre = self.nombre.upper()
+        self.abreviatura = self.abreviatura.upper()
+        return super().save()
+
     def __str__(self):
         return str(self.nombre)
 
-        
+
 class Magnitud(models.Model):
     '''Solo por Admin'''
 
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Magnitud_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -39,6 +44,10 @@ class Magnitud(models.Model):
         verbose_name = 'Magnitud'
         verbose_name_plural = 'Magnitudes'
 
+    def save(self):
+        self.nombre = self.nombre.upper()
+        return super().save()
+
     def __str__(self):
         return self.nombre
 
@@ -47,7 +56,7 @@ class Unidad(models.Model):
     '''Solo por Admin'''
 
     magnitud = models.ForeignKey(Magnitud, on_delete=models.PROTECT)
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     simbolo = models.CharField('Símbolo', max_length=5)
     unidad_sunat = models.CharField('Unidad Sunat', max_length=5)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -66,8 +75,8 @@ class Unidad(models.Model):
 class Area(models.Model):
     '''Solo por Admin'''
 
-    nombre = models.CharField('Nombre', max_length=50)
-    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Area_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -86,7 +95,7 @@ class Cargo(models.Model):
     '''Solo por Admin'''
 
     area = models.ForeignKey(Area, on_delete=models.PROTECT)
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cargo_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -104,7 +113,7 @@ class Cargo(models.Model):
 class TipoInterlocutor(models.Model):
     '''Solo por Admin'''
 
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoInterlocutor_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -121,8 +130,8 @@ class TipoInterlocutor(models.Model):
 class Departamento(models.Model):
     '''Solo por Admin'''
 
-    codigo = models.CharField('Código', max_length=2)
-    nombre = models.CharField('Nombre', max_length=50)
+    codigo = models.CharField('Código', max_length=2, unique=True)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Departamento_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -180,7 +189,8 @@ class Distrito(models.Model):
 class Banco(models.Model):
     '''Solo por Admin'''
 
-    nombre = models.CharField('Nombre', max_length=50)
+    razon_social = models.CharField('Razón Social', max_length=50, unique=True)
+    nombre_comercial = models.CharField('Nombre Comercial', max_length=50, unique=True)
     estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Banco_created_by', editable=False)
@@ -192,11 +202,11 @@ class Banco(models.Model):
         verbose_name_plural = 'Bancos'
 
     def __str__(self):
-        return self.nombre
+        return self.razon_social
 
 
 class DocumentoProceso(models.Model):
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     descripcion = models.CharField('Descripción', max_length=250, blank=True, null=True)
     modelo = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -209,18 +219,10 @@ class DocumentoProceso(models.Model):
         verbose_name_plural = 'Documentos de Proceso'
 
     def __str__(self):
-        """ print("*******************************")
-        print(self.nombre, type(self.nombre))
-        print(self.modelo, type(self.modelo))
-        print(self.modelo.id, type(self.modelo.id))
-        print(self.modelo.app_label, type(self.modelo.app_label))
-        print(self.modelo.model, type(self.modelo.model))
-        print(self.modelo.model_class().objects.get(id = 1), type(self.modelo.model_class().objects.get(id = 1)))
-        print("*******************************") """
         return self.nombre
 
 class DocumentoFisico(models.Model):
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     descripcion = models.CharField('Descripción', max_length=250, blank=True, null=True)
     modelo = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -250,7 +252,7 @@ class RangoDocumentoProceso(models.Model):
         verbose_name_plural = 'Rangos de Documentos de Proceso'
 
     def __str__(self):
-        return self.modelo
+        return str(self.modelo)
 
 
 class RangoDocumentoFisico(models.Model):
@@ -267,15 +269,15 @@ class RangoDocumentoFisico(models.Model):
         verbose_name_plural = 'Rangos de Documentos Físicos'
 
     def __str__(self):
-        return self.modelo
+        return str(self.modelo)
 
 
 class CuentaBancariaSociedad(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
     moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
-    numero_cuenta = models.CharField('Número de Cuenta', max_length=20)
-    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True)
+    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaSociedad_created_by', editable=False)
@@ -295,8 +297,8 @@ class CuentaBancariaPersonal(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='User')
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
     moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
-    numero_cuenta = models.CharField('Número de Cuenta', max_length=20)
-    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True)
+    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaPersonal_created_by', editable=False)
@@ -313,8 +315,8 @@ class CuentaBancariaPersonal(models.Model):
 
 
 class SegmentoSunat(models.Model):
-    codigo = models.CharField('Código', max_length=10)
-    descripcion = models.CharField('Descripción', max_length=50)
+    codigo = models.CharField('Código', max_length=10, unique=True)
+    descripcion = models.CharField('Descripción', max_length=50, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SegmentoSunat_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
