@@ -8,7 +8,7 @@ from colorfield.fields import ColorField
 
 class Sociedad(models.Model):
     tipo_documento = models.CharField('Tipo de Documento', choices=TIPO_DOCUMENTO_CHOICES, max_length=1)
-    ruc = models.CharField('RUC', max_length=15, unique=True)
+    ruc = models.CharField('RUC', max_length=11, unique=True)
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=100)
     direccion_legal = models.CharField('Dirección Legal', max_length=100)

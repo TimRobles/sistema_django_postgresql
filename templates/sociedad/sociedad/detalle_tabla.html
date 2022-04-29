@@ -53,8 +53,10 @@
         <thead>
             <tr>
                 <th>Representante Legal</th>
+                <th>Número de Documento</th>
                 <th>Tipo Representante Legal</th>
                 <th>Fecha Registro</th>
+                <th>Fecha Baja</th>
                 <th>Estado</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -69,8 +71,10 @@
                     {{ representante.usuario }}
                     {% endif %}
                 </td>
+                <td>{{ representante.usuario.DatosUsuario_usuario }}</td>
                 <td>{{ representante.tipo_representante_legal }}</td>
                 <td>{{ representante.fecha_registro|date:'d/m/Y'}}</td>
+                <td>{{ representante.fecha_baja|date:'d/m/Y'}}</td>
                 <td>{{ representante.get_estado_display}}</td>
 
                 <td>
