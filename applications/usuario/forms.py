@@ -89,11 +89,13 @@ class UserPasswordForm(forms.Form):
         if not user:
             self.add_error('password1', 'Contraseña anterior incorrecta')
 
-        if password2 != password3:
-            self.add_error('password2', 'Las contraseñas no coinciden')
-
-        messages.success(self.request, 'Se actualizo correctamente la contraseña')
-        
+        else:
+            if password2 != password3:
+                self.add_error('password2', 'Las contraseñas no coinciden')
+                
+            else:
+                messages.success(self.request, 'Se actualizo correctamente la contraseña')
+                
         return cleaned_data
 
 

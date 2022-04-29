@@ -108,7 +108,7 @@ class OlvideContrasenaView(FormView):
         try:
             usuario_buscar = User.objects.get(email=correo)
         except:
-            form.add_error('Correo', 'El correo %s no existe.' % correo)
+            form.add_error('correo', 'El correo %s no existe.' % correo)
             return super(OlvideContrasenaView, self).form_invalid(form)
 
         datos_usuario = usuario_buscar.DatosUsuario_usuario
