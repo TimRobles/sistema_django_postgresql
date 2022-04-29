@@ -1,6 +1,5 @@
 from django.urls import path
 from applications.home.views import (
-    ConsultaRucView,
     PanelView,
     InicioView,
     UserLogoutView,
@@ -16,6 +15,4 @@ urlpatterns = [
     path('logout/', UserLogoutView.as_view(), name='logout'),
     path('olvide-contraseña/', OlvideContrasenaView.as_view(), name='olvide_contraseña'),
     path('recuperar-contraseña/', RecuperarContrasenaView.as_view(), name='recuperar_contraseña'),
-
-    path('consulta-ruc/<int:ruc>/', ConsultaRucView, name='consulta_ruc'),
 ]

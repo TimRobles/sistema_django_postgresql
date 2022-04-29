@@ -130,3 +130,10 @@ STATIC_ROOT = BASE_DIR
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.child('media')
+
+# EMAIL SETTINGS
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'mail.multiplay.com.pe'
+EMAIL_HOST_USER = "no-responder@multiplay.com.pe"
+EMAIL_HOST_PASSWORD = "MPqap4ca8SBjFuN"
+EMAIL_PORT = 587

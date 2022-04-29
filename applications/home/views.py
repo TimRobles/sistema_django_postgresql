@@ -1,5 +1,6 @@
-from applications.funciones import consulta_dni, consulta_ruc
 from applications.importaciones import *
+from django.utils.crypto import get_random_string
+from applications.funciones import consulta_dni, consulta_ruc
 from .forms import UserLoginForm
 from .forms import OlvideContrasenaForm
 from .forms import RecuperarContrasenaForm
@@ -58,7 +59,7 @@ class SinPermisoView(TemplateView):
 class OlvideContrasenaView(FormView):
     template_name = "home/olvide contraseña.html"
     form_class = OlvideContrasenaForm
-    success_url = reverse_lazy('home:recuperar_contraseña')
+    success_url = reverse_lazy('home_app:recuperar_contraseña')
 
     def form_valid(self, form):
         User = get_user_model()
@@ -67,10 +68,10 @@ class OlvideContrasenaView(FormView):
         try:
             usuario_buscar = User.objects.get(email=correo)
         except:
-            form.add_error('correo', 'El correo %s no existe.' % correo)
+            form.add_error('Correo', 'El correo %s no existe.' % correo)
             return super(OlvideContrasenaView, self).form_invalid(form)
         
-        datos_usuario = usuario_buscar.usuario_datos_usuario
+        datos_usuario = usuario_buscar.DatosUsuario_usuario
         password = get_random_string(length=10)
         datos_usuario.recuperar_password = password
         datos_usuario.save()
@@ -86,7 +87,7 @@ class OlvideContrasenaView(FormView):
 class RecuperarContrasenaView(FormView):
     template_name = "home/recuperar contraseña.html"
     form_class = RecuperarContrasenaForm
-    success_url = reverse_lazy('home:home')
+    success_url = reverse_lazy('home_app:home')
 
     def form_valid(self, form):
         User = get_user_model()
@@ -96,10 +97,10 @@ class RecuperarContrasenaView(FormView):
         try:
             usuario_buscar = User.objects.get(email=correo)
         except:
-            form.add_error('correo', 'El correo %s no existe.' % correo)
+            form.add_error('Correo', 'El correo %s no existe.' % correo)
             return super(RecuperarContrasenaView, self).form_invalid(form)
 
-        datos_usuario = usuario_buscar.usuario_datos_usuario
+        datos_usuario = usuario_buscar.DatosUsuario_usuario
         if datos_usuario.recuperar_password == password:
             datos_usuario.recuperar_password = None
             datos_usuario.save()
@@ -118,34 +119,3 @@ class RecuperarContrasenaView(FormView):
             
         return super(RecuperarContrasenaView, self).form_valid(form)
 
-
-
-def ConsultaRucView(request, ruc):
-    data = dict()
-    if request.method == 'GET':
-        if len(ruc.__str__()) == 11:
-            datos_empresa = consulta_ruc(ruc)
-            informacion = simplejson.dumps({
-                                'razon_social' : datos_empresa['nombre'],
-                                'direccion' : datos_empresa['direccion'],
-                                'ubigeo' : datos_empresa['ubigeo'],
-                                'estado' : datos_empresa['estado'],
-                                'condicion' : datos_empresa['condicion'],
-                                'distrito' : datos_empresa['distrito'],
-                                'provincia' : datos_empresa['provincia'],
-                                'departamento' : datos_empresa['departamento'],
-                            })
-        else:
-            datos_persona = consulta_dni(ruc)
-            informacion = simplejson.dumps({
-                                'razon_social' : datos_persona['cliente'],
-                            })
-
-        data['info'] = render_to_string(
-            'includes/info.html',
-            {
-                'informacion': informacion,
-            },
-            request=request
-        )
-        return JsonResponse(data)
