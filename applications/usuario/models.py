@@ -51,6 +51,7 @@ class DatosUsuario(models.Model):
     fecha_nacimiento = models.DateField('Fecha de Nacimiento', auto_now=False, auto_now_add=False)
     foto = models.ImageField('Foto de Perfil', upload_to='img/usuario/datos_usuario/', default='img/usuario/datos_usuario/default-avatar.png', height_field=None, width_field=None, max_length=None)
     direccion = models.CharField('Dirección', max_length=254)
+    recuperar_password = models.CharField('Recuperar password', max_length=10, blank=True, null=True)
     telefono_personal = PhoneNumberField('Teléfono Personal')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

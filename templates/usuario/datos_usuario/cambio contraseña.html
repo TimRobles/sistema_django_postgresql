@@ -1,4 +1,5 @@
 {% extends 'base.html'  %}
+{% load static %}
 
 {% block header %}
     {% include 'includes/header.html' %}
@@ -12,8 +13,40 @@
     <h1>Cambio de Contraseña</h1>
     <form action="" enctype="multipart/form-data" method="post" >
         {% csrf_token %}
-        {% include 'includes/formulario.html' %}
-        <input class="btn btn-primary mb-5" type="submit" value="Guardar">
+
+        {% for field in form %}
+            <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %}
+                >
+                {% if 'Boton' not in field.label %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+
+                
+                {% if field.label == 'Contraseña Actual' or field.label == 'Contraseña Nueva' or field.label == 'Confirmar nueva contraseña'%}
+                    <button type="button" class="btn btn-info input-group-text">
+                        <i class="bi bi-eye-fill"></i>
+                    </button>                              
+                {% endif %}
+                    
+            </div>
+            {% for error in field.errors %}
+                <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="modal-footer">
+            <input class="btn btn-primary" type="submit" value="Guardar">
+        </div>
+
     </form>
+
 {% endblock contenido %}
-    
+
+
+{% block extrajs %}
+    <script src="{% static 'js/usuario/datos_usuario/cambio_contraseña.js' %}" ></script>
+{% endblock extrajs %}

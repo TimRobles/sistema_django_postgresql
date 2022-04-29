@@ -39,6 +39,7 @@ class DatosUsuarioView(LoginRequiredMixin, FormView):
 
         usuario_buscar.first_name = self.request.POST['Nombres']
         usuario_buscar.last_name = self.request.POST['Apellidos']
+        usuario_buscar.email = self.request.POST['Correo']
         
         usuario_buscar.save()
         form.save()
@@ -108,7 +109,6 @@ class HistoricoUserDarBajaView(BSModalUpdateView):
         context['titulo'] = 'Historico Usuario'
         return context
     
-
 class HistoricoUserDarAltaView(BSModalCreateView):
     template_name = "includes/formulario generico.html"
     form_class = HistoricoUserDarAltaForm
@@ -149,3 +149,22 @@ class HistoricoUserDarAltaView(BSModalCreateView):
         context['accion'] = 'Dar de Alta'
         context['titulo'] = 'Historico Usuario'
         return context
+
+class HistoricoDetailView(DetailView):
+    model = get_user_model()
+    template_name = "usuario/historico_user/detail.html"
+    context_object_name = 'contexto_user'
+
+    def get_context_data(self, **kwargs):
+        contexto_historicouser = HistoricoUser.objects.filter(usuario__id = self.kwargs['pk'])
+        try:
+            datos_usuario = DatosUsuario.objects.get(usuario__id = self.kwargs['pk'])
+        except:
+            datos_usuario = None
+
+        context = super(HistoricoDetailView, self).get_context_data(**kwargs)
+        context['datos_usuario'] = datos_usuario
+        context['contexto_historicouser'] = contexto_historicouser
+        return context
+
+

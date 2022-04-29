@@ -11,6 +11,7 @@
             <form action="" method="post">{% csrf_token %}
                 {% include 'includes/formulario.html' %}
                 <input class="col-12 mt-2 btn btn-primary" type="submit" value="Login">
+                <a href="{% url 'home_app:olvide_contraseña' %}" class="col-12 mt-2 btn btn-info">Olvidé mi contraseña</a>
             </form>
         </div>
     </div>

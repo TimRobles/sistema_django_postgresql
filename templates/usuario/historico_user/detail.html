@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle de usuario e historico
+{% endblock titulo %}
+
+{% block contenido %}
+
+<h3> Datos del usuario </h3>
+
+<div class="table-responsive">
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Nombre Completo</th>
+                <th>Tipo de Documento</th>
+                <th>Nro. Documento</th>
+                <th>Fecha de Nacimiento</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        
+        <tbody>
+            <tr>
+                <td>{{ datos_usuario.usuario.first_name }} {{ datos_usuario.usuario.last_name }}</td>
+                <td>{{ datos_usuario.get_tipo_documento_display }}</td>
+                <td>{{ datos_usuario.numero_documento }}</td>
+                <td>{{ datos_usuario.fecha_nacimiento }}</td>
+                <td>{{ datos_usuario.get_estado_display}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+
+<h3> Historico del usuario </h3>
+
+<div class="table-responsive">
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Fecha de Alta</th>
+                <th>Fecha de Baja</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for historicouser in contexto_historicouser.all %}
+            <tr>
+                <td>{{ historicouser.usuario }}</td>
+                <td>{{ historicouser.fecha_alta|date:'d/m/Y' }}</td>
+                <td>{{ historicouser.fecha_baja|date:'d/m/Y' }}</td>
+                <td>{{ historicouser.get_estado_display}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        
+    </table>
+</div>
+
+{% endblock contenido  %}

@@ -9,6 +9,7 @@ from applications.usuario.views import(
     HistoricoUserDarBajaView,
     HistoricoUserListView,
     HistoricoUserDarAltaView,
+    HistoricoDetailView,
 )
 
 app_name='usuario_app'
@@ -19,6 +20,8 @@ urlpatterns = [
 
     path('historico-usuarios/', HistoricoUserListView.as_view(),name='historico_usuarios'),
     path('historico-usuarios-tabla/', HistoricoUserTabla,name='historico_usuarios_tabla'),
+    path('historico-usuarios-detalle/<pk>/', HistoricoDetailView.as_view(),name='historico_usuarios_detalle'),
+
     path('baja-usuarios/<pk>/', HistoricoUserDarBajaView.as_view(),name='baja_usuarios'),
     path('alta-usuarios/<int:usuario>/', HistoricoUserDarAltaView.as_view(),name='alta_usuarios'),
 
