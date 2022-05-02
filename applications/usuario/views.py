@@ -99,6 +99,8 @@ class HistoricoUserDarBajaView(BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.estado = 2
+        form.instance.usuario.is_active = False
+        form.instance.usuario.save()
         registro_guardar(form.instance, self.request)
         
         return super().form_valid(form)
@@ -116,20 +118,25 @@ class HistoricoUserDarAltaView(BSModalCreateView):
 
     def form_valid(self, form):
         usuario = get_user_model()
-        form.instance.usuario = usuario.objects.get(id = self.kwargs['usuario'])
+        
+        buscar_usuario = usuario.objects.get(id = self.kwargs['usuario'])
+        form.instance.usuario = buscar_usuario
         historico = HistoricoUser.objects.filter(
-            usuario = usuario.objects.get(id = self.kwargs['usuario']),
+            usuario = buscar_usuario,
             estado = 2,
         )
         if historico:
             historico = historico.latest('id')
             historico.estado = 3
+            buscar_usuario.is_active = True
+            buscar_usuario.save()
             registro_guardar(historico, self.request)
             historico.save()
 
         registro_guardar(form.instance, self.request)
         
         return super().form_valid(form)
+        
 
     def get_form_kwargs(self):
         usuario = get_user_model()
