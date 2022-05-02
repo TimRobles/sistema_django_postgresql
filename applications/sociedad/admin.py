@@ -8,16 +8,20 @@ class SociedadAdmin(admin.ModelAdmin):
     '''Admin View for Sociedad'''
 
     list_display = (
-        'razon_social',
         'ruc',
+        'nombre_comercial',
+        'razon_social',
         'direccion_legal',
         'ubigeo',
         'estado_sunat',
         'condicion_sunat',
-        'logo',
-        'color',
+
         )
     exclude = (
+        'tipo_documento',
+        'razon_social',
+        'direccion_legal',
+        'ubigeo',
         'estado_sunat',
         'condicion_sunat',
         'logo',

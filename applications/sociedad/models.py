@@ -7,10 +7,10 @@ from colorfield.fields import ColorField
 # Create your models here.
 
 class Sociedad(models.Model):
-    tipo_documento = models.CharField('Tipo de Documento', choices=TIPO_DOCUMENTO_CHOICES, max_length=1)
+    tipo_documento = models.CharField('Tipo de Documento', choices=TIPO_DOCUMENTO_CHOICES, max_length=1, default="6")
     ruc = models.CharField('RUC', max_length=11, unique=True)
     razon_social = models.CharField('Razón Social', max_length=100)
-    nombre_comercial = models.CharField('Nombre Comercial', max_length=100)
+    nombre_comercial = models.CharField('Nombre Comercial', max_length=100, blank=True, null=True)
     direccion_legal = models.CharField('Dirección Legal', max_length=100)
     ubigeo = models.CharField('Ubigeo', max_length=6)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT, default=1)
@@ -52,7 +52,7 @@ class Documento(models.Model):
 class TipoRepresentanteLegal(models.Model):
     '''Solo por Admin'''
     
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoRepresentanteLegal_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
