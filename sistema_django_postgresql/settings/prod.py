@@ -24,5 +24,5 @@ STATICFILES_DIRS = [
     ]
 STATIC_ROOT = BASE_DIR.child('staticfiles')
 
-MEDIA_URL = '/medias/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.child('medias')
