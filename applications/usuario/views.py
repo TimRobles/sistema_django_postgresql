@@ -43,7 +43,11 @@ class DatosUsuarioView(LoginRequiredMixin, FormView):
         
         usuario_buscar.save()
         form.save()
+        messages.success(self.request, 'Datos actualizados correctamente')
+
         return super(DatosUsuarioView, self).form_valid(form)
+        
+
 
 class UserPasswordView(FormView):
     template_name = "usuario/datos_usuario/cambio contraseña.html"
