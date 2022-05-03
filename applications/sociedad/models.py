@@ -1,13 +1,13 @@
 from email.policy import default
 from django.db import models
 from django.conf import settings
-from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_CHOICES, CONDICION_SUNAT
+from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, CONDICION_SUNAT
 from colorfield.fields import ColorField
 
 # Create your models here.
 
 class Sociedad(models.Model):
-    tipo_documento = models.CharField('Tipo de Documento', choices=TIPO_DOCUMENTO_CHOICES, max_length=1, default="6")
+    tipo_documento = models.CharField('Tipo de Documento', choices=TIPO_DOCUMENTO_SUNAT, max_length=1, default="6")
     ruc = models.CharField('RUC', max_length=11, unique=True)
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=100, blank=True, null=True)

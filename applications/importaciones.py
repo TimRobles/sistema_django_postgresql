@@ -39,7 +39,7 @@ from django.http import HttpResponse
 
 from .variables import *
 
-from datetime import date
+from datetime import date, datetime
 
 import simplejson
 

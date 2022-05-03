@@ -11,6 +11,7 @@ class Visita(models.Model):
     hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True)
     hora_salida = models.TimeField('Hora de Salida', auto_now=False, auto_now_add=False, blank=True, null=True)
     empresa_cliente = models.CharField('Empresa Cliente', max_length=50, blank=True, null=True)
+    fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Visita_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -20,6 +21,11 @@ class Visita(models.Model):
 
         verbose_name = 'Visita'
         verbose_name_plural = 'Visitas'
+        ordering = ['-fecha_registro', '-hora_ingreso', 'nombre']
+
+    def save(self):
+        self.nombre = self.nombre.upper()
+        return super().save()
 
     def __str__(self):
         return self.nombre
