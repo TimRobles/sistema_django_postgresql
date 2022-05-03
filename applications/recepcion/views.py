@@ -2,11 +2,13 @@ from datetime import datetime, time
 from applications.importaciones import *
 
 from .forms import (
-    VisitaForm,VisitaBuscarForm
+    VisitaForm,VisitaBuscarForm,
+    AsistenciaForm,
     )
 
 from .models import (
     Visita,
+    Asistencia,
     )
 
 class VisitaListView(FormView):
@@ -109,4 +111,63 @@ class VisitaRegistrarSalidaView(BSModalDeleteView):
         context['titulo'] = "Visita"
         context['dar_baja'] = "true"
         context['item'] = self.object.nombre
+        return context
+
+
+class AsistenciaListView(ListView):
+    model = Asistencia
+    template_name = "recepcion/asistencia/inicio.html"
+    context_object_name = 'contexto_asistencia'
+
+def AsistenciaTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'recepcion/asistencia/inicio_tabla.html'
+        context = {}
+        context['contexto_asistencia'] = Asistencia.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class AsistenciaCreateView(BSModalCreateView):
+    model = Asistencia
+    template_name = "recepcion/asistencia/registrar.html"
+    form_class = AsistenciaForm
+    success_url = reverse_lazy('recepcion_app:asistencia_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Asistencia"
+        return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+class AsistenciaRegistrarSalidaView(BSModalDeleteView):
+    model = Asistencia
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('recepcion_app:asistencia_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        hour = datetime.now()
+        self.object.hora_salida = hour.strftime("%H:%M")
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_REGISTRAR_SALIDA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaRegistrarSalidaView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar Salida"
+        context['titulo'] = "Asistencia"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.usuario
         return context
