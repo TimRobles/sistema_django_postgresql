@@ -26,7 +26,7 @@ class VisitaListView(FormView):
         filtro_nombre = self.request.GET.get('nombre')
         filtro_fecha = self.request.GET.get('fecha')
         if filtro_nombre and filtro_fecha:
-            condicion = Q(nombre__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            condicion = Q(nombre__icontains = filtro_nombre.upper()) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
             visitas = visitas.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha   
         elif filtro_fecha:
@@ -34,7 +34,7 @@ class VisitaListView(FormView):
             visitas = visitas.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
         elif filtro_nombre:
-            condicion = Q(nombre__icontains = filtro_nombre)
+            condicion = Q(nombre__icontains = filtro_nombre.upper())
             visitas = visitas.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
    
@@ -50,7 +50,7 @@ def VisitaTabla(request):
         filtro_nombre = request.GET.get('nombre')
         filtro_fecha = request.GET.get('fecha')
         if filtro_nombre and filtro_fecha:
-            condicion = Q(nombre__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            condicion = Q(nombre__icontains = filtro_nombre.upper()) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
             visitas = visitas.filter(condicion)
    
         elif filtro_fecha:
@@ -58,7 +58,7 @@ def VisitaTabla(request):
             visitas = visitas.filter(condicion)
 
         elif filtro_nombre:
-            condicion = Q(nombre__icontains = filtro_nombre)
+            condicion = Q(nombre__icontains = filtro_nombre.upper())
             visitas = visitas.filter(condicion)
 
         context['contexto_visita'] = visitas
