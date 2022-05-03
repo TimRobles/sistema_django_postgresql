@@ -1,11 +1,3 @@
-<h3>Visitas
-    <button data-form-url="{% url 'visita_app:visita_registrar' %}"
-        data-table-url="{% url 'visita_app:visita_tabla' %}"
-        class="create badge bg-primary">
-        Registrar Visita
-    </button>
-</h3>
-
 <table class="table">
     <thead>
         <tr>
@@ -15,6 +7,7 @@
             <th>Hora de Ingreso</th>
             <th>Hora de Salida</th>
             <th>Empresa Cliente</th>
+            <th>Fecha de Registro</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -41,11 +34,12 @@
                 {% endif %}
                     
             </td>
+            <td>{{ visita.fecha_registro|date:'d/m/Y'}}</td>
             <td class="text-center text-nowrap">
                 
                 {% if visita.hora_salida == None %}
-                <button data-form-url="{% url 'visita_app:visita_registrar_salida' visita.id %}"1
-                    data-table-url="{% url 'visita_app:visita_tabla' %}"
+                <button data-form-url="{% url 'recepcion_app:visita_registrar_salida' visita.id %}"1
+                    data-table-url="{% url 'recepcion_app:visita_tabla' %}"
                     class="update btn btn-warning btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">
                     <i class="bi bi-pencil-fill"></i>

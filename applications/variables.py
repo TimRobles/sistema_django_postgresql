@@ -1,4 +1,4 @@
-TIPO_DOCUMENTO_CHOICES = (
+TIPO_DOCUMENTO_SUNAT = (
         ('6', 'RUC - REGISTRO ÚNICO DE CONTRIBUYENTE'),
         ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
         ('-', 'VARIOS - VENTAS MENORES A S/.700.00 Y OTROS'),
@@ -22,6 +22,14 @@ ESTADO_SUNAT = (
         (5, 'Baja provisional de oficio'),
         (6, 'Baja definitiva de oficio'),
         (7, 'Baja interna'),
+        )
+
+TIPO_DOCUMENTO_CHOICES = (
+
+        ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
+        ('4', 'CARNET DE EXTRANJERÍA'),
+        ('7', 'PASAPORTE'),
+        ('A', 'CÉDULA DIPLOMÁTICA DE IDENTIDAD')
         )
 
 ESTADOS = (

@@ -13,7 +13,13 @@ class VisitaAdmin(admin.ModelAdmin):
         'hora_ingreso',
         'hora_salida',
         'empresa_cliente',
+        'fecha_registro',
         )
+    exclude = (
+        'hora_ingreso',
+        'hora_salida',
+        'fecha_registro',
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
