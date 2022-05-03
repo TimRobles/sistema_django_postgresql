@@ -9,14 +9,22 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR.ancestor(1).child('sistema_django_postgresql.sqlite3'),
     },
-    'prod': {
+    'test': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dbprueba',
         'USER': 'multiplay',
         'PASSWORD': 'multiplay123',
         'HOST': 'localhost',
         'PORT': '5432',
-    }
+    },
+    'prod': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'sistema_django_prod',
+        'USER': 'multiplay',
+        'PASSWORD': 'multiplay123',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    },
 }
 
 STATIC_URL = '/static/'
