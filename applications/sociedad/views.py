@@ -86,7 +86,7 @@ class SociedadDarAltaView(BSModalDeleteView):
         self.object.estado_sunat = 1
         registro_guardar(self.object, self.request)
         self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        messages.success(request, MENSAJE_DAR_ALTA)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
