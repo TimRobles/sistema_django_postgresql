@@ -6,10 +6,6 @@ ALLOWED_HOSTS = ['*']
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.ancestor(1).child('sistema_django_postgresql.sqlite3'),
-    },
-    'test': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dbprueba',
         'USER': 'multiplay',
