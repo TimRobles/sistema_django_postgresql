@@ -4,6 +4,8 @@ from django.contrib.contenttypes.models import ContentType
 from applications.sociedad.models import Sociedad
 from django.db import models
 
+from applications.funciones import validar_numero
+
 
 class Moneda(models.Model):
     '''Solo por Admin'''
@@ -276,8 +278,8 @@ class CuentaBancariaSociedad(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
     moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
-    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True)
-    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_numero])
+    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero])
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaSociedad_created_by', editable=False)
@@ -297,8 +299,8 @@ class CuentaBancariaPersonal(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='User')
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
     moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
-    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True)
-    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_numero])
+    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero])
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaPersonal_created_by', editable=False)

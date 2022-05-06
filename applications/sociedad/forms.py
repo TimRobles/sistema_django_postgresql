@@ -10,6 +10,7 @@ class SociedadForm(BSModalModelForm):
     class Meta:
         model = Sociedad
         fields=(
+            'ruc',
             'razon_social',
             'nombre_comercial',
             'direccion_legal',

@@ -9,9 +9,9 @@ class VisitaForm(BSModalModelForm):
     class Meta:
         model = Visita
         fields=(
-            'nombre',
             'tipo_documento',
             'numero_documento',
+            'nombre',
             'usuario_atendio',
             'motivo_visita',
             'empresa_cliente',
