@@ -23,7 +23,7 @@ class Visita(models.Model):
 
         verbose_name = 'Visita'
         verbose_name_plural = 'Visitas'
-        ordering = ['-fecha_registro', '-hora_ingreso', 'nombre']
+        ordering = ['-hora_salida', '-fecha_registro', '-hora_ingreso', 'nombre']
 
     def save(self):
         self.nombre = self.nombre.upper()

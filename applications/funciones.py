@@ -1,4 +1,6 @@
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 def consulta_ruc(ruc):
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
@@ -35,7 +37,14 @@ def consulta_dni(dni):
     token = "7c95cc7e139486c8b86f15f9d96ec096" #Libre
     url = "https://api.apifacturacion.com/dni/"
     data = {"token" : "%s" % token}
-    r = requests.post(url + str(dni), data=data)
+
+    session = requests.Session()
+    retry = Retry(connect=3, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    r = session.post(url + str(dni), data=data)
     data = r.json()
     return data
 
