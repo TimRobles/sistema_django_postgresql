@@ -3,7 +3,7 @@ from applications.importaciones import *
 
 from .forms import (
     VisitaForm,VisitaBuscarForm,
-    AsistenciaForm,
+    AsistenciaForm,AsistenciaBuscarForm,
     )
 
 from .models import (
@@ -122,17 +122,71 @@ class VisitaRegistrarSalidaView(BSModalDeleteView):
         return context
 
 
-class AsistenciaListView(ListView):
-    model = Asistencia
+class AsistenciaListView(FormView):
     template_name = "recepcion/asistencia/inicio.html"
-    context_object_name = 'contexto_asistencia'
+    form_class = AsistenciaBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(AsistenciaListView, self).get_form_kwargs()
+        kwargs['filtro_nombre'] = self.request.GET.get('nombre')
+        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaListView,self).get_context_data(**kwargs)
+        asistencias = Asistencia.objects.all()
+        filtro_nombre = self.request.GET.get('nombre')
+        filtro_fecha = self.request.GET.get('fecha')
+
+        if filtro_nombre and filtro_fecha:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            asistencias = asistencias.filter(condicion)
+            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha 
+
+        elif filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
+        
+        elif filtro_nombre:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
+            asistencias = asistencias.filter(condicion)
+            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
+   
+        context['contexto_asistencia'] = asistencias
+        return context
 
 def AsistenciaTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'recepcion/asistencia/inicio_tabla.html'
         context = {}
-        context['contexto_asistencia'] = Asistencia.objects.all()
+        asistencias = Asistencia.objects.all()
+        filtro_nombre = request.GET.get('nombre')
+        filtro_fecha = request.GET.get('fecha')
+
+        if filtro_nombre and filtro_fecha:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            asistencias = asistencias.filter(condicion) 
+
+        elif filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+        
+        elif filtro_nombre:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
+            asistencias = asistencias.filter(condicion)
+   
+        context['contexto_asistencia'] = asistencias
 
         data['table'] = render_to_string(
             template,

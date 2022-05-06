@@ -1,11 +1,3 @@
-<h3>Asistencia
-    <button data-form-url="{% url 'recepcion_app:asistencia_registrar' %}"
-    data-table-url="{% url 'recepcion_app:asistencia_tabla' %}"
-    class="create badge bg-primary">
-        Registrar Asistencia
-    </button>
-</h3>
-
 <table class="table">
     <thead>
         <tr>
@@ -36,7 +28,7 @@
                 {% endif %}
                     
             </td>
-            <td>{{ asistencia.created_at|date:'d/m/Y' }}</td>
+            <td>{{ asistencia.fecha_registro|date:'d/m/Y' }}</td>
 
             <td class="text-center text-nowrap">
                 

@@ -34,10 +34,15 @@ class AsistenciaAdmin(admin.ModelAdmin):
         'usuario',
         'hora_ingreso',
         'hora_salida',
+        'fecha_registro',
         'created_by',
         'updated_by',
         'updated_at',
         'created_at',
+        )
+    exclude = (
+        'hora_ingreso',
+        'hora_salida',
         )
 
     def save_model(self, request, obj, form, change):
