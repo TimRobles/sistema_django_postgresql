@@ -1,0 +1,49 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Sociedad</th>
+            <th>Hora de Ingreso</th>
+            <th>Hora de Salida</th>
+            <th>Fecha de Registro</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asistencia in contexto_asistencia %}
+        <tr>
+            <td>
+                {% if asistencia.usuario.first_name %}
+                {{ asistencia.usuario.first_name}} {{ asistencia.usuario.last_name}}
+                {% else %}
+                {{ asistencia.usuario }}
+                {% endif %}
+            </td>
+            <td>{{ asistencia.sociedad}}</td>
+            <td>{{ asistencia.hora_ingreso }}</td>
+            <td>
+                
+                {% if asistencia.hora_salida %}
+                {{ asistencia.hora_salida }}                  
+                {% endif %}
+                    
+            </td>
+            <td>{{ asistencia.fecha_registro|date:'d/m/Y' }}</td>
+
+            <td class="text-center text-nowrap">
+                
+                {% if asistencia.hora_salida == None %}
+                <button data-form-url="{% url 'recepcion_app:asistencia_registrar_salida' asistencia.id %}"1
+                    data-table-url="{% url 'recepcion_app:asistencia_tabla' %}"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                
+                {% endif %}
+                    
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

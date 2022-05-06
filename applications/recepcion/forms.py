@@ -1,7 +1,7 @@
 from datetime import date
 from django import forms
 
-from .models import Visita
+from .models import Visita, Asistencia
 
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
@@ -48,5 +48,40 @@ class VisitaBuscarForm(forms.Form):
         super(VisitaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['nombre'].initial = filtro_nombre
         self.fields['fecha'].initial = filtro_fecha
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class AsistenciaForm(BSModalModelForm):
+    class Meta:
+        model = Asistencia
+        fields=(
+            'usuario',
+            'sociedad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(AsistenciaForm, self).__init__(*args, **kwargs)        
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class AsistenciaBuscarForm(forms.Form):
+    nombre = forms.CharField(max_length=50, required=False)
+    fecha = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):     
+        filtro_nombre = kwargs.pop('filtro_nombre')
+        filtro_fecha = kwargs.pop('filtro_fecha')
+        super(AsistenciaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['nombre'].initial = filtro_nombre
+        self.fields['fecha'].initial = filtro_fecha
+        
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
