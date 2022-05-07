@@ -45,6 +45,6 @@
 
 {% block js %}
 
-    <script src="{% static 'js/recepcion/visita/registrar.js' %}"></script>
+    <script src="{% static 'js/recepcion/visita/registrar.js' %}?{{ cache_bust }}"></script>
     
 {% endblock js %}
