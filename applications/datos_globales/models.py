@@ -132,7 +132,7 @@ class TipoInterlocutor(models.Model):
 class Departamento(models.Model):
     '''Solo por Admin'''
 
-    codigo = models.CharField('Código', max_length=2, unique=True)
+    codigo = models.CharField('Código', max_length=2, unique=True, primary_key=True)
     nombre = models.CharField('Nombre', max_length=50, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Departamento_created_by', editable=False)
@@ -151,7 +151,7 @@ class Departamento(models.Model):
 class Provincia(models.Model):
     '''Solo por Admin'''
 
-    codigo = models.CharField('Código', max_length=2)
+    codigo = models.CharField('Código', max_length=4, primary_key=True)
     nombre = models.CharField('Nombre', max_length=50)
     departamento = models.ForeignKey(Departamento, on_delete=models.PROTECT)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -171,7 +171,7 @@ class Provincia(models.Model):
 class Distrito(models.Model):
     '''Solo por Admin'''
 
-    codigo = models.CharField('Código', max_length=2)
+    codigo = models.CharField('Código', max_length=6, primary_key=True)
     nombre = models.CharField('Nombre', max_length=50)
     provincia = models.ForeignKey(Provincia, on_delete=models.PROTECT)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
