@@ -2,7 +2,7 @@ from datetime import date
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .models import Documento, Sociedad, RepresentanteLegal
+from .models import Documento, Sociedad, RepresentanteLegal, TipoRepresentanteLegal
 
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
@@ -40,6 +40,22 @@ class DocumentoForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+
+class TipoRepresentanteLegalForm(forms.ModelForm):
+    class Meta:
+        model = TipoRepresentanteLegal
+        fields = (
+            'nombre',
+            )
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre')
+        filtro = TipoRepresentanteLegal.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe un Tipo de representante legal con este nombre')
+
+        return nombre
 
 class RepresentanteLegalForm(BSModalModelForm):
     class Meta:

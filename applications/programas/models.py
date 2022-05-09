@@ -3,8 +3,8 @@ from django.conf import settings
 from django.core.validators import FileExtensionValidator
 
 class NivelUno(models.Model): 
-    orden = models.IntegerField()
-    nombre = models.CharField('Nombre de Nivel Uno', max_length=50)
+    orden = models.IntegerField(unique=True)
+    nombre = models.CharField('Nombre de Nivel Uno', max_length=50, unique=True)
     icono = models.ImageField('Icono PNG o SVG', upload_to='img/programas/icono/', height_field=None, width_field=None, max_length=None, blank=True, null=True, validators=[FileExtensionValidator(['svg', 'png'])])
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NivelUno_created_by', editable=False)
