@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from applications.programas.forms import NivelUnoForm
+
 from .models import NivelCuatro, NivelTres, NivelDos, NivelUno
 
 # Register your models here.
@@ -9,6 +11,8 @@ class NivelUnoAdmin(admin.ModelAdmin):
         'nombre',
         'icono',
         )
+
+    form = NivelUnoForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:

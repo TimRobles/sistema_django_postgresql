@@ -80,6 +80,7 @@ TEMPLATES = [
                 'django.template.context_processors.media',
 
                 'applications.programas.context.contexto_menu',
+                'applications.programas.context.cache_bust',
             ],
         },
     },

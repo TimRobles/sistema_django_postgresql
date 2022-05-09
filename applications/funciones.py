@@ -1,5 +1,6 @@
 import requests
 from requests.adapters import HTTPAdapter
+from django.core.exceptions import ValidationError
 from requests.packages.urllib3.util.retry import Retry
 
 def consulta_ruc(ruc):
@@ -52,3 +53,14 @@ def consulta_dni(dni):
 #     'dni': '47834310',
 #     'cliente': 'TIM ARNOLD ROBLES MARTINEZ'
 #     }
+
+def validar_texto(texto):
+    lista = texto.split(" ")
+    for palabra in lista:
+        if not palabra.isalpha():
+            raise ValidationError('%s tiene caracteres incorrectos' % texto)
+
+def validar_numero(texto):
+    for letra in texto:
+        if not letra.isnumeric():
+            raise ValidationError('%s tiene caracteres incorrectos' % texto)

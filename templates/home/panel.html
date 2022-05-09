@@ -6,11 +6,6 @@
 
 {% block contenido %}
     <h1>Bienvenido {{ user.username }}</h1>
-    <div class="row justify-content-around">
-        {% for aplicacion in menu_contexto %}
-        <a class="btn btn-primary col-lg-3 py-2 mx-2 mb-3" href="{{ aplicacion.url }}">{{ aplicacion.aplicacion }}</a>
-        {% endfor %}
-    </div>
     
 {% endblock contenido %}
     

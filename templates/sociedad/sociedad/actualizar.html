@@ -1,17 +1,48 @@
-{% extends 'includes/formulario generico.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
-{% block arriba %}
-    <div class="input-group">
-        <input type="text" value="{{ruc}}" id="ruc" class="form-control">
-        <button type="button" id="consultar-ruc" class="input-group-text bg-success">
-            Consultar Ruc
-        </button>
+<form id="formulario" action="" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-{% endblock arriba %}
+    <div class="modal-body">
+        {% block arriba %}
+        {% endblock arriba %}
+            
+        {% for field in form %}
+            <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %}
+                >
+                {% if 'Boton' not in field.label %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+                {% if  field.label == "RUC" %}
+                <button type="button" id="consultar-ruc" class="input-group-text bg-success">
+                    Consultar Ruc
+                </button>
+                {% endif %}
+            </div>
+            {% for error in field.errors %}
+                <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+
+        {% block abajo %}
+        {% endblock abajo %}            
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
 
 {% block js %}
     <script src="{% static 'js/sociedad/sociedad/actualizar.js' %}"></script>
 {% endblock js %}
-    
+
     

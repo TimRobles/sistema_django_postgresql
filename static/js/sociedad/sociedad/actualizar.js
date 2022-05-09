@@ -1,5 +1,5 @@
 function ConsultarRuc() {
-    $ruc = $('#ruc')[0].value;
+    $ruc = $('#id_ruc')[0].value;
     $razon_social = $('#id_razon_social')[0];
     $direccion = $('#id_direccion_legal')[0];
     $ubigeo = $('#id_ubigeo')[0];
