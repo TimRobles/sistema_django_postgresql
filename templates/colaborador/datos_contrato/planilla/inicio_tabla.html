@@ -1,0 +1,29 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Sociedad</th>
+            <th>Fecha ingreso</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for datoscontratoplanilla in contexto_datoscontratoplanilla %}
+        <tr>
+            <td>
+                {% if datoscontratoplanilla.usuario.first_name %}
+                {{ datoscontratoplanilla.usuario.first_name}} {{ datoscontratoplanilla.usuario.last_name}}
+                {% else %}
+                {{ datoscontratoplanilla.usuario }}
+                {% endif %}
+            </td>
+            <td>{{ datoscontratoplanilla.sociedad}}</td>
+       
+            </td>
+            <td>{{ datoscontratoplanilla.fecha_alta|date:'d/m/Y' }}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
