@@ -158,7 +158,7 @@ class AsistenciaListView(FormView):
             asistencias = asistencias.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
    
-        context['contexto_asistencia'] = asistencias
+        context[''] = asistencias
         return context
 
 def AsistenciaTabla(request):
@@ -231,5 +231,5 @@ class AsistenciaRegistrarSalidaView(BSModalDeleteView):
         context['accion'] = "Registrar Salida"
         context['titulo'] = "Asistencia"
         context['dar_baja'] = "true"
-        context['item'] = self.object.usuario
+        context['item'] = self.object.usuario.first_name + ' ' + self.object.usuario.last_name
         return context

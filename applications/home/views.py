@@ -15,9 +15,6 @@ class InicioView(FormView):
             password = form.cleaned_data['password'],
         )
         login(self.request, user)
-        self.request.session['sociedad'] = form.cleaned_data['sociedad'].razon_social
-        '''self.request.session['logo'] = form.cleaned_data['sociedad'].logo.url
-        self.request.session['color'] = form.cleaned_data['sociedad'].color'''
         self.request.session.set_expiry(0)
         return super(InicioView, self).form_valid(form)
 
