@@ -82,10 +82,10 @@
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
                 
-                {% if user.avatar == 'False' or not user.avatar %}
-                <img src="{{ MEDIA_URL }}img/Avatars/default-avatar.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
+                {% if user.DatosUsuario_usuario.foto == 'False' or not user.DatosUsuario_usuario.foto %}
+                <img src="{{ MEDIA_URL }}img/usuario/datos_usuario/default-avatar.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
                 {% else %}
-                <img src="{{ MEDIA_URL }}{{user.avatar}}" alt="" width="32" height="32" class="rounded-circle me-2">
+                <img src="{{ MEDIA_URL }}{{user.DatosUsuario_usuario.foto}}" alt="" width="32" height="32" class="rounded-circle me-2">
                 {% endif %}
                 
                 {% if user.username %}
