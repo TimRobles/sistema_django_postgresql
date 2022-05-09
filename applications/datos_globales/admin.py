@@ -1,5 +1,12 @@
 from django.contrib import admin
 
+from applications.datos_globales.forms import (
+    AreaForm,
+    CargoForm,
+    MonedaForm,
+    TipoInterlocutorForm,    
+    )
+
 from .models import (
     Moneda,
     Magnitud, 
@@ -30,6 +37,8 @@ class MonedaAdmin(admin.ModelAdmin):
         'simbolo',
         'estado',
         )
+    
+    form = MonedaForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -79,6 +88,8 @@ class AreaAdmin(admin.ModelAdmin):
         'updated_at',
         )
 
+    form = AreaForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -96,6 +107,8 @@ class CargoAdmin(admin.ModelAdmin):
         'updated_at',
         )
 
+    form = CargoForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -111,6 +124,8 @@ class TipoInterlocutorAdmin(admin.ModelAdmin):
         'updated_by',
         'updated_at',
         )
+    
+    form = TipoInterlocutorForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:

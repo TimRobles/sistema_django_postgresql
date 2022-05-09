@@ -1,7 +1,15 @@
 from django.contrib import admin
 
-from applications.sociedad.models import Sociedad, Documento, TipoRepresentanteLegal, RepresentanteLegal
+from applications.sociedad.models import (
+    Sociedad, 
+    Documento, 
+    TipoRepresentanteLegal, 
+    RepresentanteLegal,
+    )
 
+from applications.sociedad.forms import (
+    TipoRepresentanteLegalForm,    
+    )
 # Register your models here.
 
 class SociedadAdmin(admin.ModelAdmin):
@@ -56,7 +64,11 @@ class DocumentoAdmin(admin.ModelAdmin):
 class TipoRepresentanteLegalAdmin(admin.ModelAdmin):
     '''Admin View for TipoRepresentanteLegal'''
 
-    list_display = ('nombre',)
+    list_display = (
+        'nombre',
+        )
+
+    form = TipoRepresentanteLegalForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
