@@ -195,7 +195,7 @@ def AsistenciaTabla(request):
         )
         return JsonResponse(data)
 
-class AsistenciaCreateView(BSModalCreateView):
+class AsistenciaCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Asistencia
     template_name = "recepcion/asistencia/registrar.html"
     form_class = AsistenciaForm
@@ -212,7 +212,7 @@ class AsistenciaCreateView(BSModalCreateView):
 
         return super().form_valid(form)
 
-class AsistenciaRegistrarSalidaView(BSModalDeleteView):
+class AsistenciaRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
     model = Asistencia
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('recepcion_app:asistencia_inicio')

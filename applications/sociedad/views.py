@@ -13,7 +13,9 @@ from .models import (
     RepresentanteLegal,
     )
 
-class SociedadListView(ListView):
+class SociedadListView(PermissionRequiredMixin, ListView):
+    permission_required = ('sociedad.view_sociedad')
+
     model = Sociedad
     template_name = "sociedad/sociedad/inicio.html"
     context_object_name = 'contexto_sociedad'
@@ -34,7 +36,9 @@ def SociedadTabla(request):
         return JsonResponse(data)
 
 
-class SociedadUpdateView(BSModalUpdateView):
+class SociedadUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('sociedad.change_sociedad')
+
     model = Sociedad
     template_name = "sociedad/sociedad/actualizar.html"
     form_class = SociedadForm
@@ -54,7 +58,9 @@ class SociedadUpdateView(BSModalUpdateView):
         
         return super().form_valid(form)
 
-class SociedadDarBajaView(BSModalDeleteView):
+class SociedadDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('sociedad.change_sociedad')
+
     model = Sociedad
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
@@ -76,7 +82,8 @@ class SociedadDarBajaView(BSModalDeleteView):
         return context
 
 
-class SociedadDarAltaView(BSModalDeleteView):
+class SociedadDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('sociedad.change_sociedad')
     model = Sociedad
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
@@ -97,7 +104,9 @@ class SociedadDarAltaView(BSModalDeleteView):
         context['item'] = self.object.razon_social
         return context
 
-class SociedadDetailView(DetailView):
+class SociedadDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('sociedad.view_sociedad')
+
     model = Sociedad
     template_name = "sociedad/sociedad/detalle.html"
     context_object_name = 'contexto_sociedad'
@@ -128,7 +137,9 @@ def SociedadDetailTabla(request, pk):
         return JsonResponse(data)
 
 
-class DocumentoCreateView(BSModalCreateView):
+class DocumentoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('sociedad.add_documento')
+
     model = Documento
     template_name = "includes/formulario generico.html"
     form_class = DocumentoForm
@@ -150,7 +161,8 @@ class DocumentoCreateView(BSModalCreateView):
         context['titulo']="Documento"
         return context
 
-class DocumentoDeleteView(BSModalDeleteView):
+class DocumentoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('sociedad.delete_documento')
     model = Documento
     template_name = "sociedad/documento/eliminar.html"
     context_object_name = 'contexto_documento' 
@@ -164,7 +176,9 @@ class DocumentoDeleteView(BSModalDeleteView):
         context['titulo']="Documento"
         return context
 
-class RepresentanteCreateView(BSModalCreateView):
+class RepresentanteCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('sociedad.add_representantelegal')
+
     model = RepresentanteLegal
     template_name = "includes/formulario generico.html"
     form_class = RepresentanteLegalForm
@@ -184,7 +198,8 @@ class RepresentanteCreateView(BSModalCreateView):
         context['titulo']="Representante Legal"
         return context
 
-class RepresentanteLegalDarBajaView(BSModalUpdateView):
+class RepresentanteLegalDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('sociedad.change_representantelegal')
     model = RepresentanteLegal
     template_name = "includes/formulario generico.html"
     form_class = RepresentanteLegalDarBajaForm
