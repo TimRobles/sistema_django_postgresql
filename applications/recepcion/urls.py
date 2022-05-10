@@ -11,11 +11,10 @@ urlpatterns = [
 
     path('asistencia/', views.AsistenciaListView.as_view(), name='asistencia_inicio'),
     path('asistencia-tabla/', views.AsistenciaTabla, name='asistencia_tabla'),
-    path('asistencia/registrar/', views.AsistenciaCreateView.as_view(), name='asistencia_registrar'),
-    path('asistencia/registrar-salida/<pk>/', views.AsistenciaRegistrarSalidaView.as_view(), name='asistencia_registrar_salida'),
     
     path('asistencia-personal/', views.AsistenciaPersonalView.as_view(), name='asistencia_personal_inicio'),
     path('asistencia-personal-tabla/', views.AsistenciaPersonalTabla, name='asistencia_personal_tabla'),
     path('asistencia-personal/registrar/', views.AsistenciaPersonalCreateView.as_view(), name='asistencia_personal_registrar'),
+    path('asistencia-personal/registrar-salida/<pk>/', views.AsistenciaPersonalRegistrarSalidaView.as_view(), name='asistencia_personal_registrar_salida'),
 
 ]

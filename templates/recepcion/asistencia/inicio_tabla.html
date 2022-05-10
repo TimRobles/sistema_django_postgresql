@@ -6,7 +6,6 @@
             <th>Hora de Ingreso</th>
             <th>Hora de Salida</th>
             <th>Fecha de Registro</th>
-            <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -30,19 +29,7 @@
             </td>
             <td>{{ asistencia.fecha_registro|date:'d/m/Y' }}</td>
 
-            <td class="text-center text-nowrap">
-                
-                {% if asistencia.hora_salida == None %}
-                <button data-form-url="{% url 'recepcion_app:asistencia_registrar_salida' asistencia.id %}"1
-                    data-table-url="{% url 'recepcion_app:asistencia_tabla' %}"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
-                
-                {% endif %}
-                    
-            </td>
+
         </tr>
         {% endfor %}
     </tbody>

@@ -33,7 +33,7 @@
             <td class="text-center text-nowrap">
                 
                 {% if asistencia.hora_salida == None %}
-                <button data-form-url="{% url 'recepcion_app:asistencia_registrar_salida' asistencia.id %}"1
+                <button data-form-url="{% url 'recepcion_app:asistencia_personal_registrar_salida' asistencia.id %}"1
                     data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}"
                     class="update btn btn-warning btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">

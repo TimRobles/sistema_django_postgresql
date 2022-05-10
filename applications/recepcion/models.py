@@ -67,7 +67,6 @@ class ResponsableAsistencia(models.Model):
     usuario_a_registrar = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name='Usuarios a Registrar',related_name='ResponsableAsistencia_usuario_a_registrar')
     permiso_cambio_ip = models.BooleanField()
 
-
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ResponsableAsistencia_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -91,8 +90,6 @@ class IpPublica(models.Model):
 
 
     class Meta:
-        """Meta definition for IpPublica."""
-
         verbose_name = 'IpPublica'
         verbose_name_plural = 'IpPublicas'
 
