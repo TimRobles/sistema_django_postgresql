@@ -37,7 +37,7 @@ def DatosContratoPlanillaTabla(request):
 
 class DatosContratoPlanillaCreateView(BSModalCreateView):
     model = DatosContratoPlanilla
-    template_name = "colaborador/datos_contrato/planilla/registrar.html"
+    template_name = "includes/formulario generico.html"
     form_class = DatosContratoPlanillaForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_planilla_inicio')
 

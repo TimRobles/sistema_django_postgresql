@@ -151,7 +151,7 @@ class Departamento(models.Model):
 class Provincia(models.Model):
     '''Solo por Admin'''
 
-    codigo = models.CharField('Código', max_length=2, primary_key=True)
+    codigo = models.CharField('Código', max_length=4, primary_key=True)
     nombre = models.CharField('Nombre', max_length=50)
     departamento = models.ForeignKey(Departamento, on_delete=models.PROTECT)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -171,7 +171,7 @@ class Provincia(models.Model):
 class Distrito(models.Model):
     '''Solo por Admin'''
 
-    codigo = models.CharField('Código', max_length=2, primary_key=True)
+    codigo = models.CharField('Código', max_length=6, primary_key=True)
     nombre = models.CharField('Nombre', max_length=50)
     provincia = models.ForeignKey(Provincia, on_delete=models.PROTECT)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -252,6 +252,16 @@ class RangoDocumentoProceso(models.Model):
     class Meta:
         verbose_name = 'Rango de Documento de Proceso'
         verbose_name_plural = 'Rangos de Documentos de Proceso'
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'modelo',
+                    'serie',
+                    ], name='RangoDocumentoProceso_modelo_serie',
+                ), 
+            ]
+
+            
 
     def __str__(self):
         return str(self.modelo)
@@ -269,6 +279,14 @@ class RangoDocumentoFisico(models.Model):
     class Meta:
         verbose_name = 'Rango de Documento Físico'
         verbose_name_plural = 'Rangos de Documentos Físicos'
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'modelo',
+                    'serie',
+                    ], name='RangoDocumentoFisico_modelo_serie',
+                ), 
+            ]
 
     def __str__(self):
         return str(self.modelo)
@@ -317,8 +335,8 @@ class CuentaBancariaPersonal(models.Model):
 
 
 class SegmentoSunat(models.Model):
-    codigo = models.CharField('Código', max_length=10, unique=True)
-    descripcion = models.CharField('Descripción', max_length=50, unique=True)
+    codigo = models.CharField('Código', max_length=2, primary_key=True)
+    descripcion = models.CharField('Descripción', max_length=255, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SegmentoSunat_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -328,14 +346,15 @@ class SegmentoSunat(models.Model):
 
         verbose_name = 'Segmento Sunat'
         verbose_name_plural = 'Segmentos Sunat'
+        ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion
 
 
 class FamiliaSunat(models.Model):
-    codigo = models.CharField('Código', max_length=10)
-    descripcion = models.CharField('Descripción', max_length=50)
+    codigo = models.CharField('Código', max_length=4, primary_key=True)
+    descripcion = models.CharField('Descripción', max_length=255)
     segmento = models.ForeignKey(SegmentoSunat, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='FamiliaSunat_created_by', editable=False)
@@ -346,14 +365,15 @@ class FamiliaSunat(models.Model):
 
         verbose_name = 'Familia Sunat'
         verbose_name_plural = 'Familias Sunat'
+        ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion
 
 
 class ClaseSunat(models.Model):
-    codigo = models.CharField('Código', max_length=10)
-    descripcion = models.CharField('Descripción', max_length=50)
+    codigo = models.CharField('Código', max_length=6, primary_key=True)
+    descripcion = models.CharField('Descripción', max_length=255)
     familia = models.ForeignKey(FamiliaSunat, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClaseSunat_created_by', editable=False)
@@ -364,14 +384,15 @@ class ClaseSunat(models.Model):
 
         verbose_name = 'Clase Sunat'
         verbose_name_plural = 'Clases Sunat'
+        ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion
 
 
 class ProductoSunat(models.Model):
-    codigo = models.CharField('Código', max_length=10)
-    descripcion = models.CharField('Descripción', max_length=50)
+    codigo = models.CharField('Código', max_length=8, primary_key=True)
+    descripcion = models.CharField('Descripción', max_length=255)
     clase = models.ForeignKey(ClaseSunat, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ProductoSunat_created_by', editable=False)
@@ -382,6 +403,7 @@ class ProductoSunat(models.Model):
 
         verbose_name = 'Producto Sunat'
         verbose_name_plural = 'Productos Sunat'
+        ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion

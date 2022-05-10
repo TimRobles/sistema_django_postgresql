@@ -197,7 +197,7 @@ def AsistenciaTabla(request):
 
 class AsistenciaCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Asistencia
-    template_name = "recepcion/asistencia/registrar.html"
+    template_name = "includes/formulario generico.html"
     form_class = AsistenciaForm
     success_url = reverse_lazy('recepcion_app:asistencia_inicio')
 

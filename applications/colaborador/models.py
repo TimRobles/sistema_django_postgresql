@@ -28,8 +28,8 @@ class DatosContratoPlanilla(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='DatosContratoPlanilla_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'DatosContratoPlanilla'
-        verbose_name_plural = 'DatosContratosPlanillas'
+        verbose_name = 'Datos de Contrato de Planilla'
+        verbose_name_plural = 'Datos de Contratos de Planilla'
 
     def __str__(self):
         
