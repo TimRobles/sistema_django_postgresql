@@ -1,10 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 
-from applications.sociedad.models import Sociedad
-
 class UserLoginForm(forms.Form):
-    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
     username = forms.CharField(
         label='Usuario',
         required=True,

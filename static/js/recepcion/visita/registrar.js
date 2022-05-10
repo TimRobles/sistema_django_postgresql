@@ -1,6 +1,7 @@
 function ConsultarDni() {
     $dni = $('#id_numero_documento')[0].value;
     $nombre = $('#id_nombre')[0];
+    $boton = $('#consultar-dni')[0];
     
     url = '/consulta-dni/' + $dni;
 
@@ -14,8 +15,16 @@ function ConsultarDni() {
             $nombre.value = $info['nombre_completo'];
         }else{
             $respuesta = false;
+            $nombre.value = "";
             console.log("Error")
+            swal({
+                title: "¡DNI inválido!",
+                text: "Ingrese un número de DNI correcto",
+                icon: "warning",
+              });
         }
+        $boton.innerHTML = 'Consultar DNI';
+        $boton.disabled = false;
     }
     xhr.send();
 }
@@ -36,6 +45,8 @@ $('#id_tipo_documento').change(function (e) {
 });
 
 $(document).unbind().on('click', '#consultar-dni', function (e) {
+    e.target.innerHTML = spinnerText;
+    e.target.disabled = true;
     ConsultarDni();
 });
 habilitar();

@@ -158,7 +158,7 @@ class AsistenciaListView(FormView):
             asistencias = asistencias.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
    
-        context['contexto_asistencia'] = asistencias
+        context[''] = asistencias
         return context
 
 def AsistenciaTabla(request):
@@ -195,9 +195,9 @@ def AsistenciaTabla(request):
         )
         return JsonResponse(data)
 
-class AsistenciaCreateView(BSModalCreateView):
+class AsistenciaCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Asistencia
-    template_name = "recepcion/asistencia/registrar.html"
+    template_name = "includes/formulario generico.html"
     form_class = AsistenciaForm
     success_url = reverse_lazy('recepcion_app:asistencia_inicio')
 
@@ -212,7 +212,7 @@ class AsistenciaCreateView(BSModalCreateView):
 
         return super().form_valid(form)
 
-class AsistenciaRegistrarSalidaView(BSModalDeleteView):
+class AsistenciaRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
     model = Asistencia
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('recepcion_app:asistencia_inicio')
@@ -231,5 +231,5 @@ class AsistenciaRegistrarSalidaView(BSModalDeleteView):
         context['accion'] = "Registrar Salida"
         context['titulo'] = "Asistencia"
         context['dar_baja'] = "true"
-        context['item'] = self.object.usuario
+        context['item'] = self.object.usuario.first_name + ' ' + self.object.usuario.last_name
         return context

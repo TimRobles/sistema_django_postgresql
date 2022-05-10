@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from applications.programas.forms import NivelUnoForm
+from applications.programas.forms import NivelUnoForm, NivelDosForm, NivelTresForm, NivelCuatroForm
 
 from .models import NivelCuatro, NivelTres, NivelDos, NivelUno
 
@@ -29,6 +29,8 @@ class NivelDosAdmin(admin.ModelAdmin):
         'icono',
         )
 
+    form = NivelDosForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -44,6 +46,8 @@ class NivelTresAdmin(admin.ModelAdmin):
         'icono',
         )
 
+    form = NivelTresForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -58,6 +62,8 @@ class NivelCuatroAdmin(admin.ModelAdmin):
         'nivel_tres',
         'icono',
         )
+
+    form = NivelCuatroForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
