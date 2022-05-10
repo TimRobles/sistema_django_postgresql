@@ -336,7 +336,7 @@ class CuentaBancariaPersonal(models.Model):
 
 class SegmentoSunat(models.Model):
     codigo = models.CharField('Código', max_length=2, primary_key=True)
-    descripcion = models.CharField('Descripción', max_length=100, unique=True)
+    descripcion = models.CharField('Descripción', max_length=255, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SegmentoSunat_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -349,12 +349,12 @@ class SegmentoSunat(models.Model):
         ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion
 
 
 class FamiliaSunat(models.Model):
     codigo = models.CharField('Código', max_length=4, primary_key=True)
-    descripcion = models.CharField('Descripción', max_length=100)
+    descripcion = models.CharField('Descripción', max_length=255)
     segmento = models.ForeignKey(SegmentoSunat, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='FamiliaSunat_created_by', editable=False)
@@ -368,12 +368,12 @@ class FamiliaSunat(models.Model):
         ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion
 
 
 class ClaseSunat(models.Model):
     codigo = models.CharField('Código', max_length=6, primary_key=True)
-    descripcion = models.CharField('Descripción', max_length=100)
+    descripcion = models.CharField('Descripción', max_length=255)
     familia = models.ForeignKey(FamiliaSunat, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClaseSunat_created_by', editable=False)
@@ -387,12 +387,12 @@ class ClaseSunat(models.Model):
         ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion
 
 
 class ProductoSunat(models.Model):
     codigo = models.CharField('Código', max_length=8, primary_key=True)
-    descripcion = models.CharField('Descripción', max_length=100)
+    descripcion = models.CharField('Descripción', max_length=255)
     clase = models.ForeignKey(ClaseSunat, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ProductoSunat_created_by', editable=False)
@@ -406,4 +406,4 @@ class ProductoSunat(models.Model):
         ordering = ['codigo',]
 
     def __str__(self):
-        return self.descripcion
+        return self.codigo + ' - ' + self.descripcion
