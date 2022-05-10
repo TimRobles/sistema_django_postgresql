@@ -46,6 +46,6 @@
 {% endblock content %}
 
 {% block extrajs %}
-    <script src="{% static 'js/usuario/datos_usuario/cambio_contraseña.js' %}" ></script>
+    <script src="{% static 'js/usuario/datos_usuario/cambio_contraseña.js' %}?{{ cache_bust }}" ></script>
 {% endblock extrajs %}
 

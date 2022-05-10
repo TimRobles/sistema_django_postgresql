@@ -98,7 +98,7 @@ class NivelCuatroForm(forms.ModelForm):
         nombre = cleaned_data.get('nombre')
         nivel_tres = cleaned_data.get('nivel_tres')
         filtro_orden = NivelCuatro.objects.filter(orden = orden, nivel_tres = nivel_tres)
-        filtro = NivelCuatro.objects.filter(nombre__unaccent__iexact = nombre, nive_tres = nivel_tres)
+        filtro = NivelCuatro.objects.filter(nombre__unaccent__iexact = nombre, nivel_tres = nivel_tres)
         if orden != self.instance.orden:
             if len(filtro_orden)>0:
                 self.add_error('orden', 'Ya existe un Nivel Cuatro con este orden')
