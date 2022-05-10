@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block titulo %}
     Visitas
@@ -42,3 +43,9 @@
     </div>
     
 {% endblock contenido %}
+
+{% block extrajs %}
+
+    <script src="{% static 'js/recepcion/visita/inicio.js' %}?{{ cache_bust }}"></script>
+    
+{% endblock extrajs %}
