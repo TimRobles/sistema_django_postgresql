@@ -42,7 +42,7 @@
 </form>
 
 {% block js %}
-    <script src="{% static 'js/sociedad/sociedad/actualizar.js' %}"></script>
+    <script src="{% static 'js/sociedad/sociedad/actualizar.js' %}?{{ cache_bust }}"></script>
 {% endblock js %}
 
     
