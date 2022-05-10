@@ -1,0 +1,39 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Sociedad</th>
+            <th>Fecha ingreso</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for datoscontratohonorarios in contexto_datoscontratohonorarios %}
+        <tr>
+            <td>
+                {% if datoscontratohonorarios.usuario.first_name %}
+                {{ datoscontratohonorarios.usuario.first_name}} {{ datoscontratohonorarios.usuario.last_name}}
+                {% else %}
+                {{ datoscontratohonorarios.usuario }}
+                {% endif %}
+            </td>
+            <td>{{ datoscontratohonorarios.sociedad}}</td>
+       
+            </td>
+            <td>{{ datoscontratohonorarios.fecha_alta|date:'d/m/Y' }}</td>
+<!-- 
+            <td>
+                <button data-form-url="{% url 'colaborador_app:datos_contrato_planilla_actualizar' datoscontratohonorarios.usuario.id %}"
+                    data-table-url="{% url 'colaborador_app:datos_contrato_planilla_tabla' %}"
+                    class="update btn btn-success btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                </button>
+
+            </td> -->
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

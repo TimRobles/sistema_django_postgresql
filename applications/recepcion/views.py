@@ -3,7 +3,7 @@ from applications.importaciones import *
 
 from .forms import (
     VisitaForm,VisitaBuscarForm,
-    AsistenciaForm,AsistenciaBuscarForm,
+    AsistenciaForm,AsistenciaBuscarForm,AsistenciaPersonalBuscarForm
     )
 
 from .models import (
@@ -158,7 +158,7 @@ class AsistenciaListView(FormView):
             asistencias = asistencias.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
    
-        context[''] = asistencias
+        context['contexto_asistencia'] = asistencias
         return context
 
 def AsistenciaTabla(request):
@@ -230,6 +230,90 @@ class AsistenciaRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
         context = super(AsistenciaRegistrarSalidaView, self).get_context_data(**kwargs)
         context['accion'] = "Registrar Salida"
         context['titulo'] = "Asistencia"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.usuario.first_name + ' ' + self.object.usuario.last_name
+        return context
+
+
+class AsistenciaPersonalView(FormView):
+    template_name = "recepcion/asistencia/inicio_personal.html"
+    form_class = AsistenciaPersonalBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(AsistenciaPersonalView, self).get_form_kwargs()
+        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaPersonalView,self).get_context_data(**kwargs)
+        asistencias = Asistencia.objects.filter(usuario=self.request.user)
+        filtro_fecha = self.request.GET.get('fecha')
+
+        if filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+            context['contexto_filtro'] = '&fecha=' + filtro_fecha
+        
+        context['contexto_asistencia_personal'] = asistencias
+        return context
+
+def AsistenciaPersonalTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'recepcion/asistencia/inicio_personal_tabla.html'
+        context = {}
+        asistencias = Asistencia.objects.filter(usuario=request.user)
+        filtro_fecha = request.GET.get('fecha')
+
+        if filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+
+        context['contexto_asistencia_personal'] = asistencias
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
+    model = Asistencia
+    template_name = "includes/formulario generico.html"
+    form_class = AsistenciaForm
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaPersonalCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Asistencia"
+        return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
+    model = Asistencia
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        hour = datetime.now()
+        self.object.hora_salida = hour.strftime("%H:%M")
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_REGISTRAR_SALIDA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaRegistrarSalidaView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar Salida"
+        context['titulo'] = "Asistencia Personal"
         context['dar_baja'] = "true"
         context['item'] = self.object.usuario.first_name + ' ' + self.object.usuario.last_name
         return context

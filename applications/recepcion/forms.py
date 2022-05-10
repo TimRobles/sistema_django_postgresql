@@ -85,3 +85,22 @@ class AsistenciaBuscarForm(forms.Form):
         
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class AsistenciaPersonalBuscarForm(forms.Form):
+    fecha = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):     
+        filtro_fecha = kwargs.pop('filtro_fecha')
+        super(AsistenciaPersonalBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['fecha'].initial = filtro_fecha
+        
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

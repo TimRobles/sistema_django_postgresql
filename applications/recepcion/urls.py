@@ -14,4 +14,8 @@ urlpatterns = [
     path('asistencia/registrar/', views.AsistenciaCreateView.as_view(), name='asistencia_registrar'),
     path('asistencia/registrar-salida/<pk>/', views.AsistenciaRegistrarSalidaView.as_view(), name='asistencia_registrar_salida'),
     
+    path('asistencia-personal/', views.AsistenciaPersonalView.as_view(), name='asistencia_personal_inicio'),
+    path('asistencia-personal-tabla/', views.AsistenciaPersonalTabla, name='asistencia_personal_tabla'),
+    path('asistencia-personal/registrar/', views.AsistenciaPersonalCreateView.as_view(), name='asistencia_personal_registrar'),
+
 ]
