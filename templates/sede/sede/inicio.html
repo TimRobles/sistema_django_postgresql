@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Sedes
+{% endblock titulo %}
+
+{% block contenido %}
+    <h1>Sedes
+        <button class="create badge bg-primary"
+        data-form-url="{% url 'sede_app:sede_registrar' %}"
+        data-table-url="{% url 'sede_app:sede_tabla' %}">
+            Registrar Sede
+        </button>
+    </h1>
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'sede/sede/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}
