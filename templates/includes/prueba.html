@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contenido %}
+{{ form.as_p }}
+{% endblock contenido %}
+
+
+{% block extrajs %}
+    <script src="{% static 'js/includes/prueba.js' %}"></script>
+{% endblock extrajs %}
+    

@@ -52,7 +52,6 @@ class SociedadUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
     def form_valid(self, form):
-
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         

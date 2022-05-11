@@ -21,6 +21,7 @@ class SociedadAdmin(admin.ModelAdmin):
         'razon_social',
         'direccion_legal',
         'ubigeo',
+        'distrito',
         'estado_sunat',
         'condicion_sunat',
 
@@ -30,6 +31,7 @@ class SociedadAdmin(admin.ModelAdmin):
         'razon_social',
         'direccion_legal',
         'ubigeo',
+        'distrito',
         'estado_sunat',
         'condicion_sunat',
         'logo',

@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 from django.conf import settings
 from applications.variables import TIPO_DOCUMENTO_CHOICES
@@ -33,7 +34,6 @@ class Visita(models.Model):
         return self.nombre
 
 
-
 class Asistencia(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuarios', on_delete=models.PROTECT, related_name='Asistencia_usuario')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT) 
@@ -49,8 +49,51 @@ class Asistencia(models.Model):
     class Meta:      
         verbose_name = 'Asistencia'
         verbose_name_plural = 'Asistencias'
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'usuario',
+                    'fecha_registro',
+                ], name='Asistencia_usuario_fecha_registro'
+            )
+        ]
 
     def __str__(self):
         return str(self.hora_ingreso)
+
+
+class ResponsableAsistencia(models.Model):
+    usuario_responsable = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario Responsable', on_delete=models.PROTECT, related_name='ResponsableAsistencia_usuario_responsable')
+    usuario_a_registrar = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name='Usuarios a Registrar',related_name='ResponsableAsistencia_usuario_a_registrar')
+    permiso_cambio_ip = models.BooleanField()
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ResponsableAsistencia_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ResponsableAsistencia_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'ResponsableAsistencia'
+        verbose_name_plural = 'ResponsableAsistencias'
+
+    def __str__(self):
+        return str(self.usuario_responsable)
+
+
+class IpPublica(models.Model):
+    ip = models.CharField('IP', max_length=15)
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='IpPublica_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='IpPublica_updated_by', editable=False)
+
+
+    class Meta:
+        verbose_name = 'IpPublica'
+        verbose_name_plural = 'IpPublicas'
+
+    def __str__(self):
+        return str(self.ip)
 
 

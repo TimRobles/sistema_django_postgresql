@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
 
 {% block titulo %}
-    Asistencia
+    Datos contrato de honorarios
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Asistencia General</h3>
+    <h3>Datos del contrato por honorarios
+        <button data-form-url="{% url 'colaborador_app:datos_contrato_honorarios_registrar' %}"
+            data-table-url="{% url 'colaborador_app:datos_contrato_honorarios_tabla' %}"
+            class="create badge bg-primary">
+            Registrar contrato
+        </button>
+    </h3>
 
     <form action="" method="get">
         <div class="row">
@@ -26,15 +32,16 @@
                 {% endfor %}
             </div>
             {% endfor %}
-            <div class="col-lg-4 my-auto">
+            <!-- <div class="col-lg-4 my-auto">
                 <input class="btn btn-outline-dark" type="submit" value="Buscar">
-                <a class="btn btn-outline-dark" href="{% url 'recepcion_app:asistencia_inicio' %}">Limpiar</a>
-            </div>            
+                <a class="btn btn-outline-dark" href="{% url 'colaborador_app:datos_contrato_honorarios_inicio' %}">Limpiar</a>
+            </div>             -->
         </div>
     </form>
 
     <div class="table-responsive" id="tabla">
-        {% include 'recepcion/asistencia/inicio_tabla.html' %}
+        {% include 'colaborador/datos_contrato/honorarios/inicio_tabla.html' %}
     </div>
     
 {% endblock contenido %}
+    

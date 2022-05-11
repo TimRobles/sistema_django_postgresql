@@ -14,6 +14,7 @@ urlpatterns = [
     path('sociedad/', include('applications.sociedad.urls')),
     path('recepcion/', include('applications.recepcion.urls')),
     path('colaborador/', include('applications.colaborador.urls')),
+    path('datos_globales/', include('applications.datos_globales.urls')),
     path('sede/', include('applications.sede.urls')),
 ]
 
