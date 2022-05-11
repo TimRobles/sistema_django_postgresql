@@ -22,16 +22,28 @@
        
             </td>
             <td>{{ datoscontratohonorarios.fecha_alta|date:'d/m/Y' }}</td>
-<!-- 
+
+
             <td>
-                <button data-form-url="{% url 'colaborador_app:datos_contrato_planilla_actualizar' datoscontratohonorarios.usuario.id %}"
-                    data-table-url="{% url 'colaborador_app:datos_contrato_planilla_tabla' %}"
-                    class="update btn btn-success btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
-                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                <button data-form-url="{% url 'colaborador_app:datos_contrato_honorarios_actualizar' datoscontratohonorarios.id %}"
+                    data-table-url="{% url 'colaborador_app:datos_contrato_honorarios_tabla' %}"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
                 </button>
 
-            </td> -->
+
+                {% if datoscontratohonorarios.estado_alta_baja == 1 %}                   
+                <button data-form-url="{% url 'colaborador_app:datos_contrato_honorarios_baja' datoscontratohonorarios.id %}"
+                    data-table-url="{% url 'colaborador_app:datos_contrato_honorarios_tabla' %}"
+                    class="update btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                    <i class="bi bi-hand-thumbs-down-fill"></i>
+                </button>
+
+                {% endif %}
+
+            </td>
 
         </tr>
         {% endfor %}
