@@ -145,7 +145,7 @@ class Departamento(models.Model):
         ordering = ['nombre',]
 
     def __str__(self):
-        return self.nombre
+        return self.codigo + ' - ' + self.nombre
 
 
 class Provincia(models.Model):
@@ -162,10 +162,10 @@ class Provincia(models.Model):
     class Meta:
         verbose_name = 'Provincia'
         verbose_name_plural = 'Provincias'
-        ordering = ['nombre',]
+        ordering = ['departamento__nombre', 'nombre',]
 
     def __str__(self):
-        return self.nombre
+        return self.codigo + ' - ' + self.nombre
 
 
 class Distrito(models.Model):
@@ -182,10 +182,10 @@ class Distrito(models.Model):
     class Meta:
         verbose_name = 'Distrito'
         verbose_name_plural = 'Distritos'
-        ordering = ['nombre',]
+        ordering = ['provincia__nombre', 'nombre',]
 
     def __str__(self):
-        return self.nombre
+        return self.codigo + ' - ' + self.nombre
 
 
 class Banco(models.Model):
