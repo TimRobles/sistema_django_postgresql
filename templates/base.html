@@ -50,7 +50,7 @@
         <script src="{% static 'js/popper.min.js' %}"></script>
         <script src="{% static 'js/jquery.bootstrap.modal.forms.js' %}"></script>
         <script src="{% static 'js/jscolor.js' %}"></script> 
-        <script src="{% static 'js/funciones.js' %}"></script>
+        <script src="{% static 'js/funciones.js' %}?{{ cache_bust }}"></script>
         
         {% block extrajs %}
         {% endblock extrajs %}
