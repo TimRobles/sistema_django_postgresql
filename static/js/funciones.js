@@ -286,7 +286,7 @@ var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
 });
 
 function input_letras(event) {
-    var regex = new RegExp("^[a-zA-Z]+$");
+    var regex = new RegExp("^[a-zA-Z ]+$");
     var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
     if (!regex.test(key)) {
        event.preventDefault();

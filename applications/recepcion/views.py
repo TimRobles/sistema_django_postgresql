@@ -14,7 +14,8 @@ from .models import (
     Asistencia,
     )
 
-class VisitaListView(FormView):
+class VisitaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('recepcion.view_visita')
     template_name = "recepcion/visita/inicio.html"
     form_class = VisitaBuscarForm
     success_url = '.'
@@ -83,7 +84,8 @@ def VisitaTabla(request):
         )
         return JsonResponse(data)
 
-class VisitaCreateView(BSModalCreateView):
+class VisitaCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('recepcion.add_visita')
     model = Visita
     template_name = "recepcion/visita/registrar.html"
     form_class = VisitaForm
@@ -102,7 +104,8 @@ class VisitaCreateView(BSModalCreateView):
 
         return super().form_valid(form)
 
-class VisitaRegistrarSalidaView(BSModalDeleteView):
+class VisitaRegistrarSalidaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion.change_visita')
     model = Visita
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('recepcion_app:visita_inicio')
