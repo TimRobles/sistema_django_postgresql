@@ -1,12 +1,15 @@
 from datetime import datetime, time
 from applications.importaciones import *
+from applications.colaborador.models import DatosContratoHonorarios, DatosContratoPlanilla
 
 from .forms import (
     VisitaForm,VisitaBuscarForm,
-    AsistenciaForm,AsistenciaBuscarForm,
+    AsistenciaForm,AsistenciaBuscarForm,AsistenciaPersonalBuscarForm
     )
 
 from .models import (
+    IpPublica,
+    ResponsableAsistencia,
     Visita,
     Asistencia,
     )
@@ -158,7 +161,7 @@ class AsistenciaListView(FormView):
             asistencias = asistencias.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
    
-        context[''] = asistencias
+        context['contexto_asistencia'] = asistencias
         return context
 
 def AsistenciaTabla(request):
@@ -195,27 +198,117 @@ def AsistenciaTabla(request):
         )
         return JsonResponse(data)
 
-class AsistenciaCreateView(LoginRequiredMixin, BSModalCreateView):
+
+class AsistenciaPersonalView(FormView):
+    template_name = "recepcion/asistencia/inicio_personal.html"
+    form_class = AsistenciaPersonalBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(AsistenciaPersonalView, self).get_form_kwargs()
+        kwargs['filtro_nombre'] = self.request.GET.get('nombre')
+        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaPersonalView,self).get_context_data(**kwargs)
+        usuarios = list(ResponsableAsistencia.objects.get(usuario_responsable = self.request.user).usuario_a_registrar.all())
+        asistencias = Asistencia.objects.filter(usuario__in=usuarios)
+        filtro_nombre = self.request.GET.get('nombre')
+        filtro_fecha = self.request.GET.get('fecha')
+
+        if filtro_nombre and filtro_fecha:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            asistencias = asistencias.filter(condicion)
+            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha 
+
+        elif filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
+        
+        elif filtro_nombre:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
+            asistencias = asistencias.filter(condicion)
+            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
+
+        context['contexto_asistencia_personal'] = asistencias
+        return context
+
+def AsistenciaPersonalTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'recepcion/asistencia/inicio_personal_tabla.html'
+        context = {}
+        usuarios = list(ResponsableAsistencia.objects.get(usuario_responsable = request.user).usuario_a_registrar.all())
+
+        asistencias = Asistencia.objects.filter(usuario__in=usuarios)
+        filtro_nombre = request.GET.get('nombre')
+        filtro_fecha = request.GET.get('fecha')
+
+        if filtro_nombre and filtro_fecha:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            asistencias = asistencias.filter(condicion) 
+
+        elif filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+        
+        elif filtro_nombre:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
+            asistencias = asistencias.filter(condicion)
+   
+
+        context['contexto_asistencia_personal'] = asistencias
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Asistencia
     template_name = "includes/formulario generico.html"
     form_class = AsistenciaForm
-    success_url = reverse_lazy('recepcion_app:asistencia_inicio')
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
 
     def get_context_data(self, **kwargs):
-        context = super(AsistenciaCreateView, self).get_context_data(**kwargs)
+        context = super(AsistenciaPersonalCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Asistencia"
         return context
 
     def form_valid(self, form):
+        if IpPublica.objects.latest('created_at').ip != self.request.META['REMOTE_ADDR']:
+            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+            return super().form_invalid(form)
+        try:
+            sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad
+        except:
+            try:
+                sociedad = DatosContratoHonorarios.objects.get(usuario = form.instance.usuario).sociedad
+            except:
+                sociedad = None
+
+        form.instance.sociedad = sociedad
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
 
-class AsistenciaRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
+class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
     model = Asistencia
     template_name = "includes/eliminar generico.html"
-    success_url = reverse_lazy('recepcion_app:asistencia_inicio')
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -227,9 +320,9 @@ class AsistenciaRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
-        context = super(AsistenciaRegistrarSalidaView, self).get_context_data(**kwargs)
+        context = super(AsistenciaPersonalRegistrarSalidaView, self).get_context_data(**kwargs)
         context['accion'] = "Registrar Salida"
-        context['titulo'] = "Asistencia"
+        context['titulo'] = "Asistencia Personal"
         context['dar_baja'] = "true"
         context['item'] = self.object.usuario.first_name + ' ' + self.object.usuario.last_name
         return context

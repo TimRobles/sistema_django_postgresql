@@ -2,6 +2,8 @@ from django.contrib import admin
 from .models import (
     Visita,
     Asistencia,
+    ResponsableAsistencia,
+    IpPublica,
 )
 
 class VisitaAdmin(admin.ModelAdmin):
@@ -52,6 +54,39 @@ class AsistenciaAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class ResponsableAsistenciaAdmin(admin.ModelAdmin):
+    list_display = (
+        'usuario_responsable',
+        'permiso_cambio_ip',
+        )
+    list_filter = ('usuario_a_registrar',)
+
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class IpPublicaAdmin(admin.ModelAdmin):
+    list_display = (
+        'ip',
+        'created_at',
+        )
+
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+
+
 admin.site.register(Visita, VisitaAdmin)
 admin.site.register(Asistencia, AsistenciaAdmin)
+admin.site.register(ResponsableAsistencia, ResponsableAsistenciaAdmin)
+admin.site.register(IpPublica, IpPublicaAdmin)
 

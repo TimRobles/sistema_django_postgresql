@@ -23,6 +23,15 @@
             </td>
             <td>{{ datoscontratoplanilla.fecha_alta|date:'d/m/Y' }}</td>
 
+            <td>
+                <button data-form-url="{% url 'colaborador_app:datos_contrato_planilla_actualizar' datoscontratoplanilla.id %}"
+                    data-table-url="{% url 'colaborador_app:datos_contrato_planilla_tabla' %}"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
         </tr>
         {% endfor %}
     </tbody>
