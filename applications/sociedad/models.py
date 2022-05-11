@@ -1,6 +1,7 @@
 from email.policy import default
 from django.db import models
 from django.conf import settings
+from applications import datos_globales
 from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, CONDICION_SUNAT
 from colorfield.fields import ColorField
 
@@ -15,6 +16,7 @@ class Sociedad(models.Model):
     nombre_comercial = models.CharField('Nombre Comercial', max_length=100, blank=True, null=True)
     direccion_legal = models.CharField('Dirección Legal', max_length=100)
     ubigeo = models.CharField('Ubigeo', max_length=6)
+    distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT, default=1)
     condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
     logo = models.ImageField('Logo', upload_to='img/sociedad', height_field=None, width_field=None, max_length=None, blank=True, null=True)
@@ -27,6 +29,11 @@ class Sociedad(models.Model):
     class Meta:
         verbose_name = 'Sociedad'
         verbose_name_plural = 'Sociedades'
+
+    def save(self, *args, **kwargs):
+        if self.ubigeo:
+            self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.razon_social
