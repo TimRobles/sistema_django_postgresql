@@ -179,6 +179,10 @@ class DistritoAdmin(admin.ModelAdmin):
         'updated_by',
         'updated_at',
         )
+    search_fields = (
+        'codigo',
+        'nombre',
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
