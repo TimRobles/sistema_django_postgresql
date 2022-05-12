@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
-from applications.sociedad.models import Sociedad
+from applications import datos_globales
 from applications.variables import ESTADOS
+from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Distrito
 
 class Sede(models.Model):
@@ -22,6 +23,11 @@ class Sede(models.Model):
 
         verbose_name = 'Sede'
         verbose_name_plural = 'Sedes'
+
+    def save(self, *args, **kwargs):
+        if self.ubigeo:
+            self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nombre

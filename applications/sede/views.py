@@ -30,7 +30,7 @@ def SedeTabla(request):
 class SedeCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('sede.add_sede')
     model = Sede
-    template_name = "includes/formulario generico.html"
+    template_name = "sede/sede/form.html"
     form_class = SedeCreateForm
     success_url = reverse_lazy('sede_app:sede_inicio')
 
@@ -51,7 +51,7 @@ class SedeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('sede.change_sede')
 
     model = Sede
-    template_name = "includes/formulario generico.html"
+    template_name = "sede/sede/form.html"
     form_class = SedeUpdateForm
     success_url = reverse_lazy('sede_app:sede_inicio')
 

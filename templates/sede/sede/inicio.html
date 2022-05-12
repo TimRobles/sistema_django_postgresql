@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block titulo %}
     Sedes
 {% endblock titulo %}
 
 {% block contenido %}
-    <h1>Sedes
+    <h3>Sedes
         <button class="create badge bg-primary"
-        data-form-url="{% url 'sede_app:sede_registrar' %}"
-        data-table-url="{% url 'sede_app:sede_tabla' %}">
+            data-form-url="{% url 'sede_app:sede_registrar' %}"
+            data-table-url="{% url 'sede_app:sede_tabla' %}">
             Registrar Sede
         </button>
-    </h1>
+    </h3>
     
     <div class="table-responsive" id="tabla">
         {% include 'sede/sede/inicio_tabla.html' %}

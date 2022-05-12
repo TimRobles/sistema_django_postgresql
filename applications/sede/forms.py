@@ -1,12 +1,13 @@
 from django import forms
 from .models import Sede
+from applications.datos_globales.models import Provincia, Distrito, Departamento
 
 from bootstrap_modal_forms.forms import  BSModalModelForm
 
 class SedeCreateForm(BSModalModelForm):
-    departamento_buscar = forms.CharField(max_length=50)
-    provincia_buscar = forms.CharField(max_length=50)
-    distrito_buscar = forms.CharField(max_length=50)
+    departamento_buscar = forms.ModelChoiceField(queryset = Departamento.objects.all())
+    provincia_buscar = forms.ModelChoiceField(queryset = Provincia.objects.all(), required=False)
+    distrito_buscar = forms.ModelChoiceField(queryset = Distrito.objects.all(), required=False)
     class Meta:
         model = Sede
         fields = (
@@ -19,7 +20,6 @@ class SedeCreateForm(BSModalModelForm):
             'distrito_buscar',
             'ubigeo',
             )
-        
 
     def __init__(self, *args, **kwargs):
         super(SedeCreateForm, self).__init__(*args, **kwargs)
@@ -27,9 +27,9 @@ class SedeCreateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class SedeUpdateForm(BSModalModelForm):
-    departamento_buscar = forms.CharField(max_length=50)
-    provincia_buscar = forms.CharField(max_length=50)
-    distrito_buscar = forms.CharField(max_length=50)
+    departamento_buscar = forms.ModelChoiceField(queryset = Departamento.objects.all())
+    provincia_buscar = forms.ModelChoiceField(queryset = Provincia.objects.all(), required=False)
+    distrito_buscar = forms.ModelChoiceField(queryset = Distrito.objects.all(), required=False)
     class Meta:
         model = Sede
         fields = (
@@ -41,8 +41,11 @@ class SedeUpdateForm(BSModalModelForm):
             'ubigeo',
             )
         
-
     def __init__(self, *args, **kwargs):
         super(SedeUpdateForm, self).__init__(*args, **kwargs)
+        ubigeo = self.instance.ubigeo
+        self.fields['departamento_buscar'].initial = ubigeo[:2]
+        self.fields['provincia_buscar'].initial = ubigeo[:4]
+        self.fields['distrito_buscar'].initial = ubigeo
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
