@@ -1,3 +1,4 @@
+from sistema_django_postgresql.settings.local import BUSCAR_IP
 from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -26,3 +27,5 @@ STATIC_ROOT = BASE_DIR.child('staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.ancestor(1).child('media')
+
+BUSCAR_IP = 'HTTP_CF_CONNECTING_IP'

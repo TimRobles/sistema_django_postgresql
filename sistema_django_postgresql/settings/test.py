@@ -26,3 +26,5 @@ STATIC_ROOT = BASE_DIR.child('staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.ancestor(1).child('media_test')
+
+BUSCAR_IP = 'HTTP_CF_CONNECTING_IP'

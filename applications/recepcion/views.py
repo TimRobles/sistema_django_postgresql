@@ -1,4 +1,6 @@
 from datetime import datetime, time
+
+from django.conf import settings
 from applications.importaciones import *
 from applications.colaborador.models import DatosContratoHonorarios, DatosContratoPlanilla
 
@@ -292,8 +294,7 @@ class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
         return context
 
     def form_valid(self, form):
-        if IpPublica.objects.latest('created_at').ip != self.request.META['REMOTE_ADDR']:
-        #if IpPublica.objects.latest('created_at').ip != self.request.META['HTTP_CF_CONNECTING_IP']:
+        if IpPublica.objects.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
             form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
             return super().form_invalid(form)
         try:

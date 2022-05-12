@@ -31,3 +31,5 @@ STATIC_ROOT = BASE_DIR
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.ancestor(1).child('media_sistema_django_postgresql')
+
+BUSCAR_IP = 'REMOTE_ADDR'
