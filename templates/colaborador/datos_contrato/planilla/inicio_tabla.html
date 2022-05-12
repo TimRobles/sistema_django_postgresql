@@ -27,9 +27,22 @@
                 <button data-form-url="{% url 'colaborador_app:datos_contrato_planilla_actualizar' datoscontratoplanilla.id %}"
                     data-table-url="{% url 'colaborador_app:datos_contrato_planilla_tabla' %}"
                     class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+
+                {% if datoscontratoplanilla.estado_alta_baja == 1 %}                   
+                    <button data-form-url="{% url 'colaborador_app:datos_contrato_planilla_baja' datoscontratoplanilla.id %}"
+                        data-table-url="{% url 'colaborador_app:datos_contrato_planilla_tabla' %}"
+                        class="update btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+               
+                       
+                {% endif %}
+                        
+
             </td>
 
         </tr>
