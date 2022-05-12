@@ -25,6 +25,7 @@ class DatosContratoPlanillaListView(ListView):
 
     def get_queryset(self):
         queryset = super(DatosContratoPlanillaListView, self).get_queryset()
+        queryset = DatosContratoPlanilla.objects.exclude(estado_alta_baja=2)
         return queryset
 
 def DatosContratoPlanillaTabla(request):
@@ -32,7 +33,7 @@ def DatosContratoPlanillaTabla(request):
     if request.method == 'GET':
         template = 'colaborador/datos_contrato/planilla/inicio_tabla.html'
         context = {}
-        datoscontratoplanilla = DatosContratoPlanilla.objects.all()
+        datoscontratoplanilla = DatosContratoPlanilla.objects.exclude(estado_alta_baja = 2)
         context['contexto_datoscontratoplanilla'] = datoscontratoplanilla
 
         data['table'] = render_to_string(
@@ -56,14 +57,24 @@ class DatosContratoPlanillaCreateView(BSModalCreateView):
 
     def form_valid(self, form):
         usuario_honorario = DatosContratoHonorarios.objects.filter(usuario = form.instance.usuario)
-        print(form.instance.usuario)
-
         if len(usuario_honorario)>0:
             form.add_error('usuario', 'El usuario tiene contrato por honorarios.')
             return super().form_invalid(form)
 
-        registro_guardar(form.instance, self.request)
+        usuario_planilla = DatosContratoPlanilla.objects.filter(
+                usuario = form.instance.usuario,
+                estado_alta_baja = 1)
+        if usuario_planilla:
+            form.add_error('usuario', 'El usuario tiene un contrato activo por planilla.')
+            return super().form_invalid(form)
 
+        ultima_fecha_baja = DatosContratoPlanilla.objects.filter(usuario = form.instance.usuario).exclude(fecha_baja=None)        
+        if ultima_fecha_baja:
+            if ultima_fecha_baja.latest('fecha_baja').fecha_baja > form.instance.fecha_alta:
+                form.add_error('fecha_alta','La fecha de alta tiene que ser mayor a la ultima fecha de baja (%s)' % ultima_fecha_baja.latest('fecha_baja').fecha_baja.strftime("%d/%m/%Y"))
+                return super().form_invalid(form)
+
+        registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
 class DatosContratoPlanillaUpdateView(BSModalUpdateView):
@@ -113,6 +124,7 @@ class DatosContratoHonorariosListView(ListView):
 
     def get_queryset(self):
         queryset = super(DatosContratoHonorariosListView, self).get_queryset()
+        queryset = DatosContratoHonorarios.objects.exclude(estado_alta_baja=2)
         return queryset
 
 def DatosContratoHonorariosTabla(request):
@@ -120,7 +132,7 @@ def DatosContratoHonorariosTabla(request):
     if request.method == 'GET':
         template = 'colaborador/datos_contrato/honorarios/inicio_tabla.html'
         context = {}
-        datoscontratohonorarios = DatosContratoHonorarios.objects.all()
+        datoscontratohonorarios = DatosContratoHonorarios.objects.exclude(estado_alta_baja = 2)
         context['contexto_datoscontratohonorarios'] = datoscontratohonorarios
 
         data['table'] = render_to_string(
@@ -144,16 +156,24 @@ class DatosContratoHonorariosCreateView(BSModalCreateView):
 
     def form_valid(self, form):
         usuario_planilla =  DatosContratoPlanilla.objects.filter(usuario = form.instance.usuario)
-        print(form.instance.usuario)
-
         if len(usuario_planilla)>0:
             form.add_error('usuario', 'El usuario tiene contrato por planilla.')
             return super().form_invalid(form)
+        
+        usuario_planilla = DatosContratoHonorarios.objects.filter(
+        usuario = form.instance.usuario,
+        estado_alta_baja = 1)
+        if usuario_planilla:
+            form.add_error('usuario', 'El usuario tiene un contrato activo por recibo por honorarios.')
+            return super().form_invalid(form)
 
-
+        ultima_fecha_baja = DatosContratoHonorarios.objects.filter(usuario = form.instance.usuario).exclude(fecha_baja=None)        
+        if ultima_fecha_baja:
+            if ultima_fecha_baja.latest('fecha_baja').fecha_baja > form.instance.fecha_alta:
+                form.add_error('fecha_alta','La fecha de alta tiene que ser mayor a la ultima fecha de baja (%s)' % ultima_fecha_baja.latest('fecha_baja').fecha_baja.strftime("%d/%m/%Y"))
+                return super().form_invalid(form)
 
         registro_guardar(form.instance, self.request)
-
         return super().form_valid(form)
 
 class DatosContratoHonorariosUpdateView(BSModalUpdateView):
