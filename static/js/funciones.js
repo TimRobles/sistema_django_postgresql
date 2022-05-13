@@ -217,6 +217,15 @@ $(function () {
         $(".form-check-input").wrap("<div class='input-group-text'></div>");
     };
 
+    function reemplazarTexto(e) {
+        for (let index = 0; index < document.getElementsByTagName('a').length; index++) {
+            const element = document.getElementsByTagName('a')[index];
+            if (element.parentElement.parentElement.className == 'modal-body'){
+                element.innerHTML = 'Ver Archivo';
+            }
+        }
+    }
+
     function funcionesDentroModal() {
         spinner();
         checkbox_div();
@@ -225,10 +234,12 @@ $(function () {
 
     $('#modal').on('shown.bs.modal', function (e) {
         funcionesDentroModal();
+        reemplazarTexto(e)
     });
 
-    $('#modal-xl').on('shown.bs.modal', function () {
+    $('#modal-xl').on('shown.bs.modal', function (e) {
         funcionesDentroModal();
+        reemplazarTexto(e)
     });
     
     

@@ -1,0 +1,6 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block js %}
+    <script src="{% static 'js/colaboradores/datos_contrato/honorarios.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}
