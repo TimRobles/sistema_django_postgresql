@@ -2,6 +2,7 @@ from email.policy import default
 from django.db import models
 from django.conf import settings
 from applications import datos_globales
+from applications.rutas import RUTA_SOCIEDAD_DOCUMENTO, RUTA_SOCIEDAD_LOGO
 from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, CONDICION_SUNAT
 from colorfield.fields import ColorField
 
@@ -19,7 +20,7 @@ class Sociedad(models.Model):
     distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT, default=1)
     condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
-    logo = models.ImageField('Logo', upload_to='img/sociedad', height_field=None, width_field=None, max_length=None, blank=True, null=True)
+    logo = models.ImageField('Logo', upload_to=RUTA_SOCIEDAD_LOGO, height_field=None, width_field=None, max_length=None, blank=True, null=True)
     color = ColorField(default='#FF0000')
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Sociedad_created_by', editable=False)
@@ -41,7 +42,7 @@ class Sociedad(models.Model):
 class Documento(models.Model):
     nombre_documento = models.CharField('Nombre de documento', max_length=50)
     descripcion_documento = models.CharField('Descripción del documento', max_length=100)
-    documento = models.FileField('Documento', upload_to='file/sociedad/documento/', max_length=100, blank=True, null=True)
+    documento = models.FileField('Documento', upload_to=RUTA_SOCIEDAD_DOCUMENTO, max_length=100, blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Documento_created_by', editable=False)
