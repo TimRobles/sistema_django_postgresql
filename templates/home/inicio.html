@@ -26,7 +26,7 @@
                         {{ field }}
 
                         {% if field.label == 'Contraseña'%}
-                            <button type="button" class="btn btn-info input-group-text">
+                            <button type="button"  id="ver-contraseña" class="btn btn-info input-group-text">
                                 <i class="bi bi-eye-fill"></i>
                             </button>
                         {% endif %}
@@ -46,6 +46,6 @@
 {% endblock content %}
 
 {% block extrajs %}
-    <script src="{% static 'js/usuario/datos_usuario/cambio_contraseña.js' %}?{{ cache_bust }}" ></script>
+    <script src="{% static 'js/usuario/datos_usuario/login_contraseña.js' %}?{{ cache_bust }}" ></script>
 {% endblock extrajs %}
 

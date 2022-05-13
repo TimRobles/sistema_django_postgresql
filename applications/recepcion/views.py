@@ -6,7 +6,7 @@ from applications.colaborador.models import DatosContratoHonorarios, DatosContra
 
 from .forms import (
     VisitaForm,VisitaBuscarForm,
-    AsistenciaForm,AsistenciaBuscarForm,AsistenciaPersonalBuscarForm
+    AsistenciaForm,AsistenciaBuscarForm,AsistenciaPersonalBuscarForm,AsistenciaSalidaForm
     )
 
 from .models import (
@@ -148,7 +148,7 @@ class AsistenciaListView(FormView):
         filtro_fecha = self.request.GET.get('fecha')
 
         if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             asistencias = asistencias.filter(condicion)
@@ -160,7 +160,7 @@ class AsistenciaListView(FormView):
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
         
         elif filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) 
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
@@ -179,7 +179,7 @@ def AsistenciaTabla(request):
         filtro_fecha = request.GET.get('fecha')
 
         if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             asistencias = asistencias.filter(condicion) 
@@ -189,7 +189,7 @@ def AsistenciaTabla(request):
             asistencias = asistencias.filter(condicion)
         
         elif filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
@@ -204,7 +204,9 @@ def AsistenciaTabla(request):
         return JsonResponse(data)
 
 
-class AsistenciaPersonalView(FormView):
+class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
+    permission_required = ('recepcion.view_asistencia')
+
     template_name = "recepcion/asistencia/inicio_personal.html"
     form_class = AsistenciaPersonalBuscarForm
     success_url = '.'
@@ -223,7 +225,7 @@ class AsistenciaPersonalView(FormView):
         filtro_fecha = self.request.GET.get('fecha')
 
         if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             asistencias = asistencias.filter(condicion)
@@ -235,7 +237,7 @@ class AsistenciaPersonalView(FormView):
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
         
         elif filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) 
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
@@ -256,7 +258,7 @@ def AsistenciaPersonalTabla(request):
         filtro_fecha = request.GET.get('fecha')
 
         if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
             asistencias = asistencias.filter(condicion) 
@@ -266,7 +268,7 @@ def AsistenciaPersonalTabla(request):
             asistencias = asistencias.filter(condicion)
         
         elif filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0]))  
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
@@ -283,20 +285,37 @@ def AsistenciaPersonalTabla(request):
 
 class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Asistencia
-    template_name = "includes/formulario generico.html"
+    template_name = "recepcion/asistencia/asistencia.html"
     form_class = AsistenciaForm
     success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
 
     def get_context_data(self, **kwargs):
         context = super(AsistenciaPersonalCreateView, self).get_context_data(**kwargs)
+        confirmar = False
+        context['confirmar']=confirmar
         context['accion']="Registrar"
         context['titulo']="Asistencia"
         return context
 
     def form_valid(self, form):
-        if IpPublica.objects.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
-            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+        try:
+            print(form.instance.usuario.Asistencia_usuario.all().get(fecha_registro = date.today()))
+            form.add_error('usuario', 'Ya registró su asistencia.')
             return super().form_invalid(form)
+        except:
+            pass
+        buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
+        if not buscar_ip:
+            form.add_error('sede', 'No hay IP registrada en esta sede.')
+            return super().form_invalid(form)
+
+        if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
+            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
+                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'])
+            else: 
+                form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+                return super().form_invalid(form)
+
         try:
             sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad
         except:
@@ -310,24 +329,46 @@ class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
 
         return super().form_valid(form)
 
-class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin, BSModalDeleteView):
+
+class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin,BSModalUpdateView):
     model = Asistencia
-    template_name = "includes/eliminar generico.html"
+    template_name = "recepcion/asistencia/asistencia.html"
+    form_class = AsistenciaSalidaForm
     success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         self.object = self.get_object()
-        hour = datetime.now()
-        self.object.hora_salida = hour.strftime("%H:%M")
+        hour = datetime.now()     
+        self.object.hora_salida = hour.strftime("%H:%M") 
         registro_guardar(self.object, self.request)
         self.object.save()
-        messages.success(request, MENSAJE_REGISTRAR_SALIDA)
-        return HttpResponseRedirect(self.get_success_url())
+
+
+        buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
+        if not buscar_ip:
+            form.add_error('sede', 'No hay IP registrada en esta sede.')
+            return super().form_invalid(form)
+
+        if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
+            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
+                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'])
+            else: 
+                form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+                return super().form_invalid(form)
+
+
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(AsistenciaPersonalRegistrarSalidaView, self).get_context_data(**kwargs)
-        context['accion'] = "Registrar Salida"
-        context['titulo'] = "Asistencia Personal"
-        context['dar_baja'] = "true"
-        context['item'] = self.object.usuario.first_name + ' ' + self.object.usuario.last_name
+        context['accion']="Registrar Salida"
+        context['titulo']="Asistencia Personal"
         return context
+
+def ConfirmarSedeView(request, id_sede):
+    buscar_ip = IpPublica.objects.filter(sede__id = id_sede)
+    if buscar_ip:
+        if buscar_ip.latest('created_at').ip != request.META[settings.BUSCAR_IP]:
+            return HttpResponse('No estás en el wifi correcto.')
+    
+    return HttpResponse('')

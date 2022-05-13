@@ -1,0 +1,14 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block arriba %}
+
+<div style="color: red;" id="confirmar"></div>
+
+{% endblock arriba %}
+    
+
+{% block js %}
+<script src="{% static 'js/recepcion/asistencia/asistencia.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}
+    

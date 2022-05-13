@@ -38,9 +38,9 @@ class AsistenciaAdmin(admin.ModelAdmin):
         'hora_salida',
         'fecha_registro',
         'created_by',
+        'created_at',
         'updated_by',
         'updated_at',
-        'created_at',
         )
     exclude = (
         'hora_ingreso',
@@ -72,7 +72,9 @@ class ResponsableAsistenciaAdmin(admin.ModelAdmin):
 class IpPublicaAdmin(admin.ModelAdmin):
     list_display = (
         'ip',
+        'sede',
         'created_at',
+        'created_by',
         )
 
 
