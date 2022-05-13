@@ -16,5 +16,7 @@ urlpatterns = [
     path('asistencia-personal-tabla/', views.AsistenciaPersonalTabla, name='asistencia_personal_tabla'),
     path('asistencia-personal/registrar/', views.AsistenciaPersonalCreateView.as_view(), name='asistencia_personal_registrar'),
     path('asistencia-personal/registrar-salida/<pk>/', views.AsistenciaPersonalRegistrarSalidaView.as_view(), name='asistencia_personal_registrar_salida'),
+    
+    path('confirmar-sede/<int:id_sede>/', views.ConfirmarSedeView, name='confirmar_sede'),
 
 ]

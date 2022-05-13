@@ -85,8 +85,6 @@ class DatosContratoPlanillaUpdateView(BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.estado_alta_baja = 1
-        form.instance.usuario.is_active = False
-        form.instance.usuario.save()
         registro_guardar(form.instance, self.request)
         
         return super().form_valid(form)
@@ -184,8 +182,6 @@ class DatosContratoHonorariosUpdateView(BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.estado_alta_baja = 1
-        form.instance.usuario.is_active = False
-        form.instance.usuario.save()
         registro_guardar(form.instance, self.request)
         
         return super().form_valid(form)
