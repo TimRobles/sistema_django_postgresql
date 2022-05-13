@@ -32,8 +32,8 @@ class DatosContratoPlanillaForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(DatosContratoPlanillaForm, self).__init__(*args, **kwargs)          
         for visible in self.visible_fields():
-            if visible.field != self.fields['asignacion_familiar']:
-                visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['asignacion_familiar'].widget.attrs['class'] = 'form-check-input'
 
 class DatosContratoActualizarPlanillaForm(BSModalModelForm):
     class Meta:
@@ -60,8 +60,8 @@ class DatosContratoActualizarPlanillaForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(DatosContratoActualizarPlanillaForm, self).__init__(*args, **kwargs)          
         for visible in self.visible_fields():
-            if visible.field != self.fields['asignacion_familiar']:
-                visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['asignacion_familiar'].widget.attrs['class'] = 'form-check-input'
 
 class DatosContratoPlanillaDarBajaForm(BSModalModelForm):
     class Meta:
@@ -131,8 +131,8 @@ class DatosContratoHonorariosForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(DatosContratoHonorariosForm, self).__init__(*args, **kwargs)          
         for visible in self.visible_fields():
-            if visible.field != self.fields['suspension_cuarta']:
-                visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['suspension_cuarta'].widget.attrs['class'] = 'form-check-input'
 
 class DatosContratoActualizarHonorariosForm(BSModalModelForm):
     class Meta:
@@ -159,8 +159,8 @@ class DatosContratoActualizarHonorariosForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(DatosContratoActualizarHonorariosForm, self).__init__(*args, **kwargs)          
         for visible in self.visible_fields():
-            if visible.field != self.fields['suspension_cuarta']:
-                visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['suspension_cuarta'].widget.attrs['class'] = 'form-check-input'
 
 class DatosContratoHonorariosDarBajaForm(BSModalModelForm):
     class Meta:

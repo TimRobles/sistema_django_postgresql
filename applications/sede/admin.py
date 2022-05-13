@@ -5,7 +5,6 @@ from .models import (
 
 class SedeAdmin(admin.ModelAdmin):
     list_display = (
-        'sociedad',
         'nombre',
         'usuario_responsable',
         'direccion',

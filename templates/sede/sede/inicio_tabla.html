@@ -13,7 +13,13 @@
     <tbody>
         {% for sede in contexto_sede %}
         <tr>
-            <td>{{ sede.sociedad }}</td>
+            <td>
+                {% for sociedad in sede.sociedad.all %}
+                <li>
+                    {{ sociedad }}
+                </li>
+                {% endfor %}
+            </td>
             <td>{{ sede.nombre }}</td>
             <td>{{ sede.usuario_responsable }}</td>
             <td>{{ sede.direccion }}</td>

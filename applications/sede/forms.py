@@ -20,11 +20,15 @@ class SedeCreateForm(BSModalModelForm):
             'distrito_buscar',
             'ubigeo',
             )
+        widgets = {
+            'sociedad': forms.CheckboxSelectMultiple(),
+        }
 
     def __init__(self, *args, **kwargs):
         super(SedeCreateForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['sociedad'].widget.attrs['class'] = 'nobull'
 
 class SedeUpdateForm(BSModalModelForm):
     departamento_buscar = forms.ModelChoiceField(queryset = Departamento.objects.all())
@@ -40,7 +44,7 @@ class SedeUpdateForm(BSModalModelForm):
             'distrito_buscar',
             'ubigeo',
             )
-        
+
     def __init__(self, *args, **kwargs):
         super(SedeUpdateForm, self).__init__(*args, **kwargs)
         ubigeo = self.instance.ubigeo
