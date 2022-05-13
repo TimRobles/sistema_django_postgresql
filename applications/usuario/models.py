@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 
-from applications.variables import TIPO_DOCUMENTO_SUNAT
+from applications.variables import TIPO_DOCUMENTO_CHOICES
 
 
 # Create your models here.
@@ -46,7 +46,7 @@ class DatosUsuario(models.Model):
         (2, 'Baja'),
     )
     usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, unique=True, related_name='DatosUsuario_usuario')
-    tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT)    
+    tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)    
     numero_documento = models.CharField('Número de Documento', max_length=15)
     fecha_nacimiento = models.DateField('Fecha de Nacimiento', auto_now=False, auto_now_add=False)
     foto = models.ImageField('Foto de Perfil', upload_to='img/usuario/datos_usuario/', default='img/usuario/datos_usuario/default-avatar.png', height_field=None, width_field=None, max_length=None)

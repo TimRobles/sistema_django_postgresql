@@ -85,8 +85,6 @@ class DatosContratoPlanillaUpdateView(BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.estado_alta_baja = 1
-        form.instance.usuario.is_active = False
-        form.instance.usuario.save()
         registro_guardar(form.instance, self.request)
         
         return super().form_valid(form)
@@ -115,8 +113,6 @@ class DatosContratoPlanillaDarBajaView(BSModalUpdateView):
         context['titulo'] = 'al contrato planilla'
         return context
     
-
-
 class DatosContratoHonorariosListView(ListView):
     model = DatosContratoHonorarios
     template_name = "colaborador/datos_contrato/honorarios/inicio.html"
@@ -144,7 +140,7 @@ def DatosContratoHonorariosTabla(request):
 
 class DatosContratoHonorariosCreateView(BSModalCreateView):
     model = DatosContratoHonorarios
-    template_name = "includes/formulario generico.html"
+    template_name = "colaborador/datos_contrato/honorarios/form.html"
     form_class = DatosContratoHonorariosForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_honorarios_inicio')
 
@@ -173,19 +169,23 @@ class DatosContratoHonorariosCreateView(BSModalCreateView):
                 form.add_error('fecha_alta','La fecha de alta tiene que ser mayor a la ultima fecha de baja (%s)' % ultima_fecha_baja.latest('fecha_baja').fecha_baja.strftime("%d/%m/%Y"))
                 return super().form_invalid(form)
 
+        if not form.instance.suspension_cuarta:
+            form.instance.archivo_suspension_cuarta = None
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
 class DatosContratoHonorariosUpdateView(BSModalUpdateView):
     model = DatosContratoHonorarios
-    template_name = "includes/formulario generico.html"
+    template_name = "colaborador/datos_contrato/honorarios/form.html"
     form_class = DatosContratoActualizarHonorariosForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_honorarios_inicio')
 
     def form_valid(self, form):
+        if not form.instance.suspension_cuarta:
+            form.instance.archivo_suspension_cuarta = None
+
         form.instance.estado_alta_baja = 1
-        form.instance.usuario.is_active = False
-        form.instance.usuario.save()
         registro_guardar(form.instance, self.request)
         
         return super().form_valid(form)
