@@ -130,7 +130,8 @@ class VisitaRegistrarSalidaView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 
-class AsistenciaListView(FormView):
+class AsistenciaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('recepcion.view_asistencia')
     template_name = "recepcion/asistencia/inicio.html"
     form_class = AsistenciaBuscarForm
     success_url = '.'
