@@ -37,6 +37,7 @@ class AsistenciaAdmin(admin.ModelAdmin):
         'hora_ingreso',
         'hora_salida',
         'fecha_registro',
+        'sede',
         'created_by',
         'created_at',
         'updated_by',

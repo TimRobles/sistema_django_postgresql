@@ -3,6 +3,7 @@
         <tr>
             <th>Nombre</th>
             <th>Sociedad</th>
+            <th>Sede</th>
             <th>Hora de Ingreso</th>
             <th>Hora de Salida</th>
             <th>Fecha de Registro</th>
@@ -19,6 +20,7 @@
                 {% endif %}
             </td>
             <td>{{ asistencia.sociedad}}</td>
+            <td>{{ asistencia.sede}}</td>
             <td>{{ asistencia.hora_ingreso }}</td>
             <td>
                 
@@ -28,7 +30,6 @@
                     
             </td>
             <td>{{ asistencia.fecha_registro|date:'d/m/Y' }}</td>
-
 
         </tr>
         {% endfor %}

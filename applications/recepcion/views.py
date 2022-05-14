@@ -203,7 +203,6 @@ def AsistenciaTabla(request):
         )
         return JsonResponse(data)
 
-
 class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     permission_required = ('recepcion.view_asistencia')
 
@@ -329,7 +328,6 @@ class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
 
         return super().form_valid(form)
 
-
 class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin,BSModalUpdateView):
     model = Asistencia
     template_name = "recepcion/asistencia/asistencia.html"
@@ -342,7 +340,6 @@ class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin,BSModalUpdateView
         self.object.hora_salida = hour.strftime("%H:%M") 
         registro_guardar(self.object, self.request)
         self.object.save()
-
 
         buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
         if not buscar_ip:

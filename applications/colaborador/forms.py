@@ -114,6 +114,7 @@ class DatosContratoHonorariosForm(BSModalModelForm):
             'sueldo',
             'cargo',
             'suspension_cuarta',
+            'year',
             'archivo_suspension_cuarta',
             'archivo_contrato',
             )
@@ -142,6 +143,7 @@ class DatosContratoActualizarHonorariosForm(BSModalModelForm):
             'sueldo',
             'cargo',
             'suspension_cuarta',
+            'year',
             'archivo_suspension_cuarta',
             'archivo_contrato',
             )

@@ -34,6 +34,7 @@ class DatosContratoHonorariosAdmin(admin.ModelAdmin):
         'fecha_alta',
         'sueldo',
         'suspension_cuarta',
+        'year',
         'archivo_suspension_cuarta',
         'archivo_contrato',
         'cargo',

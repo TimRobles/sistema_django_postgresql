@@ -114,7 +114,6 @@ class AsistenciaPersonalBuscarForm(forms.Form):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-
 class AsistenciaSalidaForm(BSModalModelForm):
     sede = forms.ModelChoiceField(queryset=Sede.objects.all())
     class Meta:

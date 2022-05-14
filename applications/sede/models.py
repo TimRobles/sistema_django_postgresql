@@ -30,5 +30,5 @@ class Sede(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.nombre + '-' + str(self.id)
+        return self.nombre
 
