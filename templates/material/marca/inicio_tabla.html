@@ -1,0 +1,31 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-center text-nowrap">Nombre</th>
+            <th class="text-center text-nowrap">Modelos</th>
+            <th class="text-center text-nowrap">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for marca in contexto_marca %}
+            <td class="text-center text-nowrap">{{ marca.nombre }}</td>
+            <td>
+                {% for modelo in marca.modelos.all %}
+                <li class="text-center text-nowrap">
+                    {{ modelo }}
+                </li>
+                {% endfor %}
+            </td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'material_app:marca_actualizar' marca.id %}"
+                    data-table-url="{% url 'material_app:marca_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

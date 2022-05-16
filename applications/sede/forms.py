@@ -5,9 +5,9 @@ from applications.datos_globales.models import Provincia, Distrito, Departamento
 from bootstrap_modal_forms.forms import  BSModalModelForm
 
 class SedeCreateForm(BSModalModelForm):
-    departamento_buscar = forms.ModelChoiceField(queryset = Departamento.objects.all())
-    provincia_buscar = forms.ModelChoiceField(queryset = Provincia.objects.all(), required=False)
-    distrito_buscar = forms.ModelChoiceField(queryset = Distrito.objects.all(), required=False)
+    departamento_buscar = forms.ModelChoiceField(label = 'Departamento', queryset = Departamento.objects.all())
+    provincia_buscar = forms.ModelChoiceField(label = 'Provincia', queryset = Provincia.objects.all(), required=False)
+    distrito_buscar = forms.ModelChoiceField(label = 'Distrito', queryset = Distrito.objects.all(), required=False)
     class Meta:
         model = Sede
         fields = (
@@ -31,9 +31,9 @@ class SedeCreateForm(BSModalModelForm):
         self.fields['sociedad'].widget.attrs['class'] = 'nobull'
 
 class SedeUpdateForm(BSModalModelForm):
-    departamento_buscar = forms.ModelChoiceField(queryset = Departamento.objects.all())
-    provincia_buscar = forms.ModelChoiceField(queryset = Provincia.objects.all(), required=False)
-    distrito_buscar = forms.ModelChoiceField(queryset = Distrito.objects.all(), required=False)
+    departamento_buscar = forms.ModelChoiceField(label = 'Departamento', queryset = Departamento.objects.all())
+    provincia_buscar = forms.ModelChoiceField(label = 'Provincia', queryset = Provincia.objects.all(), required=False)
+    distrito_buscar = forms.ModelChoiceField(label = 'Distrito', queryset = Distrito.objects.all(), required=False)
     class Meta:
         model = Sede
         fields = (
