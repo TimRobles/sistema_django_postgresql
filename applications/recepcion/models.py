@@ -80,8 +80,8 @@ class ResponsableAsistencia(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ResponsableAsistencia_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'ResponsableAsistencia'
-        verbose_name_plural = 'ResponsableAsistencias'
+        verbose_name = 'Responsable Asistencia'
+        verbose_name_plural = 'Responsable Asistencias'
 
     def __str__(self):
         return str(self.usuario_responsable)
@@ -98,8 +98,8 @@ class IpPublica(models.Model):
 
 
     class Meta:
-        verbose_name = 'IpPublica'
-        verbose_name_plural = 'IpPublicas'
+        verbose_name = 'Ip Publica'
+        verbose_name_plural = 'Ip Publicas'
 
 
     def __str__(self):

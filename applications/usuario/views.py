@@ -37,9 +37,9 @@ class DatosUsuarioView(LoginRequiredMixin, FormView):
             form.instance.created_by = self.request.user
         form.instance.updated_by = self.request.user
 
-        usuario_buscar.first_name = self.request.POST['Nombres']
-        usuario_buscar.last_name = self.request.POST['Apellidos']
-        usuario_buscar.email = self.request.POST['Correo']
+        usuario_buscar.first_name = self.request.POST['nombres']
+        usuario_buscar.last_name = self.request.POST['apellidos']
+        usuario_buscar.email = self.request.POST['correo']
         
         usuario_buscar.save()
         form.save()

@@ -65,8 +65,8 @@ class DatosContratoHonorarios(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='DatosContratoHonorarios_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'Datos de Contrato de Honorarios'
-        verbose_name_plural = 'Datos de Contratos de Honorarios'
+        verbose_name = 'Datos de Contrato por Honorarios'
+        verbose_name_plural = 'Datos de Contratos por Honorarios'
         ordering = [
             '-fecha_alta',
         ]

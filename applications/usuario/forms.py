@@ -16,21 +16,21 @@ class HistoricoUserForm(forms.ModelForm):
             )
 
 class DatosUsuarioForm(forms.ModelForm):
-    Nombres = forms.CharField(max_length=50)
-    Apellidos = forms.CharField(max_length=50)
-    Correo = forms.CharField(max_length=50)
+    nombres = forms.CharField(max_length=50)
+    apellidos = forms.CharField(max_length=50)
+    correo = forms.CharField(max_length=50)
     class Meta:
         model = DatosUsuario
         fields = (
-            'Nombres', 
-            'Apellidos', 
+            'nombres', 
+            'apellidos', 
             'tipo_documento',
             'numero_documento', 
             'fecha_nacimiento', 
             'foto', 
             'direccion', 
             'telefono_personal',
-            'Correo',
+            'correo',
             )
         widgets = {
             'fecha_nacimiento': forms.DateInput(
@@ -45,9 +45,9 @@ class DatosUsuarioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         usuario = kwargs.pop('usuario')
         super(DatosUsuarioForm, self).__init__(*args, **kwargs)
-        self.fields['Nombres'].initial = usuario.first_name
-        self.fields['Apellidos'].initial = usuario.last_name
-        self.fields['Correo'].initial = usuario.email
+        self.fields['nombres'].initial = usuario.first_name
+        self.fields['apellidos'].initial = usuario.last_name
+        self.fields['correo'].initial = usuario.email
 
         if self.fields['telefono_personal'].initial == None:   
             self.fields['telefono_personal'].initial = '+51'
