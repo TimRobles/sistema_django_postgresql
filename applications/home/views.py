@@ -120,7 +120,6 @@ class OlvideContrasenaView(FormView):
 
         return super(OlvideContrasenaView, self).form_valid(form)
 
-
 class RecuperarContrasenaView(FormView):
     template_name = "home/recuperar contraseña.html"
     form_class = RecuperarContrasenaForm

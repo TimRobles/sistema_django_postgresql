@@ -47,8 +47,6 @@ class DatosUsuarioView(LoginRequiredMixin, FormView):
 
         return super(DatosUsuarioView, self).form_valid(form)
         
-
-
 class UserPasswordView(FormView):
     template_name = "usuario/datos_usuario/cambio contraseña.html"
     form_class = UserPasswordForm
@@ -71,7 +69,10 @@ class UserPasswordView(FormView):
         kwargs['request'] = self.request
         return kwargs   
 
-class HistoricoUserListView(ListView):
+
+class HistoricoUserListView(PermissionRequiredMixin, ListView):
+    permission_required = ('usuario.view_historicouser')
+
     model = HistoricoUser
     template_name = "usuario/historico_user/list.html"
     context_object_name = 'contexto_historicouser'
@@ -95,7 +96,9 @@ def HistoricoUserTabla(request):
         )
         return JsonResponse(data)
 
-class HistoricoUserDarBajaView(BSModalUpdateView):
+class HistoricoUserDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('usuario.change_historicouser')
+    
     model = HistoricoUser
     template_name = "includes/formulario generico.html"
     form_class = HistoricoUserDarBajaForm
@@ -115,7 +118,9 @@ class HistoricoUserDarBajaView(BSModalUpdateView):
         context['titulo'] = 'Historico Usuario'
         return context
     
-class HistoricoUserDarAltaView(BSModalCreateView):
+class HistoricoUserDarAltaView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('usuario.add_historicouser')
+
     template_name = "includes/formulario generico.html"
     form_class = HistoricoUserDarAltaForm
     success_url = reverse_lazy('usuario_app:historico_usuarios')
@@ -161,7 +166,9 @@ class HistoricoUserDarAltaView(BSModalCreateView):
         context['titulo'] = 'Historico Usuario'
         return context
 
-class HistoricoDetailView(DetailView):
+class HistoricoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('usuario.view_historicouser')
+
     model = get_user_model()
     template_name = "usuario/historico_user/detail.html"
     context_object_name = 'contexto_user'

@@ -283,7 +283,9 @@ def AsistenciaPersonalTabla(request):
         )
         return JsonResponse(data)
 
-class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
+class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('recepcion.add_asistencia')
+
     model = Asistencia
     template_name = "recepcion/asistencia/asistencia.html"
     form_class = AsistenciaForm
@@ -318,18 +320,24 @@ class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
 
         try:
             sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad
+    
         except:
             try:
                 sociedad = DatosContratoHonorarios.objects.get(usuario = form.instance.usuario).sociedad
+
             except:
                 sociedad = None
+                form.add_error('usuario', 'Este usuario no tiene contrato vigente.')
+                return super().form_invalid(form)
 
         form.instance.sociedad = sociedad
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
 
-class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin,BSModalUpdateView):
+class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('recepcion.change_asistencia')
+
     model = Asistencia
     template_name = "recepcion/asistencia/asistencia.html"
     form_class = AsistenciaSalidaForm
