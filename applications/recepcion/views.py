@@ -211,6 +211,11 @@ class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     form_class = AsistenciaPersonalBuscarForm
     success_url = '.'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not ResponsableAsistencia.objects.get(usuario_responsable = self.request.user):
+            return self.handle_no_permission()
+        return super(AsistenciaPersonalView, self).dispatch(request, *args, **kwargs)
+    
     def get_form_kwargs(self):
         kwargs = super(AsistenciaPersonalView, self).get_form_kwargs()
         kwargs['filtro_nombre'] = self.request.GET.get('nombre')
