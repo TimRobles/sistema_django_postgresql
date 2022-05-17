@@ -308,12 +308,15 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
             pass
         buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
         if not buscar_ip:
-            form.add_error('sede', 'No hay IP registrada en esta sede.')
-            return super().form_invalid(form)
+            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
+                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
+            else:
+                form.add_error('sede', 'No hay IP registrada en esta sede.')
+                return super().form_invalid(form)
 
         if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
             if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'])
+                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
             else: 
                 form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
                 return super().form_invalid(form)
@@ -352,12 +355,15 @@ class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpda
 
         buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
         if not buscar_ip:
-            form.add_error('sede', 'No hay IP registrada en esta sede.')
-            return super().form_invalid(form)
+            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
+                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
+            else:
+                form.add_error('sede', 'No hay IP registrada en esta sede.')
+                return super().form_invalid(form)
 
         if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
             if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'])
+                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
             else: 
                 form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
                 return super().form_invalid(form)
