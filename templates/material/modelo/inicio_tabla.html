@@ -1,0 +1,23 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-center text-nowrap">Nombre</th>
+            <th class="text-center text-nowrap">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for modelo in contexto_modelo %}
+            <td class="text-center text-nowrap">{{ modelo.nombre }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'material_app:modelo_actualizar' modelo.id %}"
+                    data-table-url="{% url 'material_app:modelo_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
