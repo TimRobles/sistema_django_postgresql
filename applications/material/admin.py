@@ -1,4 +1,12 @@
 from django.contrib import admin
+from applications.material.forms import (
+    ClaseForm,
+    ComponenteForm,
+    AtributoForm,
+    FamiliaForm,    
+    SubFamiliaForm,      
+    )
+
 from .models import (
     Clase,
     Componente,
@@ -16,6 +24,8 @@ class ClaseAdmin(admin.ModelAdmin):
         'descripcion',
         )
 
+    form = ClaseForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -27,6 +37,8 @@ class ComponenteAdmin(admin.ModelAdmin):
     list_display = (
         'nombre',
         )
+
+    form = ComponenteForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -40,6 +52,8 @@ class AtributoAdmin(admin.ModelAdmin):
         'nombre',
         )
 
+    form = AtributoForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -51,6 +65,8 @@ class FamiliaAdmin(admin.ModelAdmin):
     list_display = (
         'nombre',
         )
+
+    form = FamiliaForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -64,6 +80,8 @@ class SubFamiliaAdmin(admin.ModelAdmin):
         'nombre',
         'familia',
         )
+
+    form = SubFamiliaForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
