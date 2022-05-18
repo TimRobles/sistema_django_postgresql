@@ -13,7 +13,7 @@ class Sede(models.Model):
     direccion = models.CharField('Dirección', max_length=254)
     ubigeo = models.CharField('Ubigeo', max_length=6)
     distrito = models.ForeignKey(Distrito, on_delete=models.PROTECT, blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Sede_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)

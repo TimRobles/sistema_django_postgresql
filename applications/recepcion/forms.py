@@ -15,6 +15,7 @@ class VisitaForm(BSModalModelForm):
             'tipo_documento',
             'numero_documento',
             'nombre',
+            'sede',
             'usuario_atendio',
             'motivo_visita',
             'empresa_cliente',
@@ -55,7 +56,7 @@ class VisitaBuscarForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class AsistenciaForm(BSModalModelForm):
-    sede = forms.ModelChoiceField(queryset=Sede.objects.all())
+    sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
     class Meta:
         model = Asistencia
         fields=(
@@ -115,7 +116,7 @@ class AsistenciaPersonalBuscarForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class AsistenciaSalidaForm(BSModalModelForm):
-    sede = forms.ModelChoiceField(queryset=Sede.objects.all())
+    sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
     class Meta:
         model = Asistencia
         fields = (

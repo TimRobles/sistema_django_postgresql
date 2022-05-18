@@ -10,6 +10,7 @@ class Visita(models.Model):
     nombre = models.CharField('Nombre Completo', max_length=50)
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)    
     numero_documento = models.CharField('Número de Documento', max_length=15)
+    sede = models.ForeignKey(Sede, on_delete=models.PROTECT)
     usuario_atendio = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='Usuario_Atendio')
     motivo_visita = models.CharField('Motivo de Visita', max_length=50)
     hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True)
