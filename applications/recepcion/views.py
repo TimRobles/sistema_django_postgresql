@@ -214,7 +214,7 @@ class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     def dispatch(self, request, *args, **kwargs):
         if len(ResponsableAsistencia.objects.filter(usuario_responsable = self.request.user)) == 0:
             return self.handle_no_permission()
-        return super(AsistenciaPersonalView, self).dispatch(request, *args, **kwargs)
+        return super(AsistenciaPersonalView, self).dispatch(request, *args, **kwargs)    
     
     def get_form_kwargs(self):
         kwargs = super(AsistenciaPersonalView, self).get_form_kwargs()
