@@ -31,6 +31,7 @@ class VisitaForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(VisitaForm, self).__init__(*args, **kwargs)
+        self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
