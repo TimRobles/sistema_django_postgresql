@@ -212,6 +212,8 @@ class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     success_url = '.'
 
     def dispatch(self, request, *args, **kwargs):
+        if self.request.user.is_anonymous:
+            return self.handle_no_permission()
         if len(ResponsableAsistencia.objects.filter(usuario_responsable = self.request.user)) == 0:
             return self.handle_no_permission()
         return super(AsistenciaPersonalView, self).dispatch(request, *args, **kwargs)    
