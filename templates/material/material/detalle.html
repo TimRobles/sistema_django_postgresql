@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle material
+{% endblock titulo %}
+
+{% block contenido %}
+    <div class="table-responsive" id="tabla">
+        {% include 'material/material/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

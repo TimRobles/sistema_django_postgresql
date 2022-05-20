@@ -1,0 +1,217 @@
+<h3>Datos de importación</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Traducción</th>
+                <th class="text-rigth">Partida</th>
+                <th class="text-rigth">Uso o funcion</th>
+                <th class="text-rigth">Compuesto por</th>
+                <th class="text-rigth">Es componente</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_material.traduccion }}</td>
+                <td>{{ contexto_material.partida }}</td>
+                <td>{{ contexto_material.uso_funcion }}</td>
+                <td>{{ contexto_material.compuesto_por }}</td>
+                <td>{{ contexto_material.es_componente }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:datos_importacion_actualizar' contexto_material.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+
+<h3>Producto SUNAT</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Segmento SUNAT</th>
+                <th class="text-rigth">Familia SUNAT</th>
+                <th class="text-rigth">Clase SUNAT</th>
+                <th class="text-rigth">Producto SUNAT</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_material.producto_sunat.clase.familia.segmento }}</td>
+                <td>{{ contexto_material.producto_sunat.clase.familia}}</td>
+                <td>{{ contexto_material.producto_sunat.clase}}</td>
+                <td>{{ contexto_material.producto_sunat }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:producto_sunat_actualizar' contexto_material.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+
+<h3>Componentes
+    <button data-form-url="{% url 'material_app:componente_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Relacionar componentes
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Componente</th>
+                <th class="text-rigth">Cantidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for componente in componentes %}
+            <tr>
+                <td>{{ componente.componentematerial }}</td>
+                <td>{{ componente.cantidad }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:componente_actualizar' componente.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    <button data-form-url="{% url 'material_app:componente_eliminar' componente.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+
+</br>
+<h3>Especificaciones 
+    <button data-form-url="{% url 'material_app:especificacion_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Relacionar Especificaciones
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Orden</th>
+                <th class="text-rigth">Atributo</th>
+                <th class="text-rigth">Valor</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for especificacion in especificaciones %}
+            <tr>
+                <td>{{ especificacion.orden }}</td>
+                <td>{{ especificacion.atributomaterial }}</td>
+                <td>{{ especificacion.valor }}</td>
+
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:especificacion_actualizar' especificacion.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    
+                    <button data-form-url="{% url 'material_app:especificacion_eliminar' especificacion.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+
+</br>
+<h3>Datasheet
+    <button data-form-url="{% url 'material_app:datasheet_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Relacionar Datasheet
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Descripción</th>
+                <th class="text-rigth">Archivo</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for datasheet in datasheets %}
+            <tr>
+                <td>{{ datasheet.descripcion }}</td>
+                <td>{{ datasheet.archivo }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:datasheet_actualizar' datasheet.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    <button data-form-url="{% url 'material_app:datasheet_eliminar' datasheet.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
