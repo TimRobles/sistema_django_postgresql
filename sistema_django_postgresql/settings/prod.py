@@ -1,4 +1,3 @@
-from sistema_django_postgresql.settings.local import BUSCAR_IP
 from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
