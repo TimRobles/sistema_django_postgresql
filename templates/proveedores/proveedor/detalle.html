@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Proveedores
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'proveedores/proveedor/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

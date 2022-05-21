@@ -129,6 +129,23 @@ class TipoInterlocutor(models.Model):
     def __str__(self):
         return self.nombre
 
+class Pais(models.Model):
+    '''Solo por Admin'''
+
+    nombre = models.CharField('Nombre', max_length=50, unique=True)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Pais_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Pais_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Pais'
+        verbose_name_plural = 'Paises'
+        ordering = ['nombre',]
+
+    def __str__(self):
+        return self.nombre
+
 class Departamento(models.Model):
     '''Solo por Admin'''
 

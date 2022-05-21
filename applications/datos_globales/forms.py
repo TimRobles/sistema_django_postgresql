@@ -1,5 +1,5 @@
 from django import forms
-from applications.datos_globales.models import Area, Cargo, Moneda, TipoInterlocutor
+from applications.datos_globales.models import Area, Cargo, Moneda, TipoInterlocutor, Pais
 
 class MonedaForm(forms.ModelForm):
     class Meta:
@@ -70,5 +70,21 @@ class TipoInterlocutorForm(forms.ModelForm):
         if nombre != self.instance.nombre:
             if len(filtro)>0:
                 self.add_error('nombre', 'Ya existe un Tipo de Interlocutor con este nombre')
+
+        return nombre
+
+class PaisForm(forms.ModelForm):
+    class Meta:
+        model = Pais
+        fields = (
+            'nombre',
+            )
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre')
+        filtro = Pais.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe un País con este nombre')
 
         return nombre
