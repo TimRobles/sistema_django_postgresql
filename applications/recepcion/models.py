@@ -114,3 +114,23 @@ class IpPublica(models.Model):
         return str(self.ip)
 
 
+class GeoLocalizacion(models.Model):
+    longitud = models.DecimalField('Longitud', max_digits=22, decimal_places=16)
+    latitud = models.DecimalField('Latitud', max_digits=22, decimal_places=16)
+    sede = models.ForeignKey(Sede, on_delete=models.PROTECT) 
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='GeoLocalizacion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='GeoLocalizacion_updated_by', editable=False)
+
+
+    class Meta:
+        verbose_name = 'Geo Localización'
+        verbose_name_plural = 'Geo Localizaciones'
+
+
+    def __str__(self):
+        return str(self.longitud) + ', ' + str(self.latitud)
+
+

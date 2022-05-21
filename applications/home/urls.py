@@ -2,6 +2,7 @@ from django.urls import path
 from applications.home.views import (
     ConsultaDniView,
     ConsultaRucView,
+    DistanciaGeoLocalizacion,
     PanelView,
     InicioView,
     PruebaGeolocalizacion,
@@ -21,4 +22,5 @@ urlpatterns = [
     path('olvide-contraseña/', OlvideContrasenaView.as_view(), name='olvide_contraseña'),
     path('recuperar-contraseña/', RecuperarContrasenaView.as_view(), name='recuperar_contraseña'),
     path('prueba-geolocalizacion', PruebaGeolocalizacion.as_view()),
+    path('distancia-geolocalizacion/<str:longitud>/<str:latitud>/<int:sede_id>/', DistanciaGeoLocalizacion),
 ]
