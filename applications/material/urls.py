@@ -42,4 +42,8 @@ urlpatterns = [
     path('familia-sunat/<str:id_segmento>/', views.FamiliaSunatView, name='familia_sunat'),
     path('clase-sunat/<str:id_familia>/', views.ClaseSunatView, name='clase_sunat'),
     path('producto-sunat/<str:id_clase>/', views.ProductoSunatView, name='producto_sunat'),
+
+    path('subfamilia/<str:id_familia>/', views.SubfamiliaView, name='subfamilia'),
+    path('unidad/<str:id_subfamilia>/', views.UnidadView, name='unidad'),
+
 ]
