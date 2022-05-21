@@ -69,7 +69,7 @@ def validar_numero(texto):
 
 
 def consulta_distancia(longitud, latitud, sede_id):
-    ubicacion = applications.recepcion.models.GeoLocalizacion.objects.get(id=sede_id)
+    ubicacion = applications.recepcion.models.GeoLocalizacion.objects.get(sede__id=sede_id)
     local = (float(ubicacion.longitud), float(ubicacion.latitud))
     posicion = (float(longitud), float(latitud))
     """ R = 3958.8 #Radius of the Earth in miles """
@@ -79,6 +79,6 @@ def consulta_distancia(longitud, latitud, sede_id):
     difflat = rlat2-rlat1 #Radian difference (latitudes)
     difflon = (posicion[0]-local[0]) * (math.pi/180) #Radian difference (longitudes)
 
-    distancia = 2 * R * math.asin(math.sqrt(math.sin(difflat/2)*math.sin(difflat/2)+math.cos(rlat1)*math.cos(rlat2)*math.sin(difflon/2)*math.sin(difflon/2)))
-    return str(distancia*1000)
+    distancia = 2 * R * math.asin(math.sqrt(math.sin(difflat/2)*math.sin(difflat/2)+math.cos(rlat1)*math.cos(rlat2)*math.sin(difflon/2)*math.sin(difflon/2))) #Distancia en kilómetros
+    return str(int(distancia*1000))
     

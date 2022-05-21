@@ -1,12 +1,18 @@
 function CambioSede(elemento) {
     $id_sede = elemento.value;
-    url = '/recepcion/confirmar-sede/' + $id_sede;
+    longitud = $('#id_longitud')[0].value;
+    latitud = $('#id_latitud')[0].value;
+    url = '/distancia-geolocalizacion/' + longitud + "/" + latitud + "/" + $id_sede;
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
-            $('#confirmar')[0].innerHTML = xhr.responseText;
+            if (parseFloat(xhr.responseText) > 10) {
+                $('#confirmar')[0].innerHTML = "Estás a " + xhr.responseText + " metros de la oficina.";
+            }else{
+                $('#confirmar')[0].innerHTML = "Estás en la sede.";
+            }
         }
     }
     xhr.send();
@@ -15,3 +21,24 @@ function CambioSede(elemento) {
 $('#id_sede').on('change', function (e) {
     CambioSede(e.target);
 })
+
+function Ubicacion() {
+    function success(position) {
+        $('#id_longitud')[0].value = position.coords.longitude;
+        $('#id_latitud')[0].value = position.coords.latitude;
+    }
+    
+    function error() {
+        $('#id_longitud')[0].value = 0;
+        $('#id_latitud')[0].value = 0;
+    }
+    
+    if(!navigator.geolocation) {
+        $('#id_longitud')[0].value = 0;
+        $('#id_latitud')[0].value = 0;
+    } else {
+        navigator.geolocation.getCurrentPosition(success, error);
+    }
+}
+
+Ubicacion();

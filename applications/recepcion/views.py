@@ -1,6 +1,7 @@
 from datetime import datetime, time
 
 from django.conf import settings
+from applications.funciones import consulta_distancia
 from applications.importaciones import *
 from applications.colaborador.models import DatosContratoHonorarios, DatosContratoPlanilla
 
@@ -313,20 +314,14 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
             return super().form_invalid(form)
         except:
             pass
-        buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
-        if not buscar_ip:
-            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
-            else:
-                form.add_error('sede', 'No hay IP registrada en esta sede.')
-                return super().form_invalid(form)
-
-        if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
-            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
-            else: 
-                form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
-                return super().form_invalid(form)
+        
+        longitud = form.cleaned_data['longitud']
+        latitud = form.cleaned_data['latitud']
+        sede = form.cleaned_data['sede']
+        
+        if float(consulta_distancia(longitud, latitud, sede.id)) > 10:
+            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+            return super().form_invalid(form)
 
         try:
             sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad

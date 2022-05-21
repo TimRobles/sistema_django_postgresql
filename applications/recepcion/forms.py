@@ -58,6 +58,8 @@ class VisitaBuscarForm(forms.Form):
 
 class AsistenciaForm(BSModalModelForm):
     sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
+    longitud = forms.FloatField(label='Longitud', required=False)
+    latitud = forms.FloatField(label='Latitud', required=False)
     class Meta:
         model = Asistencia
         fields=(
