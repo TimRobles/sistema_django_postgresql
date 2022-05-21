@@ -154,3 +154,7 @@ class RecuperarContrasenaView(FormView):
             return super(RecuperarContrasenaView, self).form_invalid(form)
 
         return super(RecuperarContrasenaView, self).form_valid(form)
+
+
+class PruebaGeolocalizacion(TemplateView):
+    template_name = "home/prueba geolocalizacion.html"

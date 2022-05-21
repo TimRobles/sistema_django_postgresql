@@ -4,6 +4,7 @@ from applications.home.views import (
     ConsultaRucView,
     PanelView,
     InicioView,
+    PruebaGeolocalizacion,
     UserLogoutView,
     OlvideContrasenaView,
     RecuperarContrasenaView
@@ -19,4 +20,5 @@ urlpatterns = [
     path('consulta-dni/<str:dni>/', ConsultaDniView, name='consulta_dni'),
     path('olvide-contraseña/', OlvideContrasenaView.as_view(), name='olvide_contraseña'),
     path('recuperar-contraseña/', RecuperarContrasenaView.as_view(), name='recuperar_contraseña'),
+    path('prueba-geolocalizacion', PruebaGeolocalizacion.as_view()),
 ]
