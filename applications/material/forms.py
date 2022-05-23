@@ -1,8 +1,7 @@
-from dataclasses import fields
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
-from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet
+from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet,ImagenMaterial,VideoMaterial
 
 class ClaseForm(forms.ModelForm):
     class Meta:
@@ -76,6 +75,7 @@ class SubFamiliaForm(forms.ModelForm):
         fields = (
             'nombre',
             'familia',
+            'unidad',
             )
 
     def clean(self):
@@ -297,5 +297,31 @@ class ProductoSunatForm(BSModalModelForm):
             self.fields['producto_sunat'].queryset = ProductoSunat.objects.filter(clase = clase_sunat.codigo)
             self.fields['producto_sunat'].initial = producto_sunat
         
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ImagenMaterialForm(BSModalModelForm):
+    class Meta:
+        model = ImagenMaterial
+        fields =(
+            'descripcion',
+            'imagen',
+        )
+    
+    def __init__(self, *args, **kwargs):
+        super(ImagenMaterialForm, self).__init__(*args, **kwargs)          
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class VideoMaterialForm(BSModalModelForm):
+    class Meta:
+        model = VideoMaterial
+        fields =(
+            'descripcion',
+            'url',
+        )
+    
+    def __init__(self, *args, **kwargs):
+        super(VideoMaterialForm, self).__init__(*args, **kwargs)          
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

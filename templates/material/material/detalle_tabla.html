@@ -21,7 +21,7 @@
                     {% if contexto_material.es_componente == True %}
                     <h6>Sí</h6>
                     {% else %}
-                    <h6>No</h6>
+
                     {% endif %}
                 </td>
                 <td class="text-center text-nowrap">
@@ -91,7 +91,7 @@
     <button data-form-url="{% url 'material_app:componente_registrar' contexto_material.id %}"
         data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
         class="create badge bg-primary">
-        Relacionar componentes
+        Relacionar Componentes
     </button>
     <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
@@ -205,7 +205,8 @@
             {% for datasheet in datasheets %}
             <tr>
                 <td>{{ datasheet.descripcion }}</td>
-                <td>{{ datasheet.archivo }}</td>
+                <td><a href="{{ MEDIA_URL }}{{ datasheet.archivo }}" target="_blank">Ver Archivo</a></td>
+
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'material_app:datasheet_actualizar' datasheet.id %}"
                         data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
@@ -224,6 +225,123 @@
                 </td>
             </tr>
             {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+<h3>Imagen
+    <button data-form-url="{% url 'material_app:imagen_material_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Relacionar Imagen
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>      
+                <th class="text-rigth">Descripción</th>
+                <th class="text-rigth">Imagen</th>
+                <th class="text-center">Acciones</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for imagen  in imagenes %}
+            <tr>
+                <td>{{ imagen.descripcion}}</td>
+                <td><a href="{{ MEDIA_URL }}{{ imagen.imagen}}" target="_blank">Ver Imagen</a></td>
+
+                <td class="text-center text-nowrap">
+                    {% if imagen.estado_alta_baja == 1 %}
+                        <button data-form-url="{% url 'material_app:imagen_material_baja' imagen.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'material_app:imagen_material_actualizar' imagen.id %}"
+                            data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        
+                    {% elif imagen.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'material_app:imagen_material_alta' imagen.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+                    
+                </td>
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+<h3>Video
+    <button data-form-url="{% url 'material_app:video_material_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Relacionar Video
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>      
+                <th class="text-rigth">Descripción</th>
+                <th class="text-rigth">Video</th>
+                <th class="text-center">Acciones</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for video  in videos %}
+            <tr>
+                <td>{{ video.descripcion}}</td>
+                <td><a href="{{ video.url}}" target="_blank" >Ver Video</a></td>
+
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:video_material_actualizar' video.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    {% if video.estado_alta_baja == 1 %}
+                        <button data-form-url="{% url 'material_app:video_material_baja' video.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% elif video.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'material_app:video_material_alta' video.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+                    
+                </td>
+            </tr>
+            {% endfor %}    
         </tbody>
     </table>
 </div>

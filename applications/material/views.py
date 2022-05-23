@@ -5,7 +5,9 @@ from django.shortcuts import render
 
 from .forms import (
     ModeloForm, MarcaForm,MaterialForm, 
-    RelacionMaterialComponenteForm,EspecificacionForm, DatasheetForm,DatosImportacionForm,ProductoSunatForm,
+    RelacionMaterialComponenteForm,EspecificacionForm, 
+    DatasheetForm,DatosImportacionForm,ProductoSunatForm,
+    ImagenMaterialForm,VideoMaterialForm,
     )
 from .models import (
     Modelo, 
@@ -15,6 +17,8 @@ from .models import (
     Especificacion,
     Datasheet,
     SubFamilia,
+    ImagenMaterial,
+    VideoMaterial,
     )
 
 class ModeloListView(PermissionRequiredMixin, ListView):
@@ -178,7 +182,6 @@ class MaterialCreateView(BSModalCreateView):
         context['titulo']="Material"
         return context
         
-
 class MaterialUpdateView(BSModalUpdateView):
     model = Material
     template_name = "material/material/form_material.html"
@@ -251,6 +254,8 @@ class MaterialDetailView(DetailView):
         context['componentes'] = RelacionMaterialComponente.objects.filter(material = material)
         context['especificaciones'] = Especificacion.objects.filter(material = material)
         context['datasheets'] = Datasheet.objects.filter(material = material)
+        context['imagenes'] = ImagenMaterial.objects.filter(material = material)
+        context['videos'] = VideoMaterial.objects.filter(material = material)
         return context
 
 def MaterialDetailTabla(request, pk):
@@ -263,6 +268,8 @@ def MaterialDetailTabla(request, pk):
         context['componentes'] = RelacionMaterialComponente.objects.filter(material = material)
         context['especificaciones'] = Especificacion.objects.filter(material = material)
         context['datasheets'] = Datasheet.objects.filter(material = material)
+        context['imagenes'] = ImagenMaterial.objects.filter(material = material)
+        context['videos'] = VideoMaterial.objects.filter(material = material)
 
         data['table'] = render_to_string(
             template,
@@ -270,6 +277,7 @@ def MaterialDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
 
 class ComponenteCreateView(BSModalCreateView):
     model = RelacionMaterialComponente
@@ -305,6 +313,11 @@ class ComponenteUpdateView(BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(ComponenteUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['componentes'] = self.object.material.subfamilia.componentes.all()
+        return kwargs
+
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -327,6 +340,7 @@ class ComponenteDeleteView(BSModalDeleteView):
         context['accion']="Eliminar"
         context['titulo']="Componente"
         return context
+
 
 class EspecificacionCreateView(BSModalCreateView):
     model = Especificacion
@@ -362,6 +376,11 @@ class EspecificacionUpdateView(BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(EspecificacionUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['atributos'] = self.object.material.subfamilia.familia.atributos.all()
+        return kwargs
+
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -384,6 +403,7 @@ class EspecificacionDeleteView(BSModalDeleteView):
         context['accion']="Eliminar"
         context['titulo']="Especificación"
         return context
+
 
 class DatasheetCreateView(BSModalCreateView):
     model = Datasheet
@@ -456,6 +476,7 @@ class DatosImportacionUpdateView(BSModalUpdateView):
         context['titulo']="Importaciones"
         return context
 
+
 class ProductoSunatUpdateView(BSModalUpdateView):
     model = Material
     template_name = "material/material/form_sunat.html"
@@ -498,7 +519,6 @@ def ProductoSunatView(request, id_clase):
     form.fields['producto'].queryset = ProductoSunat.objects.filter(clase = id_clase)
     return render(request, 'includes/form.html', context={'form':form})
 
-
 class SubfamiliaForm(forms.Form):
     subfamilia = forms.ModelChoiceField(queryset = SubFamilia.objects.all(), required=False, empty_label=None)
 
@@ -507,7 +527,6 @@ def SubfamiliaView(request, id_familia):
     form.fields['subfamilia'].queryset = SubFamilia.objects.filter(familia = id_familia)
     return render(request, 'includes/form.html', context={'form':form})
 
-
 class UnidadForm(forms.Form):
     unidad = forms.ModelChoiceField(queryset = Unidad.objects.all(), required=False, empty_label=None)
 
@@ -515,3 +534,179 @@ def UnidadView(request, id_subfamilia):
     form = UnidadForm()
     form.fields['unidad'].queryset = SubFamilia.objects.get(id = id_subfamilia).unidad.all()
     return render(request, 'includes/form.html', context={'form':form})
+
+
+class ImagenMaterialCreateView(BSModalCreateView):
+    model = ImagenMaterial
+    template_name = "includes/formulario generico.html"
+    form_class = ImagenMaterialForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
+
+    def form_valid(self, form):
+        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ImagenMaterialCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Imagen Material"
+        return context     
+
+class ImagenMaterialUpdateView(BSModalUpdateView):
+    model = ImagenMaterial
+    template_name = "includes/formulario generico.html"
+    form_class = ImagenMaterialForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ImagenMaterialUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Imagen"
+        return context
+
+class ImagenMaterialDarBaja(BSModalDeleteView):
+    model = ImagenMaterial
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado_alta_baja = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_DAR_BAJA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super( ImagenMaterialDarBaja, self).get_context_data(**kwargs)
+        context['accion'] = "Dar Baja"
+        context['titulo'] = "Imagen"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.descripcion
+        return context
+
+class ImagenMaterialDarAlta(BSModalDeleteView):
+    model = ImagenMaterial
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado_alta_baja = 1
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_DAR_ALTA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ImagenMaterialDarAlta, self).get_context_data(**kwargs)
+        context['accion']="Dar Alta"
+        context['titulo'] = "Imagen"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.descripcion
+        return context
+
+
+class VideoMaterialCreateView(BSModalCreateView):
+    model = VideoMaterial
+    template_name = "includes/formulario generico.html"
+    form_class = VideoMaterialForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
+
+    def form_valid(self, form):
+        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(VideoMaterialCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Video Material"
+        return context     
+
+class VideoMaterialUpdateView(BSModalUpdateView):
+    model = VideoMaterial
+    template_name = "includes/formulario generico.html"
+    form_class = VideoMaterialForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(VideoMaterialUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Video"
+        return context
+
+class VideoMaterialDarBaja(BSModalDeleteView):
+    model = VideoMaterial
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado_alta_baja = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_DAR_BAJA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super( VideoMaterialDarBaja, self).get_context_data(**kwargs)
+        context['accion'] = "Dar Baja"
+        context['titulo'] = "Video"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.descripcion
+        return context
+
+class VideoMaterialDarAlta(BSModalDeleteView):
+    model = VideoMaterial
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado_alta_baja = 1
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_DAR_ALTA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(VideoMaterialDarAlta, self).get_context_data(**kwargs)
+        context['accion']="Dar Alta"
+        context['titulo'] = "Video"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.descripcion
+        return context
+
+

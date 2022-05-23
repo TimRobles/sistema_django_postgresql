@@ -46,4 +46,14 @@ urlpatterns = [
     path('subfamilia/<str:id_familia>/', views.SubfamiliaView, name='subfamilia'),
     path('unidad/<str:id_subfamilia>/', views.UnidadView, name='unidad'),
 
+    path('imagen-material/registrar/<int:material_id>/', views.ImagenMaterialCreateView.as_view(), name='imagen_material_registrar'),
+    path('imagen-material/actualizar/<pk>/', views.ImagenMaterialUpdateView.as_view(), name='imagen_material_actualizar'),
+    path('imagen-material/baja/<pk>/', views.ImagenMaterialDarBaja.as_view(), name='imagen_material_baja'),
+    path('imagen-material/alta/<pk>/', views.ImagenMaterialDarAlta.as_view(), name='imagen_material_alta'),
+
+    path('video-material/registrar/<int:material_id>/', views.VideoMaterialCreateView.as_view(), name='video_material_registrar'),
+    path('video-material/actualizar/<pk>/', views.VideoMaterialUpdateView.as_view(), name='video_material_actualizar'),
+    path('video-material/baja/<pk>/', views.VideoMaterialDarBaja.as_view(), name='video_material_baja'),
+    path('video-material/alta/<pk>/', views.VideoMaterialDarAlta.as_view(), name='video_material_alta'),
+
 ]

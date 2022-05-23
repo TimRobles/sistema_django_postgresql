@@ -12,6 +12,7 @@ from .models import (
     Componente,
     Atributo,
     Familia,
+    ImagenMaterial,
     RelacionMaterialComponente,
     SubFamilia,
     Modelo,
@@ -19,6 +20,7 @@ from .models import (
     Material,
     Especificacion,
     Datasheet,
+    VideoMaterial,
 )
 
 class ClaseAdmin(admin.ModelAdmin):
@@ -124,6 +126,7 @@ class MaterialAdmin(admin.ModelAdmin):
         'descripcion_corta',
         'unidad_base',
         'marca',
+        'estado_alta_baja',
         )
 
     def save_model(self, request, obj, form, change):
@@ -131,6 +134,7 @@ class MaterialAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
 
 class RelacionMaterialComponenteAdmin(admin.ModelAdmin):
     list_display = (
@@ -175,6 +179,33 @@ class DatasheetAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class ImagenMaterialAdmin(admin.ModelAdmin):
+    list_display = (
+        'descripcion',
+        'imagen',
+        'material',
+        'estado_alta_baja',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class VideoMaterialAdmin(admin.ModelAdmin):
+    list_display = (
+        'descripcion',
+        'url',
+        'material',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 admin.site.register(Marca, MarcaAdmin)
 admin.site.register(Modelo, ModeloAdmin)
@@ -188,3 +219,5 @@ admin.site.register(Material, MaterialAdmin)
 admin.site.register(RelacionMaterialComponente,RelacionMaterialComponenteAdmin)
 admin.site.register(Especificacion,EspecificacionAdmin)
 admin.site.register(Datasheet,DatasheetAdmin)
+admin.site.register(ImagenMaterial,ImagenMaterialAdmin)
+admin.site.register(VideoMaterial,VideoMaterialAdmin)

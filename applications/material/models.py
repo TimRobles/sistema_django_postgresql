@@ -167,8 +167,8 @@ class RelacionMaterialComponente(models.Model):
 
 
     class Meta:
-        verbose_name = 'RelacionMaterialComponente'
-        verbose_name_plural = 'RelacionMaterialComponentes'
+        verbose_name = 'Relacion Material Componente'
+        verbose_name_plural = 'Relacion Material Componentes'
 
     def __str__(self):
         return self.material.__str__()
@@ -207,4 +207,43 @@ class Datasheet(models.Model):
 
     def __str__(self):
         return self.descripcion.__str__()
-     
+
+class ImagenMaterial(models.Model):
+    descripcion = models.CharField('Descripción imagen material', max_length=200)
+    imagen = models.ImageField('Imagen material', upload_to='img/material/imagen/', height_field=None, width_field=None, max_length=None)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ImagenMaterial_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ImagenMaterial_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Imagen Material'
+        verbose_name_plural = 'Imagen Materiales'
+        ordering = ['estado_alta_baja']
+
+    def __str__(self):
+        return self.descripcion.__str__()
+
+class VideoMaterial(models.Model):
+    descripcion = models.CharField('Descripción video material', max_length=200)
+    url = models.URLField('URL video material')
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='VideoMaterial_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='VideoMaterial_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Video Material'
+        verbose_name_plural = 'Video Materiales'
+        ordering = ['estado_alta_baja']
+
+
+    def __str__(self):
+        return self.descripcion.__str__()
+
