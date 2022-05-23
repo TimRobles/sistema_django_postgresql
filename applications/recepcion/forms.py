@@ -1,6 +1,7 @@
 from dataclasses import fields
 from datetime import date
 from django import forms
+from django.contrib.auth import get_user_model
 
 from applications.sede.models import Sede
 
@@ -31,6 +32,7 @@ class VisitaForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(VisitaForm, self).__init__(*args, **kwargs)
+        self.fields['usuario_atendio'].queryset = get_user_model().objects.filter(is_active=1)
         self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

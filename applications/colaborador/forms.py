@@ -1,5 +1,8 @@
 from datetime import date
 from django import forms
+from django.contrib.auth import get_user_model
+
+from applications.sociedad.models import Sociedad
 
 from .models import DatosContratoPlanilla, DatosContratoHonorarios
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
@@ -27,10 +30,12 @@ class DatosContratoPlanillaForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 
                 ),
-        }
+            }
 
     def __init__(self, *args, **kwargs):
-        super(DatosContratoPlanillaForm, self).__init__(*args, **kwargs)          
+        super(DatosContratoPlanillaForm, self).__init__(*args, **kwargs)
+        self.fields['usuario'].queryset = get_user_model().objects.filter(is_active=1)      
+        self.fields['sociedad'].queryset = Sociedad.objects.filter(estado_sunat=1)    
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['asignacion_familiar'].widget.attrs['class'] = 'form-check-input'
@@ -55,7 +60,7 @@ class DatosContratoActualizarPlanillaForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 
                 ),
-        }
+            }
 
     def __init__(self, *args, **kwargs):
         super(DatosContratoActualizarPlanillaForm, self).__init__(*args, **kwargs)          
@@ -76,8 +81,7 @@ class DatosContratoPlanillaDarBajaForm(BSModalModelForm):
                     },
                 format = '%Y-%m-%d',
                 ), 
-        }
-
+            }
 
     def clean_fecha_baja(self):
         fecha_baja = self.cleaned_data.get('fecha_baja')
@@ -103,7 +107,6 @@ class DatosContratoPlanillaDarBajaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-
 class DatosContratoHonorariosForm(BSModalModelForm):
     class Meta:
         model = DatosContratoHonorarios
@@ -127,10 +130,12 @@ class DatosContratoHonorariosForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 
                 ),
-        }
+            }
 
     def __init__(self, *args, **kwargs):
-        super(DatosContratoHonorariosForm, self).__init__(*args, **kwargs)          
+        super(DatosContratoHonorariosForm, self).__init__(*args, **kwargs)
+        self.fields['usuario'].queryset = get_user_model().objects.filter(is_active=1)
+        self.fields['sociedad'].queryset = Sociedad.objects.filter(estado_sunat=1)           
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['suspension_cuarta'].widget.attrs['class'] = 'form-check-input'
@@ -156,7 +161,7 @@ class DatosContratoActualizarHonorariosForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 
                 ),
-        }
+            }
 
     def __init__(self, *args, **kwargs):
         super(DatosContratoActualizarHonorariosForm, self).__init__(*args, **kwargs)          
@@ -177,14 +182,12 @@ class DatosContratoHonorariosDarBajaForm(BSModalModelForm):
                     },
                 format = '%Y-%m-%d',
                 ), 
-        }
-
+            }
 
     def clean_fecha_baja(self):
         fecha_baja = self.cleaned_data.get('fecha_baja')
         fecha_alta = self.instance.fecha_alta
 
-        
         if fecha_baja == None:
             texto = 'Ingresar fecha de baja.'
             self.add_error('fecha_baja', texto)

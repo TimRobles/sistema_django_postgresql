@@ -1,7 +1,8 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from applications.sociedad.models import Sociedad
 from .models import Sede
 from applications.datos_globales.models import Provincia, Distrito, Departamento
-
 from bootstrap_modal_forms.forms import  BSModalModelForm
 
 class SedeCreateForm(BSModalModelForm):
@@ -26,6 +27,8 @@ class SedeCreateForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SedeCreateForm, self).__init__(*args, **kwargs)
+        self.fields['usuario_responsable'].queryset = get_user_model().objects.filter(is_active=1)  
+        self.fields['sociedad'].queryset = Sociedad.objects.filter(estado_sunat=1) 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['sociedad'].widget.attrs['class'] = 'nobull'
@@ -47,6 +50,7 @@ class SedeUpdateForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SedeUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['usuario_responsable'].queryset = get_user_model().objects.filter(is_active=1) 
         ubigeo = self.instance.ubigeo
         self.fields['departamento_buscar'].initial = ubigeo[:2]
         self.fields['provincia_buscar'].initial = ubigeo[:4]
