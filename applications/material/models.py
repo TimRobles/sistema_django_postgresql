@@ -147,6 +147,9 @@ class Material(models.Model):
     class Meta:
         verbose_name = 'Material'
         verbose_name_plural = 'Materiales'
+        ordering = [
+        'descripcion_venta',
+        ]
 
     def __str__(self):
 

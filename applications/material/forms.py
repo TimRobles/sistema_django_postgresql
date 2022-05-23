@@ -135,7 +135,8 @@ class MarcaForm(BSModalModelForm):
         self.fields['modelos'].widget.attrs['class'] = 'nobull'
 
 class MaterialForm(BSModalModelForm):
-    familia = forms.ModelChoiceField(queryset=Familia.objects.all())
+    familia = forms.ModelChoiceField(label = 'Familia', queryset = Familia.objects.all(), required=False)
+    
     class Meta:
         model = Material
         fields=(
@@ -154,10 +155,30 @@ class MaterialForm(BSModalModelForm):
             'mostrar',
             )
 
+    def clean_familia(self):
+        familia = self.cleaned_data.get('familia')
+        subfamilia = self.fields['subfamilia']
+        subfamilia.queryset = SubFamilia.objects.filter(familia = familia)   
+        return familia
+    
+    def clean_subfamilia(self):
+        subfamilia = self.cleaned_data.get('subfamilia')
+        unidad= self.fields['unidad_base']
+        unidad.queryset = subfamilia.unidad.all()
+        return subfamilia
+
     def __init__(self, *args, **kwargs):
-        super(MaterialForm, self).__init__(*args, **kwargs)          
+        super(MaterialForm, self).__init__(*args, **kwargs)
         self.fields['subfamilia'].queryset = SubFamilia.objects.none()
         self.fields['unidad_base'].queryset = Unidad.objects.none()
+        try:
+            subfamilia = self.instance.subfamilia 
+            familia = subfamilia.familia
+            self.fields['familia'].initial = familia
+            self.fields['subfamilia'].queryset = SubFamilia.objects.filter(familia = familia)
+            self.fields['unidad_base'].queryset = subfamilia.unidad.all()
+        except:
+            pass
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['control_serie'].widget.attrs['class'] = 'form-check-input'

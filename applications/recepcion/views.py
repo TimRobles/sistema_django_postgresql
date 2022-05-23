@@ -319,8 +319,8 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
         latitud = form.cleaned_data['latitud']
         sede = form.cleaned_data['sede']
         
-        if int(consulta_distancia(longitud, latitud, sede.id)) > sede.distancia:
-            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+        if consulta_distancia(longitud, latitud, sede.id) != "Estás en la oficina":
+            form.add_error('sede', 'No estás en la oficina, no seas sapo.')
             return super().form_invalid(form)
 
         try:
@@ -355,8 +355,8 @@ class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpda
         latitud = form.cleaned_data['latitud']
         sede = form.cleaned_data['sede']
         
-        if int(consulta_distancia(longitud, latitud, sede.id)) > sede.distancia:
-            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+        if consulta_distancia(longitud, latitud, sede.id) != "Estás en la oficina":
+            form.add_error('sede', 'No estás en la oficina, no seas sapo.')
             return super().form_invalid(form)
 
         hour = datetime.now()     
