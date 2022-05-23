@@ -319,7 +319,7 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
         latitud = form.cleaned_data['latitud']
         sede = form.cleaned_data['sede']
         
-        if float(consulta_distancia(longitud, latitud, sede.id)) > 10:
+        if int(consulta_distancia(longitud, latitud, sede.id)) > sede.distancia:
             form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
             return super().form_invalid(form)
 
@@ -350,27 +350,20 @@ class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpda
 
     def form_valid(self, form):
         self.object = self.get_object()
+
+        longitud = form.cleaned_data['longitud']
+        latitud = form.cleaned_data['latitud']
+        sede = form.cleaned_data['sede']
+        
+        if int(consulta_distancia(longitud, latitud, sede.id)) > sede.distancia:
+            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+            return super().form_invalid(form)
+
         hour = datetime.now()     
         self.object.hora_salida = hour.strftime("%H:%M") 
         registro_guardar(self.object, self.request)
         self.object.save()
-
-        buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
-        if not buscar_ip:
-            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
-            else:
-                form.add_error('sede', 'No hay IP registrada en esta sede.')
-                return super().form_invalid(form)
-
-        if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
-            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'], created_by = self.request.user, updated_by = self.request.user)
-            else: 
-                form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
-                return super().form_invalid(form)
-
-
+        
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
