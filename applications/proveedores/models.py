@@ -19,7 +19,7 @@ class Proveedor(models.Model):
 
         verbose_name = 'Proveedor'
         verbose_name_plural = 'Proveedores'
-        ordering = ['nombre',]
+        ordering = ['estado', 'nombre',]
 
     def __str__(self):
         return self.nombre
@@ -55,6 +55,7 @@ class ProveedorInterlocutor(models.Model):
 
         verbose_name = 'Proveedor Interlocutor'
         verbose_name_plural = 'Proveedor Interlocutores'
+        ordering = ['estado', '-interlocutor',]
 
     def __str__(self):
         return str(self.interlocutor)
@@ -74,6 +75,7 @@ class TelefonoInterlocutorProveedor(models.Model):
 
         verbose_name = 'Telefono Interlocutor Proveedor'
         verbose_name_plural = 'Telefonos Interlocutores Proveedor'
+        ordering = ['estado', '-fecha_baja',]
 
     def __str__(self):
         return str(self.interlocutor)
@@ -93,6 +95,7 @@ class CorreoInterlocutorProveedor(models.Model):
 
         verbose_name = 'Correo Interlocutor Proveedor'
         verbose_name_plural = 'Correos Interlocutores Proveedor'
+        ordering = ['estado', '-fecha_baja',]
 
     def __str__(self):
         return str(self.interlocutor)

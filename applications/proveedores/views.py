@@ -200,7 +200,7 @@ class InterlocutorProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView
     form_class = InterlocutorProveedorUpdateForm
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('home_app:home')
+        return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.kwargs['proveedor_id']})
 
     def get_context_data(self, **kwargs):
         context = super(InterlocutorProveedorUpdateView, self).get_context_data(**kwargs)
@@ -248,7 +248,7 @@ class InterlocutorProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteVie
     success_url = reverse_lazy()
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('home_app:home')
+        return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.object.proveedor.id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -328,7 +328,7 @@ class TelefonoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView)
     form_class = TelefonoInterlocutorForm
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('home_app:home')
+        return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
 
     def get_context_data(self, **kwargs):
         context = super(TelefonoInterlocutorUpdateView, self).get_context_data(**kwargs)
@@ -394,7 +394,7 @@ class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     form_class = CorreoInterlocutorForm
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('home_app:home')
+        return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
 
     def get_context_data(self, **kwargs):
         context = super(CorreoInterlocutorUpdateView, self).get_context_data(**kwargs)
