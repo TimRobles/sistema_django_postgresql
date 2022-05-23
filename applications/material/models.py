@@ -1,7 +1,8 @@
+from applications.variables import ESTADOS
 from django.db import models
 from django.conf import settings
 
-from applications.datos_globales.models import Unidad
+from applications.datos_globales.models import Unidad,ProductoSunat
 
 class Clase(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -114,3 +115,93 @@ class Marca(models.Model):
 
     def __str__(self):
         return self.nombre
+
+class Material(models.Model):
+    descripcion_venta = models.CharField('Descripción Venta', max_length=500)
+    descripcion_corta = models.CharField('Descripción Corta', max_length=150)
+    unidad_base = models.ForeignKey(Unidad, on_delete=models.PROTECT, related_name='Material_unidad_base')
+    peso_unidad_base = models.DecimalField('Peso Unidad Base', max_digits=6, decimal_places=2)
+    marca = models.ForeignKey(Marca, on_delete=models.PROTECT, related_name='Material_marca')
+    modelo = models.ForeignKey(Modelo, on_delete=models.PROTECT, related_name='Material_modelo')
+    subfamilia = models.ForeignKey(SubFamilia, on_delete=models.PROTECT, related_name='Material_subfamilia')
+    clase = models.ForeignKey(Clase, on_delete=models.PROTECT, related_name='Material_clase',blank=True,null=True)
+    producto_sunat = models.ForeignKey(ProductoSunat, on_delete=models.PROTECT, related_name='Material_producto_sunat', blank=True,null=True)
+    control_serie = models.BooleanField('Control Serie',default=False)
+    control_lote = models.BooleanField('Control Lote',default=False)
+    control_calidad = models.BooleanField('Control Calidad',default=False)
+    estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
+    mostrar = models.BooleanField('Mostrar',default=False)
+    traduccion = models.CharField('Traducción', max_length=255, blank=True)
+    partida =  models.CharField('Partida', max_length=30,blank=True)
+    uso_funcion =  models.CharField('Uso función', max_length=500,blank=True)
+    compuesto_por =  models.CharField('Compuesto por', max_length=255,blank=True)
+    es_componente = models.BooleanField('Es componente',default=False)
+    atributo = models.ManyToManyField(Atributo,verbose_name='Atributo',related_name='Material_atributo',blank=True)
+    componente = models.ManyToManyField(Componente,verbose_name='Componente',related_name='Material_componente', blank=True, through='material.RelacionMaterialComponente')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Material_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Material_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Material'
+        verbose_name_plural = 'Materiales'
+
+    def __str__(self):
+
+        return self.descripcion_venta
+
+class RelacionMaterialComponente(models.Model):
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    componentematerial = models.ForeignKey(Componente,verbose_name='Componente material', on_delete=models.CASCADE)
+    cantidad = models.IntegerField('Cantidad')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RelacionMaterialComponente_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RelacionMaterialComponente_updated_by', editable=False)
+
+
+    class Meta:
+        verbose_name = 'RelacionMaterialComponente'
+        verbose_name_plural = 'RelacionMaterialComponentes'
+
+    def __str__(self):
+        return self.material.__str__()
+
+class Especificacion(models.Model):
+    orden = models.IntegerField('Orden')
+    atributomaterial = models.ForeignKey(Atributo,verbose_name='Atributo material', on_delete=models.CASCADE)
+    valor = models.CharField('Valor', max_length=100)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Especificacion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Especificacion_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Especificacion'
+        verbose_name_plural = 'Especificaciones'
+
+    def __str__(self):
+        return self.material.__str__()
+
+class Datasheet(models.Model):
+    descripcion = models.CharField('Descripción', max_length=200)
+    archivo = models.FileField('Archivo',upload_to = 'file/materiales/archivo_datasheet/', max_length=100, blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Datasheet_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Datasheet_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Datasheet'
+        verbose_name_plural = 'Datasheets'
+
+    def __str__(self):
+        return self.descripcion.__str__()
+     

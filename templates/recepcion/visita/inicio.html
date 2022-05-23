@@ -23,9 +23,7 @@
                 data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
                 {% endif %}
                 >
-                {% if 'Boton' not in field.label %}
                 <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {% endif %}
                 {{ field }}
                 </div>
                 {% for error in field.errors %}

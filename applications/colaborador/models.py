@@ -17,7 +17,7 @@ class DatosContratoPlanilla(models.Model):
     fecha_alta = models.DateField('Fecha de Alta', auto_now=False, auto_now_add=False)
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     sueldo_bruto = models.DecimalField('Sueldo Bruto', max_digits=7, decimal_places=2)
-    movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, blank=True, null=True)
+    movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=0.00)
     asignacion_familiar = models.BooleanField('Asignación familiar', default=False)
     archivo_contrato = models.FileField('Archivo Contrato',upload_to = 'file/colaboradores/archivo_contrato/', max_length=100, blank=True, null=True)
     cargo = models.ForeignKey(Cargo, on_delete=models.PROTECT)  
@@ -65,8 +65,8 @@ class DatosContratoHonorarios(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='DatosContratoHonorarios_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'Datos de Contrato de Honorarios'
-        verbose_name_plural = 'Datos de Contratos de Honorarios'
+        verbose_name = 'Datos de Contrato por Honorarios'
+        verbose_name_plural = 'Datos de Contratos por Honorarios'
         ordering = [
             '-fecha_alta',
         ]

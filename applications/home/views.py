@@ -1,6 +1,6 @@
 from applications.importaciones import *
 from django.utils.crypto import get_random_string
-from applications.funciones import consulta_dni, consulta_ruc
+from applications.funciones import consulta_distancia, consulta_dni, consulta_ruc
 from .forms import UserLoginForm
 from .forms import OlvideContrasenaForm
 from .forms import RecuperarContrasenaForm
@@ -120,7 +120,6 @@ class OlvideContrasenaView(FormView):
 
         return super(OlvideContrasenaView, self).form_valid(form)
 
-
 class RecuperarContrasenaView(FormView):
     template_name = "home/recuperar contraseña.html"
     form_class = RecuperarContrasenaForm
@@ -155,3 +154,13 @@ class RecuperarContrasenaView(FormView):
             return super(RecuperarContrasenaView, self).form_invalid(form)
 
         return super(RecuperarContrasenaView, self).form_valid(form)
+
+
+class PruebaGeolocalizacion(TemplateView):
+    template_name = "home/prueba geolocalizacion.html"
+
+
+def DistanciaGeoLocalizacion(request, longitud, latitud, sede_id):
+    if request.method == 'GET':
+        distancia = consulta_distancia(longitud, latitud, sede_id)
+        return HttpResponse(distancia)

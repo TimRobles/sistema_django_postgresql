@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import (
+    GeoLocalizacion,
     Visita,
     Asistencia,
     ResponsableAsistencia,
@@ -86,10 +87,29 @@ class IpPublicaAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class GeoLocalizacionAdmin(admin.ModelAdmin):
+    list_display = (
+        'longitud',
+        'latitud',
+        'distancia',
+        'sede',
+        'created_at',
+        'created_by',
+        )
+
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
 
 
 admin.site.register(Visita, VisitaAdmin)
 admin.site.register(Asistencia, AsistenciaAdmin)
 admin.site.register(ResponsableAsistencia, ResponsableAsistenciaAdmin)
 admin.site.register(IpPublica, IpPublicaAdmin)
+admin.site.register(GeoLocalizacion, GeoLocalizacionAdmin)
 

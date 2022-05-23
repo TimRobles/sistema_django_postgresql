@@ -1,6 +1,7 @@
 from datetime import datetime, time
 
 from django.conf import settings
+from applications.funciones import consulta_distancia
 from applications.importaciones import *
 from applications.colaborador.models import DatosContratoHonorarios, DatosContratoPlanilla
 
@@ -211,6 +212,13 @@ class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     form_class = AsistenciaPersonalBuscarForm
     success_url = '.'
 
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.user.is_anonymous:
+            return self.handle_no_permission()
+        if len(ResponsableAsistencia.objects.filter(usuario_responsable = self.request.user)) == 0:
+            return self.handle_no_permission()
+        return super(AsistenciaPersonalView, self).dispatch(request, *args, **kwargs)    
+    
     def get_form_kwargs(self):
         kwargs = super(AsistenciaPersonalView, self).get_form_kwargs()
         kwargs['filtro_nombre'] = self.request.GET.get('nombre')
@@ -283,7 +291,9 @@ def AsistenciaPersonalTabla(request):
         )
         return JsonResponse(data)
 
-class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
+class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('recepcion.add_asistencia')
+
     model = Asistencia
     template_name = "recepcion/asistencia/asistencia.html"
     form_class = AsistenciaForm
@@ -304,32 +314,35 @@ class AsistenciaPersonalCreateView(LoginRequiredMixin, BSModalCreateView):
             return super().form_invalid(form)
         except:
             pass
-        buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
-        if not buscar_ip:
-            form.add_error('sede', 'No hay IP registrada en esta sede.')
+        
+        longitud = form.cleaned_data['longitud']
+        latitud = form.cleaned_data['latitud']
+        sede = form.cleaned_data['sede']
+        
+        if int(consulta_distancia(longitud, latitud, sede.id)) > sede.distancia:
+            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
             return super().form_invalid(form)
-
-        if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
-            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'])
-            else: 
-                form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
-                return super().form_invalid(form)
 
         try:
             sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad
+    
         except:
             try:
                 sociedad = DatosContratoHonorarios.objects.get(usuario = form.instance.usuario).sociedad
+
             except:
                 sociedad = None
+                form.add_error('usuario', 'Este usuario no tiene contrato vigente.')
+                return super().form_invalid(form)
 
         form.instance.sociedad = sociedad
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
 
-class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin,BSModalUpdateView):
+class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('recepcion.change_asistencia')
+
     model = Asistencia
     template_name = "recepcion/asistencia/asistencia.html"
     form_class = AsistenciaSalidaForm
@@ -337,24 +350,20 @@ class AsistenciaPersonalRegistrarSalidaView(LoginRequiredMixin,BSModalUpdateView
 
     def form_valid(self, form):
         self.object = self.get_object()
+
+        longitud = form.cleaned_data['longitud']
+        latitud = form.cleaned_data['latitud']
+        sede = form.cleaned_data['sede']
+        
+        if int(consulta_distancia(longitud, latitud, sede.id)) > sede.distancia:
+            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+            return super().form_invalid(form)
+
         hour = datetime.now()     
         self.object.hora_salida = hour.strftime("%H:%M") 
         registro_guardar(self.object, self.request)
         self.object.save()
-
-        buscar_ip = IpPublica.objects.filter(sede = form.cleaned_data['sede'])
-        if not buscar_ip:
-            form.add_error('sede', 'No hay IP registrada en esta sede.')
-            return super().form_invalid(form)
-
-        if buscar_ip.latest('created_at').ip != self.request.META[settings.BUSCAR_IP]:
-            if self.request.user.ResponsableAsistencia_usuario_responsable.all()[0].permiso_cambio_ip:
-                IpPublica.objects.create(ip = self.request.META[settings.BUSCAR_IP], sede = form.cleaned_data['sede'])
-            else: 
-                form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
-                return super().form_invalid(form)
-
-
+        
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):

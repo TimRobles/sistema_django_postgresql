@@ -3,6 +3,8 @@
         <tr>
             <th>Nombre</th>
             <th>Número de Documento</th>
+            <th>Sede</th>
+            <th>Usuario que lo atendió</th>
             <th>Motivo de Visita</th>
             <th>Hora de Ingreso</th>
             <th>Hora de Salida</th>
@@ -14,9 +16,11 @@
     <tbody>
         {% for visita in contexto_visita %}
         <tr>
-            <td>{{ visita.nombre }}</td>
+            <td class="text-nowrap">{{ visita.nombre }}</td>
             <td>{{ visita.numero_documento }}</td>
-            <td>{{ visita.motivo_visita }}</td>
+            <td class="text-nowrap">{{ visita.sede }}</td>
+            <td>{{ visita.usuario_atendio }}</td>
+            <td class="text-nowrap">{{ visita.motivo_visita }}</td>
             <td>{{ visita.hora_ingreso }}</td>
             <td>
                 
@@ -26,7 +30,7 @@
                 {% endif %}
                     
             </td>
-            <td>
+            <td class="text-nowrap">
                 
                 {% if visita.empresa_cliente %}
                 {{ visita.empresa_cliente }}

@@ -18,7 +18,9 @@ from .models import (
     DatosContratoHonorarios,
     )
 
-class DatosContratoPlanillaListView(ListView):
+class DatosContratoPlanillaListView(PermissionRequiredMixin,ListView):
+    permission_required = ('colaborador.view_datoscontratoplanilla')
+    
     model = DatosContratoPlanilla
     template_name = "colaborador/datos_contrato/planilla/inicio.html"
     context_object_name = 'contexto_datoscontratoplanilla'
@@ -43,7 +45,9 @@ def DatosContratoPlanillaTabla(request):
         )
         return JsonResponse(data)
 
-class DatosContratoPlanillaCreateView(BSModalCreateView):
+class DatosContratoPlanillaCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('colaborador.add_datoscontratoplanilla')
+
     model = DatosContratoPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoPlanillaForm
@@ -77,7 +81,9 @@ class DatosContratoPlanillaCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class DatosContratoPlanillaUpdateView(BSModalUpdateView):
+class DatosContratoPlanillaUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('colaborador.change_datoscontratoplanilla')
+ 
     model = DatosContratoPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoActualizarPlanillaForm
@@ -95,7 +101,9 @@ class DatosContratoPlanillaUpdateView(BSModalUpdateView):
         context['titulo'] = 'Contrato por Planilla'
         return context
 
-class DatosContratoPlanillaDarBajaView(BSModalUpdateView):
+class DatosContratoPlanillaDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('colaborador.change_datoscontratoplanilla')
+
     model = DatosContratoPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoPlanillaDarBajaForm
@@ -112,8 +120,11 @@ class DatosContratoPlanillaDarBajaView(BSModalUpdateView):
         context['accion'] = 'Dar de Baja'
         context['titulo'] = 'al contrato planilla'
         return context
-    
-class DatosContratoHonorariosListView(ListView):
+
+
+class DatosContratoHonorariosListView(PermissionRequiredMixin, ListView):
+    permission_required = ('colaborador.view_datoscontratohonorarios')
+
     model = DatosContratoHonorarios
     template_name = "colaborador/datos_contrato/honorarios/inicio.html"
     context_object_name = 'contexto_datoscontratohonorarios'
@@ -138,7 +149,9 @@ def DatosContratoHonorariosTabla(request):
         )
         return JsonResponse(data)
 
-class DatosContratoHonorariosCreateView(BSModalCreateView):
+class DatosContratoHonorariosCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('colaborador.add_datoscontratohonorarios')
+
     model = DatosContratoHonorarios
     template_name = "colaborador/datos_contrato/honorarios/form.html"
     form_class = DatosContratoHonorariosForm
@@ -175,7 +188,9 @@ class DatosContratoHonorariosCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class DatosContratoHonorariosUpdateView(BSModalUpdateView):
+class DatosContratoHonorariosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('colaborador.change_datoscontratohonorarios')
+
     model = DatosContratoHonorarios
     template_name = "colaborador/datos_contrato/honorarios/form.html"
     form_class = DatosContratoActualizarHonorariosForm
@@ -196,7 +211,9 @@ class DatosContratoHonorariosUpdateView(BSModalUpdateView):
         context['titulo'] = 'Contrato por Honorarios'
         return context
 
-class DatosContratoHonorariosDarBajaView(BSModalUpdateView):
+class DatosContratoHonorariosDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('colaborador.change_datoscontratohonorarios')
+
     model = DatosContratoHonorarios
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoHonorariosDarBajaForm

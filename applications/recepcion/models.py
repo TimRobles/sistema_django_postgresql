@@ -10,6 +10,7 @@ class Visita(models.Model):
     nombre = models.CharField('Nombre Completo', max_length=50)
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)    
     numero_documento = models.CharField('Número de Documento', max_length=15)
+    sede = models.ForeignKey(Sede, on_delete=models.PROTECT)
     usuario_atendio = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='Usuario_Atendio')
     motivo_visita = models.CharField('Motivo de Visita', max_length=50)
     hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True)
@@ -25,7 +26,12 @@ class Visita(models.Model):
 
         verbose_name = 'Visita'
         verbose_name_plural = 'Visitas'
-        ordering = [ '-fecha_registro', '-hora_salida', '-hora_ingreso', 'nombre']
+        ordering = [
+            '-fecha_registro',
+            '-hora_salida',
+            '-hora_ingreso',
+            'nombre'
+            ]
 
     def save(self):
         self.nombre = self.nombre.upper()
@@ -52,8 +58,10 @@ class Asistencia(models.Model):
         verbose_name = 'Asistencia'
         verbose_name_plural = 'Asistencias'
         ordering = [
-            '-hora_ingreso',
+            '-fecha_registro',
             '-hora_salida',
+            '-hora_ingreso',
+            'usuario',
         ]
 
         constraints = [
@@ -80,8 +88,8 @@ class ResponsableAsistencia(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ResponsableAsistencia_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'ResponsableAsistencia'
-        verbose_name_plural = 'ResponsableAsistencias'
+        verbose_name = 'Responsable Asistencia'
+        verbose_name_plural = 'Responsable Asistencias'
 
     def __str__(self):
         return str(self.usuario_responsable)
@@ -98,11 +106,32 @@ class IpPublica(models.Model):
 
 
     class Meta:
-        verbose_name = 'IpPublica'
-        verbose_name_plural = 'IpPublicas'
+        verbose_name = 'Ip Publica'
+        verbose_name_plural = 'Ip Publicas'
 
 
     def __str__(self):
         return str(self.ip)
+
+
+class GeoLocalizacion(models.Model):
+    longitud = models.DecimalField('Longitud', max_digits=22, decimal_places=16)
+    latitud = models.DecimalField('Latitud', max_digits=22, decimal_places=16)
+    sede = models.ForeignKey(Sede, on_delete=models.PROTECT)
+    distancia = models.IntegerField()
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='GeoLocalizacion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='GeoLocalizacion_updated_by', editable=False)
+
+
+    class Meta:
+        verbose_name = 'Geo Localización'
+        verbose_name_plural = 'Geo Localizaciones'
+
+
+    def __str__(self):
+        return str(self.longitud) + ', ' + str(self.latitud)
 
 
