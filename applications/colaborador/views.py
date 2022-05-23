@@ -3,6 +3,8 @@ from applications.importaciones import *
 
 from datetime import datetime, time
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
+from django.shortcuts import render
+
 
 from .forms import (
     DatosContratoPlanillaForm,
@@ -47,11 +49,15 @@ def DatosContratoPlanillaTabla(request):
 
 class DatosContratoPlanillaCreateView(PermissionRequiredMixin,BSModalCreateView):
     permission_required = ('colaborador.add_datoscontratoplanilla')
-
     model = DatosContratoPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoPlanillaForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_planilla_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_context_data(self, **kwargs):
         context = super(DatosContratoPlanillaCreateView, self).get_context_data(**kwargs)
@@ -83,11 +89,15 @@ class DatosContratoPlanillaCreateView(PermissionRequiredMixin,BSModalCreateView)
 
 class DatosContratoPlanillaUpdateView(PermissionRequiredMixin,BSModalUpdateView):
     permission_required = ('colaborador.change_datoscontratoplanilla')
- 
     model = DatosContratoPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoActualizarPlanillaForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_planilla_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def form_valid(self, form):
         form.instance.estado_alta_baja = 1
@@ -103,11 +113,15 @@ class DatosContratoPlanillaUpdateView(PermissionRequiredMixin,BSModalUpdateView)
 
 class DatosContratoPlanillaDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('colaborador.change_datoscontratoplanilla')
-
     model = DatosContratoPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoPlanillaDarBajaForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_planilla_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def form_valid(self, form):
         form.instance.estado_alta_baja = 2
@@ -124,7 +138,6 @@ class DatosContratoPlanillaDarBajaView(PermissionRequiredMixin, BSModalUpdateVie
 
 class DatosContratoHonorariosListView(PermissionRequiredMixin, ListView):
     permission_required = ('colaborador.view_datoscontratohonorarios')
-
     model = DatosContratoHonorarios
     template_name = "colaborador/datos_contrato/honorarios/inicio.html"
     context_object_name = 'contexto_datoscontratohonorarios'
@@ -151,11 +164,15 @@ def DatosContratoHonorariosTabla(request):
 
 class DatosContratoHonorariosCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('colaborador.add_datoscontratohonorarios')
-
     model = DatosContratoHonorarios
     template_name = "colaborador/datos_contrato/honorarios/form.html"
     form_class = DatosContratoHonorariosForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_honorarios_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_context_data(self, **kwargs):
         context = super(DatosContratoHonorariosCreateView, self).get_context_data(**kwargs)
@@ -190,19 +207,21 @@ class DatosContratoHonorariosCreateView(PermissionRequiredMixin, BSModalCreateVi
 
 class DatosContratoHonorariosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('colaborador.change_datoscontratohonorarios')
-
     model = DatosContratoHonorarios
     template_name = "colaborador/datos_contrato/honorarios/form.html"
     form_class = DatosContratoActualizarHonorariosForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_honorarios_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def form_valid(self, form):
         if not form.instance.suspension_cuarta:
             form.instance.archivo_suspension_cuarta = None
-
         form.instance.estado_alta_baja = 1
         registro_guardar(form.instance, self.request)
-        
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
@@ -213,16 +232,19 @@ class DatosContratoHonorariosUpdateView(PermissionRequiredMixin, BSModalUpdateVi
 
 class DatosContratoHonorariosDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('colaborador.change_datoscontratohonorarios')
-
     model = DatosContratoHonorarios
     template_name = "includes/formulario generico.html"
     form_class = DatosContratoHonorariosDarBajaForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_honorarios_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def form_valid(self, form):
         form.instance.estado_alta_baja = 2
         registro_guardar(form.instance, self.request)
-        
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):

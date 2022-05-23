@@ -259,12 +259,6 @@
 
                 <td class="text-center text-nowrap">
                     {% if imagen.estado_alta_baja == 1 %}
-                        <button data-form-url="{% url 'material_app:imagen_material_baja' imagen.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
-                            <i class="bi bi-hand-thumbs-down-fill"></i>
-                        </button>
-
                         <button data-form-url="{% url 'material_app:imagen_material_actualizar' imagen.id %}"
                             data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
                             data-keep-open="true"
@@ -272,7 +266,12 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        
+
+                        <button data-form-url="{% url 'material_app:imagen_material_baja' imagen.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
                     {% elif imagen.estado_alta_baja == 2 %}
                         <button data-form-url="{% url 'material_app:imagen_material_alta' imagen.id %}"
                             class="delete btn btn-success btn-sm"

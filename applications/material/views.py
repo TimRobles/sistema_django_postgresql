@@ -49,6 +49,11 @@ class ModeloCreateView(PermissionRequiredMixin, BSModalCreateView):
     form_class = ModeloForm 
     success_url = reverse_lazy('material_app:modelo_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
     def get_context_data(self, **kwargs):
         context = super(ModeloCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
@@ -64,11 +69,15 @@ class ModeloCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 class ModeloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('material.change_modelo')
-
     model = Modelo
     template_name = "includes/formulario generico.html"
     form_class = ModeloForm
     success_url = reverse_lazy('material_app:modelo_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_context_data(self, **kwargs):
         context = super(ModeloUpdateView, self).get_context_data(**kwargs)
@@ -111,6 +120,11 @@ class MarcaCreateView(PermissionRequiredMixin, BSModalCreateView):
     form_class = MarcaForm 
     success_url = reverse_lazy('material_app:marca_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
     def get_context_data(self, **kwargs):
         context = super(MarcaCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
@@ -126,11 +140,15 @@ class MarcaCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 class MarcaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('material.change_marca')
-
     model = Marca
     template_name = "includes/formulario generico.html"
     form_class = MarcaForm
     success_url = reverse_lazy('material_app:marca_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_context_data(self, **kwargs):
         context = super(MarcaUpdateView, self).get_context_data(**kwargs)
@@ -146,7 +164,8 @@ class MarcaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().form_valid(form)
 
 
-class MaterialListView(ListView):
+class MaterialListView(PermissionRequiredMixin,ListView):
+    permission_required = ('material.view_material')
     model = Material
     template_name = "material/material/inicio.html"
     context_object_name = 'contexto_material'
@@ -165,11 +184,17 @@ def MaterialTabla(request):
         )
         return JsonResponse(data)
 
-class MaterialCreateView(BSModalCreateView):
+class MaterialCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('material.add_material')
     model = Material
     template_name = "material/material/form_material.html"
     form_class = MaterialForm 
     success_url = reverse_lazy('material_app:material_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
@@ -182,11 +207,17 @@ class MaterialCreateView(BSModalCreateView):
         context['titulo']="Material"
         return context
         
-class MaterialUpdateView(BSModalUpdateView):
+class MaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_material')
     model = Material
     template_name = "material/material/form_material.html"
     form_class = MaterialForm
     success_url = reverse_lazy('material_app:material_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_context_data(self, **kwargs):
         context = super(MaterialUpdateView, self).get_context_data(**kwargs)
@@ -200,10 +231,16 @@ class MaterialUpdateView(BSModalUpdateView):
         
         return super().form_valid(form)
 
-class MaterialDarBajaView(BSModalDeleteView):
+class MaterialDarBajaView(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_material')
     model = Material
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('material_app:material_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -221,10 +258,16 @@ class MaterialDarBajaView(BSModalDeleteView):
         context['item'] = self.object.descripcion_venta
         return context
 
-class MaterialDarAltaView(BSModalDeleteView):
+class MaterialDarAltaView(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_material')
     model = Material
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('material_app:material_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -243,7 +286,8 @@ class MaterialDarAltaView(BSModalDeleteView):
         return context
 
 
-class MaterialDetailView(DetailView):
+class MaterialDetailView(PermissionRequiredMixin,DetailView):
+    permission_required = ('material.view_material')
     model = Material
     template_name = "material/material/detalle.html"
     context_object_name = 'contexto_material'
@@ -279,10 +323,16 @@ def MaterialDetailTabla(request, pk):
         return JsonResponse(data)
 
 
-class ComponenteCreateView(BSModalCreateView):
+class ComponenteCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('material.add_relacionmaterialcomponente')
     model = RelacionMaterialComponente
     template_name = "includes/formulario generico.html"
     form_class = RelacionMaterialComponenteForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
@@ -305,10 +355,16 @@ class ComponenteCreateView(BSModalCreateView):
         context['titulo']="Componente"
         return context
 
-class ComponenteUpdateView(BSModalUpdateView):
+class ComponenteUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_relacionmaterialcomponente')
     model = RelacionMaterialComponente
     template_name = "includes/formulario generico.html"
     form_class = RelacionMaterialComponenteForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -328,9 +384,15 @@ class ComponenteUpdateView(BSModalUpdateView):
         context['titulo']="Componentes"
         return context
 
-class ComponenteDeleteView(BSModalDeleteView):
+class ComponenteDeleteView(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_relacionmaterialcomponente')
     model = RelacionMaterialComponente
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -342,10 +404,16 @@ class ComponenteDeleteView(BSModalDeleteView):
         return context
 
 
-class EspecificacionCreateView(BSModalCreateView):
+class EspecificacionCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('material.add_especificacion')
     model = Especificacion
     template_name = "includes/formulario generico.html"
     form_class = EspecificacionForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
@@ -368,10 +436,16 @@ class EspecificacionCreateView(BSModalCreateView):
         context['titulo']="Especificación"
         return context     
 
-class EspecificacionUpdateView(BSModalUpdateView):
+class EspecificacionUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_especificacion')
     model = Especificacion
     template_name = "includes/formulario generico.html"
     form_class = EspecificacionForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -391,9 +465,15 @@ class EspecificacionUpdateView(BSModalUpdateView):
         context['titulo']="Especificación"
         return context
 
-class EspecificacionDeleteView(BSModalDeleteView):
+class EspecificacionDeleteView(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_especificacion')
     model = Especificacion
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -405,10 +485,16 @@ class EspecificacionDeleteView(BSModalDeleteView):
         return context
 
 
-class DatasheetCreateView(BSModalCreateView):
+class DatasheetCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('material.add_datasheet')
     model = Datasheet
     template_name = "includes/formulario generico.html"
     form_class = DatasheetForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
@@ -427,10 +513,16 @@ class DatasheetCreateView(BSModalCreateView):
         context['titulo']="Datasheet"
         return context     
 
-class DatasheetUpdateView(BSModalUpdateView):
+class DatasheetUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_datasheet')
     model = Datasheet
     template_name = "includes/formulario generico.html"
     form_class = DatasheetForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -442,12 +534,18 @@ class DatasheetUpdateView(BSModalUpdateView):
     def get_context_data(self, **kwargs):
         context = super(DatasheetUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="Especificación"
+        context['titulo']="Datasheet"
         return context
 
-class DatasheetDeleteView(BSModalDeleteView):
+class DatasheetDeleteView(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_datasheet')
     model = Datasheet
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -455,13 +553,20 @@ class DatasheetDeleteView(BSModalDeleteView):
     def get_context_data(self, **kwargs):
         context = super(DatasheetDeleteView, self).get_context_data(**kwargs)
         context['accion']="Eliminar"
-        context['titulo']="Especificación"
+        context['titulo']="Datasheet"
         return context
 
-class DatosImportacionUpdateView(BSModalUpdateView):
+class DatosImportacionUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_material')
     model = Material
     template_name = "includes/formulario generico.html"
     form_class = DatosImportacionForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id})
@@ -477,10 +582,16 @@ class DatosImportacionUpdateView(BSModalUpdateView):
         return context
 
 
-class ProductoSunatUpdateView(BSModalUpdateView):
+class ProductoSunatUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_material')
     model = Material
     template_name = "material/material/form_sunat.html"
     form_class = ProductoSunatForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id})
@@ -536,10 +647,16 @@ def UnidadView(request, id_subfamilia):
     return render(request, 'includes/form.html', context={'form':form})
 
 
-class ImagenMaterialCreateView(BSModalCreateView):
+class ImagenMaterialCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('material.add_imagenmaterial')
     model = ImagenMaterial
     template_name = "includes/formulario generico.html"
     form_class = ImagenMaterialForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
@@ -558,10 +675,16 @@ class ImagenMaterialCreateView(BSModalCreateView):
         context['titulo']="Imagen Material"
         return context     
 
-class ImagenMaterialUpdateView(BSModalUpdateView):
+class ImagenMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.delete_imagenmaterial')
     model = ImagenMaterial
     template_name = "includes/formulario generico.html"
     form_class = ImagenMaterialForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -576,9 +699,15 @@ class ImagenMaterialUpdateView(BSModalUpdateView):
         context['titulo']="Imagen"
         return context
 
-class ImagenMaterialDarBaja(BSModalDeleteView):
+class ImagenMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.')
     model = ImagenMaterial
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -599,9 +728,15 @@ class ImagenMaterialDarBaja(BSModalDeleteView):
         context['item'] = self.object.descripcion
         return context
 
-class ImagenMaterialDarAlta(BSModalDeleteView):
+class ImagenMaterialDarAlta(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_imagenmaterial')
     model = ImagenMaterial
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -623,10 +758,16 @@ class ImagenMaterialDarAlta(BSModalDeleteView):
         return context
 
 
-class VideoMaterialCreateView(BSModalCreateView):
+class VideoMaterialCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('material.add_videomaterial')
     model = VideoMaterial
     template_name = "includes/formulario generico.html"
     form_class = VideoMaterialForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
@@ -645,10 +786,16 @@ class VideoMaterialCreateView(BSModalCreateView):
         context['titulo']="Video Material"
         return context     
 
-class VideoMaterialUpdateView(BSModalUpdateView):
+class VideoMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_videomaterial')
     model = VideoMaterial
     template_name = "includes/formulario generico.html"
     form_class = VideoMaterialForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -663,9 +810,15 @@ class VideoMaterialUpdateView(BSModalUpdateView):
         context['titulo']="Video"
         return context
 
-class VideoMaterialDarBaja(BSModalDeleteView):
+class VideoMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_videomaterial')
     model = VideoMaterial
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
@@ -686,9 +839,15 @@ class VideoMaterialDarBaja(BSModalDeleteView):
         context['item'] = self.object.descripcion
         return context
 
-class VideoMaterialDarAlta(BSModalDeleteView):
+class VideoMaterialDarAlta(PermissionRequiredMixin,BSModalDeleteView):
+    permission_required = ('material.delete_videomaterial')
     model = VideoMaterial
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
