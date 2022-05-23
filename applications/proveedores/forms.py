@@ -115,7 +115,7 @@ class CorreoInterlocutorForm(BSModalModelForm):
         filtro = CorreoInterlocutorProveedor.objects.filter(correo__unaccent__iexact = correo)
         if correo != self.instance.correo:
             if len(filtro)>0:
-                self.add_error('correo', 'Ya existe un Teléfono con este correo')
+                self.add_error('correo', 'El correo ingresado ya se encuentra registrado')
 
 class CorreoInterlocutorDarBajaForm(BSModalModelForm):
     class Meta:

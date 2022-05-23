@@ -384,7 +384,7 @@ class CorreoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
     def get_context_data(self, **kwargs):
         context = super(CorreoInterlocutorCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
-        context['titulo']="Teléfono"
+        context['titulo']="Correo"
         return context
 
 class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
@@ -399,7 +399,7 @@ class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def get_context_data(self, **kwargs):
         context = super(CorreoInterlocutorUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="Teléfono"
+        context['titulo']="Correo"
         return context
     
     def form_valid(self, form):
@@ -426,5 +426,5 @@ class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     def get_context_data(self, **kwargs):
         context = super(CorreoInterlocutorDarBajaView, self).get_context_data(**kwargs)
         context['accion']="Dar Baja"
-        context['titulo']="Teléfono"
+        context['titulo']="Correo"
         return context
