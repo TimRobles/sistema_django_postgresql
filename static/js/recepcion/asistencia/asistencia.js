@@ -38,3 +38,6 @@ function Ubicacion() {
 }
 
 Ubicacion();
+setTimeout(() => {
+    CambioSede($('#id_sede')[0]);
+}, 10);

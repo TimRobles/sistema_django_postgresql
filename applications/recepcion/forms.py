@@ -120,10 +120,9 @@ class AsistenciaPersonalBuscarForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class AsistenciaSalidaForm(BSModalModelForm):
-    sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
     longitud = forms.FloatField(required=False, widget = forms.HiddenInput())
     latitud = forms.FloatField(required=False, widget = forms.HiddenInput())
-    
+
     class Meta:
         model = Asistencia
         fields = (
@@ -131,5 +130,6 @@ class AsistenciaSalidaForm(BSModalModelForm):
         )
     def __init__(self, *args, **kwargs):
         super(AsistenciaSalidaForm, self).__init__(*args, **kwargs)
+        self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
