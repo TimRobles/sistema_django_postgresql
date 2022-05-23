@@ -320,7 +320,7 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
         sede = form.cleaned_data['sede']
         
         if consulta_distancia(longitud, latitud, sede.id) != "Estás en la oficina":
-            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+            form.add_error('sede', 'No estás en la oficina, no seas sapo.')
             return super().form_invalid(form)
 
         try:
@@ -356,7 +356,7 @@ class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpda
         sede = form.cleaned_data['sede']
         
         if consulta_distancia(longitud, latitud, sede.id) != "Estás en la oficina":
-            form.add_error('usuario', 'No estás en la oficina, no seas sapo.')
+            form.add_error('sede', 'No estás en la oficina, no seas sapo.')
             return super().form_invalid(form)
 
         hour = datetime.now()     
