@@ -76,6 +76,7 @@ class SubFamiliaForm(forms.ModelForm):
         fields = (
             'nombre',
             'familia',
+            'unidad',
             )
 
     def clean(self):
