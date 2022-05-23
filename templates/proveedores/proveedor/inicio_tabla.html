@@ -1,0 +1,48 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>País</th>
+            <th>Dirección</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for proveedor in contexto_proveedores %}
+        <tr>
+            <td>{{ proveedor.nombre }}</td>
+            <td>{{ proveedor.pais }}</td>
+            <td>{{ proveedor.direccion }}</td>
+            <td>{{ proveedor.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                {% if proveedor.estado == 1 %}
+                    <button data-form-url="{% url 'proveedores_app:proveedor_actualizar' proveedor.id %}"
+                        data-table-url="{% url 'proveedores_app:proveedor_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'proveedores_app:proveedor_baja' proveedor.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                    <a href="{% url 'proveedores_app:proveedor_detalle' proveedor.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                    </a>
+                {% elif proveedor.estado == 2 %}
+                    <button data-form-url="{% url 'proveedores_app:proveedor_alta' proveedor.id %}"
+                        class="delete btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                        <i class="bi bi-hand-thumbs-up-fill"></i>
+                    </button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

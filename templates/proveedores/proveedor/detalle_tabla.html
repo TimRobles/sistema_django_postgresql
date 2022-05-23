@@ -1,0 +1,55 @@
+<h3>Interlocutores
+    <button data-form-url="{% url 'proveedores_app:interlocutor_registrar' contexto_proveedores.id %}"
+        data-table-url="{% url 'proveedores_app:proveedor_detalle_tabla' contexto_proveedores.id %}"
+        class="create badge bg-primary">
+        Registrar Interlocutor
+    </button>
+    <a href="{% url 'proveedores_app:proveedor_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombres</th>
+                <th>Apellidos</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interlocutor in interlocutores %}
+            <tr>
+                <td>{{ interlocutor.interlocutor.nombres }}</td>
+                <td>{{ interlocutor.interlocutor.apellidos }}</td>
+                <td class="text-center text-nowrap">
+                    {% if interlocutor.estado == 1 %}
+                        <button data-form-url="{% url 'proveedores_app:interlocutor_actualizar' interlocutor.interlocutor.id %}"
+                            data-table-url="{% url 'proveedores_app:proveedor_detalle_tabla' contexto_proveedores.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'proveedores_app:interlocutor_baja' interlocutor.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                        <a href="{% url 'proveedores_app:interlocutor_detalle' interlocutor.interlocutor.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    {% elif interlocutor.estado == 2 %}
+                        <button data-form-url="{% url 'proveedores_app:interlocutor_alta' interlocutor.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

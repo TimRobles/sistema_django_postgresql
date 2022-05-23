@@ -4,7 +4,8 @@ from applications.datos_globales.forms import (
     AreaForm,
     CargoForm,
     MonedaForm,
-    TipoInterlocutorForm,    
+    TipoInterlocutorForm,
+    PaisForm    
     )
 
 from .models import (
@@ -14,6 +15,7 @@ from .models import (
     Area, 
     Cargo,
     TipoInterlocutor, 
+    Pais,
     Departamento, 
     Provincia, 
     Distrito,
@@ -126,6 +128,23 @@ class TipoInterlocutorAdmin(admin.ModelAdmin):
         )
     
     form = TipoInterlocutorForm
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+class PaisAdmin(admin.ModelAdmin):
+    list_display = (
+        'nombre',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+    
+    form = PaisForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -393,6 +412,7 @@ admin.site.register(Area, AreaAdmin)
 admin.site.register(Cargo, CargoAdmin)
 admin.site.register(TipoInterlocutor, TipoInterlocutorAdmin)
 
+admin.site.register(Pais, PaisAdmin)
 admin.site.register(Departamento, DepartamentoAdmin)
 admin.site.register(Provincia, ProvinciaAdmin)
 admin.site.register(Distrito, DistritoAdmin)
