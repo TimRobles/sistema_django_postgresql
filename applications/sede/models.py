@@ -23,6 +23,7 @@ class Sede(models.Model):
 
         verbose_name = 'Sede'
         verbose_name_plural = 'Sedes'
+        ordering = ['estado', 'nombre']
 
     def save(self, *args, **kwargs):
         if self.ubigeo:

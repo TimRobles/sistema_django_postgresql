@@ -26,14 +26,14 @@
             <td>{{ sede.ubigeo }}</td>
             <td>{{ sede.get_estado_display }}</td>
             <td class="text-center text-nowrap">
-                <button data-form-url="{% url 'sede_app:sede_actualizar' sede.id %}"
-                    data-table-url="{% url 'sede_app:sede_tabla' %}"
-                    data-keep-open="true"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
                 {% if sede.estado == 1 %}
+                    <button data-form-url="{% url 'sede_app:sede_actualizar' sede.id %}"
+                        data-table-url="{% url 'sede_app:sede_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
                     <button data-form-url="{% url 'sede_app:sede_baja' sede.id %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
