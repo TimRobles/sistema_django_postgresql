@@ -117,7 +117,8 @@ class IpPublica(models.Model):
 class GeoLocalizacion(models.Model):
     longitud = models.DecimalField('Longitud', max_digits=22, decimal_places=16)
     latitud = models.DecimalField('Latitud', max_digits=22, decimal_places=16)
-    sede = models.ForeignKey(Sede, on_delete=models.PROTECT) 
+    sede = models.ForeignKey(Sede, on_delete=models.PROTECT)
+    distancia = models.IntegerField()
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='GeoLocalizacion_created_by', editable=False)

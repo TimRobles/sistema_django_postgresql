@@ -4,7 +4,7 @@
         data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
         {% endif %}
         >
-        {% if 'Boton' not in field.label %}
+        {% if field in form.visible_fields %}
         <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
         {% endif %}
         {{ field }}

@@ -80,5 +80,8 @@ def consulta_distancia(longitud, latitud, sede_id):
     difflon = (posicion[0]-local[0]) * (math.pi/180) #Radian difference (longitudes)
 
     distancia = 2 * R * math.asin(math.sqrt(math.sin(difflat/2)*math.sin(difflat/2)+math.cos(rlat1)*math.cos(rlat2)*math.sin(difflon/2)*math.sin(difflon/2))) #Distancia en kilómetros
-    return str(int(distancia*1000))
+    if int(distancia*1000) > ubicacion.distancia:
+        return "Estás a %i metros de la oficina." % int(distancia*1000)
+    else:
+        return "Estás en la oficina"
     

@@ -91,6 +91,7 @@ class GeoLocalizacionAdmin(admin.ModelAdmin):
     list_display = (
         'longitud',
         'latitud',
+        'distancia',
         'sede',
         'created_at',
         'created_by',

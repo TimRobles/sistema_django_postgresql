@@ -8,11 +8,7 @@ function CambioSede(elemento) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
-            if (parseFloat(xhr.responseText) > 10) {
-                $('#confirmar')[0].innerHTML = "Estás a " + xhr.responseText + " metros de la oficina.";
-            }else{
-                $('#confirmar')[0].innerHTML = "Estás en la sede.";
-            }
+            $('#confirmar')[0].innerHTML = xhr.responseText;
         }
     }
     xhr.send();
