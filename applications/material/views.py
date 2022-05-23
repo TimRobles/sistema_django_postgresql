@@ -1,5 +1,5 @@
 from applications.importaciones import *
-from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat
+from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from django import forms
 from django.shortcuts import render
 
@@ -14,6 +14,7 @@ from .models import (
     RelacionMaterialComponente,
     Especificacion,
     Datasheet,
+    SubFamilia,
     )
 
 class ModeloListView(PermissionRequiredMixin, ListView):
@@ -162,9 +163,14 @@ def MaterialTabla(request):
 
 class MaterialCreateView(BSModalCreateView):
     model = Material
-    template_name = "includes/formulario generico.html"
+    template_name = "material/material/form_material.html"
     form_class = MaterialForm 
     success_url = reverse_lazy('material_app:material_inicio')
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(MaterialCreateView, self).get_context_data(**kwargs)
@@ -173,16 +179,9 @@ class MaterialCreateView(BSModalCreateView):
         return context
         
 
-    def form_valid(self, form):
-
-        form.instance.usuario = self.request.user
-        registro_guardar(form.instance, self.request)
-
-        return super().form_valid(form)
-
 class MaterialUpdateView(BSModalUpdateView):
     model = Material
-    template_name = "includes/formulario generico.html"
+    template_name = "material/material/form_material.html"
     form_class = MaterialForm
     success_url = reverse_lazy('material_app:material_inicio')
 
@@ -459,7 +458,7 @@ class DatosImportacionUpdateView(BSModalUpdateView):
 
 class ProductoSunatUpdateView(BSModalUpdateView):
     model = Material
-    template_name = "material/material/form.html"
+    template_name = "material/material/form_sunat.html"
     form_class = ProductoSunatForm
 
     def get_success_url(self, **kwargs):
@@ -497,4 +496,22 @@ class ProductoSunatForm(forms.Form):
 def ProductoSunatView(request, id_clase):
     form = ProductoSunatForm()
     form.fields['producto'].queryset = ProductoSunat.objects.filter(clase = id_clase)
+    return render(request, 'includes/form.html', context={'form':form})
+
+
+class SubfamiliaForm(forms.Form):
+    subfamilia = forms.ModelChoiceField(queryset = SubFamilia.objects.all(), required=False, empty_label=None)
+
+def SubfamiliaView(request, id_familia):
+    form = SubfamiliaForm()
+    form.fields['subfamilia'].queryset = SubFamilia.objects.filter(familia = id_familia)
+    return render(request, 'includes/form.html', context={'form':form})
+
+
+class UnidadForm(forms.Form):
+    unidad = forms.ModelChoiceField(queryset = Unidad.objects.all(), required=False, empty_label=None)
+
+def UnidadView(request, id_subfamilia):
+    form = UnidadForm()
+    form.fields['unidad'].queryset = SubFamilia.objects.get(id = id_subfamilia).unidad.all()
     return render(request, 'includes/form.html', context={'form':form})

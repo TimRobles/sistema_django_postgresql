@@ -17,7 +17,13 @@
                 <td>{{ contexto_material.partida }}</td>
                 <td>{{ contexto_material.uso_funcion }}</td>
                 <td>{{ contexto_material.compuesto_por }}</td>
-                <td>{{ contexto_material.es_componente }}</td>
+                <td>
+                    {% if contexto_material.es_componente == True %}
+                    <h6>Sí</h6>
+                    {% else %}
+                    <h6>No</h6>
+                    {% endif %}
+                </td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'material_app:datos_importacion_actualizar' contexto_material.id %}"
                         data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
@@ -53,8 +59,15 @@
             <tr>
                 <td>{{ contexto_material.producto_sunat.clase.familia.segmento }}</td>
                 <td>{{ contexto_material.producto_sunat.clase.familia}}</td>
-                <td>{{ contexto_material.producto_sunat.clase}}</td>
-                <td>{{ contexto_material.producto_sunat }}</td>
+                <td>{{ contexto_material.producto_sunat.clase}}</td>            
+                <td>
+                    {% if contexto_material.producto_sunat %}
+                    {{ contexto_material.producto_sunat }}
+                    {% else %}
+                    
+                    {% endif %}
+                </td>
+
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'material_app:producto_sunat_actualizar' contexto_material.id %}"
                         data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
