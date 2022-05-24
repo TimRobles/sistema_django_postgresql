@@ -259,12 +259,6 @@
 
                 <td class="text-center text-nowrap">
                     {% if imagen.estado_alta_baja == 1 %}
-                        <button data-form-url="{% url 'material_app:imagen_material_baja' imagen.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
-                            <i class="bi bi-hand-thumbs-down-fill"></i>
-                        </button>
-
                         <button data-form-url="{% url 'material_app:imagen_material_actualizar' imagen.id %}"
                             data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
                             data-keep-open="true"
@@ -272,7 +266,12 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        
+
+                        <button data-form-url="{% url 'material_app:imagen_material_baja' imagen.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
                     {% elif imagen.estado_alta_baja == 2 %}
                         <button data-form-url="{% url 'material_app:imagen_material_alta' imagen.id %}"
                             class="delete btn btn-success btn-sm"
@@ -287,7 +286,6 @@
         </tbody>
     </table>
 </div>
-
 <br>
 
 </br>
@@ -317,15 +315,16 @@
                 <td><a href="{{ video.url}}" target="_blank" >Ver Video</a></td>
 
                 <td class="text-center text-nowrap">
-                    <button data-form-url="{% url 'material_app:video_material_actualizar' video.id %}"
-                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
-                        data-keep-open="true"
-                        class="update btn btn-warning btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                        <i class="bi bi-pencil-fill"></i>
-                    </button>
-
                     {% if video.estado_alta_baja == 1 %}
+
+                        <button data-form-url="{% url 'material_app:video_material_actualizar' video.id %}"
+                            data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
                         <button data-form-url="{% url 'material_app:video_material_baja' video.id %}"
                             class="delete btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
@@ -340,6 +339,125 @@
                     {% endif %}
                     
                 </td>
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+<h3>Equivalencia Unidad
+    <button data-form-url="{% url 'material_app:equivalencia_unidad_material_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Equivalencia Unidad
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>      
+                <th class="text-rigth">Cantidad base</th>
+                <th class="text-rigth">Nueva unidad</th>
+                <th class="text-rigth">Cantidad nueva unidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equivalencia  in equivalencias %}
+            <tr>
+                <td>{{ equivalencia.cantidad_base}}</td>
+                <td>{{ equivalencia.nueva_unidad}}</td>
+                <td>{{ equivalencia.cantidad_nueva_unidad}}</td>
+                <td class="text-center text-nowrap">
+
+                    {% if equivalencia.estado_alta_baja == 1 %}
+                        <button data-form-url="{% url 'material_app:equivalencia_unidad_material_actualizar' equivalencia.id %}"
+                            data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'material_app:equivalencia_unidad_material_baja' equivalencia.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% elif equivalencia.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'material_app:equivalencia_unidad_material_alta' equivalencia.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+
+                </td>
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
+
+
+<br>
+
+</br>
+<h3>Proveedor Material
+    <button data-form-url="{% url 'material_app:proveedor_material_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Proveedor Material
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>      
+                <th class="text-rigth">Proveedor</th>
+                <th class="text-rigth">Name</th>
+                <th class="text-rigth">Brand</th>
+                <th class="text-rigth">Descripción</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+            <tr>
+                <td>{{ proveedor.proveedor}}</td>
+                <td>{{ proveedor.name}}</td>
+                <td>{{ proveedor.brand}}</td>
+                <td>{{ proveedor.description}}</td>
+                <td class="text-center text-nowrap">
+                    {% if proveedor.estado_alta_baja == 1 %}
+                        <button data-form-url="{% url 'material_app:proveedor_material_actualizar' proveedor.id %}"
+                            data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'material_app:proveedor_material_baja' proveedor.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% elif proveedor.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'material_app:proveedor_material_alta' proveedor.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+                </td> 
             </tr>
             {% endfor %}    
         </tbody>

@@ -58,4 +58,14 @@ urlpatterns = [
     path('video-material/baja/<pk>/', views.VideoMaterialDarBaja.as_view(), name='video_material_baja'),
     path('video-material/alta/<pk>/', views.VideoMaterialDarAlta.as_view(), name='video_material_alta'),
 
+    path('equivalencia-unidad-material/registrar/<int:material_id>/', views.EquivalenciaUnidadCreateView.as_view(), name='equivalencia_unidad_material_registrar'),
+    path('equivalencia-unidad-material/actualizar/<pk>/', views.EquivalenciaUnidadUpdateView.as_view(), name='equivalencia_unidad_material_actualizar'),
+    path('equivalencia-unidad-material/baja/<pk>/', views.EquivalenciaUnidadDarBaja.as_view(), name='equivalencia_unidad_material_baja'),
+    path('equivalencia-unidad-material/alta/<pk>/', views.EquivalenciaUnidadDarAlta.as_view(), name='equivalencia_unidad_material_alta'),
+
+    path('proveedor-material/registrar/<int:material_id>/', views.ProveedorMaterialCreateView.as_view(), name='proveedor_material_registrar'),
+    path('proveedor-material/actualizar/<pk>/', views.ProveedorMaterialUpdateView.as_view(), name='proveedor_material_actualizar'),
+    path('proveedor-material/baja/<pk>/', views.ProveedorMaterialDarBaja.as_view(), name='proveedor_material_baja'),
+    path('proveedor-material/alta/<pk>/', views.ProveedorMaterialDarAlta.as_view(), name='proveedor_material_alta'),
+
 ]

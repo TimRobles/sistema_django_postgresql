@@ -1,4 +1,5 @@
 from applications.importaciones import *
+from django.shortcuts import render
 
 from .models import (
     DatosUsuario,
@@ -72,7 +73,6 @@ class UserPasswordView(FormView):
 
 class HistoricoUserListView(PermissionRequiredMixin, ListView):
     permission_required = ('usuario.view_historicouser')
-
     model = HistoricoUser
     template_name = "usuario/historico_user/list.html"
     context_object_name = 'contexto_historicouser'
@@ -98,11 +98,15 @@ def HistoricoUserTabla(request):
 
 class HistoricoUserDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('usuario.change_historicouser')
-    
     model = HistoricoUser
     template_name = "includes/formulario generico.html"
     form_class = HistoricoUserDarBajaForm
     success_url = reverse_lazy('usuario_app:historico_usuarios')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def form_valid(self, form):
         form.instance.estado = 2
@@ -120,10 +124,14 @@ class HistoricoUserDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     
 class HistoricoUserDarAltaView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('usuario.add_historicouser')
-
     template_name = "includes/formulario generico.html"
     form_class = HistoricoUserDarAltaForm
     success_url = reverse_lazy('usuario_app:historico_usuarios')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs) 
 
     def form_valid(self, form):
         usuario = get_user_model()
@@ -168,7 +176,6 @@ class HistoricoUserDarAltaView(PermissionRequiredMixin, BSModalCreateView):
 
 class HistoricoDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('usuario.view_historicouser')
-
     model = get_user_model()
     template_name = "usuario/historico_user/detail.html"
     context_object_name = 'contexto_user'

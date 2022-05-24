@@ -1,4 +1,5 @@
 from datetime import datetime, time
+from django.shortcuts import render
 
 from django.conf import settings
 from applications.funciones import consulta_distancia
@@ -93,6 +94,11 @@ class VisitaCreateView(PermissionRequiredMixin, BSModalCreateView):
     template_name = "recepcion/visita/registrar.html"
     form_class = VisitaForm
     success_url = reverse_lazy('recepcion_app:visita_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_context_data(self, **kwargs):
         context = super(VisitaCreateView, self).get_context_data(**kwargs)
@@ -112,6 +118,11 @@ class VisitaRegistrarSalidaView(PermissionRequiredMixin, BSModalDeleteView):
     model = Visita
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('recepcion_app:visita_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -293,11 +304,15 @@ def AsistenciaPersonalTabla(request):
 
 class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('recepcion.add_asistencia')
-
     model = Asistencia
     template_name = "recepcion/asistencia/asistencia.html"
     form_class = AsistenciaForm
     success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def get_context_data(self, **kwargs):
         context = super(AsistenciaPersonalCreateView, self).get_context_data(**kwargs)
@@ -342,11 +357,15 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('recepcion.change_asistencia')
-
     model = Asistencia
     template_name = "recepcion/asistencia/asistencia.html"
     form_class = AsistenciaSalidaForm
     success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
 
     def form_valid(self, form):
         self.object = self.get_object()

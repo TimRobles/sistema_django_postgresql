@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 
 from applications.datos_globales.models import Unidad,ProductoSunat
+from applications.proveedores.models import Proveedor
 
 class Clase(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -255,3 +256,42 @@ class VideoMaterial(models.Model):
     def __str__(self):
         return self.descripcion.__str__()
 
+class ProveedorMaterial(models.Model):
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
+    name = models.CharField('Name', max_length=100)
+    brand = models.CharField('Brand', max_length=100)
+    description = models.CharField('Description', max_length=255)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ProveedorMaterial_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ProveedorMaterial_updated_by', editable=False)
+    estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
+
+
+    class Meta:
+        verbose_name = 'Proveedor Material'
+        verbose_name_plural = 'Proveedor Materiales'
+
+    def __str__(self):
+        return self.material.__str__()
+
+class EquivalenciaUnidad(models.Model):
+    cantidad_base = models.DecimalField('Cantidad Base', max_digits=6, decimal_places=2)
+    nueva_unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT, related_name='EquivalenciaUnidad_nueva_unidad')
+    cantidad_nueva_unidad = models.DecimalField('Cantidad Nueva', max_digits=6, decimal_places=2)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EquivalenciaUnidad_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EquivalenciaUnidad_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Equivalencia Unidad'
+        verbose_name_plural = 'Equivalencia Unidades'
+
+    def __str__(self):
+        return self.nueva_unidad
