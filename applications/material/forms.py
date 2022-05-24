@@ -58,6 +58,7 @@ class FamiliaForm(forms.ModelForm):
         model = Familia
         fields = (
             'nombre',
+            'atributos',
             )
 
     def clean_nombre(self):
@@ -76,6 +77,7 @@ class SubFamiliaForm(forms.ModelForm):
             'nombre',
             'familia',
             'unidad',
+            'componentes',
             )
 
     def clean(self):

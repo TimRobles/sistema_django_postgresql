@@ -194,6 +194,7 @@ class Especificacion(models.Model):
     class Meta:
         verbose_name = 'Especificacion'
         verbose_name_plural = 'Especificaciones'
+        ordering = ['orden',]
 
     def __str__(self):
         return self.material.__str__()
