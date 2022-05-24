@@ -7,10 +7,13 @@ function seleccionar_segmento(id_segmento) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
+            info = JSON.parse(xhr.responseText)['info'];
             var parser, xmlDoc;
             parser = new DOMParser();
-            xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+            xmlDoc = parser.parseFromString(info, "text/xml");
             $familia.innerHTML = xmlDoc.getElementById('id_familia').innerHTML;
+
+            seleccionar_familia($familia);
         }
     }
     xhr.send();
@@ -29,11 +32,15 @@ function seleccionar_familia(id_familia) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
+            info = JSON.parse(xhr.responseText)['info'];
             var parser, xmlDoc;
             parser = new DOMParser();
-            xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+            xmlDoc = parser.parseFromString(info, "text/xml");
             $clase.innerHTML = xmlDoc.getElementById('id_clase').innerHTML;
+        }else{
+            $clase.innerHTML = '<option value="" selected="">---------</option>';
         }
+        seleccionar_clase($clase);
     }
     xhr.send();
 }
@@ -51,10 +58,13 @@ function seleccionar_clase(id_clase) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
+            info = JSON.parse(xhr.responseText)['info'];
             var parser, xmlDoc;
             parser = new DOMParser();
-            xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+            xmlDoc = parser.parseFromString(info, "text/xml");
             $producto.innerHTML = xmlDoc.getElementById('id_producto').innerHTML;
+        }else{
+            $producto.innerHTML = '<option value="" selected="">---------</option>';
         }
     }
     xhr.send();

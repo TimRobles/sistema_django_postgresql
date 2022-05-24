@@ -86,6 +86,9 @@ class SubFamiliaAdmin(admin.ModelAdmin):
         'nombre',
         'familia',
         )
+    list_filter = [
+        'familia',
+        ]
 
     form = SubFamiliaForm
 

@@ -496,44 +496,113 @@ class ProductoSunatUpdateView(BSModalUpdateView):
         return context
 
 class FamiliaSunatForm(forms.Form):
-    familia = forms.ModelChoiceField(queryset = FamiliaSunat.objects.all(), required=False, empty_label=None)
+    familia = forms.ModelChoiceField(queryset = FamiliaSunat.objects.all(), required=False)
 
 def FamiliaSunatView(request, id_segmento):
     form = FamiliaSunatForm()
     form.fields['familia'].queryset = FamiliaSunat.objects.filter(segmento = id_segmento)
-    return render(request, 'includes/form.html', context={'form':form})
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
 
 class ClaseSunatForm(forms.Form):
-    clase = forms.ModelChoiceField(queryset = ClaseSunat.objects.all(), required=False, empty_label=None)
+    clase = forms.ModelChoiceField(queryset = ClaseSunat.objects.all(), required=False)
 
 def ClaseSunatView(request, id_familia):
     form = ClaseSunatForm()
     form.fields['clase'].queryset = ClaseSunat.objects.filter(familia = id_familia)
-    return render(request, 'includes/form.html', context={'form':form})
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
 
 class ProductoSunatForm(forms.Form):
-    producto = forms.ModelChoiceField(queryset = ProductoSunat.objects.all(), required=False, empty_label=None)
+    producto = forms.ModelChoiceField(queryset = ProductoSunat.objects.all(), required=False)
 
 def ProductoSunatView(request, id_clase):
     form = ProductoSunatForm()
     form.fields['producto'].queryset = ProductoSunat.objects.filter(clase = id_clase)
-    return render(request, 'includes/form.html', context={'form':form})
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
 
 class SubfamiliaForm(forms.Form):
-    subfamilia = forms.ModelChoiceField(queryset = SubFamilia.objects.all(), required=False, empty_label=None)
+    subfamilia = forms.ModelChoiceField(queryset = SubFamilia.objects.all(), required=False)
 
 def SubfamiliaView(request, id_familia):
     form = SubfamiliaForm()
     form.fields['subfamilia'].queryset = SubFamilia.objects.filter(familia = id_familia)
-    return render(request, 'includes/form.html', context={'form':form})
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
 
 class UnidadForm(forms.Form):
-    unidad = forms.ModelChoiceField(queryset = Unidad.objects.all(), required=False, empty_label=None)
+    unidad = forms.ModelChoiceField(queryset = Unidad.objects.all(), required=False)
 
 def UnidadView(request, id_subfamilia):
     form = UnidadForm()
     form.fields['unidad'].queryset = SubFamilia.objects.get(id = id_subfamilia).unidad.all()
-    return render(request, 'includes/form.html', context={'form':form})
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
+
+
+class ModeloForm(forms.Form):
+    modelo = forms.ModelChoiceField(queryset = Modelo.objects.all(), required=False)
+
+def ModeloView(request, id_marca):
+    form = ModeloForm()
+    form.fields['modelo'].queryset = Marca.objects.get(id = id_marca).modelos.all()
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
 
 
 class ImagenMaterialCreateView(BSModalCreateView):

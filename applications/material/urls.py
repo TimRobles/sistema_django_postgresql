@@ -46,6 +46,8 @@ urlpatterns = [
     path('subfamilia/<str:id_familia>/', views.SubfamiliaView, name='subfamilia'),
     path('unidad/<str:id_subfamilia>/', views.UnidadView, name='unidad'),
 
+    path('modelo/<str:id_marca>/', views.ModeloView, name='modelo'),
+
     path('imagen-material/registrar/<int:material_id>/', views.ImagenMaterialCreateView.as_view(), name='imagen_material_registrar'),
     path('imagen-material/actualizar/<pk>/', views.ImagenMaterialUpdateView.as_view(), name='imagen_material_actualizar'),
     path('imagen-material/baja/<pk>/', views.ImagenMaterialDarBaja.as_view(), name='imagen_material_baja'),

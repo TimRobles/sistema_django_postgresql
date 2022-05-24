@@ -17,6 +17,7 @@ class Clase(models.Model):
 
         verbose_name = 'Clase'
         verbose_name_plural = 'Clases'
+        ordering = ['nombre',]
 
     def __str__(self):
         return self.nombre
@@ -32,6 +33,7 @@ class Componente(models.Model):
 
         verbose_name = 'Componente'
         verbose_name_plural = 'Componentes'
+        ordering = ['nombre',]
 
     def __str__(self):
         return self.nombre
@@ -47,6 +49,7 @@ class Atributo(models.Model):
 
         verbose_name = 'Atributo'
         verbose_name_plural = 'Atributos'
+        ordering = ['nombre',]
 
     def __str__(self):
         return self.nombre
@@ -63,6 +66,7 @@ class Familia(models.Model):
 
         verbose_name = 'Familia'
         verbose_name_plural = 'Familias'
+        ordering = ['nombre',]
 
     def __str__(self):
         return self.nombre
@@ -81,6 +85,7 @@ class SubFamilia(models.Model):
 
         verbose_name = 'SubFamilia'
         verbose_name_plural = 'SubFamilias'
+        ordering = ['nombre',]
 
     def __str__(self):
         return self.nombre
@@ -96,6 +101,7 @@ class Modelo(models.Model):
 
         verbose_name = 'Modelo'
         verbose_name_plural = 'Modelos'
+        ordering = ['nombre',]
 
     def __str__(self):
         return self.nombre
@@ -112,6 +118,7 @@ class Marca(models.Model):
 
         verbose_name = 'Marca'
         verbose_name_plural = 'Marcas'
+        ordering = ['nombre',]
 
     def __str__(self):
         return self.nombre

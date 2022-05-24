@@ -7,9 +7,10 @@ function seleccionar_familia(id_familia) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
+            info = JSON.parse(xhr.responseText)['info'];
             var parser, xmlDoc;
             parser = new DOMParser();
-            xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+            xmlDoc = parser.parseFromString(info, "text/xml");
             $subfamilia.innerHTML = xmlDoc.getElementById('id_subfamilia').innerHTML;
             seleccionar_subfamilia($subfamilia.value);
         }
@@ -30,13 +31,13 @@ function seleccionar_subfamilia(id_subfamilia) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
+            info = JSON.parse(xhr.responseText)['info'];
             var parser, xmlDoc;
             parser = new DOMParser();
-            xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+            xmlDoc = parser.parseFromString(info, "text/xml");
             $unidad.innerHTML = xmlDoc.getElementById('id_unidad').innerHTML;
-        }else if (this.status === 404) {
-            console.log("No encontrado")
-            $unidad.innerHTML = "";
+        }else {
+            $unidad.innerHTML = '<option value="" selected="">---------</option>';
         }
     }
     xhr.send();
@@ -44,4 +45,29 @@ function seleccionar_subfamilia(id_subfamilia) {
 
 $('#id_subfamilia').on('change', function (e) {
     seleccionar_subfamilia(e.target.value);
+})
+
+function seleccionar_marca(id_marca) {
+    $modelo = $('#id_modelo')[0];
+    
+    url = '/material/modelo/' + id_marca + '/';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.onload = function(){
+        if (this.status === 200) {
+            info = JSON.parse(xhr.responseText)['info'];
+            var parser, xmlDoc;
+            parser = new DOMParser();
+            xmlDoc = parser.parseFromString(info, "text/xml");
+            $modelo.innerHTML = xmlDoc.getElementById('id_modelo').innerHTML;
+        }else {
+            $modelo.innerHTML = '<option value="" selected="">---------</option>';
+        }
+    }
+    xhr.send();
+}
+
+$('#id_marca').on('change', function (e) {
+    seleccionar_marca(e.target.value);
 })
