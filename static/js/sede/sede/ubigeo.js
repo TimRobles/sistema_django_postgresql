@@ -33,12 +33,10 @@ function ConsultarProvincia(id_provincia) {
             parser = new DOMParser();
             xmlDoc = parser.parseFromString(info, "text/xml");
             $distrito.innerHTML = xmlDoc.getElementById('id_distrito').innerHTML;
-            
-            MostrarUbigeo($distrito);
         }else{
             $distrito.innerHTML = '<option value="" selected="">---------</option>';
-            MostrarUbigeo($distrito);
         }
+        MostrarUbigeo($distrito);
     }
     xhr.send();
 }
