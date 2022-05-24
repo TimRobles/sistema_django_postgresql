@@ -124,7 +124,7 @@ class ProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 class ProveedorDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('proveedores.view_interlocutorproveedor')
+    permission_required = ('proveedores.view_proveedorinterlocutor')
 
     model = Proveedor
     template_name = "proveedores/proveedor/detalle.html"
@@ -215,7 +215,7 @@ class InterlocutorProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView
         return super().form_valid(form)
 
 class InterlocutorProveedorDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('proveedores.change_interlocutorproveedor')
+    permission_required = ('proveedores.change_proveedorinterlocutor')
 
     model = ProveedorInterlocutor
     template_name = "includes/eliminar generico.html"
@@ -241,7 +241,7 @@ class InterlocutorProveedorDarBajaView(PermissionRequiredMixin, BSModalDeleteVie
         return context
 
 class InterlocutorProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('proveedores.change_interlocutorproveedor')
+    permission_required = ('proveedores.change_proveedorinterlocutor')
 
     model = ProveedorInterlocutor
     template_name = "includes/eliminar generico.html"
@@ -322,7 +322,7 @@ class TelefonoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView)
         return context
 
 class TelefonoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('proveedores.change_interlocutorproveedor')
+    permission_required = ('proveedores.change_telefonointerlocutorproveedor')
     model = TelefonoInterlocutorProveedor
     template_name = "includes/formulario generico.html"
     form_class = TelefonoInterlocutorForm
@@ -388,7 +388,7 @@ class CorreoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
         return context
 
 class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('proveedores.change_interlocutorproveedor')
+    permission_required = ('proveedores.change_correointerlocutorproveedor')
     model = CorreoInterlocutorProveedor
     template_name = "includes/formulario generico.html"
     form_class = CorreoInterlocutorForm
