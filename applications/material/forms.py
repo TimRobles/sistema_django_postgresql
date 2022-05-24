@@ -1,7 +1,7 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
-from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet,ImagenMaterial,VideoMaterial
+from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet,ImagenMaterial,VideoMaterial,ProveedorMaterial,EquivalenciaUnidad
 
 class ClaseForm(forms.ModelForm):
     class Meta:
@@ -323,5 +323,34 @@ class VideoMaterialForm(BSModalModelForm):
     
     def __init__(self, *args, **kwargs):
         super(VideoMaterialForm, self).__init__(*args, **kwargs)          
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ProveedorMaterialForm(BSModalModelForm):
+    class Meta:
+        model = ProveedorMaterial
+        fields=(
+            'proveedor',
+            'name',
+            'brand',
+            'description',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ProveedorMaterialForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+   
+class EquivalenciaUnidadForm(BSModalModelForm):
+    class Meta:
+        model = EquivalenciaUnidad
+        fields =(
+            'cantidad_base',
+            'nueva_unidad',
+            'cantidad_nueva_unidad',
+        )
+    
+    def __init__(self, *args, **kwargs):
+        super(EquivalenciaUnidadForm, self).__init__(*args, **kwargs)          
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
