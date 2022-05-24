@@ -7,10 +7,10 @@ function ConsultarDepartamento(id_departamento) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
-            console.log(xhr.responseText);
+            info = JSON.parse(xhr.responseText)['info'];
             var parser, xmlDoc;
             parser = new DOMParser();
-            xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+            xmlDoc = parser.parseFromString(info, "text/xml");
             $provincia.innerHTML = xmlDoc.getElementById('id_provincia').innerHTML;
 
             ConsultarProvincia($provincia.value);
@@ -28,11 +28,15 @@ function ConsultarProvincia(id_provincia) {
     xhr.open('GET', url);
     xhr.onload = function(){
         if (this.status === 200) {
+            info = JSON.parse(xhr.responseText)['info'];
             var parser, xmlDoc;
             parser = new DOMParser();
-            xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+            xmlDoc = parser.parseFromString(info, "text/xml");
             $distrito.innerHTML = xmlDoc.getElementById('id_distrito').innerHTML;
             
+            MostrarUbigeo($distrito);
+        }else{
+            $distrito.innerHTML = '<option value="" selected="">---------</option>';
             MostrarUbigeo($distrito);
         }
     }

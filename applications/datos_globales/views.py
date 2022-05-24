@@ -18,17 +18,38 @@ def DepartamentoView(request):
     return render(request, 'includes/prueba.html', context={'form':form})
 
 class ProvinciaForm(forms.Form):
-    provincia = forms.ModelChoiceField(queryset = Provincia.objects.all(), required=False, empty_label=None)
+    provincia = forms.ModelChoiceField(queryset = Provincia.objects.all(), required=False)
 
 def ProvinciaView(request, id_departamento):
     form = ProvinciaForm()
     form.fields['provincia'].queryset = Provincia.objects.filter(departamento = id_departamento)
-    return render(request, 'includes/form.html', context={'form':form})
+
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
 
 class DistritoForm(forms.Form):
-    distrito = forms.ModelChoiceField(queryset = Distrito.objects.all(), required=False, empty_label=None)
+    distrito = forms.ModelChoiceField(queryset = Distrito.objects.all(), required=False)
 
 def DistritoView(request, id_provincia):
     form = DistritoForm()
     form.fields['distrito'].queryset = Distrito.objects.filter(provincia = id_provincia)
-    return render(request, 'includes/form.html', context={'form':form})
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)

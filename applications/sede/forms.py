@@ -48,7 +48,7 @@ class SedeCreateForm(BSModalModelForm):
         self.fields['sociedad'].widget.attrs['class'] = 'nobull'
 
 class SedeUpdateForm(BSModalModelForm):
-    departamento_buscar = forms.ModelChoiceField(label = 'Departamento', queryset = Departamento.objects.none())
+    departamento_buscar = forms.ModelChoiceField(label = 'Departamento', queryset = Departamento.objects.all())
     provincia_buscar = forms.ModelChoiceField(label = 'Provincia', queryset = Provincia.objects.none())
     distrito_buscar = forms.ModelChoiceField(label = 'Distrito', queryset = Distrito.objects.none())
     class Meta:
