@@ -69,7 +69,7 @@ class SedeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().form_valid(form)
 
 class SedeDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('sede.change_sede')
+    permission_required = ('sede.delete_sede')
 
     model = Sede
     template_name = "includes/eliminar generico.html"
@@ -92,7 +92,7 @@ class SedeDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 class SedeDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('sede.change_sede')
+    permission_required = ('sede.delete_sede')
     model = Sede
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sede_app:sede_inicio')
