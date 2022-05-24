@@ -200,7 +200,7 @@ class InterlocutorProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView
     form_class = InterlocutorProveedorUpdateForm
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.kwargs['proveedor_id']})
+        return reverse_lazy('home_app:home')
 
     def get_context_data(self, **kwargs):
         context = super(InterlocutorProveedorUpdateView, self).get_context_data(**kwargs)
