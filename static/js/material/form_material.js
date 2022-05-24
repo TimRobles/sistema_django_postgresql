@@ -50,7 +50,13 @@ $('#id_subfamilia').on('change', function (e) {
 function seleccionar_marca(id_marca) {
     $modelo = $('#id_modelo')[0];
     
-    url = '/material/modelo/' + id_marca + '/';
+    if (id_marca=="") {
+        url = '/material/modelo/0/';
+        
+    } else {
+        url = '/material/modelo/' + id_marca + '/';
+        
+    }
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);

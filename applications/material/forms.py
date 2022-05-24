@@ -169,6 +169,12 @@ class MaterialForm(BSModalModelForm):
         unidad.queryset = subfamilia.unidad.all()
         return subfamilia
 
+    def clean_marca(self):
+        marca = self.cleaned_data.get('marca')
+        modelo = self.fields['modelo']
+        modelo.queryset = marca.modelos.all()
+        return marca
+
     def __init__(self, *args, **kwargs):
         super(MaterialForm, self).__init__(*args, **kwargs)
         self.fields['subfamilia'].queryset = SubFamilia.objects.none()
@@ -176,9 +182,12 @@ class MaterialForm(BSModalModelForm):
         try:
             subfamilia = self.instance.subfamilia 
             familia = subfamilia.familia
+            marca = self.instance.marca 
+            
             self.fields['familia'].initial = familia
             self.fields['subfamilia'].queryset = SubFamilia.objects.filter(familia = familia)
             self.fields['unidad_base'].queryset = subfamilia.unidad.all()
+            self.fields['modelo'].queryset = marca.modelos.all()
         except:
             pass
         for visible in self.visible_fields():

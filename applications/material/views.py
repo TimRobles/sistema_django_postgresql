@@ -708,7 +708,8 @@ class ModeloForm(forms.Form):
 
 def ModeloView(request, id_marca):
     form = ModeloForm()
-    form.fields['modelo'].queryset = Marca.objects.get(id = id_marca).modelos.all()
+    if id_marca != "0":
+        form.fields['modelo'].queryset = Marca.objects.get(id = id_marca).modelos.all()
     data = dict()
     if request.method == 'GET':
         template = 'includes/form.html'
