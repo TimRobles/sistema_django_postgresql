@@ -4,7 +4,9 @@ from applications.material.forms import (
     ComponenteForm,
     AtributoForm,
     FamiliaForm,    
-    SubFamiliaForm,      
+    SubFamiliaForm,
+    MarcaForm,
+    ModeloForm,      
     )
 
 from .models import (
@@ -106,6 +108,8 @@ class ModeloAdmin(admin.ModelAdmin):
         'nombre',
         )
 
+    form = ModeloForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -117,6 +121,8 @@ class MarcaAdmin(admin.ModelAdmin):
     list_display = (
         'nombre',
         )
+    
+    form = MarcaForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
