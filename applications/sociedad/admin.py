@@ -16,9 +16,9 @@ class SociedadAdmin(admin.ModelAdmin):
     '''Admin View for Sociedad'''
 
     list_display = (
-        'ruc',
-        'nombre_comercial',
         'razon_social',
+        'nombre_comercial',
+        'ruc',
         'direccion_legal',
         'ubigeo',
         'distrito',
@@ -86,6 +86,10 @@ class RepresentanteLegalAdmin(admin.ModelAdmin):
         'sociedad',
         'tipo_representante_legal',
         'fecha_registro',
+        'fecha_baja',
+        'estado',
+        )
+    exclude = (
         'fecha_baja',
         'estado',
         )

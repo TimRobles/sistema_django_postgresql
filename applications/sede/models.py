@@ -7,8 +7,8 @@ from applications.datos_globales.models import Distrito
 
 class Sede(models.Model):
 
-    sociedad = models.ManyToManyField(Sociedad)
     nombre = models.CharField('Nombre', max_length=100)
+    sociedad = models.ManyToManyField(Sociedad)
     usuario_responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='Usuario_Responsable')
     direccion = models.CharField('Dirección', max_length=254)
     ubigeo = models.CharField('Ubigeo', max_length=6)

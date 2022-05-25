@@ -57,10 +57,10 @@ class Magnitud(models.Model):
 class Unidad(models.Model):
     '''Solo por Admin'''
 
-    magnitud = models.ForeignKey(Magnitud, on_delete=models.PROTECT)
     nombre = models.CharField('Nombre', max_length=50, unique=True)
     simbolo = models.CharField('Símbolo', max_length=5)
     unidad_sunat = models.CharField('Unidad Sunat', max_length=5)
+    magnitud = models.ForeignKey(Magnitud, on_delete=models.PROTECT)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Unidad_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -96,8 +96,8 @@ class Area(models.Model):
 class Cargo(models.Model):
     '''Solo por Admin'''
 
-    area = models.ForeignKey(Area, on_delete=models.PROTECT)
     nombre = models.CharField('Nombre', max_length=50, unique=True)
+    area = models.ForeignKey(Area, on_delete=models.PROTECT)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cargo_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -258,9 +258,9 @@ class DocumentoFisico(models.Model):
 
 
 class RangoDocumentoProceso(models.Model):
-    modelo = models.ForeignKey(DocumentoProceso, on_delete=models.CASCADE)
     serie = models.CharField('Serie', max_length=10)
     rango_inicial = models.CharField('Rango Inicial', max_length=15)
+    modelo = models.ForeignKey(DocumentoProceso, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RangoDocumentoProceso_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -278,16 +278,14 @@ class RangoDocumentoProceso(models.Model):
                 ), 
             ]
 
-            
-
     def __str__(self):
         return str(self.modelo)
 
 
 class RangoDocumentoFisico(models.Model):
-    modelo = models.ForeignKey(DocumentoFisico, on_delete=models.CASCADE)
     serie = models.CharField('Serie', max_length=10)
     rango_inicial = models.CharField('Rango Inicial', max_length=15)
+    modelo = models.ForeignKey(DocumentoFisico, on_delete=models.CASCADE)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RangoDocumentoFisico_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -310,11 +308,11 @@ class RangoDocumentoFisico(models.Model):
 
 
 class CuentaBancariaSociedad(models.Model):
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
-    banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
-    moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
     numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_numero])
     numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero])
+    banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
+    moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaSociedad_created_by', editable=False)
@@ -327,15 +325,15 @@ class CuentaBancariaSociedad(models.Model):
         verbose_name_plural = 'Cuentas Bancarias Sociedad'
 
     def __str__(self):
-        return str(self.sociedad) + ' ' + str(self.numero_cuenta)
+        return str(self.banco.nombre_comercial) + ' : ' + str(self.numero_cuenta) + ' | ' + str(self.numero_cuenta_interbancaria) + ' - ' +  str(self.sociedad)
 
 
 class CuentaBancariaPersonal(models.Model):
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='User')
-    banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
-    moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
     numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_numero])
     numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero])
+    banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
+    moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='User')
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaPersonal_created_by', editable=False)
@@ -348,7 +346,7 @@ class CuentaBancariaPersonal(models.Model):
         verbose_name_plural = 'Cuentas Bancarias Personal'
 
     def __str__(self):
-        return str(self.usuario) + ' ' + str(self.numero_cuenta)
+        return str(self.banco.nombre_comercial) + ' : ' + str(self.numero_cuenta) + ' | ' + str(self.numero_cuenta_interbancaria) + ' - ' +  str(self.usuario) 
 
 
 class SegmentoSunat(models.Model):

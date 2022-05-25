@@ -43,8 +43,8 @@ class CargoForm(forms.ModelForm):
     class Meta:
         model = Cargo
         fields = (
-            'area',
             'nombre',
+            'area',
             )
 
     def clean(self):
