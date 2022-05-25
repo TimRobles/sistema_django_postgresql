@@ -294,4 +294,4 @@ class EquivalenciaUnidad(models.Model):
         verbose_name_plural = 'Equivalencia Unidades'
 
     def __str__(self):
-        return self.nueva_unidad
+        return "%d %s = %d %s" % (self.cantidad_base, self.material.unidad_base.__str__(), self.cantidad_nueva_unidad, self.nueva_unidad.__str__())
