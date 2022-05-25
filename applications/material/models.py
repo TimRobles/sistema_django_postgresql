@@ -57,7 +57,7 @@ class Atributo(models.Model):
 
 class Familia(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
-    atributos = models.ManyToManyField(Atributo)
+    atributos = models.ManyToManyField(Atributo, blank=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Familia_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -75,7 +75,7 @@ class Familia(models.Model):
 class SubFamilia(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
     familia = models.ForeignKey(Familia, on_delete=models.PROTECT)
-    componentes = models.ManyToManyField(Componente)
+    componentes = models.ManyToManyField(Componente, blank=True)
     unidad = models.ManyToManyField(Unidad)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SubFamilia_created_by', editable=False)
