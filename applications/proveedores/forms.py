@@ -56,6 +56,14 @@ class TelefonoInterlocutorForm(BSModalModelForm):
             'numero',
             )
 
+        widgets = {
+            'numero' : forms.PasswordInput(
+                attrs ={
+                    'placeholder':'ej.: +12125552368',
+                    },
+                ),
+            }
+    
     def __init__(self, *args, **kwargs):
         super(TelefonoInterlocutorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():

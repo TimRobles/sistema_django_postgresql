@@ -43,8 +43,8 @@ class InterlocutorProveedor(models.Model):
 
 class ProveedorInterlocutor(models.Model):
 
-    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT)
+    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ProveedorInterlocutor_created_by', editable=False)
@@ -58,12 +58,12 @@ class ProveedorInterlocutor(models.Model):
         ordering = ['estado', '-interlocutor',]
 
     def __str__(self):
-        return str(self.interlocutor)
+        return str(self.proveedor) + ' - ' + str(self.interlocutor)
 
 class TelefonoInterlocutorProveedor(models.Model):
 
-    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
     numero = PhoneNumberField('Teléfono')
+    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -78,12 +78,12 @@ class TelefonoInterlocutorProveedor(models.Model):
         ordering = ['estado', '-fecha_baja',]
 
     def __str__(self):
-        return str(self.interlocutor)
+        return str(self.numero) + ' - ' + str(self.interlocutor)
 
 class CorreoInterlocutorProveedor(models.Model):
 
-    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
     correo = models.EmailField('Correo')
+    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -98,4 +98,4 @@ class CorreoInterlocutorProveedor(models.Model):
         ordering = ['estado', '-fecha_baja',]
 
     def __str__(self):
-        return str(self.interlocutor)
+        return str(self.correo) + ' - ' + str(self.interlocutor)

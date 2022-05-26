@@ -38,8 +38,8 @@ class InterlocutorProveedorAdmin(admin.ModelAdmin):
 
 class ProveedorInterlocutorAdmin(admin.ModelAdmin):
     list_display = (
-        'interlocutor',
         'proveedor',
+        'interlocutor',
         'estado',
         )
 
@@ -52,8 +52,8 @@ class ProveedorInterlocutorAdmin(admin.ModelAdmin):
 
 class TelefonoInterlocutorProveedorAdmin(admin.ModelAdmin):
     list_display = (
-        'interlocutor',
         'numero',
+        'interlocutor',
         'fecha_baja',
         'estado',
         )
@@ -70,8 +70,8 @@ class TelefonoInterlocutorProveedorAdmin(admin.ModelAdmin):
 
 class CorreoInterlocutorProveedorAdmin(admin.ModelAdmin):
     list_display = (
-        'interlocutor',
         'correo',
+        'interlocutor',
         'fecha_baja',
         'estado',        
         )

@@ -67,10 +67,10 @@ class MagnitudAdmin(admin.ModelAdmin):
 
 class UnidadAdmin(admin.ModelAdmin):
     list_display = (
-        'magnitud',
         'nombre',
         'simbolo',
         'unidad_sunat',
+        'magnitud',
         )
 
     def save_model(self, request, obj, form, change):
@@ -101,8 +101,8 @@ class AreaAdmin(admin.ModelAdmin):
 
 class CargoAdmin(admin.ModelAdmin):
     list_display = (
-        'area',
         'nombre',
+        'area',
         'created_by',
         'created_at',
         'updated_by',
@@ -266,9 +266,9 @@ class DocumentoFisicoAdmin(admin.ModelAdmin):
 
 class RangoDocumentoProcesoAdmin(admin.ModelAdmin):
     list_display = (
-        'modelo',
         'serie',
         'rango_inicial',
+        'modelo',
         'created_by',
         'created_at',
         'updated_by',
@@ -284,9 +284,9 @@ class RangoDocumentoProcesoAdmin(admin.ModelAdmin):
 
 class RangoDocumentoFisicoAdmin(admin.ModelAdmin):
     list_display = (
-        'modelo',
         'serie',
         'rango_inicial',
+        'modelo',
         'created_by',
         'created_at',
         'updated_by',
@@ -302,11 +302,11 @@ class RangoDocumentoFisicoAdmin(admin.ModelAdmin):
 
 class CuentaBancariaSociedadAdmin(admin.ModelAdmin):
     list_display = (
-        'sociedad',
-        'banco',
-        'moneda',
         'numero_cuenta',
         'numero_cuenta_interbancaria',
+        'banco',
+        'moneda',
+        'sociedad',
         'estado',
         )
 
@@ -319,11 +319,11 @@ class CuentaBancariaSociedadAdmin(admin.ModelAdmin):
 
 class CuentaBancariaPersonalAdmin(admin.ModelAdmin):
     list_display = (
-        'usuario',
-        'banco',
-        'moneda',
         'numero_cuenta',
         'numero_cuenta_interbancaria',
+        'banco',
+        'moneda',
+        'usuario',
         'estado',
         )
 

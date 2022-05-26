@@ -12,8 +12,8 @@ class SedeCreateForm(BSModalModelForm):
     class Meta:
         model = Sede
         fields = (
-            'sociedad',
             'nombre',
+            'sociedad',
             'usuario_responsable',
             'direccion',
             'departamento_buscar',
