@@ -179,8 +179,8 @@ class EspecificacionAdmin(admin.ModelAdmin):
 class DatasheetAdmin(admin.ModelAdmin):
     list_display = (
         'descripcion',
-        'archivo',
         'material',
+        'archivo',
         )
 
     def save_model(self, request, obj, form, change):
