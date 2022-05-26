@@ -172,7 +172,8 @@ class MaterialForm(BSModalModelForm):
     def clean_marca(self):
         marca = self.cleaned_data.get('marca')
         modelo = self.fields['modelo']
-        modelo.queryset = marca.modelos.all()
+        if marca:
+            modelo.queryset = marca.modelos.all()
         return marca
         
     def clean_descripcion_venta(self):
