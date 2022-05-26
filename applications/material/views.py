@@ -344,7 +344,6 @@ class ComponenteCreateView(PermissionRequiredMixin,BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
-
         material = Material.objects.get(id = self.kwargs['material_id'])
         filtro = RelacionMaterialComponente.objects.filter(
             componentematerial = form.instance.componentematerial,
@@ -777,8 +776,15 @@ class ImagenMaterialCreateView(PermissionRequiredMixin,BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
-        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
+        material = Material.objects.get(id = self.kwargs['material_id'])
+        filtro = ImagenMaterial.objects.filter(
+            descripcion = form.instance.descripcion,
+            material = material)
+        if len(filtro)>0:
+            form.add_error('descripcion', 'Descripción de imagen ya registrada.')
+            return super().form_invalid(form)
 
+        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
 
@@ -805,6 +811,18 @@ class ImagenMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
     def form_valid(self, form):
+        filtro = ImagenMaterial.objects.filter(
+            descripcion = form.instance.descripcion,
+            material = self.object.material).exclude(
+                id = self.object.id
+            )
+
+        if len(filtro)>0:
+            form.add_error('descripcion', 'Descripción de imagen ya registrada.')
+            return super().form_invalid(form)
+        else:
+            pass
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -888,6 +906,14 @@ class VideoMaterialCreateView(PermissionRequiredMixin,BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
+        material = Material.objects.get(id = self.kwargs['material_id'])
+        filtro = VideoMaterial.objects.filter(
+            descripcion = form.instance.descripcion,
+            material = material)
+        if len(filtro)>0:
+            form.add_error('descripcion', 'Descripción de video ya registrada.')
+            return super().form_invalid(form)
+
         form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
 
         form.instance.usuario = self.request.user
@@ -916,6 +942,17 @@ class VideoMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
     def form_valid(self, form):
+        filtro = VideoMaterial.objects.filter(
+            descripcion = form.instance.descripcion,
+            material = self.object.material).exclude(
+                id = self.object.id
+            )
+
+        if len(filtro)>0:
+            form.add_error('descripcion', 'Descripción de video ya registrada.')
+            return super().form_invalid(form)
+        else:
+            pass
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -999,11 +1036,17 @@ class ProveedorMaterialCreateView(PermissionRequiredMixin,BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
-        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
+        material = Material.objects.get(id = self.kwargs['material_id'])
+        filtro = ProveedorMaterial.objects.filter(
+            proveedor = form.instance.proveedor,
+            material = material)
+        if len(filtro)>0:
+            form.add_error('proveedor', 'Proveedor ya asignado al material.')
+            return super().form_invalid(form)
 
+        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
-
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -1027,6 +1070,18 @@ class ProveedorMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
     def form_valid(self, form):
+        filtro = ProveedorMaterial.objects.filter(
+            proveedor = form.instance.proveedor,
+            material = self.object.material).exclude(
+                id = self.object.id
+            )
+
+        if len(filtro)>0:
+            form.add_error('proveedor', 'Proveedor ya asignado al material.')
+            return super().form_invalid(form)
+        else:
+            pass
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -1109,6 +1164,12 @@ class EquivalenciaUnidadCreateView(PermissionRequiredMixin,BSModalCreateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
+    def get_form_kwargs(self, *args, **kwargs):
+        material = Material.objects.get(id = self.kwargs['material_id'])
+        kwargs = super(EquivalenciaUnidadCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['material'] = material
+        return kwargs
+
     def form_valid(self, form):
         form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
 
@@ -1136,6 +1197,11 @@ class EquivalenciaUnidadUpdateView(PermissionRequiredMixin,BSModalUpdateView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(EquivalenciaUnidadUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['material'] = self.object.material
+        return kwargs
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
