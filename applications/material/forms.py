@@ -169,6 +169,22 @@ class MaterialForm(BSModalModelForm):
         unidad.queryset = subfamilia.unidad.all()
         return subfamilia
 
+    def clean_descripcion_venta(self):
+        descripcion_venta = self.cleaned_data.get('descripcion_venta')
+        filtro = Material.objects.filter(descripcion_venta__unaccent__iexact = descripcion_venta)
+        if descripcion_venta != self.instance.descripcion_venta:
+            if len(filtro)>0:
+                self.add_error('descripcion_venta', 'Ya existe un material con esa descripción de venta')
+        return descripcion_venta
+
+    def clean_descripcion_corta(self):
+        descripcion_corta = self.cleaned_data.get('descripcion_corta')
+        filtro = Material.objects.filter(descripcion_corta__unaccent__iexact = descripcion_corta)
+        if descripcion_corta != self.instance.descripcion_corta:
+            if len(filtro)>0:
+                self.add_error('descripcion_corta', 'Ya existe un material con esa descripción corta')
+        return descripcion_corta
+
     def __init__(self, *args, **kwargs):
         super(MaterialForm, self).__init__(*args, **kwargs)
         self.fields['subfamilia'].queryset = SubFamilia.objects.none()
@@ -188,6 +204,7 @@ class MaterialForm(BSModalModelForm):
         self.fields['control_calidad'].widget.attrs['class'] = 'form-check-input'
         self.fields['mostrar'].widget.attrs['class'] = 'form-check-input'
 
+        
 class RelacionMaterialComponenteForm(BSModalModelForm):
     class Meta:
         model = RelacionMaterialComponente
@@ -195,6 +212,7 @@ class RelacionMaterialComponenteForm(BSModalModelForm):
             'componentematerial',
             'cantidad',
             )
+
 
     def __init__(self, *args, **kwargs):
         componentes = kwargs.pop('componentes')

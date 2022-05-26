@@ -35,9 +35,8 @@ class DatosContratoPlanilla(models.Model):
             '-fecha_alta',
         ]
 
-    def __str__(self):
-        
-        return str(self.fecha_alta)
+    def __str__(self):     
+        return str(self.usuario) + str(" - ") + str(self.sociedad)
         
 
 
@@ -72,4 +71,4 @@ class DatosContratoHonorarios(models.Model):
         ]
 
     def __str__(self):
-        return str(self.fecha_alta)
+        return str(self.usuario) + str(" - ") + str(self.sociedad)

@@ -74,7 +74,7 @@ class Asistencia(models.Model):
         ]
 
     def __str__(self):
-        return str(self.hora_ingreso)
+        return str(self.usuario)+" - "+ str(self.fecha_registro)+" - "+ str(self.hora_ingreso)+" - "+ str(self.sede)
 
 
 class ResponsableAsistencia(models.Model):

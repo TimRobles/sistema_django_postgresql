@@ -37,7 +37,7 @@ class HistoricoUser(models.Model):
             ]
 
     def __str__(self):
-        return str(self.fecha_alta)
+        return str(self.usuario) + " - " + str(self.fecha_alta)
 
 
 class DatosUsuario(models.Model):
@@ -64,4 +64,4 @@ class DatosUsuario(models.Model):
         verbose_name_plural = 'Datos de los Usuarios'
 
     def __str__(self):
-        return str(self.numero_documento)
+        return str(self.usuario)+ " - " + str(self.numero_documento)

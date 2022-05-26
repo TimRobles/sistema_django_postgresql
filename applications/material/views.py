@@ -344,7 +344,16 @@ class ComponenteCreateView(PermissionRequiredMixin,BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
-        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
+
+        material = Material.objects.get(id = self.kwargs['material_id'])
+        filtro = RelacionMaterialComponente.objects.filter(
+            componentematerial = form.instance.componentematerial,
+            material = material)
+        if len(filtro)>0:
+            form.add_error('componentematerial', 'El material ya cuenta con el componente seleccionado.')
+            return super().form_invalid(form)
+            
+        form.instance.material = material
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -381,6 +390,17 @@ class ComponenteUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return kwargs
 
     def form_valid(self, form):
+        filtro = RelacionMaterialComponente.objects.filter(
+            componentematerial = form.instance.componentematerial,
+            material = self.object.material).exclude(
+                id = self.object.id
+            )
+        if len(filtro)>0:
+            form.add_error('componentematerial', 'El material ya cuenta con el componente seleccionado.')
+            return super().form_invalid(form)
+        else:
+            pass
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -425,7 +445,15 @@ class EspecificacionCreateView(PermissionRequiredMixin,BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
-        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
+        material = Material.objects.get(id = self.kwargs['material_id'])
+        filtro = Especificacion.objects.filter(
+            atributomaterial = form.instance.atributomaterial,
+            material = material)
+        if len(filtro)>0:
+            form.add_error('atributomaterial', 'El material ya cuenta con el atributo seleccionado.')
+            return super().form_invalid(form)
+            
+        form.instance.material = material
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -462,6 +490,17 @@ class EspecificacionUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return kwargs
 
     def form_valid(self, form):
+        filtro = Especificacion.objects.filter(
+            atributomaterial = form.instance.atributomaterial,
+            material = self.object.material).exclude(
+                id = self.object.id
+            )
+        if len(filtro)>0:
+            form.add_error('atributomaterial', 'El material ya cuenta con el atributo seleccionado.')
+            return super().form_invalid(form)
+        else:
+            pass
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -584,7 +623,7 @@ class DatosImportacionUpdateView(PermissionRequiredMixin,BSModalUpdateView):
     def get_context_data(self, **kwargs):
         context = super(DatosImportacionUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="Importaciones"
+        context['titulo']="Datos de Importación"
         return context
 
 

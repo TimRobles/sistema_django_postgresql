@@ -156,12 +156,12 @@ class Material(models.Model):
         verbose_name = 'Material'
         verbose_name_plural = 'Materiales'
         ordering = [
+        'estado_alta_baja',
         'descripcion_venta',
         ]
 
     def __str__(self):
-
-        return self.descripcion_venta
+        return self.descripcion_venta +" - "+ self.descripcion_corta
 
 class RelacionMaterialComponente(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
@@ -179,7 +179,7 @@ class RelacionMaterialComponente(models.Model):
         verbose_name_plural = 'Relacion Material Componentes'
 
     def __str__(self):
-        return self.material.__str__()
+        return self.material.__str__() +" - "+ self.componentematerial.__str__()
 
 class Especificacion(models.Model):
     orden = models.IntegerField('Orden')
@@ -198,7 +198,7 @@ class Especificacion(models.Model):
         ordering = ['orden',]
 
     def __str__(self):
-        return self.material.__str__()
+        return str(self.orden) + " - " +self.atributomaterial.__str__() + " - " + str(self.valor)
 
 class Datasheet(models.Model):
     descripcion = models.CharField('Descripción', max_length=200)
@@ -215,7 +215,7 @@ class Datasheet(models.Model):
         verbose_name_plural = 'Datasheets'
 
     def __str__(self):
-        return self.descripcion.__str__()
+        return self.descripcion.__str__() + " - " + self.material.__str__()
 
 class ImagenMaterial(models.Model):
     descripcion = models.CharField('Descripción imagen material', max_length=200)
@@ -234,7 +234,7 @@ class ImagenMaterial(models.Model):
         ordering = ['estado_alta_baja']
 
     def __str__(self):
-        return self.descripcion.__str__()
+        return self.descripcion.__str__() + " - " + self.material.__str__()
 
 class VideoMaterial(models.Model):
     descripcion = models.CharField('Descripción video material', max_length=200)
@@ -254,7 +254,7 @@ class VideoMaterial(models.Model):
 
 
     def __str__(self):
-        return self.descripcion.__str__()
+        return self.descripcion.__str__()+ " - " + self.material.__str__()
 
 class ProveedorMaterial(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
@@ -262,20 +262,21 @@ class ProveedorMaterial(models.Model):
     name = models.CharField('Name', max_length=100)
     brand = models.CharField('Brand', max_length=100)
     description = models.CharField('Description', max_length=255)
+    estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ProveedorMaterial_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ProveedorMaterial_updated_by', editable=False)
-    estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
-
 
     class Meta:
         verbose_name = 'Proveedor Material'
         verbose_name_plural = 'Proveedor Materiales'
+        ordering = ['estado_alta_baja',]
+
 
     def __str__(self):
-        return self.material.__str__()
+        return str(self.proveedor) + " - " + self.material.__str__()
 
 class EquivalenciaUnidad(models.Model):
     cantidad_base = models.DecimalField('Cantidad Base', max_digits=6, decimal_places=2)
@@ -292,6 +293,8 @@ class EquivalenciaUnidad(models.Model):
     class Meta:
         verbose_name = 'Equivalencia Unidad'
         verbose_name_plural = 'Equivalencia Unidades'
+        ordering = ['estado_alta_baja',]
+
 
     def __str__(self):
-        return self.nueva_unidad
+        return str(self.cantidad_base) + " : " + str(self.cantidad_nueva_unidad) +" " + str(self.nueva_unidad)
