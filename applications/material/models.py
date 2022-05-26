@@ -298,3 +298,4 @@ class EquivalenciaUnidad(models.Model):
 
     def __str__(self):
         return str(self.cantidad_base) + " : " + str(self.cantidad_nueva_unidad) + " " + str(self.nueva_unidad)
+
