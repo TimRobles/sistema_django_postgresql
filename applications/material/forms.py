@@ -371,15 +371,22 @@ class ProveedorMaterialForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
    
 class EquivalenciaUnidadForm(BSModalModelForm):
+    unidad_base = forms.CharField(max_length=50)
     class Meta:
         model = EquivalenciaUnidad
         fields =(
             'cantidad_base',
-            'nueva_unidad',
+            'unidad_base',
             'cantidad_nueva_unidad',
+            'nueva_unidad',
         )
     
     def __init__(self, *args, **kwargs):
-        super(EquivalenciaUnidadForm, self).__init__(*args, **kwargs)          
+        material = kwargs.pop('material')
+        super(EquivalenciaUnidadForm, self).__init__(*args, **kwargs) 
+        self.fields['unidad_base'].initial = material.unidad_base
+        self.fields['nueva_unidad'].queryset = material.subfamilia.unidad.all().exclude(id = material.unidad_base.id)
+        self.fields['unidad_base'].disabled = True
+         
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

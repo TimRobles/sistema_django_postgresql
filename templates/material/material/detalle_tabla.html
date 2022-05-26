@@ -362,8 +362,9 @@
         <thead>
             <tr>      
                 <th class="text-rigth">Cantidad base</th>
-                <th class="text-rigth">Nueva unidad</th>
+                <th class="text-rigth">Unidad Base</th>
                 <th class="text-rigth">Cantidad nueva unidad</th>
+                <th class="text-rigth">Nueva unidad</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -371,8 +372,9 @@
             {% for equivalencia  in equivalencias %}
             <tr>
                 <td>{{ equivalencia.cantidad_base}}</td>
-                <td>{{ equivalencia.nueva_unidad}}</td>
+                <td>{{ equivalencia.unidad_base}}</td>
                 <td>{{ equivalencia.cantidad_nueva_unidad}}</td>
+                <td>{{ equivalencia.nueva_unidad}}</td>
                 <td class="text-center text-nowrap">
 
                     {% if equivalencia.estado_alta_baja == 1 %}
