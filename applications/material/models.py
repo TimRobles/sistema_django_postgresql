@@ -299,3 +299,34 @@ class EquivalenciaUnidad(models.Model):
     def __str__(self):
         return str(self.cantidad_base) + " : " + str(self.cantidad_nueva_unidad) + " " + str(self.nueva_unidad)
 
+class Idioma(models.Model):
+    nombre = models.CharField('Idioma', max_length=50)  
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Idioma_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Idioma_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Idioma'
+        verbose_name_plural = 'Idiomas'
+        ordering = ['nombre',]
+
+    def __str__(self):
+        return self.nombre
+
+class IdiomaMaterial(models.Model):
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    idioma = models.ForeignKey(Idioma, on_delete=models.CASCADE)
+    traduccion = models.CharField('Traducción', max_length=50)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='IdiomaMaterial_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='IdiomaMaterial_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Idioma Material'
+        verbose_name_plural = 'Idioma Materiales'
+
+    def __str__(self):
+        return str(self.idioma)

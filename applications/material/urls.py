@@ -68,4 +68,7 @@ urlpatterns = [
     path('proveedor-material/baja/<pk>/', views.ProveedorMaterialDarBaja.as_view(), name='proveedor_material_baja'),
     path('proveedor-material/alta/<pk>/', views.ProveedorMaterialDarAlta.as_view(), name='proveedor_material_alta'),
 
+    path('idioma-material/registrar/<int:material_id>/', views.IdiomaMaterialCreateView.as_view(), name='idioma_material_registrar'),
+    path('idioma-material/actualizar/<pk>/', views.IdiomaMaterialUpdateView.as_view(), name='idioma_material_actualizar'),
+
 ]

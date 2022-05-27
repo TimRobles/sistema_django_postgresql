@@ -372,7 +372,7 @@
             {% for equivalencia  in equivalencias %}
             <tr>
                 <td>{{ equivalencia.cantidad_base}}</td>
-                <td>{{ equivalencia.unidad_base}}</td>
+                <td>{{ equivalencia.material.unidad_base}}</td>
                 <td>{{ equivalencia.cantidad_nueva_unidad}}</td>
                 <td>{{ equivalencia.nueva_unidad}}</td>
                 <td class="text-center text-nowrap">
@@ -460,6 +460,47 @@
                         </button>
                     {% endif %}
                 </td> 
+            </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+<h3>Idioma Material
+    <button data-form-url="{% url 'material_app:idioma_material_registrar' contexto_material.id %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        class="create badge bg-primary">
+        Idioma Material
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>      
+                <th class="text-rigth">Idioma</th>
+                <th class="text-rigth">Traducción</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for idioma in idiomas %}
+            <tr>
+                <td>{{ idioma.idioma}}</td>
+                <td>{{ idioma.traduccion}}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:idioma_material_actualizar' idioma.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
             </tr>
             {% endfor %}    
         </tbody>
