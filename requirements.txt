@@ -12,3 +12,4 @@ phonenumbers
 dataclasses
 simplejson
 requests
+django-cleanup

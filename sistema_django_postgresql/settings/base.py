@@ -53,6 +53,7 @@ THIRD_PARTY_APPS = (
     'bootstrap_modal_forms',
     'widget_tweaks',
     'colorfield',
+    'django_cleanup.apps.CleanupConfig',
 )
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
