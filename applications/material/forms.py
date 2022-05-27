@@ -1,6 +1,7 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
+from applications.proveedores.models import Proveedor
 from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet,ImagenMaterial,VideoMaterial,ProveedorMaterial,EquivalenciaUnidad,Idioma,IdiomaMaterial
 
 class ClaseForm(forms.ModelForm):
@@ -368,6 +369,7 @@ class ProveedorMaterialForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProveedorMaterialForm, self).__init__(*args, **kwargs)
+        self.fields['proveedor'].queryset = Proveedor.objects.filter(estado = 1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
    
