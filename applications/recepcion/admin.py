@@ -4,7 +4,6 @@ from .models import (
     Visita,
     Asistencia,
     ResponsableAsistencia,
-    IpPublica,
 )
 
 class VisitaAdmin(admin.ModelAdmin):
@@ -71,22 +70,6 @@ class ResponsableAsistenciaAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-class IpPublicaAdmin(admin.ModelAdmin):
-    list_display = (
-        'ip',
-        'sede',
-        'created_at',
-        'created_by',
-        )
-
-
-    def save_model(self, request, obj, form, change):
-        if obj.created_by == None:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
-
 class GeoLocalizacionAdmin(admin.ModelAdmin):
     list_display = (
         'longitud',
@@ -110,6 +93,5 @@ class GeoLocalizacionAdmin(admin.ModelAdmin):
 admin.site.register(Visita, VisitaAdmin)
 admin.site.register(Asistencia, AsistenciaAdmin)
 admin.site.register(ResponsableAsistencia, ResponsableAsistenciaAdmin)
-admin.site.register(IpPublica, IpPublicaAdmin)
 admin.site.register(GeoLocalizacion, GeoLocalizacionAdmin)
 

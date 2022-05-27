@@ -12,7 +12,6 @@ from .forms import (
     )
 
 from .models import (
-    IpPublica,
     ResponsableAsistencia,
     Visita,
     Asistencia,
@@ -390,11 +389,3 @@ class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpda
         context['accion']="Registrar Salida"
         context['titulo']="Asistencia Personal"
         return context
-
-def ConfirmarSedeView(request, id_sede):
-    buscar_ip = IpPublica.objects.filter(sede__id = id_sede)
-    if buscar_ip:
-        if buscar_ip.latest('created_at').ip != request.META[settings.BUSCAR_IP]:
-            return HttpResponse('No estás en el wifi correcto.')
-    
-    return HttpResponse('')
