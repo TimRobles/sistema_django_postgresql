@@ -1,7 +1,7 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
-from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet,ImagenMaterial,VideoMaterial,ProveedorMaterial,EquivalenciaUnidad
+from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet,ImagenMaterial,VideoMaterial,ProveedorMaterial,EquivalenciaUnidad,Idioma,IdiomaMaterial
 
 class ClaseForm(forms.ModelForm):
     class Meta:
@@ -389,5 +389,33 @@ class EquivalenciaUnidadForm(BSModalModelForm):
         self.fields['nueva_unidad'].queryset = material.subfamilia.unidad.all().exclude(id = material.unidad_base.id)
         self.fields['unidad_base'].disabled = True
          
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class IdiomaForm(forms.ModelForm):
+    class Meta:
+        model = Idioma
+        fields = (
+            'nombre',
+            )
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre')
+        filtro = Idioma.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe este Idioma.')
+        return nombre
+
+class IdiomaMaterialForm(BSModalModelForm):
+    class Meta:
+        model = IdiomaMaterial
+        fields = (
+            'idioma',
+            'traduccion',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(IdiomaMaterialForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

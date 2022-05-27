@@ -7,7 +7,7 @@ from .forms import (
     ModeloForm, MarcaForm,MaterialForm, 
     RelacionMaterialComponenteForm,EspecificacionForm, 
     DatasheetForm,DatosImportacionForm,ProductoSunatForm,
-    ImagenMaterialForm,VideoMaterialForm,ProveedorMaterialForm,EquivalenciaUnidadForm,
+    ImagenMaterialForm,VideoMaterialForm,ProveedorMaterialForm,EquivalenciaUnidadForm,IdiomaMaterialForm,
     )
 from .models import (
     Modelo, 
@@ -21,6 +21,7 @@ from .models import (
     VideoMaterial,
     ProveedorMaterial,
     EquivalenciaUnidad,
+    IdiomaMaterial,
     )
 
 class ModeloListView(PermissionRequiredMixin, ListView):
@@ -304,6 +305,7 @@ class MaterialDetailView(PermissionRequiredMixin,DetailView):
         context['videos'] = VideoMaterial.objects.filter(material = material)
         context['proveedores'] = ProveedorMaterial.objects.filter(material = material)
         context['equivalencias'] = EquivalenciaUnidad.objects.filter(material = material)
+        context['idiomas'] = IdiomaMaterial.objects.filter(material = material)
         return context
 
 def MaterialDetailTabla(request, pk):
@@ -320,6 +322,7 @@ def MaterialDetailTabla(request, pk):
         context['videos'] = VideoMaterial.objects.filter(material = material)
         context['proveedores'] = ProveedorMaterial.objects.filter(material = material)
         context['equivalencias'] = EquivalenciaUnidad.objects.filter(material = material)
+        context['idiomas'] = IdiomaMaterial.objects.filter(material = material)
 
         data['table'] = render_to_string(
             template,
@@ -1172,10 +1175,8 @@ class EquivalenciaUnidadCreateView(PermissionRequiredMixin,BSModalCreateView):
 
     def form_valid(self, form):
         form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
-
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
-
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -1267,5 +1268,76 @@ class EquivalenciaUnidadDarAlta(PermissionRequiredMixin,BSModalDeleteView):
         context['accion']="Dar Alta"
         context['titulo'] = "Equivalencia Unidad"
         context['dar_baja'] = "true"
+        return context
+
+
+class IdiomaMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('material.add_idiomamaterial')
+    model = IdiomaMaterial
+    template_name = "includes/formulario generico.html"
+    form_class = IdiomaMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
+
+    def form_valid(self, form):
+        material = Material.objects.get(id = self.kwargs['material_id'])
+        filtro = IdiomaMaterial.objects.filter(
+            idioma = form.instance.idioma,
+            material = material)
+        if len(filtro)>0:
+            form.add_error('idioma', 'Idioma ya registrado.')
+            return super().form_invalid(form)
+
+        form.instance.material = material
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(IdiomaMaterialCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="IdiomaMaterial"
+        return context     
+
+class IdiomaMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('material.add_idiomamaterial')
+    model = IdiomaMaterial
+    template_name = "includes/formulario generico.html"
+    form_class = IdiomaMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)   
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+
+    def form_valid(self, form):
+        filtro = IdiomaMaterial.objects.filter(
+            idioma = form.instance.idioma,
+            material = self.object.material).exclude(
+                id = self.object.id
+            )
+
+        if len(filtro)>0:
+            form.add_error('idioma', 'Idioma ya registrado.')
+            return super().form_invalid(form)
+        else:
+            pass
+
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(IdiomaMaterialUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Idioma del Material"
         return context
 

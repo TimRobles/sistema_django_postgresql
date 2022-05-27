@@ -3,10 +3,13 @@ from applications.material.forms import (
     ClaseForm,
     ComponenteForm,
     AtributoForm,
-    FamiliaForm,    
+    FamiliaForm,
+    IdiomaMaterialForm,    
     SubFamiliaForm,
     MarcaForm,
-    ModeloForm,      
+    ModeloForm,
+    IdiomaForm,      
+    IdiomaMaterialForm,      
     )
 
 from .models import (
@@ -25,6 +28,8 @@ from .models import (
     VideoMaterial,
     ProveedorMaterial,
     EquivalenciaUnidad,
+    Idioma,
+    IdiomaMaterial,
 )
 
 class ClaseAdmin(admin.ModelAdmin):
@@ -234,6 +239,7 @@ class ProveedorMaterialAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+
 class EquivalenciaUnidadAdmin(admin.ModelAdmin):
     list_display = (
         'material',
@@ -247,6 +253,35 @@ class EquivalenciaUnidadAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+class IdiomaAdmin(admin.ModelAdmin):
+    list_display = (
+        'nombre',
+        'created_at',
+        'created_by',
+        )
+    form = IdiomaForm
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+class IdiomaMaterialAdmin(admin.ModelAdmin):
+    list_display = (
+        'idioma',
+        'material',
+        'traduccion',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+     
 
 
 admin.site.register(Marca, MarcaAdmin)
@@ -265,3 +300,5 @@ admin.site.register(ImagenMaterial,ImagenMaterialAdmin)
 admin.site.register(VideoMaterial,VideoMaterialAdmin)
 admin.site.register(ProveedorMaterial,ProveedorMaterialAdmin)
 admin.site.register(EquivalenciaUnidad,EquivalenciaUnidadAdmin)
+admin.site.register(Idioma,IdiomaAdmin)
+admin.site.register(IdiomaMaterial,IdiomaMaterialAdmin)
