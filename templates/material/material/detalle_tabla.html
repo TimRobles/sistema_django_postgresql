@@ -1,3 +1,107 @@
+<h3>Datos de material</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Descripción venta</th>
+                <th class="text-rigth">Descripción corta</th>
+                <th class="text-rigth">Familia</th>
+                <th class="text-rigth">Subfamilia</th>
+                <th class="text-rigth">Unidad Base</th>
+                <th class="text-rigth">Peso Unidad Base</th>
+                <th class="text-rigth">Marca</th>
+                <th class="text-rigth">Modelo</th>
+                <th class="text-center">Clase</th>
+                <th class="text-center">Control Serie</th>
+                <th class="text-center">Control Lote</th>
+                <th class="text-center">Control Calidad</th>
+                <th class="text-center">Mostrar</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_material.descripcion_venta }}</td>
+                <td>{{ contexto_material.descripcion_corta }}</td>
+                <td>{{ contexto_material.subfamilia.familia }}</td>
+                <td>{{ contexto_material.subfamilia }}</td>
+                <td>{{ contexto_material.unidad_base }}</td>
+                <td>{{ contexto_material.peso_unidad_base }}</td>
+
+                <td class="text-center">
+                    {% if contexto_material.marca != None %}
+                        {{ contexto_material.marca }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>                 
+
+                <td class="text-center">
+                    {% if contexto_material.modelo != None %}
+                        {{ contexto_material.modelo }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>                 
+
+                <td class="text-center">
+                    {% if contexto_material.clase != None %}
+                        {{ contexto_material.clase }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                                
+                <td class="text-center">
+                    {% if contexto_material.control_serie == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                
+                <td class="text-center">
+                    {% if contexto_material.control_lote == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                               
+                <td class="text-center">
+                    {% if contexto_material.control_calidad == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                                              
+                <td class="text-center">
+                    {% if contexto_material.mostrar == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'material_app:material_actualizar' contexto_material.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+
 <h3>Datos de importación</h3>
 <div class="table-responsive">
     <table class="table">
@@ -7,7 +111,7 @@
                 <th class="text-rigth">Partida</th>
                 <th class="text-rigth">Uso o funcion</th>
                 <th class="text-rigth">Compuesto por</th>
-                <th class="text-rigth">Es componente</th>
+                <th class="text-center">Es componente</th>
                 <th class="text-center">Acción</th>
             </tr>
         </thead>
@@ -17,11 +121,11 @@
                 <td>{{ contexto_material.partida }}</td>
                 <td>{{ contexto_material.uso_funcion }}</td>
                 <td>{{ contexto_material.compuesto_por }}</td>
-                <td>
+                <td class="text-center">
                     {% if contexto_material.es_componente == True %}
-                    <h6>Sí</h6>
+                        Sí
                     {% else %}
-
+                        No
                     {% endif %}
                 </td>
                 <td class="text-center text-nowrap">
