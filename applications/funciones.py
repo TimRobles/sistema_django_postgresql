@@ -56,6 +56,41 @@ def consulta_dni(dni):
 #     'cliente': 'TIM ARNOLD ROBLES MARTINEZ'
 #     }
 
+def consulta_dni2(dni):
+    token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
+    url = "https://api.apis.net.pe/v1/dni?numero="
+    headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
+    r = requests.get(url + str(dni), headers=headers)
+    data = r.json()
+
+    return data
+
+# {
+#  "nombre":"HUAMANI MENDOZA ERACLEO JUAN",
+#  "tipoDocumento":"1",
+#  "numeroDocumento":"46027897",
+#  "estado":"",
+#  "condicion":"",
+#  "direccion":"",
+#  "ubigeo":"",
+#  "viaTipo":"",
+#  "viaNombre":"",
+#  "zonaCodigo":"",
+#  "zonaTipo":"",
+#  "numero":"",
+#  "interior":"",
+#  "lote":"",
+#  "dpto":"",
+#  "manzana":"",
+#  "kilometro":"",
+#  "distrito":"",
+#  "provincia":"",
+#  "departamento":"",
+#  "nombres": "ERACLE JUAN",
+#  "apellidoPaterno": "HUAMANI",
+#  "apellidoMaterno": "MENDOZA"
+#}
+
 def validar_texto(texto):
     lista = texto.split(" ")
     for palabra in lista:
