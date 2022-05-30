@@ -75,9 +75,9 @@ class InterlocutorClienteAdmin(admin.ModelAdmin):
 
 class ClienteInterlocutorAdmin(admin.ModelAdmin):
     list_display = (
+        'cliente',
         'interlocutor',
         'tipo_interlocutor',
-        'cliente',
         'estado',
         )
 
