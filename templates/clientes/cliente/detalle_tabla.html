@@ -20,7 +20,7 @@
             {% for interlocutor in interlocutores %}
             <tr>
                 <td>{{ interlocutor.interlocutor.nombre_completo }}</td>
-                <td>{{ interlocutor.interlocutor.tipo_interlocutor}}</td>
+                <td>{{ interlocutor.interlocutor.tipo_interlocutor }}</td>
                 <td class="text-center text-nowrap">
                     {% if interlocutor.estado == 1 %}
                         <button data-form-url="{% url 'clientes_app:interlocutor_actualizar' interlocutor.interlocutor.id %}"
@@ -35,7 +35,11 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
                             <i class="bi bi-hand-thumbs-down-fill"></i>
                         </button>
-
+                        <a href="{% url 'clientes_app:interlocutor_detalle' interlocutor.interlocutor.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
                     {% elif interlocutor.estado == 2 %}
                         <button data-form-url="{% url 'clientes_app:interlocutor_alta' interlocutor.id %}"
                             class="delete btn btn-success btn-sm"

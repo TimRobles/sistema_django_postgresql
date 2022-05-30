@@ -153,7 +153,6 @@ def ClienteDetailTabla(request, pk):
         )
         return JsonResponse(data)
 
-
 class InterlocutorClienteCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('clientes.add_interlocutorcliente')
 
@@ -271,4 +270,170 @@ class InterlocutorClienteDarAltaView(PermissionRequiredMixin, BSModalDeleteView)
         context['titulo'] = "Interlocutor"
         context['dar_baja'] = "true"
         context['item'] = self.object.interlocutor
+        return context
+
+
+
+
+class InterlocutorClienteDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('clientes.view_interlocutorcliente')
+
+    model = InterlocutorCliente
+    template_name = "clientes/interlocutor/detalle.html"
+    context_object_name = 'contexto_interlocutores'
+
+    def get_context_data(self, **kwargs):
+        interlocutor = InterlocutorCliente.objects.get(id = self.kwargs['pk'])
+        context = super(InterlocutorClienteDetailView, self).get_context_data(**kwargs)
+        context['telefonos'] = TelefonoInterlocutorCliente.objects.filter(interlocutor = interlocutor)
+        context['correos'] = CorreoInterlocutorCliente.objects.filter(interlocutor = interlocutor)
+        return context
+
+def InterlocutorClienteDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'clientes/interlocutor/detalle_tabla.html'
+        context = {}
+        interlocutor = InterlocutorCliente.objects.get(id = pk)
+        context['contexto_interlocutores'] = interlocutor
+        context['telefonos'] = TelefonoInterlocutorCliente.objects.filter(interlocutor = interlocutor)
+        context['correos'] = CorreoInterlocutorCliente.objects.filter(interlocutor = interlocutor)
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class TelefonoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('clientes.add_telefonointerlocutorcliente')
+
+    model = TelefonoInterlocutorCliente
+    template_name = "includes/formulario generico.html"
+    form_class = TelefonoInterlocutorForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.kwargs['interlocutor_id']})
+
+    def form_valid(self, form):
+        form.instance.interlocutor = InterlocutorCliente.objects.get(id = self.kwargs['interlocutor_id'])
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(TelefonoInterlocutorCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Teléfono"
+        return context
+
+class TelefonoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_telefonointerlocutorcliente')
+    model = TelefonoInterlocutorCliente
+    template_name = "includes/formulario generico.html"
+    form_class = TelefonoInterlocutorForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(TelefonoInterlocutorUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Teléfono"
+        return context
+    
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+class TelefonoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_telefonointerlocutorcliente')
+
+    model = TelefonoInterlocutorCliente
+    template_name = "includes/formulario generico.html"
+    form_class = TelefonoInterlocutorDarBajaForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
+
+    def form_valid(self, form):
+        form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(TelefonoInterlocutorDarBajaView, self).get_context_data(**kwargs)
+        context['accion']="Dar Baja"
+        context['titulo']="Teléfono"
+        return context
+
+class CorreoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('clientes.add_correointerlocutorcliente')
+
+    model = CorreoInterlocutorCliente
+    template_name = "includes/formulario generico.html"
+    form_class = CorreoInterlocutorForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.kwargs['interlocutor_id']})
+
+    def form_valid(self, form):
+        form.instance.interlocutor = InterlocutorCliente.objects.get(id = self.kwargs['interlocutor_id'])
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreoInterlocutorCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Correo"
+        return context
+
+class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_correointerlocutorcliente')
+    model = CorreoInterlocutorCliente
+    template_name = "includes/formulario generico.html"
+    form_class = CorreoInterlocutorForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreoInterlocutorUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Correo"
+        return context
+    
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_correointerlocutorcliente')
+
+    model = CorreoInterlocutorCliente
+    template_name = "includes/formulario generico.html"
+    form_class = CorreoInterlocutorDarBajaForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
+
+    def form_valid(self, form):
+        form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreoInterlocutorDarBajaView, self).get_context_data(**kwargs)
+        context['accion']="Dar Baja"
+        context['titulo']="Correo"
         return context

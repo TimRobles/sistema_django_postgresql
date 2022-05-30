@@ -8,7 +8,7 @@ from applications.variables import ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, 
 class Cliente(models.Model):
 
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT)
-    numero_documento = models.CharField('Número de Documento', max_length=15, unique=True)
+    numero_documento = models.CharField('Número de Documento', max_length=15)
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=50, blank=True, null=True)
     direccion_fiscal = models.CharField('Dirección Fiscal', max_length=100)
@@ -56,7 +56,7 @@ class TipoInterlocutorCliente(models.Model):
 class InterlocutorCliente(models.Model):
 
     nombre_completo = models.CharField('Nombre Completo', max_length=120)
-    tipo_interlocutor = models.ForeignKey(TipoInterlocutorCliente, on_delete=models.PROTECT)
+    tipo_interlocutor = models.ForeignKey(TipoInterlocutorCliente, verbose_name='Tipo de Interlocutor', on_delete=models.PROTECT)
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)
     numero_documento = models.CharField('Número de Documento', max_length=15, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
