@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from applications import datos_globales
 from applications.rutas import RUTA_SOCIEDAD_DOCUMENTO, RUTA_SOCIEDAD_LOGO
-from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, CONDICION_SUNAT
+from applications.variables import ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, CONDICION_SUNAT, ESTADOS
 from colorfield.fields import ColorField
 
 from applications.funciones import validar_numero
@@ -80,17 +80,12 @@ class TipoRepresentanteLegal(models.Model):
 class RepresentanteLegal(models.Model):
     '''Solo por Admin'''
 
-    ESTADO = (
-    (1, 'ACTIVO'),
-    (2, 'BAJA'),
-    )
-
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Usuario', verbose_name='Representante Legal')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True, related_name='Sociedad', editable=False)
     tipo_representante_legal = models.ForeignKey(TipoRepresentanteLegal, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoRepresentanteLegal')
     fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_baja= models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADO, default=1)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RepresentanteLegal_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -101,5 +96,5 @@ class RepresentanteLegal(models.Model):
         verbose_name_plural = 'Representantes Legales'
 
     def __str__(self):
-        return str(self.tipo_representante_legal) + ' - ' + str(self.sociedad)
+        return str(self.usuario)+ ' - ' + str(self.tipo_representante_legal) 
 
