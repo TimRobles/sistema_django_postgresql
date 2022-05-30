@@ -50,7 +50,8 @@ def DatosContratoPlanillaTabla(request):
 class DatosContratoPlanillaCreateView(PermissionRequiredMixin,BSModalCreateView):
     permission_required = ('colaborador.add_datoscontratoplanilla')
     model = DatosContratoPlanilla
-    template_name = "includes/formulario generico.html"
+    # template_name = "includes/formulario generico.html"
+    template_name = "colaborador/datos_contrato/planilla/form.html"
     form_class = DatosContratoPlanillaForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_planilla_inicio')
     
@@ -90,7 +91,8 @@ class DatosContratoPlanillaCreateView(PermissionRequiredMixin,BSModalCreateView)
 class DatosContratoPlanillaUpdateView(PermissionRequiredMixin,BSModalUpdateView):
     permission_required = ('colaborador.change_datoscontratoplanilla')
     model = DatosContratoPlanilla
-    template_name = "includes/formulario generico.html"
+    # template_name = "includes/formulario generico.html"
+    template_name = "colaborador/datos_contrato/planilla/form.html"
     form_class = DatosContratoActualizarPlanillaForm
     success_url = reverse_lazy('colaborador_app:datos_contrato_planilla_inicio')
     

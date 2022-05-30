@@ -230,26 +230,23 @@ $(function () {
         spinner();
         checkbox_div();
         jscolor.install();
+
+        combos = document.getElementsByClassName('select2');
+        for (let index = 0; index < combos.length; index++) {
+            const element = combos[index];
+            element.className = element.className.replace('select2-container--default', 'form-control');
+        }
     }
 
     $('#modal').on('shown.bs.modal', function (e) {
         funcionesDentroModal();
         reemplazarTexto(e);
-        combos = document.getElementsByClassName('select2');
-        for (let index = 0; index < combos.length; index++) {
-            const element = combos[index];
-            element.className = element.className.replace('select2-container--default', 'form-control');
-        }
+
     });
 
     $('#modal-xl').on('shown.bs.modal', function (e) {
         funcionesDentroModal();
         reemplazarTexto(e);
-        combos = document.getElementsByClassName('select2');
-        for (let index = 0; index < combos.length; index++) {
-            const element = combos[index];
-            element.className = element.className.replace('select2-container--default', 'form-control');
-        }
     });
     
     

@@ -3,4 +3,32 @@
 
 {% block js %}
     <script src="{% static 'js/sede/sede/ubigeo.js' %}?{{ cache_bust }}"></script>
+
+    <script>
+        $(function () {
+
+            $("#id_usuario_responsable").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+
+            $("#id_departamento_buscar").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body")
+
+            });
+                
+
+            $("#id_provincia_buscar").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+
+            $("#id_distrito_buscar").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+            });
+    </script>
+
 {% endblock js %}

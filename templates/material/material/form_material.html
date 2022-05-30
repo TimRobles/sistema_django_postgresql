@@ -3,4 +3,36 @@
 
 {% block js %}
     <script src="{% static 'js/material/form_material.js' %}?{{ cache_bust }}"></script>
+
+    <script>
+        $(function () {
+
+            $("#id_familia").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+
+            $("#id_subfamilia").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body")
+
+            });
+
+            $("#id_unidad_base").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+
+            $("#id_marca").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+
+            $("#id_modelo").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+            });
+    </script>
+
 {% endblock js %}

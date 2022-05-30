@@ -2,8 +2,6 @@
 {% load static %}
 
 {% block js %}
-    <script src="{% static 'js/colaboradores/datos_contrato/honorarios.js' %}?{{ cache_bust }}"></script>
-
     <script>
         $(function () {
 
@@ -12,13 +10,11 @@
                 dropdownParent: $(".modal-body")
             });
 
-            $("#id_cargo").select2({
+            $("#id_tipo_representante_legal").select2({
                 width: '100%',
                 dropdownParent: $(".modal-body")
             });
-
             });
     </script>
-
 
 {% endblock js %}

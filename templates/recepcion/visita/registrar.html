@@ -44,4 +44,14 @@
 
     <script src="{% static 'js/recepcion/visita/registrar.js' %}?{{ cache_bust }}"></script>
     
+    <script>
+        $(function () {
+
+            $("#id_usuario_atendio").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body")
+            });
+            });
+    </script>
+
 {% endblock js %}
