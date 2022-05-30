@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Clientes
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Clientes
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'clientes_app:cliente_registrar' %}"
+            data-table-url="{% url 'clientes_app:cliente_tabla' %}">
+            Registrar Cliente
+        </button>
+    </h3>
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'clientes/cliente/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}
