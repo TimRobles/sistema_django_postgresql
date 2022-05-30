@@ -13,6 +13,7 @@ from .models import (
     Cliente,
     InterlocutorCliente,
     ClienteInterlocutor,
+    RepresentanteLegalCliente,
     TelefonoInterlocutorCliente,
     CorreoInterlocutorCliente,
     )
@@ -145,6 +146,7 @@ def ClienteDetailTabla(request, pk):
         cliente = Cliente.objects.get(id = pk)
         context['contexto_clientes'] = cliente
         context['interlocutores'] = ClienteInterlocutor.objects.filter(cliente = cliente)
+        context['representantes_legales'] = RepresentanteLegalCliente.objects.filter(cliente = cliente)
         
         data['table'] = render_to_string(
             template,
@@ -271,9 +273,6 @@ class InterlocutorClienteDarAltaView(PermissionRequiredMixin, BSModalDeleteView)
         context['dar_baja'] = "true"
         context['item'] = self.object.interlocutor
         return context
-
-
-
 
 class InterlocutorClienteDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('clientes.view_interlocutorcliente')
