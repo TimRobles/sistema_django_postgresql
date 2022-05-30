@@ -45,6 +45,7 @@ LOCAL_APPS = (
     'applications.sede',
     'applications.material',
     'applications.proveedores',
+    'applications.clientes',
 )
 
 THIRD_PARTY_APPS = (

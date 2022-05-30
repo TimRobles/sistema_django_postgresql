@@ -1,62 +1,90 @@
 from datetime import date
 from django import forms
+from applications.variables import TIPO_DOCUMENTO_CHOICES
 from .models import (
-    CorreoInterlocutorProveedor, 
-    Proveedor, 
-    InterlocutorProveedor, 
-    TelefonoInterlocutorProveedor,
+    Cliente, 
+    InterlocutorCliente, 
+    TelefonoInterlocutorCliente,
+    CorreoInterlocutorCliente,
+    TipoInterlocutorCliente, 
     )
+
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
-class ProveedorForm(BSModalModelForm):
+class ClienteForm(BSModalModelForm):
     class Meta:
-        model = Proveedor
+        model = Cliente
         fields = (
-            'nombre',
-            'pais',
-            'direccion',
+            'tipo_documento',
+            'numero_documento',
+            'razon_social',
+            'nombre_comercial',
+            'direccion_fiscal',
+            'ubigeo',
+            'estado_sunat',
             )
 
     def __init__(self, *args, **kwargs):
-        super(ProveedorForm, self).__init__(*args, **kwargs)
+        super(ClienteForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        numero_documento = cleaned_data.get('numero_documento')
+        filtro = Cliente.objects.filter(numero_documento__unaccent__iexact = numero_documento)
+        if numero_documento != self.instance.numero_documento:
+            if len(filtro)>0:
+                self.add_error('numero_documento', 'Ya existe un Cliente con este Número de documento')
+
+
+class TipoInterlocutorClienteForm(forms.ModelForm):
+    class Meta:
+        model = TipoInterlocutorCliente
+        fields = (
+            'nombre',
+            )
 
     def clean_nombre(self):
         nombre = self.cleaned_data.get('nombre')
-        filtro = Proveedor.objects.filter(nombre__unaccent__iexact = nombre)
+        filtro = TipoInterlocutorCliente.objects.filter(nombre__unaccent__iexact = nombre)
         if nombre != self.instance.nombre:
             if len(filtro)>0:
-                self.add_error('nombre', 'Ya existe un Proveedor con este nombre')
+                self.add_error('nombre', 'Ya existe un Tipo de Interlocutor Cliente con este nombre')
 
         return nombre
 
-class InterlocutorProveedorForm(BSModalForm):
-    nombres = forms.CharField(max_length=60, required=True)
-    apellidos = forms.CharField(max_length=60, required=True)
+
+class InterlocutorClienteForm(BSModalForm):
+    tipo_documento = forms.ChoiceField(label = 'Tipo de Documento', choices = TIPO_DOCUMENTO_CHOICES)
+    numero_documento = forms.CharField(label = 'Número de Documento', max_length=15)
+    nombre_completo = forms.CharField(label = 'Nombre Completo', max_length=120, required=True)
+    tipo_interlocutor = forms.ModelChoiceField(label = 'Tipo de Interlocutor', queryset = TipoInterlocutorCliente.objects.all(), required=False)
     
     def __init__(self, *args, **kwargs):
-        super(InterlocutorProveedorForm, self).__init__(*args, **kwargs)
+        super(InterlocutorClienteForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-class InterlocutorProveedorUpdateForm(BSModalModelForm):
+class InterlocutorClienteUpdateForm(BSModalModelForm):
     class Meta:
-        model = InterlocutorProveedor
+        model = InterlocutorCliente
         fields = (
-            'nombres',
-            'apellidos',
+            'tipo_documento',
+            'numero_documento',
+            'nombre_completo',
+            'tipo_interlocutor',
             )
 
     def __init__(self, *args, **kwargs):
-        super(InterlocutorProveedorUpdateForm, self).__init__(*args, **kwargs)
+        super(InterlocutorClienteUpdateForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class TelefonoInterlocutorForm(BSModalModelForm):
     class Meta:
-        model = TelefonoInterlocutorProveedor
+        model = TelefonoInterlocutorCliente
         fields = (
             'numero',
             )
@@ -77,14 +105,14 @@ class TelefonoInterlocutorForm(BSModalModelForm):
     def clean(self):
         cleaned_data = super().clean()
         numero = cleaned_data.get('numero')
-        filtro = TelefonoInterlocutorProveedor.objects.filter(numero__unaccent__iexact = numero)
+        filtro = TelefonoInterlocutorCliente.objects.filter(numero__unaccent__iexact = numero)
         if numero != self.instance.numero:
             if len(filtro)>0:
                 self.add_error('numero', 'Ya existe un Teléfono con este numero')
 
 class TelefonoInterlocutorDarBajaForm(BSModalModelForm):
     class Meta:
-        model = TelefonoInterlocutorProveedor
+        model = TelefonoInterlocutorCliente
         fields = (
             'fecha_baja',
             )
@@ -112,7 +140,7 @@ class TelefonoInterlocutorDarBajaForm(BSModalModelForm):
 
 class CorreoInterlocutorForm(BSModalModelForm):
     class Meta:
-        model = CorreoInterlocutorProveedor
+        model = CorreoInterlocutorCliente
         fields = (
             'correo',
             )
@@ -125,14 +153,14 @@ class CorreoInterlocutorForm(BSModalModelForm):
     def clean(self):
         cleaned_data = super().clean()
         correo = cleaned_data.get('correo')
-        filtro = CorreoInterlocutorProveedor.objects.filter(correo__unaccent__iexact = correo)
+        filtro = CorreoInterlocutorCliente.objects.filter(correo__unaccent__iexact = correo)
         if correo != self.instance.correo:
             if len(filtro)>0:
                 self.add_error('correo', 'El correo ingresado ya se encuentra registrado')
 
 class CorreoInterlocutorDarBajaForm(BSModalModelForm):
     class Meta:
-        model = CorreoInterlocutorProveedor
+        model = CorreoInterlocutorCliente
         fields = (
             'fecha_baja',
             )
