@@ -1,6 +1,29 @@
 {% extends 'includes/formulario generico.html' %}
-{% load static %}
+{% load static %}    
 
 {% block js %}
     <script src="{% static 'js/material/form_sunat.js' %}?{{ cache_bust }}"></script>
+    <script>
+        $(function () {
+            $("#id_segmento_sunat").select2({
+                width:'100%',
+                dropdownParent: $('#modal-xl')
+            });
+
+            $("#id_familia_sunat").select2({
+                width: '100%',
+                dropdownParent: $('#modal-xl')
+            });
+
+            $("#id_clase_sunat").select2({
+                width: '100%',
+                dropdownParent: $('#modal-xl')
+            });
+
+            $("#id_producto_sunat").select2({
+                width: '100%',
+                dropdownParent: $('#modal-xl')
+            });
+            });
+    </script>
 {% endblock js %}
