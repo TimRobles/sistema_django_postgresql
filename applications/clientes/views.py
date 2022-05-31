@@ -452,7 +452,7 @@ class RepresentanteLegalClienteCreateView(PermissionRequiredMixin, BSModalFormVi
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
 
     def get_form_kwargs(self, *args, **kwargs):
-        interlocutores = ClienteInterlocutor.objects.filter(cliente__id = self.kwargs['cliente_id'])
+        interlocutores = ClienteInterlocutor.objects.filter(cliente__id = self.kwargs['cliente_id'], estado = 1)
         lista_interlocutores = []
         for interlocutor in interlocutores:
             lista_interlocutores.append(interlocutor.interlocutor.id)

@@ -67,6 +67,7 @@ class InterlocutorCliente(models.Model):
 
         verbose_name = 'Interlocutor Cliente'
         verbose_name_plural = 'Interlocutores Cliente'
+        ordering = ['-nombre_completo',]
 
     def __str__(self):
         return str(self.nombre_completo)
@@ -151,7 +152,7 @@ class RepresentanteLegalCliente(models.Model):
 
         verbose_name = 'Representante Legal Cliente'
         verbose_name_plural = 'Representantes Legales Cliente'
-        ordering = ['estado', '-fecha_baja',]
+        ordering = ['estado', '-fecha_baja', '-interlocutor',]
 
     def __str__(self):
         return str(self.interlocutor) + ' - ' + str(self.cliente)

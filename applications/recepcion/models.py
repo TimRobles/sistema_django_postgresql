@@ -4,6 +4,7 @@ from django.conf import settings
 from applications.variables import TIPO_DOCUMENTO_CHOICES
 from applications.sociedad.models import Sociedad
 from applications.sede.models import Sede
+from applications.clientes.models import Cliente
 
 
 class Visita(models.Model):
@@ -15,7 +16,7 @@ class Visita(models.Model):
     motivo_visita = models.CharField('Motivo de Visita', max_length=50)
     hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True)
     hora_salida = models.TimeField('Hora de Salida', auto_now=False, auto_now_add=False, blank=True, null=True)
-    empresa_cliente = models.CharField('Empresa Cliente', max_length=50, blank=True, null=True)
+    empresa_cliente = models.ForeignKey(Cliente, verbose_name='Empresa Cliente', on_delete=models.PROTECT)
     fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Visita_created_by', editable=False)
