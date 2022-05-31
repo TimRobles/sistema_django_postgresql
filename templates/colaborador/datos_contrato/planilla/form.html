@@ -2,8 +2,6 @@
 {% load static %}
 
 {% block js %}
-    <script src="{% static 'js/colaboradores/datos_contrato/honorarios.js' %}?{{ cache_bust }}"></script>
-
     <script>
         $(function () {
 
@@ -16,7 +14,6 @@
                 width: '100%',
                 dropdownParent: $(".modal-body")
             });
-
             });
     </script>
 
