@@ -48,7 +48,6 @@ ESTADO_SUNAT = (
         )
 
 TIPO_DOCUMENTO_CHOICES = (
-
         ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
         ('4', 'CARNET DE EXTRANJERÍA'),
         ('7', 'PASAPORTE'),

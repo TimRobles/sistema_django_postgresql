@@ -61,7 +61,6 @@ class TipoInterlocutorClienteAdmin(admin.ModelAdmin):
 class InterlocutorClienteAdmin(admin.ModelAdmin):
     list_display = (
         'nombre_completo',
-        'tipo_interlocutor',
         'tipo_documento',
         'numero_documento',
         )

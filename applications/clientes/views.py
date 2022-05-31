@@ -4,6 +4,8 @@ from .forms import (
     ClienteForm, 
     InterlocutorClienteForm,
     InterlocutorClienteUpdateForm,
+    RepresentanteLegalClienteDarBajaForm,
+    RepresentanteLegalClienteForm,
     TelefonoInterlocutorForm,
     TelefonoInterlocutorDarBajaForm,
     CorreoInterlocutorForm,
@@ -136,6 +138,7 @@ class ClienteDetailView(PermissionRequiredMixin, DetailView):
         cliente = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(ClienteDetailView, self).get_context_data(**kwargs)
         context['interlocutores'] = ClienteInterlocutor.objects.filter(cliente = cliente)
+        context['representantes_legales'] = RepresentanteLegalCliente.objects.filter(cliente = cliente)
         return context
 
 def ClienteDetailTabla(request, pk):
@@ -175,7 +178,6 @@ class InterlocutorClienteCreateView(PermissionRequiredMixin, BSModalFormView):
             tipo_documento = tipo_documento,
             numero_documento = numero_documento,
             nombre_completo = nombre_completo,
-            tipo_interlocutor = tipo_interlocutor,
         )
         if not existe:
             interlocutor.created_by = self.request.user
@@ -218,6 +220,9 @@ class InterlocutorClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     
     def form_valid(self, form):
         form.instance.usuario = self.request.user
+        cliente_interlocutor = form.instance.ClienteInterlocutor_interlocutor.all()[0]
+        cliente_interlocutor.tipo_interlocutor = form.cleaned_data['tipo_interlocutor']
+        cliente_interlocutor.save()
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
@@ -435,4 +440,69 @@ class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
         context = super(CorreoInterlocutorDarBajaView, self).get_context_data(**kwargs)
         context['accion']="Dar Baja"
         context['titulo']="Correo"
+        return context
+
+class RepresentanteLegalClienteCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('clientes.add_interlocutorcliente')
+
+    template_name = "clientes/interlocutor/form.html"
+    form_class = RepresentanteLegalClienteForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        interlocutores = ClienteInterlocutor.objects.filter(cliente__id = self.kwargs['cliente_id'])
+        lista_interlocutores = []
+        for interlocutor in interlocutores:
+            lista_interlocutores.append(interlocutor.interlocutor.id)
+        kwargs = super(RepresentanteLegalClienteCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['interlocutores'] = InterlocutorCliente.objects.filter(id__in = lista_interlocutores)
+        return kwargs
+
+    def form_valid(self, form):
+        interlocutor = form.cleaned_data['interlocutor']
+        tipo_representante_legal = form.cleaned_data['tipo_representante_legal']
+        fecha_inicio = form.cleaned_data['fecha_inicio']
+        cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
+
+        representante, existe = RepresentanteLegalCliente.objects.get_or_create(
+            cliente = cliente,
+            interlocutor = interlocutor,
+            tipo_representante_legal = tipo_representante_legal,
+            fecha_inicio = fecha_inicio,
+        )
+        if not existe:
+            representante.created_by = self.request.user
+            representante.updated_by = self.request.user
+            representante.save()
+
+        return super().form_valid(form) 
+
+    def get_context_data(self, **kwargs):
+        context = super(RepresentanteLegalClienteCreateView, self).get_context_data(**kwargs)
+        context['accion']="Asignar"
+        context['titulo']="Representante Legal Cliente"
+        return context
+
+    
+class RepresentanteLegalClienteDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_correointerlocutorcliente')
+
+    model = RepresentanteLegalCliente
+    template_name = "includes/formulario generico.html"
+    form_class = RepresentanteLegalClienteDarBajaForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
+
+    def form_valid(self, form):
+        form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RepresentanteLegalClienteDarBajaView, self).get_context_data(**kwargs)
+        context['accion']="Dar Baja"
+        context['titulo']="Representante Legal"
         return context

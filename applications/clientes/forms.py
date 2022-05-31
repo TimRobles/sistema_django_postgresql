@@ -1,9 +1,11 @@
 from datetime import date
 from django import forms
-from applications.variables import TIPO_DOCUMENTO_CHOICES
+from applications.variables import TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
 from .models import (
-    Cliente, 
-    InterlocutorCliente, 
+    Cliente,
+    ClienteInterlocutor, 
+    InterlocutorCliente,
+    RepresentanteLegalCliente, 
     TelefonoInterlocutorCliente,
     CorreoInterlocutorCliente,
     TipoInterlocutorCliente, 
@@ -37,7 +39,6 @@ class ClienteForm(BSModalModelForm):
             if len(filtro)>0:
                 self.add_error('numero_documento', 'Ya existe un Cliente con este Número de documento')
 
-
 class TipoInterlocutorClienteForm(forms.ModelForm):
     class Meta:
         model = TipoInterlocutorCliente
@@ -54,7 +55,6 @@ class TipoInterlocutorClienteForm(forms.ModelForm):
 
         return nombre
 
-
 class InterlocutorClienteForm(BSModalForm):
     tipo_documento = forms.ChoiceField(label = 'Tipo de Documento', choices = TIPO_DOCUMENTO_CHOICES)
     numero_documento = forms.CharField(label = 'Número de Documento', max_length=15)
@@ -66,8 +66,8 @@ class InterlocutorClienteForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-
 class InterlocutorClienteUpdateForm(BSModalModelForm):
+    tipo_interlocutor = forms.ModelChoiceField(label = 'Tipo de Interlocutor', queryset = TipoInterlocutorCliente.objects.all())
     class Meta:
         model = InterlocutorCliente
         fields = (
@@ -79,8 +79,57 @@ class InterlocutorClienteUpdateForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(InterlocutorClienteUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['tipo_interlocutor'].initial = self.instance.ClienteInterlocutor_interlocutor.all()[0].tipo_interlocutor
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class RepresentanteLegalClienteForm(BSModalForm):
+    interlocutor = forms.ModelChoiceField(label = 'Interlocutor', queryset = InterlocutorCliente.objects.all(), required=False)
+    tipo_representante_legal = forms.ChoiceField(label = 'Tipo de Representante Legal', choices = TIPO_REPRESENTANTE_LEGAL_SUNAT)
+    fecha_inicio = forms.DateField(
+        label = 'Fecha de Inicio',
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    
+    def __init__(self, *args, **kwargs):
+        lista_interlocutores = kwargs.pop('interlocutores')
+        super(RepresentanteLegalClienteForm, self).__init__(*args, **kwargs)
+        self.fields['interlocutor'].queryset = lista_interlocutores
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class RepresentanteLegalClienteDarBajaForm(BSModalModelForm):
+    class Meta:
+        model = RepresentanteLegalCliente
+        fields = (
+            'fecha_baja',
+            )
+
+        widgets = {
+            'fecha_baja' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+    
+    def clean_fecha_baja(self):
+        fecha_baja = self.cleaned_data.get('fecha_baja')
+        if fecha_baja > date.today():
+            self.add_error('fecha_baja', 'La fecha de baja no puede ser mayor a la fecha de hoy.')
+        return fecha_baja
+
+    def __init__(self, *args, **kwargs):
+        super(RepresentanteLegalClienteDarBajaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
 
 class TelefonoInterlocutorForm(BSModalModelForm):
     class Meta:
@@ -88,19 +137,12 @@ class TelefonoInterlocutorForm(BSModalModelForm):
         fields = (
             'numero',
             )
-
-        widgets = {
-            'numero' : forms.PasswordInput(
-                attrs ={
-                    'placeholder':'ej.: +12125552368',
-                    },
-                ),
-            }
     
     def __init__(self, *args, **kwargs):
         super(TelefonoInterlocutorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['numero'].widget.attrs['placeholder'] = 'ej.: +12125552368'
 
     def clean(self):
         cleaned_data = super().clean()

@@ -20,7 +20,7 @@
             {% for interlocutor in interlocutores %}
             <tr>
                 <td>{{ interlocutor.interlocutor.nombre_completo }}</td>
-                <td>{{ interlocutor.interlocutor.tipo_interlocutor }}</td>
+                <td>{{ interlocutor.tipo_interlocutor }}</td>
                 <td class="text-center text-nowrap">
                     {% if interlocutor.estado == 1 %}
                         <button data-form-url="{% url 'clientes_app:interlocutor_actualizar' interlocutor.interlocutor.id %}"
@@ -45,6 +45,51 @@
                             class="delete btn btn-success btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
                             <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<h3>Representantes Legales
+    <button data-form-url="{% url 'clientes_app:representante_legal_asignar' contexto_clientes.id %}"
+        data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"
+        class="create badge bg-primary">
+        Asignar Representante Legal
+    </button>
+    <a href="{% url 'clientes_app:cliente_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Representante Legal</th>
+                <th>Tipo de Representante Legal</th>
+                <th>Fecha de Inicio</th>
+                <th>Fecha de Baja</th>
+                <th>Estado</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for representante in representantes_legales %}
+            <tr>
+                <td>{{ representante.interlocutor.nombre_completo }}</td>
+                <td>{{ representante.get_tipo_representante_legal_display }}</td>
+                <td>{{ representante.fecha_inicio|date:'d/m/Y' }}</td>
+                <td>{{ representante.fecha_baja|date:'d/m/Y' }}</td>
+                <td>{{ representante.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    {% if representante.estado == 1 %}
+                        <button data-form-url="{% url 'clientes_app:representante_legal_baja' representante.id %}"
+                            data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"
+                            class="update btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
                         </button>
                     {% endif %}
                 </td>

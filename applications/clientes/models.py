@@ -56,7 +56,6 @@ class TipoInterlocutorCliente(models.Model):
 class InterlocutorCliente(models.Model):
 
     nombre_completo = models.CharField('Nombre Completo', max_length=120)
-    tipo_interlocutor = models.ForeignKey(TipoInterlocutorCliente, verbose_name='Tipo de Interlocutor', on_delete=models.PROTECT)
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)
     numero_documento = models.CharField('Número de Documento', max_length=15, unique=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -74,8 +73,8 @@ class InterlocutorCliente(models.Model):
 
 class ClienteInterlocutor(models.Model):
 
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ClienteInterlocutor_cliente')
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ClienteInterlocutor_interlocutor')
     tipo_interlocutor = models.ForeignKey(TipoInterlocutorCliente, on_delete=models.PROTECT)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -139,7 +138,7 @@ class RepresentanteLegalCliente(models.Model):
 
     interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    tipo_representante_legal = models.IntegerField('Tipo de Representante Legal', choices=TIPO_REPRESENTANTE_LEGAL_SUNAT)
+    tipo_representante_legal = models.CharField('Tipo de Representante Legal', max_length=4, choices=TIPO_REPRESENTANTE_LEGAL_SUNAT)
     fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)

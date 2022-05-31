@@ -23,6 +23,11 @@ urlInterlocutor = [
     path('interlocutor/detalle-tabla/<pk>/', views.InterlocutorClienteDetailTabla, name='interlocutor_detalle_tabla'),
 ]
 
+urlRepresentante_Legal = [
+    path('representante-legal/asignar/<int:cliente_id>/', views.RepresentanteLegalClienteCreateView.as_view(), name='representante_legal_asignar'),
+    path('representante-legal/baja/<pk>/', views.RepresentanteLegalClienteDarBajaView.as_view(), name='representante_legal_baja'),
+]
+
 urlpatterns = [
     path('telefono/registrar/<int:interlocutor_id>/', views.TelefonoInterlocutorCreateView.as_view(), name='telefono_registrar'),
     path('telefono/actualizar/<pk>/', views.TelefonoInterlocutorUpdateView.as_view(), name='telefono_actualizar'),
@@ -32,4 +37,4 @@ urlpatterns = [
     path('correo/actualizar/<pk>/', views.CorreoInterlocutorUpdateView.as_view(), name='correo_actualizar'),
     path('correo/baja/<pk>/', views.CorreoInterlocutorDarBajaView.as_view(), name='correo_baja'),
     
-] + urlCliente + urlInterlocutor
+] + urlCliente + urlInterlocutor + urlRepresentante_Legal
