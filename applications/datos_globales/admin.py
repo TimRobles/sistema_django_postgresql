@@ -10,7 +10,7 @@ from applications.datos_globales.forms import (
 
 from .models import (
     Moneda,
-    Magnitud, 
+    Magnitud,
     Unidad, 
     Area, 
     Cargo,
@@ -30,6 +30,10 @@ from .models import (
     FamiliaSunat,
     ClaseSunat,
     ProductoSunat,
+    TipoCambio, 
+    RemuneracionMinimaVital,
+    UnidadImpositivaTributaria,
+    ImpuestoGeneralVentas,
 )
 
 class MonedaAdmin(admin.ModelAdmin):
@@ -405,6 +409,76 @@ class ProductoSunatAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class TipoCambioAdmin(admin.ModelAdmin):
+    list_display = (
+        'fecha',
+        'tipo_cambio_venta',
+        'tipo_cambio_compra',
+        'tipo_cambio_venta_sunat',
+        'tipo_cambio_compra_sunat',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class RemuneracionMinimaVitalAdmin(admin.ModelAdmin):
+    list_display = (
+        'fecha_inicio',
+        'monto',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class UnidadImpositivaTributariaAdmin(admin.ModelAdmin):
+    list_display = (
+        'fecha_inicio',
+        'monto',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class ImpuestoGeneralVentasAdmin(admin.ModelAdmin):
+    list_display = (
+        'fecha_inicio',
+        'monto',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 admin.site.register(Moneda, MonedaAdmin)
 admin.site.register(Magnitud, MagnitudAdmin)
 admin.site.register(Unidad, UnidadAdmin)
@@ -432,3 +506,8 @@ admin.site.register(SegmentoSunat, SegmentoSunatAdmin)
 admin.site.register(FamiliaSunat, FamiliaSunatAdmin)
 admin.site.register(ClaseSunat, ClaseSunatAdmin)
 admin.site.register(ProductoSunat, ProductoSunatAdmin)
+
+admin.site.register(TipoCambio, TipoCambioAdmin)
+admin.site.register(RemuneracionMinimaVital, RemuneracionMinimaVitalAdmin)
+admin.site.register(UnidadImpositivaTributaria, UnidadImpositivaTributariaAdmin)
+admin.site.register(ImpuestoGeneralVentas, ImpuestoGeneralVentasAdmin)

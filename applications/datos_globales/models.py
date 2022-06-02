@@ -422,3 +422,82 @@ class ProductoSunat(models.Model):
 
     def __str__(self):
         return self.codigo + ' - ' + self.descripcion
+
+
+class TipoCambio(models.Model):
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
+    tipo_cambio_venta = models.DecimalField('Tipo de Cambio Venta', max_digits=4, decimal_places=3)
+    tipo_cambio_compra = models.DecimalField('Tipo de Cambio Compra', max_digits=4, decimal_places=3)
+    tipo_cambio_venta_sunat = models.DecimalField('Tipo de Cambio Venta Sunat', max_digits=4, decimal_places=3)
+    tipo_cambio_compra_sunat = models.DecimalField('Tipo de Cambio Compra Sunat', max_digits=4, decimal_places=3)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambio_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambio_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Tipo de Cambio'
+        verbose_name_plural = 'Tipos de Cambio'
+        ordering = [
+            '-fecha',
+        ]
+
+    def __str__(self):     
+        return self.monto
+
+
+class RemuneracionMinimaVital(models.Model):
+    fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RemuneracionMinimaVital_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RemuneracionMinimaVital_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Remuneración Mínima Vital'
+        verbose_name_plural = 'Remuneración Mínima Vital'
+        ordering = [
+            '-fecha_inicio',
+        ]
+
+    def __str__(self):     
+        return self.monto
+
+
+class UnidadImpositivaTributaria(models.Model):
+    fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='UnidadImpositivaTributaria_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='UnidadImpositivaTributaria_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Unidad Impositiva Tributaria'
+        verbose_name_plural = 'Unidad Impositiva Tributaria'
+        ordering = [
+            '-fecha_inicio',
+        ]
+
+    def __str__(self):     
+        return self.monto
+
+
+class ImpuestoGeneralVentas(models.Model):
+    fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False)
+    monto = models.DecimalField('Monto', max_digits=4, decimal_places=2)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ImpuestoGeneralVentas_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ImpuestoGeneralVentas_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Impuesto General a las Ventas'
+        verbose_name_plural = 'Impuesto General a las Ventas'
+        ordering = [
+            '-fecha_inicio',
+        ]
+
+    def __str__(self):     
+        return self.monto

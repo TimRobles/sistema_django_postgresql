@@ -1,5 +1,6 @@
 from django import forms
-from applications.datos_globales.models import Area, Cargo, Moneda, TipoInterlocutor, Pais
+from applications.datos_globales.models import Area, Cargo, Moneda, TipoCambio, TipoInterlocutor, Pais
+from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 class MonedaForm(forms.ModelForm):
     class Meta:
@@ -88,3 +89,27 @@ class PaisForm(forms.ModelForm):
                 self.add_error('nombre', 'Ya existe un País con este nombre')
 
         return nombre
+
+class TipoCambioForm(BSModalModelForm):
+    class Meta:
+        model = TipoCambio
+        fields = (
+            'fecha',
+            'tipo_cambio_venta',
+            'tipo_cambio_compra',
+            'tipo_cambio_venta_sunat',
+            'tipo_cambio_compra_sunat',
+            )
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(TipoCambioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
