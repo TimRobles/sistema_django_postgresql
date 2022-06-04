@@ -1,6 +1,7 @@
 from datetime import date
 from django import forms
 from applications.variables import TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
+from applications import datos_globales
 from .models import (
     Cliente,
     ClienteInterlocutor, 
@@ -30,6 +31,24 @@ class ClienteForm(BSModalModelForm):
         super(ClienteForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean_tipo_documento(self):
+        tipo_documento = self.cleaned_data.get('tipo_documento')
+        if tipo_documento == '-':
+            self.fields['numero_documento'].required = False
+        else:
+            self.fields['numero_documento'].required = True
+    
+        return tipo_documento
+    
+    def clean_ubigeo(self):
+        ubigeo = self.cleaned_data.get('ubigeo')
+        try:
+            datos_globales.models.Distrito.objects.get(codigo = ubigeo)
+        except:
+            self.add_error('ubigeo', 'Usar un ubigeo válido')
+    
+        return ubigeo
 
     def clean(self):
         cleaned_data = super().clean()
@@ -147,7 +166,7 @@ class TelefonoInterlocutorForm(BSModalModelForm):
     def clean(self):
         cleaned_data = super().clean()
         numero = cleaned_data.get('numero')
-        filtro = TelefonoInterlocutorCliente.objects.filter(numero__unaccent__iexact = numero)
+        filtro = TelefonoInterlocutorCliente.objects.filter(numero__unaccent__iexact = numero, estado = 1)
         if numero != self.instance.numero:
             if len(filtro)>0:
                 self.add_error('numero', 'Ya existe un Teléfono con este numero')
@@ -195,7 +214,7 @@ class CorreoInterlocutorForm(BSModalModelForm):
     def clean(self):
         cleaned_data = super().clean()
         correo = cleaned_data.get('correo')
-        filtro = CorreoInterlocutorCliente.objects.filter(correo__unaccent__iexact = correo)
+        filtro = CorreoInterlocutorCliente.objects.filter(correo__unaccent__iexact = correo, estado = 1)
         if correo != self.instance.correo:
             if len(filtro)>0:
                 self.add_error('correo', 'El correo ingresado ya se encuentra registrado')
