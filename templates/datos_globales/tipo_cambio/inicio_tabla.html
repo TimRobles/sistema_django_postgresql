@@ -1,0 +1,37 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo de Cambio Venta</th>
+            <th>Tipo de Cambio Compra</th>
+            <th>Tipo de Cambio Venta (SUNAT)</th>
+            <th>Tipo de Cambio Compra (SUNAT)</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tipo_cambio in contexto_tipo_cambio %}
+        <tr>
+            <td>{{ tipo_cambio.fecha|date:'d/m/Y' }}</td>
+            <td>{{ tipo_cambio.tipo_cambio_venta }}</td>
+            <td>{{ tipo_cambio.tipo_cambio_compra }}</td>
+            <td>{{ tipo_cambio.tipo_cambio_venta_sunat }}</td>
+            <td>{{ tipo_cambio.tipo_cambio_compra_sunat }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'datos_globales_app:tipo_cambio_actualizar' tipo_cambio.id %}"
+                    data-table-url="{% url 'datos_globales_app:tipo_cambio_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'datos_globales_app:tipo_cambio_eliminar' tipo_cambio.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

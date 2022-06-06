@@ -28,7 +28,10 @@ class Cliente(models.Model):
 
     def save(self, *args, **kwargs):
         if self.ubigeo:
-            self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
+            try:
+                self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
+            except:
+                self.distrito = None
         super().save(*args, **kwargs)
 
     def __str__(self):

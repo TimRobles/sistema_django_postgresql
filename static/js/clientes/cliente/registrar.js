@@ -73,8 +73,10 @@ function ConsultarDni() {
 
 function habilitar() {
     $tipo_documento = $('#id_tipo_documento')[0].value;
+    $numero_documento = $('#id_numero_documento')[0];
     $boton = $('#consultar-documento')[0];
-
+    $numero_documento.required = true;
+    $numero_documento.disabled = false;
     if ($tipo_documento == 6 ) {
         $boton.hidden = false;
         $(document).unbind().on('click', '#consultar-documento', function (e) {
@@ -89,6 +91,10 @@ function habilitar() {
             e.target.disabled = true;
             ConsultarDni();
         });
+    } else if ($tipo_documento == '-' ) {
+        $boton.hidden = true;
+        $numero_documento.required = false;
+        $numero_documento.disabled = true;
     } else {
         $boton.hidden = true;
     };   
