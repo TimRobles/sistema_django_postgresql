@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from applications.importaciones import *
 from .forms import (
-    ClienteForm, 
+    ClienteForm,
+    CorreoClienteDarBajaForm,
+    CorreoClienteForm, 
     InterlocutorClienteForm,
     InterlocutorClienteUpdateForm,
     RepresentanteLegalClienteDarBajaForm,
@@ -13,6 +15,7 @@ from .forms import (
     )
 from .models import (
     Cliente,
+    CorreoCliente,
     InterlocutorCliente,
     ClienteInterlocutor,
     RepresentanteLegalCliente,
@@ -138,6 +141,7 @@ class ClienteDetailView(PermissionRequiredMixin, DetailView):
         cliente = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(ClienteDetailView, self).get_context_data(**kwargs)
         context['interlocutores'] = ClienteInterlocutor.objects.filter(cliente = cliente)
+        context['correos'] = CorreoCliente.objects.filter(cliente = cliente)
         context['representantes_legales'] = RepresentanteLegalCliente.objects.filter(cliente = cliente)
         return context
 
@@ -149,6 +153,7 @@ def ClienteDetailTabla(request, pk):
         cliente = Cliente.objects.get(id = pk)
         context['contexto_clientes'] = cliente
         context['interlocutores'] = ClienteInterlocutor.objects.filter(cliente = cliente)
+        context['correos'] = CorreoCliente.objects.filter(cliente = cliente)
         context['representantes_legales'] = RepresentanteLegalCliente.objects.filter(cliente = cliente)
         
         data['table'] = render_to_string(
@@ -309,6 +314,84 @@ def InterlocutorClienteDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
+class CorreoClienteCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('clientes.add_correocliente')
+
+    model = CorreoCliente
+    template_name = "includes/formulario generico.html"
+    form_class = CorreoClienteForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreoClienteCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Correo"
+        return context
+
+class CorreoClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_correocliente')
+    model = CorreoCliente
+    template_name = "includes/formulario generico.html"
+    form_class = CorreoClienteForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreoClienteUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Correo"
+        return context
+    
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+class CorreoClienteDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_correocliente')
+
+    model = CorreoCliente
+    template_name = "includes/formulario generico.html"
+    form_class = CorreoClienteDarBajaForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
+
+    def form_valid(self, form):
+        form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreoClienteDarBajaView, self).get_context_data(**kwargs)
+        context['accion']="Dar Baja"
+        context['titulo']="Correo"
+        return context
+
+
+
+
+
+
+
+
+
+
+
+
 
 class TelefonoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('clientes.add_telefonointerlocutorcliente')

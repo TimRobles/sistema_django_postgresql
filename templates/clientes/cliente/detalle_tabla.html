@@ -53,7 +53,55 @@
         </tbody>
     </table>
 </div>
+<br>
+<h3>Correos
+    <button data-form-url="{% url 'clientes_app:correo_registrar' contexto_clientes.id %}"
+        data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"
+        class="create badge bg-primary">
+        Registrar Correo
+    </button>
+    <a href="{% url 'clientes_app:cliente_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
 
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Correo</th>
+                <th>Fecha de Baja</th>
+                <th>Estado</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for correo in correos %}
+            <tr>
+                <td>{{ correo.correo }}</td>
+                <td>{{ correo.fecha_baja|date:'d/m/Y' }}</td>
+                <td>{{ correo.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    {% if correo.estado == 1 %}
+                        <button data-form-url="{% url 'clientes_app:correo_actualizar' correo.id %}"
+                            data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'clientes_app:correo_baja' correo.id %}"
+                            data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"
+                            class="update btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
 <h3>Representantes Legales
     <button data-form-url="{% url 'clientes_app:representante_legal_asignar' contexto_clientes.id %}"
         data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"

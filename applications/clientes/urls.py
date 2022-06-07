@@ -23,18 +23,24 @@ urlInterlocutor = [
     path('interlocutor/detalle-tabla/<pk>/', views.InterlocutorClienteDetailTabla, name='interlocutor_detalle_tabla'),
 ]
 
+urlCorreo = [
+    path('correo/registrar/<int:cliente_id>/', views.CorreoClienteCreateView.as_view(), name='correo_registrar'),
+    path('correo/actualizar/<pk>/', views.CorreoClienteUpdateView.as_view(), name='correo_actualizar'),
+    path('correo/baja/<pk>/', views.CorreoClienteDarBajaView.as_view(), name='correo_baja'),
+]
+
 urlRepresentante_Legal = [
     path('representante-legal/asignar/<int:cliente_id>/', views.RepresentanteLegalClienteCreateView.as_view(), name='representante_legal_asignar'),
     path('representante-legal/baja/<pk>/', views.RepresentanteLegalClienteDarBajaView.as_view(), name='representante_legal_baja'),
 ]
 
 urlpatterns = [
-    path('telefono/registrar/<int:interlocutor_id>/', views.TelefonoInterlocutorCreateView.as_view(), name='telefono_registrar'),
-    path('telefono/actualizar/<pk>/', views.TelefonoInterlocutorUpdateView.as_view(), name='telefono_actualizar'),
-    path('telefono/baja/<pk>/', views.TelefonoInterlocutorDarBajaView.as_view(), name='telefono_baja'),
+    path('telefono-interlocutor/registrar/<int:interlocutor_id>/', views.TelefonoInterlocutorCreateView.as_view(), name='telefono_interlocutor_registrar'),
+    path('telefono-interlocutor/actualizar/<pk>/', views.TelefonoInterlocutorUpdateView.as_view(), name='telefono_interlocutor_actualizar'),
+    path('telefono-interlocutor/baja/<pk>/', views.TelefonoInterlocutorDarBajaView.as_view(), name='telefono_interlocutor_baja'),
 
-    path('correo/registrar/<int:interlocutor_id>/', views.CorreoInterlocutorCreateView.as_view(), name='correo_registrar'),
-    path('correo/actualizar/<pk>/', views.CorreoInterlocutorUpdateView.as_view(), name='correo_actualizar'),
-    path('correo/baja/<pk>/', views.CorreoInterlocutorDarBajaView.as_view(), name='correo_baja'),
+    path('correo-interlocutor/registrar/<int:interlocutor_id>/', views.CorreoInterlocutorCreateView.as_view(), name='correo_interlocutor_registrar'),
+    path('correo-interlocutor/actualizar/<pk>/', views.CorreoInterlocutorUpdateView.as_view(), name='correo_interlocutor_actualizar'),
+    path('correo-interlocutor/baja/<pk>/', views.CorreoInterlocutorDarBajaView.as_view(), name='correo_interlocutor_baja'),
     
-] + urlCliente + urlInterlocutor + urlRepresentante_Legal
+] + urlCliente + urlInterlocutor + urlCorreo + urlRepresentante_Legal
