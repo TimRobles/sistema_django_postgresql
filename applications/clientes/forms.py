@@ -4,7 +4,8 @@ from applications.variables import TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LE
 from applications import datos_globales
 from .models import (
     Cliente,
-    ClienteInterlocutor, 
+    ClienteInterlocutor,
+    CorreoCliente, 
     InterlocutorCliente,
     RepresentanteLegalCliente, 
     TelefonoInterlocutorCliente,
@@ -101,6 +102,54 @@ class InterlocutorClienteUpdateForm(BSModalModelForm):
         self.fields['tipo_interlocutor'].initial = self.instance.ClienteInterlocutor_interlocutor.all()[0].tipo_interlocutor
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class CorreoClienteForm(BSModalModelForm):
+    class Meta:
+        model = CorreoCliente
+        fields = (
+            'correo',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CorreoClienteForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        correo = cleaned_data.get('correo')
+        filtro = CorreoCliente.objects.filter(correo__unaccent__iexact = correo, estado = 1)
+        if correo != self.instance.correo:
+            if len(filtro)>0:
+                self.add_error('correo', 'El correo ingresado ya se encuentra registrado')
+
+class CorreoClienteDarBajaForm(BSModalModelForm):
+    class Meta:
+        model = CorreoCliente
+        fields = (
+            'fecha_baja',
+            )
+
+        widgets = {
+            'fecha_baja' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+    
+    def clean_fecha_baja(self):
+        fecha_baja = self.cleaned_data.get('fecha_baja')
+        if fecha_baja > date.today():
+            self.add_error('fecha_baja', 'La fecha de baja no puede ser mayor a la fecha de hoy.')
+        return fecha_baja
+
+    def __init__(self, *args, **kwargs):
+        super(CorreoClienteDarBajaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
 
 class RepresentanteLegalClienteForm(BSModalForm):
     interlocutor = forms.ModelChoiceField(label = 'Interlocutor', queryset = InterlocutorCliente.objects.all(), required=False)

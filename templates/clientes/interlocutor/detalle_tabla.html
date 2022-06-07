@@ -1,5 +1,5 @@
 <h3>Teléfonos
-    <button data-form-url="{% url 'clientes_app:telefono_registrar' contexto_interlocutores.id %}"
+    <button data-form-url="{% url 'clientes_app:telefono_interlocutor_registrar' contexto_interlocutores.id %}"
         data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
         class="create badge bg-primary">
         Registrar Teléfono
@@ -25,14 +25,14 @@
                 <td>{{ telefono.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
                     {% if telefono.estado == 1 %}
-                        <button data-form-url="{% url 'clientes_app:telefono_actualizar' telefono.id %}"
+                        <button data-form-url="{% url 'clientes_app:telefono_interlocutor_actualizar' telefono.id %}"
                             data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        <button data-form-url="{% url 'clientes_app:telefono_baja' telefono.id %}"
+                        <button data-form-url="{% url 'clientes_app:telefono_interlocutor_baja' telefono.id %}"
                             data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
                             class="update btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
@@ -45,9 +45,9 @@
         </tbody>
     </table>
 </div>
-
+<br>
 <h3>Correos
-    <button data-form-url="{% url 'clientes_app:correo_registrar' contexto_interlocutores.id %}"
+    <button data-form-url="{% url 'clientes_app:correo_interlocutor_registrar' contexto_interlocutores.id %}"
         data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
         class="create badge bg-primary">
         Registrar Correo
@@ -73,14 +73,14 @@
                 <td>{{ correo.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
                     {% if correo.estado == 1 %}
-                        <button data-form-url="{% url 'clientes_app:correo_actualizar' correo.id %}"
+                        <button data-form-url="{% url 'clientes_app:correo_interlocutor_actualizar' correo.id %}"
                             data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        <button data-form-url="{% url 'clientes_app:correo_baja' correo.id %}"
+                        <button data-form-url="{% url 'clientes_app:correo_interlocutor_baja' correo.id %}"
                             data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
                             class="update btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">

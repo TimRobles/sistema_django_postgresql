@@ -4,6 +4,7 @@ from applications.clientes.forms import TipoInterlocutorClienteForm
 
 from .models import (
     Cliente,
+    CorreoCliente,
     TipoInterlocutorCliente,
     InterlocutorCliente,
     ClienteInterlocutor,
@@ -87,6 +88,25 @@ class ClienteInterlocutorAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class CorreoClienteAdmin(admin.ModelAdmin):
+    list_display = (
+        'correo',
+        'cliente',
+        'fecha_baja',
+        'estado',        
+        )
+    exclude = (
+        'fecha_baja',
+        'estado',
+        )
+        
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
 class TelefonoInterlocutorClienteAdmin(admin.ModelAdmin):
     list_display = (
         'numero',
@@ -148,6 +168,7 @@ admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(TipoInterlocutorCliente, TipoInterlocutorClienteAdmin)
 admin.site.register(InterlocutorCliente, InterlocutorClienteAdmin)
 admin.site.register(ClienteInterlocutor, ClienteInterlocutorAdmin)
+admin.site.register(CorreoCliente, CorreoClienteAdmin)
 admin.site.register(TelefonoInterlocutorCliente, TelefonoInterlocutorClienteAdmin)
 admin.site.register(CorreoInterlocutorCliente, CorreoInterlocutorClienteAdmin)
 admin.site.register(RepresentanteLegalCliente, RepresentanteLegalClienteAdmin)

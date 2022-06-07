@@ -75,6 +75,7 @@ class InterlocutorCliente(models.Model):
     def __str__(self):
         return str(self.nombre_completo)
 
+
 class ClienteInterlocutor(models.Model):
 
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ClienteInterlocutor_cliente')
@@ -94,6 +95,50 @@ class ClienteInterlocutor(models.Model):
 
     def __str__(self):
         return str(self.cliente) + ' - ' + str(self.interlocutor)
+
+
+class CorreoCliente(models.Model):
+
+    correo = models.EmailField('Correo')
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
+    fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CorreoCliente_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CorreoCliente_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Correo Cliente'
+        verbose_name_plural = 'Correos Cliente'
+        ordering = ['estado', '-fecha_baja',]
+
+    def __str__(self):
+        return str(self.correo) + ' - ' + str(self.cliente)
+
+
+class RepresentanteLegalCliente(models.Model):
+
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
+    tipo_representante_legal = models.CharField('Tipo de Representante Legal', max_length=4, choices=TIPO_REPRESENTANTE_LEGAL_SUNAT)
+    fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RepresentanteLegalCliente_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RepresentanteLegalCliente_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Representante Legal Cliente'
+        verbose_name_plural = 'Representantes Legales Cliente'
+        ordering = ['estado', '-fecha_baja', '-interlocutor',]
+
+    def __str__(self):
+        return str(self.interlocutor) + ' - ' + str(self.cliente)
 
 
 class TelefonoInterlocutorCliente(models.Model):
@@ -136,26 +181,3 @@ class CorreoInterlocutorCliente(models.Model):
 
     def __str__(self):
         return str(self.correo) + ' - ' + str(self.interlocutor)
-
-
-class RepresentanteLegalCliente(models.Model):
-
-    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT)
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    tipo_representante_legal = models.CharField('Tipo de Representante Legal', max_length=4, choices=TIPO_REPRESENTANTE_LEGAL_SUNAT)
-    fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False, blank=True, null=True)
-    fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RepresentanteLegalCliente_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RepresentanteLegalCliente_updated_by', editable=False)
-
-    class Meta:
-
-        verbose_name = 'Representante Legal Cliente'
-        verbose_name_plural = 'Representantes Legales Cliente'
-        ordering = ['estado', '-fecha_baja', '-interlocutor',]
-
-    def __str__(self):
-        return str(self.interlocutor) + ' - ' + str(self.cliente)
