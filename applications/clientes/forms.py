@@ -25,6 +25,7 @@ class ClienteForm(BSModalModelForm):
             'direccion_fiscal',
             'ubigeo',
             'estado_sunat',
+            'condicion_sunat',
             )
 
     def __init__(self, *args, **kwargs):

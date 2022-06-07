@@ -15,7 +15,7 @@ function ConsultarRuc() {
     xhr.onload = function(){
         if (this.status === 200) {
             $respuesta = JSON.parse(xhr.responseText);
-            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"'));
+            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
 
             $razon_social.value = $info['razon_social'];
             $direccion.value = $info['direccion'];

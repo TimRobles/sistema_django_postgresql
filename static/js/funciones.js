@@ -193,7 +193,7 @@ $(function () {
         var url=$(this).data('url');
         consultaAjaxCallbackGet(url + ruc + '/', function(consulta){
             if (consulta) {
-                info = JSON.parse(consulta['info'].replace(/&quot;/g,'"'));
+                info = JSON.parse(consulta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
                 razon_social[0].value = info["razon_social"];
             }else{
                 alert("Número no encontrado.");

@@ -22,7 +22,7 @@ from .models import (
 
 class ClienteListView(PermissionRequiredMixin, ListView):
     permission_required = ('clientes.view_cliente')
-
+    
     model = Cliente
     template_name = "clientes/cliente/inicio.html"
     context_object_name = 'contexto_clientes'

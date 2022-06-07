@@ -6,6 +6,7 @@
             <th>Dirección Fiscal</th>
             <th>Ubigeo</th>
             <th>Estado SUNAT</th>
+            <th>Condición SUNAT</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -21,6 +22,7 @@
             <td>{{ cliente.direccion_fiscal }}</td>
             <td>{{ cliente.ubigeo }}</td>
             <td class="text-center">{{ cliente.get_estado_sunat_display }}</td>
+            <td class="text-center">{{ cliente.get_condicion_sunat_display }}</td>
             <td class="text-center text-nowrap">
                 {% if cliente.estado_sunat == 1 %}
                     <button data-form-url="{% url 'clientes_app:cliente_actualizar' cliente.id %}"

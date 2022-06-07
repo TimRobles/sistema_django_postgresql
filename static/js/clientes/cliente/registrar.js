@@ -5,6 +5,7 @@ function ConsultarRuc() {
     $direccion_fiscal = $('#id_direccion_fiscal')[0];
     $ubigeo = $('#id_ubigeo')[0];
     $estado = $('#id_estado_sunat')[0];
+    $condicion = $('#id_condicion_sunat')[0];
     $boton = $('#consultar-documento')[0];
 
     url = '/consulta-ruc/' + $ruc;
@@ -14,12 +15,13 @@ function ConsultarRuc() {
     xhr.onload = function(){
         if (this.status === 200) {
             $respuesta = JSON.parse(xhr.responseText);
-            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"'));
+            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
 
             $razon_social.value = $info['razon_social'];
             $direccion_fiscal.value = $info['direccion'];
             $ubigeo.value = $info['ubigeo'];
             setSelectedValueText($estado, $info['estado']);
+            setSelectedValueText($condicion, $info['condicion']);
         }else{
             $respuesta = false;
             $razon_social.value = "";
@@ -27,6 +29,7 @@ function ConsultarRuc() {
             $direccion_fiscal.value = "";
             $ubigeo.value = "";
             setSelectedValueText($estado, "---------");
+            setSelectedValueText($condicion, "---------");
             console.log("Error")
             swal({
                 title: "¡RUC inválido!",
@@ -52,7 +55,7 @@ function ConsultarDni() {
     xhr.onload = function(){
         if (this.status === 200) {
             $respuesta = JSON.parse(xhr.responseText);
-            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"'));
+            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
 
             $nombre.value = $info['nombre_completo'];
         }else{

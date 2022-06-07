@@ -2,19 +2,20 @@ from django.db import models
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from applications import datos_globales
-from applications.variables import ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
+from applications.variables import CONDICION_SUNAT, ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
 
 
 class Cliente(models.Model):
 
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT)
-    numero_documento = models.CharField('Número de Documento', max_length=15)
+    numero_documento = models.CharField('Número de Documento', max_length=15, null=True, blank=True)
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=50, blank=True, null=True)
     direccion_fiscal = models.CharField('Dirección Fiscal', max_length=100)
     ubigeo = models.CharField('Ubigeo', max_length=6)
     distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT)
+    condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cliente_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -60,7 +61,7 @@ class InterlocutorCliente(models.Model):
 
     nombre_completo = models.CharField('Nombre Completo', max_length=120)
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)
-    numero_documento = models.CharField('Número de Documento', max_length=15, unique=True)
+    numero_documento = models.CharField('Número de Documento', max_length=15, unique=True, blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InterlocutorCliente_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)

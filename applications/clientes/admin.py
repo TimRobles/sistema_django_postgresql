@@ -21,6 +21,7 @@ class ClienteAdmin(admin.ModelAdmin):
         'ubigeo',
         'distrito',
         'estado_sunat',
+        'condicion_sunat',
         )
     exclude = (
         'razon_social',
@@ -28,6 +29,7 @@ class ClienteAdmin(admin.ModelAdmin):
         'ubigeo',
         'distrito',
         'estado_sunat',
+        'condicion_sunat',
         )
 
     ordering = (

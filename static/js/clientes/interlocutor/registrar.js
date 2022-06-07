@@ -10,7 +10,7 @@ function ConsultarDni() {
     xhr.onload = function(){
         if (this.status === 200) {
             $respuesta = JSON.parse(xhr.responseText);
-            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"'));
+            $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
 
             $nombre.value = $info['nombre_completo'];
         }else{
