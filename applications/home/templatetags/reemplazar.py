@@ -1,4 +1,5 @@
 from django import template
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -6,3 +7,9 @@ register = template.Library()
 def espacio_guion(value):
     return value.replace(" ","-").lower()
 
+@register.filter
+def recortar_popover(texto):
+    if len(str(texto))>40:
+        return mark_safe("""<span data-bs-toggle="tooltip" data-bs-placement="top" title="%s">%s...</span>""" % (str(texto), str(texto)[:40]))
+    else:
+        return texto

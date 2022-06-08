@@ -18,6 +18,12 @@ $('#id_sede').on('change', function (e) {
     CambioSede(e.target);
 })
 
+var options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+};
+
 function Ubicacion() {
     function success(position) {
         $('#id_longitud')[0].value = position.coords.longitude;
@@ -33,7 +39,7 @@ function Ubicacion() {
         $('#id_longitud')[0].value = 0;
         $('#id_latitud')[0].value = 0;
     } else {
-        navigator.geolocation.getCurrentPosition(success, error);
+        navigator.geolocation.getCurrentPosition(success, error, options);
     }
 }
 
