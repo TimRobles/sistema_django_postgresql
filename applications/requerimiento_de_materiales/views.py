@@ -41,10 +41,6 @@ class RequerimientoMaterialCreateView(FormView):
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_inicio')
     global obj
 
-    print('RequerimientoMaterialCreateView')
-    print('RequerimientoMaterialCreateView')
-    print('RequerimientoMaterialCreateView')
-
     def form_valid(self, form):
         global obj
         obj.titulo = form.cleaned_data['titulo']
@@ -123,9 +119,7 @@ class RequerimientoMaterialUpdateView(FormView):
     template_name = "requerimiento_material/requerimiento_material/detalle.html"
     form_class = RequerimientoMaterialForm 
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_inicio')
-    print('RequerimientoMaterialUpdateView')
-    print('RequerimientoMaterialUpdateView')
-    print('RequerimientoMaterialUpdateView')
+
     def form_valid(self, form):
         obj = RequerimientoMaterial.objects.get(id=self.kwargs['pk'])
         titulo = form.cleaned_data['titulo']
@@ -170,10 +164,7 @@ class RequerimientoMaterialDetalleCreateView(BSModalFormView):
     template_name = "includes/formulario generico.html"
     form_class = RequerimientoMaterialDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_inicio')
-    print('RequerimientoMaterialDetalleCreateView')
-    print('RequerimientoMaterialDetalleCreateView')
-    print('RequerimientoMaterialDetalleCreateView')
-    
+
     def form_valid(self, form):
         registro = RequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
         item = len(RequerimientoMaterialDetalle.objects.filter(requerimiento_material = registro))
@@ -206,9 +197,7 @@ class RequerimientoMaterialDetalleUpdateView(BSModalUpdateView):
     model = RequerimientoMaterialDetalle
     template_name = "includes/formulario generico.html"
     form_class = RequerimientoMaterialDetalleUpdateForm
-    print('RequerimientoMaterialDetalleUpdateView')
-    print('RequerimientoMaterialDetalleUpdateView')
-    print('RequerimientoMaterialDetalleUpdateView')
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('requerimiento_material_app:requerimiento_material_inicio')
 
@@ -220,10 +209,6 @@ class RequerimientoMaterialDetalleUpdateView(BSModalUpdateView):
             content_type = ContentType.objects.get_for_model(material),
             id_registro = material.id,
         )
-
-        print('****************************************')
-        print(obj)
-        print('****************************************')
         
         registro_guardar(obj, self.request)
         obj.save()
