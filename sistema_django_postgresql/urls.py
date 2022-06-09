@@ -18,6 +18,7 @@ urlpatterns = [
     path('sede/', include('applications.sede.urls')),
     path('material/', include('applications.material.urls')),
     path('proveedores/', include('applications.proveedores.urls')),
+    path('requerimiento_material/', include('applications.requerimiento_de_materiales.urls')),
 
 ]
 

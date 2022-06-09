@@ -836,7 +836,7 @@ class ImagenMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return context
 
 class ImagenMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
-    permission_required = ('material.')
+    permission_required = ('material.delete_imagenmaterial')
     model = ImagenMaterial
     template_name = "includes/eliminar generico.html"
     

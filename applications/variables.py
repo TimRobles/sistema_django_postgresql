@@ -40,3 +40,5 @@ ESTADOS = (
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
 MENSAJE_REGISTRAR_SALIDA = 'Operación exitosa: La Hora de Salida fue registrada.'
+
+MENSAJE_ELIMINAR_ITEM = 'Operación exitosa: El registro fue eliminado.'

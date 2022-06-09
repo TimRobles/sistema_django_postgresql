@@ -1,6 +1,8 @@
 from django.core.mail import send_mail
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from django.contrib.contenttypes.models import ContentType
+
 from django.contrib.auth import get_user_model
 
 from django.views.generic import (
