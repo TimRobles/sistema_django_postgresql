@@ -39,6 +39,14 @@ class SedeCreateForm(BSModalModelForm):
     
         return provincia_buscar
 
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre')
+        filtro = Sede.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe una Sede con este nombre')
+
     def __init__(self, *args, **kwargs):
         super(SedeCreateForm, self).__init__(*args, **kwargs)
         self.fields['usuario_responsable'].queryset = get_user_model().objects.filter(is_active=1)  

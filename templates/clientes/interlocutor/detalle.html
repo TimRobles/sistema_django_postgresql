@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Interlocutores
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'clientes/interlocutor/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

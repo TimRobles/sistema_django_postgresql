@@ -1,6 +1,11 @@
 from datetime import date
 from django import forms
-from .models import CorreoInterlocutorProveedor, Proveedor, InterlocutorProveedor, TelefonoInterlocutorProveedor
+from .models import (
+    CorreoInterlocutorProveedor, 
+    Proveedor, 
+    InterlocutorProveedor, 
+    TelefonoInterlocutorProveedor,
+    )
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 class ProveedorForm(BSModalModelForm):
@@ -55,19 +60,12 @@ class TelefonoInterlocutorForm(BSModalModelForm):
         fields = (
             'numero',
             )
-
-        widgets = {
-            'numero' : forms.PasswordInput(
-                attrs ={
-                    'placeholder':'ej.: +12125552368',
-                    },
-                ),
-            }
     
     def __init__(self, *args, **kwargs):
         super(TelefonoInterlocutorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['numero'].widget.attrs['placeholder'] = 'ej.: +12125552368'
 
     def clean(self):
         cleaned_data = super().clean()

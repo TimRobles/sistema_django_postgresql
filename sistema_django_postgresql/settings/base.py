@@ -46,6 +46,7 @@ LOCAL_APPS = (
     'applications.material',
     'applications.proveedores',
     'applications.almacenes',
+    'applications.clientes',
     'applications.requerimiento_de_materiales',
 )
 

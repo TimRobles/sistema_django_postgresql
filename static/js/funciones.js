@@ -193,7 +193,7 @@ $(function () {
         var url=$(this).data('url');
         consultaAjaxCallbackGet(url + ruc + '/', function(consulta){
             if (consulta) {
-                info = JSON.parse(consulta['info'].replace(/&quot;/g,'"'));
+                info = JSON.parse(consulta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
                 razon_social[0].value = info["razon_social"];
             }else{
                 alert("Número no encontrado.");
@@ -230,7 +230,6 @@ $(function () {
         spinner();
         checkbox_div();
         jscolor.install();
-
         combos = document.getElementsByClassName('select2');
         for (let index = 0; index < combos.length; index++) {
             const element = combos[index];
@@ -241,7 +240,6 @@ $(function () {
     $('#modal').on('shown.bs.modal', function (e) {
         funcionesDentroModal();
         reemplazarTexto(e);
-
     });
 
     $('#modal-xl').on('shown.bs.modal', function (e) {

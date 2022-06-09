@@ -1,3 +1,5 @@
+{% load reemplazar %}
+
 <table class="table">
     <thead>
         <tr>
@@ -33,7 +35,7 @@
             <td class="text-nowrap">
                 
                 {% if visita.empresa_cliente %}
-                {{ visita.empresa_cliente }}
+                {{ visita.empresa_cliente|recortar_popover }}
                     
                 {% endif %}
                     

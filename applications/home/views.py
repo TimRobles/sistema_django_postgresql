@@ -1,6 +1,6 @@
 from applications.importaciones import *
 from django.utils.crypto import get_random_string
-from applications.funciones import consulta_distancia, consulta_dni, consulta_ruc
+from applications.funciones import consulta_distancia, consulta_dni, consulta_dni2, consulta_ruc
 from .forms import UserLoginForm
 from .forms import OlvideContrasenaForm
 from .forms import RecuperarContrasenaForm
@@ -83,6 +83,10 @@ def ConsultaDniView(request, dni):
         informacion = simplejson.dumps({
                             'nombre_completo' : datos_persona['cliente'],
                         })
+        # datos_persona = consulta_dni2(dni)
+        # informacion = simplejson.dumps({
+        #                     'nombre_completo' : "%s %s %s" % (datos_persona['nombres'], datos_persona['apellidoPaterno'], datos_persona['apellidoMaterno']),
+        #                 })
 
         data['info'] = render_to_string(
             'includes/info.html',

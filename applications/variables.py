@@ -8,6 +8,29 @@ TIPO_DOCUMENTO_SUNAT = (
         ('0', 'NO DOMICILIADO, SIN RUC (EXPORTACIÓN)'),
     )
 
+TIPO_REPRESENTANTE_LEGAL_SUNAT = (
+        ('001', 'Administrador'),
+        ('007', 'Contador'),
+        ('013', 'Director Ejecutivo'),
+        ('014', 'Director General'),
+        ('019', 'Gerente'),
+        ('020', 'Gerente Ejecutivo'),
+        ('021', 'Gerente General'),
+        ('022', 'Gestor de Empresas'),
+        ('025', 'Jefe'),
+        ('029', 'Presidente'),
+        ('032', 'Presidente Directorio'),
+        ('033', 'Presidente Ejecutivo'),
+        ('037', 'Representante no domiciliado'),
+        ('040', 'Secretario'),
+        ('043', 'Sub gerente'),
+        ('048', 'Vicepresidente'),
+        ('051', 'Titular gerente'),
+        ('052', 'Socio Administrador'),
+        ('998', 'Otros persona juridica'),
+        ('999', 'Otros persona natural'),
+        )
+
 CONDICION_SUNAT = (
         (1, 'Habido'),
         (2, 'No hallado'),
@@ -25,7 +48,6 @@ ESTADO_SUNAT = (
         )
 
 TIPO_DOCUMENTO_CHOICES = (
-
         ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
         ('4', 'CARNET DE EXTRANJERÍA'),
         ('7', 'PASAPORTE'),
