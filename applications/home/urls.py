@@ -8,7 +8,8 @@ from applications.home.views import (
     PruebaGeolocalizacion,
     UserLogoutView,
     OlvideContrasenaView,
-    RecuperarContrasenaView
+    RecuperarContrasenaView,
+    PruebaPdfView,
 )
 
 app_name = 'home_app'
@@ -23,4 +24,5 @@ urlpatterns = [
     path('recuperar-contraseña/', RecuperarContrasenaView.as_view(), name='recuperar_contraseña'),
     path('prueba-geolocalizacion', PruebaGeolocalizacion.as_view()),
     path('distancia-geolocalizacion/<str:longitud>/<str:latitud>/<int:sede_id>/', DistanciaGeoLocalizacion),
+    path('probando/pdf/<pk>/', PruebaPdfView.as_view(), name='probando_pdf'),
 ]

@@ -1,3 +1,4 @@
+from applications.home.pdf import generarPrueba
 from applications.importaciones import *
 from django.utils.crypto import get_random_string
 from applications.funciones import consulta_distancia, consulta_dni, consulta_dni2, consulta_ruc
@@ -168,3 +169,25 @@ def DistanciaGeoLocalizacion(request, longitud, latitud, sede_id):
     if request.method == 'GET':
         distancia = consulta_distancia(longitud, latitud, sede_id)
         return HttpResponse(distancia)
+
+class PruebaPdfView(View):
+    def get(self, request, *args, **kwargs):
+        titulo = 'Prueba de PDF'
+        vertical = False
+        logo = 'https://www.multiplay.com.pe/img/header/20220530095828.png'
+        pie_pagina = 'Texto para pie de página'
+        color = '#eb4034'
+        Texto = 'Probando PDF %s' % kwargs['pk']
+        TablaEncabezado = ['Columna 1', 'Columna 2', 'Columna 3']
+        TablaDatos = [
+            ['Dato 1.1', 'Dato 1.2', 'Dato 1.3'],
+            ['Dato 2.1', 'Dato 2.2', 'Dato 2.3'],
+            ['Dato 3.1', 'Dato 3.2', 'Dato 3.3'],
+            ['Dato 4.1', 'Dato 4.2', 'Dato 4.3'],
+            ]
+        buf = generarPrueba(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
