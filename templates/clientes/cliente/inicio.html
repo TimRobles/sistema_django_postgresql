@@ -9,10 +9,38 @@
     <h3>Clientes
         <button class="create badge bg-primary"
             data-form-url="{% url 'clientes_app:cliente_registrar' %}"
-            data-table-url="{% url 'clientes_app:cliente_tabla' %}">
+            data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}">
             Registrar Cliente
         </button>
     </h3>
+    <br>
+    <form action="" method="get">
+        <div class="row">
+            {% for field in form %}
+            <div class="col-lg-4">
+                <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %}
+                >
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                </div>
+                {% for error in field.errors %}
+                    <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            <div class="col-lg-4 my-auto">
+                <input class="btn btn-outline-dark" type="submit" value="Buscar">
+                <a class="btn btn-outline-dark" href="{% url 'clientes_app:cliente_inicio' %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+
+    <br>
+
+    {% include 'includes/paginador.html' %}
     
     <div class="table-responsive" id="tabla">
         {% include 'clientes/cliente/inicio_tabla.html' %}

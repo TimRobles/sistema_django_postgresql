@@ -1,6 +1,8 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.importaciones import *
 from .forms import (
+    ClienteBuscarForm,
     ClienteForm,
     CorreoClienteDarBajaForm,
     CorreoClienteForm, 
@@ -23,19 +25,59 @@ from .models import (
     CorreoInterlocutorCliente,
     )
 
-class ClienteListView(PermissionRequiredMixin, ListView):
+class ClienteListView(PermissionRequiredMixin, FormView):
     permission_required = ('clientes.view_cliente')
-    
-    model = Cliente
     template_name = "clientes/cliente/inicio.html"
-    context_object_name = 'contexto_clientes'
+    form_class = ClienteBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(ClienteListView, self).get_form_kwargs()
+        kwargs['filtro_razon_social'] = self.request.GET.get('razon_social')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteListView,self).get_context_data(**kwargs)
+        clientes = Cliente.objects.all()
+        filtro_razon_social = self.request.GET.get('razon_social')
+        if filtro_razon_social:
+            condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
+            for palabra in filtro_razon_social.split(" ")[1:]:
+                condicion &= Q(razon_social__unaccent__icontains = palabra)
+            clientes = clientes.filter(condicion)
+            context['contexto_filtro'] = "?razon_social=" + filtro_razon_social
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(clientes) > objectsxpage:
+            paginator = Paginator(clientes, objectsxpage)
+            page_number = self.request.GET.get('page')
+            clientes = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = clientes
+        return context
 
 def ClienteTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'clientes/cliente/inicio_tabla.html'
         context = {}
-        context['contexto_clientes'] = Cliente.objects.all()
+        clientes = Cliente.objects.all()
+        filtro_razon_social = request.GET.get('razon_social')
+        if filtro_razon_social:
+            condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
+            for palabra in filtro_razon_social.split(" ")[1:]:
+                condicion &= Q(razon_social__unaccent__icontains = palabra)
+            clientes = clientes.filter(condicion)
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(clientes) > objectsxpage:
+            paginator = Paginator(clientes, objectsxpage)
+            page_number = request.GET.get('page')
+            clientes = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = clientes
 
         data['table'] = render_to_string(
             template,
@@ -325,6 +367,16 @@ class CorreoClienteCreateView(PermissionRequiredMixin, BSModalCreateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
 
+    def get_form_kwargs(self, *args, **kwargs):
+        correos = CorreoCliente.objects.filter(cliente__id = self.kwargs['cliente_id'], estado = 1)
+        lista_correos = []
+        for correo in correos:
+            lista_correos.append(correo.id)
+        kwargs = super(CorreoClienteCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['correos'] = CorreoCliente.objects.filter(id__in = lista_correos)
+        kwargs['cliente_id'] = self.kwargs['cliente_id']
+        return kwargs
+
     def form_valid(self, form):
         form.instance.cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
 
@@ -347,6 +399,16 @@ class CorreoClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        correos = CorreoCliente.objects.filter(cliente__id = self.object.cliente.id, estado = 1)
+        lista_correos = []
+        for correo in correos:
+            lista_correos.append(correo.id)
+        kwargs = super(CorreoClienteUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['correos'] = lista_correos
+        kwargs['cliente_id'] = self.object.cliente.id
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(CorreoClienteUpdateView, self).get_context_data(**kwargs)
@@ -380,18 +442,6 @@ class CorreoClienteDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion']="Dar Baja"
         context['titulo']="Correo"
         return context
-
-
-
-
-
-
-
-
-
-
-
-
 
 class TelefonoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('clientes.add_telefonointerlocutorcliente')
@@ -568,7 +618,6 @@ class RepresentanteLegalClienteCreateView(PermissionRequiredMixin, BSModalFormVi
         context['titulo']="Representante Legal Cliente"
         return context
 
-    
 class RepresentanteLegalClienteDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_correointerlocutorcliente')
 

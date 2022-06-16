@@ -113,7 +113,7 @@ class CorreoCliente(models.Model):
 
         verbose_name = 'Correo Cliente'
         verbose_name_plural = 'Correos Cliente'
-        ordering = ['estado', '-fecha_baja',]
+        ordering = ['estado', '-fecha_baja', 'correo']
 
     def __str__(self):
         return str(self.correo) + ' - ' + str(self.cliente)

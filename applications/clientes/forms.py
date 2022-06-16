@@ -60,6 +60,16 @@ class ClienteForm(BSModalModelForm):
             if len(filtro)>0:
                 self.add_error('numero_documento', 'Ya existe un Cliente con este Número de documento')
 
+class ClienteBuscarForm(forms.Form):
+    razon_social = forms.CharField(label = 'Razón Social', max_length=100, required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_razon_social = kwargs.pop('filtro_razon_social')
+        super(ClienteBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['razon_social'].initial = filtro_razon_social
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class TipoInterlocutorClienteForm(forms.ModelForm):
     class Meta:
         model = TipoInterlocutorCliente
@@ -112,6 +122,8 @@ class CorreoClienteForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
+        self.lista_correos = kwargs.pop('correos')
+        self.cliente_id = kwargs.pop('cliente_id')
         super(CorreoClienteForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -119,10 +131,18 @@ class CorreoClienteForm(BSModalModelForm):
     def clean(self):
         cleaned_data = super().clean()
         correo = cleaned_data.get('correo')
-        filtro = CorreoCliente.objects.filter(correo__unaccent__iexact = correo, estado = 1)
-        if correo != self.instance.correo:
-            if len(filtro)>0:
-                self.add_error('correo', 'El correo ingresado ya se encuentra registrado')
+        filtro = CorreoCliente.objects.filter(correo__unaccent__iexact = correo, cliente = self.cliente_id, estado = 1)
+        if len(self.lista_correos) < 3:
+            if correo != self.instance.correo:
+                if len(filtro) > 0:
+                    self.add_error('correo', 'El correo ingresado ya se encuentra registrado')
+        elif len(self.lista_correos) == 3:
+            if (self.instance.id) in (self.lista_correos):
+                if correo != self.instance.correo:
+                    if len(filtro) > 0:
+                        self.add_error('correo', 'El correo ingresado ya se encuentra registrado')
+            else:
+                self.add_error('correo', 'No se pueden registrar mas correos')
 
 class CorreoClienteDarBajaForm(BSModalModelForm):
     class Meta:
