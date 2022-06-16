@@ -16,29 +16,45 @@
             <li class="page-item disabled">
                 <a class="page-link">&laquo;</a>
             </li>
-            <li class="page-item active">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
-            </li>
-        {% endif %}
-
-        {% for i in contexto_pagina.paginator.page_range %}
-            {% if i != 1 and i != contexto_pagina.paginator.num_pages %}
-                {% if i > contexto_pagina.number|add:"-5" and contexto_pagina.number|add:"5" > i %}
-                    {% if contexto_pagina.number == i %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ i }} 
-                                <span class="sr-only"></span>
-                            </span>
-                        </li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
-                        </li>
+            {% for i in contexto_pagina.paginator.page_range %}
+                {% if i != contexto_pagina.paginator.num_pages %}
+                    {% if contexto_pagina.number|add:"10" > i %}
+                        {% if contexto_pagina.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }} 
+                                    <span class="sr-only"></span>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
+        {% endif %}
 
+        {% if contexto_pagina.has_previous and contexto_pagina.has_next %}
+            {% for i in contexto_pagina.paginator.page_range %}
+                {% if i != 1 and i != contexto_pagina.paginator.num_pages %}
+                    {% if i > contexto_pagina.number|add:"-5" and contexto_pagina.number|add:"5" > i %}
+                        {% if contexto_pagina.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }} 
+                                    <span class="sr-only"></span>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+            
         {% if contexto_pagina.has_next %}
             <li class="page-item">
                 <a class="page-link">...</a>
@@ -52,9 +68,23 @@
                 </a>
             </li>
         {% else %}
-            <li class="page-item active">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.paginator.num_pages }}{% else %}?page={{ contexto_pagina.paginator.num_pages }}{% endif %}">{{ contexto_pagina.paginator.num_pages }}</a>
-            </li>
+            {% for i in contexto_pagina.paginator.page_range %}
+                {% if i != 1 %}
+                    {% if i > contexto_pagina.number|add:"-10" %}
+                        {% if contexto_pagina.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }} 
+                                    <span class="sr-only"></span>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
             <li class="page-item disabled">
                 <a class="page-link">&raquo;</a>
             </li>
@@ -83,29 +113,45 @@
             <li class="col-auto page-item disabled">
                 <a class="page-link">&laquo;</a>
             </li>
-            <li class="col-auto page-item active">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
-            </li>
-        {% endif %}
-
-        {% for i in contexto_pagina.paginator.page_range %}
-            {% if i != 1 and i != contexto_pagina.paginator.num_pages %}
-                {% if i > contexto_pagina.number|add:"-5" and contexto_pagina.number|add:"5" > i %}
-                    {% if contexto_pagina.number == i %}
-                        <li class="col-auto page-item active">
-                            <span class="page-link">{{ i }} 
-                                <span class="sr-only"></span>
-                            </span>
-                        </li>
-                    {% else %}
-                        <li class="col-auto page-item">
-                            <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
-                        </li>
+            {% for i in contexto_pagina.paginator.page_range %}
+                {% if i != contexto_pagina.paginator.num_pages %}
+                    {% if contexto_pagina.number|add:"10" > i %}
+                        {% if contexto_pagina.number == i %}
+                            <li class="col-auto page-item active">
+                                <span class="page-link">{{ i }} 
+                                    <span class="sr-only"></span>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="col-auto page-item">
+                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
+        {% endif %}
 
+        {% if contexto_pagina.has_previous and contexto_pagina.has_next %}
+            {% for i in contexto_pagina.paginator.page_range %}
+                {% if i != 1 and i != contexto_pagina.paginator.num_pages %}
+                    {% if i > contexto_pagina.number|add:"-5" and contexto_pagina.number|add:"5" > i %}
+                        {% if contexto_pagina.number == i %}
+                            <li class="col-auto page-item active">
+                                <span class="page-link">{{ i }} 
+                                    <span class="sr-only"></span>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="col-auto page-item">
+                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+            
         {% if contexto_pagina.has_next %}
             <li class="col-auto page-item">
                 <a class="page-link">...</a>
@@ -119,9 +165,23 @@
                 </a>
             </li>
         {% else %}
-            <li class="col-auto page-item active">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.paginator.num_pages }}{% else %}?page={{ contexto_pagina.paginator.num_pages }}{% endif %}">{{ contexto_pagina.paginator.num_pages }}</a>
-            </li>
+            {% for i in contexto_pagina.paginator.page_range %}
+                {% if i != 1 %}
+                    {% if i > contexto_pagina.number|add:"-10" %}
+                        {% if contexto_pagina.number == i %}
+                            <li class="col-auto page-item active">
+                                <span class="page-link">{{ i }} 
+                                    <span class="sr-only"></span>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="col-auto page-item">
+                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
             <li class="col-auto page-item disabled">
                 <a class="page-link">&raquo;</a>
             </li>
