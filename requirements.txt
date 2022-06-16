@@ -13,3 +13,4 @@ dataclasses
 simplejson
 requests
 django-cleanup
+reportlab

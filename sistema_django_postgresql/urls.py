@@ -19,6 +19,8 @@ urlpatterns = [
     path('material/', include('applications.material.urls')),
     path('proveedores/', include('applications.proveedores.urls')),
     path('clientes/', include('applications.clientes.urls')),
+    path('requerimiento_material/', include('applications.requerimiento_de_materiales.urls')),
+
 ]
 
 urlpatterns += [url(r'^media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT})]

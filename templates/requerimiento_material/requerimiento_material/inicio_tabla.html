@@ -1,0 +1,50 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Titulo</th>
+            <th>Proveedor</th>
+            <th>Interlocutor</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for requerimiento_material in contexto_requerimiento_material %}
+            <td>{{ requerimiento_material.fecha|date:'d/m/Y' }}</td>
+            <td>
+                {% if requerimiento_material.titulo != None %}
+                    {{ requerimiento_material.titulo}}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if requerimiento_material.proveedor != None %}
+                    {{ requerimiento_material.proveedor }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if requerimiento_material.interlocutor_proveedor != None %}
+                    {{ requerimiento_material.interlocutor_proveedor }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ requerimiento_material.get_estado_display}}</td>
+            <td>
+            <a href="{% url 'requerimiento_material_app:requerimiento_material_actualizar' requerimiento_material.id %}"
+                class="btn btn-info btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                <i class="bi bi-eye-fill"></i>
+            </a>   
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
