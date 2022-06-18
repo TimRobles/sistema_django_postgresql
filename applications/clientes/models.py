@@ -33,6 +33,9 @@ class Cliente(models.Model):
                 self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
             except:
                 self.distrito = None
+        self.razon_social = self.razon_social.upper()
+        self.nombre_comercial = self.nombre_comercial.upper()
+        self.direccion_fiscal = self.direccion_fiscal.upper()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -73,9 +76,12 @@ class InterlocutorCliente(models.Model):
         verbose_name_plural = 'Interlocutores Cliente'
         ordering = ['-nombre_completo',]
 
+    def save(self):
+        self.nombre_completo = self.nombre_completo.upper()
+        return super().save()
+
     def __str__(self):
         return str(self.nombre_completo)
-
 
 class ClienteInterlocutor(models.Model):
 
