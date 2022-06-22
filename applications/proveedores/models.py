@@ -43,11 +43,6 @@ class InterlocutorProveedor(models.Model):
         verbose_name = 'Interlocutor Proveedor'
         verbose_name_plural = 'Interlocutores Proveedor'
 
-    def save(self):
-        self.nombres = self.nombres.upper()
-        self.apellidos = self.apellidos.upper()
-        return super().save()
-
     def __str__(self):
         return str(self.nombres) + ' ' + str(self.apellidos) 
 

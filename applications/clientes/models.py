@@ -4,6 +4,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from applications import datos_globales
 from applications.variables import CONDICION_SUNAT, ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
 
+from django.db.models.signals import pre_save, post_save
 
 class Cliente(models.Model):
 
@@ -75,10 +76,6 @@ class InterlocutorCliente(models.Model):
         verbose_name = 'Interlocutor Cliente'
         verbose_name_plural = 'Interlocutores Cliente'
         ordering = ['-nombre_completo',]
-
-    def save(self):
-        self.nombre_completo = self.nombre_completo.upper()
-        return super().save()
 
     def __str__(self):
         return str(self.nombre_completo)
@@ -188,3 +185,19 @@ class CorreoInterlocutorCliente(models.Model):
 
     def __str__(self):
         return str(self.correo) + ' - ' + str(self.interlocutor)
+
+
+# def interlocutor_cliente_pre_save(*args, **kwargs):
+#     print('pre save')
+#     print(kwargs)
+#     obj = kwargs['instance']
+#     print(obj.nombre_completo)
+#     obj.nombre_completo = obj.nombre_completo.upper()
+#     print(obj.nombre_completo)
+
+# def interlocutor_cliente_post_save(*args, **kwargs):
+#     print('post save')
+#     print(kwargs)
+
+# pre_save.connect(interlocutor_cliente_pre_save, sender=InterlocutorCliente)
+# post_save.connect(interlocutor_cliente_post_save, sender=InterlocutorCliente)

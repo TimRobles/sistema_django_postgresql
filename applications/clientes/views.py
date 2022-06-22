@@ -224,7 +224,7 @@ class InterlocutorClienteCreateView(PermissionRequiredMixin, BSModalFormView):
         interlocutor, existe = InterlocutorCliente.objects.get_or_create(
             tipo_documento = tipo_documento,
             numero_documento = numero_documento,
-            nombre_completo = nombre_completo,
+            nombre_completo = nombre_completo.upper(),
         )
         if not existe:
             interlocutor.created_by = self.request.user
