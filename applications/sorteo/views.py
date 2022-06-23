@@ -5,13 +5,13 @@ from applications.sorteo.models import Ticket
 
 # Create your views here.
 
-class TicketListView(ListView):
+class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
     template_name = "sorteo/lista.html"
     context_object_name = 'tickets'
 
 
-class SorteoView(TemplateView):
+class SorteoView(LoginRequiredMixin, TemplateView):
     template_name = "sorteo/sorteo.html"
 
 
