@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Sorteo
+{% endblock titulo %}
+    
+
+{% block contenido %}
+<h1>Sorteo</h1>
+<div class="row justify-content-center">
+    <div class="casillero col-auto">
+        <span id="primero">0</span>
+    </div>
+    <div class="casillero col-auto">
+        <span id="segundo">0</span>
+    </div>
+    <div class="casillero col-auto">
+        <span id="tercero">0</span>
+    </div>
+    <div class="casillero col-auto">
+        <span id="cuarto">0</span>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-5">
+    <button id="sortear" class="btn btn-warning col-1 mx-2">Sin Premio</button>
+    <button id="ganador" class="btn btn-success col-1 mx-2">Ganador</button>
+    <a href="{% url 'sorteo_app:lista' %}" class="btn btn-primary col-1 mx-2">Ver Lista</a>
+</div>
+
+{% endblock contenido %}
+
+
+{% block extrajs %}
+<script src="{% static 'js/sorteo/sorteo.js' %}"></script>
+{% endblock extrajs %}
+    
+    
