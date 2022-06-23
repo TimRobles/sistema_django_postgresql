@@ -26,10 +26,10 @@ def Sortear(request):
         ticket.save()
         titulo = "<h2>¡Felicidades!</h2>"
 
-        tickets = Ticket.objects.filter(elegido=True).filter(premio=None)
-        for ticket in tickets:
-            ticket.elegido = False
-            ticket.save()
+        limpiar = Ticket.objects.filter(elegido=True).filter(premio=None)
+        for limpia in limpiar:
+            limpia.elegido = False
+            limpia.save()
     else:
         ticket.elegido = True
         ticket.save()
