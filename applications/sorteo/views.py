@@ -23,7 +23,7 @@ def Perdedor(request):
 
 
 def Ganador(request):
-    elegido = Ticket.objects.filter(elegido=False).order_by('?').first()
+    elegido = Ticket.objects.filter(elegido=False).exclude(bloqueo=True).order_by('?').first()
     numero = Ticket.objects.exclude(premio=None)
     elegido.elegido = True
     elegido.premio = 'Premio N°%i' % (len(numero)+1)
