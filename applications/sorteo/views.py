@@ -15,6 +15,28 @@ class SorteoView(LoginRequiredMixin, TemplateView):
     template_name = "sorteo/sorteo.html"
 
 
+def Sortear(request):
+    premios = Ticket.objects.exclude(premio=None)
+    elegidos = Ticket.objects.filter(elegido=True).filter(premio=None)
+    ticket = Ticket.objects.filter(elegido=False).exclude(bloqueo=True).order_by('?').first()
+    texto = '<h4>Ticket N° %s</br>Nombre: %s</br>Empresa: %s</h4>' % (ticket.ticket, ticket.contacto, ticket.razon_social)
+    if len(elegidos) % 3 == 2:
+        ticket.elegido = True
+        ticket.premio = 'Premio N°%i' % (len(premios)+1)
+        ticket.save()
+        titulo = "<h2>¡Felicidades!</h2>"
+
+        tickets = Ticket.objects.filter(elegido=True).filter(premio=None)
+        for ticket in tickets:
+            ticket.elegido = False
+            ticket.save()
+    else:
+        ticket.elegido = True
+        ticket.save()
+        titulo = "<h2>¡Gracias por participar!</h2>"
+
+    return HttpResponse("%s | %s | %s" % (ticket.__str__(), titulo, texto))
+
 def Perdedor(request):
     elegido = Ticket.objects.filter(elegido=False).order_by('?').first()
     elegido.elegido = True
@@ -38,7 +60,7 @@ def Ganador(request):
 
 def Datos(request, ticket):
     obj = Ticket.objects.get(ticket=ticket)
-    texto = 'Nombre: %s\nEmpresa: %s' % (obj.contacto, obj.razon_social)
+    texto = '<h4>Ticket N° %s</br>Nombre: %s</br>Empresa: %s</h4>' % (obj.ticket, obj.contacto, obj.razon_social)
     return HttpResponse(texto)
 
 
