@@ -33,3 +33,11 @@
     list-style-type: none;
     padding-left: 0.5em;
 }
+
+.casillero{
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border: solid black;
+    border-radius: 0.5rem;
+    font-size: 5rem;
+}

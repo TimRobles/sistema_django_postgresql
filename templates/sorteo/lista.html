@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Lista de Sorteo
+{% endblock titulo %}
+    
+
+{% block contenido %}
+<h1>Lista de Sorteo</h1>
+<a href="{% url 'sorteo_app:sorteo' %}" class="btn btn-primary">Iniciar Sorteo</a>
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Ticket</th>
+            <th>Contacto</th>
+            <th>Razón Social</th>
+            <th>RUC</th>
+            <th>Elegido</th>
+            <th>Ganador</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for ticket in tickets %}
+        <tr>
+            <td class="text-nowrap">{{ ticket.ticket }}</td>
+            <td class="text-nowrap">{{ ticket.contacto }}</td>
+            <td>{{ ticket.razon_social }}</td>
+            <td>{{ ticket.ruc }}</td>
+            <td>
+                {% if ticket.elegido %}
+                Sí
+                {% endif %}
+            </td>
+            <td class="text-nowrap">
+                {% if ticket.premio %}
+                {{ ticket.premio }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock contenido %}
+    
