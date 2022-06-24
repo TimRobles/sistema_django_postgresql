@@ -31,7 +31,7 @@ function ConsultarRuc() {
             setSelectedValueText($estado, "---------");
             setSelectedValueText($condicion, "---------");
             console.log("Error")
-            swal({
+            Swal.fire({
                 title: "¡RUC inválido!",
                 text: "Ingrese un número de RUC correcto",
                 icon: "warning",

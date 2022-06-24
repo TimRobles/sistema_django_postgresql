@@ -31,7 +31,7 @@ function ConsultarRuc() {
             setSelectedValueText($estado, "---------");
             setSelectedValueText($condicion, "---------");
             console.log("Error")
-            swal({
+            Swal.fire({
                 title: "¡RUC inválido!",
                 text: "Ingrese un número de RUC correcto",
                 icon: "warning",
@@ -62,7 +62,7 @@ function ConsultarDni() {
             $respuesta = false;
             $nombre.value = "";
             console.log("Error")
-            swal({
+            Swal.fire({
                 title: "¡DNI inválido!",
                 text: "Ingrese un número de DNI correcto",
                 icon: "warning",
