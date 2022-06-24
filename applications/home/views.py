@@ -170,7 +170,13 @@ def DistanciaGeoLocalizacion(request, longitud, latitud, sede_id):
         distancia = consulta_distancia(longitud, latitud, sede_id)
         return HttpResponse(distancia)
 
-class PruebaPdfView(View):
+class PruebaPdfView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.user.id!=1:
+            return self.handle_no_permission()
+        return super(PruebaPdfView, self).dispatch(request, *args, **kwargs)
+    
+
     def get(self, request, *args, **kwargs):
         titulo = 'Prueba de PDF'
         vertical = False

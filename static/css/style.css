@@ -33,3 +33,19 @@
     list-style-type: none;
     padding-left: 0.5em;
 }
+
+.casillero{
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border: solid black;
+    border-radius: 0.5rem;
+    font-size: 5rem;
+}
+
+.logo-multiplay{
+    border: solid white;
+    background-color: white;
+    border-radius: 2rem;
+    padding: 0.8rem;
+    box-shadow: 0px 0px 40px rgba(212, 217, 232, 0.2);
+}
