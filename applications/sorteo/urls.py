@@ -6,6 +6,7 @@ app_name='sorteo_app'
 urlpatterns = [
     path('lista/', views.TicketListView.as_view(), name='lista'),
     path('sorteo/', views.SorteoView.as_view(), name='sorteo'),
+    path('sortear/', views.Sortear, name='sortear'),
     path('perdedor/', views.Perdedor, name='perdedor'),
     path('ganador/', views.Ganador, name='ganador'),
     path('datos/<str:ticket>', views.Datos, name='datos'),
