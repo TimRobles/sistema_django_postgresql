@@ -23,6 +23,7 @@
                     <th>Fecha</th>
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
+                    <th>Comentario</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,6 +31,7 @@
                     <td>{{ contexto_requerimiento_material_proveedor.fecha|date:'d/m/Y' }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.proveedor }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.interlocutor_proveedor }}</td>
+                    <td>{{ contexto_requerimiento_material_proveedor.comentario }}</td>
 
                 </tr>
             </tbody>
@@ -37,7 +39,7 @@
         <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_agregar_material' requerimiento.id %}"
             data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
             class="create btn btn-primary">
-            Agregar Material {{requerimiento.id}}
+            Agregar Material
         </button>
     </div>
 

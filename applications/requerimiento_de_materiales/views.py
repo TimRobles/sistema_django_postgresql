@@ -222,15 +222,7 @@ class ListaRequerimientoMaterialDetalleDeleteView(BSModalDeleteView):
         return reverse_lazy('requerimiento_material_app:lista_requerimiento_material_actualizar', kwargs={'pk':self.get_object().lista_requerimiento_material.id})
 
     def delete(self, request, *args, **kwargs):
-        materiales = ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material=self.get_object().lista_requerimiento_material)
-
-        contador = 1
-        for material in materiales:
-            if material == self.get_object():continue
-            material.item = contador
-            material.save()
-            contador += 1
-
+        
         return super().delete(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

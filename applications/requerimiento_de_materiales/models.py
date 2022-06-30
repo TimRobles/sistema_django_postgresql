@@ -4,7 +4,7 @@ from applications.importaciones import registro_guardar_user
 from applications.proveedores.models import Proveedor, InterlocutorProveedor,ProveedorInterlocutor
 from django.contrib.contenttypes.models import ContentType
 
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 class ListaRequerimientoMaterial(models.Model):
     titulo = models.CharField('Titulo', max_length=150,null=True, blank=True)
@@ -60,8 +60,8 @@ class RequerimientoMaterialProveedor(models.Model):
     titulo = models.CharField('Titulo', max_length=150,null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT, related_name='ProveedorMaterial',null=True, blank=True)
     interlocutor_proveedor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT, related_name='InterlocutorProveedorMaterial',null=True, blank=True)
-    lista_requerimiento = models.ForeignKey(ListaRequerimientoMaterial, on_delete=models.CASCADE)
-    requerimiento_material_anterior = models.ForeignKey('self', on_delete=models.CASCADE,null=True, blank=True)
+    lista_requerimiento = models.ForeignKey(ListaRequerimientoMaterial, on_delete=models.PROTECT)
+    requerimiento_material_anterior = models.ForeignKey('self', on_delete=models.PROTECT,null=True, blank=True)
     comentario = models.TextField(null=True, blank=True)
     version = models.IntegerField(default=0)
     slug = models.SlugField(null=True, blank=True)
@@ -123,5 +123,19 @@ def requerimiento_material_proveedor_pre_save(*args, **kwargs):
     print("Pre save de requerimiento material proveedor")
     print(kwargs)
 
+def lista_requerimiento_material_detalle_pre_delete(sender, instance, *args, **kwargs):
+    print("************PRE*****************")
+
+def lista_requerimiento_material_detalle_post_delete(sender, instance, *args, **kwargs):
+    materiales = ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material=instance.lista_requerimiento_material)
+    contador = 1
+    for material in materiales:
+        material.item = contador
+        material.save()
+        contador += 1
+    
 pre_save.connect(requerimiento_material_proveedor_pre_save, sender=RequerimientoMaterialProveedor)
 post_save.connect(requerimiento_material_proveedor_post_save, sender=RequerimientoMaterialProveedor)
+
+pre_delete.connect(lista_requerimiento_material_detalle_pre_delete, sender=ListaRequerimientoMaterialDetalle)
+post_delete.connect(lista_requerimiento_material_detalle_post_delete, sender=ListaRequerimientoMaterialDetalle)
