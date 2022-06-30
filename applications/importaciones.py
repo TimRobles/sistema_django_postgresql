@@ -51,3 +51,8 @@ def registro_guardar(form, request):
     if form.created_by == None:
         form.created_by = request.user
     form.updated_by = request.user
+
+def registro_guardar_user(form, usuario):
+    if form.created_by == None:
+        form.created_by = usuario
+    form.updated_by = usuario

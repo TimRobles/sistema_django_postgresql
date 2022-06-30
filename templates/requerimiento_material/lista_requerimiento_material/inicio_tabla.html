@@ -1,0 +1,40 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha de Registro</th>
+            <th>Titulo</th>
+            <th>Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for lista_requerimiento_material in contexto_lista_requerimiento_material %}
+            <td>{{ lista_requerimiento_material.created_at|date:'d/m/Y' }}</td>
+            <td>
+                {% if lista_requerimiento_material.titulo != None %}
+                    {{ lista_requerimiento_material.titulo}}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>
+            <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_eliminar' lista_requerimiento_material.id %}"
+                class="delete btn btn-danger btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                <i class="bi-x-lg"></i>
+            </button>
+
+            <a href="{% url 'requerimiento_material_app:lista_requerimiento_material_actualizar' lista_requerimiento_material.id %}"
+                class="btn btn-info btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                <i class="bi bi-eye-fill"></i>
+            </a>
+
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>

@@ -1,18 +1,14 @@
 import os, io
 
-from datetime import datetime
-
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Table, Frame, PageTemplate, BaseDocTemplate, PageBreak, Spacer, ListFlowable, ListItem
-from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import *
 from functools import partial
 
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from django.contrib.humanize.templatetags.humanize import intcomma
 
 rutaBase=os.getcwd()
 
@@ -104,53 +100,8 @@ def listaNumero(texto, fuente, tamaño=8, tipo="Regular", color='black'):
         lista,
         )
 
-def listaPreguntas(texto, fuente, tamaño=8, tipo="Regular", color='black'):
-    filas = texto.splitlines()
-    lista = []
-    contador = 1
-    for fila in filas:
-        lista.append(
-            ListItem(
-                parrafoIzquierda(fila, fuente, tamaño, tipo, color),
-                value = contador
-            )
-        )
-        contador += 1
-        lista.append(
-            ListItem(
-                vacio(),
-                bulletColor='white',
-                leftIndent=0
-            )
-        )
-        lista.append(
-            ListItem(
-                parrafoIzquierda("."*73, 'CourierPrime', tamaño, "Bold"),
-                bulletColor='white',
-                leftIndent=0
-            )
-        )
-        lista.append(
-            ListItem(
-                vacio(),
-                bulletColor='white',
-                leftIndent=0
-            )
-        )
-        lista.append(
-            ListItem(
-                parrafoIzquierda("."*73, 'CourierPrime', tamaño, "Bold"),
-                bulletColor='white',
-                leftIndent=0
-            )
-        )
-        
-    return ListFlowable(
-        lista,
-        )
-
 def hipervinculo(ruta, texto):
-    return '<a href="%s" color="blue"><u>%s</u></a>' % (ruta.url, texto)
+    return '<a href="%s" color="blue"><u>%s</u></a>' % (ruta, texto)
 
 def insertarImagen(ruta, ancho, alto):
     return '<img src="%s" width="%s" height="%s" valign="top"/>' % (ruta, str(cmToPx(ancho)), str(cmToPx(alto)))
@@ -171,12 +122,12 @@ def insertarImagenGrande(ruta, ancho=0, alto=0):
 
 def header_content(logo):
     cabecera = insertarImagen(logo, 5, 1)
-    return parrafoCentro(cabecera, "ComicNeue", 7, "Light")
+    return parrafoCentro(cabecera, "CourierPrime", 7, "Regular")
 
 
 def footer_content(texto):
     piedepagina = texto
-    return parrafoCentro(piedepagina, "ComicNeue", 6, "Light")
+    return parrafoCentro(piedepagina, "CourierPrime", 6, "Regular")
 
 
 def header(canvas, doc, content):
@@ -206,9 +157,9 @@ def footer_Lands(canvas, doc, texto):
     canvas.restoreState()
 
 A4Portrait = Frame(cmToPx(1), cmToPx(2.5), cmToPx(19), cmToPx(24.7), id='normal') #leftMargin, bottomMargin, width, height
-A4Landscape = frame = Frame(cmToPx(1), cmToPx(2.45), cmToPx(27.65), cmToPx(17), id='normal') #leftMargin, bottomMargin, width, height
+A4Landscape = Frame(cmToPx(1), cmToPx(2.45), cmToPx(27.65), cmToPx(17), id='normal') #leftMargin, bottomMargin, width, height
 
-def generarPDF(titulo, elementos, orientacion_vertical=True, logo='/logos/logo header.png', texto='Probando Pie de página'):
+def generarPDF(titulo, elementos, orientacion_vertical=True, logo=rutaBase + '/logos/logo header.png', texto='Probando Pie de página'):
     # container for the 'Flowable' objects
 
     buf = io.BytesIO()

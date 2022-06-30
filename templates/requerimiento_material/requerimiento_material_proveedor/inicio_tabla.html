@@ -1,0 +1,66 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Titulo</th>
+            <th>Proveedor</th>
+            <th>Interlocutor</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for requerimiento_material_proveedor in contexto_requerimiento_material_proveedor %}
+        <tr> 
+            <td>{{ requerimiento_material_proveedor.fecha|date:'d/m/Y' }}</td>
+            <td>
+                {% if requerimiento_material_proveedor.titulo != None %}
+                    {{ requerimiento_material_proveedor.titulo}}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if requerimiento_material_proveedor.proveedor != None %}
+                    {{ requerimiento_material_proveedor.proveedor }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if requerimiento_material_proveedor.interlocutor_proveedor != None %}
+                    {{ requerimiento_material_proveedor.interlocutor_proveedor }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ requerimiento_material_proveedor.get_estado_display}}</td>
+            <td class="text-nowrap">
+                <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_actualizar' requerimiento_material_proveedor.id %}"
+                    data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+
+                <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_eliminar' requerimiento_material_proveedor.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi-x-lg"></i>
+                </button>
+
+                <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle' requerimiento_material_proveedor.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>   
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+

@@ -25,20 +25,20 @@ urlpatterns = [
 
     path('componente/registrar/<int:material_id>/', views.ComponenteCreateView.as_view(), name='componente_registrar'),
     path('componente/actualizar/<pk>/', views.ComponenteUpdateView.as_view(), name='componente_actualizar'),
-    path('componente/eliminar/<pk>/', views.ComponenteDeleteView.as_view(), name='componente_eliminar'),    
+    path('componente/eliminar/<pk>/', views.ComponenteDeleteView.as_view(), name='componente_eliminar'),
 
     path('especificacion/registrar/<int:material_id>/', views.EspecificacionCreateView.as_view(), name='especificacion_registrar'),
     path('especificacion/actualizar/<pk>/', views.EspecificacionUpdateView.as_view(), name='especificacion_actualizar'),
-    path('especificacion/eliminar/<pk>/', views.EspecificacionDeleteView.as_view(), name='especificacion_eliminar'),    
+    path('especificacion/eliminar/<pk>/', views.EspecificacionDeleteView.as_view(), name='especificacion_eliminar'),
 
     path('datasheet/registrar/<int:material_id>/', views.DatasheetCreateView.as_view(), name='datasheet_registrar'),
     path('datasheet/actualizar/<pk>/', views.DatasheetUpdateView.as_view(), name='datasheet_actualizar'),
-    path('datasheet/eliminar/<pk>/', views.DatasheetDeleteView.as_view(), name='datasheet_eliminar'),    
+    path('datasheet/eliminar/<pk>/', views.DatasheetDeleteView.as_view(), name='datasheet_eliminar'),
 
     path('datos-importacion/actualizar/<pk>/', views.DatosImportacionUpdateView.as_view(), name='datos_importacion_actualizar'),
-    
+
     path('producto-sunat/actualizar/<pk>/', views.ProductoSunatUpdateView.as_view(), name='producto_sunat_actualizar'),
-    
+
     path('familia-sunat/<str:id_segmento>/', views.FamiliaSunatView, name='familia_sunat'),
     path('clase-sunat/<str:id_familia>/', views.ClaseSunatView, name='clase_sunat'),
     path('producto-sunat/<str:id_clase>/', views.ProductoSunatView, name='producto_sunat'),
