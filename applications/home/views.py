@@ -178,13 +178,15 @@ class PruebaPdfView(LoginRequiredMixin, View):
     
 
     def get(self, request, *args, **kwargs):
-        titulo = 'Prueba de PDF'
-        vertical = False
+        titulo = 'Probando PDF'
+        vertical = True
         logo = 'https://www.multiplay.com.pe/img/header/20220530095828.png'
         pie_pagina = 'Texto para pie de página'
         color = '#eb4034'
+
         Texto = 'Probando PDF %s' % kwargs['pk']
-        TablaEncabezado = ['Columna 1', 'Columna 2', 'Columna 3']
+        TablaEncabezado = ['Columna 1', '''Columna 2
+        Prueba''', 'Columna 3']
         TablaDatos = [
             ['Dato 1.1', 'Dato 1.2', 'Dato 1.3'],
             ['Dato 2.1', 'Dato 2.2', 'Dato 2.3'],

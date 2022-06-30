@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Requerimiento Proveedor
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Requerimiento Material Proveedor</h3>
+    <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_duplicar' requerimiento.id %}"
+        data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
+        class="delete btn btn-primary">
+        Duplicar
+    </button>
+
+    <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_pdf' requerimiento.id  %}" target="_blank"><span class="btn btn-primary">PDF</span></a>
+
+    <br>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>Interlocutor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ contexto_requerimiento_material_proveedor.fecha|date:'d/m/Y' }}</td>
+                    <td>{{ contexto_requerimiento_material_proveedor.proveedor }}</td>
+                    <td>{{ contexto_requerimiento_material_proveedor.interlocutor_proveedor }}</td>
+
+                </tr>
+            </tbody>
+        </table>
+        <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_agregar_material' requerimiento.id %}"
+            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
+            class="create btn btn-primary">
+            Agregar Material {{requerimiento.id}}
+        </button>
+    </div>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'requerimiento_material/requerimiento_material_proveedor/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

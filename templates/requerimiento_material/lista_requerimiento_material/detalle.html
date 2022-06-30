@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Lista Requerimiento 
+{% endblock titulo %}
+
+{% block contenido %}
+    <div class="table-responsive" id="tabla">
+        {% include 'requerimiento_material/lista_requerimiento_material/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+
