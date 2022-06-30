@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from requests.packages.urllib3.util.retry import Retry
 import applications
 import math
+import random
+import string
 
 def consulta_ruc(ruc):
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
@@ -120,3 +122,18 @@ def consulta_distancia(longitud, latitud, sede_id):
     else:
         return "Estás en la oficina"
     
+
+def slug_aleatorio(modelo):
+    letters = string.ascii_uppercase
+    repetir = True
+    while repetir:
+        slugs = []
+        slugs.append(''.join(random.choice(letters) for i in range(4)))
+        slugs.append(''.join(random.choice(letters) for i in range(4)))
+        slugs.append(''.join(random.choice(letters) for i in range(4)))
+        slugs.append(''.join(random.choice(letters) for i in range(4)))
+
+        slug = '-'.join(slugs)
+        if len(modelo.objects.filter(slug=slug))==0:
+            repetir = False
+    return slug

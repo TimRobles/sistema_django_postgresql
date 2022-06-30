@@ -1,4 +1,5 @@
 from decimal import Decimal
+from applications.funciones import slug_aleatorio
 from applications.requerimiento_de_materiales.pdf import generarRequerimientoMaterialProveedor
 from applications.importaciones import *
 from django import forms
@@ -293,6 +294,7 @@ class RequerimientoMaterialProveedorCreateView(BSModalCreateView):
         lista = ListaRequerimientoMaterial.objects.get(id=self.kwargs['lista_id'])
 
         form.instance.lista_requerimiento = lista
+        form.instance.slug = slug_aleatorio(RequerimientoMaterialProveedor)
 
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -499,7 +501,7 @@ class RequerimientoMaterialProveedorPdfView(View):
         # logo = 'http://127.0.0.1:8000/media/img/sociedad/Logo_Multiplay_1A00E6b.jpg'
         pie_pagina = sociedad
 
-        obj = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['pk'])
+        obj = RequerimientoMaterialProveedor.objects.get(slug=self.kwargs['slug'])
 
         fecha=datetime.strftime(obj.fecha,'%d - %m - %Y')
 

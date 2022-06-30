@@ -26,7 +26,7 @@ urlpatterns = [
     path('requerimiento-material-proveedor/actualizar-material/<pk>/', views.RequerimientoMaterialProveedorDetalleUpdateView.as_view(), name='requerimiento_material_proveedor_actualizar_material'),
     path('requerimiento-material-proveedor/eliminar-material/<pk>/', views.RequerimientoMaterialProveedorDetalleDeleteView.as_view(), name='requerimiento_material_proveedor_eliminar_material'),
     path('requerimiento-material-proveedor/agregar-material/<int:requerimiento_id>/', views.RequerimientoMaterialProveedorDetalleCreateView.as_view(), name='requerimiento_material_proveedor_agregar_material'),
-    path('requerimiento-material-proveedor/pdf/<pk>/', views.RequerimientoMaterialProveedorPdfView.as_view(), name='requerimiento_material_proveedor_pdf'),
+    path('requerimiento-material-proveedor/pdf/<slug>/', views.RequerimientoMaterialProveedorPdfView.as_view(), name='requerimiento_material_proveedor_pdf'),
 
 
     path('requerimiento-material/', views.RequerimientoMaterialListView.as_view(), name='requerimiento_material_inicio'),
