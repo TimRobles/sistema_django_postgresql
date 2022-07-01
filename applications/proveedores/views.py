@@ -167,8 +167,8 @@ class InterlocutorProveedorCreateView(PermissionRequiredMixin, BSModalFormView):
         proveedor = Proveedor.objects.get(id = self.kwargs['proveedor_id'])
 
         interlocutor, existe = InterlocutorProveedor.objects.get_or_create(
-            nombres = nombres,
-            apellidos = apellidos,
+            nombres = nombres.upper(),
+            apellidos = apellidos.upper(),
         )
         if not existe:
             interlocutor.created_by = self.request.user

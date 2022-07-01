@@ -70,6 +70,12 @@ class Unidad(models.Model):
         verbose_name = 'Unidad'
         verbose_name_plural = 'Unidades'
 
+    def save(self):
+        self.nombre = self.nombre.upper()
+        self.simbolo = self.simbolo.upper()
+        self.unidad_sunat = self.unidad_sunat.upper()
+        return super().save()
+
     def __str__(self):
         return self.nombre
 
@@ -88,6 +94,10 @@ class Area(models.Model):
         verbose_name = 'Area'
         verbose_name_plural = 'Areas'
         ordering = ['nombre',]
+
+    def save(self):
+        self.nombre = self.nombre.capitalize()
+        return super().save()
 
     def __str__(self):
         return self.nombre
@@ -108,6 +118,10 @@ class Cargo(models.Model):
         verbose_name_plural = 'Cargos'
         ordering = ['nombre',]
 
+    def save(self):
+        self.nombre = self.nombre.capitalize()
+        return super().save()
+
     def __str__(self):
         return self.nombre
 
@@ -126,8 +140,13 @@ class TipoInterlocutor(models.Model):
         verbose_name_plural = 'Tipos de Interlocutor'
         ordering = ['nombre',]
 
+    def save(self):
+        self.nombre = self.nombre.capitalize()
+        return super().save()
+
     def __str__(self):
         return self.nombre
+
 
 class Pais(models.Model):
     '''Solo por Admin'''
@@ -143,8 +162,13 @@ class Pais(models.Model):
         verbose_name_plural = 'Paises'
         ordering = ['nombre',]
 
+    def save(self):
+        self.nombre = self.nombre.upper()
+        return super().save()
+
     def __str__(self):
         return self.nombre
+
 
 class Departamento(models.Model):
     '''Solo por Admin'''
@@ -160,6 +184,10 @@ class Departamento(models.Model):
         verbose_name = 'Departamento'
         verbose_name_plural = 'Departamentos'
         ordering = ['nombre',]
+
+    def save(self):
+        self.nombre = self.nombre.upper()
+        return super().save()
 
     def __str__(self):
         return self.codigo + ' - ' + self.nombre
@@ -181,6 +209,10 @@ class Provincia(models.Model):
         verbose_name_plural = 'Provincias'
         ordering = ['departamento__nombre', 'nombre',]
 
+    def save(self):
+        self.nombre = self.nombre.upper()
+        return super().save()
+
     def __str__(self):
         return self.codigo + ' - ' + self.nombre
 
@@ -200,6 +232,10 @@ class Distrito(models.Model):
         verbose_name = 'Distrito'
         verbose_name_plural = 'Distritos'
         ordering = ['provincia__nombre', 'nombre',]
+
+    def save(self):
+        self.nombre = self.nombre.upper()
+        return super().save()
 
     def __str__(self):
         return self.codigo + ' - ' + self.nombre
@@ -237,6 +273,11 @@ class DocumentoProceso(models.Model):
         verbose_name = 'Documento de Proceso'
         verbose_name_plural = 'Documentos de Proceso'
 
+    def save(self):
+        self.nombre = self.nombre.capitalize()
+        self.descripcion = self.descripcion.capitalize()
+        return super().save()
+
     def __str__(self):
         return self.nombre
 
@@ -252,6 +293,11 @@ class DocumentoFisico(models.Model):
     class Meta:
         verbose_name = 'Documento Físico'
         verbose_name_plural = 'Documentos Físicos'
+
+    def save(self):
+        self.nombre = self.nombre.capitalize()
+        self.descripcion = self.descripcion.capitalize()
+        return super().save()
 
     def __str__(self):
         return self.nombre
@@ -363,6 +409,10 @@ class SegmentoSunat(models.Model):
         verbose_name_plural = 'Segmentos Sunat'
         ordering = ['codigo',]
 
+    def save(self):
+        self.descripcion = self.descripcion.upper()
+        return super().save()
+
     def __str__(self):
         return self.codigo + ' - ' + self.descripcion
 
@@ -381,6 +431,10 @@ class FamiliaSunat(models.Model):
         verbose_name = 'Familia Sunat'
         verbose_name_plural = 'Familias Sunat'
         ordering = ['codigo',]
+
+    def save(self):
+        self.descripcion = self.descripcion.upper()
+        return super().save()
 
     def __str__(self):
         return self.codigo + ' - ' + self.descripcion
@@ -401,6 +455,10 @@ class ClaseSunat(models.Model):
         verbose_name_plural = 'Clases Sunat'
         ordering = ['codigo',]
 
+    def save(self):
+        self.descripcion = self.descripcion.upper()
+        return super().save()
+
     def __str__(self):
         return self.codigo + ' - ' + self.descripcion
 
@@ -419,6 +477,10 @@ class ProductoSunat(models.Model):
         verbose_name = 'Producto Sunat'
         verbose_name_plural = 'Productos Sunat'
         ordering = ['codigo',]
+
+    def save(self):
+        self.descripcion = self.descripcion.upper()
+        return super().save()
 
     def __str__(self):
         return self.codigo + ' - ' + self.descripcion
