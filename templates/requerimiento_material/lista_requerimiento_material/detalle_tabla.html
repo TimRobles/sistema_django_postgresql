@@ -1,0 +1,74 @@
+<h3>Lista Requerimiento Material</h3>
+<div>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Guardar">
+        <br>
+        <br>
+    </form>
+    <button onclick="history.back()" class="btn btn-danger">Regresar</button>
+</div>
+<br>
+
+<div class="table_responsive">
+    <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_agregar_material' requerimiento.id %}"
+        data-table-url="{% url 'requerimiento_material_app:lista_requerimiento_material_detalle_tabla' requerimiento.id  %}"
+        class="create btn btn-primary">
+        Agregar Material
+    </button>
+
+    <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_registrar' requerimiento.id %}"
+        data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
+        class="delete btn btn-primary">
+        Asignar proveedor
+    </button>
+
+    <br>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Comentario</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.material }}</td>
+                    <td>{{ material.material.unidad_base }}</td>
+                    <td>{{ material.cantidad }}</td>
+                    <td>
+                        {% if material.comentario  != None %}
+                            {{ material.comentario }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_actualizar_material' material.id %}"
+                            data-table-url="{% url 'requerimiento_material_app:lista_requerimiento_material_detalle_tabla' requerimiento.id  %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_eliminar_material' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+
+                    </td>
+
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

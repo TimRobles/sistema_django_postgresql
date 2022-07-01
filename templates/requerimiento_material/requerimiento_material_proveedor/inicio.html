@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Requerimiento Material Proveedor
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Requerimiento Material Proveedor
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'requerimiento_material/requerimiento_material_proveedor/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

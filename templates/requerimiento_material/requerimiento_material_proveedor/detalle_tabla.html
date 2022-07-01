@@ -1,22 +1,4 @@
-<h3>Requerimiento Material</h3>
-<div>
-    <form action="" method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Guardar">
-        <br>
-        <br>
-    </form>
-    <button onclick="history.back()" class="btn btn-danger">Regresar</button>
-</div>
-<br>
 <div class="table_responsive">
-    <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_agregar_material' requerimiento.id %}"
-        data-table-url="{% url 'requerimiento_material_app:requerimiento_material_detalle_tabla' requerimiento.id  %}"
-        class="create btn btn-primary">
-        Agregar Material {{requerimiento.id}}
-    </button>
-    <br>
     <table class="table">
         <thead>
             <tr>
@@ -30,29 +12,30 @@
         <tbody>
             {% for material in materiales %}
                 <tr>
+
                     <td>{{ material.item }}</td>
                     <td>{{ material.material }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td>{{ material.cantidad }}</td>
                     <td>
-                        <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_actualizar_material' material.id %}"
-                            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_detalle_tabla' requerimiento.id  %}"
+                        <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_actualizar_material' material.id %}"
+                            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle_tabla' requerimiento.id  %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_eliminar_material' material.id %}"
+                        <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_eliminar_material' material.id  %}"
                             class="delete btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                             <i class="bi-x-lg"></i>
                         </button>
 
                     </td>
-
+    
                 </tr>
-            {% endfor %} 
+            {% endfor %}    
         </tbody>
     </table>
 </div>
