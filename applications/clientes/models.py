@@ -4,6 +4,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from applications import datos_globales
 from applications.variables import CONDICION_SUNAT, ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
 
+from django.db.models.signals import pre_save, post_save
 
 class Cliente(models.Model):
 
@@ -33,6 +34,9 @@ class Cliente(models.Model):
                 self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
             except:
                 self.distrito = None
+        self.razon_social = self.razon_social.upper()
+        self.nombre_comercial = self.nombre_comercial.upper()
+        self.direccion_fiscal = self.direccion_fiscal.upper()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -76,7 +80,6 @@ class InterlocutorCliente(models.Model):
     def __str__(self):
         return str(self.nombre_completo)
 
-
 class ClienteInterlocutor(models.Model):
 
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ClienteInterlocutor_cliente')
@@ -113,7 +116,7 @@ class CorreoCliente(models.Model):
 
         verbose_name = 'Correo Cliente'
         verbose_name_plural = 'Correos Cliente'
-        ordering = ['estado', '-fecha_baja',]
+        ordering = ['estado', '-fecha_baja', 'correo']
 
     def __str__(self):
         return str(self.correo) + ' - ' + str(self.cliente)
@@ -182,3 +185,19 @@ class CorreoInterlocutorCliente(models.Model):
 
     def __str__(self):
         return str(self.correo) + ' - ' + str(self.interlocutor)
+
+
+# def interlocutor_cliente_pre_save(*args, **kwargs):
+#     print('pre save')
+#     print(kwargs)
+#     obj = kwargs['instance']
+#     print(obj.nombre_completo)
+#     obj.nombre_completo = obj.nombre_completo.upper()
+#     print(obj.nombre_completo)
+
+# def interlocutor_cliente_post_save(*args, **kwargs):
+#     print('post save')
+#     print(kwargs)
+
+# pre_save.connect(interlocutor_cliente_pre_save, sender=InterlocutorCliente)
+# post_save.connect(interlocutor_cliente_post_save, sender=InterlocutorCliente)

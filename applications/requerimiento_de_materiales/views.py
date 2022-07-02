@@ -201,31 +201,35 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        registro = ListaRequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
-        item = len(ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material = registro))
-        material = form.cleaned_data.get('material')
-        cantidad = form.cleaned_data.get('cantidad')
-        comentario = form.cleaned_data.get('comentario')
+        global primero
+        if primero:
+            registro = ListaRequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
+            item = len(ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material = registro))
+            material = form.cleaned_data.get('material')
+            cantidad = form.cleaned_data.get('cantidad')
+            comentario = form.cleaned_data.get('comentario')
 
-        obj, created = ListaRequerimientoMaterialDetalle.objects.get_or_create(
-            content_type = ContentType.objects.get_for_model(material),
-            id_registro = material.id,
-            lista_requerimiento_material = registro,
-        )
-        if created:
-            obj.item = item + 1
-            obj.cantidad = cantidad/2
-            obj.comentario = comentario
-        else:
-            obj.cantidad = obj.cantidad + cantidad/2
-            if obj.comentario[-len(' | ' + comentario):] != ' | ' + comentario:
+            obj, created = ListaRequerimientoMaterialDetalle.objects.get_or_create(
+                content_type = ContentType.objects.get_for_model(material),
+                id_registro = material.id,
+                lista_requerimiento_material = registro,
+            )
+            if created:
+                obj.item = item + 1
+                obj.cantidad = cantidad
+                obj.comentario = comentario
+            else:
+                obj.cantidad = obj.cantidad + cantidad
                 obj.comentario = obj.comentario + ' | ' + comentario
 
-        registro_guardar(obj, self.request)
-        obj.save()
-        return super().form_valid(form)
+            registro_guardar(obj, self.request)
+            obj.save()
+            primero = False
+        return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
+        global primero
+        primero = True
         context = super(ListaRequerimientoMaterialDetalleCreateView, self).get_context_data(**kwargs)
         context['titulo'] = 'Agregar Material '
         context['accion'] = 'Guardar'

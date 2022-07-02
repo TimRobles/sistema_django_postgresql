@@ -11,11 +11,11 @@ class AlmacenForm(forms.ModelForm):
             'estado_alta_baja',
             )
             
-    def clean_nombre(self):
-        nombre = self.cleaned_data.get('nombre')
-        filtro = Almacen.objects.filter(nombre__unaccent__iexact = nombre)
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre')
+        sede = cleaned_data.get('sede')
+        filtro = Almacen.objects.filter(nombre__unaccent__iexact = nombre, sede = sede )
         if nombre != self.instance.nombre:
             if len(filtro)>0:
                 self.add_error('nombre', 'Ya existe un Almacén con este nombre.')
-
-        return nombre

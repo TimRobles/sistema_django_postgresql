@@ -28,6 +28,8 @@ class Sede(models.Model):
     def save(self, *args, **kwargs):
         if self.ubigeo:
             self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
+        self.nombre = self.nombre.upper()
+        self.direccion = self.direccion.upper()
         super().save(*args, **kwargs)
 
     def __str__(self):

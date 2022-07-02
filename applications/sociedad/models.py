@@ -8,8 +8,6 @@ from colorfield.fields import ColorField
 
 from applications.funciones import validar_numero
 
-# Create your models here.
-
 class Sociedad(models.Model):
     tipo_documento = models.CharField('Tipo de Documento', choices=TIPO_DOCUMENTO_SUNAT, max_length=1, default="6")
     ruc = models.CharField('RUC', max_length=11, unique=True, validators=[validar_numero])
@@ -35,6 +33,10 @@ class Sociedad(models.Model):
     def save(self, *args, **kwargs):
         if self.ubigeo:
             self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
+
+        self.razon_social = self.razon_social.upper()
+        self.nombre_comercial = self.nombre_comercial.upper()
+        self.direccion_legal = self.direccion_legal.upper()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -51,13 +53,15 @@ class Documento(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Documento_updated_by', editable=False)
 
     class Meta:
-        """Meta definition for Sociedad."""
-
         verbose_name = 'Documento'
         verbose_name_plural = 'Documentos'
 
+    def save(self):
+        self.nombre_documento = self.nombre_documento.title()
+        self.descripcion_documento = self.descripcion_documento.capitalize()
+        return super().save()
+
     def __str__(self):
-        """Unicode representation of Sociedad."""
         return self.nombre_documento
 
 class TipoRepresentanteLegal(models.Model):

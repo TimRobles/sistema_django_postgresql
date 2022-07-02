@@ -21,6 +21,11 @@ class Proveedor(models.Model):
         verbose_name_plural = 'Proveedores'
         ordering = ['estado', 'nombre',]
 
+    def save(self):
+        self.nombre = self.nombre.upper()
+        self.direccion = self.direccion.upper()
+        return super().save()
+
     def __str__(self):
         return self.nombre
 
