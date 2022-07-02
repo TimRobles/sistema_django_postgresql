@@ -64,3 +64,8 @@ MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
 MENSAJE_REGISTRAR_SALIDA = 'Operación exitosa: La Hora de Salida fue registrada.'
 
 MENSAJE_ELIMINAR_ITEM = 'Operación exitosa: El registro fue eliminado.'
+
+COLOR_DEFAULT = '#8B32A8'
+PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
+
+EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'

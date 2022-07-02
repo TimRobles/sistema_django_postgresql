@@ -121,8 +121,11 @@ def insertarImagenGrande(ruta, ancho=0, alto=0):
 
 
 def header_content(logo):
-    cabecera = insertarImagen(logo, 5, 1)
-    return parrafoCentro(cabecera, "CourierPrime", 7, "Regular")
+    if logo:
+        cabecera = insertarImagen(logo, 5, 1)
+        return parrafoCentro(cabecera, "CourierPrime", 7, "Regular")
+    else:
+        return parrafoCentro('', "CourierPrime", 7, "Regular")
 
 
 def footer_content(texto):

@@ -15,6 +15,12 @@
 
     <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_pdf' requerimiento.slug  %}" target="_blank"><span class="btn btn-primary">PDF</span></a>
 
+    <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_enviar_correo' requerimiento.id %}"
+        data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
+        class="form btn btn-primary">
+        Enviar Correo
+    </button>
+
     <br>
     <div class="table-responsive">
         <table class="table">

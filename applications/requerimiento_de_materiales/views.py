@@ -1,4 +1,5 @@
 from decimal import Decimal
+from django.core.mail import EmailMultiAlternatives
 from applications.funciones import slug_aleatorio
 from applications.requerimiento_de_materiales.pdf import generarRequerimientoMaterialProveedor
 from applications.importaciones import *
@@ -13,6 +14,7 @@ from .forms import (
     ListaRequerimientoMaterialForm,
     ListaRequerimientoMaterialDetalleForm,
     ListaRequerimientoMaterialDetalleUpdateForm,
+    RequerimientoMaterialProveedorEnviarCorreoForm,
     RequerimientoMaterialProveedorForm,
     RequerimientoMaterialProveedorDetalleUpdateForm,
     RequerimientoMaterialProveedorDetalleForm,
@@ -555,13 +557,11 @@ class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, B
 
 class RequerimientoMaterialProveedorPdfView(View):
     def get(self, request, *args, **kwargs):
-        sociedad = Sociedad.objects.get(ruc='20518487303')
-        color = sociedad.color
+        color = COLOR_DEFAULT
         titulo = 'Requerimiento'
         vertical = True
-        logo = 'https://www.multiplay.com.pe/img/header/20220530095828.png'
-        # logo = 'http://127.0.0.1:8000/media/img/sociedad/Logo_Multiplay_1A00E6b.jpg'
-        pie_pagina = sociedad
+        logo = None
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
 
         obj = RequerimientoMaterialProveedor.objects.get(slug=self.kwargs['slug'])
 
@@ -589,7 +589,56 @@ class RequerimientoMaterialProveedorPdfView(View):
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
+        obj.estado = 2
+        obj.save()
+
         return respuesta
+
+
+class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedor')
+
+    template_name = "includes/formulario generico.html"
+    form_class = RequerimientoMaterialProveedorEnviarCorreoForm
+    success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
+
+        correos_proveedor = form.cleaned_data['correos_proveedor']
+        correos_internos = form.cleaned_data['correos_internos']
+        asunto = "Requerimiento - %s" % (requerimiento.titulo)
+        mensaje = '<p>Estimado,</p><p>Se le invita a cotizar el siguiente requerimiento: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_pdf', kwargs={'slug':requerimiento.slug}), 'Requerimiento')
+        email_remitente = EMAIL_REMITENTE
+
+        print("*******************")
+        print(correos_proveedor)
+        print(correos_internos)
+        print("*******************")
+
+        correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
+        correo.attach_alternative(mensaje, "text/html")
+        try:
+            correo.send()
+            requerimiento.estado = 3
+            requerimiento.save()
+            messages.success(self.request, 'Correo enviado.')
+        except:
+            messages.warning(self.request, 'Hubo un error al enviar el correo.')
+
+        return super().form_valid(form)
+
+
+    def get_context_data(self, **kwargs):
+        context = super(RequerimientoMaterialProveedorEnviarCorreoView, self).get_context_data(**kwargs)
+        context['accion']="Enviar"
+        context['titulo']="Correos"
+        return context
 
 
 
