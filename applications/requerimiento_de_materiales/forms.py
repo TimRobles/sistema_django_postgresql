@@ -1,5 +1,5 @@
-from pyexpat import model
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.proveedores.models import InterlocutorProveedor, Proveedor,ProveedorInterlocutor
@@ -128,4 +128,50 @@ class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
+    CHOICES = (
+        (1, 'a'),
+        (2, 'b'),
+        (3, 'c'),
+    )
+    correos_proveedor = forms.MultipleChoiceField(choices=CHOICES, required=False, widget=forms.CheckboxSelectMultiple())
+    correos_internos = forms.MultipleChoiceField(choices=[None], required=False, widget=forms.CheckboxSelectMultiple())
+    class Meta:
+        fields=(
+            'correos_proveedor',
+            'correos_internos',
+            )
 
+    def clean_correos_proveedor(self):
+        correos_proveedor = self.cleaned_data.get('correos_proveedor')
+
+        if correos_proveedor==[]:
+            self.add_error('correos_proveedor', 'Debe seleccionar al menos un correo.')
+            
+        return correos_proveedor
+
+    def clean_correos_internos(self):
+        correos_internos = self.cleaned_data.get('correos_internos')
+
+        if correos_internos==[]:
+            self.add_error('correos_internos', 'Debe seleccionar al menos un correo.')
+    
+        return correos_internos
+
+    def __init__(self, *args, **kwargs):
+        CORREOS_INTERNOS = []
+        usuarios = get_user_model().objects.exclude(email='')
+        for usuario in usuarios:
+            CORREOS_INTERNOS.append((usuario.email,usuario.username))
+            
+        CORREOS_INTERNOS = []
+        usuarios = get_user_model().objects.exclude(email='')
+        for usuario in usuarios:
+            CORREOS_INTERNOS.append((usuario.email,usuario.username))
+
+        super(RequerimientoMaterialProveedorEnviarCorreoForm, self).__init__(*args, **kwargs)   
+        self.fields['correos_internos'].choices = CORREOS_INTERNOS
+        self.fields['correos_proveedor'].choices = CORREOS_INTERNOS
+        self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
+        self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'
+        

@@ -52,7 +52,7 @@ class ListaRequerimientoMaterialDetalle(models.Model):
 class RequerimientoMaterialProveedor(models.Model):
     ESTADOS_REQUERIMIENTO = (
         (1, 'BORRADOR'),
-        (2, 'PENDIENTE'),
+        (2, 'PENDIENTE DE ENVÍO'),
         (3, 'ENVIADO'),
     )
 

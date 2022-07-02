@@ -120,7 +120,7 @@ class OlvideContrasenaView(FormView):
 
         asunto = "Recuperación de Contraseña"
         mensaje = "Hola %s\nEl código de recuperación de tu cuenta es: %s\n\nUna vez que ingreses este código, esa será tu nueva contraseña.\nSi no solicitaste el cambio de contraseña, puedes ignorar este correo." % (usuario_buscar.username, password)
-        email_remitente = 'no-responder@multiplay.com.pe'
+        email_remitente = EMAIL_REMITENTE
         send_mail(asunto, mensaje, email_remitente, [correo,])
 
         return super(OlvideContrasenaView, self).form_valid(form)
