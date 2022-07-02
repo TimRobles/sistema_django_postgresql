@@ -608,33 +608,39 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
+        global primero
 
-        correos_proveedor = form.cleaned_data['correos_proveedor']
-        correos_internos = form.cleaned_data['correos_internos']
-        asunto = "Requerimiento - %s" % (requerimiento.titulo)
-        mensaje = '<p>Estimado,</p><p>Se le invita a cotizar el siguiente requerimiento: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_pdf', kwargs={'slug':requerimiento.slug}), 'Requerimiento')
-        email_remitente = EMAIL_REMITENTE
+        if primero:
+            requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
 
-        print("*******************")
-        print(correos_proveedor)
-        print(correos_internos)
-        print("*******************")
+            correos_proveedor = form.cleaned_data['correos_proveedor']
+            correos_internos = form.cleaned_data['correos_internos']
+            asunto = "Requerimiento - %s" % (requerimiento.titulo)
+            mensaje = '<p>Estimado,</p><p>Se le invita a cotizar el siguiente requerimiento: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_pdf', kwargs={'slug':requerimiento.slug}), 'Requerimiento')
+            email_remitente = EMAIL_REMITENTE
 
-        correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
-        correo.attach_alternative(mensaje, "text/html")
-        try:
-            correo.send()
-            requerimiento.estado = 3
-            requerimiento.save()
-            messages.success(self.request, 'Correo enviado.')
-        except:
-            messages.warning(self.request, 'Hubo un error al enviar el correo.')
+            print("*******************")
+            print(correos_proveedor)
+            print(correos_internos)
+            print("*******************")
+
+            correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
+            correo.attach_alternative(mensaje, "text/html")
+            try:
+                correo.send()
+                requerimiento.estado = 3
+                requerimiento.save()
+                messages.success(self.request, 'Correo enviado.')
+                primero = False
+            except:
+                messages.warning(self.request, 'Hubo un error al enviar el correo.')
 
         return super().form_valid(form)
 
 
     def get_context_data(self, **kwargs):
+        global primero
+        primero = True
         context = super(RequerimientoMaterialProveedorEnviarCorreoView, self).get_context_data(**kwargs)
         context['accion']="Enviar"
         context['titulo']="Correos"
