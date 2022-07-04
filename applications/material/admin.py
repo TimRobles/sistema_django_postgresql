@@ -226,8 +226,9 @@ class VideoMaterialAdmin(admin.ModelAdmin):
 
 class ProveedorMaterialAdmin(admin.ModelAdmin):
     list_display = (
+        'content_type',
+        'id_registro',
         'proveedor',
-        'material',
         'name',
         'brand',
         'description',

@@ -30,6 +30,7 @@
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
                     <th>Comentario</th>
+                    <th>Estado</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +39,7 @@
                     <td>{{ contexto_requerimiento_material_proveedor.proveedor }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.interlocutor_proveedor }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.comentario }}</td>
+                    <td>{{ contexto_requerimiento_material_proveedor.get_estado_display }}</td>
 
                 </tr>
             </tbody>

@@ -4,6 +4,8 @@ from django.conf import settings
 
 from applications.datos_globales.models import Unidad,ProductoSunat
 from applications.proveedores.models import Proveedor
+from django.contrib.contenttypes.models import ContentType
+
 
 class Clase(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -257,7 +259,8 @@ class VideoMaterial(models.Model):
         return self.descripcion.__str__()+ " - " + self.material.__str__()
 
 class ProveedorMaterial(models.Model):
-    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    id_registro = models.IntegerField()    
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100)
     brand = models.CharField('Brand', max_length=100)
