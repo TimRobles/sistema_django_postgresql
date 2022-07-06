@@ -58,8 +58,7 @@ class ListaRequerimientoMaterialDetalleForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
-    material = forms.ModelChoiceField(queryset=Material.objects.all())
-
+    material = forms.CharField(required=False)
     class Meta:
         model = ListaRequerimientoMaterialDetalle
         fields=(
@@ -71,7 +70,8 @@ class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(ListaRequerimientoMaterialDetalleUpdateForm, self).__init__(*args, **kwargs)
         busqueda_material = self.instance.content_type.get_object_for_this_type(id = self.instance.id_registro)
-        self.fields['material'].initial = busqueda_material
+        self.fields['material'].initial = busqueda_material.descripcion_venta
+        self.fields['material'].disabled = True
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -113,7 +113,6 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
-    # material = forms.ModelChoiceField(queryset=Material.objects.all())
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
     class Meta:
