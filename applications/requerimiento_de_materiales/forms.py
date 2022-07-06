@@ -1,3 +1,4 @@
+from webbrowser import get
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -112,19 +113,24 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
+    # material = forms.ModelChoiceField(queryset=Material.objects.all())
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
-    # comentario = forms.CharField(widget=forms.Textarea)
     class Meta:
         model = RequerimientoMaterialProveedorDetalle
         fields=(
             'material',
             'cantidad',
-            # 'comentario',
             )
     
     def __init__(self, *args, **kwargs):
+        materiales = kwargs.pop('materiales')
+        lista_materiales = []
+        for material in materiales:
+            lista_materiales.append(material.id_registro)
+
         super(RequerimientoMaterialProveedorDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['material'].queryset = Material.objects.filter(id__in = lista_materiales)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -136,6 +142,7 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
     )
     correos_proveedor = forms.MultipleChoiceField(choices=CHOICES, required=False, widget=forms.CheckboxSelectMultiple())
     correos_internos = forms.MultipleChoiceField(choices=[None], required=False, widget=forms.CheckboxSelectMultiple())
+   
     class Meta:
         fields=(
             'correos_proveedor',
@@ -159,19 +166,22 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
         return correos_internos
 
     def __init__(self, *args, **kwargs):
-        CORREOS_INTERNOS = []
-        usuarios = get_user_model().objects.exclude(email='')
-        for usuario in usuarios:
-            CORREOS_INTERNOS.append((usuario.email,usuario.username))
+        proveedor = kwargs.pop('proveedor')
+        
+        CORREOS_PROVEEDOR = []
+        for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
+            for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
+                print(correo_interlocutor.correo)
+                CORREOS_PROVEEDOR.append((correo_interlocutor.correo, '%s %s (%s)' % (interlocutor_proveedor.interlocutor.nombres, interlocutor_proveedor.interlocutor.apellidos, correo_interlocutor.correo)))
             
         CORREOS_INTERNOS = []
         usuarios = get_user_model().objects.exclude(email='')
         for usuario in usuarios:
-            CORREOS_INTERNOS.append((usuario.email,usuario.username))
+            CORREOS_INTERNOS.append((usuario.email, '%s (%s)' % (usuario.username, usuario.email)))
 
         super(RequerimientoMaterialProveedorEnviarCorreoForm, self).__init__(*args, **kwargs)   
         self.fields['correos_internos'].choices = CORREOS_INTERNOS
-        self.fields['correos_proveedor'].choices = CORREOS_INTERNOS
+        self.fields['correos_proveedor'].choices = CORREOS_PROVEEDOR
         self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
         self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'
         

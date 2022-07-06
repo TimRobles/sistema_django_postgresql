@@ -7,7 +7,12 @@
         <br>
         <br>
     </form>
-    <button onclick="history.back()" class="btn btn-danger">Regresar</button>
+    <!-- <button onclick="history.back()" class="btn btn-danger">Regresar</button> -->
+    <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_inicio' %}"
+        class="delete btn btn-danger" title="Regresar">
+        Back
+    </button>
+
 </div>
 <br>
 
