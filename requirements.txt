@@ -14,5 +14,3 @@ simplejson
 requests
 django-cleanup
 reportlab
-
-Johan estuvo aqui
