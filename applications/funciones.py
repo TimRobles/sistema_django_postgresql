@@ -1,4 +1,5 @@
 import requests
+from decimal import Decimal
 from requests.adapters import HTTPAdapter
 from django.core.exceptions import ValidationError
 from requests.packages.urllib3.util.retry import Retry
@@ -137,3 +138,52 @@ def slug_aleatorio(modelo):
         if len(modelo.objects.filter(slug=slug))==0:
             repetir = False
     return slug
+
+
+def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv):
+    respuesta = {}
+
+    precio_unitario_sin_igv = Decimal(precio_unitario_con_igv/(1 + valor_igv)).quantize(Decimal('0.0000000001'))
+
+    precio_final_sin_igv = Decimal(precio_final_con_igv/(1 + valor_igv)).quantize(Decimal('0.0000000001'))
+
+    descuento_unitario = (precio_unitario_sin_igv - precio_final_sin_igv).quantize(Decimal('0.0000000001'))
+    descuento = (descuento_unitario * cantidad).quantize(Decimal('0.01'))
+
+    subtotal = (cantidad * precio_unitario_sin_igv - descuento).quantize(Decimal('0.01'))
+    igv = (subtotal * Decimal(valor_igv)).quantize(Decimal('0.01'))
+    total = (subtotal + igv).quantize(Decimal('0.01'))
+
+    respuesta['precio_unitario_sin_igv'] = precio_unitario_sin_igv
+    respuesta['descuento'] = descuento
+    respuesta['subtotal'] = subtotal
+    respuesta['igv'] = igv
+    respuesta['total'] = total
+
+    return respuesta
+
+
+def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, valor_igv):
+    suma_igv = Decimal('0.00')
+    descuento_global = Decimal('0.00')
+    total_descuento = Decimal('0.00')
+    total_gravada = Decimal('0.00')
+    total_inafecta = Decimal('0.00')
+    total_exonerada = Decimal('0.00')
+
+    total_gratuita = Decimal('0.00')
+    total_otros_cargos = otros_cargos
+    total = Decimal('0.00')
+
+    for resultado_linea in lista_resultados_linea:
+        suma_igv += resultado_linea['igv']
+
+        total_descuento += resultado_linea['descuento']
+        if internacional == True:
+            total_gravada += resultado_linea['subtotal']
+        else:
+            total_exonerada += resultado_linea['subtotal']
+
+    total_descuento += descuento_global
+    total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
+    total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
