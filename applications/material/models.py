@@ -146,6 +146,7 @@ class Material(models.Model):
     es_componente = models.BooleanField('Es componente',default=False)
     atributo = models.ManyToManyField(Atributo,verbose_name='Atributo',related_name='Material_atributo',blank=True)
     componente = models.ManyToManyField(Componente,verbose_name='Componente',related_name='Material_componente', blank=True, through='material.RelacionMaterialComponente')
+    id_producto_temporal = models.IntegerField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Material_created_by', editable=False)
