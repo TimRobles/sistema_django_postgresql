@@ -143,14 +143,14 @@ def slug_aleatorio(modelo):
 def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv):
     respuesta = {}
 
-    precio_unitario_sin_igv = Decimal(precio_unitario_con_igv/(1 + valor_igv)).quantize(Decimal('0.0000000001'))
+    precio_unitario_sin_igv = Decimal(Decimal(precio_unitario_con_igv)/(1 + Decimal(valor_igv))).quantize(Decimal('0.0000000001'))
 
-    precio_final_sin_igv = Decimal(precio_final_con_igv/(1 + valor_igv)).quantize(Decimal('0.0000000001'))
+    precio_final_sin_igv = Decimal(Decimal(precio_final_con_igv)/(1 + Decimal(valor_igv))).quantize(Decimal('0.0000000001'))
 
     descuento_unitario = (precio_unitario_sin_igv - precio_final_sin_igv).quantize(Decimal('0.0000000001'))
-    descuento = (descuento_unitario * cantidad).quantize(Decimal('0.01'))
+    descuento = (descuento_unitario * Decimal(cantidad)).quantize(Decimal('0.01'))
 
-    subtotal = (cantidad * precio_unitario_sin_igv - descuento).quantize(Decimal('0.01'))
+    subtotal = (Decimal(cantidad) * precio_unitario_sin_igv - descuento).quantize(Decimal('0.01'))
     igv = (subtotal * Decimal(valor_igv)).quantize(Decimal('0.01'))
     total = (subtotal + igv).quantize(Decimal('0.01'))
 
@@ -163,7 +163,9 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
     return respuesta
 
 
-def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, valor_igv):
+def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv):
+    respuesta = {}
+
     suma_igv = Decimal('0.00')
     descuento_global = Decimal('0.00')
     total_descuento = Decimal('0.00')
@@ -173,6 +175,7 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
 
     total_gratuita = Decimal('0.00')
     total_otros_cargos = otros_cargos
+    total_isc = Decimal('0.00')
     total = Decimal('0.00')
 
     for resultado_linea in lista_resultados_linea:
@@ -186,4 +189,19 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
 
     total_descuento += descuento_global
     total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
-    total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
+    if anticipo:
+        total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
+    else:
+        total_anticipo = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
+
+    respuesta['descuento_global'] = descuento_global
+    respuesta['total_descuento'] = total_descuento
+    respuesta['total_anticipo'] = total_anticipo
+    respuesta['total_gravada'] = total_gravada
+    respuesta['total_inafecta'] = total_inafecta
+    respuesta['total_exonerada'] = total_exonerada
+    respuesta['total_igv'] = total_igv
+    respuesta['total_gratuita'] = total_gratuita
+    respuesta['total_otros_cargos'] = total_otros_cargos
+    respuesta['total_isc'] = total_isc
+    respuesta['total'] = total

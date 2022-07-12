@@ -1,7 +1,7 @@
 from applications.home.pdf import generarPrueba
 from applications.importaciones import *
 from django.utils.crypto import get_random_string
-from applications.funciones import consulta_distancia, consulta_dni, consulta_dni2, consulta_ruc
+from applications.funciones import calculos_linea, consulta_distancia, consulta_dni, consulta_dni2, consulta_ruc
 from .forms import UserLoginForm
 from .forms import OlvideContrasenaForm
 from .forms import RecuperarContrasenaForm
@@ -199,3 +199,23 @@ class PruebaPdfView(LoginRequiredMixin, View):
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
         
         return respuesta
+
+
+def CalculoItemLineaView(request, cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv):
+    data = dict()
+    if request.method == 'GET':
+        # cantidad = request.POST.get('cantidad')
+        # precio_unitario_con_igv = request.POST.get('precio_unitario_con_igv')
+        # precio_final_con_igv = request.POST.get('precio_final_con_igv')
+        # valor_igv = request.POST.get('valor_igv')
+        calculos = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv)
+        informacion = simplejson.dumps(calculos)
+
+        data['info'] = render_to_string(
+            'includes/info.html',
+            {
+                'informacion': informacion,
+            },
+            request=request
+        )
+        return JsonResponse(data)
