@@ -1,0 +1,34 @@
+<div class="table_responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.material }}</td>
+                    <td>{{ material.material.unidad_base }}</td>
+                    <td>{{ material.cantidad }}</td>
+                    <td>
+                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_material' material.id %}"
+                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' requerimiento.id  %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    </td>
+    
+                </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
