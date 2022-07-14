@@ -18,7 +18,7 @@ class OfertaProveedorAdmin(admin.ModelAdmin):
         'total_igv',
         'total_gratuita',
         'total_otros_cargos',
-        'total_isc',
+        'total_icbper',
         'total',
         'slug',
         'condiciones',

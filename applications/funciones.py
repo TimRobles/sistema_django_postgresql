@@ -172,6 +172,7 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     total_gravada = Decimal('0.00')
     total_inafecta = Decimal('0.00')
     total_exonerada = Decimal('0.00')
+    total_anticipo = Decimal('0.00')
 
     total_gratuita = Decimal('0.00')
     total_otros_cargos = otros_cargos
@@ -190,9 +191,9 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     total_descuento += descuento_global
     total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
     if anticipo:
-        total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
-    else:
         total_anticipo = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
+    else:
+        total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
 
     respuesta['descuento_global'] = descuento_global
     respuesta['total_descuento'] = total_descuento
@@ -205,3 +206,24 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     respuesta['total_otros_cargos'] = total_otros_cargos
     respuesta['total_isc'] = total_isc
     respuesta['total'] = total
+    return respuesta
+
+
+def obtener_totales(cabecera):
+    detalles = cabecera.OfertaProveedorDetalle_oferta_proveedor.all()
+    lista_resultados_linea = []
+    for detalle in detalles:
+        cantidad = detalle.cantidad
+        precio_unitario_con_igv = detalle.precio_unitario_con_igv
+        precio_final_con_igv = detalle.precio_final_con_igv
+        if detalle.tipo_igv == 1:
+            valor_igv = 0.18
+        else:
+            valor_igv = 0
+        calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv)
+        lista_resultados_linea.append(calculo)
+    descuento_global = cabecera.descuento_global
+    otros_cargos = 0
+    internacional = cabecera.internacional_nacional
+    anticipo = False
+    return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv)

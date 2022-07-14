@@ -1,11 +1,21 @@
-<div class="table_responsive">
+{% load humanize %}
+
+<div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
+                <th>Tipo IGV</th>
                 <th>Cantidad</th>
+                <th>Prec. Unit. sin IGV</th>
+                <th>Prec. Unit. con IGV</th>
+                <th>Prec. Final con IGV</th>
+                <th>Descuento</th>
+                <th>Sub Total</th>
+                <th>IGV</th>
+                <th>Total</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -13,13 +23,22 @@
             {% for material in materiales %}
                 <tr>
 
-                    <td>{{ material.item }}</td>
-                    <td>{{ material.material }}</td>
-                    <td>{{ material.material.unidad_base }}</td>
-                    <td>{{ material.cantidad }}</td>
+                    <td>{{ material.item}}</td>
+                    <td>{{ material.proveedor_material.material.descripcion_venta }}</td>
+                    <td>{{ material.proveedor_material.material.unidad_base }}</td>
+                    <td>{{ material.get_tipo_igv_display }}</td>
+                    <td class="text-end">{{ material.cantidad|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_unitario_sin_igv|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_unitario_con_igv|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_final_con_igv|intcomma }}</td>
+                    <td class="text-end">{{ material.descuento|intcomma }}</td>
+                    <td class="text-end">{{ material.sub_total|intcomma }}</td>
+                    <td class="text-end">{{ material.igv|intcomma }}</td>
+                    <td class="text-end">{{ material.total|intcomma }}</td>
+ 
                     <td>
                         <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_material' material.id %}"
-                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' requerimiento.id  %}"
+                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.id  %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
@@ -29,6 +48,82 @@
     
                 </tr>
             {% endfor %}    
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="11" class="text-end">Descuento Global:</td>
+                <td class="text-end">{{ totales.descuento_global|intcomma }}</td>
+            </tr>            
+            <tr>
+                <td colspan="11" class="text-end">Descuento Total:</td>
+                <td class="text-end">{{ totales.total_descuento|intcomma }}</td>
+            </tr>           
+             <tr>
+                <td colspan="11" class="text-end">Anticipo:</td>
+                <td class="text-end">{{ totales.total_anticipo|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Exonerada:</td>
+                <td class="text-end">{{ totales.total_exonerada|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Inafecta:</td>
+                <td class="text-end">{{ totales.total_inafecta|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Gravada:</td>
+                <td class="text-end">{{ totales.total_gravada|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">IGV:</td>
+                <td class="text-end">{{ totales.total_igv|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Gratuita:</td>
+                <td class="text-end">{{ totales.total_gratuita|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Otros Cargos:</td>
+                <td class="text-end">{{ totales.total_otros_cargos|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">ICBPER:</td>
+                <td class="text-end">{{ totales.total_icbper|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Total:</td>
+                <td class="text-end">{{ totales.total|intcomma }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br>
+<h3>Archivos
+    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_archivo' contexto_oferta_proveedor.id %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.id %}"
+        class="create badge bg-primary">
+        Agregar Archivo
+    </button>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Archivo</th>
+                <th class="text-center">Oferta Proveedor</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for archivo in archivos %}
+            <tr>
+                <td class="text-center">
+                    <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">Ver Documento</a>
+                </td>
+                <td class="text-center">{{ archivo.oferta_proveedor }}</td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>
