@@ -1,15 +1,16 @@
 from django.db import models
 from applications.sociedad.models import Sociedad
+from applications.oferta_proveedor.models import OfertaProveedor
 from applications.datos_globales.models import Moneda
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
-from applications.variables import ESTADOS_ORDEN_COMPRA, INTERNACIONAL_NACIONAL
+from applications.variables import ESTADOS_ORDEN_COMPRA, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
 
 class OrdenCompra(models.Model):
     internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=1)
     incoterms = models.IntegerField('INCOTERMS', choices=INTERNACIONAL_NACIONAL, blank=True, null=True)
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
-    oferta_proveedor = models.IntegerField()
+    oferta_proveedor = models.ManyToManyField(OfertaProveedor, blank=True)
     orden_compra_anterior = models.ForeignKey('self', on_delete=models.PROTECT,null=True, blank=True)
     sociedad_id = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='SociedadOrdenCompra',null=True, blank=True)
     fecha_orden = models.DateField('Fecha de Orden', auto_now=False, auto_now_add=False)
@@ -57,7 +58,7 @@ class OrdenCompraDetalle(models.Model):
     sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2,default=0)
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2,default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2,default=0)
-    tipo_igv = models.IntegerField()
+    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
     orden_compra = models.ForeignKey(OrdenCompra, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
