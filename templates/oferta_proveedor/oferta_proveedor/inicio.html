@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Oferta Proveedor
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Oferta Proveedor
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'oferta_proveedor/oferta_proveedor/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

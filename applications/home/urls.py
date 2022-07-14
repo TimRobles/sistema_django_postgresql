@@ -1,5 +1,6 @@
 from django.urls import path
 from applications.home.views import (
+    CalculoItemLineaView,
     ConsultaDniView,
     ConsultaRucView,
     DistanciaGeoLocalizacion,
@@ -25,4 +26,5 @@ urlpatterns = [
     path('prueba-geolocalizacion', PruebaGeolocalizacion.as_view()),
     path('distancia-geolocalizacion/<str:longitud>/<str:latitud>/<int:sede_id>/', DistanciaGeoLocalizacion),
     path('probando/pdf/<pk>/', PruebaPdfView.as_view(), name='probando_pdf'),
+    path('calculo-item-linea/<str:cantidad>/<str:precio_unitario_con_igv>/<str:precio_final_con_igv>/<str:valor_igv>/', CalculoItemLineaView, name='calculo_item_linea'),
 ]

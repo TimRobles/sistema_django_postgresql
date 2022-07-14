@@ -47,6 +47,26 @@ ESTADO_SUNAT = (
         (7, 'Baja interna'),
         )
 
+TIPO_IGV_CHOICES = (
+        (1, 'Gravado - Operación Onerosa'),
+        (2, 'Gravado - Retiro por premio'),
+        (3, 'Gravado - Retiro por donación'),
+        (4, 'Gravado - Retiro'),
+        (5, 'Gravado - Retiro por publicidad'),
+        (6, 'Gravado - Bonificaciones'),
+        (7, 'Gravado - Retiro por entrega a trabajadores'),
+        (8, 'Exonerado - Operación Onerosa'),
+        (9, 'Inafecto - Operación Onerosa'),
+        (10, 'Inafecto - Retiro por Bonificación'),
+        (11, 'Inafecto - Retiro'),
+        (12, 'Inafecto - Retiro por Muestras Médicas'),
+        (13, 'Inafecto - Retiro por Convenio Colectivo'),
+        (14, 'Inafecto - Retiro por premio'),
+        (15, 'Inafecto - Retiro por publicidad'),
+        (16, 'Exportación'),
+        (17, 'Exonerado - Transferencia Gratuita'),
+        )
+
 TIPO_DOCUMENTO_CHOICES = (
         ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
         ('4', 'CARNET DE EXTRANJERÍA'),

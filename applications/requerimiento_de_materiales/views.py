@@ -201,8 +201,7 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        global primero
-        if primero:
+        if self.request.session['primero']:
             registro = ListaRequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
             item = len(ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material = registro))
             print('////////////////////////////////////////////')
@@ -228,12 +227,11 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
 
             registro_guardar(obj, self.request)
             obj.save()
-            primero = False
+            self.request.session['primero'] = False
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
-        global primero
-        primero = True
+        self.request.session['primero'] = True
         context = super(ListaRequerimientoMaterialDetalleCreateView, self).get_context_data(**kwargs)
         context['titulo'] = 'Agregar Material '
         context['accion'] = 'Guardar'
@@ -625,9 +623,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        global primero
-
-        if primero:
+        if self.request.session['primero']:
             requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
 
             correos_proveedor = form.cleaned_data['correos_proveedor']
@@ -643,7 +639,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 requerimiento.estado = 3
                 requerimiento.save()
                 messages.success(self.request, 'Correo enviado.')
-                primero = False
+                self.request.session['primero'] = False
             except:
                 messages.warning(self.request, 'Hubo un error al enviar el correo.')
 
@@ -655,8 +651,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
         return kwargs
 
     def get_context_data(self, **kwargs):
-        global primero
-        primero = True
+        self.request.session['primero'] = True
         context = super(RequerimientoMaterialProveedorEnviarCorreoView, self).get_context_data(**kwargs)
         context['accion']="Enviar"
         context['titulo']="Correos"
