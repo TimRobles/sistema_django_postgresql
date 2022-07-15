@@ -1,4 +1,5 @@
 {% load widget_tweaks %}
+{% load static %}
 
 <form id="formulario" action="" enctype="multipart/form-data" method="post">
     {% csrf_token %}
@@ -7,24 +8,20 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        {{ form.material.value }}
-        <div class="input-group flex-nowrap mt-3{% if form.cantidad.errors %} invalid{% endif %}"
-        {% if form.cantidad.help_text %}
-        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ form.cantidad.help_text }}"
-        {% endif %}
-        >
-        <label class="input-group-text" for="{{ form.cantidad.id_for_label }}">{{ form.cantidad.label }}</label>
-        {{ form.cantidad }}
-    </div>
-    {% if form.cantidad.help_text %}
-    <p class="mt-0">Pista:{{ form.cantidad.help_text }}</p>
-    {% endif %}
-    {% for error in form.cantidad.errors %}
-        <p class="text-danger mt-0 error-formulario">{{ error }}</p>
-    {% endfor %}
+        {% block arriba %}
+        {% endblock arriba %}
+            
+        {% include 'includes/formulario.html' %}
+
+        {% block abajo %}
+        {% endblock abajo %}            
     </div>
     <div class="modal-footer">
         <button type="submit" class="btn btn-primary">{{ accion }}</button>
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
     </div>
 </form>
+
+{% block js %}
+<script src="{% static 'js/oferta_proveedor/oferta_proveedor/actualizar.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}

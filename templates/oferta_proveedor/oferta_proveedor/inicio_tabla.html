@@ -6,7 +6,7 @@
             <th>Proveedor</th>
             <th>Interlocutor</th>
             <th>Estado</th>
-            <th>Acciones</th>
+            <th class="text-center">Acciones</th>
         
         </tr>
     </thead>
@@ -38,13 +38,6 @@
             </td>
             <td>{{ oferta_proveedor.get_estado_display}}</td>
             <td class="text-nowrap">
-                <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar' oferta_proveedor.id %}"
-                    data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_tabla' %}"
-                    data-keep-open="true"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
                 <a href="{% url 'oferta_proveedor_app:oferta_proveedor_detalle' oferta_proveedor.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
