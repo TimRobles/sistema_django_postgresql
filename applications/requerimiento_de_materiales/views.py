@@ -566,12 +566,6 @@ class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, B
         kwargs['materiales'] = materiales
         return kwargs
 
-    def get_form_kwargs(self, *args, **kwargs):
-        registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
-        kwargs = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_form_kwargs(*args, **kwargs)
-        kwargs['lista'] = registro.lista_requerimiento
-        return kwargs
-
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_context_data(**kwargs)
