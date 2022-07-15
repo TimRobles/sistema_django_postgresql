@@ -43,7 +43,7 @@
             </tbody>
         </table>
         <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_agregar_material' requerimiento.id %}"
-            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
+            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle_tabla' requerimiento.id %}"
             class="create btn btn-primary">
             Agregar Material
         </button>

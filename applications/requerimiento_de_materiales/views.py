@@ -191,7 +191,7 @@ def ListaRequerimientoMaterialDetalleTabla(request, requerimiento_id):
 class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('requerimiento_de_materiales.add_listarequerimientomaterialdetalle')
    
-    template_name = "includes/formulario generico.html"
+    template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
     form_class = ListaRequerimientoMaterialDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
 
@@ -236,7 +236,7 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
 class ListaRequerimientoMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('requerimiento_de_materiales.change_listarequerimientomaterialdetalle')
     model = ListaRequerimientoMaterialDetalle
-    template_name = "includes/formulario generico.html"
+    template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
     form_class = ListaRequerimientoMaterialDetalleUpdateForm
 
     def dispatch(self, request, *args, **kwargs):
@@ -310,7 +310,7 @@ def RequerimientoMaterialProveedorTabla(request):
 class RequerimientoMaterialProveedorCreateView(PermissionRequiredMixin,BSModalCreateView):
     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedor')
     model = RequerimientoMaterialProveedor
-    template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
+    template_name = "requerimiento_material/lista_requerimiento_material/form_proveedor.html"
     form_class = RequerimientoMaterialProveedorForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
 
@@ -428,7 +428,7 @@ def RequerimientoMaterialProveedorDetailTabla(request, pk):
 class RequerimientoMaterialProveedorDuplicarView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedor')
     model = RequerimientoMaterialProveedor
-    template_name = "requerimiento_material/requerimiento_material_proveedor/form_material.html"
+    template_name = "requerimiento_material/requerimiento_material_proveedor/form_proveedor.html"
     form_class = RequerimientoMaterialProveedorForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
 
@@ -511,7 +511,7 @@ class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, B
 
 class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedordetalle')
-    template_name = "includes/formulario generico.html"
+    template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
     form_class = RequerimientoMaterialProveedorDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
 
@@ -521,37 +521,35 @@ class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, B
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
-        print('********registro**********')
-        print(registro)
-        print('********item**********')
-        item = len(RequerimientoMaterialProveedorDetalle.objects.filter(lista_requerimiento_material = registro))
-        print('************************')
-        print(item)
-        print('************************')
-        material = form.cleaned_data.get('material')
-        cantidad = form.cleaned_data.get('cantidad')
-        # comentario = form.cleaned_data.get('comentario')
+        if self.request.session['primero']:
+            registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
+            item = len(RequerimientoMaterialProveedorDetalle.objects.filter(requerimiento_material = registro))
+            material = form.cleaned_data.get('material')
+            cantidad = form.cleaned_data.get('cantidad')
 
-        obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
-            content_type = ContentType.objects.get_for_model(material),
-            id_registro = material.id,
-            lista_requerimiento_material = registro,
-        )
-        if created:
-            obj.item = item + 1
-            obj.cantidad = cantidad/2
-            # obj.comentario = comentario
-        else:
-            obj.cantidad = obj.cantidad + cantidad/2
-            # if obj.comentario[-len(' | ' + comentario):] != ' | ' + comentario:
-            #     obj.comentario = obj.comentario + ' | ' + comentario
+            obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
+                id_requerimiento_material_detalle = material,
+                requerimiento_material = registro,
+            )
+            if created:
+                obj.item = item + 1
+                obj.cantidad = cantidad
+            else:
+                obj.cantidad = obj.cantidad + cantidad
 
-        registro_guardar(obj, self.request)
-        obj.save()
+            registro_guardar(obj, self.request)
+            obj.save()
+            self.request.session['primero'] = False
         return super().form_valid(form)
 
+    def get_form_kwargs(self, *args, **kwargs):
+        registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
+        kwargs = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['lista'] = registro.lista_requerimiento
+        return kwargs
+
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Material '

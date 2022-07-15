@@ -7,22 +7,26 @@
         $(function () {
             $("#id_segmento_sunat").select2({
                 width:'100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
 
             $("#id_familia_sunat").select2({
                 width: '100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
 
             $("#id_clase_sunat").select2({
                 width: '100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
 
             $("#id_producto_sunat").select2({
                 width: '100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
             });
     </script>

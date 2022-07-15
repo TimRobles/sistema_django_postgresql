@@ -49,12 +49,14 @@
 
             $("#id_usuario_atendio").select2({
                 width: '100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
 
             $("#id_empresa_cliente").select2({
                 width: '100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
             });
     </script>

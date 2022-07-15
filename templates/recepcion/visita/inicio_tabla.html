@@ -1,4 +1,4 @@
-{% load reemplazar %}
+{% load funciones_propias %}
 
 <table class="table">
     <thead>
@@ -36,7 +36,6 @@
                 
                 {% if visita.empresa_cliente %}
                 {{ visita.empresa_cliente|recortar_popover }}
-                    
                 {% endif %}
                     
             </td>
