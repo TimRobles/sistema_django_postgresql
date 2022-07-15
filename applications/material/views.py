@@ -2,6 +2,7 @@ from applications.importaciones import *
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from django import forms
 from django.shortcuts import render
+from django.contrib.contenttypes.models import ContentType
 
 from .forms import (
     ModeloForm, MarcaForm,MaterialForm,
@@ -297,13 +298,15 @@ class MaterialDetailView(PermissionRequiredMixin,DetailView):
 
     def get_context_data(self, **kwargs):
         material = Material.objects.get(id = self.kwargs['pk'])
+        content_type = ContentType.objects.get_for_model(material)
+
         context = super(MaterialDetailView, self).get_context_data(**kwargs)
         context['componentes'] = RelacionMaterialComponente.objects.filter(material = material)
         context['especificaciones'] = Especificacion.objects.filter(material = material)
         context['datasheets'] = Datasheet.objects.filter(material = material)
         context['imagenes'] = ImagenMaterial.objects.filter(material = material)
         context['videos'] = VideoMaterial.objects.filter(material = material)
-        context['proveedores'] = ProveedorMaterial.objects.filter(material = material)
+        context['proveedores'] = ProveedorMaterial.objects.filter(content_type = content_type,id_registro=self.kwargs['pk'])
         context['equivalencias'] = EquivalenciaUnidad.objects.filter(material = material)
         context['idiomas'] = IdiomaMaterial.objects.filter(material = material)
         return context
@@ -314,13 +317,15 @@ def MaterialDetailTabla(request, pk):
         template = 'material/material/detalle_tabla.html'
         context = {}
         material = Material.objects.get(id = pk)
+        content_type = ContentType.objects.get_for_model(material)
+
         context['contexto_material'] = material
         context['componentes'] = RelacionMaterialComponente.objects.filter(material = material)
         context['especificaciones'] = Especificacion.objects.filter(material = material)
         context['datasheets'] = Datasheet.objects.filter(material = material)
         context['imagenes'] = ImagenMaterial.objects.filter(material = material)
         context['videos'] = VideoMaterial.objects.filter(material = material)
-        context['proveedores'] = ProveedorMaterial.objects.filter(material = material)
+        context['proveedores'] = ProveedorMaterial.objects.filter(content_type = content_type,id_registro=pk)
         context['equivalencias'] = EquivalenciaUnidad.objects.filter(material = material)
         context['idiomas'] = IdiomaMaterial.objects.filter(material = material)
 
@@ -1040,14 +1045,20 @@ class ProveedorMaterialCreateView(PermissionRequiredMixin,BSModalCreateView):
 
     def form_valid(self, form):
         material = Material.objects.get(id = self.kwargs['material_id'])
+        content_type = ContentType.objects.get_for_model(material)
+        id_registro = self.kwargs['material_id']
+
         filtro = ProveedorMaterial.objects.filter(
             proveedor = form.instance.proveedor,
-            material = material)
+            content_type = content_type,
+            id_registro = id_registro)
+            
         if len(filtro)>0:
             form.add_error('proveedor', 'Proveedor ya asignado al material.')
             return super().form_invalid(form)
 
-        form.instance.material = Material.objects.get(id = self.kwargs['material_id'])
+        form.instance.content_type = content_type
+        form.instance.id_registro = id_registro
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -1070,12 +1081,13 @@ class ProveedorMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id_registro})
 
     def form_valid(self, form):
         filtro = ProveedorMaterial.objects.filter(
             proveedor = form.instance.proveedor,
-            material = self.object.material).exclude(
+            content_type = self.object.content_type,
+            id_registro = self.object.id_registro).exclude(
                 id = self.object.id
             )
 
@@ -1105,7 +1117,7 @@ class ProveedorMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id_registro})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -1134,7 +1146,7 @@ class ProveedorMaterialDarAlta(PermissionRequiredMixin,BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id_registro})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

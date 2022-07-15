@@ -47,8 +47,7 @@ class InterlocutorProveedor(models.Model):
         return str(self.nombres) + ' ' + str(self.apellidos) 
 
 class ProveedorInterlocutor(models.Model):
-
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT, related_name='ProveedorInterlocutor_proveedor')
     interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -88,7 +87,7 @@ class TelefonoInterlocutorProveedor(models.Model):
 class CorreoInterlocutorProveedor(models.Model):
 
     correo = models.EmailField('Correo')
-    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT)
+    interlocutor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT, related_name='CorreoInterlocutorProveedor_interlocutor')
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

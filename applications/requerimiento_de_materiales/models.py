@@ -133,7 +133,7 @@ def lista_requerimiento_material_detalle_post_delete(sender, instance, *args, **
         material.item = contador
         material.save()
         contador += 1
-    
+
 pre_save.connect(requerimiento_material_proveedor_pre_save, sender=RequerimientoMaterialProveedor)
 post_save.connect(requerimiento_material_proveedor_post_save, sender=RequerimientoMaterialProveedor)
 

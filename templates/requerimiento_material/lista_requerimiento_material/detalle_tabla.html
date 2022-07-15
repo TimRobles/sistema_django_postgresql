@@ -1,15 +1,20 @@
 {% load humanize %}
 
-<h3>Lista Requerimiento Material</h3>
+<h3>Detalle Lista Requerimiento 
+    <a href="{% url 'requerimiento_material_app:lista_requerimiento_material_inicio' %}"
+    class="delete btn btn-danger" title="Regresar a Lista Requerimiento Material">
+        Regresar
+    </a>
+</h3>
+
 <div>
     <form action="" method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Guardar">
-        <br>
+        <input type="submit" class="create btn btn-primary"  value="Guardar">
         <br>
     </form>
-    <button onclick="history.back()" class="btn btn-danger">Regresar</button>
+
 </div>
 <br>
 
@@ -23,8 +28,8 @@
 
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_registrar' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
-        class="delete btn btn-primary">
-        Asignar proveedor
+        class="delete btn btn-primary" title="Agregar Proveedor">
+        Asignar Proveedor
     </button>
 
     <br>

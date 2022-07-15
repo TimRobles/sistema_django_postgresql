@@ -1,3 +1,4 @@
+from webbrowser import get
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -57,8 +58,7 @@ class ListaRequerimientoMaterialDetalleForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
-    material = forms.ModelChoiceField(queryset=Material.objects.all())
-
+    material = forms.CharField(required=False)
     class Meta:
         model = ListaRequerimientoMaterialDetalle
         fields=(
@@ -70,7 +70,8 @@ class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(ListaRequerimientoMaterialDetalleUpdateForm, self).__init__(*args, **kwargs)
         busqueda_material = self.instance.content_type.get_object_for_this_type(id = self.instance.id_registro)
-        self.fields['material'].initial = busqueda_material
+        self.fields['material'].initial = busqueda_material.descripcion_venta
+        self.fields['material'].disabled = True
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -114,7 +115,6 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
 class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=None)
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
-    # comentario = forms.CharField(widget=forms.Textarea)
     class Meta:
         model = RequerimientoMaterialProveedorDetalle
         fields=(
@@ -123,9 +123,13 @@ class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
             )
     
     def __init__(self, *args, **kwargs):
-        lista = kwargs.pop('lista')
+        materiales = kwargs.pop('materiales')
+        lista_materiales = []
+        for material in materiales:
+            lista_materiales.append(material.id_registro)
+
         super(RequerimientoMaterialProveedorDetalleForm, self).__init__(*args, **kwargs)
-        self.fields['material'].queryset = ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material=lista)
+        self.fields['material'].queryset = Material.objects.filter(id__in = lista_materiales)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -137,6 +141,7 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
     )
     correos_proveedor = forms.MultipleChoiceField(choices=CHOICES, required=False, widget=forms.CheckboxSelectMultiple())
     correos_internos = forms.MultipleChoiceField(choices=[None], required=False, widget=forms.CheckboxSelectMultiple())
+   
     class Meta:
         fields=(
             'correos_proveedor',
@@ -160,19 +165,22 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
         return correos_internos
 
     def __init__(self, *args, **kwargs):
-        CORREOS_INTERNOS = []
-        usuarios = get_user_model().objects.exclude(email='')
-        for usuario in usuarios:
-            CORREOS_INTERNOS.append((usuario.email,usuario.username))
+        proveedor = kwargs.pop('proveedor')
+        
+        CORREOS_PROVEEDOR = []
+        for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
+            for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
+                print(correo_interlocutor.correo)
+                CORREOS_PROVEEDOR.append((correo_interlocutor.correo, '%s %s (%s)' % (interlocutor_proveedor.interlocutor.nombres, interlocutor_proveedor.interlocutor.apellidos, correo_interlocutor.correo)))
             
         CORREOS_INTERNOS = []
         usuarios = get_user_model().objects.exclude(email='')
         for usuario in usuarios:
-            CORREOS_INTERNOS.append((usuario.email,usuario.username))
+            CORREOS_INTERNOS.append((usuario.email, '%s (%s)' % (usuario.username, usuario.email)))
 
         super(RequerimientoMaterialProveedorEnviarCorreoForm, self).__init__(*args, **kwargs)   
         self.fields['correos_internos'].choices = CORREOS_INTERNOS
-        self.fields['correos_proveedor'].choices = CORREOS_INTERNOS
+        self.fields['correos_proveedor'].choices = CORREOS_PROVEEDOR
         self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
         self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'
         
