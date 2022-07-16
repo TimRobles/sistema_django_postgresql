@@ -1,3 +1,4 @@
+{% load funciones_propias %}
 {% load humanize %}
 
 <h3>Detalle Lista Requerimiento 
@@ -39,7 +40,7 @@
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
-                <th>Cantidad</th>
+                <th class="text-end">Cantidad</th>
                 <th>Comentario</th>
                 <th>Acciones</th>
             </tr>
@@ -50,7 +51,7 @@
                     <td>{{ material.item }}</td>
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
-                    <td>{{ material.cantidad|intcomma }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
                     <td>
                         {% if material.comentario  != None %}
                             {{ material.comentario }}

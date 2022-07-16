@@ -240,7 +240,7 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
 class ListaRequerimientoMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('requerimiento_de_materiales.change_listarequerimientomaterialdetalle')
     model = ListaRequerimientoMaterialDetalle
-    template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
+    template_name = "includes/formulario generico.html"
     form_class = ListaRequerimientoMaterialDetalleUpdateForm
 
     def dispatch(self, request, *args, **kwargs):
