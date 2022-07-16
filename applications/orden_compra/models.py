@@ -1,6 +1,6 @@
 from django.db import models
 from applications.sociedad.models import Sociedad
-from applications.oferta_proveedor.models import OfertaProveedor
+from applications.oferta_proveedor.models import OfertaProveedor,OfertaProveedorDetalle
 from applications.datos_globales.models import Moneda
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
@@ -10,11 +10,11 @@ class OrdenCompra(models.Model):
     internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=1)
     incoterms = models.IntegerField('INCOTERMS', choices=INTERNACIONAL_NACIONAL, blank=True, null=True)
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
-    oferta_proveedor = models.ManyToManyField(OfertaProveedor, blank=True)
+    oferta_proveedor = models.OneToOneField(OfertaProveedor, on_delete=models.PROTECT, blank=True, null=True)
     orden_compra_anterior = models.ForeignKey('self', on_delete=models.PROTECT,null=True, blank=True)
     sociedad_id = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='SociedadOrdenCompra',null=True, blank=True)
     fecha_orden = models.DateField('Fecha de Orden', auto_now=False, auto_now_add=False)
-    moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2, default=0)
     total_descuento = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
     total_anticipo = models.DecimalField('Total anticipo', max_digits=14, decimal_places=2, default=0)
@@ -39,8 +39,8 @@ class OrdenCompra(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompra_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'OrdenCompra'
-        verbose_name_plural = 'OrdenCompras'
+        verbose_name = 'Orden Compra'
+        verbose_name_plural = 'Ordenes Compra'
 
     def __str__(self):
         return str(id)
@@ -67,8 +67,8 @@ class OrdenCompraDetalle(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraDetalle_updated_by', editable=False)
    
     class Meta:
-        verbose_name = 'OrdenCompraDetalle'
-        verbose_name_plural = 'OrdenesCompraDetalle'
+        verbose_name = 'Orden Compra Detalle'
+        verbose_name_plural = 'Ordenes Compra Detalle'
 
     def __str__(self):
         return str(id)

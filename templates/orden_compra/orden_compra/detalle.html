@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Orden Compra
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Orden Compra</h3>
+    <br>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>N° Orden Compra</th>
+                    <th>Proveedor</th>
+                    <th>Interlocutor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ contexto_orden_compra.fecha_orden|date:'d/m/Y' }}</td>
+                    <td>{{ contexto_orden_compra.numero_orden_compra }}</td>
+                    <td>{{ contexto_orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
+                    <td>{{ contexto_orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div id="tabla">
+        {% include 'orden_compra/orden_compra/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

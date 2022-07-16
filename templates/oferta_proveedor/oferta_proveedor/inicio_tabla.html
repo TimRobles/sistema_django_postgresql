@@ -7,13 +7,13 @@
             <th>Interlocutor</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
-        
+
         </tr>
     </thead>
-    
+
     <tbody>
         {% for oferta_proveedor in contexto_oferta_proveedor %}
-        <tr> 
+        <tr>
             <td>{{ oferta_proveedor.fecha|date:'d/m/Y' }}</td>
             <td>
                 {% if oferta_proveedor.requerimiento_material.titulo != None %}
@@ -42,11 +42,10 @@
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
-                </a>   
+                </a>
             </td>
         </tr>
         {% endfor %}
 
     </tbody>
 </table>
-
