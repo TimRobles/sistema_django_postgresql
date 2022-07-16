@@ -261,7 +261,7 @@ class VideoMaterial(models.Model):
 
 class ProveedorMaterial(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
-    id_registro = models.IntegerField()    
+    id_registro = models.IntegerField()
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100)
     brand = models.CharField('Brand', max_length=100)
@@ -280,7 +280,7 @@ class ProveedorMaterial(models.Model):
 
 
     def __str__(self):
-        return str(self.proveedor) + " - " + self.material.__str__()
+        return str(self.proveedor) 
 
 class EquivalenciaUnidad(models.Model):
     cantidad_base = models.DecimalField('Cantidad Base', max_digits=6, decimal_places=2)
@@ -304,7 +304,7 @@ class EquivalenciaUnidad(models.Model):
         return str(self.cantidad_base) + " : " + str(self.cantidad_nueva_unidad) + " " + str(self.nueva_unidad)
 
 class Idioma(models.Model):
-    nombre = models.CharField('Idioma', max_length=50)  
+    nombre = models.CharField('Idioma', max_length=50)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Idioma_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
