@@ -42,6 +42,17 @@ class OrdenCompraDetailView(DetailView):
     def get_context_data(self, **kwargs):
         orden_compra = OrdenCompra.objects.get(id = self.kwargs['pk'])
         context = super(OrdenCompraDetailView, self).get_context_data(**kwargs)
+        context['detalle_orden_compra'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
+        print('///////////////////////////////////////////')
+        print(context['detalle_orden_compra'])
+        print(orden_compra)
+        print(orden_compra.oferta_proveedor)
+        print(orden_compra.oferta_proveedor.requerimiento_material)
+        print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento)
+        print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all())
+        # print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.content_type)
+        # print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.id_registro)
+        print('///////////////////////////////////////////')
   
         return context
 
@@ -49,11 +60,15 @@ class OrdenCompraDetailView(DetailView):
 def OrdenCompraDetailTabla(request, pk):
     data = dict()
     if request.method == 'GET':
-        template = 'orden_compra/orden_compra/detalle_tabla.html'
+        template = 'orden_compra/orden_compra/detalle_orden_compra_tabla.html'
         context = {}
         orden_compra = OrdenCompra.objects.get(id = pk)
-
         context['contexto_orden_compra'] = orden_compra
+        context['detalle_orden_compra'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
+        print('/+++++++++++++++++++++++++++++++++++++')
+        print(context['detalle_orden_compra'])
+        print(orden_compra)
+        print('+++++++++++++++++++++++++++++++++++++/')
 
         data['table'] = render_to_string(
             template,
