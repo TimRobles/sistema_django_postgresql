@@ -6,7 +6,13 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Oferta Proveedor</h3>
+    <h3>Detalle Oferta Proveedor
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_finalizar' contexto_oferta_proveedor.id %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+            class="delete badge bg-primary">
+            Finalizar Oferta
+        </button>
+    </h3>
     <br>
     <div class="table-responsive">
         <table class="table">

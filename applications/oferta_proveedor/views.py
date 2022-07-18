@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from applications.importaciones import *
 from applications.oferta_proveedor.models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
-from applications.oferta_proveedor.forms import ArchivoOfertaProveedorForm, OfertaProveedorDetalleUpdateForm
+from applications.oferta_proveedor.forms import ArchivoOfertaProveedorForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm
 from applications.funciones import obtener_totales
 
 class OfertaProveedorListView(PermissionRequiredMixin, ListView):
@@ -24,29 +24,30 @@ def OfertaProveedorTabla(request):
         )
         return JsonResponse(data)
 
-# class OfertaProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-#     permission_required = ('oferta_proveedor.change_ofertaproveedor')
-#     model = OfertaProveedor
-#     template_name = "includes/formulario generico.html"
-#     form_class = OfertaProveedorForm
+class OfertaProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('oferta_proveedor.change_ofertaproveedor')
+    model = OfertaProveedor
+    template_name = "includes/formulario generico.html"
+    form_class = OfertaProveedorForm
 
-#     def dispatch(self, request, *args, **kwargs):
-#         if not self.has_permission():
-#             return render(request, 'includes/modal sin permiso.html')
-#         return super().dispatch(request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
-#     def get_success_url(self, **kwargs):
-#         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
 
-#     def form_valid(self, form):
-#         registro_guardar(form.instance, self.request)
-#         return super().form_valid(form)
+    def form_valid(self, form):
+        form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
 
-#     def get_context_data(self, **kwargs):
-#         context = super(OfertaProveedorUpdateView, self).get_context_data(**kwargs)
-#         context['accion']="Actualizar"
-#         context['titulo']="Precios"
-#         return context
+    def get_context_data(self, **kwargs):
+        context = super(OfertaProveedorUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Finalizar"
+        context['titulo']="Oferta Proveedor"
+        return context
 
 class OfertaProveedorDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('oferta_proveedor.view_OfertaProveedordetalle')
@@ -61,21 +62,6 @@ class OfertaProveedorDetailView(PermissionRequiredMixin, DetailView):
         context['archivos'] = ArchivoOfertaProveedor.objects.filter(oferta_proveedor = oferta_proveedor)
         context['totales'] = obtener_totales(OfertaProveedor.objects.get(id=self.kwargs['pk']))
         return context
-        # context = super(OfertaProveedorDetailView, self).get_context_data(**kwargs)
-        # obj = OfertaProveedor.objects.get(id=self.kwargs['pk'])
-        # # print('***************************************************************')            
-        # # print(obj)                
-        # # print('***************************************************************')  
-
-        # materiales = obj.requerimiento_material.RequerimientoMaterialProveedorDetalle_requerimiento_material.all() 
-        
-        # for material in materiales:
-        #     material.material = material.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id=material.id_requerimiento_material_detalle.id_registro)
-
-        # context['requerimiento'] = obj
-        # context['materiales'] = materiales
-
-        # return context
 
 def OfertaProveedorDetailTabla(request, pk):
     data = dict()
@@ -86,15 +72,6 @@ def OfertaProveedorDetailTabla(request, pk):
         context['contexto_oferta_proveedor'] = oferta_proveedor
         context['materiales'] = OfertaProveedorDetalle.objects.filter(oferta_proveedor = oferta_proveedor)
         context['archivos'] = ArchivoOfertaProveedor.objects.filter(oferta_proveedor = oferta_proveedor)
-        # obj = OfertaProveedor.objects.get(id=pk)
-      
-        # materiales = obj.requerimiento_material.RequerimientoMaterialProveedorDetalle_requerimiento_material.all() 
-
-        # for material in materiales:
-        #     material.material = material.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id=material.id_requerimiento_material_detalle.id_registro)
-
-        # context['requerimiento'] = obj
-        # context['materiales'] = materiales
 
         data['table'] = render_to_string(
             template,

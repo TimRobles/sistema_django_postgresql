@@ -176,7 +176,7 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
 
     total_gratuita = Decimal('0.00')
     total_otros_cargos = otros_cargos
-    total_isc = Decimal('0.00')
+    total_icbper = Decimal('0.00')
     total = Decimal('0.00')
 
     for resultado_linea in lista_resultados_linea:
@@ -204,7 +204,7 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     respuesta['total_igv'] = total_igv
     respuesta['total_gratuita'] = total_gratuita
     respuesta['total_otros_cargos'] = total_otros_cargos
-    respuesta['total_isc'] = total_isc
+    respuesta['total_icbper'] = total_icbper
     respuesta['total'] = total
     return respuesta
 
