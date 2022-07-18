@@ -1,29 +1,21 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import ArchivoOfertaProveedor, OfertaProveedorDetalle
+from .models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
 
-# class OfertaProveedorForm(BSModalModelForm):
-#     class Meta:
-#         model = OfertaProveedor
-#         fields=(
-#             'moneda',
-#             'descuento_global',
-#             'total_descuento',
-#             'total_anticipo',
-#             'total_gravada',
-#             'total_inafecta',
-#             'total_exonerada',
-#             'total_igv',
-#             'total_gratuita',
-#             'total_otros_cargos',
-#             'total_isc',
-#             'total',
-#             )
+class OfertaProveedorForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedor
+        fields=(
+            'numero_oferta',
+            'incoterms',
+            'condiciones',
+            'slug',
+            )
 
-    # def __init__(self, *args, **kwargs):
-    #     super(OfertaProveedorForm, self).__init__(*args, **kwargs)   
-    #     for visible in self.visible_fields():
-    #         visible.field.widget.attrs['class'] = 'form-control'
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
     
