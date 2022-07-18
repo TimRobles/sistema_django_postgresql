@@ -79,6 +79,17 @@ ESTADOS = (
         (2, 'Baja'),
         )
 
+INTERNACIONAL_NACIONAL = (
+        (1,'INTERNACIONAL'),
+        (2,'NACIONAL'),
+        )
+
+ESTADOS_ORDEN_COMPRA = (
+        (1, 'POR VERIFICAR'),
+        (2, 'ENVIADO'),
+        (3, 'ANULADO'),
+        )
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
 MENSAJE_REGISTRAR_SALIDA = 'Operación exitosa: La Hora de Salida fue registrada.'

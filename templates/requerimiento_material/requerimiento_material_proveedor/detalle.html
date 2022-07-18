@@ -6,7 +6,13 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Requerimiento Material Proveedor</h3>
+    <h3>Detalle Requerimiento Proveedor
+        <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_inicio' %}"
+        class="delete btn btn-danger" title="Regresar a Requerimiento Material Proveedor">
+        Regresar
+        </a>
+    </h3>
+
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_duplicar' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
         class="delete btn btn-primary">
@@ -20,8 +26,8 @@
         class="form btn btn-primary">
         Enviar Correo
     </button>
-
     <br>
+
     <div class="table-responsive">
         <table class="table">
             <thead>
@@ -30,6 +36,7 @@
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
                     <th>Comentario</th>
+                    <th>Estado</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,12 +45,13 @@
                     <td>{{ contexto_requerimiento_material_proveedor.proveedor }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.interlocutor_proveedor }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.comentario }}</td>
+                    <td>{{ contexto_requerimiento_material_proveedor.get_estado_display }}</td>
 
                 </tr>
             </tbody>
         </table>
         <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_agregar_material' requerimiento.id %}"
-            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
+            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle_tabla' requerimiento.id %}"
             class="create btn btn-primary">
             Agregar Material
         </button>

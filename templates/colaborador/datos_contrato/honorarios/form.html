@@ -9,16 +9,17 @@
 
             $("#id_usuario").select2({
                 width: '100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
 
             $("#id_cargo").select2({
                 width: '100%',
-                dropdownParent: $(".modal-body")
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
             });
 
             });
     </script>
-
 
 {% endblock js %}

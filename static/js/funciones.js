@@ -309,3 +309,36 @@ function input_letras(event) {
        return false;
     }
 }
+
+function buscar_select2(params, data) {
+    // If there are no search terms, return all of the data
+    if ($.trim(params.term) === '') {
+        return data;
+    }
+
+    // Skip if there is no 'children' property
+    if (typeof data.text === 'undefined') {
+        return null;
+    }
+    
+    var palabras = params.term.split(' ');
+    var encontrado = true
+    for (let i = 0; i < palabras.length; i++) {
+        const palabra = palabras[i];
+        
+        if (palabra != " ") {
+            if (data.text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().indexOf(palabra.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()) >= 0) {
+                encontrado = encontrado && true;
+            }else{
+                encontrado = encontrado && false;
+            }
+        }
+    }
+    if (encontrado) {
+        var modifiedData = $.extend({}, data, true);
+        return modifiedData;
+    }
+
+    // Return `null` if the term should not be displayed
+    return null;
+}

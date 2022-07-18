@@ -1,27 +1,36 @@
-<h3>Lista Requerimiento Material</h3>
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Detalle Lista Requerimiento 
+    <a href="{% url 'requerimiento_material_app:lista_requerimiento_material_inicio' %}"
+    class="delete btn btn-danger" title="Regresar a Lista Requerimiento Material">
+        Regresar
+    </a>
+</h3>
+
 <div>
     <form action="" method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Guardar">
-        <br>
+        <input type="submit" class="create btn btn-primary"  value="Guardar">
         <br>
     </form>
-    <button onclick="history.back()" class="btn btn-danger">Regresar</button>
+
 </div>
 <br>
 
 <div class="table_responsive">
     <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_agregar_material' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:lista_requerimiento_material_detalle_tabla' requerimiento.id  %}"
-        class="create btn btn-primary">
+        data-keep-open="True"
+        class="update btn btn-primary">
         Agregar Material
     </button>
 
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_registrar' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
-        class="delete btn btn-primary">
-        Asignar proveedor
+        class="delete btn btn-primary" title="Agregar Proveedor">
+        Asignar Proveedor
     </button>
 
     <br>
@@ -31,7 +40,7 @@
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
-                <th>Cantidad</th>
+                <th class="text-end">Cantidad</th>
                 <th>Comentario</th>
                 <th>Acciones</th>
             </tr>
@@ -40,9 +49,9 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td>{{ material.material }}</td>
+                    <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
-                    <td>{{ material.cantidad }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
                     <td>
                         {% if material.comentario  != None %}
                             {{ material.comentario }}

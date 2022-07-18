@@ -4,6 +4,8 @@ from django.conf import settings
 
 from applications.datos_globales.models import Unidad,ProductoSunat
 from applications.proveedores.models import Proveedor
+from django.contrib.contenttypes.models import ContentType
+
 
 class Clase(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -132,20 +134,20 @@ class Material(models.Model):
     marca = models.ForeignKey(Marca, on_delete=models.PROTECT, related_name='Material_marca', blank=True, null=True)
     modelo = models.ForeignKey(Modelo, on_delete=models.PROTECT, related_name='Material_modelo', blank=True, null=True)
     subfamilia = models.ForeignKey(SubFamilia, on_delete=models.PROTECT, related_name='Material_subfamilia')
-    clase = models.ForeignKey(Clase, on_delete=models.PROTECT, related_name='Material_clase',blank=True,null=True)
+    clase = models.ForeignKey(Clase, on_delete=models.PROTECT, related_name='Material_clase', blank=True, null=True)
     producto_sunat = models.ForeignKey(ProductoSunat, on_delete=models.PROTECT, related_name='Material_producto_sunat', blank=True,null=True)
-    control_serie = models.BooleanField('Control Serie',default=False)
-    control_lote = models.BooleanField('Control Lote',default=False)
-    control_calidad = models.BooleanField('Control Calidad',default=False)
+    control_serie = models.BooleanField('Control Serie', default=False)
+    control_lote = models.BooleanField('Control Lote', default=False)
+    control_calidad = models.BooleanField('Control Calidad', default=False)
     estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
     mostrar = models.BooleanField('Mostrar',default=False)
-    traduccion = models.CharField('Traducción', max_length=255, blank=True)
-    partida =  models.CharField('Partida', max_length=30,blank=True)
-    uso_funcion =  models.CharField('Uso función', max_length=500,blank=True)
-    compuesto_por =  models.CharField('Compuesto por', max_length=255,blank=True)
-    es_componente = models.BooleanField('Es componente',default=False)
-    atributo = models.ManyToManyField(Atributo,verbose_name='Atributo',related_name='Material_atributo',blank=True)
-    componente = models.ManyToManyField(Componente,verbose_name='Componente',related_name='Material_componente', blank=True, through='material.RelacionMaterialComponente')
+    traduccion = models.CharField('Traducción', max_length=255, blank=True, null=True)
+    partida =  models.CharField('Partida', max_length=30, blank=True, null=True)
+    uso_funcion =  models.CharField('Uso función', max_length=500, blank=True, null=True)
+    compuesto_por =  models.CharField('Compuesto por', max_length=255, blank=True, null=True)
+    es_componente = models.BooleanField('Es componente', default=False)
+    atributo = models.ManyToManyField(Atributo, verbose_name='Atributo', related_name='Material_atributo')
+    componente = models.ManyToManyField(Componente, verbose_name='Componente', related_name='Material_componente', through='material.RelacionMaterialComponente')
     id_producto_temporal = models.IntegerField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -157,12 +159,12 @@ class Material(models.Model):
         verbose_name = 'Material'
         verbose_name_plural = 'Materiales'
         ordering = [
-        'estado_alta_baja',
-        'descripcion_venta',
+            'estado_alta_baja',
+            'descripcion_venta',
         ]
 
     def __str__(self):
-        return self.descripcion_venta +" - "+ self.descripcion_corta
+        return self.descripcion_venta
 
 class RelacionMaterialComponente(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
@@ -258,7 +260,8 @@ class VideoMaterial(models.Model):
         return self.descripcion.__str__()+ " - " + self.material.__str__()
 
 class ProveedorMaterial(models.Model):
-    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    id_registro = models.IntegerField()    
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100)
     brand = models.CharField('Brand', max_length=100)

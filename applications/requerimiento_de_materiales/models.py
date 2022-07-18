@@ -29,7 +29,7 @@ class ListaRequerimientoMaterialDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, null=True, blank=True)
-    comentario = models.TextField(null=True, blank=True)
+    comentario = models.TextField(blank=True, null=True)
     lista_requerimiento_material = models.ForeignKey(ListaRequerimientoMaterial, on_delete=models.CASCADE, related_name='ListaRequerimientoMaterialDetalle_requerimiento_material')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -46,7 +46,7 @@ class ListaRequerimientoMaterialDetalle(models.Model):
         ]
 
     def __str__(self):
-        return str(self.id)
+        return self.content_type.get_object_for_this_type(id=self.id_registro).descripcion_venta
 
 
 class RequerimientoMaterialProveedor(models.Model):
@@ -133,7 +133,7 @@ def lista_requerimiento_material_detalle_post_delete(sender, instance, *args, **
         material.item = contador
         material.save()
         contador += 1
-    
+
 pre_save.connect(requerimiento_material_proveedor_pre_save, sender=RequerimientoMaterialProveedor)
 post_save.connect(requerimiento_material_proveedor_post_save, sender=RequerimientoMaterialProveedor)
 

@@ -13,3 +13,11 @@ def recortar_popover(texto):
         return mark_safe("""<span data-bs-toggle="tooltip" data-bs-placement="top" title="%s">%s...</span>""" % (str(texto), str(texto)[:40]))
     else:
         return texto
+
+@register.filter
+def redondear(texto):
+    try:
+        return round(texto,2)
+    except:
+        return texto
+
