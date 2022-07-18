@@ -1,0 +1,45 @@
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Tipo IGV</th>
+                <th>Cantidad</th>
+                <th>Prec. Unit. sin IGV</th>
+                <th>Prec. Unit. con IGV</th>
+                <th>Prec. Final con IGV</th>
+                <th>Descuento</th>
+                <th>Sub Total</th>
+                <th>IGV</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in detalle_orden_compra  %}
+            <tr>
+                <td> {{ detalle.item }} </td>
+                <td> {{ detalle.orden_compra.oferta_proveedor.proveedor_material.content_type }} </td>
+                <td> {{ detalle.proveedor_detalle.detalle.unidad_base }} </td>
+                <td> {{ detalle.get_tipo_igv_display }} </td>
+                <td class="text-end">{{ detalle.cantidad|intcomma }}</td>
+                <td class="text-end">{{ detalle.precio_unitario_sin_igv|intcomma }}</td>
+                <td class="text-end">{{ detalle.precio_unitario_con_igv|intcomma }}</td>
+                <td class="text-end">{{ detalle.precio_final_con_igv|intcomma }}</td>
+                <td class="text-end">{{ detalle.descuento|intcomma }}</td>
+                <td class="text-end">{{ detalle.sub_total|intcomma }}</td>
+                <td class="text-end">{{ detalle.igv|intcomma }}</td>
+                <td class="text-end">{{ detalle.total|intcomma }}</td>
+            </tr>
+                
+            {% endfor %}
+                
+        </tbody>
+  
+    </table>
+</div>
+<br>

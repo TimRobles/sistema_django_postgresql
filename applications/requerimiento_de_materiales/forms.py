@@ -10,12 +10,12 @@ from .models import ListaRequerimientoMaterialDetalle,RequerimientoMaterialProve
 
 class ListaRequerimientoMaterialForm (BSModalForm):
     titulo = forms.CharField(max_length=150)
-    
+
     class Meta:
         fields = (
             'titulo',
         )
-    
+
     def clean_proveedor(self):
         titulo = self.cleaned_data.get('titulo')
         return titulo
@@ -51,7 +51,7 @@ class ListaRequerimientoMaterialDetalleForm(BSModalForm):
             'cantidad',
             'comentario',
             )
-    
+
     def __init__(self, *args, **kwargs):
         super(ListaRequerimientoMaterialDetalleForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -88,7 +88,7 @@ class RequerimientoMaterialProveedorForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
-        super(RequerimientoMaterialProveedorForm, self).__init__(*args, **kwargs)   
+        super(RequerimientoMaterialProveedorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -101,7 +101,7 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
             'material',
             'cantidad',
             )
-        
+
 
     def __init__(self, *args, **kwargs):
         super(RequerimientoMaterialProveedorDetalleUpdateForm, self).__init__(*args, **kwargs)
@@ -121,7 +121,7 @@ class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
             'material',
             'cantidad',
             )
-    
+
     def __init__(self, *args, **kwargs):
         materiales = kwargs.pop('materiales')
         lista_materiales = []
@@ -141,7 +141,7 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
     )
     correos_proveedor = forms.MultipleChoiceField(choices=CHOICES, required=False, widget=forms.CheckboxSelectMultiple())
     correos_internos = forms.MultipleChoiceField(choices=[None], required=False, widget=forms.CheckboxSelectMultiple())
-   
+
     class Meta:
         fields=(
             'correos_proveedor',
@@ -153,7 +153,7 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
 
         if correos_proveedor==[]:
             self.add_error('correos_proveedor', 'Debe seleccionar al menos un correo.')
-            
+
         return correos_proveedor
 
     def clean_correos_internos(self):
@@ -161,26 +161,25 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
 
         if correos_internos==[]:
             self.add_error('correos_internos', 'Debe seleccionar al menos un correo.')
-    
+
         return correos_internos
 
     def __init__(self, *args, **kwargs):
         proveedor = kwargs.pop('proveedor')
-        
+
         CORREOS_PROVEEDOR = []
         for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
             for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
                 print(correo_interlocutor.correo)
                 CORREOS_PROVEEDOR.append((correo_interlocutor.correo, '%s %s (%s)' % (interlocutor_proveedor.interlocutor.nombres, interlocutor_proveedor.interlocutor.apellidos, correo_interlocutor.correo)))
-            
+
         CORREOS_INTERNOS = []
         usuarios = get_user_model().objects.exclude(email='')
         for usuario in usuarios:
             CORREOS_INTERNOS.append((usuario.email, '%s (%s)' % (usuario.username, usuario.email)))
 
-        super(RequerimientoMaterialProveedorEnviarCorreoForm, self).__init__(*args, **kwargs)   
+        super(RequerimientoMaterialProveedorEnviarCorreoForm, self).__init__(*args, **kwargs)
         self.fields['correos_internos'].choices = CORREOS_INTERNOS
         self.fields['correos_proveedor'].choices = CORREOS_PROVEEDOR
         self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
         self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'
-        
