@@ -9,7 +9,7 @@ from django.db.models.signals import pre_save, post_save
 class Cliente(models.Model):
 
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT)
-    numero_documento = models.CharField('Número de Documento', max_length=15, null=True, blank=True)
+    numero_documento = models.CharField('Número de Documento', max_length=15, blank=True, null=True)
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=50, blank=True, null=True)
     direccion_fiscal = models.CharField('Dirección Fiscal', max_length=100)

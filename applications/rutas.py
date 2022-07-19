@@ -1,2 +1,5 @@
 RUTA_SOCIEDAD_LOGO = 'img/sociedad'
 RUTA_SOCIEDAD_DOCUMENTO = 'file/sociedad/documento/'
+COMPROBANTE_COMPRA_PI_ARCHIVO = 'file/comprobante compra/comprobante compra PI/'
+COMPROBANTE_COMPRA_CI_ARCHIVO = 'file/comprobante compra/comprobante compra CI/'
+ARCHIVO_COMPROBANTE_COMPRA_PI_ARCHIVO = 'file/comprobante compra/archivo comprobante compra PI/'
