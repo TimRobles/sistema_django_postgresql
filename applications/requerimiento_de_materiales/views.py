@@ -190,7 +190,7 @@ def ListaRequerimientoMaterialDetalleTabla(request, requerimiento_id):
 
 class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('requerimiento_de_materiales.add_listarequerimientomaterialdetalle')
-   
+
     template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
     form_class = ListaRequerimientoMaterialDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
@@ -252,11 +252,8 @@ class ListaRequerimientoMaterialDetalleUpdateView(PermissionRequiredMixin, BSMod
         return reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
 
     def form_valid(self, form):
-
         registro_guardar(form.instance, self.request)
-
         return super().form_valid(form)
-
 
     def get_context_data(self, **kwargs):
         context = super(ListaRequerimientoMaterialDetalleUpdateView, self).get_context_data(**kwargs)
@@ -557,7 +554,7 @@ class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, B
             obj.save()
             self.request.session['primero'] = False
         return super().form_valid(form)
-        
+
 
     def get_form_kwargs(self):
         registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])

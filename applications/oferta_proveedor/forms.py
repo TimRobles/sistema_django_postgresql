@@ -17,7 +17,7 @@ class OfertaProveedorForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
-    
+
     class Meta:
         model = OfertaProveedorDetalle
         fields=(
@@ -31,7 +31,7 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
             'igv',
             'total',
             )
-        
+
     def __init__(self, *args, **kwargs):
         super(OfertaProveedorDetalleUpdateForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -65,13 +65,13 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
 
 
 class ArchivoOfertaProveedorForm(BSModalModelForm):
-    
+
     class Meta:
         model = ArchivoOfertaProveedor
         fields=(
             'archivo',
             )
-        
+
     def __init__(self, *args, **kwargs):
         super(ArchivoOfertaProveedorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
