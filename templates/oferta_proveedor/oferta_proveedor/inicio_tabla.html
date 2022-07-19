@@ -37,7 +37,7 @@
                 {% endif %}
             </td>
             <td>{{ oferta_proveedor.get_estado_display}}</td>
-            <td class="text-nowrap">
+            <td class="text-center text-nowrap">
                 <a href="{% url 'oferta_proveedor_app:oferta_proveedor_detalle' oferta_proveedor.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">

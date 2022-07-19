@@ -280,7 +280,7 @@ class ProveedorMaterial(models.Model):
 
 
     def __str__(self):
-        return str(self.proveedor) + " - " + self.material.__str__()
+        return str(self.proveedor) + " - " + self.name.__str__()
 
 class EquivalenciaUnidad(models.Model):
     cantidad_base = models.DecimalField('Cantidad Base', max_digits=6, decimal_places=2)

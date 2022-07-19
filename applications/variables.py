@@ -84,6 +84,14 @@ INTERNACIONAL_NACIONAL = (
         (2,'NACIONAL'),
         )
 
+INCOTERMS = (
+        (1, 'EXW'),
+        (2, 'FOB'),
+        (3, 'FCA'),
+        (4, 'CIF'),
+        (5, 'DDP'),
+)
+
 ESTADOS_ORDEN_COMPRA = (
         (1, 'POR VERIFICAR'),
         (2, 'ENVIADO'),
