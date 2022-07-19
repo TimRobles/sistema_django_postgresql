@@ -14,8 +14,9 @@ urlpatterns = [
     path('oferta-proveedor/detalle-tabla/<pk>/', views.OfertaProveedorDetailTabla, name='oferta_proveedor_detalle_tabla'),
     # path('oferta-proveedor/duplicar/<int:requerimiento_id>', views.OfertaProveedorDuplicarView.as_view(), name='oferta_proveedor_duplicar'),
     path('oferta-proveedor/actualizar-material/<pk>/', views.OfertaProveedorDetalleUpdateView.as_view(), name='oferta_proveedor_actualizar_material'),
-    # path('oferta-proveedor/eliminar-material/<pk>/', views.OfertaProveedorDetalleDeleteView.as_view(), name='oferta_proveedor_eliminar_material'),
     path('oferta-proveedor/agregar-archivo/<int:oferta_proveedor_id>/', views.ArchivoOfertaProveedorCreateView.as_view(), name='oferta_proveedor_agregar_archivo'),
+    path('oferta-proveedor/eliminar-archivo/<pk>/', views.ArchivoOfertaProveedorDeleteView.as_view(), name='oferta_proveedor_eliminar_archivo'),
+    # path('oferta-proveedor/agregar-material/<int:oferta_proveedor_id>/', views.MaterialOfertaProveedorDetalleCreateView.as_view(), name='oferta_proveedor_agregar_material'),
     # path('oferta-proveedor/enviar_correo/<int:requerimiento_id>', views.OfertaProveedorEnviarCorreoView.as_view(), name='oferta_proveedor_enviar_correo'),
     # path('oferta-proveedor/pdf/<slug>/', views.OfertaProveedorPdfView.as_view(), name='oferta_proveedor_pdf'),
 

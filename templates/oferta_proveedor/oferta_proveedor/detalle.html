@@ -12,6 +12,7 @@
             class="delete badge bg-primary">
             Finalizar Oferta
         </button>
+        <button onclick="history.back()" class="badge bg-primary">Regresar</button>
     </h3>
     <br>
     <div class="table-responsive">
@@ -36,6 +37,13 @@
         </table>
     </div>
     <br>
+    <h3>Materiales
+        <button data-form-url="#"
+            data-table-url="#"
+            class="create badge bg-primary">
+            Agregar Material
+        </button>
+    </h3>
     <div id="tabla">
         {% include 'oferta_proveedor/oferta_proveedor/detalle_tabla.html' %}
     </div>

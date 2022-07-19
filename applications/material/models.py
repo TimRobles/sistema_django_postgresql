@@ -278,9 +278,8 @@ class ProveedorMaterial(models.Model):
         verbose_name_plural = 'Proveedor Materiales'
         ordering = ['estado_alta_baja',]
 
-
     def __str__(self):
-        return str(self.proveedor) 
+        return str(self.proveedor)
 
 class EquivalenciaUnidad(models.Model):
     cantidad_base = models.DecimalField('Cantidad Base', max_digits=6, decimal_places=2)

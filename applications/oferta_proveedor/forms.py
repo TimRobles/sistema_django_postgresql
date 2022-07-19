@@ -9,7 +9,6 @@ class OfertaProveedorForm(BSModalModelForm):
             'numero_oferta',
             'incoterms',
             'condiciones',
-            'slug',
             )
 
     def __init__(self, *args, **kwargs):
@@ -38,13 +37,39 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+
+
+# class MaterialOfertaProveedorForm(BSModalForm):
+#     material = forms.ModelChoiceField(queryset=None)
+#     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+#     class Meta:
+#         model = RequerimientoMaterialProveedorDetalle
+#         fields=(
+#             'material',
+#             'cantidad',
+#             )
+    
+#     def __init__(self, *args, **kwargs):
+#         materiales = kwargs.pop('materiales')
+#         lista_materiales = []
+#         for material in materiales:
+#             lista_materiales.append(material.id_registro)
+
+#         super(RequerimientoMaterialProveedorDetalleForm, self).__init__(*args, **kwargs)
+#         self.fields['material'].queryset = Material.objects.filter(id__in = lista_materiales)
+#         for visible in self.visible_fields():
+#             visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+
 class ArchivoOfertaProveedorForm(BSModalModelForm):
 
     class Meta:
         model = ArchivoOfertaProveedor
         fields=(
             'archivo',
-            'oferta_proveedor',
             )
 
     def __init__(self, *args, **kwargs):
