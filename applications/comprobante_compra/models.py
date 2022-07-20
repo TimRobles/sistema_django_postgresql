@@ -1,4 +1,5 @@
 from django.db import models
+from applications.comprobante_compra.managers import ComprobanteCompraPIDetalleManager
 from applications.datos_globales.models import Moneda
 from django.conf import settings
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
@@ -6,12 +7,12 @@ from django.contrib.contenttypes.models import ContentType
 from applications.rutas import ARCHIVO_COMPROBANTE_COMPRA_PI_ARCHIVO, COMPROBANTE_COMPRA_CI_ARCHIVO, COMPROBANTE_COMPRA_PI_ARCHIVO
 from applications.sociedad.models import Sociedad
 
-from applications.variables import ESTADOS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
+from applications.variables import ESTADO_COMPROBANTE, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
 
 # Create your models here.
 class ComprobanteCompraPI(models.Model):
     internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=1)
-    incoterms = models.IntegerField('INCOTERMS', choices=INTERNACIONAL_NACIONAL, blank=True, null=True)
+    incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50, blank=True, null=True)
     orden_compra = models.OneToOneField(OrdenCompra, on_delete=models.PROTECT)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
@@ -31,7 +32,7 @@ class ComprobanteCompraPI(models.Model):
     slug = models.SlugField(blank=True, null=True)
     archivo = models.FileField('Archivo', upload_to=COMPROBANTE_COMPRA_PI_ARCHIVO, max_length=100, blank=True, null=True)
     condiciones = models.TextField('Condiciones', blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+    estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE, default=1)
     motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)
     logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=1)
 
@@ -50,7 +51,7 @@ class ComprobanteCompraPI(models.Model):
 
 class ComprobanteCompraPIDetalle(models.Model):
     item = models.IntegerField()
-    orden_compra_detalle = models.ForeignKey(OrdenCompraDetalle, on_delete=models.PROTECT)
+    orden_compra_detalle = models.OneToOneField(OrdenCompraDetalle, on_delete=models.PROTECT)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio Unitario Sin IGV', max_digits=22, decimal_places=10, default=0)
     precio_unitario_con_igv = models.DecimalField('Precio Unitario Con IGV', max_digits=22, decimal_places=10, default=0)
@@ -60,19 +61,21 @@ class ComprobanteCompraPIDetalle(models.Model):
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     tipo_igv = models.IntegerField(choices=TIPO_IGV_CHOICES)
-    comprobante_compra = models.ForeignKey(ComprobanteCompraPI, on_delete=models.CASCADE)
+    comprobante_compra = models.ForeignKey(ComprobanteCompraPI, on_delete=models.CASCADE, related_name='ComprobanteCompraPIDetalle_comprobante_compra')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraPIDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraPIDetalle_updated_by', editable=False)
 
+    objects = ComprobanteCompraPIDetalleManager()
+
     class Meta:
         verbose_name = 'Comprobante de Compra PI Detalle'
         verbose_name_plural = 'Comprobantes de Compra PI Detalles'
 
     def __str__(self):
-        return self.item
+        return str(self.item)
 
 
 class ArchivoComprobanteCompraPI(models.Model):
@@ -94,7 +97,7 @@ class ArchivoComprobanteCompraPI(models.Model):
         
 class ComprobanteCompraCI(models.Model):
     internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=1)
-    incoterms = models.IntegerField('INCOTERMS', choices=INTERNACIONAL_NACIONAL, blank=True, null=True)
+    incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50, blank=True, null=True)
     comprobante_compra_PI = models.OneToOneField(ComprobanteCompraPI, on_delete=models.PROTECT)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
@@ -114,7 +117,7 @@ class ComprobanteCompraCI(models.Model):
     slug = models.SlugField(blank=True, null=True)
     archivo = models.FileField('Archivo', upload_to=COMPROBANTE_COMPRA_CI_ARCHIVO, max_length=100, blank=True, null=True)
     condiciones = models.TextField('Condiciones', blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+    estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE, default=1)
     motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -155,4 +158,4 @@ class ComprobanteCompraCIDetalle(models.Model):
         verbose_name_plural = 'Comprobantes de Compra CI Detalles'
 
     def __str__(self):
-        return self.item
+        return str(self.item)
