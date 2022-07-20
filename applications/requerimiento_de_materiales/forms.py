@@ -2,10 +2,14 @@ from webbrowser import get
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from applications.datos_globales.models import Moneda
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.proveedores.models import InterlocutorProveedor, Proveedor,ProveedorInterlocutor
 from applications.material.models import Material
+from applications.datos_globales.models import Moneda
 from .models import ListaRequerimientoMaterialDetalle,RequerimientoMaterialProveedor,RequerimientoMaterialProveedorDetalle
+from applications.variables import INTERNACIONAL_NACIONAL
+
 
 
 class ListaRequerimientoMaterialForm (BSModalForm):
@@ -141,11 +145,15 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
     )
     correos_proveedor = forms.MultipleChoiceField(choices=CHOICES, required=False, widget=forms.CheckboxSelectMultiple())
     correos_internos = forms.MultipleChoiceField(choices=[None], required=False, widget=forms.CheckboxSelectMultiple())
+    internacional_nacional = forms.ChoiceField(label = 'Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, widget=forms.Select())
+    moneda = forms.ModelChoiceField(label = 'Moneda', queryset = Moneda.objects.all(), required=False)
 
     class Meta:
         fields=(
             'correos_proveedor',
             'correos_internos',
+            'internacional_nacional',
+            'moneda',
             )
 
     def clean_correos_proveedor(self):
@@ -164,13 +172,27 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
 
         return correos_internos
 
+    def clean_internacional_nacional(self):
+        internacional_nacional = self.cleaned_data.get('internacional_nacional')
+        if internacional_nacional==[]:
+            self.add_error('internacional_nacional', 'Debe seleccionar tipo.')
+    
+        return internacional_nacional    
+    
+    def clean_moneda(self):
+        moneda = self.cleaned_data.get('moneda')
+        if moneda==[]:
+            self.add_error('moneda', 'Debe seleccionar moneda.')
+    
+        return moneda
+        
+
     def __init__(self, *args, **kwargs):
         proveedor = kwargs.pop('proveedor')
 
         CORREOS_PROVEEDOR = []
         for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
             for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
-                print(correo_interlocutor.correo)
                 CORREOS_PROVEEDOR.append((correo_interlocutor.correo, '%s %s (%s)' % (interlocutor_proveedor.interlocutor.nombres, interlocutor_proveedor.interlocutor.apellidos, correo_interlocutor.correo)))
 
         CORREOS_INTERNOS = []
@@ -181,5 +203,6 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
         super(RequerimientoMaterialProveedorEnviarCorreoForm, self).__init__(*args, **kwargs)
         self.fields['correos_internos'].choices = CORREOS_INTERNOS
         self.fields['correos_proveedor'].choices = CORREOS_PROVEEDOR
+        self.fields['internacional_nacional'].choices = INTERNACIONAL_NACIONAL
         self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
         self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'

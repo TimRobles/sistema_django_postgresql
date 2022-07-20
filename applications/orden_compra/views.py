@@ -34,26 +34,41 @@ def OrdenCompraTabla(request):
 
 
 
+
+class OrdenCompraDeleteView(BSModalUpdateView):
+    model = OrdenCompra
+    template_name = "includes/formulario generico.html"
+    success_url = reverse_lazy('orden_compra_app:orden_compra_inicio') 
+    # form_class = s
+
+    def form_valid(self, form):
+        form.instance.estado = 3
+        registro_guardar(form.instance, self.request)
+        
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(OrdenCompraDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Anular Docuemento'
+        context['titulo'] = 'Orden de compra'
+        return context
+
 class OrdenCompraDetailView(DetailView):
     model = OrdenCompra
     template_name = "orden_compra/orden_compra/detalle.html"
     context_object_name = 'contexto_orden_compra'
 
     def get_context_data(self, **kwargs):
-        orden_compra = OrdenCompra.objects.get(id = self.kwargs['pk'])
         context = super(OrdenCompraDetailView, self).get_context_data(**kwargs)
-        context['detalle_orden_compra'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
-        print('///////////////////////////////////////////')
-        print(context['detalle_orden_compra'])
-        print(orden_compra)
-        print(orden_compra.oferta_proveedor)
-        print(orden_compra.oferta_proveedor.requerimiento_material)
-        print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento)
-        print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all())
-        # print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.content_type)
-        # print(orden_compra.oferta_proveedor.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.id_registro)
-        print('///////////////////////////////////////////')
-  
+        obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
+        
+        # materiales = obj.oferta_proveedor.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all()
+        materiales = obj.OrdenCompraDetalle_orden_compra.all()
+
+        for material in materiales:
+            material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+        
+        context['detalle_orden_compra'] = materiales 
         return context
 
 
@@ -62,13 +77,9 @@ def OrdenCompraDetailTabla(request, pk):
     if request.method == 'GET':
         template = 'orden_compra/orden_compra/detalle_orden_compra_tabla.html'
         context = {}
-        orden_compra = OrdenCompra.objects.get(id = pk)
-        context['contexto_orden_compra'] = orden_compra
-        context['detalle_orden_compra'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
-        print('/+++++++++++++++++++++++++++++++++++++')
-        print(context['detalle_orden_compra'])
-        print(orden_compra)
-        print('+++++++++++++++++++++++++++++++++++++/')
+        obj = OrdenCompra.objects.get(id = pk)
+        context['contexto_orden_compra'] = obj
+        context['detalle_orden_compra'] = OrdenCompraDetalle.objects.filter(orden_compra = obj)
 
         data['table'] = render_to_string(
             template,

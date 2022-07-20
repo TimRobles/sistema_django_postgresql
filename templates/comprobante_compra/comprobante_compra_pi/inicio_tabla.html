@@ -1,0 +1,33 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Número de Comprobante</th>
+            <th>Proveedor</th>
+            <th>Interlocutor</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for comprobante_compra_pi in contexto_comprobante_compra_pi %}
+        <tr>
+            <td>{{ comprobante_compra_pi.fecha_comprobante|date:'d/m/Y' }}</td>
+            <td>{{ comprobante_compra_pi.numero_comprobante_compra }}</td>
+            <td>{{ comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
+            <td>{{ comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+            <td>{{ comprobante_compra_pi.get_estado_display}}</td>
+            <td class="text-nowrap text-center">
+                <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle' comprobante_compra_pi.slug %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>

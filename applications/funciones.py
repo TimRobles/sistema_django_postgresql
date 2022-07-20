@@ -210,8 +210,12 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
 
 
 def obtener_totales(cabecera):
-    detalles = cabecera.OfertaProveedorDetalle_oferta_proveedor.all()
+    if hasattr(cabecera, 'OfertaProveedorDetalle_oferta_proveedor'):
+        detalles = cabecera.OfertaProveedorDetalle_oferta_proveedor.all()
+    elif hasattr(cabecera, 'ComprobanteCompraPIDetalle_comprobante_compra'):
+        detalles = cabecera.ComprobanteCompraPIDetalle_comprobante_compra.all()
     lista_resultados_linea = []
+    valor_igv = 0
     for detalle in detalles:
         cantidad = detalle.cantidad
         precio_unitario_con_igv = detalle.precio_unitario_con_igv
@@ -223,7 +227,7 @@ def obtener_totales(cabecera):
         calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv)
         lista_resultados_linea.append(calculo)
     descuento_global = cabecera.descuento_global
-    otros_cargos = 0
+    otros_cargos = Decimal('0.00')
     internacional = cabecera.internacional_nacional
     anticipo = False
     return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv)

@@ -32,7 +32,7 @@ class OfertaProveedor(models.Model):
     total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=0)
     total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
-    slug = models.SlugField(null=True, blank=True, editable=False)
+    slug = models.SlugField(blank=True, null=True, editable=False)
     condiciones = models.TextField('Condiciones', null=True, blank=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_OFERTA_PROVEEDOR, default=1)
 
@@ -53,7 +53,7 @@ class OfertaProveedor(models.Model):
 
 class OfertaProveedorDetalle(models.Model):
 
-    item = models.IntegerField(null=True, blank=True)
+    item = models.IntegerField(blank=True, null=True)
     proveedor_material = models.ForeignKey(ProveedorMaterial, on_delete=models.PROTECT)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=0)
     precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=22, decimal_places=10, default=0)
@@ -82,7 +82,7 @@ class OfertaProveedorDetalle(models.Model):
 
 class ArchivoOfertaProveedor(models.Model):
 
-    archivo = models.FileField('Archivo', null=True, blank=True)
+    archivo = models.FileField('Archivo', blank=True, null=True)
     oferta_proveedor = models.ForeignKey(OfertaProveedor, on_delete=models.PROTECT)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

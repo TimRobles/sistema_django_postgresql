@@ -1,3 +1,4 @@
+import os
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -21,3 +22,6 @@ def redondear(texto):
     except:
         return texto
 
+@register.filter
+def filename(value):
+    return os.path.basename(value.file.name)
