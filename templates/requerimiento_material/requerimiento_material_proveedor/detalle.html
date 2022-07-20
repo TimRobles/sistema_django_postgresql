@@ -8,7 +8,7 @@
 {% block contenido %}
     <h3>Detalle Requerimiento Proveedor
         <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_inicio' %}"
-        class="delete btn btn-danger" title="Regresar a Requerimiento Material Proveedor">
+        class="create btn btn-primary" title="Regresar a Requerimiento Material Proveedor">
         Regresar
         </a>
     </h3>
@@ -23,10 +23,16 @@
 
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_enviar_correo' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
-        class="form btn btn-primary">
+        class="delete btn btn-primary">
+        Enviar Correo
+    </button>    
+    
+    <!-- <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_enviar_correo' requerimiento.id %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_tabla' %}"
+        class="delete btn btn-primary">
         Enviar Correo
     </button>
-    <br>
+    <br> -->
 
     <div class="table-responsive">
         <table class="table">

@@ -59,7 +59,7 @@ class OrdenCompraDetalle(models.Model):
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2,default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2,default=0)
     tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
-    orden_compra = models.ForeignKey(OrdenCompra, on_delete=models.CASCADE)
+    orden_compra = models.ForeignKey(OrdenCompra, on_delete=models.CASCADE,related_name='OrdenCompraDetalle_orden_compra')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraDetalle_created_by', editable=False)

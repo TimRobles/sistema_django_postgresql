@@ -1,11 +1,13 @@
 from decimal import Decimal
 from django.core.mail import EmailMultiAlternatives
 from applications.funciones import slug_aleatorio
+from applications.material.models import ProveedorMaterial
 from applications.requerimiento_de_materiales.pdf import generarRequerimientoMaterialProveedor
 from applications.importaciones import *
 from django import forms
 from applications.proveedores.models import InterlocutorProveedor, Proveedor
 from applications.sociedad.models import Sociedad
+from applications.oferta_proveedor.models import OfertaProveedor, OfertaProveedorDetalle
 from datetime import datetime
 from django.shortcuts import render
 
@@ -204,10 +206,7 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
         if self.request.session['primero']:
             registro = ListaRequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
             item = len(ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material = registro))
-            print('////////////////////////////////////////////')
-            print(registro)
-            print(item)
-            print('////////////////////////////////////////////')
+
             material = form.cleaned_data.get('material')
             cantidad = form.cleaned_data.get('cantidad')
             comentario = form.cleaned_data.get('comentario')
@@ -510,16 +509,10 @@ class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, B
         context['dar_baja'] = "true"
         return context
 
-class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedordetalle')
+class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
     template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
     form_class = RequerimientoMaterialProveedorDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
-
-    # def dispatch(self, request, *args, **kwargs):
-    #     if not self.has_permission():
-    #         return render(request, 'includes/modal sin permiso.html')
-    #     return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if self.request.session['primero']:
@@ -528,12 +521,6 @@ class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, B
             material = form.cleaned_data.get('material')
             cantidad = form.cleaned_data.get('cantidad')
             # comentario = form.cleaned_data.get('comentario')
-            print('////////////////////////////////////////////')
-            print(registro)
-            print(item)
-            print(material)
-            print(material.id)
-            print('////////////////////////////////////////////')
 
             obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
                 # content_type = ContentType.objects.get_for_model(material),
@@ -614,7 +601,8 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
 
     template_name = "includes/formulario generico.html"
     form_class = RequerimientoMaterialProveedorEnviarCorreoForm
-    success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
+    # success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
+    success_url = reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -624,9 +612,35 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
     def form_valid(self, form):
         if self.request.session['primero']:
             requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
-
             correos_proveedor = form.cleaned_data['correos_proveedor']
             correos_internos = form.cleaned_data['correos_internos']
+            internacional_nacional = form.cleaned_data['internacional_nacional']
+            moneda = form.cleaned_data['moneda']
+
+            oferta = OfertaProveedor.objects.create(
+                internacional_nacional=internacional_nacional,
+                requerimiento_material=requerimiento,
+                moneda=moneda,
+            )
+            
+            requerimiento_detalle = requerimiento.RequerimientoMaterialProveedorDetalle_requerimiento_material.all()
+            for detalle in requerimiento_detalle:
+
+                proveedor_material, created = ProveedorMaterial.objects.get_or_create(
+                    content_type = detalle.id_requerimiento_material_detalle.content_type,
+                    id_registro = detalle.id_requerimiento_material_detalle.id_registro,
+                    proveedor = requerimiento.proveedor,
+                    estado_alta_baja = 1,
+                )
+                
+                oferta_detalle = OfertaProveedorDetalle.objects.create(
+                    item=detalle.item,
+                    proveedor_material=proveedor_material,
+                    cantidad=detalle.cantidad,
+                    oferta_proveedor=oferta,
+                    )
+            self.request.session['primero'] = False
+
             asunto = "Requerimiento - %s" % (requerimiento.titulo)
             mensaje = '<p>Estimado,</p><p>Se le invita a cotizar el siguiente requerimiento: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_pdf', kwargs={'slug':requerimiento.slug}), 'Requerimiento')
             email_remitente = EMAIL_REMITENTE
@@ -637,6 +651,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 correo.send()
                 requerimiento.estado = 3
                 requerimiento.save()
+                
                 messages.success(self.request, 'Correo enviado.')
                 self.request.session['primero'] = False
             except:
