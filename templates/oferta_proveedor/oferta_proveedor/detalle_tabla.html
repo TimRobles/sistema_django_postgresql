@@ -38,7 +38,7 @@
  
                     <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_material' material.id %}"
-                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.id %}"
+                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
@@ -99,8 +99,8 @@
 </div>
 <br>
 <h3>Archivos
-    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_archivo' contexto_oferta_proveedor.id %}"
-        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.id %}"
+    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_archivo' contexto_oferta_proveedor.slug %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
         class="create badge bg-primary">
         Agregar Archivo
     </button>
