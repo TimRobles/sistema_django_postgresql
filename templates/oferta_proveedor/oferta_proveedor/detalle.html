@@ -6,7 +6,14 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Oferta Proveedor</h3>
+    <h3>Detalle Oferta Proveedor
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_finalizar' contexto_oferta_proveedor.id %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+            class="delete badge bg-primary">
+            Finalizar Oferta
+        </button>
+        <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+    </h3>
     <br>
     <div class="table-responsive">
         <table class="table">
@@ -30,6 +37,13 @@
         </table>
     </div>
     <br>
+    <h3>Materiales
+        <button data-form-url="#"
+            data-table-url="#"
+            class="create badge bg-primary">
+            Agregar Material
+        </button>
+    </h3>
     <div id="tabla">
         {% include 'oferta_proveedor/oferta_proveedor/detalle_tabla.html' %}
     </div>

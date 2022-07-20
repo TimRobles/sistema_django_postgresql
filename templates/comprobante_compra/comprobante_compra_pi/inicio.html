@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Comprobante Compra PI
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Comprobante Compra PI</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'comprobante_compra/comprobante_compra_pi/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

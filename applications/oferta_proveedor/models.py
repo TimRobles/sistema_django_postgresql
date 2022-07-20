@@ -4,7 +4,9 @@ from django.conf import settings
 from applications.requerimiento_de_materiales.models import RequerimientoMaterialProveedor
 from applications.datos_globales.models import Moneda
 from applications.material.models import ProveedorMaterial
-from applications.variables import TIPO_IGV_CHOICES
+from applications.variables import INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
+
+from applications.oferta_proveedor.managers import OfertaProveedorDetalleManager
 
 class OfertaProveedor(models.Model):
     ESTADOS_OFERTA_PROVEEDOR = (
@@ -12,14 +14,9 @@ class OfertaProveedor(models.Model):
         (2, 'FINALIZADO'),
     )
 
-    INTERNACIONAL_NACIONAL = (
-        (1, 'INTERNACIONAL'),
-        (2, 'NACIONAL'),
-    )
-
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
     internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=1)
-    incoterms = models.IntegerField('INCOTERMS', choices=INTERNACIONAL_NACIONAL, blank=True, null=True)
+    incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     numero_oferta = models.CharField('Número de Oferta', max_length=50, blank=True, null=True)
     requerimiento_material = models.OneToOneField(RequerimientoMaterialProveedor, on_delete=models.CASCADE)
     moneda = models.ForeignKey(Moneda, null=True,  on_delete=models.PROTECT)
@@ -34,7 +31,7 @@ class OfertaProveedor(models.Model):
     total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=0)
     total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
-    slug = models.SlugField(null=True, blank=True)
+    slug = models.SlugField(blank=True, null=True, editable=False)
     condiciones = models.TextField('Condiciones', null=True, blank=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_OFERTA_PROVEEDOR, default=1)
 
@@ -55,7 +52,7 @@ class OfertaProveedor(models.Model):
 
 class OfertaProveedorDetalle(models.Model):
 
-    item = models.IntegerField(null=True, blank=True)
+    item = models.IntegerField(blank=True, null=True)
     proveedor_material = models.ForeignKey(ProveedorMaterial, on_delete=models.PROTECT)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=0)
     precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=22, decimal_places=10, default=0)
@@ -73,16 +70,18 @@ class OfertaProveedorDetalle(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OfertaProveedorDetalle_updated_by', editable=False)
 
+    objects = OfertaProveedorDetalleManager()
     class Meta:
         verbose_name = 'Oferta Proveedor Detalle'
         verbose_name_plural = 'Ofertas Proveedor Detalle'
+        ordering = ['item',]
 
     def __str__(self):
         return str(self.oferta_proveedor)
 
 class ArchivoOfertaProveedor(models.Model):
 
-    archivo = models.FileField('Archivo', null=True, blank=True)
+    archivo = models.FileField('Archivo', blank=True, null=True)
     oferta_proveedor = models.ForeignKey(OfertaProveedor, on_delete=models.PROTECT)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

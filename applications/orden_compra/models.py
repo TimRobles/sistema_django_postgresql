@@ -11,8 +11,8 @@ class OrdenCompra(models.Model):
     incoterms = models.IntegerField('INCOTERMS', choices=INTERNACIONAL_NACIONAL, blank=True, null=True)
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
     oferta_proveedor = models.OneToOneField(OfertaProveedor, on_delete=models.PROTECT, blank=True, null=True)
-    orden_compra_anterior = models.ForeignKey('self', on_delete=models.PROTECT,null=True, blank=True)
-    sociedad_id = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='SociedadOrdenCompra',null=True, blank=True)
+    orden_compra_anterior = models.ForeignKey('self', on_delete=models.PROTECT,blank=True, null=True)
+    sociedad_id = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='SociedadOrdenCompra',blank=True, null=True)
     fecha_orden = models.DateField('Fecha de Orden', auto_now=False, auto_now_add=False)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2, default=0)
@@ -26,11 +26,10 @@ class OrdenCompra(models.Model):
     total_otros_cargos = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
     total_isc = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
-    slug = models.SlugField(null=True, blank=True)
+    slug = models.SlugField(blank=True, null=True)
     archivo = models.FileField('Archivo',upload_to = 'file/orden_compra/', max_length=100, blank=True, null=True)
     condiciones = models.TextField()
-    motivo_anulacion = models.TextField()
-    motivo_anulacion = models.TextField()
+    motivo_anulacion = models.TextField(blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_ORDEN_COMPRA,default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -47,7 +46,7 @@ class OrdenCompra(models.Model):
 
 
 class OrdenCompraDetalle(models.Model):
-    item = models.IntegerField(null=True, blank=True)
+    item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)

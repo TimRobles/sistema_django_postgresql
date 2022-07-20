@@ -22,6 +22,7 @@ urlpatterns = [
     path('requerimiento_material/', include('applications.requerimiento_de_materiales.urls')),
     path('oferta_proveedor/', include('applications.oferta_proveedor.urls')),
     path('orden_compra/', include('applications.orden_compra.urls')),
+    path('comprobante_compra/', include('applications.comprobante_compra.urls')),
 
 ]
 

@@ -1,29 +1,20 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import ArchivoOfertaProveedor, OfertaProveedorDetalle
+from .models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
 
-# class OfertaProveedorForm(BSModalModelForm):
-#     class Meta:
-#         model = OfertaProveedor
-#         fields=(
-#             'moneda',
-#             'descuento_global',
-#             'total_descuento',
-#             'total_anticipo',
-#             'total_gravada',
-#             'total_inafecta',
-#             'total_exonerada',
-#             'total_igv',
-#             'total_gratuita',
-#             'total_otros_cargos',
-#             'total_isc',
-#             'total',
-#             )
+class OfertaProveedorForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedor
+        fields=(
+            'numero_oferta',
+            'incoterms',
+            'condiciones',
+            )
 
-    # def __init__(self, *args, **kwargs):
-    #     super(OfertaProveedorForm, self).__init__(*args, **kwargs)
-    #     for visible in self.visible_fields():
-    #         visible.field.widget.attrs['class'] = 'form-control'
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
 
@@ -46,13 +37,39 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+
+
+# class MaterialOfertaProveedorForm(BSModalForm):
+#     material = forms.ModelChoiceField(queryset=None)
+#     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+#     class Meta:
+#         model = RequerimientoMaterialProveedorDetalle
+#         fields=(
+#             'material',
+#             'cantidad',
+#             )
+    
+#     def __init__(self, *args, **kwargs):
+#         materiales = kwargs.pop('materiales')
+#         lista_materiales = []
+#         for material in materiales:
+#             lista_materiales.append(material.id_registro)
+
+#         super(RequerimientoMaterialProveedorDetalleForm, self).__init__(*args, **kwargs)
+#         self.fields['material'].queryset = Material.objects.filter(id__in = lista_materiales)
+#         for visible in self.visible_fields():
+#             visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+
 class ArchivoOfertaProveedorForm(BSModalModelForm):
 
     class Meta:
         model = ArchivoOfertaProveedor
         fields=(
             'archivo',
-            'oferta_proveedor',
             )
 
     def __init__(self, *args, **kwargs):

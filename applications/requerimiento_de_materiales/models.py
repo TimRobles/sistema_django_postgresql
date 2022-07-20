@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 class ListaRequerimientoMaterial(models.Model):
-    titulo = models.CharField('Titulo', max_length=150,null=True, blank=True)
+    titulo = models.CharField('Titulo', max_length=150,blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ListaRequerimientoMaterial_created_by', editable=False)
@@ -25,10 +25,10 @@ class ListaRequerimientoMaterial(models.Model):
         return str(self.titulo)
 
 class ListaRequerimientoMaterialDetalle(models.Model):
-    item = models.IntegerField(null=True, blank=True)
+    item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, null=True, blank=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
     lista_requerimiento_material = models.ForeignKey(ListaRequerimientoMaterial, on_delete=models.CASCADE, related_name='ListaRequerimientoMaterialDetalle_requerimiento_material')
 
@@ -57,14 +57,14 @@ class RequerimientoMaterialProveedor(models.Model):
     )
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
-    titulo = models.CharField('Titulo', max_length=150,null=True, blank=True)
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT, related_name='ProveedorMaterial',null=True, blank=True)
-    interlocutor_proveedor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT, related_name='InterlocutorProveedorMaterial',null=True, blank=True)
+    titulo = models.CharField('Titulo', max_length=150,blank=True, null=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT, related_name='ProveedorMaterial',blank=True, null=True)
+    interlocutor_proveedor = models.ForeignKey(InterlocutorProveedor, on_delete=models.PROTECT, related_name='InterlocutorProveedorMaterial',blank=True, null=True)
     lista_requerimiento = models.ForeignKey(ListaRequerimientoMaterial, on_delete=models.PROTECT)
-    requerimiento_material_anterior = models.ForeignKey('self', on_delete=models.PROTECT,null=True, blank=True)
-    comentario = models.TextField(null=True, blank=True)
+    requerimiento_material_anterior = models.ForeignKey('self', on_delete=models.PROTECT,blank=True, null=True)
+    comentario = models.TextField(blank=True, null=True)
     version = models.IntegerField(default=0)
-    slug = models.SlugField(null=True, blank=True)
+    slug = models.SlugField(blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_REQUERIMIENTO, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -83,9 +83,9 @@ class RequerimientoMaterialProveedor(models.Model):
         return str(self.titulo)
 
 class RequerimientoMaterialProveedorDetalle(models.Model):
-    item = models.IntegerField(null=True, blank=True)
+    item = models.IntegerField(blank=True, null=True)
     id_requerimiento_material_detalle =  models.ForeignKey(ListaRequerimientoMaterialDetalle, on_delete=models.PROTECT)
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, null=True, blank=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
     requerimiento_material = models.ForeignKey(RequerimientoMaterialProveedor, on_delete=models.CASCADE, related_name='RequerimientoMaterialProveedorDetalle_requerimiento_material')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
