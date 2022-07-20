@@ -23,7 +23,8 @@
             {% for detalle in detalle_orden_compra  %}
             <tr>
                 <td> {{ detalle.item }} </td>
-                <td> {{ detalle.orden_compra.oferta_proveedor.proveedor_material.content_type }} </td>
+                <td> {{ detalle.material }}</td>
+                <td> {{ detalle.material.unidad_base }}</td>
                 <td> {{ detalle.proveedor_detalle.detalle.unidad_base }} </td>
                 <td> {{ detalle.get_tipo_igv_display }} </td>
                 <td class="text-end">{{ detalle.cantidad|intcomma }}</td>

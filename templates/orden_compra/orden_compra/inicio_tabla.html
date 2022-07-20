@@ -41,7 +41,13 @@
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
-                </a>   
+                </a>
+                
+                <button data-form-url="{% url 'orden_compra_app:orden_compra_eliminar' orden_compra.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi-x-lg"></i>
+                </button>
             </td>
         </tr>
         {% endfor %}
