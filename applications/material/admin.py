@@ -138,6 +138,7 @@ class MarcaAdmin(admin.ModelAdmin):
 
 class MaterialAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'descripcion_venta',
         'descripcion_corta',
         'unidad_base',

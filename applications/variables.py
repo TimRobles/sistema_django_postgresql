@@ -79,6 +79,12 @@ ESTADOS = (
     (2, 'Baja'),
     )
 
+ESTADO_COMPROBANTE = (
+    (1, 'PENDIENTE'),
+    (2, 'CANCELADO'),
+    (3, 'ANULADO'),
+    )
+
 INTERNACIONAL_NACIONAL = (
     (1,'INTERNACIONAL'),
     (2,'NACIONAL'),
