@@ -53,6 +53,7 @@ LOCAL_APPS = (
     'applications.orden_compra',
     'applications.comprobante_compra',
     'applications.movimiento_almacen',
+    'applications.recepcion_compra',
 )
 
 THIRD_PARTY_APPS = (

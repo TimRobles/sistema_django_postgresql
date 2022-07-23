@@ -359,7 +359,7 @@ class RequerimientoMaterialProveedorUpdateView(PermissionRequiredMixin, BSModalU
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="material"
+        context['titulo']="Material"
         return context
 
 class RequerimientoMaterialProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteView):
@@ -474,7 +474,7 @@ class RequerimientoMaterialProveedorDetalleUpdateView(PermissionRequiredMixin, B
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorDetalleUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="material"
+        context['titulo']="Material"
         return context
 
 class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):

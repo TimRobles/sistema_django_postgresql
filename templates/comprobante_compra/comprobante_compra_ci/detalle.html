@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Comprobante de Compra
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Comprobante de Compra</h3>
+    {% if contexto_comprobante_compra_pi.estado == 1 %}
+        <button data-form-url="{% url 'comprobante_compra_app:recepcion_comprobante_compra_pi' contexto_comprobante_compra_ci.slug %}"
+            class="delete btn btn-primary">
+            Finalizar
+        </button>
+    {% endif %}
+    <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle' contexto_comprobante_compra_ci.slug %}"
+    class="btn btn-primary">
+        Ver PI
+    </a>
+    <br>
+    <div id="tabla">
+        {% include 'comprobante_compra/comprobante_compra_ci/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

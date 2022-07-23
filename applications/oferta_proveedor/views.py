@@ -116,8 +116,9 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
 
     def get_context_data(self, **kwargs):
         context = super(OfertaProveedorDetalleUpdateView, self).get_context_data(**kwargs)
-        context['accion']="Actualizar"
-        context['titulo']="Precios"
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precios"
+        context['material'] = self.object.proveedor_material
         return context
 
 

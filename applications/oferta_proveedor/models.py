@@ -74,7 +74,10 @@ class OfertaProveedorDetalle(models.Model):
     class Meta:
         verbose_name = 'Oferta Proveedor Detalle'
         verbose_name_plural = 'Ofertas Proveedor Detalle'
-        ordering = ['item',]
+        ordering = [
+            'oferta_proveedor',
+            'item',
+            ]
 
     def __str__(self):
         return str(self.oferta_proveedor)

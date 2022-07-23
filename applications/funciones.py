@@ -214,6 +214,8 @@ def obtener_totales(cabecera):
         detalles = cabecera.OfertaProveedorDetalle_oferta_proveedor.all()
     elif hasattr(cabecera, 'ComprobanteCompraPIDetalle_comprobante_compra'):
         detalles = cabecera.ComprobanteCompraPIDetalle_comprobante_compra.all()
+    elif hasattr(cabecera, 'ComprobanteCompraCIDetalle_comprobante_compra'):
+        detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:

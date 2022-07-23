@@ -201,6 +201,8 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
             CORREOS_INTERNOS.append((usuario.email, '%s (%s)' % (usuario.username, usuario.email)))
 
         super(RequerimientoMaterialProveedorEnviarCorreoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
         self.fields['correos_internos'].choices = CORREOS_INTERNOS
         self.fields['correos_proveedor'].choices = CORREOS_PROVEEDOR
         self.fields['internacional_nacional'].choices = INTERNACIONAL_NACIONAL

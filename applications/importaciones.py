@@ -45,6 +45,8 @@ from .variables import *
 
 from datetime import date, datetime
 
+from django.shortcuts import render
+
 import simplejson
 
 def registro_guardar(form, request):
