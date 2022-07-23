@@ -25,7 +25,7 @@ def OfertaProveedorTabla(request):
         )
         return JsonResponse(data)
 
-class OfertaProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('oferta_proveedor.change_ofertaproveedor')
     model = OfertaProveedor
     template_name = "includes/formulario generico.html"
@@ -59,9 +59,57 @@ class OfertaProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(OfertaProveedorUpdateView, self).get_context_data(**kwargs)
+        context = super(OfertaProveedorFinalizarView, self).get_context_data(**kwargs)
         context['accion']="Finalizar"
         context['titulo']="Oferta Proveedor"
+        return context
+
+class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('oferta_proveedor.change_ofertaproveedor')
+    model = OfertaProveedor
+    template_name = "includes/eliminar generico.html"
+
+    # def dispatch(self, request, *args, **kwargs):
+    #     if not self.has_permission():
+    #         return render(request, 'includes/modal sin permiso.html')
+    #     return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
+
+    # def form_valid(self, form):
+    #     totales = obtener_totales(OfertaProveedor.objects.get(id=form.instance.id))
+    #     form.instance.estado = 3
+    #     form.instance.descuento_global = totales['descuento_global']
+    #     form.instance.total_descuento = totales['total_descuento']
+    #     form.instance.total_anticipo = totales['total_anticipo']
+    #     form.instance.total_gravada = totales['total_gravada']
+    #     form.instance.total_inafecta = totales['total_inafecta']
+    #     form.instance.total_exonerada = totales['total_exonerada']
+    #     form.instance.total_igv = totales['total_igv']
+    #     form.instance.total_gratuita = totales['total_gratuita']
+    #     form.instance.total_otros_cargos = totales['total_otros_cargos']
+    #     form.instance.total_icbper = totales['total_icbper']
+    #     form.instance.total = totales['total']
+    #     form.instance.slug = slug_aleatorio(OfertaProveedor)
+
+    #     registro_guardar(form.instance, self.request)
+    #     return super().form_valid(form)
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 3
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_RECHAZAR_OFERTA_PROVEEDOR)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(OfertaProveedorRechazarView, self).get_context_data(**kwargs)
+        context['accion'] = "Rechazar"
+        context['titulo'] = "Oferta Proveedor"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.requerimiento_material
         return context
 
 class OfertaProveedorDetailView(PermissionRequiredMixin, DetailView):
@@ -71,22 +119,23 @@ class OfertaProveedorDetailView(PermissionRequiredMixin, DetailView):
     context_object_name = 'contexto_oferta_proveedor'
 
     def get_context_data(self, **kwargs):
-        oferta_proveedor = OfertaProveedor.objects.get(id = self.kwargs['pk'])
+        oferta_proveedor = OfertaProveedor.objects.get(slug = self.kwargs['slug'])
         context = super(OfertaProveedorDetailView, self).get_context_data(**kwargs)
         context['materiales'] = OfertaProveedorDetalle.objects.ver_detalle(oferta_proveedor)
         context['archivos'] = ArchivoOfertaProveedor.objects.filter(oferta_proveedor = oferta_proveedor)
-        context['totales'] = obtener_totales(OfertaProveedor.objects.get(id=self.kwargs['pk']))
+        context['totales'] = obtener_totales(OfertaProveedor.objects.get(slug=self.kwargs['slug']))
         return context
 
-def OfertaProveedorDetailTabla(request, pk):
+def OfertaProveedorDetailTabla(request, slug):
     data = dict()
     if request.method == 'GET':
         template = 'oferta_proveedor/oferta_proveedor/detalle_tabla.html'
         context = {}
-        oferta_proveedor = OfertaProveedor.objects.get(id = pk)
+        oferta_proveedor = OfertaProveedor.objects.get(slug = slug)
         context['contexto_oferta_proveedor'] = oferta_proveedor
         context['materiales'] = OfertaProveedorDetalle.objects.ver_detalle(oferta_proveedor)
         context['archivos'] = ArchivoOfertaProveedor.objects.filter(oferta_proveedor = oferta_proveedor)
+        context['totales'] = obtener_totales(OfertaProveedor.objects.get(slug=slug))
 
         data['table'] = render_to_string(
             template,
@@ -108,7 +157,7 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'pk':self.get_object().oferta_proveedor.id})
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.get_object().oferta_proveedor.slug})
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -189,7 +238,7 @@ class ArchivoOfertaProveedorCreateView(PermissionRequiredMixin, BSModalCreateVie
     form_class = ArchivoOfertaProveedorForm
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'pk':self.kwargs['oferta_proveedor_id']})
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -197,7 +246,7 @@ class ArchivoOfertaProveedorCreateView(PermissionRequiredMixin, BSModalCreateVie
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.oferta_proveedor = OfertaProveedor.objects.get(id = self.kwargs['oferta_proveedor_id'])
+        form.instance.oferta_proveedor = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
 
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
@@ -216,7 +265,7 @@ class ArchivoOfertaProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteVie
     template_name = "includes/eliminar generico.html" 
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'pk':self.object.oferta_proveedor_id})
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.object.oferta_proveedor.slug})
 
     def get_context_data(self, **kwargs):
         context = super(ArchivoOfertaProveedorDeleteView, self).get_context_data(**kwargs)

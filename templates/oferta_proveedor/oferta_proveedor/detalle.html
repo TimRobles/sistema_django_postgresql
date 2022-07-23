@@ -12,6 +12,11 @@
             class="delete badge bg-primary">
             Finalizar Oferta
         </button>
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_rechazar' contexto_oferta_proveedor.id %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+            class="delete badge bg-primary">
+            Rechazar Oferta
+        </button>
         <button onclick="history.back()" class="badge bg-primary">Regresar</button>
     </h3>
     <br>

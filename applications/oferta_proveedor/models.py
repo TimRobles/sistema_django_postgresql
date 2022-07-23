@@ -12,6 +12,7 @@ class OfertaProveedor(models.Model):
     ESTADOS_OFERTA_PROVEEDOR = (
         (1, 'PENDIENTE'),
         (2, 'FINALIZADO'),
+        (3, 'RECHAZADO'),
     )
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
