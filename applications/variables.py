@@ -126,3 +126,6 @@ COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
 
 EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'
+
+
+MENSAJE_ANULAR_ORDEN_COMPRA = 'Operación exitosa: La Orden de Compra fue anulada.'
