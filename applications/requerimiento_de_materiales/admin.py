@@ -38,6 +38,7 @@ class ListaRequerimientoMaterialDetalleAdmin(admin.ModelAdmin):
 
 class RequerimientoMaterialProveedorAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'titulo',
         'fecha',
         'proveedor',
@@ -45,7 +46,9 @@ class RequerimientoMaterialProveedorAdmin(admin.ModelAdmin):
         'slug',
         'estado',
         'created_at',
+        'created_by',
         'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):
@@ -56,10 +59,15 @@ class RequerimientoMaterialProveedorAdmin(admin.ModelAdmin):
 
 class RequerimientoMaterialProveedorDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'item',
         'id_requerimiento_material_detalle',
         'cantidad',
         'requerimiento_material',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):

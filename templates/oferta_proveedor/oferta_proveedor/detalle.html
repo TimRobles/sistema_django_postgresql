@@ -12,12 +12,25 @@
             class="delete badge bg-primary">
             Finalizar Oferta
         </button>
-        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_rechazar' contexto_oferta_proveedor.id %}"
-            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
-            class="delete badge bg-primary">
-            Rechazar Oferta
-        </button>
         <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+    </h3>
+    <br>
+    <h3>
+    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_rechazar' contexto_oferta_proveedor.id %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+        class="delete badge bg-primary">
+        Rechazar Oferta
+    </button>
+    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_nuevo_requerimiento' contexto_oferta_proveedor.slug %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+        class="delete badge bg-primary">
+        Generar Nuevo Requerimiento
+    </button>
+    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_nuevo_requerimiento' contexto_oferta_proveedor.slug %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+        class="delete badge bg-primary">
+        Generar Orden de Compra
+    </button>
     </h3>
     <br>
     <div class="table-responsive">
@@ -43,10 +56,16 @@
     </div>
     <br>
     <h3>Materiales
-        <button data-form-url="#"
-            data-table-url="#"
+
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_material' contexto_oferta_proveedor.slug %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
             class="create badge bg-primary">
             Agregar Material
+        </button>
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_crear_material' contexto_oferta_proveedor.slug %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+        class="create badge bg-primary">
+            Crear Material
         </button>
     </h3>
     <div id="tabla">
