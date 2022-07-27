@@ -6,7 +6,27 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Orden Compra</h3>
+    <h3>Detalle Orden Compra         
+        <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
+    </h3>
+
+    <button 
+        class="create btn btn-primary">
+        Nueva Versión
+    </button>
+
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.id %}"
+        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
+        class="create btn btn-primary">
+        Enviar Correo
+    </button>       
+    
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_pdf_anular' contexto_orden_compra.id %}"
+        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
+        class="create btn btn-primary">
+        Motivo Anulación
+    </button>    
+
     <br>
     <div class="table-responsive">
         <table class="table">
@@ -16,6 +36,7 @@
                     <th>N° Orden Compra</th>
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
+                    <th>Estado</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,6 +45,7 @@
                     <td>{{ contexto_orden_compra.numero_orden_compra }}</td>
                     <td>{{ contexto_orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
                     <td>{{ contexto_orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+                    <td>{{ contexto_orden_compra.get_estado_display }}</td>
 
                 </tr>
             </tbody>

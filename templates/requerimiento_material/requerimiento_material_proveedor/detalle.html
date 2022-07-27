@@ -15,7 +15,7 @@
 
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_duplicar' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
-        class="delete btn btn-primary">
+        class="create btn btn-primary">
         Duplicar
     </button>
 
@@ -23,17 +23,10 @@
 
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_enviar_correo' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
-        class="delete btn btn-primary">
+        class="create btn btn-primary">
         Enviar Correo
     </button>    
     
-    <!-- <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_enviar_correo' requerimiento.id %}"
-        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_tabla' %}"
-        class="delete btn btn-primary">
-        Enviar Correo
-    </button>
-    <br> -->
-
     <div class="table-responsive">
         <table class="table">
             <thead>
