@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from applications.importaciones import *
 from applications.oferta_proveedor.models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
-from applications.oferta_proveedor.forms import ArchivoOfertaProveedorForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm
+from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm
 from applications.funciones import obtener_totales
 from applications.funciones import slug_aleatorio
+from applications.requerimiento_de_materiales.models import ListaRequerimientoMaterialDetalle, RequerimientoMaterialProveedor, RequerimientoMaterialProveedorDetalle
+from applications.material.models import ProveedorMaterial
 
 class OfertaProveedorListView(PermissionRequiredMixin, ListView):
     permission_required = ('oferta_proveedor.view_ofertaproveedor')
@@ -65,7 +67,7 @@ class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('oferta_proveedor.change_ofertaproveedor')
+    permission_required = ('oferta_proveedor.delete_ofertaproveedor')
     model = OfertaProveedor
     template_name = "includes/eliminar generico.html"
 
@@ -76,25 +78,6 @@ class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
-
-    # def form_valid(self, form):
-    #     totales = obtener_totales(OfertaProveedor.objects.get(id=form.instance.id))
-    #     form.instance.estado = 3
-    #     form.instance.descuento_global = totales['descuento_global']
-    #     form.instance.total_descuento = totales['total_descuento']
-    #     form.instance.total_anticipo = totales['total_anticipo']
-    #     form.instance.total_gravada = totales['total_gravada']
-    #     form.instance.total_inafecta = totales['total_inafecta']
-    #     form.instance.total_exonerada = totales['total_exonerada']
-    #     form.instance.total_igv = totales['total_igv']
-    #     form.instance.total_gratuita = totales['total_gratuita']
-    #     form.instance.total_otros_cargos = totales['total_otros_cargos']
-    #     form.instance.total_icbper = totales['total_icbper']
-    #     form.instance.total = totales['total']
-    #     form.instance.slug = slug_aleatorio(OfertaProveedor)
-
-    #     registro_guardar(form.instance, self.request)
-    #     return super().form_valid(form)
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -113,7 +96,7 @@ class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 class OfertaProveedorDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('oferta_proveedor.view_OfertaProveedordetalle')
+    permission_required = ('oferta_proveedor.view_archivoofertaproveedor')
     model = OfertaProveedor
     template_name = "oferta_proveedor/oferta_proveedor/detalle.html"
     context_object_name = 'contexto_oferta_proveedor'
@@ -170,69 +153,135 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         context['material'] = self.object.proveedor_material
         return context
 
+class OfertaProveedorDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('oferta_proveedor.delete_ofertaproveedordetalle')
+    model = OfertaProveedorDetalle
+    template_name = "includes/eliminar generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.get_object().oferta_proveedor.slug})
 
-# class MaterialOfertaProveedorDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
-#     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedordetalle')
-#     template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
-#     form_class = RequerimientoMaterialProveedorDetalleForm
-#     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
+    def delete(self, request, *args, **kwargs):
+        materiales = OfertaProveedorDetalle.objects.filter(oferta_proveedor=self.get_object().oferta_proveedor)
+        contador = 1
+        for material in materiales:
+            if material == self.get_object():continue
+            material.item = contador
+            material.save()
+            contador += 1
 
-#     def form_valid(self, form):
-#         if self.request.session['primero']:
-#             registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
-#             item = len(registro.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all())
-#             material = form.cleaned_data.get('material')
-#             cantidad = form.cleaned_data.get('cantidad')
-#             # comentario = form.cleaned_data.get('comentario')
-#             print('////////////////////////////////////////////')
-#             print(registro)
-#             print(item)
-#             print(material)
-#             print(material.id)
-#             print('////////////////////////////////////////////')
+        return super().delete(request, *args, **kwargs)
 
-#             obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
-#                 # content_type = ContentType.objects.get_for_model(material),
-#                 id_registro = material.id,
-#                 lista_requerimiento_material = registro,
-#             )
-#             if created:
-#                 obj.item = item + 1
-#                 obj.cantidad = cantidad
-#                 # obj.comentario = comentario
-#             else:
-#                 obj.cantidad = obj.cantidad + cantidad
-#                 # if obj.comentario[-len(' | ' + comentario):] != ' | ' + comentario:
-#                 #     obj.comentario = obj.comentario + ' | ' + comentario
+    def get_context_data(self, **kwargs):
+        context = super(OfertaProveedorDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material."
+        context['item'] = self.get_object().item
+        context['dar_baja'] = "true"
+        return context
 
+class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
+    template_name = "oferta_proveedor/oferta_proveedor/form_material.html"
+    form_class = AgregarMaterialOfertaProveedorForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
 
-#             registro_guardar(obj, self.request)
-#             obj.save()
-#             self.request.session['primero'] = False
-#         return super().form_valid(form)
-        
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
+            item = len(registro.OfertaProveedorDetalle_oferta_proveedor.all())
+            material = form.cleaned_data.get('material')
+            cantidad = form.cleaned_data.get('cantidad')
 
-#     def get_form_kwargs(self):
-#         registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
-#         materiales = registro.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all()
-#         kwargs = super().get_form_kwargs()
-#         kwargs['materiales'] = materiales
-#         return kwargs
+            obj, created = OfertaProveedorDetalle.objects.get_or_create(
+                proveedor_material = material,
+                oferta_proveedor = registro,
+            )
+            if created:
+                obj.item = item + 1
+                obj.cantidad = cantidad
 
-#     def get_context_data(self, **kwargs):
-#         self.request.session['primero'] = True
-#         context = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_context_data(**kwargs)
-#         context['accion'] = 'Agregar'
-#         context['titulo'] = 'Material '
-#         return context
+            else:
+                obj.cantidad = obj.cantidad + cantidad
 
+            registro_guardar(obj, self.request)
+            obj.save()
+            self.request.session['primero'] = False
+        return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        registro = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
+        proveedor = registro.requerimiento_material.proveedor.id
+        materiales = ProveedorMaterial.objects.filter(proveedor__id = proveedor)
 
+        kwargs = super().get_form_kwargs()
+        kwargs['materiales'] = materiales
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(MaterialOfertaProveedorAgregarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Material '
+        return context
+
+class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
+    template_name = "includes/formulario generico.html"
+    form_class = CrearMaterialOfertaProveedorForm
+    
+    def get_success_url(self, **kwargs):
+            return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
+            proveedor = registro.requerimiento_material.proveedor
+            item = len(registro.OfertaProveedorDetalle_oferta_proveedor.all())
+            name = form.cleaned_data.get('name')
+            brand = form.cleaned_data.get('brand')
+            description = form.cleaned_data.get('description')
+            
+            proveedor_material, created = ProveedorMaterial.objects.get_or_create(
+                proveedor = proveedor,
+                name = name.upper(),
+                brand = brand.upper(),
+                description = description.upper(),
+            )
+            if created:
+                proveedor_material.created_by = self.request.user
+                proveedor_material.updated_by = self.request.user
+                proveedor_material.save()
+
+            oferta_proveedor_detalle, created = OfertaProveedorDetalle.objects.get_or_create(
+                proveedor_material = proveedor_material,
+                oferta_proveedor = registro,
+            )
+            if created:
+                oferta_proveedor_detalle.item = item + 1
+                oferta_proveedor_detalle.created_by = self.request.user
+                oferta_proveedor_detalle.updated_by = self.request.user
+                oferta_proveedor_detalle.save()
+
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(MaterialOfertaProveedorCrearView, self).get_context_data(**kwargs)
+        context['accion'] = 'Crear'
+        context['titulo'] = 'Material '
+        return context
 
 class ArchivoOfertaProveedorCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('oferta_proveedor.add_ofertaproveedordetalle')
+    permission_required = ('oferta_proveedor.add_archivoofertaproveedor')
     model = ArchivoOfertaProveedor
     template_name = "includes/formulario generico.html"
     form_class = ArchivoOfertaProveedorForm
@@ -260,7 +309,7 @@ class ArchivoOfertaProveedorCreateView(PermissionRequiredMixin, BSModalCreateVie
         return context
 
 class ArchivoOfertaProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('oferta_proveedor.delete_documento')
+    permission_required = ('oferta_proveedor.delete_archivoofertaproveedor')
     model =ArchivoOfertaProveedor
     template_name = "includes/eliminar generico.html" 
 
@@ -273,4 +322,67 @@ class ArchivoOfertaProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteVie
         context['titulo']="Documento"
         return context
 
+class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('requerimiento_de_materiales.change_ofertaproveedordetalle')
 
+    model = OfertaProveedor
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.session['primero']:
+            self.object = self.get_object()
+            oferta = self.get_object()
+            requerimiento = RequerimientoMaterialProveedor.objects.create(
+                titulo = oferta.requerimiento_material.titulo,
+                proveedor = oferta.requerimiento_material.proveedor,
+                interlocutor_proveedor = oferta.requerimiento_material.interlocutor_proveedor,
+                lista_requerimiento = oferta.requerimiento_material.lista_requerimiento,
+                requerimiento_material_anterior = oferta.requerimiento_material.requerimiento_material_anterior,
+                comentario = oferta.requerimiento_material.comentario,
+                version = oferta.requerimiento_material.version + 1,
+                slug = slug_aleatorio(RequerimientoMaterialProveedor),
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+
+            oferta_detalle = oferta.OfertaProveedorDetalle_oferta_proveedor.all()
+            for detalle in oferta_detalle:
+
+                id_lista_requerimiento, created = ListaRequerimientoMaterialDetalle.objects.get_or_create(
+                    content_type = detalle.proveedor_material.content_type,
+                    id_registro = detalle.proveedor_material.id_registro,
+                    lista_requerimiento_material = oferta.requerimiento_material.lista_requerimiento,
+                )
+                if created:
+                    id_lista_requerimiento.item = len(detalle.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all())
+                registro_guardar(id_lista_requerimiento, self.request)
+                id_lista_requerimiento.save()
+                
+                oferta_detalle = RequerimientoMaterialProveedorDetalle.objects.create(
+                    
+                    item = detalle.item,
+                    id_requerimiento_material_detalle = id_lista_requerimiento,
+                    cantidad = detalle.cantidad,
+                    requerimiento_material = requerimiento,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                    )
+            self.request.session['primero'] = False
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_GENERAR_REQUERIMIENTO_PROVEEDOR)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(OfertaProveedorGenerarNuevoRequerimientoView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Requerimiento Proveedor"
+        context['dar_baja'] = "true"
+        return context

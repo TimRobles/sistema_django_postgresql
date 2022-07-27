@@ -129,6 +129,7 @@ MENSAJE_REGISTRAR_SALIDA = 'Operación exitosa: La Hora de Salida fue registrada
 
 MENSAJE_ELIMINAR_ITEM = 'Operación exitosa: El registro fue eliminado.'
 MENSAJE_RECHAZAR_OFERTA_PROVEEDOR = 'Operación exitosa: La Oferta fue Rechazada.'
+MENSAJE_GENERAR_REQUERIMIENTO_PROVEEDOR = 'Operación exitosa: Generar Requerimiento Proveedor.'
 
 
 COLOR_DEFAULT = '#8B32A8'

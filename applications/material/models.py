@@ -260,8 +260,8 @@ class VideoMaterial(models.Model):
         return self.descripcion.__str__()+ " - " + self.material.__str__()
 
 class ProveedorMaterial(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
-    id_registro = models.IntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
+    id_registro = models.IntegerField(blank=True, null=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100)
     brand = models.CharField('Brand', max_length=100)

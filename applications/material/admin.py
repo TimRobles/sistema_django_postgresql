@@ -227,12 +227,17 @@ class VideoMaterialAdmin(admin.ModelAdmin):
 
 class ProveedorMaterialAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'content_type',
         'id_registro',
         'proveedor',
         'name',
         'brand',
         'description',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):
