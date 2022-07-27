@@ -116,6 +116,7 @@ INCOTERMS = (
 )
 
 ESTADOS_ORDEN_COMPRA = (
+    (0, 'NUEVA VERSIÓN'),
     (1, 'POR VERIFICAR'),
     (2, 'ENVIADO'),
     (3, 'ANULADO'),

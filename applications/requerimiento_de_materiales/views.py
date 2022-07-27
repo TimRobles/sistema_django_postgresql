@@ -445,7 +445,6 @@ class RequerimientoMaterialProveedorDuplicarView(PermissionRequiredMixin, BSModa
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorDuplicarView, self).get_context_data(**kwargs)
         context['accion']="Duplicar"
@@ -517,16 +516,21 @@ class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
     def form_valid(self, form):
         if self.request.session['primero']:
             registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
-            item = len(registro.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all())
+            item = len(registro.RequerimientoMaterialProveedorDetalle_requerimiento_material.all())
             material = form.cleaned_data.get('material')
             cantidad = form.cleaned_data.get('cantidad')
-            # comentario = form.cleaned_data.get('comentario')
+
+            requerimiento_material_detalle = ListaRequerimientoMaterialDetalle.objects.get(
+                content_type = ContentType.objects.get_for_model(material),
+                id_registro = material.id ,
+                lista_requerimiento_material = registro.lista_requerimiento,
+            )
 
             obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
-                # content_type = ContentType.objects.get_for_model(material),
-                id_registro = material.id,
-                lista_requerimiento_material = registro,
+                id_requerimiento_material_detalle = requerimiento_material_detalle,
+                requerimiento_material = registro
             )
+
             if created:
                 obj.item = item + 1
                 obj.cantidad = cantidad
@@ -621,7 +625,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 requerimiento_material=requerimiento,
                 moneda=moneda,
             )
-            
+
             requerimiento_detalle = requerimiento.RequerimientoMaterialProveedorDetalle_requerimiento_material.all()
             for detalle in requerimiento_detalle:
 
@@ -631,7 +635,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                     proveedor = requerimiento.proveedor,
                     estado_alta_baja = 1,
                 )
-                
+
                 oferta_detalle = OfertaProveedorDetalle.objects.create(
                     item=detalle.item,
                     proveedor_material=proveedor_material,
@@ -650,12 +654,12 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 correo.send()
                 requerimiento.estado = 3
                 requerimiento.save()
-                
+
                 messages.success(self.request, 'Correo enviado.')
                 self.request.session['primero'] = False
             except:
                 messages.warning(self.request, 'Hubo un error al enviar el correo.')
-        
+
         # registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -670,6 +674,9 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
         context['accion']="Enviar"
         context['titulo']="Correos"
         return context
+
+
+
 
 
 class ProveedorForm(forms.Form):

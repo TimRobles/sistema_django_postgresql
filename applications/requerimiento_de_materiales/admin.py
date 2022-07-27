@@ -8,9 +8,12 @@ from .models import (
 
 class ListaRequerimientoMaterialAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'titulo',
         'created_at',
+        'created_by',
         'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):
@@ -21,12 +24,18 @@ class ListaRequerimientoMaterialAdmin(admin.ModelAdmin):
 
 class ListaRequerimientoMaterialDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
+        'lista_requerimiento_material',
         'item',
         'content_type',
         'id_registro',
         'cantidad',
         'lista_requerimiento_material',
         'comentario',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):
@@ -38,6 +47,8 @@ class ListaRequerimientoMaterialDetalleAdmin(admin.ModelAdmin):
 
 class RequerimientoMaterialProveedorAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
+        'lista_requerimiento',
         'titulo',
         'fecha',
         'proveedor',
@@ -45,7 +56,9 @@ class RequerimientoMaterialProveedorAdmin(admin.ModelAdmin):
         'slug',
         'estado',
         'created_at',
+        'created_by',
         'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):
@@ -56,10 +69,16 @@ class RequerimientoMaterialProveedorAdmin(admin.ModelAdmin):
 
 class RequerimientoMaterialProveedorDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'item',
+        'requerimiento_material',
         'id_requerimiento_material_detalle',
         'cantidad',
         'requerimiento_material',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):

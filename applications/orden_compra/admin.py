@@ -9,6 +9,7 @@ class OrdenCompraAdmin(admin.ModelAdmin):
 
     list_display = (
         'id',
+        'oferta_proveedor',
         'internacional_nacional',
         'incoterms',
         'numero_orden_compra',
