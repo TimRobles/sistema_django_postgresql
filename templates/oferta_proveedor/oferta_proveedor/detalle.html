@@ -7,14 +7,15 @@
 
 {% block contenido %}
     <h3>Detalle Oferta Proveedor
-        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_finalizar' contexto_oferta_proveedor.id %}"
-            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
-            class="delete badge bg-primary">
-            Finalizar Oferta
-        </button>
+        {% if contexto_oferta_proveedor.estado == 1 %}
+            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_finalizar' contexto_oferta_proveedor.id %}"
+                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+                class="delete badge bg-primary">
+                Finalizar Oferta
+            </button>
+        {% endif %}
         <button onclick="history.back()" class="badge bg-primary">Regresar</button>
     </h3>
-    <br>
     <h3>
     <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_rechazar' contexto_oferta_proveedor.id %}"
         data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
@@ -56,17 +57,18 @@
     </div>
     <br>
     <h3>Materiales
-
-        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_material' contexto_oferta_proveedor.slug %}"
-            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
-            class="create badge bg-primary">
-            Agregar Material
-        </button>
-        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_crear_material' contexto_oferta_proveedor.slug %}"
-        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
-        class="create badge bg-primary">
-            Crear Material
-        </button>
+        {% if contexto_oferta_proveedor.estado == 1 %}
+            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_material' contexto_oferta_proveedor.slug %}"
+                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                class="create badge bg-primary">
+                Agregar Material
+            </button>
+            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_crear_material' contexto_oferta_proveedor.slug %}"
+                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                class="create badge bg-primary">
+                Crear Material
+            </button>
+        {% endif %}
     </h3>
     <div id="tabla">
         {% include 'oferta_proveedor/oferta_proveedor/detalle_tabla.html' %}

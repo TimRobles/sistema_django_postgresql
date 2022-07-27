@@ -273,22 +273,6 @@ class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView)
             self.request.session['primero'] = False
         return super().form_valid(form)
 
-    # def get_form_kwargs(self):
-        # registro = OfertaProveedorDetalle.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
-        # materiales = registro.proveedor_material.all()
-
-
-        # # print('****************************')
-        # # print(oferta_proveedor)
-        # # print('****************************')
-        # # materiales = OfertaProveedorDetalle.objects.ver_detalle(oferta_proveedor)
-        # print('****************************')
-        # print(materiales)
-        # print('****************************')
-        # kwargs = super().get_form_kwargs()
-        # kwargs['materiales'] = materiales
-        # return kwargs
-
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(MaterialOfertaProveedorCrearView, self).get_context_data(**kwargs)
@@ -402,9 +386,3 @@ class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSMo
         context['titulo'] = "Requerimiento Proveedor"
         context['dar_baja'] = "true"
         return context
-
-# ProveedorMaterial.objects.filter(proveedor__id = proveedor_id)
-
-# ProveedorMaterial.objects.create(
-#     content_type=
-# )

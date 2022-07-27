@@ -18,7 +18,9 @@
                 <th>Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
-                <th class="text-center">Acciones</th>
+                {% if contexto_oferta_proveedor.estado == 1 %}
+                    <th class="text-center">Acciones</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -41,18 +43,20 @@
                     <td class="text-end">{{ material.total|intcomma }}</td>
  
                     <td class="text-center text-nowrap">
-                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_material' material.id %}"
-                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
-                            data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_eliminar_material' material.id  %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                            <i class="bi-x-lg"></i>
-                        </button>
+                        {% if contexto_oferta_proveedor.estado == 1 %}
+                            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_material' material.id %}"
+                                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_eliminar_material' material.id  %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        {% endif %}
                     </td>
     
                 </tr>
