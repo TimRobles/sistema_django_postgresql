@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from applications.funciones import ver_proveedor
 from applications.rutas import ARCHIVO_RECEPCION_COMPRA_ARCHIVO, FOTO_RECEPCION_COMPRA_FOTO
 
 from applications.variables import ESTADO_COMPROBANTE
@@ -26,6 +27,18 @@ class RecepcionCompra(models.Model):
         verbose_name = 'Recepción de Compra'
         verbose_name_plural = 'Recepciones de Compras'
 
+    def proveedor(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return ver_proveedor(documento)[0]
+
+    def interlocutor_proveedor(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return ver_proveedor(documento)[1]
+
+    def sociedad(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return documento.sociedad
+
     def __str__(self):
         return self.numero_comprobante_compra
 
@@ -42,6 +55,10 @@ class ArchivoRecepcionCompra(models.Model):
     class Meta:
         verbose_name = 'Archivo de Comprobante de Compra PI'
         verbose_name_plural = 'Archivos de Comprobantes de Compra PIs'
+        ordering = [
+            'recepcion_compra',
+            'archivo',
+            ]
 
     def __str__(self):
         return self.archivo
@@ -59,6 +76,10 @@ class FotoRecepcionCompra(models.Model):
     class Meta:
         verbose_name = 'Foto de Comprobante de Compra PI'
         verbose_name_plural = 'Fotos de Comprobantes de Compra PIs'
+        ordering = [
+            'recepcion_compra',
+            'foto',
+            ]
 
     def __str__(self):
         return self.foto

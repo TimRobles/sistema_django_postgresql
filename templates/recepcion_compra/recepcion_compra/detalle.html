@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Recepción de Compra
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Recepción de Compra</h3>
+    <a href="{{ regresar }}" class="btn btn-primary">Ver Notas de Ingreso</a>
+    <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_finalizar' contexto_recepcion_compra.id %}"
+        class="delete btn btn-primary">
+        Generar Nota de Ingreso
+    </button>
+    <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+    <br>
+    <div id="tabla">
+        {% include 'recepcion_compra/recepcion_compra/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

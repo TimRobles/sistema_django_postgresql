@@ -9,6 +9,8 @@
                 <th>Proveedor</th>
                 <th>Interlocutor</th>
                 <th>Sociedad</th>
+                <th>Archivo</th>
+                <th>Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -18,6 +20,8 @@
                 <td>{{ contexto_comprobante_compra_ci.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
                 <td>{{ contexto_comprobante_compra_ci.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
                 <td>{{ contexto_comprobante_compra_ci.sociedad }}</td>
+                <td><a href="{{ MEDIA_URL }}{{ contexto_comprobante_compra_ci.archivo }}" target="_blank">Ver Archivo</a></td>
+                <td>{{ contexto_comprobante_compra_ci.get_estado_display }}</td>
             </tr>
         </tbody>
     </table>
@@ -63,6 +67,7 @@
                     <td class="text-end">{{ material.igv|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.total|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
+                        {% if contexto_comprobante_compra_ci.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_actualizar_material' material.id %}"
                             data-table-url="{% url 'comprobante_compra_app:comprobante_compra_ci_detalle_tabla' contexto_comprobante_compra_ci.slug %}"
                             data-keep-open="true"
@@ -70,6 +75,7 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}    

@@ -79,6 +79,12 @@ ESTADOS = (
     (2, 'Baja'),
     )
 
+ESTADO_NOTA_INGRESO = (
+    (1, 'BORRADOR'),
+    (2, 'FINALIZADO'),
+    (3, 'ANULADO'),
+    )
+
 ESTADO_COMPROBANTE = (
     (1, 'PENDIENTE'),
     (2, 'ANULADO'),

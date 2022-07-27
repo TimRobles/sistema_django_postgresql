@@ -1,5 +1,5 @@
 from django.db import models
-from applications.comprobante_compra.managers import ComprobanteCompraCIDetalleManager, ComprobanteCompraPIDetalleManager
+from applications.comprobante_compra.managers import ComprobanteCompraCIDetalleManager, ComprobanteCompraPIDetalleManager, ComprobanteCompraPIManager
 from applications.datos_globales.models import Moneda
 from django.conf import settings
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
@@ -41,9 +41,17 @@ class ComprobanteCompraPI(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraPI_updated_by', editable=False)
 
+    objects = ComprobanteCompraPIManager()
+
     class Meta:
         verbose_name = 'Comprobante de Compra PI'
         verbose_name_plural = 'Comprobantes de Compra PIs'
+
+    def no_existe_CI(self):
+        if self.ComprobanteCompraCI_comprobante_compra_PI:
+            return False
+        else:
+            return True
 
     def __str__(self):
         return str(self.numero_comprobante_compra)

@@ -209,6 +209,19 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     return respuesta
 
 
+def ver_proveedor(documento):
+    if hasattr(documento, 'OfertaProveedorDetalle_oferta_proveedor'):
+        proveedor = documento.requerimiento_material.proveedor
+        interlocutor_proveedor = documento.requerimiento_material.interlocutor_proveedor
+    elif hasattr(documento, 'ComprobanteCompraPIDetalle_comprobante_compra'):
+        proveedor = documento.orden_compra.oferta_proveedor.requerimiento_material.proveedor
+        interlocutor_proveedor = documento.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor
+    elif hasattr(documento, 'ComprobanteCompraCIDetalle_comprobante_compra'):
+        proveedor = documento.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.proveedor
+        interlocutor_proveedor = documento.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor
+    return proveedor, interlocutor_proveedor
+
+
 def obtener_totales(cabecera):
     if hasattr(cabecera, 'OfertaProveedorDetalle_oferta_proveedor'):
         detalles = cabecera.OfertaProveedorDetalle_oferta_proveedor.all()

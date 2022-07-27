@@ -23,6 +23,8 @@ urlpatterns = [
     path('oferta_proveedor/', include('applications.oferta_proveedor.urls')),
     path('orden_compra/', include('applications.orden_compra.urls')),
     path('comprobante_compra/', include('applications.comprobante_compra.urls')),
+    path('recepcion_compra/', include('applications.recepcion_compra.urls')),
+    path('nota_ingreso/', include('applications.nota_ingreso.urls')),
 
 ]
 

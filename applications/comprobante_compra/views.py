@@ -1,4 +1,3 @@
-from requests import request
 from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPILogisticoForm, RecepcionComprobanteCompraPIForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
 from applications.funciones import obtener_totales
@@ -26,6 +25,13 @@ class ComprobanteCompraPIDetailView(DetailView):
         context['materiales'] = ComprobanteCompraPIDetalle.objects.ver_detalle(self.get_object())
         context['archivos'] = ArchivoComprobanteCompraPI.objects.filter(comprobante_compra=self.get_object())
         context['totales'] = obtener_totales(self.get_object())
+        try:
+            context['contexto_recepcion_compra'] = RecepcionCompra.objects.get(
+                                                        content_type=ContentType.objects.get_for_model(self.get_object()),
+                                                        id_registro=self.get_object().id,
+                                                    )
+        except:
+            context['contexto_recepcion_compra'] = None
         return context
     
 
@@ -287,4 +293,34 @@ class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdat
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
         context['material'] = str(self.object.content_type.get_object_for_this_type(id = self.object.id_registro))
+        return context
+
+
+class ComprobanteCompraCIFinalizarView(BSModalDeleteView):
+    model = ComprobanteCompraCI
+    template_name = "includes/eliminar generico.html"
+    context_object_name = 'contexto_comprobante_compra_ci'
+
+    # def dispatch(self, request, *args, **kwargs):
+    #     if not self.has_permission():
+    #         return render(request, 'includes/modal sin permiso.html')
+    #     return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_compra_app:comprobante_compra_ci_detalle', kwargs={'slug':self.get_object().slug})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_COMPROBANTE_COMPRA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraCIFinalizarView, self).get_context_data(**kwargs)
+        context['accion'] = "Finalizar"
+        context['titulo'] = "Comprobante"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.numero_comprobante_compra
         return context
