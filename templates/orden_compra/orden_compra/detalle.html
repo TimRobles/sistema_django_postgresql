@@ -10,7 +10,8 @@
         <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
     </h3>
 
-    <button 
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_nueva_version' contexto_orden_compra.id %}"
+        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="create btn btn-primary">
         Nueva Versión
     </button>
@@ -21,12 +22,11 @@
         Enviar Correo
     </button>       
     
-    <button data-form-url="{% url 'orden_compra_app:orden_compra_pdf_anular' contexto_orden_compra.id %}"
-        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
-        class="create btn btn-primary">
-        Motivo Anulación
-    </button>    
-
+    
+    {% if contexto_orden_compra.estado == 3 %}
+        <a href="{% url 'orden_compra_app:orden_compra_pdf_anular' contexto_orden_compra.slug  %}" target="_blank"><span class="btn btn-primary">Motivo Anulación</span></a>
+    {% endif %}
+        
     <br>
     <div class="table-responsive">
         <table class="table">

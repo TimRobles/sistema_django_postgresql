@@ -38,7 +38,8 @@ def OrdenCompraTabla(request):
 
 class OrdenCompraDeleteView(BSModalDeleteView):
     model = OrdenCompra
-    template_name = "includes/eliminar generico.html"
+    # template_name = "includes/eliminar generico.html"
+    template_name = "includes/formulario generico.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
 
     def delete(self, request, *args, **kwargs):
@@ -51,10 +52,10 @@ class OrdenCompraDeleteView(BSModalDeleteView):
 
     def get_context_data(self, **kwargs):
         context = super(OrdenCompraDeleteView, self).get_context_data(**kwargs)
-        context['accion'] = 'Anular Documento'
-        context['titulo'] = 'Orden de compra'
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Orden de Compra'
+        # context['item'] = self.object.id
         return context
-
 
 class OrdenCompraMotivoAnulacionPdfView(View):
     def get(self, request, *args, **kwargs):
@@ -97,6 +98,36 @@ class OrdenCompraMotivoAnulacionPdfView(View):
 
         return respuesta
 
+
+
+class OrdenCompraNuevaVersionView(BSModalDeleteView):
+    model = OrdenCompra
+    template_name = "includes/eliminar generico.html"
+    # template_name = "includes/formulario generico.html"
+    success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
+        print(self.object)
+        print(self.object.numero_orden_compra)
+        print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
+        # self.object.estado = 3
+        # registro_guardar(self.object, self.request)
+        # self.object.save()
+
+
+        
+        messages.success(request, MENSAJE_ANULAR_ORDEN_COMPRA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenCompraNuevaVersionView, self).get_context_data(**kwargs)
+        context['accion'] = 'Nueva Versión'
+        context['titulo'] = 'Orden de Compra'
+        # context['item'] = self.object.id
+        return context
 
 class OrdenCompraDetailView(DetailView):
     model = OrdenCompra
