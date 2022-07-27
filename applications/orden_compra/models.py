@@ -4,11 +4,11 @@ from applications.oferta_proveedor.models import OfertaProveedor,OfertaProveedor
 from applications.datos_globales.models import Moneda
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
-from applications.variables import ESTADOS_ORDEN_COMPRA, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
+from applications.variables import ESTADOS_ORDEN_COMPRA, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
 
 class OrdenCompra(models.Model):
     internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=1)
-    incoterms = models.IntegerField('INCOTERMS', choices=INTERNACIONAL_NACIONAL, blank=True, null=True)
+    incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
     oferta_proveedor = models.OneToOneField(OfertaProveedor, on_delete=models.PROTECT, blank=True, null=True)
     orden_compra_anterior = models.ForeignKey('self', on_delete=models.PROTECT,blank=True, null=True)
@@ -68,6 +68,10 @@ class OrdenCompraDetalle(models.Model):
     class Meta:
         verbose_name = 'Orden Compra Detalle'
         verbose_name_plural = 'Ordenes Compra Detalle'
+        ordering = [
+            'orden_compra',
+            'item',
+            ]
 
     def __str__(self):
-        return str(self.id)
+        return "%s - %s" % (self.item, str(self.content_type.get_object_for_this_type(id = self.id_registro)))

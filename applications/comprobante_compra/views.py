@@ -1,8 +1,11 @@
-from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraPILogisticoForm
-from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraPI, ComprobanteCompraPIDetalle
+from requests import request
+from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPILogisticoForm, RecepcionComprobanteCompraPIForm
+from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
 from applications.funciones import obtener_totales
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.recepcion_compra.models import RecepcionCompra
 
 # Create your views here.
 
@@ -92,4 +95,196 @@ class ArchivoComprobanteCompraPIDeleteView(BSModalDeleteView):
         context['accion'] = "Agregar"
         context['titulo'] = "Archivo"
         context['item'] = filename(self.object.archivo)
+        return context
+
+
+class RecepcionComprobanteCompraPIView(BSModalFormView):
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionComprobanteCompraPIForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':self.kwargs['slug']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            fecha_recepcion = form.cleaned_data['fecha_recepcion']
+            usuario_recepcion = form.cleaned_data['usuario_recepcion']
+            nro_bultos = form.cleaned_data['nro_bultos']
+            observaciones = form.cleaned_data['observaciones']
+
+            comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
+            detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
+            movimiento_inicial = TipoMovimiento.objects.get(codigo=100)
+            movimiento_final = TipoMovimiento.objects.get(codigo=200)
+
+            RecepcionCompra.objects.create(
+                numero_comprobante_compra = comprobante_pi.numero_comprobante_compra,
+                content_type = ContentType.objects.get_for_model(comprobante_pi),
+                id_registro = comprobante_pi.id,
+                fecha_recepcion = fecha_recepcion,
+                usuario_recepcion = usuario_recepcion,
+                nro_bultos = nro_bultos,
+                observaciones = observaciones,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+            for detalle in detalles:
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = movimiento_inicial,
+                    signo_factor_multiplicador = -1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
+                    id_registro_documento_proceso = comprobante_pi.id,
+                    almacen = None,
+                    sociedad = comprobante_pi.sociedad,
+                    movimiento_anterior = None,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = movimiento_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
+                    id_registro_documento_proceso = comprobante_pi.id,
+                    almacen = None,
+                    sociedad = comprobante_pi.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+            comprobante_pi.estado = 2
+            comprobante_pi.total = obtener_totales(comprobante_pi)['total']
+            registro_guardar(comprobante_pi, self.request)
+            comprobante_pi.save()
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RecepcionComprobanteCompraPIView, self).get_context_data(**kwargs)
+        context['accion'] = "Recibir"
+        context['titulo'] = "Comprobante de Compra"
+        return context
+
+
+class ComprobanteCompraCIRegistrarView(BSModalFormView):
+    template_name = "includes/formulario generico.html"
+    form_class = ComprobanteCompraCIForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_compra_app:comprobante_compra_ci_detalle', kwargs={'slug':self.kwargs['slug']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            numero_comprobante_compra = form.cleaned_data['numero_comprobante_compra']
+            fecha_comprobante = form.cleaned_data['fecha_comprobante']
+            archivo = form.cleaned_data['archivo']
+
+            comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
+            comprobante_ci = ComprobanteCompraCI.objects.create(
+                internacional_nacional = comprobante_pi.internacional_nacional,
+                incoterms = comprobante_pi.incoterms,
+                numero_comprobante_compra = numero_comprobante_compra,
+                comprobante_compra_PI = comprobante_pi,
+                sociedad = comprobante_pi.sociedad,
+                fecha_comprobante = fecha_comprobante,
+                moneda = comprobante_pi.moneda,
+                slug = comprobante_pi.slug,
+                archivo = archivo,
+                condiciones = comprobante_pi.condiciones,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+                )
+            detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
+            
+            for detalle in detalles:
+                ComprobanteCompraCIDetalle.objects.create(
+                    item = detalle.item,
+                    content_type = detalle.orden_compra_detalle.content_type,
+                    id_registro = detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad,
+                    precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
+                    precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                    precio_final_con_igv = detalle.precio_final_con_igv,
+                    descuento = detalle.descuento,
+                    sub_total = detalle.sub_total,
+                    igv = detalle.igv,
+                    total = detalle.total,
+                    tipo_igv = detalle.tipo_igv,
+                    comprobante_compra = comprobante_ci,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ComprobanteCompraCIRegistrarView, self).get_context_data(**kwargs)
+        context['accion'] = "Recibir"
+        context['titulo'] = "Comprobante de Compra"
+        return context
+
+
+class ComprobanteCompraCIDetailView(DetailView):
+    model = ComprobanteCompraCI
+    template_name = "comprobante_compra/comprobante_compra_ci/detalle.html"
+    context_object_name = 'contexto_comprobante_compra_ci'
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraCIDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = ComprobanteCompraCIDetalle.objects.ver_detalle(self.get_object())
+        context['totales'] = obtener_totales(self.get_object())
+        return context
+    
+
+def ComprobanteCompraCIDetailTabla(request, slug):
+    data = dict()
+    if request.method == 'GET':
+        template = 'comprobante_compra/comprobante_compra_ci/detalle_tabla.html'
+        context = {}
+        comprobante_compra = ComprobanteCompraCI.objects.get(slug = slug)
+        context['contexto_comprobante_compra_ci'] = comprobante_compra
+        context['materiales'] = ComprobanteCompraCIDetalle.objects.ver_detalle(comprobante_compra)
+        context['totales'] = obtener_totales(comprobante_compra)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('oferta_proveedor.change_ofertaproveedordetalle')
+
+    model = ComprobanteCompraCIDetalle
+    template_name = "oferta_proveedor/oferta_proveedor/actualizar.html"
+    form_class = ComprobanteCompraCIDetalleUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_compra_app:comprobante_compra_ci_detalle', kwargs={'slug':self.get_object().comprobante_compra.slug})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraCIDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precios"
+        context['material'] = str(self.object.content_type.get_object_for_this_type(id = self.object.id_registro))
         return context

@@ -6,3 +6,11 @@ class ComprobanteCompraPIDetalleManager(models.Manager):
         for dato in consulta:
             dato.material = dato.orden_compra_detalle.content_type.get_object_for_this_type(id=dato.orden_compra_detalle.id_registro)
         return consulta
+
+
+class ComprobanteCompraCIDetalleManager(models.Manager):
+    def ver_detalle(self, comprobante_compra_ci):
+        consulta = self.filter(comprobante_compra = comprobante_compra_ci)
+        for dato in consulta:
+            dato.material = dato.content_type.get_object_for_this_type(id=dato.id_registro)
+        return consulta

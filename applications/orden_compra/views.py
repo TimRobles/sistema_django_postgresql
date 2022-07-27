@@ -53,6 +53,27 @@ class OrdenCompraDeleteView(BSModalUpdateView):
         context['titulo'] = 'Orden de compra'
         return context
 
+
+class OrdenCompraDeleteView(BSModalDeleteView):
+    model = OrdenCompra
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 3
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_ANULAR_ORDEN_COMPRA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenCompraDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Anular Documento'
+        context['titulo'] = 'Orden de compra'
+        return context
+
+
 class OrdenCompraDetailView(DetailView):
     model = OrdenCompra
     template_name = "orden_compra/orden_compra/detalle.html"

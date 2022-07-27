@@ -8,13 +8,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        {% block arriba %}
-        {% endblock arriba %}
-            
-        {% include 'includes/formulario.html' %}
-
-        {% block abajo %}
-        {% endblock abajo %}            
+        {{ material }}
+        {% include 'includes/formulario.html' %}    
     </div>
     <div class="modal-footer">
         <button type="submit" class="btn btn-primary">{{ accion }}</button>
@@ -22,6 +17,4 @@
     </div>
 </form>
 
-{% block js %}
 <script src="{% static 'js/oferta_proveedor/oferta_proveedor/actualizar.js' %}?{{ cache_bust }}"></script>
-{% endblock js %}

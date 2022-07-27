@@ -81,8 +81,19 @@ ESTADOS = (
 
 ESTADO_COMPROBANTE = (
     (1, 'PENDIENTE'),
-    (2, 'CANCELADO'),
+    (2, 'ANULADO'),
+    )
+
+ESTADO_COMPROBANTE_PI = (
+    (0, 'PARCIAL'),
+    (1, 'PENDIENTE'),
+    (2, 'RECIBIDO'),
     (3, 'ANULADO'),
+    )
+
+ESTADO_COMPROBANTE_CI = (
+    (1, 'BORRADOR'),
+    (2, 'FINALIZADO'),
     )
 
 INTERNACIONAL_NACIONAL = (
@@ -106,6 +117,7 @@ ESTADOS_ORDEN_COMPRA = (
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
+MENSAJE_COMPROBANTE_COMPRA = 'Operación exitosa: El comprobante fue registrado.'
 MENSAJE_REGISTRAR_SALIDA = 'Operación exitosa: La Hora de Salida fue registrada.'
 
 MENSAJE_ELIMINAR_ITEM = 'Operación exitosa: El registro fue eliminado.'
@@ -117,3 +129,6 @@ COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
 
 EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'
+
+
+MENSAJE_ANULAR_ORDEN_COMPRA = 'Operación exitosa: La Orden de Compra fue anulada.'

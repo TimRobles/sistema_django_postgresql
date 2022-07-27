@@ -279,7 +279,10 @@ class ProveedorMaterial(models.Model):
         ordering = ['estado_alta_baja',]
 
     def __str__(self):
-        return "%s - %s - %s" % (self.name, self.brand, self.description)
+        if self.description:
+            return "%s - %s - %s" % (self.name, self.brand, self.description)
+        else:
+            return str(self.content_type.get_object_for_this_type(id = self.id_registro))
 
 class EquivalenciaUnidad(models.Model):
     cantidad_base = models.DecimalField('Cantidad Base', max_digits=6, decimal_places=2)

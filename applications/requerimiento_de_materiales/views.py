@@ -359,7 +359,7 @@ class RequerimientoMaterialProveedorUpdateView(PermissionRequiredMixin, BSModalU
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="material"
+        context['titulo']="Material"
         return context
 
 class RequerimientoMaterialProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteView):
@@ -474,7 +474,7 @@ class RequerimientoMaterialProveedorDetalleUpdateView(PermissionRequiredMixin, B
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorDetalleUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="material"
+        context['titulo']="Material"
         return context
 
 class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
@@ -601,7 +601,6 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
 
     template_name = "includes/formulario generico.html"
     form_class = RequerimientoMaterialProveedorEnviarCorreoForm
-    # success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
     success_url = reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
 
     def dispatch(self, request, *args, **kwargs):
@@ -656,7 +655,8 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 self.request.session['primero'] = False
             except:
                 messages.warning(self.request, 'Hubo un error al enviar el correo.')
-
+        
+        # registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_form_kwargs(self):
