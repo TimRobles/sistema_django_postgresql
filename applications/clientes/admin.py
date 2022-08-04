@@ -23,6 +23,10 @@ class ClienteAdmin(admin.ModelAdmin):
         'distrito',
         'estado_sunat',
         'condicion_sunat',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
     exclude = (
         'razon_social',
@@ -66,6 +70,10 @@ class InterlocutorClienteAdmin(admin.ModelAdmin):
         'nombre_completo',
         'tipo_documento',
         'numero_documento',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -81,6 +89,10 @@ class ClienteInterlocutorAdmin(admin.ModelAdmin):
         'interlocutor',
         'tipo_interlocutor',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -95,7 +107,11 @@ class CorreoClienteAdmin(admin.ModelAdmin):
         'correo',
         'cliente',
         'fecha_baja',
-        'estado',        
+        'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',        
         )
     exclude = (
         'fecha_baja',
@@ -115,6 +131,10 @@ class TelefonoInterlocutorClienteAdmin(admin.ModelAdmin):
         'interlocutor',
         'fecha_baja',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
     exclude = (
         'fecha_baja',
@@ -132,7 +152,11 @@ class CorreoInterlocutorClienteAdmin(admin.ModelAdmin):
         'correo',
         'interlocutor',
         'fecha_baja',
-        'estado',        
+        'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',        
         )
     exclude = (
         'fecha_baja',
@@ -153,7 +177,11 @@ class RepresentanteLegalClienteAdmin(admin.ModelAdmin):
         'tipo_representante_legal',
         'fecha_inicio',
         'fecha_baja',
-        'estado',        
+        'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',        
         )
     exclude = (
         'fecha_baja',

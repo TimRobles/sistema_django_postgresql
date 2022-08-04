@@ -23,6 +23,10 @@ class OfertaProveedorAdmin(admin.ModelAdmin):
         'slug',
         'condiciones',
         'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):

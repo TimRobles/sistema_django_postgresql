@@ -10,6 +10,10 @@ class NivelUnoAdmin(admin.ModelAdmin):
         'orden',
         'nombre',
         'icono',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     form = NivelUnoForm
@@ -27,6 +31,10 @@ class NivelDosAdmin(admin.ModelAdmin):
         'app_name',
         'nivel_uno',
         'icono',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     form = NivelDosForm
@@ -44,6 +52,10 @@ class NivelTresAdmin(admin.ModelAdmin):
         'url_name',
         'nivel_dos',
         'icono',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     form = NivelTresForm
@@ -61,6 +73,10 @@ class NivelCuatroAdmin(admin.ModelAdmin):
         'url_name',
         'nivel_tres',
         'icono',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     form = NivelCuatroForm

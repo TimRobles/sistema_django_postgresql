@@ -69,7 +69,7 @@ class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
 class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('oferta_proveedor.delete_ofertaproveedor')
     model = OfertaProveedor
-    template_name = "includes/eliminar generico.html"
+    template_name = "oferta_proveedor/oferta_proveedor/boton.html"
 
     # def dispatch(self, request, *args, **kwargs):
     #     if not self.has_permission():
@@ -90,7 +90,7 @@ class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
     def get_context_data(self, **kwargs):
         context = super(OfertaProveedorRechazarView, self).get_context_data(**kwargs)
         context['accion'] = "Rechazar"
-        context['titulo'] = "Oferta Proveedor"
+        context['titulo'] = "Oferta"
         context['dar_baja'] = "true"
         context['item'] = self.object.requerimiento_material
         return context
@@ -326,7 +326,7 @@ class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSMo
     permission_required = ('requerimiento_de_materiales.change_ofertaproveedordetalle')
 
     model = OfertaProveedor
-    template_name = "includes/eliminar generico.html"
+    template_name = "oferta_proveedor/oferta_proveedor/boton.html"
     success_url = reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
 
     def dispatch(self, request, *args, **kwargs):
@@ -383,6 +383,6 @@ class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSMo
         self.request.session['primero'] = True
         context = super(OfertaProveedorGenerarNuevoRequerimientoView, self).get_context_data(**kwargs)
         context['accion'] = "Generar"
-        context['titulo'] = "Requerimiento Proveedor"
+        context['titulo'] = "Nuevo Requerimiento"
         context['dar_baja'] = "true"
         return context

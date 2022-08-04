@@ -42,6 +42,10 @@ class MonedaAdmin(admin.ModelAdmin):
         'abreviatura',
         'simbolo',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
     
     form = MonedaForm
@@ -75,6 +79,10 @@ class UnidadAdmin(admin.ModelAdmin):
         'simbolo',
         'unidad_sunat',
         'magnitud',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -312,6 +320,10 @@ class CuentaBancariaSociedadAdmin(admin.ModelAdmin):
         'moneda',
         'sociedad',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -329,6 +341,10 @@ class CuentaBancariaPersonalAdmin(admin.ModelAdmin):
         'moneda',
         'usuario',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):

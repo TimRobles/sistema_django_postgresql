@@ -11,6 +11,10 @@ class SedeAdmin(admin.ModelAdmin):
         'ubigeo',
         'distrito',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
     exclude = (
         'ubigeo',

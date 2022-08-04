@@ -24,7 +24,10 @@ class SociedadAdmin(admin.ModelAdmin):
         'distrito',
         'estado_sunat',
         'condicion_sunat',
-
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
     exclude = (
         'tipo_documento',
@@ -55,6 +58,10 @@ class DocumentoAdmin(admin.ModelAdmin):
         'nombre_documento',
         'descripcion_documento',
         'documento',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -68,6 +75,10 @@ class TipoRepresentanteLegalAdmin(admin.ModelAdmin):
 
     list_display = (
         'nombre',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     form = TipoRepresentanteLegalForm
@@ -88,6 +99,10 @@ class RepresentanteLegalAdmin(admin.ModelAdmin):
         'fecha_registro',
         'fecha_baja',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
     exclude = (
         'fecha_baja',

@@ -14,6 +14,10 @@ class ProveedorAdmin(admin.ModelAdmin):
         'pais',
         'direccion',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -27,6 +31,10 @@ class InterlocutorProveedorAdmin(admin.ModelAdmin):
     list_display = (
         'nombres',
         'apellidos',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -41,6 +49,10 @@ class ProveedorInterlocutorAdmin(admin.ModelAdmin):
         'proveedor',
         'interlocutor',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
 
     def save_model(self, request, obj, form, change):
@@ -56,6 +68,10 @@ class TelefonoInterlocutorProveedorAdmin(admin.ModelAdmin):
         'interlocutor',
         'fecha_baja',
         'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
         )
     exclude = (
         'fecha_baja',
@@ -73,7 +89,11 @@ class CorreoInterlocutorProveedorAdmin(admin.ModelAdmin):
         'correo',
         'interlocutor',
         'fecha_baja',
-        'estado',        
+        'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',        
         )
     exclude = (
         'fecha_baja',
