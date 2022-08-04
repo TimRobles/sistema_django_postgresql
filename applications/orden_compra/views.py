@@ -102,9 +102,9 @@ class OrdenCompraMotivoAnulacionPdfView(View):
 
 class OrdenCompraNuevaVersionView(BSModalDeleteView):
     model = OrdenCompra
-    template_name = "includes/eliminar generico.html"
-    # template_name = "includes/formulario generico.html"
+    template_name = "orden_compra/orden_compra/nueva_version.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
+    context_object_name = 'contexto_orden_compra' 
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -118,7 +118,45 @@ class OrdenCompraNuevaVersionView(BSModalDeleteView):
         # self.object.save()
 
 
-        
+        obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
+        print(obj.oferta_proveedor)
+
+        orden = OrdenCompra.objects.create(
+            internacional_nacional=obj.internacional_nacional,
+            oferta_proveedor=obj.oferta_proveedor,
+            fecha_orden=obj.fecha_orden,
+            moneda=obj.moneda,
+        )
+
+
+        print('***********************')
+        print(obj.internacional_nacional)
+        print(obj.oferta_proveedor)
+        print(obj.moneda)
+        print(obj.fecha_orden)
+        print('***********************')
+
+        materiales = obj.OrdenCompraDetalle_orden_compra.all()
+        for material in materiales:
+            material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+
+            print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
+            print(material.material)
+            print(material.item)
+            print(material.content_type)
+            print(material.id_registro)
+            print(material.cantidad)
+            print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
+
+            orden_detalle = OrdenCompraDetalle.objects.create(
+                item=material.item,
+                content_type=material.content_type,
+                id_registro=material.id_registro,
+                cantidad=material.cantidad,
+                orden_compra=orden,
+                )
+
+
         messages.success(request, MENSAJE_ANULAR_ORDEN_COMPRA)
         return HttpResponseRedirect(self.get_success_url())
 
@@ -126,7 +164,6 @@ class OrdenCompraNuevaVersionView(BSModalDeleteView):
         context = super(OrdenCompraNuevaVersionView, self).get_context_data(**kwargs)
         context['accion'] = 'Nueva Versión'
         context['titulo'] = 'Orden de Compra'
-        # context['item'] = self.object.id
         return context
 
 class OrdenCompraDetailView(DetailView):
