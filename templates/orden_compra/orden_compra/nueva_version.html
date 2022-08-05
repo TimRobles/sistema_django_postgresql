@@ -1,0 +1,56 @@
+{% load widget_tweaks %}
+
+<form id="formulario" action="" method="post">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <p class="delete-text">¿Está seguro de
+            {% if dar_baja %}
+            {{ accion }}
+            {% else %}
+            anular
+            {% endif %}
+            la siguiente orden de compra?</p>
+        <p>
+            <strong>{{ item }}</strong>
+        </p>
+        {% for error in form.non_field_errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+        {% endfor %}
+
+        {% block abajo %}
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th>Fecha</th>
+                    <td class="text-center">{{ contexto_orden_compra.fecha_orden }}</td>
+                </tr>            
+                <tr>
+                    <th>N° Orden</th>
+                    <td class="text-center">{{ contexto_orden_compra.numero_orden_compra }}</td>
+                </tr>
+                <tr>
+                    <th>Proveedor</th>
+                    <td class="text-center">{{ contexto_orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
+                </tr>
+    
+                </tr>
+            </tbody>
+        </table>    
+        {% endblock abajo %}
+    </div>
+    <div class="modal-footer">
+        <button type="submit" id="delete-btn" class="btn btn-primary">
+            {% if dar_baja %}
+            {{ accion }}
+            {% else %}
+            Nueva Versión
+            {% endif %}
+        </button>
+    </div>
+
+
+</form>

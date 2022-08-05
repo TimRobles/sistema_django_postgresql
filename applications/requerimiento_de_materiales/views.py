@@ -558,7 +558,7 @@ class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
         self.request.session['primero'] = True
         context = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
-        context['titulo'] = 'Material '
+        context['titulo'] = 'Material'
         return context
 
 class RequerimientoMaterialProveedorPdfView(View):
@@ -614,16 +614,19 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
 
     def form_valid(self, form):
         if self.request.session['primero']:
-            requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
+            # requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
+            requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['slug'])
             correos_proveedor = form.cleaned_data['correos_proveedor']
             correos_internos = form.cleaned_data['correos_internos']
             internacional_nacional = form.cleaned_data['internacional_nacional']
             moneda = form.cleaned_data['moneda']
 
+
             oferta = OfertaProveedor.objects.create(
                 internacional_nacional=internacional_nacional,
                 requerimiento_material=requerimiento,
                 moneda=moneda,
+                slug = slug_aleatorio(OfertaProveedor),
             )
 
             requerimiento_detalle = requerimiento.RequerimientoMaterialProveedorDetalle_requerimiento_material.all()
@@ -665,7 +668,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
 
     def get_form_kwargs(self):
         kwargs = super(RequerimientoMaterialProveedorEnviarCorreoView, self).get_form_kwargs()
-        kwargs['proveedor'] = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id']).proveedor
+        kwargs['proveedor'] = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['slug']).proveedor
         return kwargs
 
     def get_context_data(self, **kwargs):

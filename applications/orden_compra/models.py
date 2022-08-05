@@ -18,13 +18,13 @@ class OrdenCompra(models.Model):
     descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2, default=0)
     total_descuento = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
     total_anticipo = models.DecimalField('Total anticipo', max_digits=14, decimal_places=2, default=0)
-    total_gravada = models.DecimalField('Total anticipo', max_digits=14, decimal_places=2, default=0)
-    total_inafacta = models.DecimalField('Total anticipo', max_digits=14, decimal_places=2, default=0)
-    total_exonerada = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
-    total_igv = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
-    total_gratuita = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
-    total_otros_cargos = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
-    total_isc = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=0)
+    total_gravada = models.DecimalField('Total gravada', max_digits=14, decimal_places=2, default=0)
+    total_inafacta = models.DecimalField('Total inafacta', max_digits=14, decimal_places=2, default=0)
+    total_exonerada = models.DecimalField('Total exonerada', max_digits=14, decimal_places=2, default=0)
+    total_igv = models.DecimalField('Total igv', max_digits=14, decimal_places=2, default=0)
+    total_gratuita = models.DecimalField('Total gratuita', max_digits=14, decimal_places=2, default=0)
+    total_otros_cargos = models.DecimalField('Total otros cargos', max_digits=14, decimal_places=2, default=0)
+    total_isc = models.DecimalField('Total isc', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     slug = models.SlugField(blank=True, null=True)
     archivo = models.FileField('Archivo',upload_to = 'file/orden_compra/', max_length=100, blank=True, null=True)
@@ -42,7 +42,7 @@ class OrdenCompra(models.Model):
         verbose_name_plural = 'Ordenes Compra'
 
     def __str__(self):
-        return str(self.numero_orden_compra)
+        return str(self.id)
 
 
 class OrdenCompraDetalle(models.Model):
