@@ -14,26 +14,30 @@
                 Finalizar Oferta
             </button>
         {% endif %}
+        {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 %}
+            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_rechazar' contexto_oferta_proveedor.id %}"
+                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+                class="delete badge bg-primary">
+                Rechazar Oferta
+            </button>
+        {% endif %}
         <button onclick="history.back()" class="badge bg-primary">Regresar</button>
     </h3>
     <h3>
-    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_rechazar' contexto_oferta_proveedor.id %}"
-        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
-        class="delete badge bg-primary">
-        Rechazar Oferta
-    </button>
-    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_nuevo_requerimiento' contexto_oferta_proveedor.slug %}"
-        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
-        class="delete badge bg-primary">
-        Generar Nuevo Requerimiento
-    </button>
+    {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 %}
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_nuevo_requerimiento' contexto_oferta_proveedor.slug %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+            class="delete badge bg-primary">
+            Generar Nuevo Requerimiento
+        </button>
 
-    <!--Este botón falta corregirlo por ahora hace lo mismo que Generar Nuevo Requerimiento-->
-    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_nuevo_requerimiento' contexto_oferta_proveedor.slug %}"
-        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
-        class="delete badge bg-primary">
-        Generar Orden de Compra
-    </button>
+        <!--Este botón falta corregirlo por ahora hace lo mismo que Generar Nuevo Requerimiento-->
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_nuevo_requerimiento' contexto_oferta_proveedor.slug %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
+            class="delete badge bg-primary">
+            Generar Orden de Compra
+        </button>
+    {% endif %}
     </h3>
     <br>
     <div class="table-responsive">
