@@ -558,7 +558,7 @@ class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
         self.request.session['primero'] = True
         context = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
-        context['titulo'] = 'Material '
+        context['titulo'] = 'Material'
         return context
 
 class RequerimientoMaterialProveedorPdfView(View):
