@@ -441,6 +441,7 @@ class RequerimientoMaterialProveedorDuplicarView(PermissionRequiredMixin, BSModa
         duplicado = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
         lista = duplicado.lista_requerimiento
         form.instance.lista_requerimiento = lista
+        form.instance.slug = slug_aleatorio(RequerimientoMaterialProveedor)
 
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
