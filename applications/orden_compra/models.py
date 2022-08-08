@@ -12,7 +12,7 @@ class OrdenCompra(models.Model):
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
     oferta_proveedor = models.OneToOneField(OfertaProveedor, on_delete=models.PROTECT, blank=True, null=True)
     orden_compra_anterior = models.ForeignKey('self', on_delete=models.PROTECT,blank=True, null=True)
-    sociedad_id = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='SociedadOrdenCompra',blank=True, null=True)
+    sociedad_id = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='SociedadOrdenCompra', blank=True, null=True)
     fecha_orden = models.DateField('Fecha de Orden', auto_now=False, auto_now_add=False)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2, default=0)
@@ -28,7 +28,7 @@ class OrdenCompra(models.Model):
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     slug = models.SlugField(blank=True, null=True)
     archivo = models.FileField('Archivo',upload_to = 'file/orden_compra/', max_length=100, blank=True, null=True)
-    condiciones = models.TextField()
+    condiciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField(blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_ORDEN_COMPRA,default=1)
 

@@ -246,7 +246,9 @@ class OrdenCompraPdfView(View):
 class OrdenCompraEnviarCorreoView(BSModalFormView):
     template_name = "includes/formulario generico.html"
     form_class = OrdenCompraEnviarCorreoForm
-    success_url = reverse_lazy('orden_compra_app:orden_compra_detalle')
+
+    def get_success_url(self):
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'pk':self.kwargs['orden_id']})
 
     def form_valid(self, form):
         if self.request.session['primero']:
