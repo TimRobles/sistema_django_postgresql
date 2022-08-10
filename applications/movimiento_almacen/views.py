@@ -9,12 +9,13 @@ class MovimientoMaterialView(BSModalReadView):
     template_name = "movimiento_almacen/ver_movimiento.html"
     
     def get_context_data(self, **kwargs):
-        movimientos = MovimientosAlmacen.objects.filter(
-            content_type_producto = self.get_object(),
-            id_registro_producto = self.kwargs['id_registro'],
+        movimientos, total = MovimientosAlmacen.objects.ver_movimientos(
+            self.get_object(),
+            self.kwargs['id_registro'],
         )
         context = super(MovimientoMaterialView, self).get_context_data(**kwargs)
         context['movimientos'] = movimientos
+        context['total'] = total
         return context
     
 

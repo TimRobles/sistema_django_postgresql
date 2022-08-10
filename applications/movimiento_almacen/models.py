@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.almacenes.models import Almacen
+from applications.movimiento_almacen.managers import MovimientoAlmacenManager
 from applications.sociedad.models import Sociedad
 
 # Create your models here.
@@ -62,6 +63,8 @@ class MovimientosAlmacen(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='MovimientosAlmacen_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='MovimientosAlmacen_updated_by', editable=False)
+
+    objects = MovimientoAlmacenManager()
 
     class Meta:
         verbose_name = 'Movimiento de Almacen'

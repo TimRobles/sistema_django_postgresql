@@ -123,7 +123,7 @@ class RecepcionComprobanteCompraPIView(BSModalFormView):
             movimiento_inicial = TipoMovimiento.objects.get(codigo=100)
             movimiento_final = TipoMovimiento.objects.get(codigo=101)
 
-            RecepcionCompra.objects.create(
+            recepcion = RecepcionCompra.objects.create(
                 numero_comprobante_compra = comprobante_pi.numero_comprobante_compra,
                 content_type = ContentType.objects.get_for_model(comprobante_pi),
                 id_registro = comprobante_pi.id,
@@ -167,8 +167,8 @@ class RecepcionComprobanteCompraPIView(BSModalFormView):
                     cantidad = detalle.cantidad,
                     tipo_movimiento = movimiento_final,
                     signo_factor_multiplicador = +1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
-                    id_registro_documento_proceso = comprobante_pi.id,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(recepcion),
+                    id_registro_documento_proceso = recepcion.id,
                     almacen = None,
                     sociedad = comprobante_pi.sociedad,
                     movimiento_anterior = movimiento_uno,

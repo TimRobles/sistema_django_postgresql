@@ -39,6 +39,9 @@ class RecepcionCompra(models.Model):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return documento.sociedad
 
+    def fecha(self):
+        return self.fecha_recepcion
+
     def __str__(self):
         return self.numero_comprobante_compra
 
