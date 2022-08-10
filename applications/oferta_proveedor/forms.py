@@ -20,10 +20,15 @@ class OfertaProveedorForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
-
+    name = forms.CharField(max_length=50)
+    brand = forms.CharField(max_length=50)
+    description = forms.CharField(max_length=50)
     class Meta:
         model = OfertaProveedorDetalle
         fields=(
+            'name',
+            'brand',
+            'description',
             'tipo_igv',
             'cantidad',
             'precio_unitario_sin_igv',
@@ -37,6 +42,9 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(OfertaProveedorDetalleUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['name'].initial = self.instance.proveedor_material.name
+        self.fields['brand'].initial = self.instance.proveedor_material.brand
+        self.fields['description'].initial = self.instance.proveedor_material.description
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

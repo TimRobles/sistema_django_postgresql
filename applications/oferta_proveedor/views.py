@@ -144,6 +144,10 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.get_object().oferta_proveedor.slug})
 
     def form_valid(self, form):
+        form.instance.proveedor_material.name = form.cleaned_data['name']
+        form.instance.proveedor_material.brand = form.cleaned_data['brand']
+        form.instance.proveedor_material.description = form.cleaned_data['description']
+        form.instance.proveedor_material.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

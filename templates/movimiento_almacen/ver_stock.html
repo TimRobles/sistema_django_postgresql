@@ -1,45 +1,60 @@
 {% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
 
 {% block content %}
-<div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Fecha</th>
-                <th>Documento</th>
-                <th>Movimiento</th>
-                <th>Tipo Movimiento</th>
-                <th>Tipo Stock</th>
-                <th>Sociedad</th>
-                <th>Almacén</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-        <tfoot>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
-</div>    
+
+{% for sociedad, filas in stocks.items %}
+<h3>{{ sociedad }}</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Almacén/Estado</th>
+                    {% for estado in estados %}
+                    <th>{{ estado }}</th>
+                    {% endfor %}
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in filas.0 %} 
+                <tr>
+                    {% for columna in fila %}
+                    
+                    {% if forloop.first %}
+                    <th>
+                        {% if columna %}
+                        {{ columna }}    
+                        {% else %}
+                        Sin Almacén
+                        {% endif %}
+                    </th>
+                    {% elif forloop.last %}
+                    <th class="text-end">{{ columna|redondear|intcomma }}</th>
+                    {% else %}
+                    <td class="text-end">{{ columna|redondear|intcomma }}</td>
+                    {% endif %}
+                        
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    {% for columna in filas.1 %}
+                    
+                    {% if forloop.first %}
+                    <th>{{ columna }}</th>
+                    {% else %}
+                    <th class="text-end">{{ columna|redondear|intcomma }}</th>
+                    {% endif %}
+                        
+                    {% endfor %}
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+{% endfor %}
 {% endblock content %}
     
