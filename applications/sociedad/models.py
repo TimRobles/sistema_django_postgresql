@@ -12,6 +12,7 @@ class Sociedad(models.Model):
     ruc = models.CharField('RUC', max_length=11, unique=True, validators=[validar_numero])
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=100, blank=True, null=True)
+    abreviatura = models.CharField('Abreviatura', max_length=3, blank=True, null=True)
     direccion_legal = models.CharField('Dirección Legal', max_length=100)
     ubigeo = models.CharField('Ubigeo', max_length=6)
     distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)

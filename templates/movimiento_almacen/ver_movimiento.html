@@ -1,0 +1,53 @@
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block content %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>Documento</th>
+                <th>Movimiento</th>
+                <th>Tipo Movimiento</th>
+                <th>Tipo Stock</th>
+                <th>Sociedad</th>
+                <th>Almacén</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movimiento in movimientos %} 
+            <tr>
+                <td>{{ movimiento.id }}</td>
+                <td>{{ movimiento.documento_proceso.fecha|date:'d/m/Y' }}</td>
+                <td>{{ movimiento.content_type_documento_proceso.name }} - {{ movimiento.documento_proceso }}</td>
+                <td class="text-end">{{ movimiento.valor|redondear|intcomma }}</td>
+                <td>{{ movimiento.id }}</td>
+                <td>{{ movimiento.id }}</td>
+                <td>{{ movimiento.id }}</td>
+                <td>{{ movimiento.id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>    
+
+<div>
+    {{movimientos}}
+</div>
+{% endblock content %}
+    

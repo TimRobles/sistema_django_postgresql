@@ -13,6 +13,7 @@ class SociedadForm(BSModalModelForm):
             'ruc',
             'razon_social',
             'nombre_comercial',
+            'abreviatura',
             'direccion_legal',
             'ubigeo',
             'estado_sunat',

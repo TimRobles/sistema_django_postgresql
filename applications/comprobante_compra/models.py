@@ -16,7 +16,7 @@ class ComprobanteCompraPI(models.Model):
     numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50, blank=True, null=True)
     orden_compra = models.OneToOneField(OrdenCompra, on_delete=models.PROTECT)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    fecha_comprobante = models.DateField('Fecha del Comprobante', auto_now=False, auto_now_add=False)
+    fecha_comprobante = models.DateField('Fecha del Comprobante', auto_now=False, auto_now_add=False, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
     total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=0)
@@ -53,6 +53,9 @@ class ComprobanteCompraPI(models.Model):
         else:
             return True
 
+    def fecha(self):
+        return self.fecha_comprobante
+        
     def __str__(self):
         return str(self.numero_comprobante_compra)
 

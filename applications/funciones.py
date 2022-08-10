@@ -246,3 +246,7 @@ def obtener_totales(cabecera):
     internacional = cabecera.internacional_nacional
     anticipo = False
     return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv)
+
+
+def numeroXn(numero, n):
+    return '0'*(n-len(str(numero))) + str(numero)

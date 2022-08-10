@@ -18,9 +18,7 @@
                 <th>Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
-                {% if contexto_oferta_proveedor.estado == 1 %}
-                    <th class="text-center">Acciones</th>
-                {% endif %}
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -56,6 +54,15 @@
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                                 <i class="bi-x-lg"></i>
                             </button>
+                        {% else %}
+                            {% if not material.proveedor_material.id_registro %}
+                            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_proveedor_material' material.id %}"
+                                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            {% endif %}
                         {% endif %}
                     </td>
     
@@ -131,7 +138,9 @@
             {% for archivo in archivos %}
             <tr>
                 <td class="text-center">
-                    <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">Ver Documento</a>
+                    <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">
+                        {{ archivo.archivo }}
+                    </a>
                 </td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_eliminar_archivo' archivo.id %}"

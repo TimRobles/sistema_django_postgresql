@@ -16,8 +16,10 @@ class SociedadAdmin(admin.ModelAdmin):
     '''Admin View for Sociedad'''
 
     list_display = (
+        'id',
         'razon_social',
         'nombre_comercial',
+        'abreviatura',
         'ruc',
         'direccion_legal',
         'ubigeo',

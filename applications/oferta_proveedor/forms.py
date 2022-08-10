@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.contenttypes.models import ContentType
+from applications.sociedad.models import Sociedad
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.material.models import Material, ProveedorMaterial
 from .models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
@@ -13,7 +15,7 @@ class OfertaProveedorForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
-        super(OfertaProveedorForm, self).__init__(*args, **kwargs)   
+        super(OfertaProveedorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -43,6 +45,20 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         self.fields['sub_total'].disabled = True
         self.fields['igv'].disabled = True
         self.fields['total'].disabled = True
+        
+class OfertaProveedorDetalleProveedorMaterialUpdateForm(BSModalForm):
+    content_type = forms.ModelChoiceField(queryset=ContentType.objects.all())
+    material = forms.ModelChoiceField(queryset=Material.objects.all())
+    class Meta:
+        fields=(
+            'content_type',
+            'material',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorDetalleProveedorMaterialUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 class AgregarMaterialOfertaProveedorForm(BSModalModelForm):
     material = forms.ModelChoiceField(queryset=None)
@@ -73,7 +89,7 @@ class CrearMaterialOfertaProveedorForm(BSModalForm):
             'brand',
             'description',
             )
-    
+
     def __init__(self, *args, **kwargs):
         super(CrearMaterialOfertaProveedorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -89,5 +105,18 @@ class ArchivoOfertaProveedorForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ArchivoOfertaProveedorForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class OrdenCompraSociedadForm(BSModalForm):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1))
+    class Meta:
+        fields=(
+            'sociedad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OrdenCompraSociedadForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
