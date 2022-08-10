@@ -219,7 +219,7 @@ class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormVie
     permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
     template_name = "oferta_proveedor/oferta_proveedor/form_material.html"
     form_class = AgregarMaterialOfertaProveedorForm
-    
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
 
@@ -266,7 +266,7 @@ class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView)
     permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
     template_name = "includes/formulario generico.html"
     form_class = CrearMaterialOfertaProveedorForm
-    
+
     def get_success_url(self, **kwargs):
             return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
 
@@ -278,7 +278,7 @@ class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView)
             name = form.cleaned_data.get('name')
             brand = form.cleaned_data.get('brand')
             description = form.cleaned_data.get('description')
-            
+
             proveedor_material, created = ProveedorMaterial.objects.get_or_create(
                 proveedor = proveedor,
                 name = name.upper(),
@@ -341,7 +341,7 @@ class ArchivoOfertaProveedorCreateView(PermissionRequiredMixin, BSModalCreateVie
 class ArchivoOfertaProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('oferta_proveedor.delete_archivoofertaproveedor')
     model =ArchivoOfertaProveedor
-    template_name = "includes/eliminar generico.html" 
+    template_name = "includes/eliminar generico.html"
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.object.oferta_proveedor.slug})
@@ -393,7 +393,7 @@ class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSMo
                     id_lista_requerimiento.item = len(detalle.requerimiento_material.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all())
                 registro_guardar(id_lista_requerimiento, self.request)
                 id_lista_requerimiento.save()
-                
+
                 requerimiento_detalle = RequerimientoMaterialProveedorDetalle.objects.create(
                     item = detalle.item,
                     id_requerimiento_material_detalle = id_lista_requerimiento,
@@ -415,7 +415,7 @@ class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSMo
         context['titulo'] = "Nuevo Requerimiento"
         context['dar_baja'] = "true"
         return context
-        
+
 class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('orden_compra.add_ordencompra')
 
@@ -466,7 +466,7 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
                     updated_by = self.request.user,
                     )
             self.request.session['primero'] = False
-        
+
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
