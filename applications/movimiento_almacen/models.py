@@ -5,9 +5,27 @@ from applications.almacenes.models import Almacen
 from applications.sociedad.models import Sociedad
 
 # Create your models here.
+class TipoStock(models.Model):
+    codigo = models.IntegerField('Código', blank=True, null=True, unique=True)
+    descripcion = models.CharField('Descripción del movimiento', max_length=50, unique=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoStock_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoStock_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Tipo de Stock'
+        verbose_name_plural = 'Tipos de Stocks'
+
+    def __str__(self):
+        return "%s - %s" % (self.codigo, self.descripcion)
+
+
 class TipoMovimiento(models.Model):
-    codigo = models.IntegerField('Código SAP', blank=True, null=True)
-    descripcion = models.CharField('Descripción del movimiento', max_length=50)
+    codigo = models.IntegerField('Código', blank=True, null=True, unique=True)
+    descripcion = models.CharField('Descripción del movimiento', max_length=50, unique=True)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoMovimiento_created_by', editable=False)
@@ -20,7 +38,6 @@ class TipoMovimiento(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.codigo, self.descripcion)
-
 
 
 class MovimientosAlmacen(models.Model):
@@ -49,6 +66,12 @@ class MovimientosAlmacen(models.Model):
     class Meta:
         verbose_name = 'Movimiento de Almacen'
         verbose_name_plural = 'Movimientos de Almacenes'
+
+    def documento_proceso(self):
+        return self.content_type_documento_proceso.model_class().objects.get(id=self.id_registro_documento_proceso)
+
+    def valor(self):
+        return self.cantidad * self.signo_factor_multiplicador
 
     def __str__(self):
         return str(self.id)

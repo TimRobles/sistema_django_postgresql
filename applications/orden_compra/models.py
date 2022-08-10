@@ -42,7 +42,7 @@ class OrdenCompra(models.Model):
         verbose_name_plural = 'Ordenes Compra'
 
     def __str__(self):
-        return str(self.id)
+        return self.numero_orden_compra
 
 
 class OrdenCompraDetalle(models.Model):

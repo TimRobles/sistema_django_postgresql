@@ -1,6 +1,9 @@
 from decimal import Decimal
 from django.shortcuts import render
+from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
+from applications.funciones import slug_aleatorio
 from applications.importaciones import *
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.orden_compra.pdf import generarOrdenCompra, generarMotivoAnulacionOrdenCompra
 from django.core.mail import EmailMultiAlternatives
 
@@ -287,3 +290,72 @@ class OrdenCompraEnviarCorreoView(BSModalFormView):
         context['titulo']="Correos"
         return context
 
+
+class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
+    model = OrdenCompra
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('comprobante_compra_app:comprobante_compra_pi_lista')
+    context_object_name = 'contexto_orden_compra' 
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        orden = self.get_object()
+
+        comprobante = ComprobanteCompraPI.objects.create(
+            internacional_nacional = orden.internacional_nacional,
+            incoterms = orden.incoterms,
+            orden_compra = orden,
+            sociedad = orden.sociedad_id,
+            moneda = orden.moneda,
+            slug = slug_aleatorio(ComprobanteCompraPI),
+            created_by = self.request.user,
+            updated_by = self.request.user,
+        )
+
+        materiales = orden.OrdenCompraDetalle_orden_compra.all()
+        movimiento_final = TipoMovimiento.objects.get(codigo=100)
+        for material in materiales:
+            orden_detalle = ComprobanteCompraPIDetalle.objects.create(
+                item=material.item,
+                orden_compra_detalle = material,
+                cantidad = material.cantidad,
+                precio_unitario_sin_igv = material.precio_unitario_sin_igv,
+                precio_unitario_con_igv = material.precio_unitario_con_igv,
+                precio_final_con_igv = material.precio_final_con_igv,
+                descuento = material.descuento,
+                sub_total = material.sub_total,
+                igv = material.igv,
+                total = material.total,
+                tipo_igv = material.tipo_igv,
+                comprobante_compra = comprobante,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+                )
+            
+            movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = material.content_type,
+                    id_registro_producto = material.id_registro,
+                    cantidad = material.cantidad,
+                    tipo_movimiento = movimiento_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
+                    id_registro_documento_proceso = comprobante.id,
+                    almacen = None,
+                    sociedad = comprobante.sociedad,
+                    movimiento_anterior = None,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+
+        messages.success(request, MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenCompraGenerarComprobanteTotalView, self).get_context_data(**kwargs)
+        context['accion'] = 'Generar'
+        context['titulo'] = 'Comprobante Total'
+        context['item'] = self.get_object()
+
+        return context

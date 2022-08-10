@@ -3,15 +3,25 @@ from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import ComprobanteCompraCIDetalle, ComprobanteCompraPI, ArchivoComprobanteCompraPI
 
-class ComprobanteCompraPILogisticoForm(BSModalModelForm):
+class ComprobanteCompraPIForm(BSModalModelForm):
     class Meta:
         model = ComprobanteCompraPI
         fields=(
+            'fecha_comprobante',
+            'numero_comprobante_compra',
             'logistico',
             )
+        widgets = {
+            'fecha_comprobante' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
 
     def __init__(self, *args, **kwargs):
-        super(ComprobanteCompraPILogisticoForm, self).__init__(*args, **kwargs)
+        super(ComprobanteCompraPIForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

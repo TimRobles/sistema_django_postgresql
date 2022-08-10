@@ -163,6 +163,9 @@ class Material(models.Model):
             'descripcion_venta',
         ]
 
+    def content_type(self):
+        return ContentType.objects.get_for_model(self).id
+
     def __str__(self):
         return self.descripcion_venta
 
