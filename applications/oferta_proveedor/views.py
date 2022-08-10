@@ -364,7 +364,7 @@ class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSMo
                 registro_guardar(id_lista_requerimiento, self.request)
                 id_lista_requerimiento.save()
                 
-                oferta_detalle = RequerimientoMaterialProveedorDetalle.objects.create(
+                requerimiento_detalle = RequerimientoMaterialProveedorDetalle.objects.create(
                     
                     item = detalle.item,
                     id_requerimiento_material_detalle = id_lista_requerimiento,

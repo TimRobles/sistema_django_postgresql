@@ -38,6 +38,12 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+        self.fields['precio_unitario_sin_igv'].disabled = True
+        self.fields['descuento'].disabled = True
+        self.fields['sub_total'].disabled = True
+        self.fields['igv'].disabled = True
+        self.fields['total'].disabled = True
+
 class AgregarMaterialOfertaProveedorForm(BSModalModelForm):
     material = forms.ModelChoiceField(queryset=None)
 

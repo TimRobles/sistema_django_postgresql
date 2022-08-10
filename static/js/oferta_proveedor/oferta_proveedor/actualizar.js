@@ -38,13 +38,6 @@ function CalculosLinea() {
             $sub_total.value = "";
             $igv.value = "";
             $total.value = "";
-
-            console.log("Error")
-            Swal.fire({
-                title: "¡Datos inválidos!",
-                text: "Ingrese datos correctos",
-                icon: "warning",
-              });
         }
     }
     xhr.send();
