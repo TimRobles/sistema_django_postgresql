@@ -15,16 +15,16 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ contexto_recepcion_compra.fecha_recepcion|date:'d/m/Y' }}</td>
-                <td>{{ contexto_recepcion_compra.content_type.name }}</td>
-                <td>{{ contexto_recepcion_compra.numero_comprobante_compra }}</td>
-                <td>{{ contexto_recepcion_compra.proveedor }}</td>
-                <td>{{ contexto_recepcion_compra.interlocutor_proveedor }}</td>
-                <td>{{ contexto_recepcion_compra.sociedad }}</td>
+                <td>{{ contexto_nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+                <td>{{ contexto_nota_ingreso.content_type.name }}</td>
+                <td>{{ contexto_nota_ingreso.numero_comprobante_compra }}</td>
+                <td>{{ contexto_nota_ingreso.proveedor }}</td>
+                <td>{{ contexto_nota_ingreso.interlocutor_proveedor }}</td>
+                <td>{{ contexto_nota_ingreso.sociedad }}</td>
                 <td class="text-center">
-                    {{ contexto_recepcion_compra.get_estado_display }}
-                    {% if contexto_recepcion_compra.motivo_anulacion %}
-                        - {{ contexto_recepcion_compra.motivo_anulacion }}
+                    {{ contexto_nota_ingreso.get_estado_display }}
+                    {% if contexto_nota_ingreso.motivo_anulacion %}
+                        - {{ contexto_nota_ingreso.motivo_anulacion }}
                     {% endif %}
                 </td>
             </tr>
@@ -33,7 +33,7 @@
 </div>
 <br>
 <h4>Observaciones:</h4>
-<p>{{ contexto_recepcion_compra.observaciones }}</p>
+<p>{{ contexto_nota_ingreso.observaciones }}</p>
 <br>
 <h3>Materiales</h3>
 <div class="table-responsive">
@@ -44,6 +44,7 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th>Cantidad</th>
+                <th>Almacén</th>
             </tr>
         </thead>
         <tbody>
