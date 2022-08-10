@@ -14,4 +14,5 @@ urlpatterns = [
     path('foto-recepcion-compra/crear/<int:pk>/', views.FotoRecepcionCompraCreateView.as_view(), name='foto_recepcion_compra_crear'),
     path('foto-recepcion-compra/eliminar/<pk>/', views.FotoRecepcionCompraDeleteView.as_view(), name='foto_recepcion_compra_eliminar'),
     
+    path('recepcion-compra/generar-nota-ingreso/<int:pk>/', views.RecepcionCompraGenerarNotaIngresoView.as_view(), name='recepcion_compra_generar_nota_credito'),
 ]

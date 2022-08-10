@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.almacenes.models import Almacen
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
+from applications.nota_ingreso.managers import NotaIngresoManager
 
 from applications.recepcion_compra.models import RecepcionCompra
 from applications.sociedad.models import Sociedad
@@ -22,6 +23,8 @@ class NotaIngreso(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaIngreso_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaIngreso_updated_by', editable=False)
+
+    objects = NotaIngresoManager()
 
     class Meta:
         verbose_name = 'Nota de Ingreso'
