@@ -55,6 +55,7 @@ LOCAL_APPS = (
     'applications.movimiento_almacen',
     'applications.recepcion_compra',
     'applications.nota_ingreso',
+    'applications.activos',
 )
 
 THIRD_PARTY_APPS = (
