@@ -28,7 +28,7 @@ urlpatterns = [
     path('movimiento_almacen/', include('applications.movimiento_almacen.urls')),
     path('encuesta/', include('applications.encuesta.urls')),
     path('aptc/', include('applications.sorteo_aptc.urls')),
-
+    path('activos/', include('applications.activos.urls')),
 
 ]
 
