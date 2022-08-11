@@ -26,6 +26,7 @@ urlpatterns = [
     path('recepcion_compra/', include('applications.recepcion_compra.urls')),
     path('nota_ingreso/', include('applications.nota_ingreso.urls')),
     path('movimiento_almacen/', include('applications.movimiento_almacen.urls')),
+    path('activos/', include('applications.activos.urls')),
 
 ]
 

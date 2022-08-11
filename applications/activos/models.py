@@ -4,6 +4,7 @@ from applications.datos_globales.models import ProductoSunat, Unidad
 from applications.material.models import SubFamilia
 from applications.variables import ESTADOS
 
+
 class ActivoBase(models.Model):
     descripcion_venta = models.CharField('Descripción de Venta', max_length=150)
     descripcion_corta = models.CharField('Descripción Corta', max_length=150)
@@ -12,7 +13,7 @@ class ActivoBase(models.Model):
     sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE, blank=True, null=True)
     depreciacion = models.DecimalField('Depreciación', max_digits=6, decimal_places=3)
     producto_sunat = models.ForeignKey(ProductoSunat, on_delete=models.CASCADE, blank=True, null=True)
-    estado = models.IntegerField('Estado Activo', choices=ESTADOS)
+    estado = models.IntegerField('Estado Activo', choices=ESTADOS, default=1)
     traduccion = models.CharField('Traducción', max_length=255, blank=True, null=True)
     partida = models.CharField('Partida', max_length=30, blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -24,6 +25,9 @@ class ActivoBase(models.Model):
     class Meta:
         verbose_name = 'ActivoBase'
         verbose_name_plural = 'ActivosBase'
+        ordering = [
+            'descripcion_corta',
+            ]
 
     def __str__(self):
         return self.descripcion_corta.upper()

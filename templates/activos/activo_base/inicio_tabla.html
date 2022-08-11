@@ -1,0 +1,63 @@
+<div>{{contexto_activo_base}}</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Descripción de Venta</th>
+            <th>Descripción Corta</th>    
+            <th>Unidad</th>    
+            <th>Peso</th>    
+            <th>SubFamilia</th>    
+            <th>Depreciación</th>    
+            <th>ProductoSunat</th>    
+            <th>Traducción</th>    
+            <th>Partida</th>    
+            <th>Estado Activo</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for activo_base in contexto_activo_base %}
+            <tr>
+                <td> {{ activo_base.descripcion_venta }}</td>
+                <td> {{ activo_base.descripcion_corta }}</td>
+                <td> {{ activo_base.unidad }}</td>
+                <td> 
+                    {% if activo_base.peso %}
+                    {{ activo_base.peso }}
+                    {% endif %}
+                </td>
+                <td> {{ activo_base.sub_familia }}</td>
+                <td> {{ activo_base.depreciacion }}</td>
+                <td> 
+                    {% if activo_base.producto_sunat %}
+                    {{ activo_base.producto_sunat }}
+                    {% endif %}
+                </td>
+                <td> 
+                    {% if activo_base.traduccion %}
+                    {{ activo_base.traduccion }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if activo_base.partida %}
+                        {{ activo_base.partida }}
+                    {% endif %}
+                </td>
+                <td> {{ activo_base.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    {% if activo_base.estado == 1 %}
+                    <button data-form-url="{% url 'activos_app:activo_base_actualizar' activo_base.id %}"
+                        data-table-url="{% url 'activos_app:activo_base_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    {% endif %}                   
+                </td>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>
