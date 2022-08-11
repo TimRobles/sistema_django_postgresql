@@ -65,3 +65,49 @@ class ActivoBaseUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+class ActivoBaseDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.change_activo_base')
+
+    model = ActivoBase
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('activos_app:activo_base_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_DAR_BAJA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ActivoBaseDarBajaView, self).get_context_data(**kwargs)
+        context['accion'] = "Dar Baja"
+        context['titulo'] = "Activo Base"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.descripcion_corta
+        return context
+
+class ActivoBaseDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.change_activo_base')
+
+    model = ActivoBase
+    template_name = "includes/dar_alta_generico.html"
+    success_url = reverse_lazy('activos_app:activo_base_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 1
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_DAR_ALTA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ActivoBaseDarAltaView, self).get_context_data(**kwargs)
+        context['accion'] = "Dar Alta"
+        context['titulo'] = "Activo Base"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.descripcion_corta
+        return context

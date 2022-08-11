@@ -1,9 +1,9 @@
-<div>{{contexto_activo_base}}</div>
+<!-- <div>{{contexto_activo_base}}</div> -->
 <table class="table">
     <thead>
         <tr>
-            <th>Descripción de Venta</th>
             <th>Descripción Corta</th>    
+            <th>Descripción de Venta</th>
             <th>Unidad</th>    
             <th>Peso</th>    
             <th>SubFamilia</th>    
@@ -19,8 +19,8 @@
         
         {% for activo_base in contexto_activo_base %}
             <tr>
-                <td> {{ activo_base.descripcion_venta }}</td>
                 <td> {{ activo_base.descripcion_corta }}</td>
+                <td> {{ activo_base.descripcion_venta }}</td>
                 <td> {{ activo_base.unidad }}</td>
                 <td> 
                     {% if activo_base.peso %}
@@ -54,7 +54,18 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    {% endif %}                   
+                    <button data-form-url="{% url 'activos_app:activo_base_dar_baja' activo_base.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                    {% elif activo_base.estado == 2 %}
+                    <button data-form-url="{% url 'activos_app:activo_base_dar_alta' activo_base.id %}"
+                        class="delete btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                        <i class="bi bi-hand-thumbs-up-fill"></i>
+                    </button>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
