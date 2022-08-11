@@ -15,15 +15,20 @@ class OfertaProveedorForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
-        super(OfertaProveedorForm, self).__init__(*args, **kwargs)   
+        super(OfertaProveedorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
-
+    name = forms.CharField(max_length=50)
+    brand = forms.CharField(max_length=50)
+    description = forms.CharField(max_length=50)
     class Meta:
         model = OfertaProveedorDetalle
         fields=(
+            'name',
+            'brand',
+            'description',
             'tipo_igv',
             'cantidad',
             'precio_unitario_sin_igv',
@@ -37,9 +42,18 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(OfertaProveedorDetalleUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['name'].initial = self.instance.proveedor_material.name
+        self.fields['brand'].initial = self.instance.proveedor_material.brand
+        self.fields['description'].initial = self.instance.proveedor_material.description
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+        self.fields['precio_unitario_sin_igv'].disabled = True
+        self.fields['descuento'].disabled = True
+        self.fields['sub_total'].disabled = True
+        self.fields['igv'].disabled = True
+        self.fields['total'].disabled = True
+        
 class OfertaProveedorDetalleProveedorMaterialUpdateForm(BSModalForm):
     content_type = forms.ModelChoiceField(queryset=ContentType.objects.all())
     material = forms.ModelChoiceField(queryset=Material.objects.all())
@@ -83,7 +97,7 @@ class CrearMaterialOfertaProveedorForm(BSModalForm):
             'brand',
             'description',
             )
-    
+
     def __init__(self, *args, **kwargs):
         super(CrearMaterialOfertaProveedorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -114,4 +128,3 @@ class OrdenCompraSociedadForm(BSModalForm):
         super(OrdenCompraSociedadForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-

@@ -1,7 +1,9 @@
+from applications.funciones import numeroXn
 from applications.links import link_detalle
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
-from applications.recepcion_compra.forms import ArchivoRecepcionCompraForm, FotoRecepcionCompraForm
+from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
+from applications.recepcion_compra.forms import ArchivoRecepcionCompraForm, FotoRecepcionCompraForm, RecepcionCompraGenerarNotaIngresoForm
 from .models import FotoRecepcionCompra, RecepcionCompra, ArchivoRecepcionCompra
 
 # Create your views here.
@@ -102,4 +104,35 @@ class FotoRecepcionCompraDeleteView(BSModalDeleteView):
         context['accion'] = "Agregar"
         context['titulo'] = "Foto"
         context['item'] = filename(self.object.foto)
+        return context
+
+
+class RecepcionCompraGenerarNotaIngresoView(BSModalFormView):
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionCompraGenerarNotaIngresoForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['nota'].id})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            recepcion_compra = RecepcionCompra.objects.get(id=self.kwargs['pk'])
+            numero_nota = len(NotaIngreso.objects.all()) + 1
+            nota = NotaIngreso.objects.create(
+                nro_nota_ingreso = numeroXn(numero_nota, 6),
+                recepcion_compra = recepcion_compra,
+                sociedad = recepcion_compra.content_type.get_object_for_this_type(id=recepcion_compra.id_registro).sociedad,
+                fecha_ingreso = form.cleaned_data['fecha_ingreso'],
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+            self.kwargs['nota']=nota
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RecepcionCompraGenerarNotaIngresoView, self).get_context_data(**kwargs)
+        context['accion'] = "Recibir"
+        context['titulo'] = "Comprobante de Compra"
         return context

@@ -20,7 +20,15 @@
         data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Enviar Correo
-    </button>       
+    </button>
+    
+    {% if contexto_orden_compra.estado == 2 %}
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_generar_comprobante_compra_total' contexto_orden_compra.id %}"
+        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
+        class="delete btn btn-primary">
+        Generar Comprobante Total
+    </button>
+    {% endif %}
     
     
     {% if contexto_orden_compra.estado == 3 %}

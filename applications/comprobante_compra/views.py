@@ -1,4 +1,4 @@
-from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPILogisticoForm, RecepcionComprobanteCompraPIForm
+from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, RecepcionComprobanteCompraPIForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
 from applications.funciones import obtener_totales
 from applications.home.templatetags.funciones_propias import filename
@@ -54,10 +54,10 @@ def ComprobanteCompraPIDetailTabla(request, slug):
         return JsonResponse(data)
 
 
-class ComprobanteCompraPILogisticoUpdateView(BSModalUpdateView):
+class ComprobanteCompraPIUpdateView(BSModalUpdateView):
     model = ComprobanteCompraPI
     template_name = "includes/formulario generico.html"
-    form_class = ComprobanteCompraPILogisticoForm
+    form_class = ComprobanteCompraPIForm
     success_url = '.'
 
     def form_valid(self, form):
@@ -65,9 +65,9 @@ class ComprobanteCompraPILogisticoUpdateView(BSModalUpdateView):
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
-        context = super(ComprobanteCompraPILogisticoUpdateView, self).get_context_data(**kwargs)
-        context['accion'] = "Agregar"
-        context['titulo'] = "Logístico"
+        context = super(ComprobanteCompraPIUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Comprobante"
         return context
     
 
@@ -121,9 +121,9 @@ class RecepcionComprobanteCompraPIView(BSModalFormView):
             comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
             detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
             movimiento_inicial = TipoMovimiento.objects.get(codigo=100)
-            movimiento_final = TipoMovimiento.objects.get(codigo=200)
+            movimiento_final = TipoMovimiento.objects.get(codigo=101)
 
-            RecepcionCompra.objects.create(
+            recepcion = RecepcionCompra.objects.create(
                 numero_comprobante_compra = comprobante_pi.numero_comprobante_compra,
                 content_type = ContentType.objects.get_for_model(comprobante_pi),
                 id_registro = comprobante_pi.id,
@@ -135,17 +135,28 @@ class RecepcionComprobanteCompraPIView(BSModalFormView):
                 updated_by = self.request.user,
             )
             for detalle in detalles:
+                movimiento_anterior = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.orden_compra_detalle.id_registro,
+                    tipo_movimiento = movimiento_inicial,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
+                    id_registro_documento_proceso = comprobante_pi.id,
+                    sociedad = comprobante_pi.sociedad,
+                    movimiento_reversion = False,
+                )
+
                 movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.orden_compra_detalle.content_type,
                     id_registro_producto = detalle.orden_compra_detalle.id_registro,
                     cantidad = detalle.cantidad,
                     tipo_movimiento = movimiento_inicial,
                     signo_factor_multiplicador = -1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
-                    id_registro_documento_proceso = comprobante_pi.id,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(recepcion),
+                    id_registro_documento_proceso = recepcion.id,
                     almacen = None,
                     sociedad = comprobante_pi.sociedad,
-                    movimiento_anterior = None,
+                    movimiento_anterior = movimiento_anterior,
                     movimiento_reversion = False,
                     created_by = self.request.user,
                     updated_by = self.request.user,
@@ -156,8 +167,8 @@ class RecepcionComprobanteCompraPIView(BSModalFormView):
                     cantidad = detalle.cantidad,
                     tipo_movimiento = movimiento_final,
                     signo_factor_multiplicador = +1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
-                    id_registro_documento_proceso = comprobante_pi.id,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(recepcion),
+                    id_registro_documento_proceso = recepcion.id,
                     almacen = None,
                     sociedad = comprobante_pi.sociedad,
                     movimiento_anterior = movimiento_uno,

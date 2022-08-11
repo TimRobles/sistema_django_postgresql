@@ -6,8 +6,8 @@
 
 {% block contenido %}
     <h3>Recepción de Compra</h3>
-    <a href="{{ regresar }}" class="btn btn-primary">Ver Notas de Ingreso</a>
-    <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_finalizar' contexto_recepcion_compra.id %}"
+    <a href="{% url 'nota_ingreso_app:nota_ingreso_lista' contexto_recepcion_compra.id %}" class="btn btn-primary">Ver Notas de Ingreso</a>
+    <button data-form-url="{% url 'recepcion_compra_app:recepcion_compra_generar_nota_credito' contexto_recepcion_compra.id %}"
         class="delete btn btn-primary">
         Generar Nota de Ingreso
     </button>

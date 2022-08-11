@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+
+{% block contenido %}
+
+
+
+{% for pregunta in preguntas.items %}
+
+    <p>{{ pregunta.0 }}</p> 
+    <ul>
+        {% for detalle in pregunta.1 %}
+        <li>{{detalle}}</li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+
+<td>
+    <a href="{% url 'encuesta_app:respuesta_lista' %} "
+    class="delete btn btn-danger btn-sm"
+    data-bs-toggle="tooltip" data-bs-placement="top" title="Volver">
+    Volver
+    </a>
+</td>
+        
+{% endblock contenido %}
+    

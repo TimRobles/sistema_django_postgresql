@@ -35,6 +35,7 @@ class NivelDosForm(forms.ModelForm):
             'orden',
             'nombre',
             'app_name',
+            'url_name',
             'nivel_uno',
             'icono',
             )
@@ -62,6 +63,7 @@ class NivelTresForm(forms.ModelForm):
         fields = (
             'orden',
             'nombre',
+            'app_name',
             'url_name',
             'nivel_dos',
             'icono',
@@ -87,6 +89,7 @@ class NivelCuatroForm(forms.ModelForm):
         fields = (
             'orden',
             'nombre',
+            'app_name',
             'url_name',
             'nivel_tres',
             'icono',

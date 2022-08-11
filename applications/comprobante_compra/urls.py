@@ -8,7 +8,7 @@ urlpatterns = [
     path('comprobante-compra-pi/lista/', views.ComprobanteCompraPIListView.as_view(), name='comprobante_compra_pi_lista'),
     path('comprobante-compra-pi/detalle/<slug>/', views.ComprobanteCompraPIDetailView.as_view(), name='comprobante_compra_pi_detalle'),
     path('comprobante-compra-pi/detalle/tabla/<slug>/', views.ComprobanteCompraPIDetailTabla, name='comprobante_compra_pi_detalle_tabla'),
-    path('comprobante-compra-pi/logistico/<slug>/', views.ComprobanteCompraPILogisticoUpdateView.as_view(), name='comprobante_compra_pi_logistico'),
+    path('comprobante-compra-pi/actualizar/<slug>/', views.ComprobanteCompraPIUpdateView.as_view(), name='comprobante_compra_pi_actualizar'),
     path('comprobante-compra-pi/registrar/<str:slug>/', views.ComprobanteCompraCIRegistrarView.as_view(), name='comprobante_compra_ci_registrar'),
     
     path('archivo-comprobante-compra-pi/crear/<str:slug>/', views.ArchivoComprobanteCompraPICreateView.as_view(), name='archivo_comprobante_compra_pi_crear'),

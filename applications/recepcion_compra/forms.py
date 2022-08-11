@@ -27,3 +27,23 @@ class FotoRecepcionCompraForm(BSModalModelForm):
         super(FotoRecepcionCompraForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RecepcionCompraGenerarNotaIngresoForm(BSModalForm):
+    fecha_ingreso = forms.DateField(
+        widget=forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+    )
+    class Meta:
+        fields=(
+            'fecha_ingreso',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(RecepcionCompraGenerarNotaIngresoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

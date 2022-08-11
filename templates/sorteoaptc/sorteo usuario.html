@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block titulo %}
+Registro Usuario
+{% endblock titulo %}
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+    
+    <div class="modal-body">
+        {% block arriba %}
+        {% endblock arriba %}
+
+        {% for field in form %}
+            <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %}
+                >
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if  field.label == "Número de Documento" %}
+                    <button type="button" id="consultar-dni" class="input-group-text bg-success">
+                        Consultar DNI
+                    </button>
+                {% endif %}
+            </div>
+
+            {% for error in field.errors %}
+                <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}        
+        {% endfor %}        
+    </div>
+
+    <br>
+    <input type="submit" class="btn btn-primary col-lg-2 mx-2" value="Guardar" >
+    <a href="{% url 'sorteo_aptc_app:respuesta_lista' %}" class="btn btn-danger col-lg-2 mx-2">Cancelar</a>
+</form>
+
+{% endblock contenido %}
+
+
+{% block extrajs %}
+    <script src="{% static 'js/sorteoAPTC/registrar.js' %}?{{ cache_bust }}"></script>
+{% endblock extrajs %}
+
