@@ -56,6 +56,9 @@ LOCAL_APPS = (
     'applications.recepcion_compra',
     'applications.nota_ingreso',
     'applications.activos',
+    'applications.encuesta',
+    'applications.sorteo_aptc',
+
 )
 
 THIRD_PARTY_APPS = (

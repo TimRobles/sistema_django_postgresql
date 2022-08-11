@@ -1,0 +1,45 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>N° de Nota de Ingreso</th>
+            <th>Observaciones</th>
+            <th>Motivo de Anulación</th>
+            <th>Estado</th>  
+            <th class="text-center">Acciones</th>      
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for nota_ingreso in contexto_nota_ingreso %}
+        <tr> 
+            <td>{{ nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+            <td>{{ nota_ingreso.nro_nota_ingreso }}</td>
+            <td>
+                {% if nota_ingreso.observaciones %}
+                    {{ nota_ingreso.observaciones }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if nota_ingreso.motivo_anulacion %}
+                    {{ nota_ingreso.motivo_anulacion }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ nota_ingreso.get_estado_display}}</td>
+            <td class="text-nowrap text-center">
+                <a href="{% url 'nota_ingreso_app:nota_ingreso_detalle' nota_ingreso.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>    
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+

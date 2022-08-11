@@ -1,12 +1,14 @@
 {% load humanize %}
 {% load funciones_propias %}
+<a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+<br>
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
                 <th>Fecha</th>
                 <th>Comprobante</th>
-                <th>Número de Comprobante</th>
+                <th>Número de Ingreso</th>
                 <th>Proveedor</th>
                 <th>Interlocutor</th>
                 <th>Sociedad</th>
@@ -15,16 +17,16 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ contexto_recepcion_compra.fecha_recepcion|date:'d/m/Y' }}</td>
-                <td>{{ contexto_recepcion_compra.content_type.name }}</td>
-                <td>{{ contexto_recepcion_compra.numero_comprobante_compra }}</td>
-                <td>{{ contexto_recepcion_compra.proveedor }}</td>
-                <td>{{ contexto_recepcion_compra.interlocutor_proveedor }}</td>
-                <td>{{ contexto_recepcion_compra.sociedad }}</td>
+                <td>{{ contexto_nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+                <td>{{ contexto_nota_ingreso.recepcion_compra }}</td>
+                <td>{{ contexto_nota_ingreso.nro_nota_ingreso }}</td>
+                <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
+                <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+                <td>{{ contexto_nota_ingreso.sociedad }}</td>
                 <td class="text-center">
-                    {{ contexto_recepcion_compra.get_estado_display }}
-                    {% if contexto_recepcion_compra.motivo_anulacion %}
-                        - {{ contexto_recepcion_compra.motivo_anulacion }}
+                    {{ contexto_nota_ingreso.get_estado_display }}
+                    {% if contexto_nota_ingreso.motivo_anulacion %}
+                        - {{ contexto_nota_ingreso.motivo_anulacion }}
                     {% endif %}
                 </td>
             </tr>
@@ -33,9 +35,14 @@
 </div>
 <br>
 <h4>Observaciones:</h4>
-<p>{{ contexto_recepcion_compra.observaciones }}</p>
+<p>{{ contexto_nota_ingreso.observaciones }}</p>
 <br>
 <h3>Materiales</h3>
+<button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_agregar_material' contexto_nota_ingreso.id %}"
+    data-table-url="{% url 'nota_ingreso_app:nota_ingreso_detalle_tabla' contexto_nota_ingreso.id %}"
+    class="create btn btn-primary">
+    Agregar Material
+</button>
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -44,6 +51,7 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th>Cantidad</th>
+                <th>Almacén</th>
             </tr>
         </thead>
         <tbody>
