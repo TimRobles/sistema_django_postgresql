@@ -576,19 +576,28 @@ class RequerimientoMaterialProveedorPdfView(View):
 
         Texto = obj.titulo + '\n' +str(obj.proveedor) + '\n' + str(fecha) + '\n' + obj.comentario
 
-        TablaEncabezado = ['Item','Material', 'Unidad', 'Cantidad']
+        TablaEncabezado = ['Item','Name', 'Brand', 'Description', 'Unidad', 'Cantidad']
 
         detalle = obj.RequerimientoMaterialProveedorDetalle_requerimiento_material
         materiales = detalle.all()
 
         TablaDatos = []
         for material in materiales:
-            fila = []
             material.material = material.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id = material.id_requerimiento_material_detalle.id_registro)
+            proveedor_material = ProveedorMaterial.objects.get(
+                content_type = ContentType.objects.get_for_model(material.material),
+                id_registro = material.material.id,
+                proveedor = obj.proveedor,
+                estado_alta_baja = 1,
+            )
+            fila = []
             fila.append(material.item)
-            fila.append(material.material)
+            fila.append(proveedor_material.name)
+            fila.append(proveedor_material.brand)
+            fila.append(proveedor_material.description)
             fila.append(material.material.unidad_base)
             fila.append(material.cantidad.quantize(Decimal('0.01')))
+
             TablaDatos.append(fila)
 
         buf = generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
