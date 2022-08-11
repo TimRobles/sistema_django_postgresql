@@ -29,6 +29,7 @@ class NivelDosAdmin(admin.ModelAdmin):
         'orden',
         'nombre',
         'app_name',
+        'url_name',
         'nivel_uno',
         'icono',
         'created_by',
@@ -49,6 +50,7 @@ class NivelTresAdmin(admin.ModelAdmin):
     list_display = (
         'orden',
         'nombre',
+        'app_name',
         'url_name',
         'nivel_dos',
         'icono',
@@ -70,6 +72,7 @@ class NivelCuatroAdmin(admin.ModelAdmin):
     list_display = (
         'orden',
         'nombre',
+        'app_name',
         'url_name',
         'nivel_tres',
         'icono',

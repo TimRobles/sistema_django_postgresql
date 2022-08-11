@@ -6,7 +6,11 @@ register = template.Library()
 
 @register.filter
 def espacio_guion(value):
-    return value.replace(" ","-").lower()
+    texto = value
+    texto = texto.replace(" ","-").lower()
+    texto = texto.replace("(","-").lower()
+    texto = texto.replace(")","-").lower()
+    return texto
 
 @register.filter
 def recortar_popover(texto):
