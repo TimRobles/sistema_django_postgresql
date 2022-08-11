@@ -1,0 +1,29 @@
+{% load static %}
+{% load widget_tweaks %}
+
+
+
+{% block contenido %}
+<form action="" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    
+    <div class="modal-body">
+        {{ form.as_p }}
+    </div>
+
+    <div class="modal-footer">
+        <input type="submit" class="btn btn-primary" value="Enviar" data-bs-dismiss="modal" onclick="cargar()">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>    
+
+<script src="{% static 'js/encuesta/encuestar actualizar.js' %}?{{ cache_bust }}"></script>
+
+{% endblock contenido %}
+
+

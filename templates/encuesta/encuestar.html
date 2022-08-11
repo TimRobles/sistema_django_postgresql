@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+Encuestar
+{% endblock titulo %}
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <td>
+        <input type="submit" value="Continuar"
+        class="create btn btn-primary btn-sm">
+    </td>
+
+    <td>
+        <a href="{% url 'encuesta_app:respuesta_lista' %} "
+        class="delete btn btn-danger btn-sm"
+        data-bs-toggle="tooltip" data-bs-placement="top" title="Volver">
+        Volver
+        </a>
+    </td>
+
+</form>    
+{% endblock contenido %}
+
+

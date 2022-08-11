@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Encuestar
+{% endblock titulo %}
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {% for pregunta in preguntas %}
+
+        {{ pregunta }}
+
+        <ul>
+
+            {% if  pregunta.tipo_pregunta == 1 or pregunta.tipo_pregunta == 2 %}
+                {% for alternativa in pregunta.Alternativa_pregunta.all %}
+                    {% if alternativa.mostrar and pregunta.tipo_pregunta == 1 %}
+                        <input type="radio" name="{{ pregunta.id }}" value="{{ alternativa.id }}">{{ alternativa }}
+                    {% elif alternativa.mostrar and pregunta.tipo_pregunta == 2 %}
+                        <input type="checkbox" name="{{ pregunta.id }}" value="{{ alternativa.id }}">{{ alternativa }}
+                    {% endif %}
+                {% endfor %}
+
+            {% elif pregunta.tipo_pregunta == 3 %}
+                <input type="text" name="{{ pregunta.id }}">
+
+            {% endif %}
+        </ul>
+        
+    {% endfor %}
+    <ul>
+        <input type="hidden" id="respuesta" value="{{ respuesta }}">
+    </ul>
+    <ul>
+        <input type="hidden" id="url" value="{{ url }}">
+        <input type="hidden" id="url2" value="{{ url2 }}">
+    </ul>
+    <input type="submit" value="Enviar" class="btn btn-primary btn-sm" id="enviar">
+    <a href="{% url 'encuesta_app:respuesta_lista' %} "
+    class="delete btn btn-danger btn-sm"
+    data-bs-toggle="tooltip" data-bs-placement="top" title="Volver">
+    Volver
+    </a>
+   
+</form>    
+{% endblock contenido %}
+    
+{% block extrajs %}
+<script src="{% static 'js/encuesta/encuestar segunda parte.js' %}?{{ cache_bust }}"></script>
+{% endblock extrajs %}
+    

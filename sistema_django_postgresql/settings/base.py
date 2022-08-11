@@ -49,6 +49,9 @@ LOCAL_APPS = (
     'applications.almacenes',
     'applications.clientes',
     'applications.requerimiento_de_materiales',
+    'applications.encuesta',
+    'applications.sorteo_aptc',
+
 )
 
 THIRD_PARTY_APPS = (
