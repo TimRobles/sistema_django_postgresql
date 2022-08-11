@@ -101,3 +101,16 @@ class OrdenCompraEnviarCorreoForm(BSModalForm):
         self.fields['correos_proveedor'].choices = CORREOS_PROVEEDOR
         self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
         self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'
+
+
+class OrdenCompraAnularForm(BSModalModelForm):
+    class Meta:
+        model = OrdenCompra
+        fields=(
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OrdenCompraAnularForm, self).__init__(*args, **kwargs)          
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

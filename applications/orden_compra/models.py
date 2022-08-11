@@ -56,7 +56,7 @@ class OrdenCompra(models.Model):
             return self.OrdenCompra_orden_compra_anterior.interlocutor
 
     def __str__(self):
-        return self.numero_orden_compra
+        return "%s %s" % (self.id, self.numero_orden_compra)
 
 
 class OrdenCompraDetalle(models.Model):

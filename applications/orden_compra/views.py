@@ -1,11 +1,13 @@
 from decimal import Decimal
 from django.shortcuts import render
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
+from applications.funciones import numeroXn
 from applications.funciones import slug_aleatorio
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.orden_compra.pdf import generarOrdenCompra, generarMotivoAnulacionOrdenCompra
 from django.core.mail import EmailMultiAlternatives
+
 
 from .models import (
     OrdenCompra,
@@ -17,6 +19,7 @@ from .models import (
 from .forms import (
     OrdenCompraForm,
     OrdenCompraEnviarCorreoForm,
+    OrdenCompraAnularForm,
 )
 
 
@@ -39,25 +42,23 @@ def OrdenCompraTabla(request):
         )
         return JsonResponse(data)
 
-class OrdenCompraDeleteView(BSModalDeleteView):
+class OrdenCompraAnularView(BSModalUpdateView):
     model = OrdenCompra
-    # template_name = "includes/eliminar generico.html"
+    form_class = OrdenCompraAnularForm    
     template_name = "includes/formulario generico.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 3
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_ANULAR_ORDEN_COMPRA)
-        return HttpResponseRedirect(self.get_success_url())
+    def form_valid(self, form):
+        form.instance.estado = 3
+        registro_guardar(form.instance, self.request)
+                
+        messages.success(self.request, MENSAJE_ANULAR_ORDEN_COMPRA)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(OrdenCompraDeleteView, self).get_context_data(**kwargs)
+        context = super(OrdenCompraAnularView, self).get_context_data(**kwargs)
         context['accion'] = 'Anular'
         context['titulo'] = 'Orden de Compra'
-        # context['item'] = self.object.id
         return context
 
 class OrdenCompraMotivoAnulacionPdfView(View):
@@ -103,33 +104,87 @@ class OrdenCompraMotivoAnulacionPdfView(View):
 
 
 
-class OrdenCompraNuevaVersionView(BSModalDeleteView):
+# class OrdenCompraNuevaVersionView(BSModalDeleteView):
+#     model = OrdenCompra
+#     template_name = "orden_compra/orden_compra/nueva_version.html"
+#     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
+#     context_object_name = 'contexto_orden_compra' 
+
+#     def delete(self, request, *args, **kwargs):
+#         self.object = self.get_object()
+
+#         orden_compra_anterior = self.object
+#         oferta_proveedor = self.object.oferta_proveedor
+
+#         self.object.oferta_proveedor = None
+#         self.object.estado = 3
+
+#         registro_guardar(self.object, self.request)
+#         self.object.save()
+
+#         obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
+#         numero_orden_compra = obj.sociedad_id.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad_id = obj.sociedad_id ))+1, 5)
+
+#         orden = OrdenCompra.objects.create(
+#             internacional_nacional=obj.internacional_nacional,
+#             numero_orden_compra=numero_orden_compra,
+#             oferta_proveedor=oferta_proveedor,
+#             orden_compra_anterior=orden_compra_anterior,
+#             sociedad_id=obj.sociedad_id,
+#             fecha_orden=obj.fecha_orden,
+#             moneda=obj.moneda,
+#             estado=0,
+#         )
+
+#         materiales = obj.OrdenCompraDetalle_orden_compra.all()
+#         for material in materiales:
+#             material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+
+#             orden_detalle = OrdenCompraDetalle.objects.create(
+#                 item=material.item,
+#                 content_type=material.content_type,
+#                 id_registro=material.id_registro,
+#                 cantidad=material.cantidad,
+#                 orden_compra=orden,
+#                 )
+
+#         messages.success(request, MENSAJE_ANULAR_ORDEN_COMPRA)
+#         return HttpResponseRedirect(self.get_success_url())
+
+#     def get_context_data(self, **kwargs):
+#         context = super(OrdenCompraNuevaVersionView, self).get_context_data(**kwargs)
+#         context['accion'] = 'Nueva Versión'
+#         context['titulo'] = 'Orden de Compra'
+#         return context
+
+
+class OrdenCompraNuevaVersionView(BSModalUpdateView):
     model = OrdenCompra
+    form_class = OrdenCompraAnularForm    
     template_name = "orden_compra/orden_compra/nueva_version.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
     context_object_name = 'contexto_orden_compra' 
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        oferta_proveedor = self.object.oferta_proveedor
-        orden_compra_anterior = self.object
-        print('*********************************************')
-        print(orden_compra_anterior)
-        print('*********************************************')
-
-        self.object.oferta_proveedor = None
-        self.object.estado = 3
-
-        registro_guardar(self.object, self.request)
-        self.object.save()
-
+    def form_valid(self, form):
         obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
+        numero_orden_compra = obj.sociedad_id.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad_id = obj.sociedad_id ))+1, 5)
+
+        orden_compra_anterior = obj
+        oferta_proveedor = obj.oferta_proveedor
+
+        obj.oferta_proveedor = None
+        obj.estado = 3
+        obj.motivo_anulacion = form.instance.motivo_anulacion
+
+        registro_guardar(obj, self.request)
+        obj.save()
 
         orden = OrdenCompra.objects.create(
             internacional_nacional=obj.internacional_nacional,
+            numero_orden_compra=numero_orden_compra,
             oferta_proveedor=oferta_proveedor,
             orden_compra_anterior=orden_compra_anterior,
+            sociedad_id=obj.sociedad_id,
             fecha_orden=obj.fecha_orden,
             moneda=obj.moneda,
             estado=0,
@@ -146,15 +201,16 @@ class OrdenCompraNuevaVersionView(BSModalDeleteView):
                 cantidad=material.cantidad,
                 orden_compra=orden,
                 )
-
-        messages.success(request, MENSAJE_ANULAR_ORDEN_COMPRA)
-        return HttpResponseRedirect(self.get_success_url())
+                
+        messages.success(self.request, MENSAJE_ANULAR_ORDEN_COMPRA)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(OrdenCompraNuevaVersionView, self).get_context_data(**kwargs)
-        context['accion'] = 'Nueva Versión'
+        context['accion'] = 'Nueva Version'
         context['titulo'] = 'Orden de Compra'
         return context
+
 
 class OrdenCompraDetailView(DetailView):
     model = OrdenCompra

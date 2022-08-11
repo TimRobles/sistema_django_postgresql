@@ -41,7 +41,7 @@
                 
                 
                 {% if orden_compra.estado != 3 %}
-                <button data-form-url="{% url 'orden_compra_app:orden_compra_eliminar' orden_compra.id %}"
+                <button data-form-url="{% url 'orden_compra_app:orden_compra_anular' orden_compra.id %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Anular">
                     <i class="bi-x-lg"></i>
