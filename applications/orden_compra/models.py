@@ -11,7 +11,7 @@ class OrdenCompra(models.Model):
     incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
     oferta_proveedor = models.OneToOneField(OfertaProveedor, on_delete=models.PROTECT, blank=True, null=True)
-    orden_compra_anterior = models.ForeignKey('self', on_delete=models.PROTECT,blank=True, null=True)
+    orden_compra_anterior = models.OneToOneField('self', on_delete=models.PROTECT,blank=True, null=True, related_name='OrdenCompra_orden_compra_anterior')
     sociedad_id = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='SociedadOrdenCompra', blank=True, null=True)
     fecha_orden = models.DateField('Fecha de Orden', auto_now=False, auto_now_add=False)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
@@ -40,6 +40,20 @@ class OrdenCompra(models.Model):
     class Meta:
         verbose_name = 'Orden Compra'
         verbose_name_plural = 'Ordenes Compra'
+    
+    @property
+    def proveedor(self):
+        try:
+            return self.oferta_proveedor.requerimiento_material.proveedor
+        except:
+            return self.OrdenCompra_orden_compra_anterior.proveedor
+
+    @property
+    def interlocutor(self):
+        try:
+            return self.oferta_proveedor.requerimiento_material.interlocutor_proveedor
+        except:
+            return self.OrdenCompra_orden_compra_anterior.interlocutor
 
     def __str__(self):
         return str(self.id)

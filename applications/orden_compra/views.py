@@ -109,44 +109,32 @@ class OrdenCompraNuevaVersionView(BSModalDeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
-        print(self.object)
-        print(self.object.numero_orden_compra)
-        print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
-        # self.object.estado = 3
-        # registro_guardar(self.object, self.request)
-        # self.object.save()
+        oferta_proveedor = self.object.oferta_proveedor
+        orden_compra_anterior = self.object
+        print('*********************************************')
+        print(orden_compra_anterior)
+        print('*********************************************')
 
+        self.object.oferta_proveedor = None
+        self.object.estado = 3
+
+        registro_guardar(self.object, self.request)
+        self.object.save()
 
         obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
-        print(obj.oferta_proveedor)
 
         orden = OrdenCompra.objects.create(
             internacional_nacional=obj.internacional_nacional,
-            oferta_proveedor=obj.oferta_proveedor,
+            oferta_proveedor=oferta_proveedor,
+            orden_compra_anterior=orden_compra_anterior,
             fecha_orden=obj.fecha_orden,
             moneda=obj.moneda,
+            estado=0,
         )
-
-
-        print('***********************')
-        print(obj.internacional_nacional)
-        print(obj.oferta_proveedor)
-        print(obj.moneda)
-        print(obj.fecha_orden)
-        print('***********************')
 
         materiales = obj.OrdenCompraDetalle_orden_compra.all()
         for material in materiales:
             material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-
-            print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
-            print(material.material)
-            print(material.item)
-            print(material.content_type)
-            print(material.id_registro)
-            print(material.cantidad)
-            print('°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°')
 
             orden_detalle = OrdenCompraDetalle.objects.create(
                 item=material.item,
@@ -155,7 +143,6 @@ class OrdenCompraNuevaVersionView(BSModalDeleteView):
                 cantidad=material.cantidad,
                 orden_compra=orden,
                 )
-
 
         messages.success(request, MENSAJE_ANULAR_ORDEN_COMPRA)
         return HttpResponseRedirect(self.get_success_url())
