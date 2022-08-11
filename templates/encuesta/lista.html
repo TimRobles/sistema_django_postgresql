@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Encuesta
+{% endblock titulo %}
+
+{% block contenido %}
+<h3>Encuesta
+    <button class="create badge bg-primary"
+        data-form-url="{% url 'encuesta_app:respuesta_cliente_crear' %}">
+        Registrar Encuestado
+    </button>
+</h3>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Interlocutor</th>
+            <th>Tipo de Encuesta</th>
+            <th colspan="2" class="text-center">Acciones</th>
+            
+            
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for respuesta in respuestas %}
+        <tr>
+            <td>{{ respuesta.created_at }}</td>
+            <td>{{ respuesta.cliente }}</td>
+            
+            {% if respuesta.interlocutor %}
+            <td>{{ respuesta.interlocutor }}</td>
+            {% else %}
+            <td>{{ respuesta.nombre_interlocutor }}</td>
+            {% endif %}
+                
+            <td>
+                {% if respuesta.tipo_encuesta %}
+                {{ respuesta.tipo_encuesta }}
+                {% endif %}
+            </td>
+                    
+            <td>
+                <button class="create btn bg-warning btn-sm"
+                    data-form-url="{% url 'encuesta_app:respuesta_cliente_actualizar' respuesta.id %}"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+            <td>
+                <a href="{% url 'encuesta_app:encuestar' respuesta.id %} "
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Encuestar">
+                    <i class="bi bi-person-bounding-box"></i>
+                </a>
+            </td>
+            <td>
+                <a href="{% url 'encuesta_app:respuesta_detalle_ver' respuesta.id %} "
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+{% endblock contenido %}
