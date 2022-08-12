@@ -61,7 +61,8 @@
                     <td>{{ material.item}}</td>
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
-                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.cantidad_conteo|redondear|intcomma }}</td>
+                    <td>{{ material.almacen }}</td>
                 </tr>
             {% endfor %}    
         </tbody>
