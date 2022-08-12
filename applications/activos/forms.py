@@ -13,6 +13,7 @@ class ActivoBaseForm(BSModalModelForm):
             'peso',
             'sub_familia',
             'depreciacion',
+            'vida_util',
             'producto_sunat',
             'traduccion',
             'partida',
