@@ -52,6 +52,7 @@
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
                     <th>Estado</th>
+                    <th>Motivo de Anulación</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,6 +62,13 @@
                     <td>{{ contexto_orden_compra.proveedor }}</td>
                     <td>{{ contexto_orden_compra.interlocutor }}</td>
                     <td>{{ contexto_orden_compra.get_estado_display }}</td>
+                    
+                    {% if  contexto_orden_compra.motivo_anulacion  %}
+                    <td>{{ contexto_orden_compra.motivo_anulacion }}</td>
+                        
+                    {% endif %}
+                    <td> - </td>
+                        
 
                 </tr>
             </tbody>

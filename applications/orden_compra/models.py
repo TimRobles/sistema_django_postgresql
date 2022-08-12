@@ -40,7 +40,11 @@ class OrdenCompra(models.Model):
     class Meta:
         verbose_name = 'Orden Compra'
         verbose_name_plural = 'Ordenes Compra'
-    
+        ordering = [
+            '-numero_orden_compra',
+            '-created_at',
+            ]
+            
     @property
     def proveedor(self):
         try:
