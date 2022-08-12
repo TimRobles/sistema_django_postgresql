@@ -39,6 +39,7 @@ class RecepcionCompra(models.Model):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return documento.sociedad
 
+    @property
     def documento(self):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return documento

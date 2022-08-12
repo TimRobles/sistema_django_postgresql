@@ -90,6 +90,10 @@ class OrdenCompraDetalle(models.Model):
             'orden_compra',
             'item',
             ]
+    
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
         return "%s - %s" % (self.item, str(self.content_type.get_object_for_this_type(id = self.id_registro)))

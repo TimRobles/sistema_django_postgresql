@@ -55,6 +55,10 @@ class ComprobanteCompraPI(models.Model):
 
     def fecha(self):
         return self.fecha_comprobante
+
+    @property
+    def detalle(self):
+        return self.ComprobanteCompraPIDetalle_comprobante_compra.all()
         
     def __str__(self):
         return "ComprobanteCompraPI - %s" % (self.numero_comprobante_compra)
@@ -88,6 +92,10 @@ class ComprobanteCompraPIDetalle(models.Model):
             'comprobante_compra',
             'item',
             ]
+
+    @property
+    def producto(self):
+        return self.orden_compra_detalle.producto
 
     def __str__(self):
         return "%s - %s" % (self.item, str(self.orden_compra_detalle))
