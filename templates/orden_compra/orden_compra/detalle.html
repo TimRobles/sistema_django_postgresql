@@ -21,7 +21,7 @@
     
     
     {% if contexto_orden_compra.estado == 0  %}
-    <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.id %}"
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.slug %}"
         data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Enviar Correo
@@ -30,7 +30,7 @@
 
 
     {% if contexto_orden_compra.estado == 2 %}
-    <button data-form-url="{% url 'orden_compra_app:orden_compra_generar_comprobante_compra_total' contexto_orden_compra.id %}"
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_generar_comprobante_compra_total' contexto_orden_compra.slug %}"
         data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Generar Comprobante Total
@@ -75,6 +75,17 @@
         </table>
     </div>
     <br>
+
+    <h3>Materiales
+    {% if contexto_orden_compra.estado == 0 %}
+    <button 
+        class="create btn btn-primary">
+        Agregar Material
+    </button>
+    {% endif %}
+    </h3>
+
+
     <div id="tabla">
         {% include 'orden_compra/orden_compra/detalle_tabla.html' %}
     </div>

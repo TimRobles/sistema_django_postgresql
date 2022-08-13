@@ -20,6 +20,7 @@ from .forms import (
     OrdenCompraForm,
     OrdenCompraEnviarCorreoForm,
     OrdenCompraAnularForm,
+    OrdenCompraUpdateForm,
 )
 
 
@@ -70,30 +71,24 @@ class OrdenCompraMotivoAnulacionPdfView(View):
         pie_pagina = PIE_DE_PAGINA_DEFAULT
 
         obj = OrdenCompra.objects.get(slug=self.kwargs['slug'])
-        print('**********************')
-        print(obj)
-        print('**********************')
 
-        # fecha=datetime.strftime(obj.fecha_orden,'%d - %m - %Y')
         fecha=datetime.strftime(obj.updated_at,'%d - %m - %Y')
 
-        # Texto = titulo + '\n' +str(obj.oferta_proveedor.requerimiento_material.proveedor) + '\n' + str(fecha)
         Texto = titulo + '\n' +str(obj.oferta_proveedor) + '\n' + str(obj.motivo_anulacion) + '\n' + str(fecha)
 
         TablaEncabezado = ['Item','Material', 'Unidad', 'Cantidad']
 
-        detalle = obj.OrdenCompraDetalle_orden_compra
-        materiales = detalle.all()
+        orden_detalle = obj.OrdenCompraDetalle_orden_compra.all()
 
         TablaDatos = []
-        for material in materiales:
+        for detalle in orden_detalle:
             fila = []
 
-            material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-            fila.append(material.item)
-            fila.append(material.material)
-            fila.append(material.material.unidad_base)
-            fila.append(material.cantidad.quantize(Decimal('0.01')))
+            detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            fila.append(detalle.item)
+            fila.append(detalle.material)
+            fila.append(detalle.material.unidad_base)
+            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
 
             TablaDatos.append(fila)
 
@@ -101,9 +96,6 @@ class OrdenCompraMotivoAnulacionPdfView(View):
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
-
-        obj.estado = 2
-        obj.save()
 
         return respuesta
 
@@ -117,6 +109,9 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
     def form_valid(self, form):
         if self.request.session['primero']:
             obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
+            print(obj)
+            print(obj)
+            print(obj)
             numero_orden_compra = obj.sociedad_id.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad_id = obj.sociedad_id ))+1, 5)
 
             orden_compra_anterior = obj
@@ -132,27 +127,49 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
             obj.save()
 
             orden = OrdenCompra.objects.create(
-                internacional_nacional=obj.internacional_nacional,
-                numero_orden_compra=numero_orden_compra,
-                oferta_proveedor=oferta_proveedor,
-                orden_compra_anterior=orden_compra_anterior,
+                internacional_nacional = obj.internacional_nacional,
+                incoterms = obj.incoterms,
+                numero_orden_compra= numero_orden_compra,
+                oferta_proveedor= oferta_proveedor,
+                orden_compra_anterior= orden_compra_anterior,
+                sociedad_id= obj.sociedad_id,
+                fecha_orden= obj.fecha_orden,
+                moneda= obj.moneda,
+                descuento_global = obj.descuento_global ,
+                total_descuento = obj.total_descuento,
+                total_anticipo = obj.total_anticipo,
+                total_gravada = obj.total_gravada,
+                total_inafacta = obj.total_inafacta,
+                total_exonerada = obj.total_exonerada,
+                total_igv = obj.total_igv,
+                total_gratuita = obj.total_gratuita,
+                total_otros_cargos = obj.total_otros_cargos,
+                total_isc = obj.total_isc,
+                total = obj.total,
                 slug = slug_aleatorio(OrdenCompra),
-                sociedad_id=obj.sociedad_id,
-                fecha_orden=obj.fecha_orden,
-                moneda=obj.moneda,
+                condiciones = obj.condiciones,
                 estado=0,
             )
 
-            materiales = obj.OrdenCompraDetalle_orden_compra.all()
-            for material in materiales:
-                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+            orden_detalle = obj.OrdenCompraDetalle_orden_compra.all()
+            for detalle in orden_detalle:
+                detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
 
                 orden_detalle = OrdenCompraDetalle.objects.create(
-                    item=material.item,
-                    content_type=material.content_type,
-                    id_registro=material.id_registro,
-                    cantidad=material.cantidad,
+                    item=detalle.item,
+                    content_type=detalle.content_type,
+                    id_registro=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
+                    precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                    precio_final_con_igv = detalle.precio_final_con_igv,
+                    descuento = detalle.descuento,
+                    sub_total = detalle.sub_total,
+                    igv = detalle.igv,
+                    total = detalle.total,
+                    tipo_igv = detalle.tipo_igv,
                     orden_compra=orden,
+                     
                     )
             messages.success(self.request, MENSAJE_ANULAR_ORDEN_COMPRA)
             self.request.session['primero'] = False
@@ -172,25 +189,22 @@ class OrdenCompraDetailView(DetailView):
     context_object_name = 'contexto_orden_compra'
 
     def get_context_data(self, **kwargs):
-        context = super(OrdenCompraDetailView, self).get_context_data(**kwargs)
-        obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
-                
-        materiales = obj.OrdenCompraDetalle_orden_compra.all()
+        orden_compra = OrdenCompra.objects.get(slug = self.kwargs['slug'])
 
-        for material in materiales:
-            material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+        context = super(OrdenCompraDetailView, self).get_context_data(**kwargs)
         
-        context['detalle_orden_compra'] = materiales 
+        orden_detalle = OrdenCompraDetalle.objects.ver_detalle(orden_compra)
+        context['orden_compra_detalle'] = orden_detalle 
         return context
 
-def OrdenCompraDetailTabla(request, orden_id):
+def OrdenCompraDetailTabla(request, slug):
     data = dict()
     if request.method == 'GET':
-        template = 'orden_compra/orden_compra/detalle_orden_compra_tabla.html'
+        template = 'orden_compra/orden_compra/detalle_tabla.html'
         context = {}
-        obj = OrdenCompra.objects.get(id = orden_id)
-        context['contexto_orden_compra'] = obj
-        context['detalle_orden_compra'] = OrdenCompraDetalle.objects.filter(orden_compra = obj)
+        orden_compra = OrdenCompra.objects.get(slug = slug)
+        context['contexto_orden_compra'] = orden_compra
+        context['orden_compra_detalle'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
 
         data['table'] = render_to_string(
             template,
@@ -198,9 +212,6 @@ def OrdenCompraDetailTabla(request, orden_id):
             request=request
         )
         return JsonResponse(data)
-
-
-
 
 class OrdenCompraPdfView(View):
     def get(self, request, *args, **kwargs):
@@ -218,18 +229,16 @@ class OrdenCompraPdfView(View):
 
         TablaEncabezado = ['Item','Material', 'Unidad', 'Cantidad']
 
-        detalle = obj.OrdenCompraDetalle_orden_compra
-        materiales = detalle.all()
-
+        orden_detalle = obj.OrdenCompraDetalle_orden_compra.all()
         TablaDatos = []
-        for material in materiales:
+        for detalle in orden_detalle:
             fila = []
 
-            material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-            fila.append(material.item)
-            fila.append(material.material)
-            fila.append(material.material.unidad_base)
-            fila.append(material.cantidad.quantize(Decimal('0.01')))
+            detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            fila.append(detalle.item)
+            fila.append(detalle.material)
+            fila.append(detalle.material.unidad_base)
+            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
 
             TablaDatos.append(fila)
 
@@ -238,9 +247,6 @@ class OrdenCompraPdfView(View):
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
-        obj.estado = 2
-        obj.save()
-
         return respuesta
 
 class OrdenCompraEnviarCorreoView(BSModalFormView):
@@ -248,11 +254,11 @@ class OrdenCompraEnviarCorreoView(BSModalFormView):
     form_class = OrdenCompraEnviarCorreoForm
 
     def get_success_url(self):
-        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'pk':self.kwargs['orden_id']})
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().orden_compra.slug})
 
     def form_valid(self, form):
         if self.request.session['primero']:
-            orden = OrdenCompra.objects.get(id=self.kwargs['orden_id'])            
+            orden = OrdenCompra.objects.get(id=self.kwargs['slug'])            
             correos_proveedor = form.cleaned_data['correos_proveedor']
             correos_internos = form.cleaned_data['correos_internos']
             self.request.session['primero'] = False
@@ -277,7 +283,8 @@ class OrdenCompraEnviarCorreoView(BSModalFormView):
 
     def get_form_kwargs(self):
         kwargs = super(OrdenCompraEnviarCorreoView, self).get_form_kwargs()
-        kwargs['proveedor'] = OrdenCompra.objects.get(id=self.kwargs['orden_id']).oferta_proveedor.requerimiento_material.proveedor 
+        # kwargs['proveedor'] = OrdenCompra.objects.get(id=self.kwargs['orden_id']).oferta_proveedor.requerimiento_material.proveedor 
+        kwargs['proveedor'] = OrdenCompra.objects.get(slug=self.kwargs['slug']).oferta_proveedor.requerimiento_material.proveedor 
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -285,6 +292,25 @@ class OrdenCompraEnviarCorreoView(BSModalFormView):
         context = super(OrdenCompraEnviarCorreoView, self).get_context_data(**kwargs)
         context['accion']="Enviar"
         context['titulo']="Correos"
+        return context
+
+class OfertaProveedorDetalleUpdateView(BSModalUpdateView):
+    model = OrdenCompraDetalle
+    template_name = "orden_compra/orden_compra/actualizar.html"
+    form_class = OrdenCompraUpdateForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().orden_compra.slug})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(OfertaProveedorDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precios"
+        context['material'] = self.object
         return context
 
 

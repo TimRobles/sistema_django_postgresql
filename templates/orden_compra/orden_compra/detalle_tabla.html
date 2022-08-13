@@ -5,7 +5,9 @@
         <thead>
             <tr>
                 <th>Item</th>
-                <th>Material</th>
+                <th>Name</th>
+                <th>Brand</th>
+                <th>Description</th>
                 <th>Unidad</th>
                 <th>Tipo IGV</th>
                 <th>Cantidad</th>
@@ -20,10 +22,12 @@
             </tr>
         </thead>
         <tbody>
-            {% for detalle in detalle_orden_compra  %}
+            {% for detalle in orden_compra_detalle  %}
             <tr>
                 <td> {{ detalle.item }} </td>
-                <td> {{ detalle.material }}</td>
+                <td> {{ detalle.proveedor_material.name  }}</td>
+                <td> {{ detalle.proveedor_material.brand  }}</td>
+                <td> {{ detalle.proveedor_material.description  }}</td>
                 <td> {{ detalle.material.unidad_base }}</td>
                 <td> {{ detalle.get_tipo_igv_display }} </td>
                 <td class="text-end">{{ detalle.cantidad|intcomma }}</td>
@@ -34,6 +38,19 @@
                 <td class="text-end">{{ detalle.sub_total|intcomma }}</td>
                 <td class="text-end">{{ detalle.igv|intcomma }}</td>
                 <td class="text-end">{{ detalle.total|intcomma }}</td>
+
+
+                <td class="text-center text-nowrap">
+                    {% if contexto_orden_compra.estado == 0 %}
+                    <button data-form-url="{% url 'orden_compra_app:orden_compra_actualizar_material' detalle.id %}"
+                        data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.slug %}"
+                        class="delete btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    {% endif %}
+                </td>
             </tr>
                 
             {% endfor %}

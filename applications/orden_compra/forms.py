@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
+from ..material.models import ProveedorMaterial
 from .models import OrdenCompra, OrdenCompraDetalle
 
 class OrdenCompraForm(BSModalModelForm):
@@ -114,3 +115,50 @@ class OrdenCompraAnularForm(BSModalModelForm):
         super(OrdenCompraAnularForm, self).__init__(*args, **kwargs)          
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class OrdenCompraUpdateForm(BSModalModelForm):
+    name = forms.CharField(max_length=50)
+    brand = forms.CharField(max_length=50)
+    description = forms.CharField(max_length=50)
+    class Meta:
+        model = OrdenCompraDetalle
+        fields=(
+            'name',
+            'brand',
+            'description',
+            'tipo_igv',
+            'cantidad',
+            'precio_unitario_sin_igv',
+            'precio_unitario_con_igv',
+            'precio_final_con_igv',
+            'descuento',
+            'sub_total',
+            'igv',
+            'total',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OrdenCompraUpdateForm, self).__init__(*args, **kwargs)
+        proveedor = self.instance.orden_compra.proveedor
+        proveedor_material = ProveedorMaterial.objects.get(
+            content_type = self.instance.content_type,
+            id_registro = self.instance.id_registro,
+            proveedor = proveedor,
+            estado_alta_baja = 1,
+        )
+        self.fields['name'].initial = proveedor_material.name
+        self.fields['brand'].initial = proveedor_material.brand
+        self.fields['description'].initial = proveedor_material.description
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+        self.fields['name'].disabled = True
+        self.fields['brand'].disabled = True
+        self.fields['description'].disabled = True
+        self.fields['precio_unitario_sin_igv'].disabled = True
+        self.fields['descuento'].disabled = True
+        self.fields['sub_total'].disabled = True
+        self.fields['igv'].disabled = True
+        self.fields['total'].disabled = True
+        

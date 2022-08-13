@@ -33,7 +33,7 @@
             <td>{{ orden_compra.get_estado_display}}</td>
             
             <td class="text-nowrap">
-                <a href="{% url 'orden_compra_app:orden_compra_detalle' orden_compra.id %}"
+                <a href="{% url 'orden_compra_app:orden_compra_detalle' orden_compra.slug %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
