@@ -10,20 +10,27 @@
         <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
     </h3>
 
+    
+    {% if contexto_orden_compra.estado != 3 %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_nueva_version' contexto_orden_compra.id %}"
         data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Nueva Versión
     </button>
-
-    <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.id %}"
+    {% endif %}
+    
+    
+    {% if contexto_orden_compra.estado == 0  %}
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.slug %}"
         data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Enviar Correo
     </button>
-    
+    {% endif %}
+
+
     {% if contexto_orden_compra.estado == 2 %}
-    <button data-form-url="{% url 'orden_compra_app:orden_compra_generar_comprobante_compra_total' contexto_orden_compra.id %}"
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_generar_comprobante_compra_total' contexto_orden_compra.slug %}"
         data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Generar Comprobante Total
@@ -45,21 +52,38 @@
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
                     <th>Estado</th>
+                    <th>Motivo de Anulación</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>{{ contexto_orden_compra.fecha_orden|date:'d/m/Y' }}</td>
                     <td>{{ contexto_orden_compra.numero_orden_compra }}</td>
-                    <td>{{ contexto_orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
-                    <td>{{ contexto_orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+                    <td>{{ contexto_orden_compra.proveedor }}</td>
+                    <td>{{ contexto_orden_compra.interlocutor }}</td>
                     <td>{{ contexto_orden_compra.get_estado_display }}</td>
+                    
+                    {% if  contexto_orden_compra.motivo_anulacion  %}
+                    <td>{{ contexto_orden_compra.motivo_anulacion }}</td>
+                        
+                    {% endif %}
+                    <td> - </td>
+                        
 
                 </tr>
             </tbody>
         </table>
     </div>
     <br>
+
+    <h3>Materiales</h3>
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_agregar_material' contexto_orden_compra.id %}"
+        data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.id %}"
+        class="create btn btn-primary">
+        Agregar Material
+    </button>
+
+
     <div id="tabla">
         {% include 'orden_compra/orden_compra/detalle_tabla.html' %}
     </div>

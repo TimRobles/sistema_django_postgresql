@@ -9,10 +9,10 @@ class OrdenCompraAdmin(admin.ModelAdmin):
 
     list_display = (
         'id',
-        'oferta_proveedor',
+        'estado',
+        'numero_orden_compra',
         'internacional_nacional',
         'incoterms',
-        'numero_orden_compra',
         'oferta_proveedor',
         'orden_compra_anterior',
         'sociedad_id',
@@ -33,7 +33,6 @@ class OrdenCompraAdmin(admin.ModelAdmin):
         'archivo',
         'condiciones',
         'motivo_anulacion',
-        'estado',
         'created_at',
         'created_by',
         'updated_at',
