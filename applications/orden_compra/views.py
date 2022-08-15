@@ -112,11 +112,7 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
     def form_valid(self, form):
         if self.request.session['primero']:
             obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
-            print(obj)
-            print(obj)
-            print(obj)
             numero_orden_compra = obj.sociedad_id.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad_id = obj.sociedad_id ))+1, 5)
-
             orden_compra_anterior = obj
             oferta_proveedor = obj.oferta_proveedor
 
@@ -289,7 +285,6 @@ class OrdenCompraEnviarCorreoView(BSModalFormView):
 
     def get_form_kwargs(self):
         kwargs = super(OrdenCompraEnviarCorreoView, self).get_form_kwargs()
-        # kwargs['proveedor'] = OrdenCompra.objects.get(id=self.kwargs['orden_id']).oferta_proveedor.requerimiento_material.proveedor 
         kwargs['proveedor'] = OrdenCompra.objects.get(slug=self.kwargs['slug']).oferta_proveedor.requerimiento_material.proveedor 
         return kwargs
 
@@ -342,8 +337,8 @@ class OfertaProveedorlDetalleCreateView(BSModalFormView):
             if created:
                 obj.item = item + 1
                 obj.cantidad = cantidad
-            else:
-                obj.cantidad = obj.cantidad + cantidad
+            # else:
+                # obj.cantidad = obj.cantidad +cantidad 
 
             registro_guardar(obj, self.request)
             obj.save()
