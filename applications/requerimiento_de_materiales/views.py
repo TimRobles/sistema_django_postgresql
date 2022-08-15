@@ -397,6 +397,12 @@ class RequerimientoMaterialProveedorDetailView(PermissionRequiredMixin, DetailVi
         materiales = obj.RequerimientoMaterialProveedorDetalle_requerimiento_material.all()
         for material in materiales:
             material.material = material.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id=material.id_requerimiento_material_detalle.id_registro)
+            material.proveedor_material, created = ProveedorMaterial.objects.get_or_create(
+                content_type = material.id_requerimiento_material_detalle.content_type,
+                id_registro = material.id_requerimiento_material_detalle.id_registro,
+                proveedor = obj.proveedor,
+                estado_alta_baja = 1,
+            )
 
         context['requerimiento'] = obj
         context['materiales'] = materiales
@@ -414,6 +420,12 @@ def RequerimientoMaterialProveedorDetailTabla(request, pk):
 
         for material in materiales:
             material.material = material.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id=material.id_requerimiento_material_detalle.id_registro)
+            material.proveedor_material, created = ProveedorMaterial.objects.get_or_create(
+                content_type = material.id_requerimiento_material_detalle.content_type,
+                id_registro = material.id_requerimiento_material_detalle.id_registro,
+                proveedor = obj.proveedor,
+                estado_alta_baja = 1,
+            )
 
         context['requerimiento'] = obj
         context['materiales'] = materiales
@@ -468,6 +480,16 @@ class RequerimientoMaterialProveedorDetalleUpdateView(PermissionRequiredMixin, B
         return reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_detalle', kwargs={'pk':self.get_object().requerimiento_material.id})
 
     def form_valid(self, form):
+        proveedor_material = ProveedorMaterial.objects.get(
+                content_type = form.instance.id_requerimiento_material_detalle.content_type,
+                id_registro = form.instance.id_requerimiento_material_detalle.id_registro,
+                proveedor = form.instance.requerimiento_material.proveedor,
+                estado_alta_baja = 1,
+            )
+        proveedor_material.name = form.cleaned_data['name']
+        proveedor_material.brand = form.cleaned_data['brand']
+        proveedor_material.description = form.cleaned_data['description']
+        proveedor_material.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -631,7 +653,6 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
             internacional_nacional = form.cleaned_data['internacional_nacional']
             moneda = form.cleaned_data['moneda']
 
-
             oferta = OfertaProveedor.objects.create(
                 internacional_nacional=internacional_nacional,
                 requerimiento_material=requerimiento,
@@ -648,12 +669,22 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                     proveedor = requerimiento.proveedor,
                     estado_alta_baja = 1,
                 )
+                print("**************************")
+                print(internacional_nacional)
+                print(internacional_nacional==1)
+                print(type(internacional_nacional))
+                print("**************************")
+                if internacional_nacional=='1':
+                    igv = 8
+                else:
+                    igv = 1
 
                 oferta_detalle = OfertaProveedorDetalle.objects.create(
                     item=detalle.item,
                     proveedor_material=proveedor_material,
                     cantidad=detalle.cantidad,
                     oferta_proveedor=oferta,
+                    tipo_igv = igv,
                     )
             self.request.session['primero'] = False
 
