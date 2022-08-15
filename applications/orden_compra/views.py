@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.shortcuts import render
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import numeroXn
+from applications.funciones import numeroXn, obtener_totales
 from applications.funciones import slug_aleatorio
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -198,6 +198,8 @@ class OrdenCompraDetailView(DetailView):
         
         orden_detalle = OrdenCompraDetalle.objects.ver_detalle(orden_compra)
         context['orden_compra_detalle'] = orden_detalle 
+        context['totales'] = obtener_totales(OrdenCompra.objects.get(slug=self.kwargs['slug']))
+
         return context
 
 def OrdenCompraDetailTabla(request, slug):
@@ -208,6 +210,7 @@ def OrdenCompraDetailTabla(request, slug):
         orden_compra = OrdenCompra.objects.get(slug = slug)
         context['contexto_orden_compra'] = orden_compra
         context['orden_compra_detalle'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
+        context['totales'] = obtener_totales(OrdenCompra.objects.get(slug=slug))
 
         data['table'] = render_to_string(
             template,
