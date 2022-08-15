@@ -7,6 +7,9 @@
             <tr>
                 <th>Item</th>
                 <th>Material</th>
+                <th>Name</th>
+                <th>Brand</th>
+                <th>Description</th>
                 <th>Unidad</th>
                 <th class="text-end">Cantidad</th>
                 <th>Acciones</th>
@@ -18,6 +21,9 @@
 
                     <td>{{ material.item }}</td>
                     <td>{{ material.material }}</td>
+                    <td>{{ material.proveedor_material.name }}</td>
+                    <td>{{ material.proveedor_material.brand }}</td>
+                    <td>{{ material.proveedor_material.description }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
                     <td>

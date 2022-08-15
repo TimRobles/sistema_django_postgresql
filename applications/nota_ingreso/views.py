@@ -39,7 +39,7 @@ def NotaIngresoDetailTabla(request, recepcion_id):
         nota_ingreso = NotaIngreso.objects.get(id = recepcion_id)
         context['contexto_nota_ingreso'] = nota_ingreso
         context['materiales'] = NotaIngreso.objects.ver_detalle(recepcion_id)
-        context['regresar'] = reverse_lazy('recepcion_compra_app:recepcion_compra_detalle', kwargs={'pk':recepcion_id})
+        context['regresar'] = reverse_lazy('recepcion_compra_app:recepcion_compra_detalle', kwargs={'pk':nota_ingreso.recepcion_compra.id})
         
         data['table'] = render_to_string(
             template,
@@ -81,7 +81,6 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
 
             buscar = NotaIngresoDetalle.objects.filter(
                 comprobante_compra_detalle = comprobante_compra_detalle,
-                nota_ingreso = nota_ingreso,
             )
 
             if buscar:
@@ -164,7 +163,6 @@ class NotaIngresoActualizarMaterialView(BSModalFormView):
 
             buscar = NotaIngresoDetalle.objects.filter(
                 comprobante_compra_detalle = comprobante_compra_detalle,
-                nota_ingreso = nota_ingreso_detalle.nota_ingreso,
             ).exclude(id=nota_ingreso_detalle.id)
 
             if buscar:
@@ -228,7 +226,6 @@ class NotaIngresoFinalizarConteoView(BSModalUpdateView):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.object.id})
 
     def form_valid(self, form):
-        print("*************************")
         detalles = form.instance.NotaIngresoDetalle_nota_ingreso.all()
         movimiento_inicial = TipoMovimiento.objects.get(codigo=101)
 
@@ -284,8 +281,9 @@ class NotaIngresoFinalizarConteoView(BSModalUpdateView):
                 created_by = self.request.user,
                 updated_by = self.request.user,
             )
-            print(movimiento_anterior)
-        print("*************************")
+
+            form.instance.estado = 2
+            
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):

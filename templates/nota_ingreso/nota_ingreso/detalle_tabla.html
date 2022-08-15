@@ -1,11 +1,14 @@
 {% load humanize %}
 {% load funciones_propias %}
 <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+
+{% if contexto_nota_ingreso.estado == 1 %}
 <button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_finalizar_conteo' contexto_nota_ingreso.id %}"
     class="delete btn btn-primary">
     Finalizar Conteo
 </button>
-<br>
+{% endif %}
+
 <div class="table-responsive">
     <table class="table">
         <thead>
