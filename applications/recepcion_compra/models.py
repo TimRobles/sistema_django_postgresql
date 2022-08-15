@@ -69,7 +69,7 @@ class ArchivoRecepcionCompra(models.Model):
             ]
 
     def __str__(self):
-        return self.archivo
+        return str(self.archivo)
 
 
 class FotoRecepcionCompra(models.Model):
@@ -90,5 +90,5 @@ class FotoRecepcionCompra(models.Model):
             ]
 
     def __str__(self):
-        return self.foto
+        return str(self.foto)
 

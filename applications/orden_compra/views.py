@@ -324,6 +324,7 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
                     id_registro_producto = material.id_registro,
                     cantidad = material.cantidad,
                     tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
                     signo_factor_multiplicador = +1,
                     content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
                     id_registro_documento_proceso = comprobante.id,

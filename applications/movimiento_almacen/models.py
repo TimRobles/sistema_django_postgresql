@@ -26,7 +26,8 @@ class TipoStock(models.Model):
 class TipoMovimiento(models.Model):
     codigo = models.IntegerField('Código', blank=True, null=True, unique=True)
     descripcion = models.CharField('Descripción del movimiento', max_length=50, unique=True)
-    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
+    tipo_stock_inicial = models.ForeignKey(TipoStock, on_delete=models.CASCADE, blank=True, null=True, related_name='TipoMovimiento_tipo_stock_inicial')
+    tipo_stock_final = models.ForeignKey(TipoStock, on_delete=models.CASCADE, related_name='TipoMovimiento_tipo_stock_final')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoMovimiento_created_by', editable=False)
@@ -51,6 +52,7 @@ class MovimientosAlmacen(models.Model):
     id_registro_producto = models.IntegerField()
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
     tipo_movimiento = models.ForeignKey(TipoMovimiento, on_delete=models.PROTECT)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
     signo_factor_multiplicador = models.IntegerField('Signo Factor Multiplicador', choices=SIGNOS)
     content_type_documento_proceso = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='MovimientosAlmacen_content_type_documento_proceso')
     id_registro_documento_proceso = models.IntegerField()

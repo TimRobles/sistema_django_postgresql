@@ -21,4 +21,4 @@ class Almacen(models.Model):
         verbose_name_plural = 'Almacenes'
 
     def __str__(self):
-        return self.nombre
+        return "%s - %s" % (self.nombre, self.sede)
