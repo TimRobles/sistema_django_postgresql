@@ -98,7 +98,7 @@ class ComprobanteCompraPIDetalle(models.Model):
         return self.orden_compra_detalle.producto
 
     def __str__(self):
-        return "%s - %s" % (self.item, str(self.orden_compra_detalle))
+        return "%s" % (str(self.orden_compra_detalle))
 
 
 class ArchivoComprobanteCompraPI(models.Model):

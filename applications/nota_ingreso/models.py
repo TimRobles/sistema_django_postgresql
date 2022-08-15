@@ -35,9 +35,9 @@ class NotaIngreso(models.Model):
 
 
 class NotaIngresoDetalle(models.Model):
-    item = models.IntegerField()
+    item = models.IntegerField(blank=True, null=True)
     comprobante_compra_detalle = models.ForeignKey(ComprobanteCompraPIDetalle, on_delete=models.PROTECT, related_name='NotaIngresoDetalle_comprobante_compra_detalle')
-    cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10)
+    cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT)
     nota_ingreso = models.ForeignKey(NotaIngreso, on_delete=models.PROTECT, related_name='NotaIngresoDetalle_nota_ingreso')
 
@@ -49,6 +49,9 @@ class NotaIngresoDetalle(models.Model):
     class Meta:
         verbose_name = 'Nota de Ingreso Detalle'
         verbose_name_plural = 'Notas de Ingreso Detalles'
+        ordering = [
+            'item',
+            ]
 
     def __str__(self):
-        return str(self.item)
+        return "%s" % (self.comprobante_compra_detalle)
