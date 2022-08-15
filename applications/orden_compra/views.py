@@ -8,6 +8,8 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovim
 from applications.orden_compra.pdf import generarOrdenCompra, generarMotivoAnulacionOrdenCompra
 from django.core.mail import EmailMultiAlternatives
 
+# from sistema_django.applications import oferta_proveedor, orden_compra
+
 
 from .models import (
     OrdenCompra,
@@ -20,7 +22,8 @@ from .forms import (
     OrdenCompraForm,
     OrdenCompraEnviarCorreoForm,
     OrdenCompraAnularForm,
-    OrdenCompraUpdateForm,
+    OrdenCompraDetalleUpdateForm,
+    OrdenCompraDetalleAgregarForm,
 )
 
 
@@ -297,7 +300,7 @@ class OrdenCompraEnviarCorreoView(BSModalFormView):
 class OfertaProveedorDetalleUpdateView(BSModalUpdateView):
     model = OrdenCompraDetalle
     template_name = "orden_compra/orden_compra/actualizar.html"
-    form_class = OrdenCompraUpdateForm
+    form_class = OrdenCompraDetalleUpdateForm
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().orden_compra.slug})
@@ -312,6 +315,45 @@ class OfertaProveedorDetalleUpdateView(BSModalUpdateView):
         context['titulo'] = "Precios"
         context['material'] = self.object
         return context
+
+
+class OfertaProveedorlDetalleCreateView(BSModalFormView):
+    template_name = "orden_compra/orden_compra/form_material.html"
+    form_class = OrdenCompraDetalleAgregarForm
+
+    success_url = reverse_lazy('orden_compra_app:orden_compra_detalle')
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            orden_compra = OrdenCompra.objects.get(id = self.kwargs['pk'])
+            item = len(OrdenCompraDetalle.objects.filter(orden_compra = orden_compra))
+
+            material = form.cleaned_data.get('material')
+            cantidad = form.cleaned_data.get('cantidad')
+
+            obj, created = OrdenCompraDetalle.objects.get_or_create(
+                content_type = ContentType.objects.get_for_model(material),
+                id_registro = material.id,
+                orden_compra = orden_compra,
+            )
+            if created:
+                obj.item = item + 1
+                obj.cantidad = cantidad
+            else:
+                obj.cantidad = obj.cantidad + cantidad
+
+            registro_guardar(obj, self.request)
+            obj.save()
+            self.request.session['primero'] = False
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(OfertaProveedorlDetalleCreateView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Agregar Material '
+        context['accion'] = 'Guardar'
+        return context
+
 
 
 class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):

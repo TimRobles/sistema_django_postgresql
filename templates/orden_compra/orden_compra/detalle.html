@@ -76,14 +76,12 @@
     </div>
     <br>
 
-    <h3>Materiales
-    {% if contexto_orden_compra.estado == 0 %}
-    <button 
+    <h3>Materiales</h3>
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_agregar_material' contexto_orden_compra.id %}"
+        data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.id %}"
         class="create btn btn-primary">
         Agregar Material
     </button>
-    {% endif %}
-    </h3>
 
 
     <div id="tabla">

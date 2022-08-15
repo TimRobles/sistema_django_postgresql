@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from ..material.models import ProveedorMaterial
 from .models import OrdenCompra, OrdenCompraDetalle
+from applications.material.models import Material
+
 
 class OrdenCompraForm(BSModalModelForm):
     class Meta:
@@ -117,7 +119,7 @@ class OrdenCompraAnularForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-class OrdenCompraUpdateForm(BSModalModelForm):
+class OrdenCompraDetalleUpdateForm(BSModalModelForm):
     name = forms.CharField(max_length=50)
     brand = forms.CharField(max_length=50)
     description = forms.CharField(max_length=50)
@@ -139,7 +141,7 @@ class OrdenCompraUpdateForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
-        super(OrdenCompraUpdateForm, self).__init__(*args, **kwargs)
+        super(OrdenCompraDetalleUpdateForm, self).__init__(*args, **kwargs)
         proveedor = self.instance.orden_compra.proveedor
         proveedor_material = ProveedorMaterial.objects.get(
             content_type = self.instance.content_type,
@@ -161,4 +163,19 @@ class OrdenCompraUpdateForm(BSModalModelForm):
         self.fields['sub_total'].disabled = True
         self.fields['igv'].disabled = True
         self.fields['total'].disabled = True
-        
+
+
+class OrdenCompraDetalleAgregarForm(BSModalForm):
+    material = forms.ModelChoiceField(queryset=Material.objects.all())
+    cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+    class Meta:
+        model = OrdenCompraDetalle
+        fields=(
+            'material',
+            'cantidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OrdenCompraDetalleAgregarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
