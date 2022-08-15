@@ -9,6 +9,13 @@
 </button>
 {% endif %}
 
+{% if contexto_nota_ingreso.estado == 2 %}
+<button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_finalizar_conteo' contexto_nota_ingreso.id %}"
+    class="delete btn btn-danger">
+    Anular
+</button>
+{% endif %}
+
 <div class="table-responsive">
     <table class="table">
         <thead>
