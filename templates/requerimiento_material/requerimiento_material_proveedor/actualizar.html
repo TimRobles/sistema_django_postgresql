@@ -8,6 +8,40 @@
     </div>
     <div class="modal-body">
         {{ form.material.value }}
+        <div class="input-group flex-nowrap mt-3{% if form.name.errors %} invalid{% endif %}"
+        {% if form.name.help_text %}
+        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ form.name.help_text }}"
+        {% endif %}
+        >
+        <label class="input-group-text" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        </div>
+        {% if form.name.help_text %}
+        <p class="mt-0">Pista:{{ form.name.help_text }}</p>
+        {% endif %}
+        <div class="input-group flex-nowrap mt-3{% if form.brand.errors %} invalid{% endif %}"
+        {% if form.brand.help_text %}
+        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ form.brand.help_text }}"
+        {% endif %}
+        >
+        <label class="input-group-text" for="{{ form.brand.id_for_label }}">{{ form.brand.label }}</label>
+        {{ form.brand }}
+        </div>
+        {% if form.brand.help_text %}
+        <p class="mt-0">Pista:{{ form.brand.help_text }}</p>
+        {% endif %}
+        <div class="input-group flex-nowrap mt-3{% if form.description.errors %} invalid{% endif %}"
+        {% if form.description.help_text %}
+        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ form.description.help_text }}"
+        {% endif %}
+        >
+        <label class="input-group-text" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+        {{ form.description }}
+        </div>
+        {% if form.description.help_text %}
+        <p class="mt-0">Pista:{{ form.description.help_text }}</p>
+        {% endif %}
+
         <div class="input-group flex-nowrap mt-3{% if form.cantidad.errors %} invalid{% endif %}"
         {% if form.cantidad.help_text %}
         data-bs-toggle="tooltip" data-bs-placement="top" title="{{ form.cantidad.help_text }}"

@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from applications.datos_globales.models import Moneda
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.proveedores.models import InterlocutorProveedor, Proveedor,ProveedorInterlocutor
-from applications.material.models import Material
+from applications.material.models import Material, ProveedorMaterial
 from applications.datos_globales.models import Moneda
 from .models import ListaRequerimientoMaterialDetalle,RequerimientoMaterialProveedor,RequerimientoMaterialProveedorDetalle
 from applications.variables import INTERNACIONAL_NACIONAL
@@ -98,11 +98,17 @@ class RequerimientoMaterialProveedorForm(BSModalModelForm):
 
 class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
     material = forms.CharField(required=False)
+    name = forms.CharField(required=False)
+    brand = forms.CharField(required=False)
+    description = forms.CharField(required=False)
 
     class Meta:
         model = RequerimientoMaterialProveedorDetalle
         fields=(
             'material',
+            'name',
+            'brand',
+            'description',
             'cantidad',
             )
 
@@ -110,7 +116,16 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(RequerimientoMaterialProveedorDetalleUpdateForm, self).__init__(*args, **kwargs)
         busqueda_material = self.instance.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id = self.instance.id_requerimiento_material_detalle.id_registro)
+        proveedor_material = ProveedorMaterial.objects.get(
+                content_type = self.instance.id_requerimiento_material_detalle.content_type,
+                id_registro = self.instance.id_requerimiento_material_detalle.id_registro,
+                proveedor = self.instance.requerimiento_material.proveedor,
+                estado_alta_baja = 1,
+            )
         self.fields['material'].initial = busqueda_material.descripcion_venta
+        self.fields['name'].initial = proveedor_material.name
+        self.fields['brand'].initial = proveedor_material.brand
+        self.fields['description'].initial = proveedor_material.description
         self.fields['material'].disabled = True
 
         for visible in self.visible_fields():

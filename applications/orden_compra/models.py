@@ -5,6 +5,7 @@ from applications.datos_globales.models import Moneda
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from applications.variables import ESTADOS_ORDEN_COMPRA, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
+from .managers import OrdenCompraDetalleManager
 
 class OrdenCompra(models.Model):
     internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=1)
@@ -40,7 +41,11 @@ class OrdenCompra(models.Model):
     class Meta:
         verbose_name = 'Orden Compra'
         verbose_name_plural = 'Ordenes Compra'
-    
+        ordering = [
+            '-numero_orden_compra',
+            '-created_at',
+            ]
+            
     @property
     def proveedor(self):
         try:
@@ -56,7 +61,7 @@ class OrdenCompra(models.Model):
             return self.OrdenCompra_orden_compra_anterior.interlocutor
 
     def __str__(self):
-        return self.numero_orden_compra
+        return "%s %s" % (self.id, self.numero_orden_compra)
 
 
 class OrdenCompraDetalle(models.Model):
@@ -78,6 +83,8 @@ class OrdenCompraDetalle(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraDetalle_updated_by', editable=False)
+
+    objects = OrdenCompraDetalleManager()
    
     class Meta:
         verbose_name = 'Orden Compra Detalle'
@@ -92,4 +99,4 @@ class OrdenCompraDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "%s - %s" % (self.item, str(self.content_type.get_object_for_this_type(id = self.id_registro)))
+        return "%s" % (str(self.content_type.get_object_for_this_type(id = self.id_registro)))

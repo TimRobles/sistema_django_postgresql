@@ -1,7 +1,21 @@
 {% load humanize %}
 {% load funciones_propias %}
 <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
-<br>
+
+{% if contexto_nota_ingreso.estado == 1 %}
+<button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_finalizar_conteo' contexto_nota_ingreso.id %}"
+    class="delete btn btn-primary">
+    Finalizar Conteo
+</button>
+{% endif %}
+
+{% if contexto_nota_ingreso.estado == 2 %}
+<button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_finalizar_conteo' contexto_nota_ingreso.id %}"
+    class="delete btn btn-danger">
+    Anular
+</button>
+{% endif %}
+
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -52,6 +66,7 @@
                 <th>Unidad</th>
                 <th>Cantidad</th>
                 <th>Almacén</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -63,6 +78,20 @@
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad_conteo|redondear|intcomma }}</td>
                     <td>{{ material.almacen }}</td>
+                    <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_actualizar_material' material.id %}"
+                            data-table-url="{% url 'nota_ingreso_app:nota_ingreso_detalle_tabla' contexto_nota_ingreso.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_eliminar_material' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
                 </tr>
             {% endfor %}    
         </tbody>

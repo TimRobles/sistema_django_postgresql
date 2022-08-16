@@ -63,15 +63,20 @@ class SedeUpdateForm(BSModalModelForm):
         model = Sede
         fields = (
             'usuario_responsable',
+            'sociedad',
             'direccion',
             'departamento_buscar',
             'provincia_buscar',
             'distrito_buscar',
             'ubigeo',
             )
+        widgets = {
+            'sociedad': forms.CheckboxSelectMultiple(),
+        }
 
     def __init__(self, *args, **kwargs):
         super(SedeUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].queryset = Sociedad.objects.filter(estado_sunat=1)
         self.fields['usuario_responsable'].queryset = get_user_model().objects.filter(is_active=1) 
         distrito = self.instance.distrito
         provincia = distrito.provincia
@@ -84,3 +89,4 @@ class SedeUpdateForm(BSModalModelForm):
         
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['sociedad'].widget.attrs['class'] = 'nobull'

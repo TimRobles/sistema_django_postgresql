@@ -25,7 +25,7 @@
                 <td>{{ movimiento.content_type_documento_proceso.name }} - {{ movimiento.documento_proceso }}</td>
                 <td class="text-end">{{ movimiento.valor|redondear|intcomma }}</td>
                 <td class="text-nowrap">{{ movimiento.tipo_movimiento }}</td>
-                <td class="text-nowrap">{{ movimiento.tipo_movimiento.tipo_stock }}</td>
+                <td class="text-nowrap">{{ movimiento.tipo_stock }}</td>
                 <td>{{ movimiento.sociedad }}</td>
                 <td>
                     {% if movimiento.almacen %}

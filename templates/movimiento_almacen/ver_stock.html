@@ -4,7 +4,7 @@
 
 {% block content %}
 
-{% for sociedad, filas in stocks.items %}
+{% for sociedad, stocks in stocks.items %}
 <h3>{{ sociedad }}</h3>
     <div class="table-responsive">
         <table class="table">
@@ -18,7 +18,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for fila in filas.0 %} 
+                {% for almacen, fila in stocks.0.items %} 
                 <tr>
                     {% for columna in fila %}
                     
@@ -42,7 +42,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    {% for columna in filas.1 %}
+                    {% for columna in stocks.1 %}
                     
                     {% if forloop.first %}
                     <th>{{ columna }}</th>
