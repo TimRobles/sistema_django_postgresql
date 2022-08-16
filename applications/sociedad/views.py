@@ -167,7 +167,7 @@ class DocumentoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     context_object_name = 'contexto_documento' 
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('sociedad_app:sociedad_detalle', kwargs={'pk':self.object.id})
+        return reverse_lazy('sociedad_app:sociedad_detalle', kwargs={'pk':self.object.sociedad.id})
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoDeleteView, self).get_context_data(**kwargs)

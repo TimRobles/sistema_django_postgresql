@@ -1,0 +1,75 @@
+<h3>Sociedad
+    <button data-form-url="{% url 'activos_app:activo_sociedad_relacionar' contexto_activo_detalle.id %}"
+        data-table-url="{% url 'activos_app:activo_detalle_tabla' contexto_activo_detalle.id %}"
+        class="create badge bg-primary">
+        Relacionar Sociedad
+    </button>
+    <a href="{% url 'activos_app:activo_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sociedad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activo in activo_sociedad %}
+            <tr>
+                <td>{{ activo.sociedad }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'activos_app:activo_sociedad_actualizar' activo.id %}"
+                        data-table-url="{% url 'activos_app:activo_detalle_tabla' contexto_activo_detalle.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>Ubicación
+    <button data-form-url="{% url 'activos_app:activo_ubicacion_relacionar' contexto_activo_detalle.id %}"
+        data-table-url="{% url 'activos_app:activo_detalle_tabla' contexto_activo_detalle.id %}"
+        class="create badge bg-primary">
+        Relacionar Ubicación
+    </button>
+    <a href="{% url 'activos_app:activo_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sede</th>
+                <th>Piso</th>
+                <th>Comentario</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activo in activo_ubicacion %}
+            <tr>
+                <td>{{ activo.sede }}</td>
+                <td>{{ activo.piso}}</td>
+                <td>{{ activo.comentario}}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'activos_app:activo_ubicacion_actualizar' activo.id %}"
+                        data-table-url="{% url 'activos_app:activo_detalle_tabla' contexto_activo_detalle.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

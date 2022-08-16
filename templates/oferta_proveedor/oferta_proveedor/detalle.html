@@ -21,7 +21,7 @@
                 Rechazar Oferta
             </button>
         {% endif %}
-        <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+        <a href="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
     <h3>
     {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 %}
