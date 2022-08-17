@@ -1,0 +1,62 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Número de Serie</th>    
+            <th>Descripción</th>
+            <th>Activo Base</th>    
+            <th>Marca</th>    
+            <th>Modelo</th>    
+            <th>Fecha de Compra</th>    
+            <th>Tiempo de Garantía</th>    
+            <th>Color</th>    
+            <th>Información Adicional</th>    
+            <th>Declarable</th>    
+            <th>Estado</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for activo in contexto_activo %}
+            <tr>
+                <td> {{ activo.numero_serie }}</td>
+                <td> {{ activo.descripcion }}</td>
+                <td> {{ activo.activo_base }}</td>
+                <td> {{ activo.marca }}</td>
+                <td> {{ activo.modelo }}</td>
+                <td>{{ activo.fecha_compra|date:'d/m/Y'}}</td>
+                <td class="text-center">{{ activo.tiempo_garantia}}</td>
+                <td> {{ activo.color }}</td>
+                <td> {{ activo.informacion_adicional }}</td>
+                <td class="text-center"> 
+                    {% if activo.declarable == True %}
+                        Si
+                    {% else %}
+                        No
+                    {% endif %}  
+                </td>
+                <td class="text-center">{{ activo.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'activos_app:activo_actualizar' activo.id %}"
+                        data-table-url="{% url 'activos_app:activo_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'activos_app:activo_eliminar' activo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    <a href="{% url 'activos_app:activo_detalle' activo.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>

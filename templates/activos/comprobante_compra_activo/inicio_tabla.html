@@ -1,0 +1,59 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Número Comprobante</th>
+            <th>Tipo Comprobante</th>
+            <th>Fecha Comprobante</th>
+            <th>Tipo de Compra</th>
+            <th>Sociedad</th>
+            <th>Incoterms</th>
+            <th>Orden Compra</th>
+            <th>Moneda</th>
+            <th>Logístico</th>
+            <th>Condiciones</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for comprobante_compra in contexto_comprobante_compra_activo %}
+        <tr>
+            <td>{{ comprobante_compra.numero_comprobante}}</td>
+            <td>{{ comprobante_compra.get_tipo_comprobante_display }}</td>
+            <td>{{ comprobante_compra.fecha_comprobante|date:'d/m/Y' }}</td>
+            <td>{{ comprobante_compra.get_internacional_nacional_display }}</td>
+            <td>{{ comprobante_compra.sociedad }}</td>
+            <td>{{ comprobante_compra.get_incoterms_display }}</td>
+            <td>
+                {% if comprobante_compra.orden_compra %}
+                    {{ comprobante_compra.orden_compra }}
+                {% endif %}
+            </td>
+            <td>{{ comprobante_compra.moneda }}</td>
+            <td> 
+                {% if comprobante_compra.logistico %}
+                    {{ comprobante_compra.logistico }}
+                {% endif %}
+            </td>
+            <td>{{ comprobante_compra.condiciones }}</td>
+            <td>{{ comprobante_compra.get_estado_display}}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'activos_app:comprobante_compra_activo_actualizar' comprobante_compra.id %}"
+                    data-table-url="{% url 'activos_app:comprobante_compra_activo_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <a href="{% url 'activos_app:comprobante_compra_activo_detalle' comprobante_compra.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>

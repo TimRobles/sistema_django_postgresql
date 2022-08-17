@@ -1,10 +1,12 @@
 from django.db import models
 from django.conf import settings
-from applications.datos_globales.models import ProductoSunat, Unidad
+from applications.datos_globales.models import ProductoSunat, Unidad, Moneda
 from applications.usuario.models import DatosUsuario
-# from applications.material.models import SubFamilia
-from applications.variables import ESTADOS
 from django.contrib.contenttypes.models import ContentType
+from applications.variables import ESTADOS, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_COMPROBANTE, TIPO_IGV_CHOICES
+from applications.sede.models import Sede
+from applications.sociedad.models import Sociedad
+from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 
 
 class FamiliaActivo(models.Model):
@@ -166,3 +168,162 @@ class ArchivoAsignacionActivo(models.Model):
 
     def __str__(self):
         return str(self.asignacion)
+class Activo(models.Model):
+
+    numero_serie = models.CharField('Número de Serie', max_length=25)
+    descripcion = models.CharField('Descripción', max_length=150, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
+    id_registro = models.IntegerField(blank=True, null=True)
+    activo_base = models.ForeignKey(ActivoBase, verbose_name='Activo Base', on_delete=models.CASCADE, blank=True, null=True)
+    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE, blank=True, null=True)
+    modelo = models.ForeignKey(ModeloActivo, on_delete=models.CASCADE, blank=True, null=True)
+    fecha_compra = models.DateField('Fecha de Compra', auto_now=False, auto_now_add=False, blank=True, null=True)
+    tiempo_garantia = models.IntegerField('Tiempo de Garantía (meses)', blank=True, null=True)
+    color = models.CharField('Color', max_length=25, blank=True, null=True)
+    informacion_adicional = models.TextField('Información Adicional', blank=True, null=True)
+    declarable = models.BooleanField('Declarable', default=False)
+    estado = models.IntegerField('Estado Activo', choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Activo'
+        verbose_name_plural = 'Activos'
+        ordering = ['numero_serie',]
+
+    def __str__(self):
+        return self.descripcion
+
+class ActivoSociedad(models.Model):
+
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoSociedad_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoSociedad_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Activo Sociedad'
+        verbose_name_plural = 'Activos Sociedad'
+        ordering = ['activo',]
+
+    def __str__(self):
+        return str(self.activo)
+
+class ActivoUbicacion(models.Model):
+
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    piso = models.IntegerField( blank=True, null=True)
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True)
+    comentario = models.TextField( blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoUbicacion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoUbicacion_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Activo Ubicacion'
+        verbose_name_plural = 'Activos Ubicacion'
+        ordering = ['activo',]
+
+    def __str__(self):
+        return self.activo
+
+class ComprobanteCompraActivo(models.Model):
+
+    numero_comprobante = models.CharField('Número de Comprobante', max_length=50, blank=True, null=True)
+    internacional_nacional = models.IntegerField('Tipo de Compra', choices=INTERNACIONAL_NACIONAL)
+    incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
+    tipo_comprobante = models.IntegerField('Tipo de Comprobante', choices=TIPO_COMPROBANTE)
+    orden_compra = models.ForeignKey(OrdenCompra, verbose_name='Orden de Compra', null=True, blank=True, on_delete=models.CASCADE)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
+    fecha_comprobante = models.DateField('Fecha de Comprobante', auto_now=False, auto_now_add=False, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, null=True,  on_delete=models.PROTECT)
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
+    total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=0)
+    total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=0)
+    total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=0)
+    total_inafecta = models.DecimalField('Total Inafecta', max_digits=14, decimal_places=2, default=0)
+    total_exonerada = models.DecimalField('Total Exonerada', max_digits=14, decimal_places=2, default=0)
+    total_igv = models.DecimalField('Total IGV', max_digits=14, decimal_places=2, default=0)
+    total_gratuita = models.DecimalField('Total Gratuita', max_digits=14, decimal_places=2, default=0)
+    total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=0)
+    total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    archivo = models.FileField('Archivo', blank=True, null=True)
+    condiciones = models.TextField('Condiciones', null=True, blank=True)
+    logistico = models.DecimalField('Logístico', max_digits=3, decimal_places=2, null=True, blank=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ComprobanteCompraActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ComprobanteCompraActivo_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Comprobante Compra Activo'
+        verbose_name_plural = 'Comprobantes Compra Activo'
+        ordering = [
+            '-fecha_comprobante',
+        ]
+
+    def __str__(self):
+        return self.numero_comprobante
+
+class ComprobanteCompraActivoDetalle(models.Model):
+
+    item = models.IntegerField(blank=True, null=True)
+    descripcion_comprobante = models.TextField('Descripción Comprobante', null=True, blank=True)
+    orden_compra_detalle = models.ForeignKey(OrdenCompraDetalle, verbose_name='Orden de Compra Detalle', null=True, blank=True, on_delete=models.CASCADE)
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=0)
+    precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=22, decimal_places=10, default=0)
+    precio_unitario_con_igv = models.DecimalField('Precio Unitario con IGV', max_digits=22, decimal_places=10, default=0)
+    precio_final_con_igv = models.DecimalField('Precio Final con IGV', max_digits=22, decimal_places=10, default=0)
+    descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2, default=0)
+    sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=0)
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
+    comprobante_compra_activo = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ComprobanteCompraActivoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ComprobanteCompraActivoDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Comprobante Compra Activo Detalle'
+        verbose_name_plural = 'Comprobantes Compra Activo Detalle'
+        ordering = [
+            'item',
+            ]
+
+    def __str__(self):
+        return str(self.comprobante_compra)
+
+class ArchivoComprobanteCompraActivo(models.Model):
+
+    archivo = models.FileField('Archivo', blank=True, null=True)
+    comprobante_compra_activo = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoComprobanteCompraActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoComprobanteCompraActivo_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Archivo Comprobante Compra Activo'
+        verbose_name_plural = 'Archivos Comprobante Compra Activo'
+
+    def __str__(self):
+        return str(self.comprobante_compra)

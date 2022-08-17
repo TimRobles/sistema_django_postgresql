@@ -21,7 +21,7 @@
                 Rechazar Oferta
             </button>
         {% endif %}
-        <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+        <a href="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
     <h3>
     {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 %}
@@ -31,7 +31,6 @@
             Generar Nuevo Requerimiento
         </button>
 
-        <!--Este botón falta corregirlo por ahora hace lo mismo que Generar Nuevo Requerimiento-->
         <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_orden_compra' contexto_oferta_proveedor.slug %}"
             class="delete badge bg-primary">
             Generar Orden de Compra

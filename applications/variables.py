@@ -106,6 +106,11 @@ TIPO_DOCUMENTO_CHOICES = (
     ('A', 'CÉDULA DIPLOMÁTICA DE IDENTIDAD')
     )
 
+TIPO_COMPROBANTE = (
+    (1, 'FACTURA'),
+    (2, 'BOLETA'),
+    )
+
 ESTADOS = (
     (1, 'Alta'),
     (2, 'Baja'),
