@@ -1,0 +1,79 @@
+<!-- <div>{{contexto_asignacion_activo}}</div> -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Título</th>    
+            <th>Colaborador</th>
+            <th>Fecha Documento</th>    
+            <th>Observación</th>    
+            <th>Fecha Asignación</th>    
+            <th>Estado</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for asignacion_activo in contexto_asignacion_activo %}
+            <tr>
+                <td> {{ asignacion_activo.titulo }}</td>
+                <td> {{ asignacion_activo.colaborador }}</td>
+                <td> {{ asignacion_activo.fecha_asignacion }}</td>
+                <td> {{ asignacion_activo.observacion }}</td>
+                <td>
+                {% if asignacion_activo.fecha_entrega %}
+                     {{ asignacion_activo.fecha_entrega }}
+                {% endif %}
+                </td>
+                <td> {{ asignacion_activo.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    {% if asignacion_activo.estado == 1 %}
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_actualizar' asignacion_activo.id %}"
+                        data-table-url="{% url 'activos_app:asignacion_activo_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    
+                    <a href="{% url 'activos_app:asignacion_activo_detalle_inicio' asignacion_activo.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                    
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_dar_baja' asignacion_activo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_concluir_sin_asignar' asignacion_activo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Concluir sin Asignar">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>  
+                    
+                    {% elif asignacion_activo.estado == 2 %}                  
+                    <a href="{% url 'activos_app:asignacion_activo_detalle_inicio' asignacion_activo.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                    
+                    {% elif asignacion_activo.estado == 3 %}                  
+                    <a href="{% url 'activos_app:asignacion_activo_detalle_inicio' asignacion_activo.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_dar_baja' asignacion_activo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>
