@@ -29,7 +29,10 @@ class UsuarioAPTC(models.Model):
     class Meta:
         verbose_name = 'UsuarioAPTC'
         verbose_name_plural = 'UsuarioAPTCs'
-        ordering = ['ticket']
+        ordering = [
+            'premio',
+            'ticket'
+            ]
 
     def __str__(self):
         return str(self.ticket)

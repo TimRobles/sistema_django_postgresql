@@ -7,11 +7,14 @@ Sorteo
 {% block contenido %}
 <h2>Sorteo</h2>
 <button data-form-url="{% url 'sorteo_aptc_app:respuesta_usuarioaptc_crear' %}"
-    data-table-url="{% url 'sorteo_aptc_app:respuesta_lista' %}"
-    class="create btn btn-primary mx-2">
+    data-table-url="{% url 'sorteo_aptc_app:respuesta_tabla' %}"
+    class="create btn btn-primary">
     Registrar Participante
 </button>
-<a href="{% url 'sorteo_aptc_app:respuesta_ruleta' %}" class="btn btn-success col-lg-2 mx-2">Sortear</a>
+<a href="{% url 'sorteo_aptc_app:respuesta_ruleta' %}"
+    class="btn btn-success">
+    Sortear
+</a>
 
 <div id="tabla">
     {% include 'sorteoaptc/sorteo tabla.html' %}

@@ -8,6 +8,7 @@
             <th>Correo</th>
             <th>Empresa</th>
             <th>Ticket</th>
+            <th>Premio</th>
             <th>Modificar</th>
         </tr>
     </thead>
@@ -21,6 +22,11 @@
             <td>{{ usuario.correo }}</td>
             <td>{{ usuario.empresa }}</td>
             <td>{{ usuario.ticket }}</td>
+            <td class="text-nowrap">
+                {% if usuario.premio %}
+                {{ usuario.premio }}
+                {% endif %}
+            </td>
             <td>
                 <button data-form-url="{% url 'sorteo_aptc_app:respuesta_usuarioaptc_actualizar' usuario.id %}"
                     data-keep-open="false"

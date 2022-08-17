@@ -27,7 +27,7 @@ $('#sortear').on('click', function (e) {
     var tercero = $('#tercero')[0];
     var cuarto = $('#cuarto')[0];
     
-    url = '/aptc/sorteoaptc/sortear/';
+    url = '/aptc/sorteo-aptc/sortear/';
     
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
