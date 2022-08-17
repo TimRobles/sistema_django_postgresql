@@ -13,16 +13,14 @@
     
     {% if contexto_orden_compra.estado != 3 %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_nueva_version' contexto_orden_compra.id %}"
-        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Nueva Versión
     </button>
     {% endif %}
     
     
-    {% if contexto_orden_compra.estado == 0  %}
+    {% if contexto_orden_compra.estado == 1  %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.slug %}"
-        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Enviar Correo
     </button>
@@ -31,7 +29,6 @@
 
     {% if contexto_orden_compra.estado == 2 %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_generar_comprobante_compra_total' contexto_orden_compra.slug %}"
-        data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">
         Generar Comprobante Total
     </button>
