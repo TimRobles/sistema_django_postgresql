@@ -66,7 +66,7 @@ class ComprobanteCompraPI(models.Model):
 
 class ComprobanteCompraPIDetalle(models.Model):
     item = models.IntegerField()
-    orden_compra_detalle = models.OneToOneField(OrdenCompraDetalle, on_delete=models.PROTECT)
+    orden_compra_detalle = models.OneToOneField(OrdenCompraDetalle, on_delete=models.PROTECT, related_name='ComprobanteCompraPIDetalle_orden_compra_detalle')
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio Unitario Sin IGV', max_digits=22, decimal_places=10, default=0)
     precio_unitario_con_igv = models.DecimalField('Precio Unitario Con IGV', max_digits=22, decimal_places=10, default=0)

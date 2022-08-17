@@ -18,5 +18,5 @@ urlpatterns = [
     path('orden-compra/actualizar-material/<pk>/', views.OfertaProveedorDetalleUpdateView.as_view(), name='orden_compra_actualizar_material'),
     path('orden-compra/agregar-material/<pk>/', views.OfertaProveedorlDetalleCreateView.as_view(), name='orden_compra_agregar_material'),
 
-    path('orden-compra/generar-comprobante-compra-total/<pk>/', views.OrdenCompraGenerarComprobanteTotalView.as_view(), name='orden_compra_generar_comprobante_compra_total'),
+    path('orden-compra/generar-comprobante-compra-total/<slug>/', views.OrdenCompraGenerarComprobanteTotalView.as_view(), name='orden_compra_generar_comprobante_compra_total'),
  ]

@@ -27,5 +27,5 @@ class PrecioListaMaterial(models.Model):
         verbose_name_plural = 'PrecioListaMateriales'
 
     def __str__(self):
-        return "%s" % (str(self.content_type_producto.get_object_for_this_type(id = self.id_registro_producto)))
+        return str(self.id)
 

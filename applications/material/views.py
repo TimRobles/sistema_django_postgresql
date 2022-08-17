@@ -3,12 +3,17 @@ from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseS
 from django import forms
 from django.shortcuts import render
 from django.contrib.contenttypes.models import ContentType
+from applications.cotizacion.models import PrecioListaMaterial
+from ..recepcion_compra.models import RecepcionCompra
+from ..orden_compra.models import OrdenCompraDetalle
+from ..comprobante_compra.models import ComprobanteCompraCI, ComprobanteCompraPIDetalle, ComprobanteCompraPI
 
 from .forms import (
     ModeloForm, MarcaForm,MaterialForm,
     RelacionMaterialComponenteForm,EspecificacionForm,
     DatasheetForm,DatosImportacionForm,ProductoSunatForm,
     ImagenMaterialForm,VideoMaterialForm,ProveedorMaterialForm,EquivalenciaUnidadForm,IdiomaMaterialForm,
+    PrecioListaMaterialForm,
     )
 from .models import (
     Modelo,
@@ -309,6 +314,7 @@ class MaterialDetailView(PermissionRequiredMixin,DetailView):
         context['proveedores'] = ProveedorMaterial.objects.filter(content_type = content_type,id_registro=self.kwargs['pk'])
         context['equivalencias'] = EquivalenciaUnidad.objects.filter(material = material)
         context['idiomas'] = IdiomaMaterial.objects.filter(material = material)
+        context['precios'] = PrecioListaMaterial.objects.filter(content_type_producto = content_type,id_registro_producto=self.kwargs['pk'])
         return context
 
 def MaterialDetailTabla(request, pk):
@@ -328,6 +334,8 @@ def MaterialDetailTabla(request, pk):
         context['proveedores'] = ProveedorMaterial.objects.filter(content_type = content_type,id_registro=pk)
         context['equivalencias'] = EquivalenciaUnidad.objects.filter(material = material)
         context['idiomas'] = IdiomaMaterial.objects.filter(material = material)
+        context['precios'] = PrecioListaMaterial.objects.filter(content_type_producto = content_type,id_registro_producto=pk)
+
 
         data['table'] = render_to_string(
             template,
@@ -1352,3 +1360,88 @@ class IdiomaMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion']="Actualizar"
         context['titulo']="Idioma del Material"
         return context
+
+
+class PrecioListaMaterialCreateView(BSModalCreateView):
+    model = PrecioListaMaterial
+    template_name = "material/material/form-precio.html"
+    form_class = PrecioListaMaterialForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
+
+    def form_valid(self, form):
+        comprobante_content_type_id, comprobante_id = form.cleaned_data['comprobante'].split("|")
+        form.instance.content_type_producto = ContentType.objects.get(id=self.kwargs['material_content_type'])
+        form.instance.id_registro_producto = self.kwargs['material_id']
+        form.instance.content_type_documento = ContentType.objects.get(id=int(comprobante_content_type_id))
+        form.instance.id_registro_documento = int(comprobante_id)
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        precios = []
+        content_type = self.kwargs['material_content_type']
+        id_registro = self.kwargs['material_id']
+        orden_detalle = OrdenCompraDetalle.objects.filter(
+            content_type = content_type,
+            id_registro = id_registro,
+        )
+        
+        for detalle in orden_detalle:
+            detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
+            detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+            
+            comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+            
+            detalle.logistico = comprobante_compra.logistico
+            
+            recepcion = RecepcionCompra.objects.get(
+                content_type = ContentType.objects.get_for_model(comprobante_compra),
+                id_registro = comprobante_compra.id,
+                estado = 1,
+            )
+            
+            detalle.fecha_recepcion = recepcion.fecha_recepcion
+            detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
+            valor = "%s|%s" % (ContentType.objects.get_for_model(comprobante_compra).id, comprobante_compra.id)
+            precios.append((valor, recepcion.numero_comprobante_compra))
+        self.kwargs['precios'] = orden_detalle
+        kwargs['precios'] = precios
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(PrecioListaMaterialCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Precio"
+        context['precios'] = self.kwargs['precios']
+        return context
+
+
+# # def ComprobanteView(request, id_comprobante, comprobante_content_type, id_material, material_content_type):
+#     comprobante_content_type = ContentType.objects.get(id=comprobante_content_type)
+#     comprobante_compra = comprobante_content_type.get_object_for_this_type(id = id_comprobante)
+#     comprobante_detalle = comprobante_compra.ComprobanteCompraPIDetalle_comprobante_compra.all()
+
+#     material_content_type = ContentType.objects.get(id=material_content_type)
+#     material = material_content_type.get_object_for_this_type(id)    
+
+
+#     for detalle in comprobante_detalle :
+#         detalle.precio_final_con_igv
+#         print('detalle.precio_unitario_sin_igv')
+#         print(detalle.precio_final_con_igv)
+
+#     moneda = comprobante_compra.moneda
+#     logistico = comprobante_compra.logistico
+#     # precio = 
+#     print('*********************************')
+#     print(comprobante_compra)
+#     print(moneda)
+#     print(logistico)
+#     print(id_comprobante)
+#     print('*********************************')
+
+#     # return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
+#     return HttpResponse("%s|%s" % (moneda, logistico))

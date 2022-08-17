@@ -20,7 +20,7 @@
     {% endif %}
     
     
-    {% if contexto_orden_compra.estado == 0  %}
+    {% if contexto_orden_compra.estado < 2  %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.slug %}"
         data-table-url="{% url 'orden_compra_app:orden_compra_tabla' %}"
         class="delete btn btn-primary">

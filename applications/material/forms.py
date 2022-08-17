@@ -3,6 +3,8 @@ from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from applications.proveedores.models import Proveedor
 from .models import Clase, Componente, Atributo, Familia, SubFamilia, Modelo, Marca, Material, RelacionMaterialComponente, Especificacion, Datasheet,ImagenMaterial,VideoMaterial,ProveedorMaterial,EquivalenciaUnidad,Idioma,IdiomaMaterial
+from applications.cotizacion.models import PrecioListaMaterial
+from applications.comprobante_compra.models import ComprobanteCompraPI
 
 class ClaseForm(forms.ModelForm):
     class Meta:
@@ -419,5 +421,27 @@ class IdiomaMaterialForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(IdiomaMaterialForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class PrecioListaMaterialForm (BSModalModelForm):
+    comprobante = forms.ChoiceField(choices=[(0,0)], required=False)
+    class Meta:
+        model = PrecioListaMaterial
+        fields = (
+            'comprobante',
+            'moneda',
+            'precio_compra',
+            'logistico',
+            'margen_venta',
+            'precio_lista',
+            'precio_sin_igv',
+        )
+
+    def __init__(self, *args, **kwargs):
+        precios = kwargs.pop('precios')
+        super(PrecioListaMaterialForm, self).__init__(*args, **kwargs)
+        self.fields['comprobante'].choices = precios
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

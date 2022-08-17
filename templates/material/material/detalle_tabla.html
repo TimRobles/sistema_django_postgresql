@@ -581,7 +581,6 @@
     </button>
     <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
-
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -607,6 +606,39 @@
                 </td>
             </tr>
             {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+
+<h3>Precio Lista Material
+    <button data-form-url="{% url 'material_app:precio_material_registrar' contexto_material.id contexto_material.content_type %}"
+        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+        data-modal="modal-xl"
+        class="create badge bg-primary">
+        Precio Lista Material
+    </button>
+    <a href="{% url 'material_app:material_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Precio Compra</th>
+                <th class="text-rigth">Precio Lista</th>
+                <th class="text-rigth">Precio Sin IGV</th>
+                <th class="text-rigth">Moneda</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for precio in precios %}
+                <tr>
+                    <td>{{ precio.precio_compra }}</td>
+                    <td>{{ precio.precio_lista }}</td>
+                    <td>{{ precio.precio_sin_igv }}</td>
+                    <td>{{ precio.moneda }}</td>
+                </tr>
+            {% endfor %} 
         </tbody>
     </table>
 </div>

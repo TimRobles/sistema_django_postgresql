@@ -256,11 +256,11 @@ class OrdenCompraEnviarCorreoView(BSModalFormView):
     form_class = OrdenCompraEnviarCorreoForm
 
     def get_success_url(self):
-        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().orden_compra.slug})
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.kwargs['slug']})
 
     def form_valid(self, form):
         if self.request.session['primero']:
-            orden = OrdenCompra.objects.get(id=self.kwargs['slug'])            
+            orden = OrdenCompra.objects.get(slug=self.kwargs['slug'])            
             correos_proveedor = form.cleaned_data['correos_proveedor']
             correos_internos = form.cleaned_data['correos_internos']
             self.request.session['primero'] = False
