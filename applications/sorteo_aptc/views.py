@@ -1,4 +1,5 @@
 
+from applications.funciones import numeroXn
 from applications.sorteo_aptc.forms import RespuestaUsuarioForm
 from applications.sorteo_aptc.models import UsuarioAPTC
 from applications.importaciones import *
@@ -6,24 +7,45 @@ from applications.importaciones import *
 
 # Create your views here.
 
-
 class UsuarioAPTCListView(ListView):
     model = UsuarioAPTC
     template_name = "sorteoaptc/sorteo lista.html"
     context_object_name = 'usuarios'
 
-class UsarioAPTCCreateView(CreateView):
+def UsuarioAPTCTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'sorteoaptc/sorteo tabla.html'
+        context = {}
+        context['usuarios'] = UsuarioAPTC.objects.all()
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class UsuarioAPTCCreateView(BSModalCreateView):
     template_name = "sorteoaptc/sorteo usuario.html"
     model = UsuarioAPTC
     form_class = RespuestaUsuarioForm
     success_url = reverse_lazy('sorteo_aptc_app:respuesta_lista')
 
     def form_valid(self, form):
-        nuevo_ticket = UsuarioAPTC.objects.all().aggregate(Max('ticket'))['ticket__max'] + 1
+        nuevo_ticket = numeroXn(len(UsuarioAPTC.objects.all()) + 1, 4)
         form.instance.ticket = nuevo_ticket
         return super().form_valid(form)
 
-class UsuarioAPTCUpdateView(UpdateView):
+    def get_context_data(self, **kwargs):
+        context = super(UsuarioAPTCCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Participante"
+        return context
+
+
+class UsuarioAPTCUpdateView(BSModalUpdateView):
     template_name = "sorteoaptc/sorteo usuario actualizar.html"
     model = UsuarioAPTC
     form_class = RespuestaUsuarioForm
@@ -32,14 +54,12 @@ class UsuarioAPTCUpdateView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super(UsuarioAPTCUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
-        context['titulo'] = "Participantes"
+        context['titulo'] = "Participante"
         return context
-
 
 
 class SorteoView(LoginRequiredMixin, TemplateView):
     template_name = "sorteoaptc/sorteo sortear.html"
-
 
 def Sortear(request):
 
@@ -69,9 +89,6 @@ def Datos(request, ticket):
     obj = UsuarioAPTC.objects.get(ticket=ticket)
     texto = '<h4>Ticket N° %s</br>Nombre: %s</br>Empresa: %s</h4>' % (obj.ticket, obj.nombre, obj.empresa)
     return HttpResponse(texto)
-
-
-
 
 
 def Reiniciar(request):

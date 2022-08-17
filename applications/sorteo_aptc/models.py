@@ -16,7 +16,7 @@ class UsuarioAPTC(models.Model):
     telefono = models.CharField("telefono", max_length=100)
     correo = models.EmailField("correo", max_length=254)
     empresa = models.CharField("empresa", max_length=100)
-    ticket = models.IntegerField("numero_ticket")
+    ticket = models.CharField("numero_ticket", max_length=4)
     premio = models.CharField('Premio', max_length=50, blank=True, null=True)
     elegido = models.BooleanField(default=False)
     bloqueo = models.BooleanField(default=False)

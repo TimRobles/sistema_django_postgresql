@@ -1,19 +1,17 @@
-{% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
-
-{% block titulo %}
-Registro Usuario
-{% endblock titulo %}
-
-{% block contenido %}
-<form action="" method="post">
+<form id="formulario" action="" enctype="multipart/form-data" method="post">
     {% csrf_token %}
-    
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
     <div class="modal-body">
         {% block arriba %}
+        
         {% endblock arriba %}
-
+            
         {% for field in form %}
             <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
                 {% if field.help_text %}
@@ -28,22 +26,21 @@ Registro Usuario
                     </button>
                 {% endif %}
             </div>
-
             {% for error in field.errors %}
                 <p class="text-danger mt-0 error-formulario">{{ error }}</p>
-            {% endfor %}        
-        {% endfor %}        
-    </div>
+            {% endfor %}
+        {% endfor %}
 
-    <br>
-    <input type="submit" class="btn btn-primary col-lg-2 mx-2" value="Guardar" >
-    <a href="{% url 'sorteo_aptc_app:respuesta_lista' %}" class="btn btn-danger col-lg-2 mx-2">Cancelar</a>
+        {% block abajo %}
+        {% endblock abajo %}            
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
 </form>
 
-{% endblock contenido %}
 
-
-{% block extrajs %}
-    <script src="{% static 'js/sorteoAPTC/registrar.js' %}?{{ cache_bust }}"></script>
-{% endblock extrajs %}
-
+{% block js %}
+<script src="{% static 'js/sorteoAPTC/registrar.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}

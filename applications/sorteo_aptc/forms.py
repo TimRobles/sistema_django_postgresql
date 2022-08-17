@@ -1,14 +1,15 @@
 from django import forms
 
 from applications.sorteo_aptc.models import UsuarioAPTC
+from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
-class RespuestaUsuarioForm(forms.ModelForm):
+class RespuestaUsuarioForm(BSModalModelForm):
     class Meta:
         model = UsuarioAPTC
         fields = [
-            'nombre',
             'tipo_documento',
             'numero_documento',
+            'nombre',
             'telefono',
             'correo',
             'empresa',

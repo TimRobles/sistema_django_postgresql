@@ -6,46 +6,15 @@ Sorteo
 
 {% block contenido %}
 <h2>Sorteo</h2>
-<a href="{% url 'sorteo_aptc_app:respuesta_usuarioaptc_crear' %}" class="btn btn-primary col-lg-2 mx-2">Registrar Usuario</a>
+<button data-form-url="{% url 'sorteo_aptc_app:respuesta_usuarioaptc_crear' %}"
+    data-table-url="{% url 'sorteo_aptc_app:respuesta_lista' %}"
+    class="create btn btn-primary mx-2">
+    Registrar Participante
+</button>
 <a href="{% url 'sorteo_aptc_app:respuesta_ruleta' %}" class="btn btn-success col-lg-2 mx-2">Sortear</a>
 
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Tipo Documento</th>
-            <th>DNI</th>
-            <th>Telefono</th>
-            <th>Correo</th>
-            <th>Empresa</th>
-            <th>Ticket</th>
-            <th>Modificar</th>
-        </tr>
-    </thead>
-    <tbody>      
-        {% for usuario in usuarios %}
-        <tr>
-            <td>{{ usuario.nombre }}</td>
-            <td>{{ usuario.get_tipo_documento_display }}</td>
-            <td>{{ usuario.numero_documento }}</td>
-            <td>{{ usuario.telefono }}</td>
-            <td>{{ usuario.correo }}</td>
-            <td>{{ usuario.empresa }}</td>
-            <td>{{ usuario.ticket }}</td>
-            <td>
-                <button data-form-url="{% url 'sorteo_aptc_app:respuesta_usuarioaptc_actualizar' usuario.id %}"
-                    data-keep-open="false"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
-            </td>
-
-        </tr>
-        {% endfor %}
-
-    </tbody>
-</table>
+<div id="tabla">
+    {% include 'sorteoaptc/sorteo tabla.html' %}
+</div>
 
 {% endblock contenido %}
