@@ -28,13 +28,13 @@
                     <div class="collapse" id="uno-{{ programa_uno.nombre|espacio_guion }}">
                         <ul>
                             {% for programa_dos in programa_uno.NivelDos_nivel_uno.all %}
-                                {% if programa_uno.url_name %}
+                                {% if programa_dos.url_name %}
                                 <li class="nav-link">
-                                    {% with programa_uno.app_name|add:':'|add:programa_uno.url_name as url_compuesta %}
+                                    {% with programa_dos.app_name|add:':'|add:programa_dos.url_name as url_compuesta %}
                                     <a href="{% url url_compuesta %}"
                                     class="nav-link text-white text-truncate">
                                         <img class="logo-link" src="{{ MEDIA_URL }}img/enter.png" alt="flecha" width="32" height="32">
-                                        {{ programa_uno.nombre }}
+                                        {{ programa_dos.nombre }}
                                     </a>
                                     {% endwith %}
                                 </li>
