@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Comprobante de compra Activo
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'activos/comprobante_compra_activo/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

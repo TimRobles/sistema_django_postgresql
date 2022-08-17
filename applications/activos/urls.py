@@ -3,10 +3,17 @@ from . import views
 
 app_name='activos_app'
 
+urlComprobanteCompraActivoDetalle =[
+    path('comprobante-compra-activo/detalle/registrar/<int:comprobante_compra_activo_id>/', views.ComprobanteCompraActivoDetalleCreateView.as_view(), name='comprobante_compra_activo_detalle_registrar'),
+]
+
 urlComprobanteCompraActivo = [
     path('comprobante-compra-activo/', views.ComprobanteCompraActivoListView.as_view(), name='comprobante_compra_activo_inicio'),
     path('comprobante-compra-activo-tabla/', views.ComprobanteCompraActivoTabla, name='comprobante_compra_activo_tabla'),
     path('comprobante-compra-activo/registrar/', views.ComprobanteCompraActivoCreateView.as_view(), name='comprobante_compra_activo_registrar'),
+    path('comprobante-compra-activo/actualizar/<pk>', views.ComprobanteCompraActivoUpdateView.as_view(), name='comprobante_compra_activo_actualizar'),
+    path('comprobante-compra-activo/detalle/<pk>/', views.ComprobanteCompraActivoDetailView.as_view(), name='comprobante_compra_activo_detalle'),
+    path('comprobante-compra-activo/detalle-tabla/<pk>/', views.ComprobanteCompraActivoDetailTabla, name='comprobante_compra_activo_detalle_tabla'),
 ]
 
 urlActivoUbicacion = [
@@ -51,4 +58,4 @@ urlpatterns = [
     path('activo/detalle/<pk>/', views.ActivoDetailView.as_view(), name='activo_detalle'),
     path('activo/detalle-tabla/<pk>/', views.ActivoDetailTabla, name='activo_detalle_tabla'),
 
-] + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlActivoBase + urlModelos + urlMarcas
+] + urlComprobanteCompraActivoDetalle + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlActivoBase + urlModelos + urlMarcas

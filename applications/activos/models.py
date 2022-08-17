@@ -230,7 +230,7 @@ class ComprobanteCompraActivoDetalle(models.Model):
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
-    comprobante_compra = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE)
+    comprobante_compra_activo = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ComprobanteCompraActivoDetalle_created_by', editable=False)
@@ -250,7 +250,7 @@ class ComprobanteCompraActivoDetalle(models.Model):
 class ArchivoComprobanteCompraActivo(models.Model):
 
     archivo = models.FileField('Archivo', blank=True, null=True)
-    comprobante_compra = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE)
+    comprobante_compra_activo = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoComprobanteCompraActivo_created_by', editable=False)

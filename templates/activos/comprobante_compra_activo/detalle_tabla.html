@@ -1,0 +1,103 @@
+{% load humanize %}
+<h3>Activos
+    <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_registrar' contexto_comprobante_compra_activo_detalle.id %}"
+        data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
+        class="create badge bg-primary">
+        Registrar Activo
+    </button>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Activo</th>
+                <th>Descripción</th>
+                <th>Comprobante de Compra</th>
+                <th>Orden de Compra</th>
+                <th>Tipo IGV</th>
+                <th>Cantidad</th>
+                <th>Prec. Unit. sin IGV</th>
+                <th>Prec. Unit. con IGV</th>
+                <th>Prec. Final con IGV</th>
+                <th>Descuento</th>
+                <th>Sub Total</th>
+                <th>IGV</th>
+                <th>Total</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activo in activos %}
+                <tr>
+
+                    <td>{{ activo.item }}</td>
+                    <td>{{ activo.activo }}</td>
+                    <td>{{ activo.descripcion_comprobante}}</td>
+                    <td>{{ activo.comprobante_compra_activo }}</td>
+                    <td>{{ activo.orden_compra_detalle }}</td>
+                    <td>{{ activo.get_tipo_igv_display }}</td>
+                    <td class="text-end">{{ activo.cantidad|intcomma }}</td>
+                    <td class="text-end">{{ activo.precio_unitario_sin_igv|intcomma }}</td>
+                    <td class="text-end">{{ activo.precio_unitario_con_igv|intcomma }}</td>
+                    <td class="text-end">{{ activo.precio_final_con_igv|intcomma }}</td>
+                    <td class="text-end">{{ activo.descuento|intcomma }}</td>
+                    <td class="text-end">{{ activo.sub_total|intcomma }}</td>
+                    <td class="text-end">{{ activo.igv|intcomma }}</td>
+                    <td class="text-end">{{ activo.total|intcomma }}</td>
+ 
+                    <td class="text-center text-nowrap">
+                    </td>
+                </tr>
+            {% endfor %}    
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="11" class="text-end">Descuento Global:</td>
+                <td class="text-end">{{ totales.descuento_global|intcomma }}</td>
+            </tr>            
+            <tr>
+                <td colspan="11" class="text-end">Descuento Total:</td>
+                <td class="text-end">{{ totales.total_descuento|intcomma }}</td>
+            </tr>           
+             <tr>
+                <td colspan="11" class="text-end">Anticipo:</td>
+                <td class="text-end">{{ totales.total_anticipo|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Exonerada:</td>
+                <td class="text-end">{{ totales.total_exonerada|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Inafecta:</td>
+                <td class="text-end">{{ totales.total_inafecta|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Gravada:</td>
+                <td class="text-end">{{ totales.total_gravada|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">IGV:</td>
+                <td class="text-end">{{ totales.total_igv|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Gratuita:</td>
+                <td class="text-end">{{ totales.total_gratuita|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Otros Cargos:</td>
+                <td class="text-end">{{ totales.total_otros_cargos|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">ICBPER:</td>
+                <td class="text-end">{{ totales.total_icbper|intcomma }}</td>
+            </tr>
+            <tr>
+                <td colspan="11" class="text-end">Total:</td>
+                <td class="text-end">{{ totales.total|intcomma }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br>

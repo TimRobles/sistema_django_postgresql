@@ -206,7 +206,7 @@ class ComprobanteCompraActivoDetalleAdmin(admin.ModelAdmin):
         'igv',
         'total',
         'tipo_igv',
-        'comprobante_compra',
+        'comprobante_compra_activo',
         'created_at',
         'created_by',
         'updated_at',
@@ -223,7 +223,7 @@ class ArchivoComprobanteCompraActivoAdmin(admin.ModelAdmin):
 
     list_display = (
         'archivo',
-        'comprobante_compra',
+        'comprobante_compra_activo',
         'created_at',
         'created_by',
         'updated_at',

@@ -1,0 +1,20 @@
+{% load widget_tweaks %}
+{% load static %}
+
+<form id="formulario" action="" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {{ material }}
+        {% include 'includes/formulario.html' %}    
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
+
+<script src="{% static 'js/activos/comprobante_compra_activo/registrar.js' %}?{{ cache_bust }}"></script>

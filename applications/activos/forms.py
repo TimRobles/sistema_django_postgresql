@@ -1,6 +1,6 @@
 from dataclasses import fields
 from django import forms
-from .models import Activo, ActivoBase, ActivoUbicacion, ActivoSociedad, ComprobanteCompraActivo, MarcaActivo, ModeloActivo
+from .models import Activo, ActivoBase, ActivoUbicacion, ActivoSociedad, ComprobanteCompraActivo, ComprobanteCompraActivoDetalle, MarcaActivo, ModeloActivo
 from bootstrap_modal_forms.forms import BSModalModelForm
 
 
@@ -158,3 +158,34 @@ class ComprobanteCompraActivoForm(BSModalModelForm):
         super(ComprobanteCompraActivoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class ComprobanteCompraActivoDetalleForm(BSModalModelForm):
+    class Meta:
+        model = ComprobanteCompraActivoDetalle
+        fields=(
+            'item',
+            'activo',
+            'descripcion_comprobante',
+            'comprobante_compra_activo',
+            'orden_compra_detalle',
+            'tipo_igv',
+            'cantidad',
+            'precio_unitario_sin_igv',
+            'precio_unitario_con_igv',
+            'precio_final_con_igv',
+            'descuento',
+            'sub_total',
+            'igv',
+            'total',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ComprobanteCompraActivoDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+        self.fields['precio_unitario_sin_igv'].disabled = True
+        self.fields['descuento'].disabled = True
+        self.fields['sub_total'].disabled = True
+        self.fields['igv'].disabled = True
+        self.fields['total'].disabled = True

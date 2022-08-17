@@ -39,6 +39,18 @@
             <td>{{ comprobante_compra.condiciones }}</td>
             <td>{{ comprobante_compra.get_estado_display}}</td>
             <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'activos_app:comprobante_compra_activo_actualizar' comprobante_compra.id %}"
+                    data-table-url="{% url 'activos_app:comprobante_compra_activo_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <a href="{% url 'activos_app:comprobante_compra_activo_detalle' comprobante_compra.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
             </td>
         </tr>
         {% endfor %}

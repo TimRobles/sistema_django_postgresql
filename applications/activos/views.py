@@ -1,9 +1,9 @@
 from django.shortcuts import render
-from applications.activos.models import Activo, ActivoBase, ActivoUbicacion, ActivoSociedad, ActivoUbicacion, ComprobanteCompraActivo, MarcaActivo, ModeloActivo
+from applications.activos.models import Activo, ActivoBase, ActivoUbicacion, ActivoSociedad, ActivoUbicacion, ArchivoComprobanteCompraActivo, ComprobanteCompraActivo, ComprobanteCompraActivoDetalle, MarcaActivo, ModeloActivo
 from applications.importaciones import *
 
 from bootstrap_modal_forms.generic import BSModalCreateView
-from .forms import ActivoBaseForm, ActivoForm, ActivoSociedadForm, ActivoUbicacionForm, ComprobanteCompraActivoForm, MarcaActivoForm, ModeloActivoForm
+from .forms import ActivoBaseForm, ActivoForm, ActivoSociedadForm, ActivoUbicacionForm, ComprobanteCompraActivoDetalleForm, ComprobanteCompraActivoForm, MarcaActivoForm, ModeloActivoForm
 
 
 class ActivoBaseListView(PermissionRequiredMixin, ListView):
@@ -457,13 +457,13 @@ class ActivoUbicacionUpdateView(PermissionRequiredMixin,BSModalUpdateView):
 class ComprobanteCompraActivoListView(PermissionRequiredMixin, ListView):
     permission_required = ('activos.view_comprobantecompraactivo')
     model = ComprobanteCompraActivo
-    template_name = "activos/comprobante_compra_activos/inicio.html"
+    template_name = "activos/comprobante_compra_activo/inicio.html"
     context_object_name = 'contexto_comprobante_compra_activo'
 
 def ComprobanteCompraActivoTabla(request):
     data = dict()
     if request.method == 'GET':
-        template = 'activos/comprobante_compra_activos/inicio_tabla.html'
+        template = 'activos/comprobante_compra_activo/inicio_tabla.html'
         context = {}
         context['contexto_comprobante_compra_activo'] = ComprobanteCompraActivo.objects.all()
 
@@ -491,3 +491,78 @@ class ComprobanteCompraActivoCreateView(PermissionRequiredMixin, BSModalCreateVi
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+class ComprobanteCompraActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('activos.change_comprobantecompraactivo')
+
+    model = ComprobanteCompraActivo
+    template_name = "includes/formulario generico.html"
+    form_class = ComprobanteCompraActivoForm
+    success_url = reverse_lazy('activos_app:comprobante_compra_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraActivoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Comprobante de Compra"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class ComprobanteCompraActivoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('activos.view_comprobantecompraactivo')
+
+    model = ComprobanteCompraActivo
+    template_name = "activos/comprobante_compra_activo/detalle.html"
+    context_object_name = 'contexto_comprobante_compra_activo_detalle'
+
+    def get_context_data(self, **kwargs):
+        comprobante_compra_activo = ComprobanteCompraActivo.objects.get(id = self.kwargs['pk'])
+        context = super(ComprobanteCompraActivoDetailView, self).get_context_data(**kwargs)
+        context['activos'] = ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
+        context['archivos'] = ArchivoComprobanteCompraActivo.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
+        return context
+
+def ComprobanteCompraActivoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'activos/comprobante_compra_activo/detalle_tabla.html'
+        context = {}
+        comprobante_compra_activo = ComprobanteCompraActivo.objects.get(id = pk)
+        context['contexto_comprobante_compra_activo_detalle'] = comprobante_compra_activo
+        context['activos'] = ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
+        context['archivos'] = ArchivoComprobanteCompraActivo.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class ComprobanteCompraActivoDetalleCreateView(PermissionRequiredMixin,BSModalCreateView):
+    permission_required = ('activos.add_comprobantecompraactivodetalle')
+    model = ComprobanteCompraActivoDetalle
+    template_name = "activos/comprobante_compra_activo/registrar.html"
+    form_class = ComprobanteCompraActivoDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:comprobante_compra_activo_detalle', kwargs={'pk':self.kwargs['comprobante_compra_activo_id']})
+
+    def form_valid(self, form):
+        form.instance.comprobante_compra_activo = ComprobanteCompraActivo.objects.get(id = self.kwargs['comprobante_compra_activo_id'])
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraActivoDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Activo"
+        return context
