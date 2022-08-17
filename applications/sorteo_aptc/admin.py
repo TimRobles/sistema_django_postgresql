@@ -7,6 +7,8 @@ from applications.sorteo_aptc.models import UsuarioAPTC
 @admin.register(UsuarioAPTC)
 class UsuarioAPTCAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
+        'fecha',
         'nombre',
         'tipo_documento',
         'numero_documento',

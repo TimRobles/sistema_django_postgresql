@@ -1,6 +1,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Fecha</th>
             <th>Nombre</th>
             <th>Tipo Documento</th>
             <th>DNI</th>
@@ -15,12 +16,21 @@
     <tbody>      
         {% for usuario in usuarios %}
         <tr>
+            <td>{{ usuario.fecha|date:'d/m/Y' }}</td>
             <td>{{ usuario.nombre }}</td>
             <td>{{ usuario.get_tipo_documento_display }}</td>
             <td>{{ usuario.numero_documento }}</td>
             <td>{{ usuario.telefono }}</td>
-            <td>{{ usuario.correo }}</td>
-            <td>{{ usuario.empresa }}</td>
+            <td>
+                {% if usuario.correo %}
+                {{ usuario.correo }}
+                {% endif %}    
+            </td>
+            <td>
+                {% if usuario.empresa %}
+                {{ usuario.empresa }}
+                {% endif %} 
+            </td>
             <td>{{ usuario.ticket }}</td>
             <td class="text-nowrap">
                 {% if usuario.premio %}

@@ -34,6 +34,15 @@ class UsuarioAPTCCreateView(BSModalCreateView):
     success_url = reverse_lazy('sorteo_aptc_app:respuesta_lista')
 
     def form_valid(self, form):
+        buscar = UsuarioAPTC.objects.filter(
+            fecha = date.today(),
+            tipo_documento = form.cleaned_data['tipo_documento'],
+            numero_documento = form.cleaned_data['numero_documento'],
+            )
+        if len(buscar)>0:
+            form.add_error('numero_documento', 'Ya se encuentra registrado.')
+            return super().form_invalid(form)
+
         nuevo_ticket = numeroXn(len(UsuarioAPTC.objects.all()) + 1, 4)
         form.instance.ticket = nuevo_ticket
         return super().form_valid(form)
@@ -46,7 +55,7 @@ class UsuarioAPTCCreateView(BSModalCreateView):
 
 
 class UsuarioAPTCUpdateView(BSModalUpdateView):
-    template_name = "sorteoaptc/sorteo usuario actualizar.html"
+    template_name = "sorteoaptc/sorteo usuario.html"
     model = UsuarioAPTC
     form_class = RespuestaUsuarioForm
     success_url = reverse_lazy('sorteo_aptc_app:respuesta_lista')
@@ -65,8 +74,12 @@ def Sortear(request):
 
     premios = UsuarioAPTC.objects.exclude(premio=None)
     elegidos = UsuarioAPTC.objects.filter(elegido=True).filter(premio=None)
-    ticket = UsuarioAPTC.objects.filter(elegido=False).exclude(bloqueo=True).order_by('?').first()
-    texto = '<h4>Ticket N° %s</br>Nombre: %s</br>Empresa: %s</h4>' % (ticket.ticket, ticket.nombre, ticket.empresa)
+    ticket = UsuarioAPTC.objects.filter(fecha = date.today(), elegido=False).exclude(bloqueo=True).order_by('?').first()
+    if ticket.empresa:
+        empresa = '</br>Empresa: %s' % ticket.empresa
+    else:
+        empresa = ""
+    texto = '<h4>Ticket N° %s</br>Nombre: %s%s</h4>' % (ticket.ticket, ticket.nombre, empresa)
     if len(elegidos) % 3 == 2:
         ticket.elegido = True
         ticket.premio = 'Premio N°%i' % (len(premios)+1)
@@ -87,7 +100,11 @@ def Sortear(request):
 
 def Datos(request, ticket):
     obj = UsuarioAPTC.objects.get(ticket=ticket)
-    texto = '<h4>Ticket N° %s</br>Nombre: %s</br>Empresa: %s</h4>' % (obj.ticket, obj.nombre, obj.empresa)
+    if obj.empresa:
+        empresa = '</br>Empresa: %s' % obj.empresa
+    else:
+        empresa = ""
+    texto = '<h4>Ticket N° %s</br>Nombre: %s%s</h4>' % (obj.ticket, obj.nombre, empresa)
     return HttpResponse(texto)
 
 

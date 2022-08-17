@@ -9,7 +9,7 @@ from applications.variables import TIPO_DOCUMENTO_CHOICES
 
 
 class UsuarioAPTC(models.Model):
-   
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True)
     nombre = models.CharField("nombre", max_length=100)
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)
     numero_documento = models.CharField('Número de Documento', max_length=15, null=True, blank=True)
@@ -25,11 +25,11 @@ class UsuarioAPTC(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='UsuarioAPTC_updated_by', editable=False)
 
-
     class Meta:
         verbose_name = 'UsuarioAPTC'
         verbose_name_plural = 'UsuarioAPTCs'
         ordering = [
+            '-fecha',
             'premio',
             'ticket'
             ]
