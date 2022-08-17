@@ -53,6 +53,13 @@
                         class="update btn btn-warning btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
+                    </button>                    
+                    <button data-form-url="{% url 'activos_app:activo_base_actualizar_sunat' activo_base.id %}"
+                        data-table-url="{% url 'activos_app:activo_base_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar Producto Sunat">
+                        <i class="bi bi-pencil-square"></i>
                     </button>
                     <button data-form-url="{% url 'activos_app:activo_base_dar_baja' activo_base.id %}"
                         class="delete btn btn-danger btn-sm"

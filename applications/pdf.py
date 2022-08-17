@@ -73,8 +73,8 @@ def parrafoJustificado(texto, fuente, tamaño=8, tipo="Regular", color='black'):
     
     return Paragraph('''<para color=%s align=justify>%s</para>''' % (color, texto), styleSheet[fuente + '-' + tipo + '-' + str(tamaño)])
 
-def vacio():
-    return Spacer(10, 10)
+def vacio(factor=1):
+    return Spacer(10, factor*10)
 
 def listaViñeta(texto, fuente, tamaño=8, tipo="Regular", color='black'):
     filas = texto.splitlines()

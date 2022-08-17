@@ -1,8 +1,10 @@
 from django.db import models
 from django.conf import settings
 from applications.datos_globales.models import ProductoSunat, Unidad
+from applications.usuario.models import DatosUsuario
 # from applications.material.models import SubFamilia
 from applications.variables import ESTADOS
+from django.contrib.contenttypes.models import ContentType
 
 
 class FamiliaActivo(models.Model):
@@ -96,5 +98,71 @@ class ActivoBase(models.Model):
             'descripcion_corta',
             ]
 
+    def content_type(self):
+        return ContentType.objects.get_for_model(self).id
+
     def __str__(self):
         return self.descripcion_corta.upper()
+
+
+class AsignacionActivo(models.Model):
+    ESTADOS_ASIGNACION = [
+        (1, 'ALTA'),
+        (2, 'ENTREGADO'),
+        (3, 'CONCLUIDO SIN ENTREGAR'),
+        (4, 'ANULADO'),
+        ]
+    titulo = models.CharField('Título', max_length=50)
+    colaborador = models.ForeignKey(DatosUsuario, on_delete=models.PROTECT)
+    fecha_asignacion = models.DateField('Fecha Asignación', auto_now=False, auto_now_add=False)
+    observacion = models.TextField(null=True, blank=True)
+    fecha_entrega = models.DateField('Fecha Entrega', auto_now=False, auto_now_add=False, null=True, blank=True)
+    estado = models.IntegerField('Estado Asignación', choices=ESTADOS_ASIGNACION, default=1)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivo_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Asignación de Activo'
+        verbose_name_plural = 'Asignación de Activos'
+
+    def __str__(self):
+        return self.titulo
+
+
+class AsignacionDetalleActivo(models.Model):
+    # activo = models.ForeignKey(Activo, on_delete=models.PROTECT)
+    activo = models.ForeignKey(ActivoBase, on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_activo')
+    asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_asignacion')
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivoDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Asignación Detalle del Activo'
+        verbose_name_plural = 'Asignación Detalle de Activos'
+
+    def __str__(self):
+        # return self.activo.descripcion
+        return self.activo.descripcion_corta
+
+
+
+class ArchivoAsignacionActivo(models.Model):
+
+    archivo = models.FileField('Archivo', blank=True, null=True)
+    asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT)
+    comentario = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoAsignacionActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoAsignacionActivo_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Archivo Asignación de Activos'
+        verbose_name_plural = 'Archivos Asignación de Activos'
+
+    def __str__(self):
+        return str(self.asignacion)

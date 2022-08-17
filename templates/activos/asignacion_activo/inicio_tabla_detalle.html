@@ -1,0 +1,130 @@
+<!-- <div>{{contexto_asignacion_activo_detalle}}</div> -->
+
+<!-- DETALLE ASIGNACIONES -->
+<h3>Asignación Activo Detalle 
+    {% if contexto_asignacion_activo.estado == 1 %}   
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'activos_app:asignacion_activo_detalle_registrar' contexto_asignacion_activo.id %}"
+            data-table-url="{% url 'activos_app:asignacion_activo_detalle_tabla' contexto_asignacion_activo.id %}">    
+            Añadir Activo
+        </button>            
+    {% endif %}
+    
+    {% if contexto_asignacion_activo.estado == 1 or contexto_asignacion_activo.estado == 2 %}
+        <a href="{% url 'activos_app:asignacion_activo_pdf' contexto_asignacion_activo.id %}"
+            class="create btn badge bg-primary">
+            Imprimir
+        </a>
+    {% endif %}
+
+    <a href="{% url 'activos_app:asignacion_activo_inicio' %}"
+        class="create btn badge bg-danger">
+        Retroceder
+    </a>
+</h3>
+
+<!-- TABLA DETALLE ASIGNACIONES -->
+<div class="table-responsive">
+<table>
+    <tbody>
+        <tr>
+            <td><b>Colaborador</b></td>
+            <td class="px-2">:</td>
+            <td>{{ contexto_asignacion_activo_detalle.0.asignacion.colaborador }}</td>
+        </tr>
+        <tr>
+            <td><b>Fecha Documento</b></td>
+            <td class="px-2">:</td>
+            <td>{{ contexto_asignacion_activo_detalle.0.asignacion.fecha_asignacion }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>    
+            <th>Activo Descripcion</th>    
+            <th>Colaborador</th>
+            <th>Fecha Documento</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for asignacion_activo_detalle in contexto_asignacion_activo_detalle %}
+            <tr>
+                <td> {{ forloop.counter}} </td>
+                <td> {{ asignacion_activo_detalle.activo.descripcion_corta }} </td>
+                <td> {{ asignacion_activo_detalle.asignacion.colaborador }} </td>
+                <td> {{ asignacion_activo_detalle.asignacion.fecha_asignacion }} </td>
+                
+                {% if asignacion_activo_detalle.asignacion.estado == 1 %}
+                    <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_detalle_eliminar' asignacion_activo_detalle.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Remover">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>
+</div>
+
+<!-- 
+<div>{{contexto_asignacion_activo}}</div>
+<div>{{contexto_asignacion_activo_detalle}}</div> -->
+
+
+<!-- ARCHIVOS -->
+<br>
+<h3>Asignación Activo Documentos
+    <button class="create badge bg-primary"
+        data-form-url="{% url 'activos_app:asignacion_activo_agregar_archivo' contexto_asignacion_activo.id %}"
+        data-table-url="{% url 'activos_app:asignacion_activo_detalle_tabla' contexto_asignacion_activo.id %}">    
+        Añadir Documento
+    </button>
+</h3>
+
+<!-- TABLA ARCHIVOS -->
+<div class="table-responsive">
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>    
+            <th>Archivo</th>    
+            <th>Comentario</th>
+            <th>Fecha Creación</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for asignacion_archivo in contexto_asignacion_activo_archivo %}
+            <tr>
+                <td> {{ forloop.counter}} </td>
+                <td> {{ asignacion_archivo.archivo }} </td>
+                <td> {{ asignacion_archivo.comentario }} </td>
+                <td> {{ asignacion_archivo.created_at|date:'d/m/Y' }} </td>
+                <td class="text-center"> 
+                    <a href="{{ MEDIA_URL }}{{ asignacion_archivo.archivo }} " target="_blank"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                        <i class="bi bi-eye-fill"></i>
+                        <!-- {{ asignacion_archivo.archivo }} -->
+                    </a>
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_eliminar_archivo' asignacion_archivo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Remover">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
