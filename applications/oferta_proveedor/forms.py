@@ -47,12 +47,6 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         self.fields['description'].initial = self.instance.proveedor_material.description
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
-        self.fields['precio_unitario_sin_igv'].disabled = True
-        self.fields['descuento'].disabled = True
-        self.fields['sub_total'].disabled = True
-        self.fields['igv'].disabled = True
-        self.fields['total'].disabled = True
         
 class OfertaProveedorDetalleProveedorMaterialUpdateForm(BSModalForm):
     content_type = forms.ModelChoiceField(queryset=ContentType.objects.all())
