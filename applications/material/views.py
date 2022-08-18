@@ -1371,7 +1371,7 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
-        comprobante_content_type_id, comprobante_id = form.cleaned_data['comprobante'].split("|")
+        comprobante_id, comprobante_content_type_id, material_id, material_content_type_id = form.cleaned_data['comprobante'].split("|")
         form.instance.content_type_producto = ContentType.objects.get(id=self.kwargs['material_content_type'])
         form.instance.id_registro_producto = self.kwargs['material_id']
         form.instance.content_type_documento = ContentType.objects.get(id=int(comprobante_content_type_id))
@@ -1405,7 +1405,7 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
             
             detalle.fecha_recepcion = recepcion.fecha_recepcion
             detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
-            valor = "%s|%s" % (ContentType.objects.get_for_model(comprobante_compra).id, comprobante_compra.id)
+            valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.kwargs['material_id'], self.kwargs['material_content_type'])
             precios.append((valor, recepcion.numero_comprobante_compra))
         self.kwargs['precios'] = orden_detalle
         kwargs['precios'] = precios
@@ -1419,29 +1419,26 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
         return context
 
 
-# # def ComprobanteView(request, id_comprobante, comprobante_content_type, id_material, material_content_type):
-#     comprobante_content_type = ContentType.objects.get(id=comprobante_content_type)
-#     comprobante_compra = comprobante_content_type.get_object_for_this_type(id = id_comprobante)
-#     comprobante_detalle = comprobante_compra.ComprobanteCompraPIDetalle_comprobante_compra.all()
+def ComprobanteView(request, id_comprobante, comprobante_content_type, id_material, material_content_type):
+    comprobante_content_type = ContentType.objects.get(id=comprobante_content_type)
+    comprobante_compra = comprobante_content_type.get_object_for_this_type(id = id_comprobante)
 
-#     material_content_type = ContentType.objects.get(id=material_content_type)
-#     material = material_content_type.get_object_for_this_type(id)    
+    material_content_type = ContentType.objects.get(id=material_content_type)
+    material = material_content_type.get_object_for_this_type(id = id_material)    
 
+    orden_detalle = OrdenCompraDetalle.objects.filter(
+        content_type = material_content_type,
+        id_registro = id_material,
+    )
+    
+    for detalle in orden_detalle:
+        comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+        if comprobante_compra.id == id_comprobante and ContentType.objects.get_for_model(comprobante_compra) == comprobante_content_type:
+            if detalle.id_registro == id_material and detalle.content_type == material_content_type:
+                precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
 
-#     for detalle in comprobante_detalle :
-#         detalle.precio_final_con_igv
-#         print('detalle.precio_unitario_sin_igv')
-#         print(detalle.precio_final_con_igv)
-
-#     moneda = comprobante_compra.moneda
-#     logistico = comprobante_compra.logistico
-#     # precio = 
-#     print('*********************************')
-#     print(comprobante_compra)
-#     print(moneda)
-#     print(logistico)
-#     print(id_comprobante)
-#     print('*********************************')
-
-#     # return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
-#     return HttpResponse("%s|%s" % (moneda, logistico))
+    moneda = comprobante_compra.moneda
+    logistico = comprobante_compra.logistico
+    
+    return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
+    # return HttpResponse("%s|%s" % (moneda, logistico))
