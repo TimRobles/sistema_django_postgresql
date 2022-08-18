@@ -5,6 +5,7 @@ app_name='activos_app'
 
 urlComprobanteCompraActivoDetalle =[
     path('comprobante-compra-activo/detalle/registrar/<int:comprobante_compra_activo_id>/', views.ComprobanteCompraActivoDetalleCreateView.as_view(), name='comprobante_compra_activo_detalle_registrar'),
+    path('comprobante-compra-activo/detalle/actualizar/<pk>', views.ComprobanteCompraActivoDetalleUpdateView.as_view(), name='comprobante_compra_activo_detalle_actualizar'),
 ]
 
 urlComprobanteCompraActivo = [

@@ -309,7 +309,7 @@ class ComprobanteCompraActivoDetalle(models.Model):
             ]
 
     def __str__(self):
-        return str(self.comprobante_compra)
+        return str(self.comprobante_compra_activo)
 
 class ArchivoComprobanteCompraActivo(models.Model):
 
@@ -326,4 +326,4 @@ class ArchivoComprobanteCompraActivo(models.Model):
         verbose_name_plural = 'Archivos Comprobante Compra Activo'
 
     def __str__(self):
-        return str(self.comprobante_compra)
+        return str(self.comprobante_compra_activo)

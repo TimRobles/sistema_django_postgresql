@@ -48,6 +48,13 @@
                     <td class="text-end">{{ activo.total|intcomma }}</td>
  
                     <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_actualizar' activo.id %}"
+                            data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
                     </td>
                 </tr>
             {% endfor %}    

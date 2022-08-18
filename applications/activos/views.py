@@ -1023,3 +1023,29 @@ class ComprobanteCompraActivoDetalleCreateView(PermissionRequiredMixin,BSModalCr
         context['accion']="Registrar"
         context['titulo']="Activo"
         return context
+
+class ComprobanteCompraActivoDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('oferta_proveedor.change_comprobantecompraactivodetalle')
+
+    model = ComprobanteCompraActivoDetalle
+    template_name = "activos/comprobante_compra_activo/registrar.html"
+    form_class = ComprobanteCompraActivoDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:comprobante_compra_activo_detalle', kwargs={'pk':self.get_object().comprobante_compra_activo_id})
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraActivoDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precios"
+        return context
