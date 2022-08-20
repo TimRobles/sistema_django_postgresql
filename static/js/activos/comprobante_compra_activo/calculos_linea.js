@@ -1,4 +1,5 @@
 function CalculosLinea() {
+    click_habilitar(true);
     $tipo_igv = $('#id_tipo_igv')[0].value;
     if ($tipo_igv == 1) {
         $valor_igv = 0.18
@@ -59,3 +60,18 @@ $('#id_tipo_igv').on('input', function (e) {
     console.log(e.target.value);
     CalculosLinea();
 });
+
+function click_habilitar (valor) {
+    $('#id_precio_unitario_sin_igv')[0].disabled = valor;
+    $('#id_precio_unitario_sin_igv')[0].disabled = valor;
+    $('#id_descuento')[0].disabled = valor;
+    $('#id_sub_total')[0].disabled = valor;
+    $('#id_igv')[0].disabled = valor;
+    $('#id_total')[0].disabled = valor;
+};
+
+$(document).on("click", ".btn-primary", function (e) {
+    click_habilitar(false);
+});
+
+CalculosLinea();

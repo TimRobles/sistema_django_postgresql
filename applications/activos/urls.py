@@ -6,6 +6,9 @@ app_name='activos_app'
 urlComprobanteCompraActivoDetalle =[
     path('comprobante-compra-activo/detalle/registrar/<int:comprobante_compra_activo_id>/', views.ComprobanteCompraActivoDetalleCreateView.as_view(), name='comprobante_compra_activo_detalle_registrar'),
     path('comprobante-compra-activo/detalle/actualizar/<pk>', views.ComprobanteCompraActivoDetalleUpdateView.as_view(), name='comprobante_compra_activo_detalle_actualizar'),
+    path('comprobante-compra-activo/detalle/eliminar/<pk>/', views.ComprobanteCompraActivoDetalleDeleteView.as_view(), name='comprobante_compra_activo_detalle_eliminar'),
+    path('comprobante-compra-activo/archivo/agregar/<int:comprobante_compra_activo_id>/', views.ArchivoComprobanteCompraActivoCreateView.as_view(), name='comprobante_compra_activo_archivo_agregar'),
+    path('comprobante-compra-activo/archivo/eliminar/<pk>/', views.ArchivoComprobanteCompraActivoDeleteView.as_view(), name='comprobante_compra_activo_archivo_eliminar'),
 ]
 
 urlComprobanteCompraActivo = [

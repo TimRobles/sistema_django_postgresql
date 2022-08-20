@@ -2,6 +2,7 @@ from dataclasses import fields
 from .models import (
     ActivoBase,
     ArchivoAsignacionActivo,
+    ArchivoComprobanteCompraActivo,
     AsignacionActivo,
     AsignacionDetalleActivo,
     FamiliaActivo,
@@ -340,10 +341,8 @@ class ComprobanteCompraActivoDetalleForm(BSModalModelForm):
     class Meta:
         model = ComprobanteCompraActivoDetalle
         fields=(
-            'item',
             'activo',
             'descripcion_comprobante',
-            'comprobante_compra_activo',
             'orden_compra_detalle',
             'tipo_igv',
             'cantidad',
@@ -361,8 +360,14 @@ class ComprobanteCompraActivoDetalleForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-        self.fields['precio_unitario_sin_igv'].disabled = True
-        self.fields['descuento'].disabled = True
-        self.fields['sub_total'].disabled = True
-        self.fields['igv'].disabled = True
-        self.fields['total'].disabled = True
+class ArchivoComprobanteCompraActivoDetalleForm(BSModalModelForm):
+    class Meta:
+        model = ArchivoComprobanteCompraActivo
+        fields=(
+            'archivo',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ArchivoComprobanteCompraActivoDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
