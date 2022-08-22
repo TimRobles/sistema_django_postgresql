@@ -40,17 +40,22 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
                         <i class="bi bi-eye-fill"></i>
                     </a>
-                    
-                    <button data-form-url="{% url 'activos_app:asignacion_activo_dar_baja' asignacion_activo.id %}"
-                        class="delete btn btn-danger btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
-                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_entregar' asignacion_activo.id %}"
+                        class="delete btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Entregar Asignación">
+                        <i class="bi bi-hand-thumbs-up-fill"></i>
                     </button>
                     <button data-form-url="{% url 'activos_app:asignacion_activo_concluir_sin_asignar' asignacion_activo.id %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Concluir sin Asignar">
                         <i class="bi bi-hand-thumbs-down-fill"></i>
                     </button>  
+                    <button data-form-url="{% url 'activos_app:asignacion_activo_dar_baja' asignacion_activo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+
                     
                     {% elif asignacion_activo.estado == 2 %}                  
                     <a href="{% url 'activos_app:asignacion_activo_detalle_inicio' asignacion_activo.id %}"
