@@ -155,20 +155,6 @@ class AsignacionDetalleActivo(models.Model):
     def __str__(self):
         return str(self.activo.descripcion)
 
-class ArchivoAsignacionActivo(models.Model):
-
-    archivo = models.FileField('Archivo', blank=True, null=True)
-    asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT)
-    comentario = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoAsignacionActivo_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoAsignacionActivo_updated_by', editable=False)
-
-    def __str__(self):
-        return str(self.asignacion)
-
-
 class Activo(models.Model):
     ESTADOS_ACTIVO = [
         (1, 'ALTA'),
