@@ -168,6 +168,9 @@ def generarPDF(titulo, elementos, orientacion_vertical=True, logo=rutaBase + '/l
     buf = io.BytesIO()
 
     if orientacion_vertical:
+        print('************')
+        print(logo)
+        print('************')
         frame = A4Portrait
         template = PageTemplate(id='test', frames=frame, onPage=partial(header, content=header_content(logo)), onPageEnd=partial(footer, texto=texto))
         doc = BaseDocTemplate(buf, title=titulo, pagesize=A4, pageTemplates=[template], showBoundary=0, leftMargin=cmToPx(0.3), rightMargin=cmToPx(0.3), topMargin=cmToPx(0.3), bottomMargin=cmToPx(0.3))

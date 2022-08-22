@@ -2,8 +2,11 @@ from dataclasses import fields
 from .models import (
     ActivoBase,
     ArchivoAsignacionActivo,
+    ArchivoDevolucionActivo,
     AsignacionActivo,
     AsignacionDetalleActivo,
+    DevolucionActivo,
+    DevolucionDetalleActivo,
     FamiliaActivo,
     SubFamiliaActivo,
     Activo,
@@ -184,9 +187,37 @@ class AsignacionDetalleActivoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(AsignacionDetalleActivoForm, self).__init__(*args, **kwargs)
+        self.fields['activo'].queryset = Activo.objects.filter(estado=1) 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+
+class DevolucionActivoForm(BSModalModelForm):
+
+    class Meta:
+        model = DevolucionActivo
+        fields = (
+            'titulo',
+            'colaborador',
+            'fecha_devolucion',
+            'observacion',
+            'archivo',
+            )
+        widgets = {
+            'fecha_devolucion' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(DevolucionActivoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            
 
 class ArchivoAsignacionActivoForm(BSModalModelForm):
 
@@ -366,3 +397,34 @@ class ComprobanteCompraActivoDetalleForm(BSModalModelForm):
         self.fields['sub_total'].disabled = True
         self.fields['igv'].disabled = True
         self.fields['total'].disabled = True
+
+
+class DevolucionDetalleActivoForm(BSModalModelForm):
+
+    class Meta:
+        model = DevolucionDetalleActivo
+        fields = (
+            'asignacion',
+            'activo',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(DevolucionDetalleActivoForm, self).__init__(*args, **kwargs)
+        self.fields['activo'].queryset = Activo.objects.filter(estado=3) 
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ArchivoDevolucionActivoForm(BSModalModelForm):
+
+    class Meta:
+        model = ArchivoDevolucionActivo
+        fields=(
+            'archivo',
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ArchivoDevolucionActivoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

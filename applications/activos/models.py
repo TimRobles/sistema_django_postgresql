@@ -128,14 +128,16 @@ class AsignacionActivo(models.Model):
     class Meta:
         verbose_name = 'Asignación de Activo'
         verbose_name_plural = 'Asignación de Activos'
+        ordering = [
+            '-fecha_asignacion',
+            ]
 
     def __str__(self):
         return self.titulo
 
 
 class AsignacionDetalleActivo(models.Model):
-    # activo = models.ForeignKey(Activo, on_delete=models.PROTECT)
-    activo = models.ForeignKey(ActivoBase, on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_activo')
+    activo = models.ForeignKey('Activo', on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_activo')
     asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_asignacion')
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivoDetalle_created_by', editable=False)
@@ -147,13 +149,57 @@ class AsignacionDetalleActivo(models.Model):
         verbose_name_plural = 'Asignación Detalle de Activos'
 
     def __str__(self):
-        # return self.activo.descripcion
-        return self.activo.descripcion_corta
+        return str(self.activo.descripcion)
 
+
+class Activo(models.Model):
+    ESTADOS_ACTIVO = [
+        (1, 'ALTA'),
+        (2, 'EN PROCESO ASIGNACIÓN'),
+        (3, 'ASIGNADO'),
+        (4, 'EN PROCESO DEVOLUCIÓN'),
+        ]
+    numero_serie = models.CharField('Número de Serie', max_length=25)
+    descripcion = models.CharField('Descripción', max_length=150, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
+    id_registro = models.IntegerField(blank=True, null=True)
+    activo_base = models.ForeignKey(ActivoBase, verbose_name='Activo Base', on_delete=models.CASCADE, blank=True, null=True)
+    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE, blank=True, null=True)
+    modelo = models.ForeignKey(ModeloActivo, on_delete=models.CASCADE, blank=True, null=True)
+    fecha_compra = models.DateField('Fecha de Compra', auto_now=False, auto_now_add=False, blank=True, null=True)
+    tiempo_garantia = models.IntegerField('Tiempo de Garantía (meses)', blank=True, null=True)
+    color = models.CharField('Color', max_length=25, blank=True, null=True)
+    informacion_adicional = models.TextField('Información Adicional', blank=True, null=True)
+    declarable = models.BooleanField('Declarable', default=False)
+    estado = models.IntegerField('Estado Activo', choices=ESTADOS_ACTIVO, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Activo'
+        verbose_name_plural = 'Activos'
+        ordering = ['numero_serie',]
+
+    def __str__(self):
+        return str(self.descripcion)
+
+
+from django.db.models.signals import post_save
+
+def actualizar_estado_activo_asignacion(*args, **kwargs):
+    obj = kwargs['instance']
+    activo = Activo.objects.get(id=obj.activo.id)
+    activo.estado = 2
+    activo.save()
+
+post_save.connect(actualizar_estado_activo_asignacion, sender=AsignacionDetalleActivo)
 
 
 class ArchivoAsignacionActivo(models.Model):
-
     archivo = models.FileField('Archivo', blank=True, null=True)
     asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT)
     comentario = models.TextField(null=True, blank=True)
@@ -168,35 +214,113 @@ class ArchivoAsignacionActivo(models.Model):
 
     def __str__(self):
         return str(self.asignacion)
-class Activo(models.Model):
 
-    numero_serie = models.CharField('Número de Serie', max_length=25)
-    descripcion = models.CharField('Descripción', max_length=150, blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
-    id_registro = models.IntegerField(blank=True, null=True)
-    activo_base = models.ForeignKey(ActivoBase, verbose_name='Activo Base', on_delete=models.CASCADE, blank=True, null=True)
-    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE, blank=True, null=True)
-    modelo = models.ForeignKey(ModeloActivo, on_delete=models.CASCADE, blank=True, null=True)
-    fecha_compra = models.DateField('Fecha de Compra', auto_now=False, auto_now_add=False, blank=True, null=True)
-    tiempo_garantia = models.IntegerField('Tiempo de Garantía (meses)', blank=True, null=True)
-    color = models.CharField('Color', max_length=25, blank=True, null=True)
-    informacion_adicional = models.TextField('Información Adicional', blank=True, null=True)
-    declarable = models.BooleanField('Declarable', default=False)
-    estado = models.IntegerField('Estado Activo', choices=ESTADOS, default=1)
 
+class DevolucionActivo(models.Model):
+    ESTADOS_Devolucion = [
+        (1, 'ALTA'),
+        (2, 'RECEPCIONADO'),
+        (3, 'ANULADO'),
+        ]
+    titulo = models.CharField('Título', max_length=50)
+    colaborador = models.ForeignKey(DatosUsuario, on_delete=models.PROTECT)
+    fecha_devolucion = models.DateField('Fecha Devolución', auto_now=False, auto_now_add=False)
+    observacion = models.TextField(null=True, blank=True)
+    estado = models.IntegerField('Estado Devolución', choices=ESTADOS_Devolucion, default=1)
+    archivo = models.FileField('Archivo', blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_created_by', editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionActivo_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_updated_by', editable=False)
-    
-    class Meta:
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionActivo_updated_by', editable=False)
 
-        verbose_name = 'Activo'
-        verbose_name_plural = 'Activos'
-        ordering = ['numero_serie',]
+    class Meta:
+        verbose_name = 'Devolución de Activo'
+        verbose_name_plural = 'Devolución de Activos'
+        ordering = [
+            '-fecha_devolucion',
+            ]
 
     def __str__(self):
-        return self.descripcion
+        return self.titulo
+
+
+class DevolucionDetalleActivo(models.Model):
+    asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT, related_name='DevolucionDetalleActivo_asignacion')
+    activo = models.ForeignKey('Activo', on_delete=models.PROTECT, related_name='DevolucionDetalleActivo_activo')
+    devolucion = models.ForeignKey(DevolucionActivo, on_delete=models.PROTECT, related_name='DevolucionDetalleActivo_devolucion')
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionActivoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionActivoDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Devolución Detalle del Activo'
+        verbose_name_plural = 'Devolución Detalle de Activos'
+
+    def __str__(self):
+        return str(self.activo.descripcion)
+
+
+def actualizar_estado_activo_devolucion(*args, **kwargs):
+    obj = kwargs['instance']
+    activo = Activo.objects.get(id=obj.activo.id)
+    activo.estado = 4
+    activo.save()
+
+post_save.connect(actualizar_estado_activo_devolucion, sender=DevolucionDetalleActivo)
+
+
+class ArchivoDevolucionActivo(models.Model):
+    archivo = models.FileField('Archivo', blank=True, null=True)
+    devolucion = models.ForeignKey(DevolucionActivo, on_delete=models.PROTECT)
+    comentario = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivodevolucionActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivodevolucionActivo_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Archivo Devolución de Activos'
+        verbose_name_plural = 'Archivos Devolución de Activos'
+
+    def __str__(self):
+        return str(self.devolucion)
+
+
+class EstadoActivo(models.Model):
+    nro_estado = models.IntegerField('Estado del Activo')
+    descripcion = models.CharField('Descripción del estado', max_length=50)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EstadoActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EstadoActivo_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Estado Activo'
+        verbose_name_plural = 'Estado Activos'
+
+    def __str__(self):
+        return str(self.descripcion)
+
+
+class HistorialEstadoActivo(models.Model):
+    activo = models.ForeignKey(Activo, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
+    id_registro = models.IntegerField(blank=True, null=True)
+    estado = models.ForeignKey(EstadoActivo, on_delete=models.PROTECT)
+    estado_anterior = models.ForeignKey('self', on_delete=models.PROTECT, blank=True, null=True)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='HistorialEstadoActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='HistorialEstadoActivo_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Historial Estado Activo'
+        verbose_name_plural = 'Historial Estado Activos'
+
+    def __str__(self):
+        return str(self.estado)
+
 
 class ActivoSociedad(models.Model):
 

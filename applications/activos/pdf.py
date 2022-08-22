@@ -15,7 +15,7 @@ def dataAsignacionActivos(TablaEncabezado, TablaDatos, fuenteBase, color):
         fila.append(parrafoIzquierda(dato[2], fuenteBase))
         fila.append(parrafoIzquierda(dato[3], fuenteBase))
         fila.append(parrafoIzquierda(dato[4], fuenteBase))
-        fila.append(parrafoDerecha(dato[5], fuenteBase))
+        fila.append(parrafoIzquierda(dato[5], fuenteBase))
 
         data.append(fila)  
 
@@ -30,8 +30,10 @@ def dataAsignacionActivos(TablaEncabezado, TablaDatos, fuenteBase, color):
             ]
         )
     t._argW[0]=cmToPx(1)
+    t._argW[1]=cmToPx(2.5)
+    t._argW[3]=cmToPx(2.5)
     t._argW[4]=cmToPx(2.5)
-    # t._argW[5]=cmToPx(2.5)
+    t._argW[5]=cmToPx(2.5)
 
     return t
 
@@ -74,6 +76,7 @@ def generarAsignacionActivos(titulo, vertical, logo, pie_pagina, Texto, TablaEnc
     elementos.append(vacio(7))
     elementos.append(data_firmas)
     
-    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+    # buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+    buf = generarPDF(titulo, elementos, vertical, texto=pie_pagina)
 
     return buf
