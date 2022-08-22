@@ -7,6 +7,8 @@ from applications.activos.models import (
     AsignacionDetalleActivo,
     DevolucionActivo,
     DevolucionDetalleActivo,
+    InventarioActivo,
+    InventarioActivoDetalle,
     SubFamiliaActivo,
     Activo,
     ActivoUbicacion,
@@ -22,6 +24,7 @@ from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseS
 from applications.importaciones import *
 from django import forms
 from bootstrap_modal_forms.generic import BSModalCreateView
+from applications.funciones import obtener_totales
 
 from .forms import (
     ActivoBaseForm,
@@ -33,6 +36,10 @@ from .forms import (
     ComprobanteCompraActivoForm,
     DevolucionActivoForm,
     DevolucionDetalleActivoForm,
+    ArchivoComprobanteCompraActivoDetalleForm,
+    ComprobanteCompraActivoDetalleForm,
+    ComprobanteCompraActivoForm,
+    InventarioActivoForm,
     MarcaActivoForm,
     ModeloActivoForm,
     ArchivoAsignacionActivoForm,
@@ -1043,6 +1050,7 @@ class ComprobanteCompraActivoDetailView(PermissionRequiredMixin, DetailView):
         context = super(ComprobanteCompraActivoDetailView, self).get_context_data(**kwargs)
         context['activos'] = ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
         context['archivos'] = ArchivoComprobanteCompraActivo.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
+        context['totales'] = obtener_totales(ComprobanteCompraActivo.objects.get(id = self.kwargs['pk']))
         return context
 
 def ComprobanteCompraActivoDetailTabla(request, pk):
@@ -1054,6 +1062,7 @@ def ComprobanteCompraActivoDetailTabla(request, pk):
         context['contexto_comprobante_compra_activo_detalle'] = comprobante_compra_activo
         context['activos'] = ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
         context['archivos'] = ArchivoComprobanteCompraActivo.objects.filter(comprobante_compra_activo = comprobante_compra_activo)
+        context['totales'] = obtener_totales(ComprobanteCompraActivo.objects.get(id = pk))
         data['table'] = render_to_string(
             template,
             context,
@@ -1077,6 +1086,8 @@ class ComprobanteCompraActivoDetalleCreateView(PermissionRequiredMixin,BSModalCr
 
     def form_valid(self, form):
         form.instance.comprobante_compra_activo = ComprobanteCompraActivo.objects.get(id = self.kwargs['comprobante_compra_activo_id'])
+        item = len(ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo = form.instance.comprobante_compra_activo))
+        form.instance.item = item + 1
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -1233,6 +1244,123 @@ def DevolucionActivoDetalleTabla(request, pk):
         context['contexto_devolucion_activo'] = devolucion
         context['contexto_devolucion_activo_detalle'] = DevolucionDetalleActivo.objects.filter(devolucion = devolucion)
         context['contexto_devolucion_activo_archivo'] = ArchivoDevolucionActivo.objects.filter(devolucion = devolucion)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class ComprobanteCompraActivoDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('oferta_proveedor.change_comprobantecompraactivodetalle')
+
+    model = ComprobanteCompraActivoDetalle
+    template_name = "activos/comprobante_compra_activo/registrar.html"
+    form_class = ComprobanteCompraActivoDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:comprobante_compra_activo_detalle', kwargs={'pk':self.get_object().comprobante_compra_activo_id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraActivoDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precios"
+        return context
+
+class ComprobanteCompraActivoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.delete_comprobantecompraactivodetalle')
+    model = ComprobanteCompraActivoDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:comprobante_compra_activo_detalle', kwargs={'pk':self.object.comprobante_compra_activo.id})
+
+    def delete(self, request, *args, **kwargs):
+        activos = ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo=self.get_object().comprobante_compra_activo)
+        contador = 1
+        for activo in activos:
+            if activo == self.get_object():continue
+            activo.item = contador
+            activo.save()
+            contador += 1
+
+        return super().delete(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraActivoDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Registro"
+        return context
+
+class ArchivoComprobanteCompraActivoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('activos.add_archivocomprobantecompraactivo')
+    model = ArchivoComprobanteCompraActivo
+    template_name = "includes/formulario generico.html"
+    form_class = ArchivoComprobanteCompraActivoDetalleForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:comprobante_compra_activo_detalle', kwargs={'pk':self.kwargs['comprobante_compra_activo_id']})
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.comprobante_compra_activo = ComprobanteCompraActivo.objects.get(id = self.kwargs['comprobante_compra_activo_id'])
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ArchivoComprobanteCompraActivoCreateView, self).get_context_data(**kwargs)
+        context['accion']="Agregar"
+        context['titulo']="Documento"
+        return context
+
+class ArchivoComprobanteCompraActivoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.delete_archivocomprobantecompraactivo')
+    model =ArchivoComprobanteCompraActivo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:comprobante_compra_activo_detalle', kwargs={'pk':self.object.comprobante_compra_activo.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ArchivoComprobanteCompraActivoDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Documento"
+        return context
+
+class InventarioActivoListView(PermissionRequiredMixin, ListView):
+    permission_required = ('activos.view_inventarioactivo')
+    model = InventarioActivo
+    template_name = "activos/inventario_activo/inicio.html"
+    context_object_name = 'contexto_inventario_activo'
+
+def InventarioActivoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'activos/inventario_activo/inicio_tabla.html'
+        context = {}
+        context['contexto_inventario_activo'] = InventarioActivo.objects.all()
+
         data['table'] = render_to_string(
             template,
             context,
@@ -1389,3 +1517,78 @@ class ArchivoDevolucionActivoDeleteView(PermissionRequiredMixin, BSModalDeleteVi
         context['dar_baja'] = "True"
         context['item'] = self.object.archivo
         return context
+    
+class InventarioActivoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('activos.add_inventarioactivo')
+    model = InventarioActivo
+    template_name = "includes/formulario generico.html"
+    form_class = InventarioActivoForm
+    success_url = reverse_lazy('activos_app:inventario_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+            context = super(InventarioActivoCreateView, self).get_context_data(**kwargs)
+            context['accion']="Registrar"
+            context['titulo']="Inventario Activo"
+            return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class InventarioActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('activos.change_inventarioactivo')
+
+    model = InventarioActivo
+    template_name = "includes/formulario generico.html"
+    form_class = InventarioActivoForm
+    success_url = reverse_lazy('activos_app:inventario_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioActivoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Inventario Activo"
+        return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class InventarioActivoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.delete_inventarioactivo')
+    model = InventarioActivo
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('activos_app:inventario_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioActivoDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Inventario Activo"
+        return context
+
+class InventarioActivoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('activos.view_inventarioactivo')
+    model = InventarioActivo
+    template_name = "activos/inventario_activo/detalle.html"
+    context_object_name = 'contexto_inventario_activo_detalle'
+
+    def get_context_data(self, **kwargs):
+        inventario_activo = InventarioActivo.objects.get(id = self.kwargs['pk'])
+        context = super(InventarioActivoDetailView, self).get_context_data(**kwargs)
+        context['registro_activos'] = Activo.objects.all()
+        return context
+
+def InventarioActivoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'activos/inventario_activo/detalle_tabla.html'
+        context = {}
+        inventario_activo = InventarioActivo.objects.get(id = pk)
+        context['contexto_inventario_activo_detalle'] = inventario_activo
+        context['registro_activos'] = Activo.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)

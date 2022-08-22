@@ -230,7 +230,9 @@ def obtener_totales(cabecera):
     elif hasattr(cabecera, 'ComprobanteCompraCIDetalle_comprobante_compra'):
         detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()    
     elif hasattr(cabecera, 'OrdenCompraDetalle_orden_compra'):
-        detalles = cabecera.OrdenCompraDetalle_orden_compra.all()
+        detalles = cabecera.OrdenCompraDetalle_orden_compra.all()    
+    elif hasattr(cabecera, 'ComprobanteCompraActivoDetalle_comprobante_compra_activo'):
+        detalles = cabecera.ComprobanteCompraActivoDetalle_comprobante_compra_activo.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:

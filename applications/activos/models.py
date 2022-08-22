@@ -7,6 +7,10 @@ from applications.variables import ESTADOS, INCOTERMS, INTERNACIONAL_NACIONAL, T
 from applications.sede.models import Sede
 from applications.sociedad.models import Sociedad
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
+from django.db.models.signals import pre_save, post_save, post_delete
+
+from applications.funciones import obtener_totales
+from applications.importaciones import registro_guardar, registro_guardar_user
 
 
 class FamiliaActivo(models.Model):
@@ -150,6 +154,19 @@ class AsignacionDetalleActivo(models.Model):
 
     def __str__(self):
         return str(self.activo.descripcion)
+
+class ArchivoAsignacionActivo(models.Model):
+
+    archivo = models.FileField('Archivo', blank=True, null=True)
+    asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT)
+    comentario = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoAsignacionActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoAsignacionActivo_updated_by', editable=False)
+
+    def __str__(self):
+        return str(self.asignacion)
 
 
 class Activo(models.Model):
@@ -322,6 +339,7 @@ class HistorialEstadoActivo(models.Model):
         return str(self.estado)
 
 
+
 class ActivoSociedad(models.Model):
 
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
@@ -340,6 +358,7 @@ class ActivoSociedad(models.Model):
 
     def __str__(self):
         return str(self.activo)
+
 
 class ActivoUbicacion(models.Model):
 
@@ -361,6 +380,7 @@ class ActivoUbicacion(models.Model):
 
     def __str__(self):
         return self.activo
+
 
 class ComprobanteCompraActivo(models.Model):
 
@@ -403,6 +423,7 @@ class ComprobanteCompraActivo(models.Model):
     def __str__(self):
         return self.numero_comprobante
 
+
 class ComprobanteCompraActivoDetalle(models.Model):
 
     item = models.IntegerField(blank=True, null=True)
@@ -418,7 +439,7 @@ class ComprobanteCompraActivoDetalle(models.Model):
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
-    comprobante_compra_activo = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE)
+    comprobante_compra_activo = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE, related_name='ComprobanteCompraActivoDetalle_comprobante_compra_activo')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ComprobanteCompraActivoDetalle_created_by', editable=False)
@@ -433,7 +454,28 @@ class ComprobanteCompraActivoDetalle(models.Model):
             ]
 
     def __str__(self):
-        return str(self.comprobante_compra)
+        return str(self.comprobante_compra_activo)
+
+def ComprobanteCompraActivoDetalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    totales = obtener_totales(ComprobanteCompraActivo.objects.get(id=obj.comprobante_compra_activo.id))
+    for key, value in totales.items():
+        setattr( obj.comprobante_compra_activo, key, value)
+    registro_guardar_user(obj.comprobante_compra_activo, obj.updated_by)
+    obj.comprobante_compra_activo.save()
+
+post_save.connect(ComprobanteCompraActivoDetalle_post_save, sender=ComprobanteCompraActivoDetalle)
+
+def ComprobanteCompraActivoDetalle_post_delete(sender, instance, *args, **kwargs):
+    obj = instance
+    totales = obtener_totales(ComprobanteCompraActivo.objects.get(id=obj.comprobante_compra_activo.id))
+    for key, value in totales.items():
+        setattr( obj.comprobante_compra_activo, key, value)
+    registro_guardar_user(obj.comprobante_compra_activo, obj.updated_by)
+    obj.comprobante_compra_activo.save()
+
+post_delete.connect(ComprobanteCompraActivoDetalle_post_delete, sender=ComprobanteCompraActivoDetalle)
+
 
 class ArchivoComprobanteCompraActivo(models.Model):
 
@@ -450,4 +492,45 @@ class ArchivoComprobanteCompraActivo(models.Model):
         verbose_name_plural = 'Archivos Comprobante Compra Activo'
 
     def __str__(self):
-        return str(self.comprobante_compra)
+        return str(self.comprobante_compra_activo)
+
+
+class InventarioActivo(models.Model):
+
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, related_name='InventarioActivo_Usuario')
+    fecha_inventario = models.DateField('Fecha de Inventario', auto_now=False, auto_now_add=False, blank=True, null=True)
+    observacion = models.TextField('Observación', blank=True, null=True)
+    documento = models.FileField('Doc. Inventario', blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioActivo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioActivo_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Inventario Activo'
+        verbose_name_plural = 'Inventarios Activo'
+
+    def __str__(self):
+        return str(self.usuario)
+
+
+class InventarioActivoDetalle(models.Model):
+
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True)
+    inventario_activo = models.ForeignKey(InventarioActivo, verbose_name='Inventario Activo', on_delete=models.PROTECT)
+    observacion = models.TextField('Observación', blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioActivoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioActivoDetalle_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Inventario Activo Detalle'
+        verbose_name_plural = 'Inventarios Activo Detalle'
+
+    def __str__(self):
+        return self.activo

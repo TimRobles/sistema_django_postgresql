@@ -45,19 +45,9 @@ class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
     def form_valid(self, form):
         totales = obtener_totales(OfertaProveedor.objects.get(id=form.instance.id))
         form.instance.estado = 2
-        form.instance.descuento_global = totales['descuento_global']
-        form.instance.total_descuento = totales['total_descuento']
-        form.instance.total_anticipo = totales['total_anticipo']
-        form.instance.total_gravada = totales['total_gravada']
-        form.instance.total_inafecta = totales['total_inafecta']
-        form.instance.total_exonerada = totales['total_exonerada']
-        form.instance.total_igv = totales['total_igv']
-        form.instance.total_gratuita = totales['total_gratuita']
-        form.instance.total_otros_cargos = totales['total_otros_cargos']
-        form.instance.total_icbper = totales['total_icbper']
-        form.instance.total = totales['total']
+        for key, value in totales.items():
+            setattr(form.instance, key, value)
         form.instance.slug = slug_aleatorio(OfertaProveedor)
-
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

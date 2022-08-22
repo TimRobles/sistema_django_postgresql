@@ -16,6 +16,8 @@ from .models import (
     EstadoActivo,
     FamiliaActivo,
     HistorialEstadoActivo,
+    InventarioActivo,
+    InventarioActivoDetalle,
     MarcaActivo,
     ModeloActivo,
     SubFamiliaActivo
@@ -375,6 +377,45 @@ class HistorialEstadoActivoAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class InventarioActivoAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'usuario',
+        'fecha_inventario',
+        'observacion',
+        'documento',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+class InventarioActivoDetalleAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'activo',
+        'inventario_activo',
+        'observacion',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 admin.site.register(ComprobanteCompraActivo, ComprobanteCompraActivoAdmin)
 admin.site.register(ComprobanteCompraActivoDetalle, ComprobanteCompraActivoDetalleAdmin)
 admin.site.register(ArchivoComprobanteCompraActivo, ArchivoComprobanteCompraActivoAdmin)
@@ -393,3 +434,5 @@ admin.site.register(DevolucionActivo, DevolucionActivoAdmin)
 admin.site.register(DevolucionDetalleActivo, DevolucionDetalleActivoAdmin)
 admin.site.register(EstadoActivo, EstadoActivoAdmin)
 admin.site.register(HistorialEstadoActivo, HistorialEstadoActivoAdmin)
+admin.site.register(InventarioActivo, InventarioActivoAdmin)
+admin.site.register(InventarioActivoDetalle, InventarioActivoDetalleAdmin)

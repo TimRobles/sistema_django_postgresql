@@ -3,8 +3,14 @@ from . import views
 
 app_name='activos_app'
 
-urlComprobanteCompraActivoDetalle =[
-    path('comprobante-compra-activo/detalle/registrar/<int:comprobante_compra_activo_id>/', views.ComprobanteCompraActivoDetalleCreateView.as_view(), name='comprobante_compra_activo_detalle_registrar'),
+urlInventarioActivo =[
+    path('inventario-activo/', views.InventarioActivoListView.as_view(), name='inventario_activo_inicio'),
+    path('inventario-activo-tabla/', views.InventarioActivoTabla, name='inventario_activo_tabla'),
+    path('inventario-activo/registrar/', views.InventarioActivoCreateView.as_view(), name='inventario_activo_registrar'),
+    path('inventario-activo/actualizar/<pk>', views.InventarioActivoUpdateView.as_view(), name='inventario_activo_actualizar'),
+    path('inventario-activo/eliminar/<pk>', views.InventarioActivoDeleteView.as_view(), name='inventario_activo_eliminar'),
+    path('inventario-activo/detalle/<pk>/', views.InventarioActivoDetailView.as_view(), name='inventario_activo_detalle'),
+    path('inventario-activo/detalle-tabla/<pk>/', views.InventarioActivoDetailTabla, name='inventario_activo_detalle_tabla'),
 ]
 
 urlComprobanteCompraActivo = [
@@ -14,6 +20,11 @@ urlComprobanteCompraActivo = [
     path('comprobante-compra-activo/actualizar/<pk>', views.ComprobanteCompraActivoUpdateView.as_view(), name='comprobante_compra_activo_actualizar'),
     path('comprobante-compra-activo/detalle/<pk>/', views.ComprobanteCompraActivoDetailView.as_view(), name='comprobante_compra_activo_detalle'),
     path('comprobante-compra-activo/detalle-tabla/<pk>/', views.ComprobanteCompraActivoDetailTabla, name='comprobante_compra_activo_detalle_tabla'),
+    path('comprobante-compra-activo/detalle/registrar/<int:comprobante_compra_activo_id>/', views.ComprobanteCompraActivoDetalleCreateView.as_view(), name='comprobante_compra_activo_detalle_registrar'),
+    path('comprobante-compra-activo/detalle/actualizar/<pk>', views.ComprobanteCompraActivoDetalleUpdateView.as_view(), name='comprobante_compra_activo_detalle_actualizar'),
+    path('comprobante-compra-activo/detalle/eliminar/<pk>/', views.ComprobanteCompraActivoDetalleDeleteView.as_view(), name='comprobante_compra_activo_detalle_eliminar'),
+    path('comprobante-compra-activo/archivo/agregar/<int:comprobante_compra_activo_id>/', views.ArchivoComprobanteCompraActivoCreateView.as_view(), name='comprobante_compra_activo_archivo_agregar'),
+    path('comprobante-compra-activo/archivo/eliminar/<pk>/', views.ArchivoComprobanteCompraActivoDeleteView.as_view(), name='comprobante_compra_activo_archivo_eliminar'),
 ]
 
 urlActivoUbicacion = [
@@ -29,7 +40,7 @@ urlActivoSociedad = [
 urlActivoBase = [
     path('activo_base/', views.ActivoBaseListView.as_view(), name='activo_base_inicio'),
     path('activo_base-tabla/', views.ActivoBaseTabla, name='activo_base_tabla'),
-    path('activo_base/registrar/', views.ActivoBaseListView.as_view(), name='activo_base_registrar'),
+    path('activo_base/registrar/', views.ActivoBaseCreateView.as_view(), name='activo_base_registrar'),
     path('activo_base/actualizar/<pk>', views.ActivoBaseUpdateView.as_view(), name='activo_base_actualizar'),
     path('activo_base/actualizar_sunat/<pk>', views.ProductoSunatActivoUpdateView.as_view(), name='activo_base_actualizar_sunat'),
     path('activo_base/dar_baja/<pk>', views.ActivoBaseDarBajaView.as_view(), name='activo_base_dar_baja'),
@@ -105,4 +116,4 @@ urlpatterns = [
     path('activo/detalle/<pk>/', views.ActivoDetailView.as_view(), name='activo_detalle'),
     path('activo/detalle-tabla/<pk>/', views.ActivoDetailTabla, name='activo_detalle_tabla'),
 
-] + urlComprobanteCompraActivoDetalle + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlActivoBase + urlModelos + urlMarcas + urlActivoBase + urlAsignacionActivo + urlDevolucionActivo
+] + urlDevolucionActivo + urlInventarioActivo + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlModelos + urlMarcas + urlActivoBase + urlAsignacionActivo

@@ -1,0 +1,30 @@
+<h3>Detalle
+    <a href="{% url 'activos_app:inventario_activo_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Serie</th>
+                <th>Marca</th>
+                <th>Color</th>
+                <th>Empresa</th>
+                <th>Piso</th>
+                <th>Colaborador</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activo in registro_activos %}
+
+            <tr>
+                <td>{{ activo.descripcion }}</td>
+                <td class="text-center text-nowrap">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
