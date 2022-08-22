@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Inventario Activo
+{% endblock titulo %}
+
+
+{% block contenido %}
+    <h3>Inventario Activo
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'activos_app:inventario_activo_registrar' %}"
+            data-table-url="{% url 'activos_app:inventario_activo_tabla' %}">
+            Registrar Inventario Activo
+        </button>
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'activos/inventario_activo/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
+    

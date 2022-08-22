@@ -1,4 +1,4 @@
-from dataclasses import fields
+from datetime import date
 from .models import (
     ActivoBase,
     ArchivoAsignacionActivo,
@@ -6,6 +6,7 @@ from .models import (
     AsignacionActivo,
     AsignacionDetalleActivo,
     FamiliaActivo,
+    InventarioActivo,
     SubFamiliaActivo,
     Activo,
     ActivoUbicacion,
@@ -18,6 +19,7 @@ from .models import (
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat
 from bootstrap_modal_forms.forms import BSModalModelForm
 from django import forms
+from django.contrib.auth import get_user_model
 
 
 class FamiliaActivoForm(forms.ModelForm):
@@ -369,5 +371,37 @@ class ArchivoComprobanteCompraActivoDetalleForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ArchivoComprobanteCompraActivoDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class InventarioActivoForm(BSModalModelForm):
+    class Meta:
+        model = InventarioActivo
+        fields=(
+            'usuario',
+            'fecha_inventario',
+            'observacion',
+            'documento',
+            )
+
+        widgets = {
+            'fecha_inventario' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def clean_fecha_inventario(self):
+        fecha_inventario = self.cleaned_data.get('fecha_inventario')
+        if fecha_inventario > date.today():
+            self.add_error('fecha_inventario', 'La fecha de inventario no puede ser mayor a la fecha de hoy.')
+
+        return fecha_inventario
+
+    def __init__(self, *args, **kwargs):
+        super(InventarioActivoForm, self).__init__(*args, **kwargs)
+        self.fields['usuario'].queryset = get_user_model().objects.exclude(first_name = "")
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

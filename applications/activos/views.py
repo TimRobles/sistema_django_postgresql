@@ -4,6 +4,8 @@ from applications.activos.models import (
     ArchivoAsignacionActivo,
     AsignacionActivo,
     AsignacionDetalleActivo,
+    InventarioActivo,
+    InventarioActivoDetalle,
     SubFamiliaActivo,
     Activo,
     ActivoUbicacion,
@@ -29,6 +31,7 @@ from .forms import (
     ArchivoComprobanteCompraActivoDetalleForm,
     ComprobanteCompraActivoDetalleForm,
     ComprobanteCompraActivoForm,
+    InventarioActivoForm,
     MarcaActivoForm,
     ModeloActivoForm,
     ArchivoAsignacionActivoForm,
@@ -1125,3 +1128,98 @@ class ArchivoComprobanteCompraActivoDeleteView(PermissionRequiredMixin, BSModalD
         context['accion']="Eliminar"
         context['titulo']="Documento"
         return context
+
+class InventarioActivoListView(PermissionRequiredMixin, ListView):
+    permission_required = ('activos.view_inventarioactivo')
+    model = InventarioActivo
+    template_name = "activos/inventario_activo/inicio.html"
+    context_object_name = 'contexto_inventario_activo'
+
+def InventarioActivoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'activos/inventario_activo/inicio_tabla.html'
+        context = {}
+        context['contexto_inventario_activo'] = InventarioActivo.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)  
+    
+class InventarioActivoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('activos.add_inventarioactivo')
+    model = InventarioActivo
+    template_name = "includes/formulario generico.html"
+    form_class = InventarioActivoForm
+    success_url = reverse_lazy('activos_app:inventario_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+            context = super(InventarioActivoCreateView, self).get_context_data(**kwargs)
+            context['accion']="Registrar"
+            context['titulo']="Inventario Activo"
+            return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class InventarioActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('activos.change_inventarioactivo')
+
+    model = InventarioActivo
+    template_name = "includes/formulario generico.html"
+    form_class = InventarioActivoForm
+    success_url = reverse_lazy('activos_app:inventario_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioActivoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Inventario Activo"
+        return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class InventarioActivoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.delete_inventarioactivo')
+    model = InventarioActivo
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('activos_app:inventario_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioActivoDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Inventario Activo"
+        return context
+
+class InventarioActivoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('activos.view_inventarioactivo')
+    model = InventarioActivo
+    template_name = "activos/inventario_activo/detalle.html"
+    context_object_name = 'contexto_inventario_activo_detalle'
+
+    def get_context_data(self, **kwargs):
+        inventario_activo = InventarioActivo.objects.get(id = self.kwargs['pk'])
+        context = super(InventarioActivoDetailView, self).get_context_data(**kwargs)
+        context['registro_activos'] = Activo.objects.all()
+        return context
+
+def InventarioActivoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'activos/inventario_activo/detalle_tabla.html'
+        context = {}
+        inventario_activo = InventarioActivo.objects.get(id = pk)
+        context['contexto_inventario_activo_detalle'] = inventario_activo
+        context['registro_activos'] = Activo.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
