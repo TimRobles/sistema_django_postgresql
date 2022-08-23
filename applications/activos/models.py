@@ -141,8 +141,16 @@ class AsignacionActivo(models.Model):
 
 
 class AsignacionDetalleActivo(models.Model):
+    ESTADOS_ASIGNACION_DETALLE = [
+        (1, 'EN PROCESO ASIGNACIÓN'),
+        (2, 'ASIGNADO'),
+        (3, 'DEVUELTO'),
+        (4, 'CONCLUIDO SIN ENTREGAR'),
+        (5, 'ANULADO'),
+        ]
     activo = models.ForeignKey('Activo', on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_activo')
     asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_asignacion')
+    estado = models.IntegerField('Estado Asignación', choices=ESTADOS_ASIGNACION_DETALLE, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivoDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)

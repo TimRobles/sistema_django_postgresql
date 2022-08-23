@@ -355,12 +355,16 @@ class AsignacionActivoEntregarView(PermissionRequiredMixin, BSModalDeleteView):
         self.object.save()
 
         asignacion_activo_id = self.object.id
-        asignaciones = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
+        asignaciones_detalle = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
         list_activos_id = []
-        for asignacion in asignaciones:
-            list_activos_id.append(asignacion.activo.id)
+        list_asignacion_detalle_id = []
+        for asignacion_detalle in asignaciones_detalle:
+            list_activos_id.append(asignacion_detalle.activo.id)
+            list_asignacion_detalle_id.append(asignacion_detalle.id)
         if list_activos_id != []:
             Activo.objects.filter(id__in=list_activos_id).update(estado=3)
+        if list_asignacion_detalle_id != []:
+            AsignacionDetalleActivo.objects.filter(id__in=list_asignacion_detalle_id).update(estado=2)
 
         messages.success(request, MENSAJE_ACTUALIZACION)
         return HttpResponseRedirect(self.get_success_url())
@@ -1202,10 +1206,12 @@ class DevolucionActivoRecepcionarView(PermissionRequiredMixin, BSModalDeleteView
         self.object.save()
 
         devolucion_activo_id = self.object.id
-        devoluciones = DevolucionDetalleActivo.objects.filter(devolucion=devolucion_activo_id)
+        devoluciones_detalle = DevolucionDetalleActivo.objects.filter(devolucion=devolucion_activo_id)
         list_activos_id = []
-        for devolucion in devoluciones:
-            list_activos_id.append(devolucion.activo.id)
+        for devolucion_detalle in devoluciones_detalle:
+            list_activos_id.append(devolucion_detalle.activo.id)
+            asignacion_detalle_id = devolucion_detalle.asignacion.AsignacionDetalleActivo_asignacion.filter(activo=devolucion_detalle.activo.id)
+            AsignacionDetalleActivo.objects.filter(id=asignacion_detalle_id[0].id).update(estado=3)
         if list_activos_id != []:
             Activo.objects.filter(id__in=list_activos_id).update(estado=1)
 

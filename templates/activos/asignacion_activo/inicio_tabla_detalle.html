@@ -49,6 +49,7 @@
             <th>Marca</th>
             <th>Nro. Serie</th>    
             <th>Color</th>
+            <th>Estado de Asignación</th>
             <th class="text-center">Acciones</th>    
         </tr>
     </thead>
@@ -62,6 +63,7 @@
                 <td> {{ asignacion_activo_detalle.activo.marca.nombre }} </td>
                 <td> {{ asignacion_activo_detalle.activo.numero_serie }} </td>
                 <td> {{ asignacion_activo_detalle.activo.color }} </td>
+                <td> {{ asignacion_activo_detalle.get_estado_display }} </td>
                 
                 {% if asignacion_activo_detalle.asignacion.estado == 1 %}
                     <td class="text-center text-nowrap">
