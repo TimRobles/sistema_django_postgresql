@@ -1,4 +1,4 @@
-<h3>Detalle
+<h3>Detalle Inventario Activo
     <a href="{% url 'activos_app:inventario_activo_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
@@ -21,6 +21,13 @@
 
             <tr>
                 <td>{{ activo.descripcion }}</td>
+                <td>{{ activo.numero_serie }}</td>
+                <td>{{ activo.marca }}</td>
+                <td>{{ activo.color }}</td>                
+                <td>{{ activo.empresa }}</td>                
+                <td>{{ activo.colaborador }}</td>                
+                <td>{{ activo.colaborador }}</td>                
+
                 <td class="text-center text-nowrap">
                 </td>
             </tr>

@@ -195,6 +195,17 @@ class Activo(models.Model):
         verbose_name_plural = 'Activos'
         ordering = ['numero_serie',]
 
+    @property
+    def colaborador(self):
+        return self.AsignacionDetalleActivo_activo.all()
+
+    @property
+    def empresa(self):
+        if self.ActivoSociedad_activo.all():
+            return self.ActivoSociedad_activo.all()[0].sociedad.razon_social
+        else:
+            return ""
+
     def __str__(self):
         return str(self.descripcion)
 
@@ -337,7 +348,7 @@ class HistorialEstadoActivo(models.Model):
 class ActivoSociedad(models.Model):
 
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True)
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True, related_name='ActivoSociedad_activo')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoSociedad_created_by', editable=False)
