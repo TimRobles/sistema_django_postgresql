@@ -110,6 +110,10 @@ TIPO_COMPROBANTE = (
     (1, 'FACTURA'),
     (2, 'BOLETA'),
     )
+TIPO_VENTA= (
+    (1, 'CONTADO'),
+    (2, 'CREDITO'),
+    )
 
 ESTADOS = (
     (1, 'Alta'),
@@ -158,6 +162,17 @@ ESTADOS_ORDEN_COMPRA = (
     (2, 'ENVIADO'),
     (3, 'ANULADO'),
     )
+
+ESTADOS_COTIZACION_VENTA = (
+    (1, 'PENDIENTE'),
+    (2, 'RESERVADO'),
+    (3, 'CONFIRMADO'),
+    (4, 'VENCIDO'),
+    (5, 'SIN CONFIRMAR'),
+    (6, 'DE BAJA'),
+    )
+
+
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'

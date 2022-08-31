@@ -59,7 +59,7 @@ function calcular_precio_sin_igv() {
     $valor_igv = 0.18
     $precio_sin_igv = $('#id_precio_sin_igv')[0];
 
-    $precio_sin_igv.value = ($precio_lista/$valor_igv);
+    $precio_sin_igv.value = Math.round(($precio_lista/(1 + $valor_igv))*10000000000)/10000000000;
     console.log($precio_sin_igv);
 }
 
@@ -68,23 +68,25 @@ $('#id_comprobante').on('change', function (e) {
     seleccionar_comprobante(e.target.value);
     setTimeout(() => {
         calcular_precio_lista();
+        calcular_precio_sin_igv();
     }, 100);
+});
+
+$('#id_logistico').on('input', function (e) {
+    console.log(e.target.value);
+    calcular_precio_lista();
+    calcular_precio_sin_igv();
 });
 
 $('#id_margen_venta').on('input', function (e) {
     console.log(e.target.value);
     calcular_precio_lista();
+    calcular_precio_sin_igv();
 });
 
 $('#id_precio_lista').on('input', function (e) {
     console.log(e.target.value);
     calcular_margen_venta();
-    // calcular_precio_sin_igv();
-});
-
-$('#id_precio_lista').on('change', function (e) {
-    console.log(e.target.value);
-
     calcular_precio_sin_igv();
 });
 

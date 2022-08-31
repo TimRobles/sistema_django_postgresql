@@ -1,0 +1,48 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Detalle Cotización
+</h3>
+
+
+<div class="row">
+    <div class="col-lg-6 table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes  %}
+                <tr>
+                    <td>{{ cliente.razon_social }}</td>
+
+                    <td class="text-center">
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_cliente' cliente.id %}"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_registrar' %} "
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Seleccionar Cliente">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            <thead>
+                <tr>
+                    <th>Interlocutor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>contexto_cliente_interlocutor</td>
+                </tr>
+            </tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
