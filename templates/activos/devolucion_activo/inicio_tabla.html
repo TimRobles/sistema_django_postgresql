@@ -1,0 +1,69 @@
+<!-- <div>{{contexto_devolucion_activo}}</div> -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Título</th>    
+            <th>Colaborador</th>
+            <th>Fecha Devolución</th>    
+            <th>Observación</th>    
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for devolucion_activo in contexto_devolucion_activo %}
+            <tr>
+                <td> {{ devolucion_activo.titulo }}</td>
+                <td> {{ devolucion_activo.colaborador }}</td>
+                <td> {{ devolucion_activo.fecha_devolucion }}</td>
+                <td> {{ devolucion_activo.observacion }}</td>
+                <td> {{ devolucion_activo.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    {% if devolucion_activo.estado == 1 %}
+                        <button data-form-url="{% url 'activos_app:devolucion_activo_actualizar' devolucion_activo.id %}"
+                            data-table-url="{% url 'activos_app:devolucion_activo_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <a href="{% url 'activos_app:devolucion_activo_detalle_inicio' devolucion_activo.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                        <button data-form-url="{% url 'activos_app:devolucion_activo_recepcionar' devolucion_activo.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Recepcionar">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'activos_app:devolucion_activo_dar_baja' devolucion_activo.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% endif %}
+                    
+                    {% if devolucion_activo.estado == 2 %}
+                        <button data-form-url="{% url 'activos_app:devolucion_activo_actualizar' devolucion_activo.id %}"
+                            data-table-url="{% url 'activos_app:devolucion_activo_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <a href="{% url 'activos_app:devolucion_activo_detalle_inicio' devolucion_activo.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>                        
+                    {% endif %}
+                        
+                        
+                </td>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>

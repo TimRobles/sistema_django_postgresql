@@ -3,8 +3,14 @@ from . import views
 
 app_name='activos_app'
 
-urlComprobanteCompraActivoDetalle =[
-    path('comprobante-compra-activo/detalle/registrar/<int:comprobante_compra_activo_id>/', views.ComprobanteCompraActivoDetalleCreateView.as_view(), name='comprobante_compra_activo_detalle_registrar'),
+urlInventarioActivo =[
+    path('inventario-activo/', views.InventarioActivoListView.as_view(), name='inventario_activo_inicio'),
+    path('inventario-activo-tabla/', views.InventarioActivoTabla, name='inventario_activo_tabla'),
+    path('inventario-activo/registrar/', views.InventarioActivoCreateView.as_view(), name='inventario_activo_registrar'),
+    path('inventario-activo/actualizar/<pk>', views.InventarioActivoUpdateView.as_view(), name='inventario_activo_actualizar'),
+    path('inventario-activo/eliminar/<pk>', views.InventarioActivoDeleteView.as_view(), name='inventario_activo_eliminar'),
+    path('inventario-activo/detalle/<pk>/', views.InventarioActivoDetailView.as_view(), name='inventario_activo_detalle'),
+    path('inventario-activo/detalle-tabla/<pk>/', views.InventarioActivoDetailTabla, name='inventario_activo_detalle_tabla'),
 ]
 
 urlComprobanteCompraActivo = [
@@ -14,6 +20,11 @@ urlComprobanteCompraActivo = [
     path('comprobante-compra-activo/actualizar/<pk>', views.ComprobanteCompraActivoUpdateView.as_view(), name='comprobante_compra_activo_actualizar'),
     path('comprobante-compra-activo/detalle/<pk>/', views.ComprobanteCompraActivoDetailView.as_view(), name='comprobante_compra_activo_detalle'),
     path('comprobante-compra-activo/detalle-tabla/<pk>/', views.ComprobanteCompraActivoDetailTabla, name='comprobante_compra_activo_detalle_tabla'),
+    path('comprobante-compra-activo/detalle/registrar/<int:comprobante_compra_activo_id>/', views.ComprobanteCompraActivoDetalleCreateView.as_view(), name='comprobante_compra_activo_detalle_registrar'),
+    path('comprobante-compra-activo/detalle/actualizar/<pk>', views.ComprobanteCompraActivoDetalleUpdateView.as_view(), name='comprobante_compra_activo_detalle_actualizar'),
+    path('comprobante-compra-activo/detalle/eliminar/<pk>/', views.ComprobanteCompraActivoDetalleDeleteView.as_view(), name='comprobante_compra_activo_detalle_eliminar'),
+    path('comprobante-compra-activo/archivo/agregar/<int:comprobante_compra_activo_id>/', views.ArchivoComprobanteCompraActivoCreateView.as_view(), name='comprobante_compra_activo_archivo_agregar'),
+    path('comprobante-compra-activo/archivo/eliminar/<pk>/', views.ArchivoComprobanteCompraActivoDeleteView.as_view(), name='comprobante_compra_activo_archivo_eliminar'),
 ]
 
 urlActivoUbicacion = [
@@ -29,6 +40,7 @@ urlActivoSociedad = [
 urlActivoBase = [
     path('activo_base/', views.ActivoBaseListView.as_view(), name='activo_base_inicio'),
     path('activo_base-tabla/', views.ActivoBaseTabla, name='activo_base_tabla'),
+    path('activo_base/registrar/', views.ActivoBaseCreateView.as_view(), name='activo_base_registrar'),
     path('activo_base/actualizar/<pk>', views.ActivoBaseUpdateView.as_view(), name='activo_base_actualizar'),
     path('activo_base/actualizar_sunat/<pk>', views.ProductoSunatActivoUpdateView.as_view(), name='activo_base_actualizar_sunat'),
     path('activo_base/dar_baja/<pk>', views.ActivoBaseDarBajaView.as_view(), name='activo_base_dar_baja'),
@@ -47,6 +59,7 @@ urlAsignacionActivo = [
     path('asignacion_activo-tabla/', views.AsignacionActivoTabla, name='asignacion_activo_tabla'),
     path('asignacion_activo/registrar/', views.AsignacionActivoCreateView.as_view(), name='asignacion_activo_registrar'),
     path('asignacion_activo/actualizar/<pk>', views.AsignacionActivoUpdateView.as_view(), name='asignacion_activo_actualizar'),
+    path('asignacion_activo/entregar/<pk>', views.AsignacionActivoEntregarView.as_view(), name='asignacion_activo_entregar'),
     path('asignacion_activo/dar_baja/<pk>', views.AsignacionActivoDarBajaView.as_view(), name='asignacion_activo_dar_baja'),
     path('asignacion_activo/concluir_sin_asignar/<pk>', views.AsignacionActivoConcluirView.as_view(), name='asignacion_activo_concluir_sin_asignar'),
     path('asignacion_activo/pdf/<pk>', views.AsignacionActivoPdfView.as_view(), name='asignacion_activo_pdf'),
@@ -59,6 +72,24 @@ urlAsignacionActivo = [
     path('asignacion_activo_detalle-tabla/<pk>', views.AsignacionActivoDetalleTabla, name='asignacion_activo_detalle_tabla'),
     path('asignacion_activo_detalle/registrar/<int:asignacion_id>/', views.AsignacionDetalleActivoCreateView.as_view(), name='asignacion_activo_detalle_registrar'),
     path('asignacion_activo_detalle/eliminar/<pk>', views.AsignacionDetalleActivoDeleteView.as_view(), name='asignacion_activo_detalle_eliminar'),
+]
+
+urlDevolucionActivo = [
+    path('devolucion_activo/', views.DevolucionActivoListView.as_view(), name='devolucion_activo_inicio'),
+    path('devolucion_activo-tabla/', views.DevolucionActivoTabla, name='devolucion_activo_tabla'),
+    path('devolucion_activo/registrar/', views.DevolucionActivoCreateView.as_view(), name='devolucion_activo_registrar'),
+    path('devolucion_activo/actualizar/<pk>', views.DevolucionActivoUpdateView.as_view(), name='devolucion_activo_actualizar'),
+    path('devolucion_activo/recepcionar/<pk>', views.DevolucionActivoRecepcionarView.as_view(), name='devolucion_activo_recepcionar'),
+    path('devolucion_activo/dar_baja/<pk>', views.DevolucionActivoDarBajaView.as_view(), name='devolucion_activo_dar_baja'),
+    path('devolucion_activo/pdf/<pk>', views.DevolucionActivoPdfView.as_view(), name='devolucion_activo_pdf'),
+
+    path('devolucion_activo_detalle/<pk>', views.DevolucionActivoDetailView.as_view(), name='devolucion_activo_detalle_inicio'),
+    path('devolucion_activo_detalle-tabla/<pk>', views.DevolucionActivoDetalleTabla, name='devolucion_activo_detalle_tabla'),
+    path('devolucion_activo_detalle/registrar/<int:devolucion_id>/', views.DevolucionDetalleActivoCreateView.as_view(), name='devolucion_activo_detalle_registrar'),
+    path('devolucion_activo_detalle/eliminar/<pk>', views.DevolucionDetalleActivoDeleteView.as_view(), name='devolucion_activo_detalle_eliminar'),
+
+    path('devolucion_activo/agregar-archivo/<int:devolucion_id>', views.ArchivoDevolucionActivoCreateView.as_view(), name='devolucion_activo_agregar_archivo'),
+    path('devolucion_activo/eliminar-archivo/<pk>', views.ArchivoDevolucionActivoDeleteView.as_view(), name='devolucion_activo_eliminar_archivo'),
 ]
 
 urlModelos = [
@@ -85,4 +116,4 @@ urlpatterns = [
     path('activo/detalle/<pk>/', views.ActivoDetailView.as_view(), name='activo_detalle'),
     path('activo/detalle-tabla/<pk>/', views.ActivoDetailTabla, name='activo_detalle_tabla'),
 
-] + urlComprobanteCompraActivoDetalle + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlActivoBase + urlModelos + urlMarcas + urlActivoBase + urlAsignacionActivo
+] + urlDevolucionActivo + urlInventarioActivo + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlModelos + urlMarcas + urlActivoBase + urlAsignacionActivo

@@ -74,7 +74,7 @@ def Sortear(request):
 
     premios = UsuarioAPTC.objects.exclude(premio=None)
     elegidos = UsuarioAPTC.objects.filter(elegido=True).filter(premio=None)
-    ticket = UsuarioAPTC.objects.filter(fecha = date.today(), elegido=False).exclude(bloqueo=True).order_by('?').first()
+    ticket = UsuarioAPTC.objects.filter(elegido=False).exclude(bloqueo=True).order_by('?').first()
     if ticket.empresa:
         empresa = '</br>Empresa: %s' % ticket.empresa
     else:

@@ -1,10 +1,11 @@
 {% load humanize %}
-<h3>Activos
+<h3>Detalle Comprobante de Compra Activo
     <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_registrar' contexto_comprobante_compra_activo_detalle.id %}"
         data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
         class="create badge bg-primary">
         Registrar Activo
     </button>
+    <a href="{% url 'activos_app:comprobante_compra_activo_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -14,7 +15,6 @@
                 <th>Item</th>
                 <th>Activo</th>
                 <th>Descripción</th>
-                <th>Comprobante de Compra</th>
                 <th>Orden de Compra</th>
                 <th>Tipo IGV</th>
                 <th>Cantidad</th>
@@ -35,8 +35,13 @@
                     <td>{{ activo.item }}</td>
                     <td>{{ activo.activo }}</td>
                     <td>{{ activo.descripcion_comprobante}}</td>
-                    <td>{{ activo.comprobante_compra_activo }}</td>
-                    <td>{{ activo.orden_compra_detalle }}</td>
+                    <td>
+                        {% if activo.orden_compra_detalle %}
+                            {{ activo.orden_compra_detalle }}
+                        {% else %}
+
+                        {% endif %} 
+                    </td>
                     <td>{{ activo.get_tipo_igv_display }}</td>
                     <td class="text-end">{{ activo.cantidad|intcomma }}</td>
                     <td class="text-end">{{ activo.precio_unitario_sin_igv|intcomma }}</td>
@@ -48,6 +53,18 @@
                     <td class="text-end">{{ activo.total|intcomma }}</td>
  
                     <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_actualizar' activo.id %}"
+                            data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_eliminar' activo.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
                     </td>
                 </tr>
             {% endfor %}    
@@ -101,3 +118,38 @@
     </table>
 </div>
 <br>
+<h3>Archivos
+    <button data-form-url="{% url 'activos_app:comprobante_compra_activo_archivo_agregar' contexto_comprobante_compra_activo_detalle.id %}"
+        data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
+        class="create badge bg-primary">
+        Agregar Archivo
+    </button>
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Archivo</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for archivo in archivos %}
+                <tr>
+                    <td class="text-center">
+                        <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">
+                            {{ archivo.archivo }}
+                        </a>
+                    </td>
+                    <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_archivo_eliminar' archivo.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

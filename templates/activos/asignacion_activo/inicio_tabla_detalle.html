@@ -30,12 +30,12 @@
         <tr>
             <td><b>Colaborador</b></td>
             <td class="px-2">:</td>
-            <td>{{ contexto_asignacion_activo_detalle.0.asignacion.colaborador }}</td>
+            <td>{{ contexto_asignacion_activo.colaborador }}</td>
         </tr>
         <tr>
             <td><b>Fecha Documento</b></td>
             <td class="px-2">:</td>
-            <td>{{ contexto_asignacion_activo_detalle.0.asignacion.fecha_asignacion }}</td>
+            <td>{{ contexto_asignacion_activo.fecha_asignacion }}</td>
         </tr>
     </tbody>
 </table>
@@ -44,9 +44,12 @@
     <thead>
         <tr>
             <th>Item</th>    
-            <th>Activo Descripcion</th>    
-            <th>Colaborador</th>
-            <th>Fecha Documento</th>    
+            <th>Activo Base</th>    
+            <th>Descripción del Activo</th>    
+            <th>Marca</th>
+            <th>Nro. Serie</th>    
+            <th>Color</th>
+            <th>Estado de Asignación</th>
             <th class="text-center">Acciones</th>    
         </tr>
     </thead>
@@ -55,9 +58,12 @@
         {% for asignacion_activo_detalle in contexto_asignacion_activo_detalle %}
             <tr>
                 <td> {{ forloop.counter}} </td>
-                <td> {{ asignacion_activo_detalle.activo.descripcion_corta }} </td>
-                <td> {{ asignacion_activo_detalle.asignacion.colaborador }} </td>
-                <td> {{ asignacion_activo_detalle.asignacion.fecha_asignacion }} </td>
+                <td> {{ asignacion_activo_detalle.activo.activo_base.descripcion_corta }} </td>
+                <td> {{ asignacion_activo_detalle.activo.descripcion }} </td>
+                <td> {{ asignacion_activo_detalle.activo.marca.nombre }} </td>
+                <td> {{ asignacion_activo_detalle.activo.numero_serie }} </td>
+                <td> {{ asignacion_activo_detalle.activo.color }} </td>
+                <td> {{ asignacion_activo_detalle.get_estado_display }} </td>
                 
                 {% if asignacion_activo_detalle.asignacion.estado == 1 %}
                     <td class="text-center text-nowrap">

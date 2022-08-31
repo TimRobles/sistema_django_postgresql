@@ -1,0 +1,52 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Usuario</th>      
+            <th>Fecha de Inventario</th>    
+            <th>Observación</th>    
+            <th class="text-center">Documento</th>       
+            <th class="text-center">Estado</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for inventario_activo in contexto_inventario_activo %}
+            <tr>
+                <td>
+                    {% if inventario_activo.usuario.first_name %}
+                        {{ inventario_activo.usuario.first_name }} {{ inventario_activo.usuario.last_name }}
+                    {% else %}
+                        {{ inventario_activo.usuario }}
+                    {% endif %}
+                </td>
+                <td>{{ inventario_activo.fecha_inventario|date:'d/m/Y'}}</td>
+                <td>{{ inventario_activo.observacion }}</td>
+                <td class="text-center">
+                    <a href="{{ MEDIA_URL }}{{ inventario_activo.documento }}" target="_blank">
+                        {{ inventario_activo.documento }}
+                    </a>
+                <td class="text-center">{{ inventario_activo.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'activos_app:inventario_activo_actualizar' inventario_activo.id %}"
+                        data-table-url="{% url 'activos_app:inventario_activo_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'activos_app:inventario_activo_eliminar' inventario_activo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    <a href="{% url 'activos_app:inventario_activo_detalle' inventario_activo.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>

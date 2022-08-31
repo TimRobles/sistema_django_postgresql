@@ -179,7 +179,6 @@ class RepresentanteCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('sociedad.add_representantelegal')
 
     model = RepresentanteLegal
-    # template_name = "includes/formulario generico.html"
     template_name = "sociedad/representante/form.html"
     form_class = RepresentanteLegalForm
     

@@ -11,7 +11,13 @@ from .models import (
     ArchivoComprobanteCompraActivo,
     ComprobanteCompraActivo,
     ComprobanteCompraActivoDetalle,
+    DevolucionActivo,
+    DevolucionDetalleActivo,
+    EstadoActivo,
     FamiliaActivo,
+    HistorialEstadoActivo,
+    InventarioActivo,
+    InventarioActivoDetalle,
     MarcaActivo,
     ModeloActivo,
     SubFamiliaActivo
@@ -146,6 +152,7 @@ class AsignacionDetalleActivoAdmin(admin.ModelAdmin):
     list_display = (
         'activo',
         'asignacion',
+        'estado',
         'created_at',
         'created_by',
         'updated_at',
@@ -157,6 +164,45 @@ class AsignacionDetalleActivoAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+class DevolucionActivoAdmin(admin.ModelAdmin):
+    list_display = (
+        'titulo',
+        'colaborador',
+        'fecha_devolucion',
+        'observacion',
+        'estado',
+        'archivo',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+class DevolucionDetalleActivoAdmin(admin.ModelAdmin):
+    list_display = (
+        'asignacion',
+        'activo',
+        'devolucion',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 
 class ActivoSociedadAdmin(admin.ModelAdmin):
     list_display = (
@@ -293,6 +339,83 @@ class ArchivoComprobanteCompraActivoAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+        
+class EstadoActivoAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'nro_estado',
+        'descripcion',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+class HistorialEstadoActivoAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'activo',
+        'content_type',
+        'id_registro',
+        'estado',
+        'estado_anterior',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class InventarioActivoAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'usuario',
+        'fecha_inventario',
+        'observacion',
+        'documento',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+class InventarioActivoDetalleAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'activo',
+        'inventario_activo',
+        'observacion',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 admin.site.register(ComprobanteCompraActivo, ComprobanteCompraActivoAdmin)
 admin.site.register(ComprobanteCompraActivoDetalle, ComprobanteCompraActivoDetalleAdmin)
@@ -308,3 +431,9 @@ admin.site.register(ActivoBase, ActivoBaseAdmin)
 admin.site.register(AsignacionActivo, AsignacionActivoAdmin)
 admin.site.register(AsignacionDetalleActivo, AsignacionDetalleActivoAdmin)
 admin.site.register(ArchivoAsignacionActivo, ArchivoAsignacionActivoAdmin)
+admin.site.register(DevolucionActivo, DevolucionActivoAdmin)
+admin.site.register(DevolucionDetalleActivo, DevolucionDetalleActivoAdmin)
+admin.site.register(EstadoActivo, EstadoActivoAdmin)
+admin.site.register(HistorialEstadoActivo, HistorialEstadoActivoAdmin)
+admin.site.register(InventarioActivo, InventarioActivoAdmin)
+admin.site.register(InventarioActivoDetalle, InventarioActivoDetalleAdmin)

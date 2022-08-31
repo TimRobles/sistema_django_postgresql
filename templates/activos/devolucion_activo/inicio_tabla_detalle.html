@@ -1,0 +1,131 @@
+<!-- <div>{{contexto_devolucion_activo_detalle}}</div> -->
+
+<!-- DETALLE DEVOLUCIONES -->
+<h3>Devolución Activo Detalle
+    {% if contexto_devolucion_activo.estado == 1 %}   
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'activos_app:devolucion_activo_detalle_registrar' contexto_devolucion_activo.id %}"
+            data-table-url="{% url 'activos_app:devolucion_activo_detalle_tabla' contexto_devolucion_activo.id %}">    
+            Añadir Activo
+        </button>            
+    {% endif %}
+    {% if contexto_devolucion_activo.estado == 1 or contexto_devolucion_activo.estado == 2 %}
+        <a href="{% url 'activos_app:devolucion_activo_pdf' contexto_devolucion_activo.id %}"
+            class="create btn badge bg-primary">
+            Imprimir
+        </a>
+    {% endif %}
+    <a href="{% url 'activos_app:devolucion_activo_inicio' %}"
+        class="create btn badge bg-danger">
+        Retroceder
+    </a>
+</h3>
+
+<!-- TABLA DETALLE DEVOLUCIONES -->
+<div class="table-responsive">
+<table>
+    <tbody>
+        <tr>
+            <td><b>Colaborador</b></td>
+            <td class="px-2">:</td>
+            <td>{{ contexto_devolucion_activo.colaborador }}</td>
+        </tr>
+        <tr>
+            <td><b>Fecha Documento</b></td>
+            <td class="px-2">:</td>
+            <td>{{ contexto_devolucion_activo.fecha_devolucion }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>    
+            <th>Activo Base</th>    
+            <th>Descripción del Activo</th>    
+            <th>Marca</th>
+            <th>Nro. Serie</th>    
+            <th>Color</th>
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for devolucion_activo_detalle in contexto_devolucion_activo_detalle %}
+            <tr>
+                <td> {{ forloop.counter}} </td>
+                <td> {{ devolucion_activo_detalle.activo.activo_base.descripcion_corta }} </td>
+                <td> {{ devolucion_activo_detalle.activo.descripcion }} </td>
+                <td> {{ devolucion_activo_detalle.activo.marca.nombre }} </td>
+                <td> {{ devolucion_activo_detalle.activo.numero_serie }} </td>
+                <td> {{ devolucion_activo_detalle.activo.color }} </td>
+                {% if devolucion_activo_detalle.devolucion.estado == 1 %}
+                    <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'activos_app:devolucion_activo_detalle_eliminar' devolucion_activo_detalle.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Remover">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>
+</div>
+
+<!-- 
+<div>{{contexto_devolucion_activo}}</div>
+<div>{{contexto_devolucion_activo_detalle}}</div> -->
+
+
+<!-- ARCHIVOS -->
+<br>
+<h3>Devolución Activo Documentos
+    <button class="create badge bg-primary"
+        data-form-url="{% url 'activos_app:devolucion_activo_agregar_archivo' contexto_devolucion_activo.id %}"
+        data-table-url="{% url 'activos_app:devolucion_activo_detalle_tabla' contexto_devolucion_activo.id %}">    
+        Añadir Documento
+    </button>
+</h3>
+
+<!-- TABLA ARCHIVOS -->
+<div class="table-responsive">
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>    
+            <th>Archivo</th>    
+            <th>Comentario</th>
+            <th>Fecha Creación</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for devolucion_archivo in contexto_devolucion_activo_archivo %}
+            <tr>
+                <td> {{ forloop.counter}} </td>
+                <td> {{ devolucion_archivo.archivo }} </td>
+                <td> {{ devolucion_archivo.comentario }} </td>
+                <td> {{ devolucion_archivo.created_at|date:'d/m/Y' }} </td>
+                <td class="text-center"> 
+                    <a href="{{ MEDIA_URL }}{{ devolucion_archivo.archivo }} " target="_blank"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                        <i class="bi bi-eye-fill"></i>
+                        <!-- {{ devolucion_archivo.archivo }} -->
+                    </a>
+                    <button data-form-url="{% url 'activos_app:devolucion_activo_eliminar_archivo' devolucion_archivo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Remover">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>

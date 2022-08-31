@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Devolución Activo
+{% endblock titulo %}
+
+
+{% block contenido %}
+    <h3>Devolución Activo
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'activos_app:devolucion_activo_registrar' %}"
+            data-table-url="{% url 'activos_app:devolucion_activo_tabla' %}">
+            Registrar Devolución Activo
+        </button>
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'activos/devolucion_activo/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
+    

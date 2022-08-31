@@ -175,6 +175,7 @@ ESTADOS_COTIZACION_VENTA = (
 
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
+MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
 MENSAJE_COMPROBANTE_COMPRA = 'Operación exitosa: El comprobante fue registrado.'
 MENSAJE_REGISTRAR_SALIDA = 'Operación exitosa: La Hora de Salida fue registrada.'
