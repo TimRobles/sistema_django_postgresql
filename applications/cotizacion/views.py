@@ -3,8 +3,8 @@ from applications.importaciones import *
 from applications.clientes.forms import Cliente
 
 from .forms import (
-        CotizacionVentaForm,
-        ClienteForm,
+    CotizacionVentaForm,
+    ClienteForm,
 )
     
 from .models import (
@@ -33,20 +33,22 @@ def CotizacionVentaTabla(request):
         )
         return JsonResponse(data)   
 
+
 class CotizacionVentaCreateView(FormView):
     template_name = "cotizacion/cotizacion_venta/detalle.html"
     form_class = CotizacionVentaForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
     def form_valid(self, form):
-        # print(form.cleaned_data['cliente'])
-        # print(form.cleaned_data['cliente_interlocutor'])
-       
+        obj = CotizacionVenta.objects.get(
+            
+        )
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
         context = super(CotizacionVentaCreateView, self).get_context_data(**kwargs)
-        context['clientes'] = Cliente.objects.all()
+        context['cliente'] = Cliente.objects.all()
+        context['cotizacion'] = CotizacionVenta.objects.all()
         return context
 
 class ClienteView(BSModalUpdateView):
@@ -56,11 +58,12 @@ class ClienteView(BSModalUpdateView):
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
     def form_valid(self, form):
-        # registro_guardar(form.instance, self.request)        
         return super().form_valid(form)
         
     def get_context_data(self, **kwargs):
         context = super(ClienteView, self).get_context_data(**kwargs)
+        context['cliente'] = Cliente.objects.all()
+        context['cotizacion'] = CotizacionVenta.objects.all()
         context['accion'] = "Elegir"
         context['titulo'] = "Cliente"
         return context

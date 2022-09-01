@@ -8,7 +8,8 @@ urlpatterns = [
     path('cotizacion-venta-tabla/',views.CotizacionVentaTabla,name='cotizacion_venta_tabla'),
     path('cotizacion-venta/registrar/', views.CotizacionVentaCreateView.as_view(), name='cotizacion_venta_registrar'),
 
-    path('cotizacion-venta/cliente/<pk>/', views.ClienteView.as_view(), name='cotizacion_venta_cliente'),
+    path('cotizacion-venta/cliente/', views.ClienteView.as_view(), name='cotizacion_venta_cliente'),
+    # path('cotizacion-venta/cliente/<pk>/', views.ClienteView.as_view(), name='cotizacion_venta_cliente'),
 
 
     
