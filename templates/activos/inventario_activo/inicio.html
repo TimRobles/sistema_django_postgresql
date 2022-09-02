@@ -11,11 +11,12 @@
         <button class="create badge bg-primary"
             data-form-url="{% url 'activos_app:inventario_activo_registrar' %}"
             data-table-url="{% url 'activos_app:inventario_activo_tabla' %}">
-            Registrar Inventario Activo
+            Registrar
         </button>
     </h3>
 
     <div class="table-responsive" id="tabla">
+        <br>
         {% include 'activos/inventario_activo/inicio_tabla.html' %}
     </div>
 {% endblock contenido %}

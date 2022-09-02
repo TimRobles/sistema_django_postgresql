@@ -8,8 +8,10 @@ from .models import (
     AsignacionDetalleActivo,
     DevolucionActivo,
     DevolucionDetalleActivo,
+    DocumentoInventarioActivo,
     FamiliaActivo,
     InventarioActivo,
+    InventarioActivoDetalle,
     SubFamiliaActivo,
     Activo,
     ActivoUbicacion,
@@ -423,6 +425,7 @@ class ArchivoDevolucionActivoForm(BSModalModelForm):
         super(ArchivoDevolucionActivoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
 class ArchivoComprobanteCompraActivoDetalleForm(BSModalModelForm):
     class Meta:
         model = ArchivoComprobanteCompraActivo
@@ -441,8 +444,6 @@ class InventarioActivoForm(BSModalModelForm):
         fields=(
             'usuario',
             'fecha_inventario',
-            'observacion',
-            'documento',
             )
 
         widgets = {
@@ -464,5 +465,60 @@ class InventarioActivoForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(InventarioActivoForm, self).__init__(*args, **kwargs)
         self.fields['usuario'].queryset = get_user_model().objects.exclude(first_name = "")
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class InventarioActivoDetalleCreateForm(BSModalModelForm):
+    class Meta:
+        model = InventarioActivoDetalle
+        fields=(
+            'activo',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_activos = kwargs.pop('activos')
+        # self.inventario_activo_id = kwargs.pop('inventario_activo_id')
+        super(InventarioActivoDetalleCreateForm, self).__init__(*args, **kwargs)
+        self.fields['activo'].queryset = lista_activos
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     activo = cleaned_data.get('activo')
+    #     print('**************************')
+    #     print(activo)
+    #     print('**************************')
+    #     filtro = InventarioActivoDetalle.objects.filter(activo__unaccent__iexact = activo, inventario_activo = self.inventario_activo_id)
+    #     print('++++++++++++++++++++++++++++++++')
+    #     print(self.instance)
+    #     print('++++++++++++++++++++++++++++++++')
+    #     if activo != self.instance.activo:
+    #         if len(filtro)>0:
+    #             self.add_error('activo', 'Ya existe un actvo con esta descripción')
+
+class InventarioActivoDetalleUpdateForm(BSModalModelForm):
+    class Meta:
+        model = InventarioActivoDetalle
+        fields=(
+            'observacion',
+            'estado',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(InventarioActivoDetalleUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class DocumentoInventarioActivoForm(BSModalModelForm):
+    class Meta:
+        model = DocumentoInventarioActivo
+        fields=(
+            'observacion',
+            'documento',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(DocumentoInventarioActivoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

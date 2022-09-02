@@ -1,7 +1,22 @@
 <h3>Detalle Inventario Activo
+    {% if contexto_inventario_activo_detalle.estado == 1 %}
+        <button data-form-url="{% url 'activos_app:inventario_activo_detalle_registrar' contexto_inventario_activo_detalle.id %}"
+            data-table-url="{% url 'activos_app:inventario_activo_detalle_tabla' contexto_inventario_activo_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar Activo
+        </button>
+        <button data-form-url="{% url 'activos_app:inventario_activo_finalizar' contexto_inventario_activo_detalle.id %}"
+            data-table-url="{% url 'activos_app:inventario_activo_inicio' %}"
+            class="delete badge bg-primary">
+            Finalizar Inventario
+        </button>
+        <a href="{% url 'activos_app:inventario_activo_detalle_imprimir' contexto_inventario_activo_detalle.id %}" target="_blank">
+            <span class="badge bg-primary">Imprimir</span></a>
+    {% endif %}
+        
     <a href="{% url 'activos_app:inventario_activo_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
-
+<br>
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -13,24 +28,88 @@
                 <th>Empresa</th>
                 <th>Piso</th>
                 <th>Colaborador</th>
+                <th>Observación</th>
+                <th>Estado</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for activo in registro_activos %}
+            {% for inventario_activo in detalle_inventario_activo %}
 
             <tr>
-                <td>{{ activo.descripcion }}</td>
-                <td>{{ activo.numero_serie }}</td>
-                <td>{{ activo.marca }}</td>
-                <td>{{ activo.color }}</td>                
-                <td>{{ activo.empresa }}</td>                
-                <td>{{ activo.colaborador }}</td>                
-                <td>{{ activo.colaborador }}</td>                
+                <td>{{ inventario_activo.activo.descripcion }}</td>
+                <td>{{ inventario_activo.activo.numero_serie }}</td>
+                <td>{{ inventario_activo.activo.marca }}</td>
+                <td>{{ inventario_activo.activo.color }}</td>                
+                <td>{{ inventario_activo.activo.empresa }}</td>                
+                <td>{{ inventario_activo.activo.piso }}</td>                
+                <td>{{ inventario_activo.activo.colaborador }}</td>                   
+                <td>
+                    {% if inventario_activo.observacion %}
+                        {{ inventario_activo.observacion }}
+                    {% endif %}
+                </td>                
+                <td>{{ inventario_activo.get_estado_display }}</td>                
 
                 <td class="text-center text-nowrap">
+                    {% if contexto_inventario_activo_detalle.estado == 1 %}
+                        <button data-form-url="{% url 'activos_app:inventario_activo_detalle_actualizar' inventario_activo.id %}"
+                            data-table-url="{% url 'activos_app:inventario_activo_detalle_tabla' contexto_inventario_activo_detalle.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'activos_app:inventario_activo_detalle_eliminar' inventario_activo.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    {% endif %}  
                 </td>
             </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>Documentos
+    <button data-form-url="{% url 'activos_app:inventario_activo_documento_agregar' contexto_inventario_activo_detalle.id %}"
+        data-table-url="{% url 'activos_app:inventario_activo_detalle_tabla' contexto_inventario_activo_detalle.id %}"
+        class="create badge bg-primary">
+        Agregar Documento
+    </button>
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Documento</th>                
+                <th class="text-center">Observación</th>                
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for documento in documentos %}
+                <tr>
+                    <td class="text-center">
+                        <a href="{{ MEDIA_URL }}{{ documento.documento }}" target="_blank">
+                            {{ documento.documento }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if documento.observacion %}
+                            {{ documento.observacion }}
+                        {% endif %}  
+                    </td>
+                    <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'activos_app:inventario_activo_documento_eliminar' documento.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
