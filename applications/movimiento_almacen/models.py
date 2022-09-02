@@ -27,7 +27,7 @@ class TipoMovimiento(models.Model):
     codigo = models.IntegerField('Código', blank=True, null=True, unique=True)
     descripcion = models.CharField('Descripción del movimiento', max_length=50, unique=True)
     tipo_stock_inicial = models.ForeignKey(TipoStock, on_delete=models.CASCADE, blank=True, null=True, related_name='TipoMovimiento_tipo_stock_inicial')
-    tipo_stock_final = models.ForeignKey(TipoStock, on_delete=models.CASCADE, related_name='TipoMovimiento_tipo_stock_final')
+    tipo_stock_final = models.ForeignKey(TipoStock, on_delete=models.CASCADE, blank=True, null=True, related_name='TipoMovimiento_tipo_stock_final')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TipoMovimiento_created_by', editable=False)

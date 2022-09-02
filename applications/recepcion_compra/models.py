@@ -48,7 +48,10 @@ class RecepcionCompra(models.Model):
         return self.fecha_recepcion
 
     def __str__(self):
-        return "%s" % (str(self.content_type.get_object_for_this_type(id=self.id_registro)))
+        try:
+            return "%s" % (str(self.content_type.get_object_for_this_type(id=self.id_registro)))
+        except:
+            return "-"
 
 
 class ArchivoRecepcionCompra(models.Model):

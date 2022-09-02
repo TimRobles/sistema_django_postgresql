@@ -73,6 +73,5 @@ urlpatterns = [
 
     path('precio-material/registrar/<int:material_id>/<int:material_content_type>/', views.PrecioListaMaterialCreateView.as_view(), name='precio_material_registrar'),
     
-    # path('precio-material/<int:id_comprobante>/<int:comprobante_content_type>/', views.ComprobanteView, name='comprobante'),
-    # path('precio-material/<int:id_comprobante>/', views.ComprobanteView, name='comprobante'),
+    path('precio-material/<int:id_comprobante>/<int:comprobante_content_type>/<int:id_material>/<int:material_content_type>/', views.ComprobanteView, name='comprobante'),
 ]

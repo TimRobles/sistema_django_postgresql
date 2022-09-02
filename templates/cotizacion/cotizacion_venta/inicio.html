@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Cotizaciones
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3> Cotizaciones
+        <a href="{% url 'cotizacion_app:cotizacion_venta_registrar' %}"
+        class="badge btn btn-primary" title="Nueva Cotización">
+        Nueva Cotización
+        </a>
+        
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'cotizacion/cotizacion_venta/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

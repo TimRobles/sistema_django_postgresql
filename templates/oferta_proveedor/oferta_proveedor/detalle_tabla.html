@@ -1,4 +1,5 @@
 {% load humanize %}
+{% load funciones_propias %}
 
 <div class="table-responsive">
     <table class="table">
@@ -31,14 +32,14 @@
                     <td>{{ material.proveedor_material.description }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td>{{ material.get_tipo_igv_display }}</td>
-                    <td class="text-end">{{ material.cantidad|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_unitario_sin_igv|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_unitario_con_igv|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_final_con_igv|intcomma }}</td>
-                    <td class="text-end">{{ material.descuento|intcomma }}</td>
-                    <td class="text-end">{{ material.sub_total|intcomma }}</td>
-                    <td class="text-end">{{ material.igv|intcomma }}</td>
-                    <td class="text-end">{{ material.total|intcomma }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.descuento|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.sub_total|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.igv|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.total|redondear|intcomma }}</td>
  
                     <td class="text-center text-nowrap">
                         {% if contexto_oferta_proveedor.estado == 1 %}

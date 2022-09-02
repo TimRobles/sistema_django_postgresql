@@ -1,0 +1,55 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Detalle Cotización
+</h3>
+
+<div>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" class="create btn btn-primary"  value="Guardar">
+    </form>
+    <br>
+
+    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_cliente' %}"
+        data-table-url="{% url 'cotizacion_app:cotizacion_venta_inicio' %}"
+        data-keep-open="True"
+        class="delete btn btn-primary" title="Seleccionar Cliente">
+        Seleccionar Cliente
+    </button>
+</div>
+<br>
+
+<div class="row">
+    <div class="col-lg-6 table-responsive">
+
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td> cliente.razon_social </td>
+
+                </tr>
+
+            <thead>
+                <tr>
+                    <th>Interlocutor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>contexto_cliente_interlocutor</td>
+                </tr>
+            </tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+

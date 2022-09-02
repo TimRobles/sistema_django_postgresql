@@ -628,6 +628,7 @@
                 <th class="text-rigth">Precio Lista</th>
                 <th class="text-rigth">Precio Sin IGV</th>
                 <th class="text-rigth">Moneda</th>
+                <th class="text-rigth">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -637,6 +638,11 @@
                     <td>{{ precio.precio_lista }}</td>
                     <td>{{ precio.precio_sin_igv }}</td>
                     <td>{{ precio.moneda }}</td>
+                    <td>
+                        {% if forloop.first %}
+                            VIGENTE
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %} 
         </tbody>
