@@ -1,31 +1,34 @@
 function seleccionar_comprobante(valores) {
-    valores2 = valores.split('|');
-
-    $id_comprobante = valores2[0]
-    $comprobante_content_type = valores2[1]
-    $id_material = valores2[2]
-    $material_content_type = valores2[3]
-
-    $precio_compra = $('#id_precio_compra')[0];
-    $moneda = $('#id_moneda')[0];
-    $logistico = $('#id_logistico')[0];
-
-    
-    url = '/material/precio-material/' + $id_comprobante + '/' + $comprobante_content_type + '/' + $id_material + '/' + $material_content_type + '/';
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.onload = function(){
-        if (this.status === 200) {
-            valores3 = xhr.responseText.split('|');
-            console.log($moneda)
-            
-            $precio_compra.value = valores3[0]
-            setSelectedValueText($moneda,valores3[1]);
-            $logistico.value = valores3[2];
+    if (valores != "") {
+        
+        valores2 = valores.split('|');
+        
+        $id_comprobante = valores2[0]
+        $comprobante_content_type = valores2[1]
+        $id_material = valores2[2]
+        $material_content_type = valores2[3]
+        
+        $precio_compra = $('#id_precio_compra')[0];
+        $moneda = $('#id_moneda')[0];
+        $logistico = $('#id_logistico')[0];
+        
+        
+        url = '/material/precio-material/' + $id_comprobante + '/' + $comprobante_content_type + '/' + $id_material + '/' + $material_content_type + '/';
+        console.log(url);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.onload = function(){
+            if (this.status === 200) {
+                valores3 = xhr.responseText.split('|');
+                console.log($moneda)
+                
+                $precio_compra.value = valores3[0]
+                setSelectedValueText($moneda,valores3[1]);
+                $logistico.value = valores3[2];
+            }
         }
+        xhr.send();
     }
-    xhr.send();
 }
 
 function calcular_precio_lista() {
@@ -35,7 +38,7 @@ function calcular_precio_lista() {
 
     $precio_lista = $('#id_precio_lista')[0];
     
-    $precio_lista.value = $precio_compra*$logistico*$margen_venta;
+    $precio_lista.value = Math.round(10000000000*$precio_compra*$logistico*$margen_venta)/10000000000;
     
     console.log($precio_lista.value);
     
@@ -48,7 +51,7 @@ function calcular_margen_venta() {
     
     $margen_venta = $('#id_margen_venta')[0];
 
-    $margen_venta.value = $precio_lista/($precio_compra*$logistico);
+    $margen_venta.value = Math.round(10000000000*$precio_lista/($precio_compra*$logistico))/10000000000;
 
     console.log($margen_venta);
     

@@ -1371,11 +1371,20 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
 
     def form_valid(self, form):
-        comprobante_id, comprobante_content_type_id, material_id, material_content_type_id = form.cleaned_data['comprobante'].split("|")
+        if form.cleaned_data['comprobante']:
+            comprobante_id, comprobante_content_type_id, material_id, material_content_type_id = form.cleaned_data['comprobante'].split("|")
+        else:
+            comprobante_id, comprobante_content_type_id, material_id, material_content_type_id = [None, None, None, None]
         form.instance.content_type_producto = ContentType.objects.get(id=self.kwargs['material_content_type'])
         form.instance.id_registro_producto = self.kwargs['material_id']
-        form.instance.content_type_documento = ContentType.objects.get(id=int(comprobante_content_type_id))
-        form.instance.id_registro_documento = int(comprobante_id)
+        if comprobante_content_type_id:
+            form.instance.content_type_documento = ContentType.objects.get(id=int(comprobante_content_type_id))
+        else:
+            form.instance.content_type_documento = None
+        if comprobante_id:
+            form.instance.id_registro_documento = int(comprobante_id)
+        else:
+            form.instance.id_registro_documento = comprobante_id
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

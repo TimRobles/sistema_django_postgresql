@@ -13,8 +13,8 @@ from django.conf import settings
 class PrecioListaMaterial(models.Model):
     content_type_producto = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='PrecioListaMaterial_content_type_producto')
     id_registro_producto = models.IntegerField()    
-    content_type_documento = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='PrecioListaMaterial_content_type_documento')
-    id_registro_documento = models.IntegerField()
+    content_type_documento = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='PrecioListaMaterial_content_type_documento', blank=True, null=True)
+    id_registro_documento = models.IntegerField(blank=True, null=True)
     precio_compra = models.DecimalField('Precio de compra', max_digits=22, decimal_places=10,default=0)
     precio_lista = models.DecimalField('Precio de lista', max_digits=22, decimal_places=10,default=0)
     precio_sin_igv = models.DecimalField('Precio sin igv', max_digits=22, decimal_places=10,default=0)
@@ -31,6 +31,7 @@ class PrecioListaMaterial(models.Model):
     class Meta:
         verbose_name = 'Precio Lista Materiales'
         verbose_name_plural = 'Precio Lista Materiales'
+        ordering = ['-created_at']
 
     def __str__(self):
         return str(self.id)
