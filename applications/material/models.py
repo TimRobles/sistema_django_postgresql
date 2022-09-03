@@ -1,3 +1,4 @@
+from applications.cotizacion.models import PrecioListaMaterial
 from applications.variables import ESTADOS
 from django.db import models
 from django.conf import settings
@@ -165,6 +166,16 @@ class Material(models.Model):
 
     def content_type(self):
         return ContentType.objects.get_for_model(self).id
+
+    @property
+    def precio_lista(self):
+        try:
+            return PrecioListaMaterial.objects.filter(
+                        content_type_producto = ContentType.objects.get_for_model(self),
+                        id_registro_producto = self.id,
+                    ).latest('created_at')
+        except:
+            return ""
 
     def __str__(self):
         return self.descripcion_venta
