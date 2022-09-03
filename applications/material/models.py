@@ -235,6 +235,10 @@ class Material(models.Model):
 
         return total
 
+    @property
+    def stock(self):
+        return self.vendible + self.calidad - self.reservado
+
     def __str__(self):
         return self.descripcion_venta
 

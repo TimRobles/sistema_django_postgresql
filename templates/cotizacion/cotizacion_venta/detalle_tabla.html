@@ -68,6 +68,9 @@
                 <th>Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
+                <th>Vendible</th>
+                <th>Calidad</th>
+                <th>Stock</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -85,6 +88,9 @@
                     <td class="text-end">{{ material.sub_total|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.igv|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.material.vendible|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.material.calidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.material.stock|redondear|intcomma }}</td>
                  
                 </tr>
             {% endfor %}
