@@ -8,7 +8,7 @@
             <th>Fecha Validez</th>
             <th>Total</th>
             <th>Estado</th>
-            <th>Acciones</th>
+            <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -22,6 +22,13 @@
                 <td>{{ cotizacion.total }}</td>
                 <td>{{ cotizacion.get_estado_display }}</td>
                 <td>{{ cotizacion.validez }}</td>
+                <td class="text-center">
+                    <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                </td>
             </tr>
         {% endfor %} 
     </tbody>

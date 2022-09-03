@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
-from applications.funciones import calculos_linea
+from applications.funciones import calculos_linea, numeroXn, obtener_totales
 from applications.importaciones import *
 from django import forms
 
@@ -55,10 +55,11 @@ class CotizacionVentaVerView(TemplateView):
         except:
             pass
 
-
         context = super(CotizacionVentaVerView, self).get_context_data(**kwargs)
         context['cotizacion'] = obj
         context['materiales'] = materiales
+        context['totales'] = obtener_totales(CotizacionVenta.objects.get(id=self.kwargs['id_cotizacion']))
+
         return context
 
 
@@ -68,8 +69,8 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         template = 'cotizacion/cotizacion_venta/inicio_tabla.html'
         context = {}
         context['contexto_cotizacion_venta'] = CotizacionVenta.objects.all()
+        context['totales'] = obtener_totales(CotizacionVenta.objects.get(id=id_cotizacion))
         
-                
         data['table'] = render_to_string(
             template,
             context,
@@ -138,14 +139,11 @@ def CotizacionVentaDetalleTabla(request, cotizacion_id):
         obj = CotizacionVenta.objects.get(id = cotizacion_id)
 
         materiales = None
-        print("***********************************")
         try:
             materiales = obj.CotizacionVentaDetalle_cotizacion_venta.all()
-            print(materiales)
 
             for material in materiales:
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-            print("***********************************")
         except:
             pass
 

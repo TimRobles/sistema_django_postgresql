@@ -72,6 +72,8 @@ class CotizacionVentaAdmin(admin.ModelAdmin):
 @admin.register(CotizacionVentaDetalle)
 class CotizacionVentaDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
+        'cotizacion_venta',
         'content_type',
         'id_registro',
         'item',
@@ -84,7 +86,6 @@ class CotizacionVentaDetalleAdmin(admin.ModelAdmin):
         'igv',
         'total',
         'tipo_igv',
-        'cotizacion_venta',
         'created_at',
         'created_by',
         'updated_at',

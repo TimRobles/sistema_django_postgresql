@@ -62,6 +62,10 @@ class CotizacionVenta(models.Model):
         verbose_name = 'Cotizacion Venta'
         verbose_name_plural = 'Cotizaciones Venta'
 
+    @property
+    def internacional_nacional(self):
+        return 2
+
     def __str__(self):
         return str(self.id)
 
