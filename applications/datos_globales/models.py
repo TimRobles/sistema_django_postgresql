@@ -505,7 +505,7 @@ class TipoCambio(models.Model):
         ]
 
     def __str__(self):     
-        return self.monto
+        return str(self.fecha)
 
 
 class RemuneracionMinimaVital(models.Model):

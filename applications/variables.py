@@ -164,12 +164,13 @@ ESTADOS_ORDEN_COMPRA = (
     )
 
 ESTADOS_COTIZACION_VENTA = (
-    (1, 'PENDIENTE'),
-    (2, 'RESERVADO'),
-    (3, 'CONFIRMADO'),
-    (4, 'VENCIDO'),
-    (5, 'SIN CONFIRMAR'),
-    (6, 'DE BAJA'),
+    (1, 'BORRADOR'),
+    (2, 'PENDIENTE'),
+    (3, 'RESERVADO'),
+    (4, 'CONFIRMADO'),
+    (5, 'VENCIDO'),
+    (6, 'SIN CONFIRMAR'),
+    (7, 'DE BAJA'),
     )
 
 

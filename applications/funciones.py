@@ -178,16 +178,15 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     total_otros_cargos = otros_cargos
     total_icbper = Decimal('0.00')
     total = Decimal('0.00')
-
     for resultado_linea in lista_resultados_linea:
         suma_igv += resultado_linea['igv']
 
         total_descuento += resultado_linea['descuento']
-        if internacional == True:
+        if internacional == 2:
             total_gravada += resultado_linea['subtotal']
         else:
             total_exonerada += resultado_linea['subtotal']
-
+    
     total_descuento += descuento_global
     total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
     if anticipo:
@@ -233,6 +232,8 @@ def obtener_totales(cabecera):
         detalles = cabecera.OrdenCompraDetalle_orden_compra.all()    
     elif hasattr(cabecera, 'ComprobanteCompraActivoDetalle_comprobante_compra_activo'):
         detalles = cabecera.ComprobanteCompraActivoDetalle_comprobante_compra_activo.all()
+    elif hasattr(cabecera, 'CotizacionVentaDetalle_cotizacion_venta'):
+        detalles = cabecera.CotizacionVentaDetalle_cotizacion_venta.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:
