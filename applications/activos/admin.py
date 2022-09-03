@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from applications.activos.forms import MarcaActivoForm, ModeloActivoForm
+
 from .models import (
     Activo,
     ActivoBase,
@@ -13,6 +15,7 @@ from .models import (
     ComprobanteCompraActivoDetalle,
     DevolucionActivo,
     DevolucionDetalleActivo,
+    DocumentoInventarioActivo,
     EstadoActivo,
     FamiliaActivo,
     HistorialEstadoActivo,
@@ -79,7 +82,13 @@ class SubFamiliaAdmin(admin.ModelAdmin):
 class ModeloAdmin(admin.ModelAdmin):
     list_display = (
         'nombre',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
+    
+    form = ModeloActivoForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -91,8 +100,14 @@ class ModeloAdmin(admin.ModelAdmin):
 class MarcaAdmin(admin.ModelAdmin):
     list_display = (
         'nombre',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
     
+    form = MarcaActivoForm
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
@@ -383,8 +398,6 @@ class InventarioActivoAdmin(admin.ModelAdmin):
     list_display = (
         'usuario',
         'fecha_inventario',
-        'observacion',
-        'documento',
         'estado',
         'created_at',
         'created_by',
@@ -417,6 +430,24 @@ class InventarioActivoDetalleAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+class DocumentoInventarioActivoAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'documento',
+        'observacion',
+        'inventario_activo',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 admin.site.register(ComprobanteCompraActivo, ComprobanteCompraActivoAdmin)
 admin.site.register(ComprobanteCompraActivoDetalle, ComprobanteCompraActivoDetalleAdmin)
 admin.site.register(ArchivoComprobanteCompraActivo, ArchivoComprobanteCompraActivoAdmin)
@@ -437,3 +468,4 @@ admin.site.register(EstadoActivo, EstadoActivoAdmin)
 admin.site.register(HistorialEstadoActivo, HistorialEstadoActivoAdmin)
 admin.site.register(InventarioActivo, InventarioActivoAdmin)
 admin.site.register(InventarioActivoDetalle, InventarioActivoDetalleAdmin)
+admin.site.register(DocumentoInventarioActivo, DocumentoInventarioActivoAdmin)

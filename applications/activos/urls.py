@@ -9,8 +9,15 @@ urlInventarioActivo =[
     path('inventario-activo/registrar/', views.InventarioActivoCreateView.as_view(), name='inventario_activo_registrar'),
     path('inventario-activo/actualizar/<pk>', views.InventarioActivoUpdateView.as_view(), name='inventario_activo_actualizar'),
     path('inventario-activo/eliminar/<pk>', views.InventarioActivoDeleteView.as_view(), name='inventario_activo_eliminar'),
+    path('inventario-activo/finalizar/<pk>/', views.InventarioActivoFinalizarView.as_view(), name='inventario_activo_finalizar'),
     path('inventario-activo/detalle/<pk>/', views.InventarioActivoDetailView.as_view(), name='inventario_activo_detalle'),
     path('inventario-activo/detalle-tabla/<pk>/', views.InventarioActivoDetailTabla, name='inventario_activo_detalle_tabla'),
+    path('inventario-activo/detalle/registrar/<int:inventario_activo_id>/', views.InventarioActivoDetalleCreateView.as_view(), name='inventario_activo_detalle_registrar'),
+    path('inventario-activo/detalle/actualizar/<pk>', views.InventarioActivoDetalleUpdateView.as_view(), name='inventario_activo_detalle_actualizar'),
+    path('inventario-activo/detalle/eliminar/<pk>/', views.InventarioActivoDetalleDeleteView.as_view(), name='inventario_activo_detalle_eliminar'),
+    path('inventario-activo/detalle/imprimir/<pk>/', views.InventarioActivoDetalleImprimirView.as_view(), name='inventario_activo_detalle_imprimir'),
+    path('inventario-activo/archivo/agregar/<int:inventario_activo_id>/', views.DocumentoInventarioActivoCreateView.as_view(), name='inventario_activo_documento_agregar'),
+    path('inventario-activo/archivo/eliminar/<pk>/', views.DocumentoInventarioActivoDeleteView.as_view(), name='inventario_activo_documento_eliminar'),
 ]
 
 urlComprobanteCompraActivo = [
