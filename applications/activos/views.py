@@ -1382,7 +1382,8 @@ def InventarioActivoTabla(request):
 class DevolucionDetalleActivoCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('activos.add_devolucion_activo_detalle')
     model = DevolucionDetalleActivo
-    template_name = "includes/formulario generico.html"
+    # template_name = "includes/formulario generico.html"
+    template_name = "activos/devolucion_activo/asignacion_form.html"
     form_class = DevolucionDetalleActivoForm
 
     def get_success_url(self, **kwargs):
@@ -1604,6 +1605,7 @@ def InventarioActivoDetailTabla(request, pk):
         )
         return JsonResponse(data)
 
+
 class InventarioActivoDetalleCreateView(PermissionRequiredMixin,BSModalCreateView):
     permission_required = ('activos.add_inventarioactivodetalle')
     model = InventarioActivoDetalle
@@ -1807,3 +1809,21 @@ class DocumentoInventarioActivoDeleteView(PermissionRequiredMixin, BSModalDelete
         context['accion']="Eliminar"
         context['titulo']="Documento"
         return context
+
+class Devolucion_AsignacionActivoForm(forms.Form):
+    activo = forms.ModelChoiceField(queryset = AsignacionDetalleActivo.objects.all(), required=False)
+
+def AsignacionActivoView(request, id_asignacion):
+    form = Devolucion_AsignacionActivoForm()
+    form.fields['activo'].queryset = AsignacionDetalleActivo.objects.filter(asignacion = id_asignacion)
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)

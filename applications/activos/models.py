@@ -354,6 +354,45 @@ class HistorialEstadoActivo(models.Model):
         return str(self.estado)
 
 
+def guardar_fila_historial_estado(obj, fila, estado_activo):
+    try:
+        ultimo_estado_activo = HistorialEstadoActivo.objects.filter(activo=fila.activo.id).order_by('-id').latest('id')
+        estado_activo_anterior = HistorialEstadoActivo.objects.get(id=ultimo_estado_activo.id)
+    except:
+        estado_activo_anterior = None
+    # historial_estado = HistorialEstadoActivo.objects.create(
+    historial_estado = HistorialEstadoActivo(
+        activo = Activo.objects.get(id=fila.activo.id),
+        content_type = ContentType.objects.get_for_model(obj),
+        id_registro = obj.id,
+        estado = EstadoActivo.objects.get(nro_estado=estado_activo),
+        estado_anterior = estado_activo_anterior,
+        )
+    historial_estado.save()
+
+
+def actualizar_historial_activo_asignacion(*args, **kwargs):
+    obj = kwargs['instance']
+    list_detalle_asignacion = AsignacionDetalleActivo.objects.filter(asignacion=obj.id)
+    estado_activo = 3
+    if obj.estado == 2:
+        for fila in list_detalle_asignacion:
+            guardar_fila_historial_estado(obj, fila, estado_activo)
+
+post_save.connect(actualizar_historial_activo_asignacion, sender=AsignacionActivo)
+
+
+def actualizar_historial_activo_devolucion(*args, **kwargs):
+    obj = kwargs['instance']
+    # list_detalle_devolucion = obj.DevolucionDetalleActivo_devolucion.all()
+    list_detalle_devolucion = DevolucionDetalleActivo.objects.filter(devolucion=obj.id)
+    estado_activo = 5
+    if obj.estado == 2:
+        for fila in list_detalle_devolucion:
+            guardar_fila_historial_estado(obj, fila, estado_activo)
+
+post_save.connect(actualizar_historial_activo_devolucion, sender=DevolucionActivo)
+
 
 class ActivoSociedad(models.Model):
 

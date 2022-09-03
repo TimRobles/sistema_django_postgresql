@@ -97,6 +97,8 @@ urlDevolucionActivo = [
 
     path('devolucion_activo/agregar-archivo/<int:devolucion_id>', views.ArchivoDevolucionActivoCreateView.as_view(), name='devolucion_activo_agregar_archivo'),
     path('devolucion_activo/eliminar-archivo/<pk>', views.ArchivoDevolucionActivoDeleteView.as_view(), name='devolucion_activo_eliminar_archivo'),
+
+    path('devolucion_activo/asignacion/<str:id_asignacion>/', views.AsignacionActivoView, name='devolucion_asignacion_activo'),
 ]
 
 urlModelos = [
