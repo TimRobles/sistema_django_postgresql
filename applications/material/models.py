@@ -1,7 +1,10 @@
+from decimal import Decimal
 from applications.cotizacion.models import PrecioListaMaterial
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications.variables import ESTADOS
 from django.db import models
 from django.conf import settings
+from django.db.models import Q
 
 from applications.datos_globales.models import Unidad,ProductoSunat
 from applications.proveedores.models import Proveedor
@@ -176,6 +179,61 @@ class Material(models.Model):
                     ).latest('created_at')
         except:
             return ""
+
+    @property
+    def vendible(self):
+        disponible = TipoStock.objects.get(codigo=3)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = disponible,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def reservado(self):
+        reservado = TipoStock.objects.get(codigo=16)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = reservado,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def calidad(self):
+        bloqueo_sin_serie = TipoStock.objects.get(id=4)
+        bloqueo_sin_qa = TipoStock.objects.get(id=5)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            Q(tipo_stock=bloqueo_sin_serie) | Q(tipo_stock=bloqueo_sin_qa)
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
 
     def __str__(self):
         return self.descripcion_venta

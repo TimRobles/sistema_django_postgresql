@@ -108,5 +108,4 @@ class NivelCuatroForm(forms.ModelForm):
         if nombre != self.instance.nombre:
             if len(filtro)>0:
                 self.add_error('nombre', 'Ya existe un Nivel Cuatro con este nombre')
-
-        return nombre
+        
