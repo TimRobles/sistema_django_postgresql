@@ -4,52 +4,76 @@
 <h3>Detalle Cotización
 </h3>
 
-<div>
-    <form action="" method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" class="create btn btn-primary"  value="Guardar">
-    </form>
-    <br>
-
-    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_cliente' %}"
-        data-table-url="{% url 'cotizacion_app:cotizacion_venta_inicio' %}"
-        data-keep-open="True"
-        class="delete btn btn-primary" title="Seleccionar Cliente">
-        Seleccionar Cliente
-    </button>
-</div>
-<br>
-
 <div class="row">
     <div class="col-lg-6 table-responsive">
-
-
         <table>
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                </tr>
-            </thead>
             <tbody>
                 <tr>
-                    <td> cliente.razon_social </td>
-
+                    <th class="pe-2">Cliente:</th>
+                    <td>{{ cotizacion.cliente.razon_social }}</td>
+                    <td class="ps-2" rowspan="2">
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_cliente' cotizacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_detalle_tabla' cotizacion.id %}"
+                            class="update btn btn-primary" title="Seleccionar Cliente">
+                            Seleccionar Cliente
+                        </button>
+                    </td>
                 </tr>
-
-            <thead>
                 <tr>
-                    <th>Interlocutor</th>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if cotizacion.cliente_interlocutor %}
+                        {{ cotizacion.cliente_interlocutor }}
+                        {% endif %}
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>contexto_cliente_interlocutor</td>
-                </tr>
-            </tbody>
             </tbody>
         </table>
     </div>
-</div>
 
+    <div class="col-lg-6 table-responsive">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Fecha:</th>
+                    <td> // </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<br>
+<div class="table_responsive">
+    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_agregar_material' cotizacion.id %}"
+        data-table-url="{% url 'cotizacion_app:cotizacion_venta_detalle_tabla' cotizacion.id  %}"
+        data-keep-open="True"
+        class="update btn btn-primary" title="Agregar Material">
+        Agregar Material
+    </button>
+
+    <br>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th class="text-end">Cantidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.material.descripcion_venta }}</td>
+                    <td>{{ material.material.unidad_base }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 

@@ -98,7 +98,7 @@ class ClienteInterlocutor(models.Model):
         ordering = ['estado', '-interlocutor',]
 
     def __str__(self):
-        return str(self.cliente) + ' - ' + str(self.interlocutor)
+        return "%s - %s" % (self.cliente, self.interlocutor)
 
 
 class CorreoCliente(models.Model):

@@ -6,9 +6,23 @@
             <th>Cliente</th>
             <th>Fecha Cotización</th>
             <th>Fecha Validez</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
-        <td></td>
+        {% for cotizacion in contexto_cotizacion_venta %}
+            <tr>
+                <td>{{ cotizacion.sociedad }}</td>
+                <td>{{ cotizacion.numero_cotizacion }}</td>
+                <td>{{ cotizacion.cliente }}</td>
+                <td>{{ cotizacion.fecha_cotizacion }}</td>
+                <td>{{ cotizacion.fecha_validez }}</td>
+                <td>{{ cotizacion.total }}</td>
+                <td>{{ cotizacion.get_estado_display }}</td>
+                <td>{{ cotizacion.validez }}</td>
+            </tr>
+        {% endfor %} 
     </tbody>
 </table>

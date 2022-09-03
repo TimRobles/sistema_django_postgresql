@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
-from applications.clientes.models import Cliente, ClienteInterlocutor
+from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
 from applications.variables import ESTADOS, ESTADOS_COTIZACION_VENTA, TIPO_IGV_CHOICES, TIPO_VENTA
 
 from django.conf import settings
@@ -38,20 +38,20 @@ class PrecioListaMaterial(models.Model):
 
 
 class CotizacionVenta(models.Model):
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    numero_cotizacion = models.CharField('Número de Cotización', max_length=50)
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente')
-    cliente_interlocutor = models.ForeignKey(ClienteInterlocutor, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor')
-    fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False)
-    fecha_validez = models.DateField('Fecha Validez', auto_now=False, auto_now_add=False)
-    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='CotizacionVenta_tipo_cambio')
-    observaciones_adicionales = models.TextField()
-    condiciones_pago = models.TextField()
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True)
+    numero_cotizacion = models.CharField('Número de Cotización', max_length=50, blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente', blank=True, null=True)
+    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor', blank=True, null=True)
+    fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_validez = models.DateField('Fecha Validez', auto_now=False, auto_now_add=False, blank=True, null=True)
+    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='CotizacionVenta_tipo_cambio', blank=True, null=True)
+    observaciones_adicionales = models.TextField(blank=True, null=True)
+    condiciones_pago = models.TextField(blank=True, null=True)
     tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
-    descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2)
-    total = models.DecimalField('Total', max_digits=14, decimal_places=2)
-    estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA)
-    motivo_anulacion = models.TextField()
+    descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA, default=1)
+    motivo_anulacion = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionVenta_created_by', editable=False)
@@ -67,18 +67,19 @@ class CotizacionVenta(models.Model):
 
 
 class CotizacionVentaDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
-    item = models.IntegerField()
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
-    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10)
-    precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10)
-    precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10)
-    descuento = models.DecimalField('Descuento',max_digits=14, decimal_places=2)
-    sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2)
-    igv = models.DecimalField('IGV',max_digits=14, decimal_places=2)
-    tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES,)
-    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=0)
+    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=0)
+    precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=0)
+    precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10, default=0)
+    descuento = models.DecimalField('Descuento',max_digits=14, decimal_places=2, default=0)
+    sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2, default=0)
+    igv = models.DecimalField('IGV',max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
+    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionVentaDetalle_cotizacion_venta')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionVentaDetalle_created_by', editable=False)
@@ -135,7 +136,7 @@ class ReservaVenta(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     numero_cotizacion = models.CharField('Núero de cotización', max_length=50)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ReservaVenta_cliente')
-    cliente_interlocutor = models.ForeignKey(ClienteInterlocutor, on_delete=models.PROTECT, related_name='ReservaVenta_cliente_interlocutor')
+    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ReservaVenta_cliente_interlocutor')
     fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False)
     fecha_confirmacion = models.DateField('Fecha Confirmación', auto_now=False, auto_now_add=False)
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ReservaVenta_tipo_cambio')

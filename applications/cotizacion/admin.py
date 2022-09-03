@@ -82,6 +82,7 @@ class CotizacionVentaDetalleAdmin(admin.ModelAdmin):
         'descuento',
         'sub_total',
         'igv',
+        'total',
         'tipo_igv',
         'cotizacion_venta',
         'created_at',

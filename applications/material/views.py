@@ -1451,3 +1451,11 @@ def ComprobanteView(request, id_comprobante, comprobante_content_type, id_materi
     
     return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
     # return HttpResponse("%s|%s" % (moneda, logistico))
+
+
+def PrecioListaView(request, id_material):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(Material.objects.get(id=id_material).precio_lista.precio_lista)
+        except:
+            return HttpResponse("")
