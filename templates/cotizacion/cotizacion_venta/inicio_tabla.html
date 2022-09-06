@@ -17,11 +17,10 @@
                 <td>{{ cotizacion.sociedad }}</td>
                 <td>{{ cotizacion.numero_cotizacion }}</td>
                 <td>{{ cotizacion.cliente }}</td>
-                <td>{{ cotizacion.fecha_cotizacion }}</td>
-                <td>{{ cotizacion.fecha_validez }}</td>
+                <td>{{ cotizacion.fecha_cotizacion|date:'d/m/Y' }}</td>
+                <td>{{ cotizacion.fecha_validez|date:'d/m/Y' }}</td>
                 <td>{{ cotizacion.total }}</td>
                 <td>{{ cotizacion.get_estado_display }}</td>
-                <td>{{ cotizacion.validez }}</td>
                 <td class="text-center">
                     <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id %}"
                         class="btn btn-info btn-sm"
