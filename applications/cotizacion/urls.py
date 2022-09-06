@@ -18,5 +18,7 @@ urlpatterns = [
     
     path('cotizacion-venta/sociedad/<pk>/', views.CotizacionSociedadUpdateView.as_view(), name='cotizacion_venta_sociedad'),
     path('cotizacion-venta/sociedad/guardar/<int:cantidad>/<int:item>/<str:abreviatura>/', views.GuardarCotizacionSociedad, name='guardar_cotizacion_venta_sociedad'),
+
+    path('cotizacion-venta/guardar/<pk>/', views.CotizacionVentaGuardarView.as_view(), name='cotizacion_venta_guardar'),
     
 ]

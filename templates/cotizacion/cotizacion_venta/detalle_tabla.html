@@ -37,7 +37,14 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Fecha:</th>
-                    <td> // </td>
+                    <td> {{ cotizacion.fecha_cotizacion|date:'d/m/Y'  }} </td>
+                    <td class="ps-2" rowspan="2"> 
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_guardar' cotizacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_inicio' %}"
+                            class="delete btn btn-primary">
+                            Guardar Cotización
+                        </button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -91,13 +98,19 @@
                     <td class="text-end">{{ material.material.vendible|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.material.calidad|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.material.stock|redondear|intcomma }}</td>
-                    <td class="text-center">
+                    <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_sociedad' material.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_detalle_tabla' cotizacion.id %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Stock Sociedad">
                             <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
+                            class="read btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
                         </button>
                     </td>
                 </tr>

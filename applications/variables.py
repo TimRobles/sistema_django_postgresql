@@ -188,6 +188,7 @@ MENSAJE_GENERAR_ORDEN_COMPRA = 'Operación exitosa: Generar Orden de Compra.'
 MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Generar Comprobante de Compra PI.'
 MENSAJE_FINALIZAR_INVENTARIO_ACTIVO = 'Operación exitosa: El Inventario fue Finalizado.'
 
+MENSAJE_GUARDAR_COTIZACION = 'Operación exitosa: La cotización fue guardada con éxito.'
 
 COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.cotizacion.models import CotizacionVenta, CotizacionVentaDetalle
+from applications.cotizacion.models import CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.material.models import Material
 
@@ -81,3 +81,25 @@ class CotizacionVentaDetalleForm(BSModalModelForm):
         super(CotizacionVentaDetalleForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control text-end'
+
+
+class PrecioListaMaterialForm (BSModalModelForm):
+    comprobante = forms.ChoiceField(choices=[(0,0)], required=False)
+    class Meta:
+        model = PrecioListaMaterial
+        fields = (
+            'comprobante',
+            'moneda',
+            'precio_compra',
+            'logistico',
+            'margen_venta',
+            'precio_lista',
+            'precio_sin_igv',
+        )
+
+    def __init__(self, *args, **kwargs):
+        precios = kwargs.pop('precios')
+        super(PrecioListaMaterialForm, self).__init__(*args, **kwargs)
+        self.fields['comprobante'].choices = precios
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
