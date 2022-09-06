@@ -91,7 +91,15 @@
                     <td class="text-end">{{ material.material.vendible|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.material.calidad|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.material.stock|redondear|intcomma }}</td>
-                 
+                    <td class="text-center">
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_sociedad' material.id %}"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_detalle_tabla' cotizacion.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Stock Sociedad">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

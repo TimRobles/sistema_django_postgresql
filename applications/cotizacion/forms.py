@@ -69,3 +69,15 @@ class CotizacionVentaMaterialDetalleForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
         
+class CotizacionVentaDetalleForm(BSModalModelForm):
+    cantidad = forms.DecimalField(required=False, disabled=True)
+    class Meta:
+        model = CotizacionVentaDetalle
+        fields = (
+            'cantidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control text-end'

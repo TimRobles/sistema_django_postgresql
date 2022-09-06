@@ -221,3 +221,20 @@ class ConfirmacionVenta(models.Model):
     def __str__(self):
         return str(self.id)
 
+
+class CotizacionSociedad(models.Model):
+    cotizacion_venta_detalle = models.ForeignKey(CotizacionVentaDetalle, on_delete=models.CASCADE, related_name='CotizacionSociedad_cotizacion_venta_detalle')
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=0)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionSociedad_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionSociedad_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Cotizacion Sociedad'
+        verbose_name_plural = 'Cotizacion Sociedades'
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.cotizacion_venta_detalle, self.sociedad, self.cantidad)

@@ -237,12 +237,12 @@ $(function () {
         }
     }
 
-    $('#modal').on('shown.bs.modal', function (e) {
+    $('#modal').unbind().on('shown.bs.modal', function (e) {
         funcionesDentroModal();
         reemplazarTexto(e);
     });
 
-    $('#modal-xl').on('shown.bs.modal', function (e) {
+    $('#modal-xl').unbind().on('shown.bs.modal', function (e) {
         funcionesDentroModal();
         reemplazarTexto(e);
     });

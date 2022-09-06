@@ -4,13 +4,17 @@ from applications.funciones import calculos_linea, numeroXn, obtener_totales
 from applications.importaciones import *
 from django import forms
 
+from applications.sociedad.models import Sociedad
+
 from .forms import (
     CotizacionVentaClienteForm,
+    CotizacionVentaDetalleForm,
     CotizacionVentaForm,
     CotizacionVentaMaterialDetalleForm,
 )
     
 from .models import (
+    CotizacionSociedad,
     CotizacionVenta,
     CotizacionVentaDetalle,
 )
@@ -220,3 +224,39 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
         context['titulo'] = 'Agregar'
         context['accion'] = 'Material'
         return context
+
+
+
+class CotizacionSociedadUpdateView(BSModalUpdateView):
+    model = CotizacionVentaDetalle
+    template_name = "cotizacion/cotizacion_venta/form_sociedad.html"
+    form_class = CotizacionVentaDetalleForm
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionSociedadUpdateView, self).get_context_data(**kwargs)
+        texto = []
+        for sociedad in self.object.CotizacionSociedad_cotizacion_venta_detalle.all():
+            texto.append(str(sociedad.cantidad))
+
+        context['titulo'] = "Stock por Sociedad"
+        context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_sociedad', kwargs={'cantidad':1,'item':1,'abreviatura':"a",})[:-6]
+        context['sociedades'] = Sociedad.objects.all()
+        context['cantidades'] = "|".join(texto)
+        context['item'] = self.object.id
+        return context
+    
+
+def GuardarCotizacionSociedad(request, cantidad, item, abreviatura):
+    if cantidad == 1 and item == 1 and abreviatura == 'a':
+        return HttpResponse('Nada')
+    cotizacion_venta_detalle = CotizacionVentaDetalle.objects.get(id=item)
+    sociedad = Sociedad.objects.get(abreviatura = abreviatura)
+    
+    obj, created = CotizacionSociedad.objects.get_or_create(
+        cotizacion_venta_detalle = cotizacion_venta_detalle,
+        sociedad = sociedad,
+    )
+    obj.cantidad = cantidad
+    obj.save()
+    return HttpResponse('Fin')
