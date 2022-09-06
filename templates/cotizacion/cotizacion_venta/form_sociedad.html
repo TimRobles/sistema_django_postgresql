@@ -1,7 +1,32 @@
 {% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
 {% load static %}
 
 {% block content %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th class="text-end">Vendible</th>
+                <th class="text-end">Calidad</th>
+                <th class="text-end">Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sociedad in sociedades %}
+            <tr>
+                <td>{{ sociedad }}</td>
+                <td class="text-end text-nowrap">{{ sociedad.vendible|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ sociedad.calidad|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ sociedad.stock|redondear|intcomma }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 <form action="" method="post" id="formulario-sociedad">
     {% csrf_token %}
     {% for field in form %}

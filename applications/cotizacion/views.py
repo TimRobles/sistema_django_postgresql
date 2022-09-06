@@ -3,6 +3,7 @@ from applications.clientes.models import ClienteInterlocutor, InterlocutorClient
 from applications.funciones import calculos_linea, numeroXn, obtener_totales
 from applications.importaciones import *
 from django import forms
+from applications.material.funciones import calidad, reservado, stock, vendible
 
 from applications.sociedad.models import Sociedad
 
@@ -239,9 +240,16 @@ class CotizacionSociedadUpdateView(BSModalUpdateView):
         for sociedad in self.object.CotizacionSociedad_cotizacion_venta_detalle.all():
             texto.append(str(sociedad.cantidad))
 
+        sociedades = Sociedad.objects.all()
+        for sociedad in sociedades:
+            sociedad.vendible = vendible(self.object.content_type, self.object.id_registro, sociedad.id)
+            sociedad.calidad = calidad(self.object.content_type, self.object.id_registro, sociedad.id)
+            sociedad.reservado = reservado(self.object.content_type, self.object.id_registro, sociedad.id)
+            sociedad.stock = stock(self.object.content_type, self.object.id_registro, sociedad.id)
+
         context['titulo'] = "Stock por Sociedad"
         context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_sociedad', kwargs={'cantidad':1,'item':1,'abreviatura':"a",})[:-6]
-        context['sociedades'] = Sociedad.objects.all()
+        context['sociedades'] = sociedades
         context['cantidades'] = "|".join(texto)
         context['item'] = self.object.id
         return context

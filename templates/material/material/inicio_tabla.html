@@ -48,14 +48,14 @@
                 {% endif %}
                 
                 <button data-form-url="{% url 'movimiento_almacen_app:ver_movimiento' material.id material.content_type %}"
-                    class="read btn btn-success btn-sm"
+                    class="read btn swatch-orange btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Movimientos">
-                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                    <i class="bi bi-eyeglasses"></i>
                 </button>
                 <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.id material.content_type %}"
-                    class="read btn btn-success btn-sm"
+                    class="read btn swatch-purple btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
-                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                    <i class="bi bi-box-seam"></i>
                 </button>
             </td>
         </tr>

@@ -102,9 +102,9 @@
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_sociedad' material.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_detalle_tabla' cotizacion.id %}"
                             data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
+                            class="update btn swatch-purple btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Stock Sociedad">
-                            <i class="bi bi-pencil-fill"></i>
+                            <i class="bi bi-ui-checks"></i>
                         </button>
 
                         <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
