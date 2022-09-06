@@ -3,7 +3,7 @@ from . import views
 
 app_name = 'cotizacion_app'
 
-urlpatterns = [ 
+urlpatterns = [
     path('cotizacion-venta/',views.CotizacionVentaListView.as_view(),name='cotizacion_venta_inicio'),
     path('cotizacion-venta-tabla/',views.CotizacionVentaTabla,name='cotizacion_venta_tabla'),
     path('cotizacion-venta/registrar/', views.CotizacionVentaCreateView, name='cotizacion_venta_registrar'),
@@ -15,10 +15,12 @@ urlpatterns = [
 
     path('cotizacion-venta-detalle-tabla/<int:cotizacion_id>/', views.CotizacionVentaDetalleTabla, name='cotizacion_venta_detalle_tabla'),
     path('cotizacion-venta/agregar-material/<int:cotizacion_id>/', views.CotizacionVentaMaterialDetalleView.as_view(), name='cotizacion_venta_agregar_material'),
-    
+
     path('cotizacion-venta/sociedad/<pk>/', views.CotizacionSociedadUpdateView.as_view(), name='cotizacion_venta_sociedad'),
     path('cotizacion-venta/sociedad/guardar/<int:cantidad>/<int:item>/<str:abreviatura>/', views.GuardarCotizacionSociedad, name='guardar_cotizacion_venta_sociedad'),
 
     path('cotizacion-venta/guardar/<pk>/', views.CotizacionVentaGuardarView.as_view(), name='cotizacion_venta_guardar'),
-    
+
+    path('cotizacion-venta/costeador/<pk>/', views.CotizacionVentaCosteadorView.as_view(), name='cotizacion_venta_costeador'),
+ 
 ]

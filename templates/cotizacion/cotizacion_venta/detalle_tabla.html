@@ -112,6 +112,14 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
                             <i class="bi bi-hand-thumbs-up-fill"></i>
                         </button>
+
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_costeador' material.id %}"
+                            class="read btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Costeador">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+
+
                     </td>
                 </tr>
             {% endfor %}

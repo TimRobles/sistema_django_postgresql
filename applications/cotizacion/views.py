@@ -7,6 +7,9 @@ from applications.material.funciones import calidad, reservado, stock, vendible
 
 from applications.sociedad.models import Sociedad
 
+from applications.orden_compra.models import OrdenCompraDetalle
+from applications.recepcion_compra.models import RecepcionCompra
+
 from .forms import (
     CotizacionVentaClienteForm,
     CotizacionVentaDetalleForm,
@@ -296,68 +299,41 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
         return context
 
 
-# class CotizacionVentaCosteadorView(BSModalReadView):
-#     model = PrecioListaMaterial
-#     template_name = "material/material/form-precio.html"
-#     form_class = PrecioListaMaterialForm
+class CotizacionVentaCosteadorView(BSModalReadView):
+    model = CotizacionVentaDetalle
+    template_name = "cotizacion/cotizacion_venta/form-precio.html"
 
-#     def get_success_url(self, **kwargs):
-#         return reverse_lazy('cotizacion_app:cotizacion_venta_detalle', kwargs={'pk':self.kwargs['cotizacion_id']})
-
-#     def form_valid(self, form):
-#         if form.cleaned_data['comprobante']:
-#             comprobante_id, comprobante_content_type_id, material_id, material_content_type_id = form.cleaned_data['comprobante'].split("|")
-#         else:
-#             comprobante_id, comprobante_content_type_id, material_id, material_content_type_id = [None, None, None, None]
-#         form.instance.content_type_producto = ContentType.objects.get(id=self.kwargs['material_content_type'])
-#         form.instance.id_registro_producto = self.kwargs['material_id']
-#         if comprobante_content_type_id:
-#             form.instance.content_type_documento = ContentType.objects.get(id=int(comprobante_content_type_id))
-#         else:
-#             form.instance.content_type_documento = None
-#         if comprobante_id:
-#             form.instance.id_registro_documento = int(comprobante_id)
-#         else:
-#             form.instance.id_registro_documento = comprobante_id
-#         registro_guardar(form.instance, self.request)
-#         return super().form_valid(form)
-
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         precios = []
-#         content_type = self.kwargs['material_content_type']
-#         id_registro = self.kwargs['material_id']
-#         orden_detalle = OrdenCompraDetalle.objects.filter(
-#             content_type = content_type,
-#             id_registro = id_registro,
-#         )
+    def get_context_data(self, **kwargs):
+        precios = []
+        content_type = self.object.content_type
+        id_registro = self.object.id_registro
+        orden_detalle = OrdenCompraDetalle.objects.filter(
+            content_type = content_type,
+            id_registro = id_registro,
+        )
         
-#         for detalle in orden_detalle:
-#             detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
-#             detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+        for detalle in orden_detalle:
+            detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
+            detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
             
-#             comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+            comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
             
-#             detalle.logistico = comprobante_compra.logistico
+            detalle.logistico = comprobante_compra.logistico
             
-#             recepcion = RecepcionCompra.objects.get(
-#                 content_type = ContentType.objects.get_for_model(comprobante_compra),
-#                 id_registro = comprobante_compra.id,
-#                 estado = 1,
-#             )
+            recepcion = RecepcionCompra.objects.get(
+                content_type = ContentType.objects.get_for_model(comprobante_compra),
+                id_registro = comprobante_compra.id,
+                estado = 1,
+            )
             
-#             detalle.fecha_recepcion = recepcion.fecha_recepcion
-#             detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
-#             valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.kwargs['material_id'], self.kwargs['material_content_type'])
-#             precios.append((valor, recepcion.numero_comprobante_compra))
-#         self.kwargs['precios'] = orden_detalle
-#         kwargs['precios'] = precios
-#         return kwargs
+            detalle.fecha_recepcion = recepcion.fecha_recepcion
+            detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
+            valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.object.id_registro, self.object.content_type)
+            precios.append((valor, recepcion.numero_comprobante_compra))
 
-#     def get_context_data(self, **kwargs):
-#         context = super(CotizacionVentaCosteadorView, self).get_context_data(**kwargs)
-#         context['accion']="Costeador"
-#         context['titulo']="Precio"
-#         # context['precios'] = self.kwargs['precios']
-#         return context
 
+        context = super(CotizacionVentaCosteadorView, self).get_context_data(**kwargs)
+        context['accion']="Costeador"
+        context['titulo']="Precio"
+        context['precios'] = orden_detalle
+        return context
