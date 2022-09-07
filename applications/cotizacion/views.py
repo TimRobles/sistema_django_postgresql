@@ -6,7 +6,6 @@ from applications.funciones import calculos_linea, numeroXn, obtener_totales, ob
 from applications.importaciones import *
 from django import forms
 from applications.material.funciones import calidad, reservado, stock, vendible
-from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 
 from applications.sociedad.models import Sociedad
 
@@ -18,6 +17,7 @@ from .forms import (
     CotizacionVentaDetalleForm,
     CotizacionVentaForm,
     CotizacionVentaMaterialDetalleForm,
+    CotizacionVentaMaterialDetalleUpdateForm,
     PrecioListaMaterialForm,
 )
     
@@ -322,7 +322,7 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaCosteadorView(BSModalReadView):
+class CotizacionVentaCosteadorDetalleView(BSModalReadView):
     model = CotizacionVentaDetalle
     template_name = "cotizacion/cotizacion_venta/form-precio.html"
 
@@ -355,10 +355,60 @@ class CotizacionVentaCosteadorView(BSModalReadView):
             precios.append((valor, recepcion.numero_comprobante_compra))
 
 
-        context = super(CotizacionVentaCosteadorView, self).get_context_data(**kwargs)
+        context = super(CotizacionVentaCosteadorDetalleView, self).get_context_data(**kwargs)
         context['accion']="Costeador"
         context['titulo']="Precio"
         context['precios'] = orden_detalle
+        return context
+
+class CotizacionVentaDetalleDeleteView(BSModalDeleteView):
+    model = CotizacionVentaDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
+
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object().item
+
+        return context
+
+
+class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
+    model = CotizacionVentaDetalle
+    template_name = "cotizacion/cotizacion_venta/actualizar.html"
+    form_class = CotizacionVentaMaterialDetalleUpdateForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
+
+    def form_valid(self, form):
+        precio_unitario_con_igv = form.instance.precio_unitario_con_igv
+        precio_final_con_igv = form.instance.precio_final_con_igv
+        form.instance.cantidad = form.instance.cantidad
+        respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, 0.18)
+        form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+        form.instance.precio_unitario_con_igv = precio_unitario_con_igv
+        form.instance.precio_final_con_igv = precio_final_con_igv
+        form.instance.sub_total = respuesta['subtotal']
+        form.instance.descuento = respuesta['descuento']
+        form.instance.igv = respuesta['igv']
+        form.instance.total = respuesta['total']
+
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaMaterialDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precios"
+        context['material'] = self.object.content_type.get_object_for_this_type(id = self.object.id_registro)
         return context
 
 
