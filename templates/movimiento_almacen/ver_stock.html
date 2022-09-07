@@ -5,14 +5,14 @@
 {% block content %}
 
 {% for sociedad, stocks in stocks.items %}
-<h3>{{ sociedad }}</h3>
-    <div class="table-responsive">
+    <h3>{{ sociedad }}</h3>
+    <div class="table-responsive mb-3">
         <table class="table">
             <thead>
                 <tr>
                     <th>Almacén/Estado</th>
                     {% for estado in estados %}
-                    <th>{{ estado }}</th>
+                    <th>{{ estado.descripcion }}</th>
                     {% endfor %}
                     <th>Total</th>
                 </tr>

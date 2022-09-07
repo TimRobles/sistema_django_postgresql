@@ -1,3 +1,4 @@
+from decimal import Decimal
 from applications.importaciones import *
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from django import forms
@@ -1439,15 +1440,19 @@ def ComprobanteView(request, id_comprobante, comprobante_content_type, id_materi
         content_type = material_content_type,
         id_registro = id_material,
     )
+
+    precio = Decimal('0.00')
+    moneda = None
+    logistico = Decimal('0.00')
     
     for detalle in orden_detalle:
         comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
         if comprobante_compra.id == id_comprobante and ContentType.objects.get_for_model(comprobante_compra) == comprobante_content_type:
             if detalle.id_registro == id_material and detalle.content_type == material_content_type:
                 precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+                moneda = comprobante_compra.moneda
+                logistico = comprobante_compra.logistico
 
-    moneda = comprobante_compra.moneda
-    logistico = comprobante_compra.logistico
     
     return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
     # return HttpResponse("%s|%s" % (moneda, logistico))

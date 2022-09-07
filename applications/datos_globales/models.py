@@ -502,6 +502,7 @@ class TipoCambio(models.Model):
         verbose_name_plural = 'Tipos de Cambio'
         ordering = [
             '-fecha',
+            '-updated_at',
         ]
 
     def __str__(self):     

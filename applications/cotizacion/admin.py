@@ -43,7 +43,6 @@ class PrecioListaMaterialAdmin(admin.ModelAdmin):
 class CotizacionVentaAdmin(admin.ModelAdmin):
     list_display = ( 
         'id',
-        'sociedad',
         'numero_cotizacion',
         'cliente',
         'cliente_interlocutor',

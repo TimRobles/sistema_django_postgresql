@@ -253,5 +253,21 @@ def obtener_totales(cabecera):
     return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv)
 
 
+def obtener_totales_soles(resultado, tipo_cambio):
+    respuesta = {}
+    respuesta['descuento_global'] = resultado['descuento_global'] * tipo_cambio
+    respuesta['total_descuento'] = resultado['total_descuento'] * tipo_cambio
+    respuesta['total_anticipo'] = resultado['total_anticipo'] * tipo_cambio
+    respuesta['total_gravada'] = resultado['total_gravada'] * tipo_cambio
+    respuesta['total_inafecta'] = resultado['total_inafecta'] * tipo_cambio
+    respuesta['total_exonerada'] = resultado['total_exonerada'] * tipo_cambio
+    respuesta['total_igv'] = resultado['total_igv'] * tipo_cambio
+    respuesta['total_gratuita'] = resultado['total_gratuita'] * tipo_cambio
+    respuesta['total_otros_cargos'] = resultado['total_otros_cargos'] * tipo_cambio
+    respuesta['total_icbper'] = resultado['total_icbper'] * tipo_cambio
+    respuesta['total'] = resultado['total'] * tipo_cambio
+    return respuesta
+
+
 def numeroXn(numero, n):
     return '0'*(n-len(str(numero))) + str(numero)

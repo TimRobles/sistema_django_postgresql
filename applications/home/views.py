@@ -219,3 +219,82 @@ def CalculoItemLineaView(request, cantidad, precio_unitario_con_igv, precio_fina
             request=request
         )
         return JsonResponse(data)
+
+
+def consulta(request):
+    if request.method == 'GET':
+        print("*************************")
+        accion = request.GET['accion']
+        sql = request.GET['sql']
+        print(sql)
+        print("*************************")
+        import psycopg2
+        import json
+        
+        try:
+            connection = psycopg2.connect(user="multiplay",
+                                        password="multiplay123",
+                                        host="localhost",
+                                        port="5432",
+                                        database="sleiter")
+            cursor = connection.cursor()
+            if accion == 'ejecutar':
+                cursor.execute(sql)
+                rowcount = cursor.rowcount
+                connection.commit()
+
+                if rowcount == 0:
+                    connection.rollback()
+                    respuesta = {
+                        'respuesta' : 'correcto',
+                        'id_insertado' : 'Ninguna fila afectada',
+                        'rollback' : True
+                    }
+                elif rowcount == 1:
+                    print("********************////////////////////*/*/*/*/*/*/")
+                    print(dir(connection))
+                    print(cursor.lastrowid)
+                    print("********************////////////////////*/*/*/*/*/*/")
+                    fetchone = cursor.lastrowid
+                    respuesta = {
+                        'respuesta' : 'correcto',
+                        'id_insertado' : fetchone,
+                        'rollback' : False
+                    }
+                elif rowcount > 1:
+                    respuesta = {
+                        'respuesta' : 'correcto',
+                        'id_insertado' : rowcount + ' filas afectadas',
+                        'rollback' : False
+                    }
+                else:
+                    connection.rollback()
+                    respuesta = {
+                        'respuesta' : 'error',
+                        'filas' : rowcount,
+                        'rollback' : True
+                    }
+
+            if accion == 'leer':
+                cursor.execute(sql)
+                respuesta = cursor.fetchall()
+                print("****************************")
+                print(respuesta)
+
+            respuesta = json.dumps(respuesta, default=str)
+            print(respuesta)
+            print("****************************")
+        
+        except (Exception, psycopg2.Error) as error:
+            print("ERROR:", error)
+            respuesta = error
+
+        
+        finally:
+            # closing database connection.
+            if connection:
+                cursor.close()
+                connection.close()
+                print("PostgreSQL connection is closed")
+
+        return JsonResponse(respuesta, safe=False)

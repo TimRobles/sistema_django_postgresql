@@ -11,12 +11,14 @@ from applications.home.views import (
     OlvideContrasenaView,
     RecuperarContrasenaView,
     PruebaPdfView,
+    consulta,
 )
 
 app_name = 'home_app'
 
 urlpatterns = [
     path('', PanelView.as_view(), name='home'),
+    path('consulta/', consulta, name='consulta'),
     path('login/', InicioView.as_view(), name='login'),
     path('logout/', UserLogoutView.as_view(), name='logout'),
     path('consulta-ruc/<str:ruc>/', ConsultaRucView, name='consulta_ruc'),

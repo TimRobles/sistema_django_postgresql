@@ -1,7 +1,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Sociedad</th>
             <th>Nro Cotización</th>
             <th>Cliente</th>
             <th>Fecha Cotización</th>
@@ -14,8 +13,11 @@
     <tbody>
         {% for cotizacion in contexto_cotizacion_venta %}
             <tr>
-                <td>{{ cotizacion.sociedad }}</td>
-                <td>{{ cotizacion.numero_cotizacion }}</td>
+                <td>
+                    {% if cotizacion.numero_cotizacion %}    
+                    {{ cotizacion.numero_cotizacion }}
+                    {% endif %}
+                </td>
                 <td>{{ cotizacion.cliente }}</td>
                 <td>{{ cotizacion.fecha_cotizacion|date:'d/m/Y' }}</td>
                 <td>{{ cotizacion.fecha_validez|date:'d/m/Y' }}</td>

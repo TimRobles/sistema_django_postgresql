@@ -38,8 +38,7 @@ class PrecioListaMaterial(models.Model):
 
 
 class CotizacionVenta(models.Model):
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True)
-    numero_cotizacion = models.CharField('Número de Cotización', max_length=50, blank=True, null=True)
+    numero_cotizacion = models.CharField('Número de Cotización', max_length=6, blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor', blank=True, null=True)
     fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -61,6 +60,10 @@ class CotizacionVenta(models.Model):
     class Meta:
         verbose_name = 'Cotizacion Venta'
         verbose_name_plural = 'Cotizaciones Venta'
+        ordering = [
+            '-fecha_cotizacion',
+            '-numero_cotizacion',
+        ]
 
     @property
     def internacional_nacional(self):
