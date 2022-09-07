@@ -6,6 +6,7 @@ from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
 from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
 from applications.variables import ESTADOS, ESTADOS_COTIZACION_VENTA, TIPO_IGV_CHOICES, TIPO_VENTA
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 from django.conf import settings
 
@@ -93,6 +94,7 @@ class CotizacionVentaDetalle(models.Model):
     class Meta:
         verbose_name = 'Cotizacion Venta Detalle'
         verbose_name_plural = 'Cotizaciones Venta Detalle'
+        ordering = ['item',]
 
     def __str__(self):
         return str(self.id)
@@ -238,3 +240,14 @@ class CotizacionSociedad(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta_detalle, self.sociedad, self.cantidad)
+
+
+def cotizacion_venta_material_detalle_post_delete(sender, instance, *args, **kwargs):
+    materiales = CotizacionVentaDetalle.objects.filter(cotizacion_venta=instance.cotizacion_venta)
+    contador = 1
+    for material in materiales:
+        material.item = contador
+        material.save()
+        contador += 1
+
+post_delete.connect(cotizacion_venta_material_detalle_post_delete, sender=CotizacionVentaDetalle)

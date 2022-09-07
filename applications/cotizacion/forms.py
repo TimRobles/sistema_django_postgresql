@@ -68,6 +68,22 @@ class CotizacionVentaMaterialDetalleForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
+    class Meta:
+        model = CotizacionVentaDetalle
+        fields=(
+            'tipo_igv',
+            'cantidad',
+            'precio_final_con_igv',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaMaterialDetalleUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        
+
         
 class CotizacionVentaDetalleForm(BSModalModelForm):
     cantidad = forms.DecimalField(required=False, disabled=True)
@@ -103,3 +119,4 @@ class PrecioListaMaterialForm (BSModalModelForm):
         self.fields['comprobante'].choices = precios
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
