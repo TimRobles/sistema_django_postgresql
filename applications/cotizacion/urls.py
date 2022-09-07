@@ -26,5 +26,6 @@ urlpatterns = [
     path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_eliminar'),
     path('cotizacion-venta/actualizar/<pk>/', views.CotizacionVentaMaterialDetalleUpdateView.as_view(), name='cotizacion_venta_actualizar'),
 
+    path('cotizacion-venta/pdf/<slug>/', views.CotizacionVentaPdfView.as_view(), name='cotizacion_venta_pdf'),
 
 ]

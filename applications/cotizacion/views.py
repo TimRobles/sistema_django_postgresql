@@ -1,11 +1,13 @@
 from decimal import Decimal
 from django.shortcuts import render
+from django import forms
+from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import TipoCambio
-from applications.funciones import calculos_linea, numeroXn, obtener_totales, obtener_totales_soles
-from applications.importaciones import *
-from django import forms
 from applications.material.funciones import calidad, reservado, stock, vendible
+from applications.cotizacion.pdf import generarCotizacionVenta
+from applications.funciones import calculos_linea, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio
+
 
 from applications.sociedad.models import Sociedad
 
@@ -50,7 +52,9 @@ def CotizacionVentaTabla(request):
 
 
 def CotizacionVentaCreateView(request):
-    obj = CotizacionVenta.objects.create()
+    obj = CotizacionVenta.objects.create(
+        slug = slug_aleatorio(CotizacionVenta),
+    )
     return HttpResponseRedirect(reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':obj.id}))
 
 
@@ -472,3 +476,60 @@ class CotizacionVentaReservaDeleteView(DeleteView):
         context['texto'] = "¿Está seguro de Reservar la cotización?"
         context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
         return context
+
+
+
+
+class CotizacionVentaPdfView(View):
+    def get(self, request, *args, **kwargs):
+        color = COLOR_DEFAULT
+        titulo = 'Cotización'
+        vertical = False
+        logo = None
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+
+        obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
+
+        fecha=datetime.strftime(obj.fecha_cotizacion,'%d - %m - %Y')
+
+        Texto = titulo + '\n' +str(obj.numero_cotizacion) + '\n' + str(fecha)
+
+        TablaEncabezado = [ 'Item',
+                            'Descripción',
+                            'Unidad',
+                            'Cantidad',
+                            'Prec. Unit. sin IGV',
+                            'Prec. Unit. con IGV',
+                            'P. Final IGV',
+                            'Descuento',
+                            'Sub Total',
+                            'IGV',
+                            'Total',
+                            ]
+
+        cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+        TablaDatos = []
+        for detalle in cotizacion_venta_detalle:
+            fila = []
+
+            detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            fila.append(detalle.item)
+            fila.append(detalle.material)
+            fila.append(detalle.material.unidad_base)
+            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_unitario_sin_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_final_con_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.descuento.quantize(Decimal('0.01')))
+            fila.append(detalle.sub_total.quantize(Decimal('0.01')))
+            fila.append(detalle.igv.quantize(Decimal('0.01')))
+            fila.append(detalle.total.quantize(Decimal('0.01')))
+
+            TablaDatos.append(fila)
+
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta

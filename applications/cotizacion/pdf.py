@@ -14,6 +14,13 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color):
         fila.append(parrafoIzquierda(dato[1], fuenteBase))
         fila.append(parrafoIzquierda(dato[2], fuenteBase))
         fila.append(parrafoDerecha(dato[3], fuenteBase))
+        fila.append(parrafoDerecha(dato[4], fuenteBase))
+        fila.append(parrafoDerecha(dato[5], fuenteBase))        
+        fila.append(parrafoIzquierda(dato[6], fuenteBase))
+        fila.append(parrafoIzquierda(dato[7], fuenteBase))
+        fila.append(parrafoDerecha(dato[8], fuenteBase))
+        fila.append(parrafoDerecha(dato[9], fuenteBase))
+        fila.append(parrafoDerecha(dato[10], fuenteBase))
 
         data.append(fila)  
 
@@ -29,7 +36,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color):
         )
     t._argW[0]=cmToPx(1)
     t._argW[2]=cmToPx(2)
-    t._argW[3]=cmToPx(2.5)
+    t._argW[3]=cmToPx(2)
 
     return t
 

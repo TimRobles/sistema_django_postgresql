@@ -52,6 +52,7 @@ class CotizacionVenta(models.Model):
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
+    slug = models.SlugField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionVenta_created_by', editable=False)
