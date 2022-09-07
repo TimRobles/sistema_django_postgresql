@@ -492,7 +492,12 @@ class CotizacionVentaPdfView(View):
 
         fecha=datetime.strftime(obj.fecha_cotizacion,'%d - %m - %Y')
 
-        Texto = titulo + '\n' +str(obj.numero_cotizacion) + '\n' + str(fecha)
+        nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion) 
+        razon_social = 'Razón Social: ' + str(obj.cliente)
+        direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
+
+        Texto = []
+        Texto.extend([nro_cotizacion, razon_social,direccion])
 
         TablaEncabezado = [ 'Item',
                             'Descripción',
