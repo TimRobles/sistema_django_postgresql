@@ -1,13 +1,12 @@
 from django.contrib import admin
 from .models import (
+    ConfirmacionVentaDetalle,
     CotizacionSociedad,
     PrecioListaMaterial,
     CotizacionVenta,
     CotizacionVentaDetalle,
     CotizacionOrdenCompra,
     CotizacionTerminosCondiciones,
-    ReservaVenta,
-    ReservaVentaDetalle,
     ConfirmacionVenta,
 )
 
@@ -102,6 +101,7 @@ class CotizacionVentaDetalleAdmin(admin.ModelAdmin):
 @admin.register(CotizacionOrdenCompra)
 class CotizacionOrdenCompraAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'numero_orden',
         'fecha_orden',
         'documento',
@@ -122,6 +122,7 @@ class CotizacionOrdenCompraAdmin(admin.ModelAdmin):
 @admin.register(CotizacionTerminosCondiciones)
 class CotizacionTerminosCondicionesAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'condicion',
         'condicion_visible',
         'orden',
@@ -138,90 +139,38 @@ class CotizacionTerminosCondicionesAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(ReservaVenta)
-class ReservaVentaAdmin(admin.ModelAdmin):
-    list_display = (
-        'cotizacion_venta',
-        'sociedad',
-        'numero_cotizacion',
-        'cliente',
-        'cliente_interlocutor',
-        'fecha_cotizacion',
-        'fecha_confirmacion',
-        'tipo_cambio',
-        'observaciones_adicionales',
-        'condiciones_pago',
-        'tipo_venta',
-        'descuento_global',
-        'total',
-        'estado',
-        'motivo_anualacion',
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-    )
-
-    def save_model(self, request, obj, form, change):
-        if obj.created_by == None:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
-
-@admin.register(ReservaVentaDetalle)
-class ReservaVentaDetalleAdmin(admin.ModelAdmin):
-    list_display = (
-        'content_type',
-        'id_registro',
-        'item',
-        'cantidad',
-        'precio_unitario_sin_igv',
-        'precio_unitario_con_igv',
-        'precio_final_con_igv',
-        'descuento',
-        'sub_total',
-        'igv',
-        'tipo_igv',
-        'reserva_venta',
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',        
-    )
-
-
-    def save_model(self, request, obj, form, change):
-        if obj.created_by == None:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
-
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-
-
 @admin.register(ConfirmacionVenta)
 class ConfirmacionVentaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'cotizacion_venta',
-        'reserva_venta',
         'sociedad',
-        'numero_cotizacion',
-        'cliente',
-        'fecha_cotizacion',
-        'fecha_validez',
+        'fecha_confirmacion',
         'tipo_cambio',
-        'observaciones_adicionales',
-        'condiciones_pago',
-        'tipo_venta',
-        'descuento_global',
-        'total',
         'estado',
-        'motivo_anualacion',
+        'motivo_anulacion',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',      
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(ConfirmacionVentaDetalle)
+class ConfirmacionVentaDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'cantidad_confirmada',
+        'item',
+        'content_type',
+        'id_registro',
+        'confirmacion_venta',
         'created_at',
         'created_by',
         'updated_at',
@@ -238,6 +187,7 @@ class ConfirmacionVentaAdmin(admin.ModelAdmin):
 @admin.register(CotizacionSociedad)
 class CotizacionSociedadAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'cotizacion_venta_detalle',
         'sociedad',
         'cantidad',

@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from applications import datos_globales
-from applications.variables import CONDICION_SUNAT, ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
+from applications.variables import CONDICION_SUNAT, DICCIONARIO_TIPO_DOCUMENTO_SUNAT, ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
 
 from django.db.models.signals import pre_save, post_save
 
@@ -38,6 +38,9 @@ class Cliente(models.Model):
         self.nombre_comercial = self.nombre_comercial.upper()
         self.direccion_fiscal = self.direccion_fiscal.upper()
         super().save(*args, **kwargs)
+
+    def documento(self):
+        return DICCIONARIO_TIPO_DOCUMENTO_SUNAT[self.tipo_documento]
 
     def __str__(self):
         return self.razon_social

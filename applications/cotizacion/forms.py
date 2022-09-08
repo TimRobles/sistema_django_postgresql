@@ -55,12 +55,14 @@ class CotizacionVentaMaterialDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
     precio_lista = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)
+    stock = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)
     class Meta:
         model = CotizacionVentaDetalle
         fields=(
             'material',
             'cantidad',
             'precio_lista',
+            'stock',
             )
 
     def __init__(self, *args, **kwargs):

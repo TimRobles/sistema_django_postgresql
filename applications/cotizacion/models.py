@@ -69,6 +69,10 @@ class CotizacionVenta(models.Model):
     @property
     def internacional_nacional(self):
         return 2
+    
+    @property
+    def fecha(self):
+        return self.fecha_cotizacion
 
     def __str__(self):
         return str(self.id)
@@ -140,79 +144,13 @@ class CotizacionTerminosCondiciones(models.Model):
         return str(self.condicion)
 
 
-class ReservaVenta(models.Model):
-    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE)
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    numero_cotizacion = models.CharField('Núero de cotización', max_length=50)
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ReservaVenta_cliente')
-    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ReservaVenta_cliente_interlocutor')
-    fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False)
-    fecha_confirmacion = models.DateField('Fecha Confirmación', auto_now=False, auto_now_add=False)
-    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ReservaVenta_tipo_cambio')
-    observaciones_adicionales = models.TextField()
-    condiciones_pago = models.TextField()
-    tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
-    descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2)
-    total = models.DecimalField('Total', max_digits=14, decimal_places=2)
-    estado = models.IntegerField(choices=ESTADOS)
-    motivo_anualacion = models.TextField()
-
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReservaVenta_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReservaVenta_updated_by', editable=False)
-
-    class Meta:
-        verbose_name = 'Reserva Venta'
-        verbose_name_plural = 'Reservas Venta'
-
-    def __str__(self):
-        return str(self.id)
-
-
-class ReservaVentaDetalle(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
-    id_registro = models.IntegerField()
-    item = models.IntegerField()
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
-    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10)
-    precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10)
-    precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10)
-    descuento = models.DecimalField('Descuento',max_digits=14, decimal_places=2)
-    sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2)
-    igv = models.DecimalField('IGV',max_digits=14, decimal_places=2)
-    tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES,)
-    reserva_venta = models.ForeignKey(ReservaVenta, on_delete=models.CASCADE)
-
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReservaVentaDetalle_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReservaVentaDetalle_updated_by', editable=False)
-
-    class Meta:
-        verbose_name = 'Reserva Venta Detalle'
-        verbose_name_plural = 'Reservas Venta Detalle'
-
-    def __str__(self):
-        return str(self.id)
-
-
 class ConfirmacionVenta(models.Model):
     cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE)
-    reserva_venta = models.ForeignKey(ReservaVenta, on_delete=models.PROTECT, null=True) 
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    numero_cotizacion = models.CharField('Número de Cotización', max_length=50)
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ConfirmacionVenta_cliente')
-    fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False)
-    fecha_validez = models.DateField('Fecha Validez', auto_now=False, auto_now_add=False)
+    fecha_confirmacion = models.DateField('Fecha Confirmación', auto_now=False, auto_now_add=False)
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ConfirmacionVenta_tipo_cambio')
-    observaciones_adicionales = models.TextField()
-    condiciones_pago = models.TextField()
-    tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
-    descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2)
-    total = models.DecimalField('Total', max_digits=14, decimal_places=2)
     estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA)
-    motivo_anualacion = models.TextField()
+    motivo_anulacion = models.TextField()
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionVenta_created_by', editable=False)
@@ -222,6 +160,33 @@ class ConfirmacionVenta(models.Model):
     class Meta:
         verbose_name = 'Confirmación Venta'
         verbose_name_plural = 'Confirmación Ventas'
+        ordering = [
+            '-fecha_confirmacion',
+            ]
+
+    def __str__(self):
+        return str(self.id)
+
+
+class ConfirmacionVentaDetalle(models.Model):
+    cantidad_confirmada = models.DecimalField('Cantidad confirmada', max_digits=22, decimal_places=10)
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    id_registro = models.IntegerField()
+    confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.CASCADE, related_name='ConfirmacionVentaDetalle_confirmacion_venta')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionVentaDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionVentaDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Confirmación Venta Detalle'
+        verbose_name_plural = 'Confirmación Ventas Detalle'
+        ordering = [
+            'confirmacion_venta',
+            'item',
+            ]
 
     def __str__(self):
         return str(self.id)

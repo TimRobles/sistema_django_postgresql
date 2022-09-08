@@ -1,16 +1,27 @@
 from decimal import Decimal
 from django.db import models
 
+def retornar_fecha(movimiento):
+    fecha = movimiento.content_type_documento_proceso.model_class().objects.get(id=movimiento.id_registro_documento_proceso).fecha
+    return fecha
+
 class MovimientoAlmacenManager(models.Manager):
     def ver_movimientos(self, content_type, id_registro):
+        movimientos_fuera = [16, 17]
         consulta = self.filter(
             content_type_producto = content_type,
             id_registro_producto = id_registro,
         )
         total = 0
+        lista = []
         for dato in consulta:
-            total += dato.cantidad * dato.signo_factor_multiplicador
-        return consulta, total
+            lista.append(dato)
+            if not dato.tipo_stock.codigo in movimientos_fuera:
+                total += dato.cantidad * dato.signo_factor_multiplicador
+
+        lista.sort(key=retornar_fecha)
+        
+        return lista, total
 
     def ver_stock(self, content_type, id_registro, tipo_stock):
         lista_estados = list(tipo_stock)

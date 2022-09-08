@@ -72,6 +72,7 @@ class MovimientosAlmacen(models.Model):
         verbose_name = 'Movimiento de Almacen'
         verbose_name_plural = 'Movimientos de Almacenes'
 
+    @property
     def documento_proceso(self):
         return self.content_type_documento_proceso.model_class().objects.get(id=self.id_registro_documento_proceso)
 

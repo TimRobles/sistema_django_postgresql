@@ -76,4 +76,5 @@ urlpatterns = [
     path('precio-material/<int:id_comprobante>/<int:comprobante_content_type>/<int:id_material>/<int:material_content_type>/', views.ComprobanteView, name='comprobante'),
     
     path('precio-lista/<int:id_material>/', views.PrecioListaView, name='precio_lista'),
+    path('stock/<int:id_material>/', views.StockView, name='stock'),
 ]

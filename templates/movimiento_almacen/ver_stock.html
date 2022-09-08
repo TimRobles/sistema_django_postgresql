@@ -5,7 +5,13 @@
 {% block content %}
 
 {% for sociedad, stocks in stocks.items %}
-    <h3>{{ sociedad }}</h3>
+    <h3>
+        {% if sociedad %}
+        {{ sociedad }}    
+        {% else %}
+        SIN SOCIEDAD
+        {% endif %}
+    </h3>
     <div class="table-responsive mb-3">
         <table class="table">
             <thead>

@@ -20,7 +20,9 @@ urlpatterns = [
     path('cotizacion-venta/sociedad/guardar/<int:cantidad>/<int:item>/<str:abreviatura>/', views.GuardarCotizacionSociedad, name='guardar_cotizacion_venta_sociedad'),
 
     path('cotizacion-venta/guardar/<pk>/', views.CotizacionVentaGuardarView.as_view(), name='cotizacion_venta_guardar'),
-    path('cotizacion-venta/reservar/<pk>/', views.CotizacionVentaReservaDeleteView.as_view(), name='cotizacion_venta_reservar'),
+    
+    path('cotizacion-venta/reservar/<pk>/', views.CotizacionVentaReservaView.as_view(), name='cotizacion_venta_reservar'),
+    path('cotizacion-venta/anular-reserva/<pk>/', views.CotizacionVentaReservaAnularView.as_view(), name='cotizacion_venta_anular_reserva'),
 
     path('cotizacion-venta/costeador/<pk>/', views.CotizacionVentaCosteadorDetalleView.as_view(), name='cotizacion_venta_costeador'),
     path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_eliminar'),

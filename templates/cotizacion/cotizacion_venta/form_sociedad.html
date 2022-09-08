@@ -18,7 +18,15 @@
             {% for sociedad in sociedades %}
             <tr>
                 <td>{{ sociedad }}</td>
-                <td class="text-end text-nowrap">{{ sociedad.vendible|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">
+                    {{ sociedad.vendible|redondear|intcomma }}
+                    {% if sociedad.reservado %}
+                    <br>
+                    <span class="text-danger">
+                        (-{{ sociedad.reservado|redondear|intcomma }})
+                    </span>
+                    {% endif %}
+                </td>
                 <td class="text-end text-nowrap">{{ sociedad.calidad|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">{{ sociedad.stock|redondear|intcomma }}</td>
             </tr>

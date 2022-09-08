@@ -1,5 +1,6 @@
-function seleccionar_precio_lista(id_material) {
+function seleccionar_material(id_material) {
     $precio_lista= $('#id_precio_lista')[0];
+    $stock= $('#id_stock')[0];
     
     url = '/material/precio-lista/' + id_material + '/';
 
@@ -12,13 +13,28 @@ function seleccionar_precio_lista(id_material) {
             console.log(info)
         }else{
             console.log('error')
+            $precio_lista.value = '';
         }
     }
     xhr.send();
+    
+    url = '/material/stock/' + id_material + '/';
+
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', url);
+    xhr2.onload = function(){
+        if (this.status === 200) {
+            info = xhr2.responseText;
+            $stock.value = info;
+            console.log(info)
+        }else{
+            console.log('error');
+            $stock.value = '';
+        }
+    }
+    xhr2.send();
 }
 
 $(document).unbind().on('change', '#id_material', function (e) {
-    seleccionar_precio_lista(e.target.value);
+    seleccionar_material(e.target.value);
 })
-
-// console.log('hola')

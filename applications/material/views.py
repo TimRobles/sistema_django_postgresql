@@ -1464,3 +1464,11 @@ def PrecioListaView(request, id_material):
             return HttpResponse(Material.objects.get(id=id_material).precio_lista.precio_lista)
         except:
             return HttpResponse("")
+
+
+def StockView(request, id_material):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(Material.objects.get(id=id_material).stock)
+        except:
+            return HttpResponse("")

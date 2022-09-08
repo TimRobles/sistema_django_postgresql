@@ -12,7 +12,6 @@ def vendible(content_type, id_registro, id_sociedad):
                     ).filter(
                         tipo_stock = disponible,
                     )
-        print(movimientos)
         for movimiento in movimientos:
             total += movimiento.cantidad * movimiento.signo_factor_multiplicador
     except:

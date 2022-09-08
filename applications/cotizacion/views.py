@@ -6,6 +6,7 @@ from applications.funciones import calculos_linea, numeroXn, obtener_totales, ob
 from applications.importaciones import *
 from django import forms
 from applications.material.funciones import calidad, reservado, stock, vendible
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 
 from applications.sociedad.models import Sociedad
 
@@ -77,6 +78,8 @@ class CotizacionVentaVerView(TemplateView):
         except:
             pass
 
+        sociedades = Sociedad.objects.all()
+
         context = super(CotizacionVentaVerView, self).get_context_data(**kwargs)
         context['cotizacion'] = obj
         context['materiales'] = materiales
@@ -89,6 +92,7 @@ class CotizacionVentaVerView(TemplateView):
             else:
                 tipo_cambio = 1
         context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        context['sociedades'] = sociedades
 
         return context
 
@@ -116,6 +120,8 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         except:
             pass
 
+        sociedades = Sociedad.objects.all()
+
         context = {}
         context['materiales'] = materiales
         context['cotizacion'] = obj
@@ -128,6 +134,7 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
             else:
                 tipo_cambio = 1
         context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        context['sociedades'] = sociedades
         
         data['table'] = render_to_string(
             template,
@@ -241,6 +248,28 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
 
             registro_guardar(obj, self.request)
             obj.save()
+
+            cantidad_total = obj.cantidad
+            cantidades = {}
+            sociedades = Sociedad.objects.all()
+            for sociedad in sociedades:
+                cantidades[sociedad.abreviatura] = stock(obj.content_type, obj.id_registro, sociedad.id)
+            
+            cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
+
+            for sociedad in sociedades:                
+                obj2, created = CotizacionSociedad.objects.get_or_create(
+                    cotizacion_venta_detalle = obj,
+                    sociedad = sociedad,
+                )
+                if cantidades[sociedad.abreviatura] >= cantidad_total:
+                    obj2.cantidad = cantidad_total
+                    cantidad_total -= cantidad_total
+                else:
+                    obj2.cantidad = cantidades[sociedad.abreviatura]
+                    cantidad_total -= cantidades[sociedad.abreviatura]
+                obj2.save()
+
             self.request.session['primero'] = False
         return HttpResponseRedirect(self.success_url)
 
@@ -375,7 +404,7 @@ class CotizacionVentaDetalleDeleteView(BSModalDeleteView):
         context = super(CotizacionVentaDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Material"
-        context['item'] = self.get_object().item
+        context['item'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
 
         return context
 
@@ -402,6 +431,27 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         form.instance.total = respuesta['total']
 
         registro_guardar(form.instance, self.request)
+
+        cantidad_total = form.instance.cantidad
+        cantidades = {}
+        sociedades = Sociedad.objects.all()
+        for sociedad in sociedades:
+            cantidades[sociedad.abreviatura] = stock(form.instance.content_type, form.instance.id_registro, sociedad.id)
+        
+        cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
+
+        for sociedad in sociedades:                
+            obj, created = CotizacionSociedad.objects.get_or_create(
+                cotizacion_venta_detalle = form.instance,
+                sociedad = sociedad,
+            )
+            if cantidades[sociedad.abreviatura] >= cantidad_total:
+                obj.cantidad = cantidad_total
+                cantidad_total -= cantidad_total
+            else:
+                obj.cantidad = cantidades[sociedad.abreviatura]
+                cantidad_total -= cantidades[sociedad.abreviatura]
+            obj.save()
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -412,7 +462,7 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         return context
 
 
-class CotizacionVentaReservaDeleteView(DeleteView):
+class CotizacionVentaReservaView(DeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -421,54 +471,167 @@ class CotizacionVentaReservaDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
+        
+        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
+        reserva = TipoMovimiento.objects.get(codigo=118)
+        for detalle in detalles:
+            sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+            for cotizacion_sociedad in sociedades:
+                if cotizacion_sociedad.cantidad > 0:
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                            content_type_producto = detalle.content_type,
+                            id_registro_producto = detalle.id_registro,
+                            cantidad = cotizacion_sociedad.cantidad,
+                            tipo_movimiento = reserva,
+                            tipo_stock = reserva.tipo_stock_final,
+                            signo_factor_multiplicador = +1,
+                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso = self.object.id,
+                            almacen = None,
+                            sociedad = cotizacion_sociedad.sociedad,
+                            movimiento_anterior = None,
+                            movimiento_reversion = False,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
+
         self.object.estado = 3
         registro_guardar(self.object, self.request)
         self.object.save()
-        
-        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
-        print(detalles)
-        # reserva = TipoMovimiento.objects.get(codigo=118)
-        # for material in detalles:
-        #     orden_detalle = ComprobanteCompraPIDetalle.objects.create(
-        #         item=material.item,
-        #         orden_compra_detalle = material,
-        #         cantidad = material.cantidad,
-        #         precio_unitario_sin_igv = material.precio_unitario_sin_igv,
-        #         precio_unitario_con_igv = material.precio_unitario_con_igv,
-        #         precio_final_con_igv = material.precio_final_con_igv,
-        #         descuento = material.descuento,
-        #         sub_total = material.sub_total,
-        #         igv = material.igv,
-        #         total = material.total,
-        #         tipo_igv = material.tipo_igv,
-        #         comprobante_compra = comprobante,
-        #         created_by = self.request.user,
-        #         updated_by = self.request.user,
-        #         )
-            
-        #     movimiento_dos = MovimientosAlmacen.objects.create(
-        #             content_type_producto = material.content_type,
-        #             id_registro_producto = material.id_registro,
-        #             cantidad = material.cantidad,
-        #             tipo_movimiento = reserva,
-        #             tipo_stock = reserva.tipo_stock_final,
-        #             signo_factor_multiplicador = +1,
-        #             content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
-        #             id_registro_documento_proceso = comprobante.id,
-        #             almacen = None,
-        #             sociedad = comprobante.sociedad,
-        #             movimiento_anterior = None,
-        #             movimiento_reversion = False,
-        #             created_by = self.request.user,
-        #             updated_by = self.request.user,
-        #         )
+
         messages.success(request, MENSAJE_RESERVAR_COTIZACION)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
-        context = super(CotizacionVentaReservaDeleteView, self).get_context_data(**kwargs)
+        context = super(CotizacionVentaReservaView, self).get_context_data(**kwargs)
         context['accion'] = "Reservar"
         context['titulo'] = "Cotización"
         context['texto'] = "¿Está seguro de Reservar la cotización?"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+
+
+class CotizacionVentaReservaAnularView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        
+        reserva = TipoMovimiento.objects.get(codigo=118)
+        movimientos = MovimientosAlmacen.objects.filter(
+                tipo_movimiento = reserva,
+                tipo_stock = reserva.tipo_stock_final,
+                signo_factor_multiplicador = +1,
+                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                id_registro_documento_proceso = self.object.id,
+                almacen = None,
+            )
+        for movimiento in movimientos:
+            movimiento.delete()
+
+        self.object.estado = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+
+        messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaReservaAnularView, self).get_context_data(**kwargs)
+        context['accion'] = "Anular"
+        context['titulo'] = "Reserva de Cotización"
+        context['texto'] = "¿Está seguro de Anular la Reserva de la cotización?"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+
+
+class CotizacionVentaConfirmarView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        
+        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
+        # if self.object.estado == 3: #Si está reservado
+        #     reserva = TipoMovimiento.objects.get(codigo=118)
+        #     for detalle in detalles:
+        #         sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+        #         for cotizacion_sociedad in sociedades:
+        #             if cotizacion_sociedad.cantidad > 0:
+        #                 movimiento_dos = MovimientosAlmacen.objects.create(
+        #                         content_type_producto = detalle.content_type,
+        #                         id_registro_producto = detalle.id_registro,
+        #                         cantidad = cotizacion_sociedad.cantidad,
+        #                         tipo_movimiento = reserva,
+        #                         tipo_stock = reserva.tipo_stock_final,
+        #                         signo_factor_multiplicador = +1,
+        #                         content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+        #                         id_registro_documento_proceso = self.object.id,
+        #                         almacen = None,
+        #                         sociedad = cotizacion_sociedad.sociedad,
+        #                         movimiento_anterior = None,
+        #                         movimiento_reversion = False,
+        #                         created_by = self.request.user,
+        #                         updated_by = self.request.user,
+        #                     )
+        #     self.object.estado = 4
+
+        registro_guardar(self.object, self.request)
+        self.object.save()
+
+        messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaConfirmarView, self).get_context_data(**kwargs)
+        context['accion'] = "Confirmar"
+        context['titulo'] = "Cotización"
+        context['texto'] = "¿Está seguro de Confirmar la cotización?"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+
+
+class CotizacionVentaConfirmarAnularView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        
+        reserva = TipoMovimiento.objects.get(codigo=118)
+        movimientos = MovimientosAlmacen.objects.filter(
+                tipo_movimiento = reserva,
+                tipo_stock = reserva.tipo_stock_final,
+                signo_factor_multiplicador = +1,
+                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                id_registro_documento_proceso = self.object.id,
+                almacen = None,
+            )
+        for movimiento in movimientos:
+            movimiento.delete()
+
+        self.object.estado = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+
+        messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaConfirmarAnularView, self).get_context_data(**kwargs)
+        context['accion'] = "Anular"
+        context['titulo'] = "Confirmar de Cotización"
+        context['texto'] = "¿Está seguro de Anular la Confirmar de la cotización?"
         context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
         return context

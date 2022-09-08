@@ -3,11 +3,20 @@
 
 <h3>Detalle Cotización
     <a href="{% url 'cotizacion_app:cotizacion_venta_inicio' %}" class="btn btn-primary">Regresar</a>
+    {% if cotizacion.estado == 2 %}
     <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_reservar' cotizacion.id %}"
         data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
         class="delete btn btn-primary">
         Reservar
     </button>
+    {% endif %}
+    {% if cotizacion.estado == 3 %}
+    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_reserva' cotizacion.id %}"
+        data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+        class="delete btn btn-danger">
+        Anular Reserva
+    </button>
+    {% endif %}
     <a href="{% url 'cotizacion_app:cotizacion_venta_inicio' %}" class="btn btn-primary">Confirmar</a>
 </h3>
 
@@ -16,16 +25,26 @@
         <table>
             <tbody>
                 <tr>
-                    <th class="pe-2">Cliente:</th>
+                    <th class="pe-2">Razón Social:</th>
                     <td>{{ cotizacion.cliente.razon_social }}</td>
-                    <td class="ps-2" rowspan="2">
+                    <td class="ps-2" rowspan="3">
+                        {% if cotizacion.estado < 3 %}
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_cliente' cotizacion.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
                             class="update btn btn-primary" title="Seleccionar Cliente">
                             Seleccionar Cliente
                         </button>
+                        {% endif %}
                     </td>
                     
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ cotizacion.cliente.documento }}:</th>
+                    <td>
+                        {% if cotizacion.cliente.numero_documento %}
+                        {{ cotizacion.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">Interlocutor:</th>
@@ -110,7 +129,10 @@
                 <th>Vendible</th>
                 <th>Calidad</th>
                 <th>Stock</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
+                {% for sociedad in sociedades %}
+                <th class="text-center">{{ sociedad.abreviatura }}</th>
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
@@ -127,30 +149,31 @@
                     <td class="text-end text-nowrap">$ {{ material.sub_total|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.total|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ material.material.vendible|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">
+                        {{ material.material.vendible|redondear|intcomma }}
+                        {% if material.material.reservado %}
+                        <br>
+                        <span class="text-danger">
+                            (-{{ material.material.reservado|redondear|intcomma }})
+                        </span>
+                        {% endif %}
+                    </td>
                     <td class="text-end text-nowrap">{{ material.material.calidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ material.material.stock|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
-                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_sociedad' material.id %}"
-                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-                            data-keep-open="true"
-                            class="update btn swatch-purple btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Stock Sociedad">
-                            <i class="bi bi-ui-checks"></i>
-                        </button>
-
                         <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
-                            class="read btn btn-success btn-sm"
+                            class="read btn swatch-purple btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
-                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                            <i class="bi bi-box-seam"></i>
                         </button>
 
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_costeador' material.id %}"
                             class="read btn btn-success btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Costeador">
-                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                            <i class="bi bi-calculator"></i>
                         </button>
-
+                        
+                        {% if cotizacion.estado < 3 %}
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_actualizar' material.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
                             data-keep-open="true"
@@ -165,7 +188,18 @@
                             <i class="bi-x-lg"></i>
                         </button>
 
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_sociedad' material.id %}"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                            data-keep-open="true"
+                            class="update btn swatch-teal btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Stock Sociedad">
+                            <i class="bi bi-ui-checks"></i>
+                        </button>
+                        {% endif %}
                     </td>
+                    {% for sociedad in material.CotizacionSociedad_cotizacion_venta_detalle.all %}
+                    <td class="text-end text-nowrap">{{ sociedad.cantidad|redondear|intcomma }}</td>
+                    {% endfor %}
                 </tr>
             {% endfor %}
         </tbody>
