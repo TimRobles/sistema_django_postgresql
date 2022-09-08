@@ -140,6 +140,10 @@ class CotizacionTerminosCondiciones(models.Model):
     class Meta:
         verbose_name = 'Cotizacion Terminos Condiciones'
         verbose_name_plural = 'Cotizaciones Terminos Condiciones'
+        ordering = [
+            'orden',
+            ]
+
 
     def __str__(self):
         return str(self.condicion)

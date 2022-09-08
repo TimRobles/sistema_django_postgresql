@@ -40,7 +40,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color):
 
     return t
 
-def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color):
+def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones):
     fuenteBase = "ComicNeue"
 
     data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color)
@@ -49,8 +49,14 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncab
     for texto in Texto:
         elementos.append(parrafoIzquierda(texto, fuenteBase, 10))
         elementos.append(vacio())
-    
+
     elementos.append(data_tabla)
+    elementos.append(vacio())
+
+
+    for condicion in condiciones:
+        elementos.append(parrafoIzquierda(condicion, fuenteBase, 10))
+        elementos.append(vacio())
 
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 

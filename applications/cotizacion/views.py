@@ -25,6 +25,7 @@ from .forms import (
 
 from .models import (
     CotizacionSociedad,
+    CotizacionTerminosCondiciones,
     CotizacionVenta,
     CotizacionVentaDetalle,
     PrecioListaMaterial,
@@ -656,10 +657,19 @@ class CotizacionVentaPdfView(View):
         razon_social = 'Razón Social: ' + str(obj.cliente)
         direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
         interlocutor = 'Interlocutor: ' + str(obj.cliente_interlocutor)
-        nro_documento = str(obj.cliente.tipo_documento) + ': ' + str(obj.cliente.numero_documento)
+        nro_documento = str(DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]) + ': ' + str(obj.cliente.numero_documento)
+        fecha_cotizacion = 'Fecha Cotizacion: ' + str(obj.fecha_cotizacion)
+        fecha_validez = 'Fecha Validez: ' + str(obj.fecha_validez)
 
         Texto = []
-        Texto.extend([nro_cotizacion, razon_social,direccion, interlocutor, nro_documento])
+        Texto.extend([  nro_cotizacion, 
+                        razon_social,
+                        direccion, 
+                        interlocutor, 
+                        nro_documento,
+                        fecha_cotizacion,
+                        fecha_validez,
+                        ])
 
         TablaEncabezado = [ 'Item',
                             'Descripción',
@@ -693,8 +703,14 @@ class CotizacionVentaPdfView(View):
             fila.append(detalle.total.quantize(Decimal('0.01')))
 
             TablaDatos.append(fila)
+        
+        terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
+        
+        condiciones = []
+        for condicion in terminos_condiciones:
+            condiciones.append(condicion)
 
-        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
