@@ -1,12 +1,13 @@
 from decimal import Decimal
 from django.shortcuts import render
+from django import forms
+from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import TipoCambio
-from applications.funciones import calculos_linea, numeroXn, obtener_totales, obtener_totales_soles
-from applications.importaciones import *
-from django import forms
 from applications.material.funciones import calidad, reservado, stock, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.cotizacion.pdf import generarCotizacionVenta
+from applications.funciones import calculos_linea, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio
 
 from applications.sociedad.models import Sociedad
 
@@ -21,7 +22,7 @@ from .forms import (
     CotizacionVentaMaterialDetalleUpdateForm,
     PrecioListaMaterialForm,
 )
-    
+
 from .models import (
     CotizacionSociedad,
     CotizacionVenta,
@@ -41,23 +42,25 @@ def CotizacionVentaTabla(request):
         template = 'cotizacion/cotizacion_venta/inicio_tabla.html'
         context = {}
         context['contexto_cotizacion_venta'] = CotizacionVenta.objects.all()
-                
+
         data['table'] = render_to_string(
             template,
             context,
             request=request
         )
-        return JsonResponse(data)   
+        return JsonResponse(data)
 
 
 def CotizacionVentaCreateView(request):
-    obj = CotizacionVenta.objects.create()
+    obj = CotizacionVenta.objects.create(
+        slug = slug_aleatorio(CotizacionVenta),
+    )
     return HttpResponseRedirect(reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':obj.id}))
 
 
 class CotizacionVentaVerView(TemplateView):
     template_name = "cotizacion/cotizacion_venta/detalle.html"
-    
+
     def get_context_data(self, **kwargs):
         obj = CotizacionVenta.objects.get(id = kwargs['id_cotizacion'])
         try:
@@ -135,13 +138,13 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
                 tipo_cambio = 1
         context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
         context['sociedades'] = sociedades
-        
+
         data['table'] = render_to_string(
             template,
             context,
             request=request
         )
-        return JsonResponse(data) 
+        return JsonResponse(data)
 
 
 class CotizacionVentaClienteView(BSModalUpdateView):
@@ -164,7 +167,7 @@ class CotizacionVentaClienteView(BSModalUpdateView):
         kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
         kwargs['interlocutor'] = cotizacion.cliente_interlocutor
         return kwargs
-        
+
     def get_context_data(self, **kwargs):
         context = super(CotizacionVentaClienteView, self).get_context_data(**kwargs)
         context['accion'] = "Elegir"
@@ -202,7 +205,7 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
     def form_valid(self, form):
-        
+
         if self.request.session['primero']:
             cotizacion = CotizacionVenta.objects.get(id = self.kwargs['cotizacion_id'])
             item = len(CotizacionVentaDetalle.objects.filter(cotizacion_venta = cotizacion))
@@ -254,10 +257,10 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
             sociedades = Sociedad.objects.all()
             for sociedad in sociedades:
                 cantidades[sociedad.abreviatura] = stock(obj.content_type, obj.id_registro, sociedad.id)
-            
+
             cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
 
-            for sociedad in sociedades:                
+            for sociedad in sociedades:
                 obj2, created = CotizacionSociedad.objects.get_or_create(
                     cotizacion_venta_detalle = obj,
                     sociedad = sociedad,
@@ -306,14 +309,14 @@ class CotizacionSociedadUpdateView(BSModalUpdateView):
         context['cantidades'] = "|".join(texto)
         context['item'] = self.object.id
         return context
-    
+
 
 def GuardarCotizacionSociedad(request, cantidad, item, abreviatura):
     if cantidad == 1 and item == 1 and abreviatura == 'a':
         return HttpResponse('Nada')
     cotizacion_venta_detalle = CotizacionVentaDetalle.objects.get(id=item)
     sociedad = Sociedad.objects.get(abreviatura = abreviatura)
-    
+
     obj, created = CotizacionSociedad.objects.get_or_create(
         cotizacion_venta_detalle = cotizacion_venta_detalle,
         sociedad = sociedad,
@@ -363,21 +366,21 @@ class CotizacionVentaCosteadorDetalleView(BSModalReadView):
             content_type = content_type,
             id_registro = id_registro,
         )
-        
+
         for detalle in orden_detalle:
             detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
             detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
-            
+
             comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
-            
+
             detalle.logistico = comprobante_compra.logistico
-            
+
             recepcion = RecepcionCompra.objects.get(
                 content_type = ContentType.objects.get_for_model(comprobante_compra),
                 id_registro = comprobante_compra.id,
                 estado = 1,
             )
-            
+
             detalle.fecha_recepcion = recepcion.fecha_recepcion
             detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
             valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.object.id_registro, self.object.content_type)
@@ -437,10 +440,10 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         sociedades = Sociedad.objects.all()
         for sociedad in sociedades:
             cantidades[sociedad.abreviatura] = stock(form.instance.content_type, form.instance.id_registro, sociedad.id)
-        
+
         cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
 
-        for sociedad in sociedades:                
+        for sociedad in sociedades:
             obj, created = CotizacionSociedad.objects.get_or_create(
                 cotizacion_venta_detalle = form.instance,
                 sociedad = sociedad,
@@ -471,7 +474,7 @@ class CotizacionVentaReservaView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-        
+
         detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
         reserva = TipoMovimiento.objects.get(codigo=118)
         for detalle in detalles:
@@ -520,7 +523,7 @@ class CotizacionVentaReservaAnularView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-        
+
         reserva = TipoMovimiento.objects.get(codigo=118)
         movimientos = MovimientosAlmacen.objects.filter(
                 tipo_movimiento = reserva,
@@ -558,7 +561,7 @@ class CotizacionVentaConfirmarView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-        
+
         detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
         # if self.object.estado == 3: #Si está reservado
         #     reserva = TipoMovimiento.objects.get(codigo=118)
@@ -608,7 +611,7 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-        
+
         reserva = TipoMovimiento.objects.get(codigo=118)
         movimientos = MovimientosAlmacen.objects.filter(
                 tipo_movimiento = reserva,
@@ -635,3 +638,65 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
         context['texto'] = "¿Está seguro de Anular la Confirmar de la cotización?"
         context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
         return context
+        
+
+class CotizacionVentaPdfView(View):
+    def get(self, request, *args, **kwargs):
+        color = COLOR_DEFAULT
+        titulo = 'Cotización'
+        vertical = False
+        logo = None
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+
+        obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
+
+        fecha=datetime.strftime(obj.fecha_cotizacion,'%d - %m - %Y')
+
+        nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion)
+        razon_social = 'Razón Social: ' + str(obj.cliente)
+        direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
+        interlocutor = 'Interlocutor: ' + str(obj.cliente_interlocutor)
+        nro_documento = str(obj.cliente.tipo_documento) + ': ' + str(obj.cliente.numero_documento)
+
+        Texto = []
+        Texto.extend([nro_cotizacion, razon_social,direccion, interlocutor, nro_documento])
+
+        TablaEncabezado = [ 'Item',
+                            'Descripción',
+                            'Unidad',
+                            'Cantidad',
+                            'Prec. Unit. sin IGV',
+                            'Prec. Unit. con IGV',
+                            'P. Final IGV',
+                            'Descuento',
+                            'Sub Total',
+                            'IGV',
+                            'Total',
+                            ]
+
+        cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+        TablaDatos = []
+        for detalle in cotizacion_venta_detalle:
+            fila = []
+
+            detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            fila.append(detalle.item)
+            fila.append(detalle.material)
+            fila.append(detalle.material.unidad_base)
+            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_unitario_sin_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_final_con_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.descuento.quantize(Decimal('0.01')))
+            fila.append(detalle.sub_total.quantize(Decimal('0.01')))
+            fila.append(detalle.igv.quantize(Decimal('0.01')))
+            fila.append(detalle.total.quantize(Decimal('0.01')))
+
+            TablaDatos.append(fila)
+
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta

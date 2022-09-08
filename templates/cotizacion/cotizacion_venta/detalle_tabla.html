@@ -18,6 +18,11 @@
     </button>
     {% endif %}
     <a href="{% url 'cotizacion_app:cotizacion_venta_inicio' %}" class="btn btn-primary">Confirmar</a>
+
+    {% if contexto_orden_compra.estado != 1 %}
+    <a href="{% url 'cotizacion_app:cotizacion_venta_pdf' cotizacion.slug  %}" target="_blank"><span class="btn btn-primary">PDF</span></a>
+    {% endif %}
+
 </h3>
 
 <div class="row mt-3">

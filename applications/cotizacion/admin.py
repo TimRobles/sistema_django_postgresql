@@ -55,6 +55,7 @@ class CotizacionVentaAdmin(admin.ModelAdmin):
         'total',
         'estado',
         'motivo_anulacion',
+        'slug',
         'created_at',
         'created_by',
         'updated_at',
