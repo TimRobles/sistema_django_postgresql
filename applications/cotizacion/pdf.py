@@ -16,11 +16,8 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color):
         fila.append(parrafoDerecha(dato[3], fuenteBase))
         fila.append(parrafoDerecha(dato[4], fuenteBase))
         fila.append(parrafoDerecha(dato[5], fuenteBase))        
-        fila.append(parrafoIzquierda(dato[6], fuenteBase))
-        fila.append(parrafoIzquierda(dato[7], fuenteBase))
-        fila.append(parrafoDerecha(dato[8], fuenteBase))
-        fila.append(parrafoDerecha(dato[9], fuenteBase))
-        fila.append(parrafoDerecha(dato[10], fuenteBase))
+        fila.append(parrafoDerecha(dato[6], fuenteBase))        
+        fila.append(parrafoDerecha(dato[7], fuenteBase))        
 
         data.append(fila)  
 
@@ -42,12 +39,10 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color):
     t._argW[6]=cmToPx(2)
     t._argW[7]=cmToPx(2)
     t._argW[8]=cmToPx(2)
-    t._argW[9]=cmToPx(2)
-    t._argW[10]=cmToPx(2)
-    t._argW[11]=cmToPx(2)
-    t._argW[12]=cmToPx(0.5)
+    t._argW[9]=cmToPx(0.5)
 
     return t
+
 
 def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones):
     fuenteBase = "ComicNeue"
@@ -61,7 +56,6 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncab
 
     elementos.append(data_tabla)
     elementos.append(vacio())
-
 
     for condicion in condiciones:
         elementos.append(parrafoIzquierda(condicion, fuenteBase, 9))

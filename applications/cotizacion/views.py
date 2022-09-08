@@ -651,8 +651,6 @@ class CotizacionVentaPdfView(View):
 
         obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
 
-        fecha=datetime.strftime(obj.fecha_cotizacion,'%d - %m - %Y')
-
         nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion)
         razon_social = 'Razón Social: ' + str(obj.cliente)
         direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
@@ -675,15 +673,12 @@ class CotizacionVentaPdfView(View):
                             'Descripción',
                             'Unidad',
                             'Cantidad',
-                            'Prec. Unit. sin IGV',
                             'Prec. Unit. con IGV',
-                            'P. Final IGV',
+                            'Prec. Final con IGV',
                             'Descuento',
-                            'Sub Total',
-                            'IGV',
                             'Total',
                             'Stock',
-                            'U',
+                            'u',
                             ]
 
         cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
@@ -696,12 +691,9 @@ class CotizacionVentaPdfView(View):
             fila.append(detalle.material)
             fila.append(detalle.material.unidad_base)
             fila.append(detalle.cantidad.quantize(Decimal('0.01')))
-            fila.append(detalle.precio_unitario_sin_igv.quantize(Decimal('0.01')))
             fila.append(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))
             fila.append(detalle.precio_final_con_igv.quantize(Decimal('0.01')))
             fila.append(detalle.descuento.quantize(Decimal('0.01')))
-            fila.append(detalle.sub_total.quantize(Decimal('0.01')))
-            fila.append(detalle.igv.quantize(Decimal('0.01')))
             fila.append(detalle.total.quantize(Decimal('0.01')))
 
             TablaDatos.append(fila)
