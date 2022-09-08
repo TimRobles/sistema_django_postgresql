@@ -682,6 +682,8 @@ class CotizacionVentaPdfView(View):
                             'Sub Total',
                             'IGV',
                             'Total',
+                            'Stock',
+                            'U',
                             ]
 
         cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
@@ -705,7 +707,6 @@ class CotizacionVentaPdfView(View):
             TablaDatos.append(fila)
         
         terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
-        
         condiciones = ['Condiciones: ']
         for condicion in terminos_condiciones:
             condiciones.append(condicion)

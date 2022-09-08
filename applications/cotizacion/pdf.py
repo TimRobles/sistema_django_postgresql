@@ -37,6 +37,15 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color):
     t._argW[0]=cmToPx(1)
     t._argW[2]=cmToPx(2)
     t._argW[3]=cmToPx(2)
+    t._argW[4]=cmToPx(2)
+    t._argW[5]=cmToPx(2)
+    t._argW[6]=cmToPx(2)
+    t._argW[7]=cmToPx(2)
+    t._argW[8]=cmToPx(2)
+    t._argW[9]=cmToPx(2)
+    t._argW[10]=cmToPx(2)
+    t._argW[11]=cmToPx(2)
+    t._argW[12]=cmToPx(0.5)
 
     return t
 
