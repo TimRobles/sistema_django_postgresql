@@ -706,7 +706,7 @@ class CotizacionVentaPdfView(View):
         
         terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
         
-        condiciones = []
+        condiciones = ['Condiciones: ']
         for condicion in terminos_condiciones:
             condiciones.append(condicion)
 

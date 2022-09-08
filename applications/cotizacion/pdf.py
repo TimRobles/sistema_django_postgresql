@@ -55,7 +55,7 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncab
 
 
     for condicion in condiciones:
-        elementos.append(parrafoIzquierda(condicion, fuenteBase, 10))
+        elementos.append(parrafoIzquierda(condicion, fuenteBase, 9))
         elementos.append(vacio())
 
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
