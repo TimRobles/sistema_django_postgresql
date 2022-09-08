@@ -46,12 +46,9 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncab
     data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, fuenteBase, color)
     
     elementos = []
-    elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
-    elementos.append(vacio())    
-    elementos.append(parrafoIzquierda(Texto[1], fuenteBase, 10))
-    elementos.append(vacio())    
-    elementos.append(parrafoIzquierda(Texto[2], fuenteBase, 10))
-    elementos.append(vacio())
+    for texto in Texto:
+        elementos.append(parrafoIzquierda(texto, fuenteBase, 10))
+        elementos.append(vacio())
     
     elementos.append(data_tabla)
 

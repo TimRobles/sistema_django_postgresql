@@ -495,9 +495,11 @@ class CotizacionVentaPdfView(View):
         nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion) 
         razon_social = 'Razón Social: ' + str(obj.cliente)
         direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
+        interlocutor = 'Interlocutor: ' + str(obj.cliente_interlocutor)
+        nro_documento = str(obj.cliente.tipo_documento) + ': ' + str(obj.cliente.numero_documento)
 
         Texto = []
-        Texto.extend([nro_cotizacion, razon_social,direccion])
+        Texto.extend([nro_cotizacion, razon_social,direccion, interlocutor, nro_documento])
 
         TablaEncabezado = [ 'Item',
                             'Descripción',
