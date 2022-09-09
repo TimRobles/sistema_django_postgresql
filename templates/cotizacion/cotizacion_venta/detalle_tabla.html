@@ -1,29 +1,67 @@
 {% load funciones_propias %}
 {% load humanize %}
 
-<h3>Detalle Cotización
-    <a href="{% url 'cotizacion_app:cotizacion_venta_inicio' %}" class="btn btn-primary">Regresar</a>
+<h3>Detalle Cotización</h3>
+
+<div class="row mt-3">
+    <div class="col-auto">
+        <a href="{% url 'cotizacion_app:cotizacion_venta_inicio' %}" class="btn btn-primary">Regresar</a>
+    </div>
+    
     {% if cotizacion.estado == 2 %}
-    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_reservar' cotizacion.id %}"
-        data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-        class="delete btn btn-primary">
-        Reservar
-    </button>
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_reservar' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-primary">
+            Reservar
+        </button>
+    </div>
     {% endif %}
     {% if cotizacion.estado == 3 %}
-    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_reserva' cotizacion.id %}"
-        data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-        class="delete btn btn-danger">
-        Anular Reserva
-    </button>
-    {% endif %}
-    <a href="{% url 'cotizacion_app:cotizacion_venta_inicio' %}" class="btn btn-primary">Confirmar</a>
-
-    {% if contexto_orden_compra.estado != 1 %}
-    <a href="{% url 'cotizacion_app:cotizacion_venta_pdf' cotizacion.slug  %}" target="_blank"><span class="btn btn-primary">PDF</span></a>
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_reserva' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-danger">
+            Anular Reserva
+        </button>
+    </div>
     {% endif %}
 
-</h3>
+    {% if cotizacion.estado < 3 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_observacion' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-primary">
+            Observaciones
+        </button>
+    </div>
+    {% endif %}
+
+    {% if cotizacion.estado != 1 %}
+    <div class="col-auto">
+        <a href="{% url 'cotizacion_app:cotizacion_venta_pdf' cotizacion.slug  %}" target="_blank" class="btn btn-primary">PDF</a>
+    </div>
+    {% endif %}
+
+    {% if cotizacion.estado > 1 and cotizacion.estado < 4 %}
+    <div class="col-auto ms-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-primary">
+            Confirmar
+        </button>
+    </div>
+    {% endif %}
+    {% if cotizacion.estado == 3 %}
+    <div class="col-auto ms-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-danger">
+            Anular Confirmación
+        </button>
+    </div>
+    {% endif %}
+</div>
 
 <div class="row mt-3">
     <div class="col-lg-6 table-responsive mb-3">
@@ -106,7 +144,68 @@
             </tbody>
         </table>
     </div>
+</div>
 
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Línea de crédito:</th>
+                    <td>{{ linea_credito }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Deuda:</th>
+                    <td>{{ deuda }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Disponible:</th>
+                    <td>{{ disponible }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Línea de crédito:</th>
+                    <td>{{ linea_credito }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Deuda:</th>
+                    <td>{{ deuda }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Disponible:</th>
+                    <td>{{ cotizacion.descuento }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-3">
+    {% for sociedad in sociedades %}
+    <div class="col-lg-6 table-responsive mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ sociedad.color }};">OBSERVACIONES {{ sociedad.razon_social }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if sociedad.observacion %}
+                        {{ sociedad.observacion }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
 </div>
 
 <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_agregar_material' cotizacion.id %}"
@@ -121,19 +220,19 @@
         <thead>
             <tr>
                 <th>Item</th>
-                <th>Material</th>
+                <th style="min-width: 500px;">Material</th>
                 <th>Unidad</th>
                 <th class="text-end">Cantidad</th>
-                <th>Prec. Unit. sin IGV </th>
-                <th>Prec. Unit. con IGV </th>
-                <th>Prec. Final con IGV</th>
+                <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
+                <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
+                <th class="text-nowrap table-secondary">Prec. Final<br>con IGV</th>
                 <th>Descuento</th>
-                <th>Sub Total</th>
+                <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
-                <th>Vendible</th>
-                <th>Calidad</th>
-                <th>Stock</th>
+                <th class="table-primary">Vendible</th>
+                <th class="table-primary">Calidad</th>
+                <th class="table-primary">Stock</th>
                 <th class="text-center">Acciones</th>
                 {% for sociedad in sociedades %}
                 <th class="text-center">{{ sociedad.abreviatura }}</th>
@@ -144,17 +243,17 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td>{{ material.material.descripcion_venta }}</td>
-                    <td>{{ material.material.unidad_base }}</td>
+                    <td style="min-width: 500px;">{{ material.material.descripcion_venta }}</td>
+                    <td class="text-nowrap">{{ material.material.unidad_base }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">$ {{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-secondary">$ {{ material.precio_final_con_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.descuento|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.sub_total|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.total|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">
+                    <td class="text-end text-nowrap table-primary">
                         {{ material.material.vendible|redondear|intcomma }}
                         {% if material.material.reservado %}
                         <br>
@@ -163,8 +262,8 @@
                         </span>
                         {% endif %}
                     </td>
-                    <td class="text-end text-nowrap">{{ material.material.calidad|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ material.material.stock|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.calidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.stock|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
                             class="read btn swatch-purple btn-sm"
@@ -210,7 +309,16 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="10" class="text-end">Descuento Global:</td>
+                <td colspan="10" class="text-end">
+                    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_descuento_global' cotizacion.id %}"
+                        data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Descuento Global">
+                        <i class="bi bi-percent"></i>
+                    </button>
+                    Descuento Global:
+                </td>
                 <td class="text-end text-nowrap">$ {{ totales.descuento_global|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global|redondear|intcomma }}</td>
                 <td colspan="4"></td>

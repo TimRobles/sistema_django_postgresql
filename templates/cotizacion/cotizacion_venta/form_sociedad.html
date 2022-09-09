@@ -59,14 +59,14 @@
     
     {% for sociedad in sociedades %}
     <div class="flex-nowrap mt-3">
-        <label class="input-group-text text-wrap" for="{{ item }}">{{ sociedad }}</label>
-        <input class="form-control text-end" type="number" name="{{ item }}" id="{{ sociedad.abreviatura }}">
+        <label class="input-group-text text-wrap fondo-personalizado" for="{{ item }}" style="--color-fondo: {{ sociedad.color }};">{{ sociedad }}</label>
+        <input class="form-control text-end" type="float" name="{{ item }}" id="{{ sociedad.abreviatura }}">
     </div>
     {% endfor %}
 
     <div class="input-group flex-nowrap mt-3">
         <label class="input-group-text" for="pendiente">Pendiente</label>
-        <input class="form-control text-end" type="number" name="pendiente" id="pendiente" disabled>
+        <input class="form-control text-end" type="float" name="pendiente" id="pendiente" disabled>
     </div>
     
     <div class="modal-footer">

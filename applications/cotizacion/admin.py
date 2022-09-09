@@ -1,10 +1,12 @@
 from django.contrib import admin
 from .models import (
     ConfirmacionVentaDetalle,
+    CotizacionDescuentoGlobal,
     CotizacionSociedad,
     PrecioListaMaterial,
     CotizacionVenta,
     CotizacionVentaDetalle,
+    CotizacionObservacion,
     CotizacionOrdenCompra,
     CotizacionTerminosCondiciones,
     ConfirmacionVenta,
@@ -47,11 +49,6 @@ class CotizacionVentaAdmin(admin.ModelAdmin):
         'cliente_interlocutor',
         'fecha_cotizacion',
         'fecha_validez',
-        'tipo_cambio',
-        'observaciones_adicionales',
-        'condiciones_pago',
-        'tipo_venta',
-        'descuento_global',
         'total',
         'estado',
         'motivo_anulacion',
@@ -148,6 +145,9 @@ class ConfirmacionVentaAdmin(admin.ModelAdmin):
         'sociedad',
         'fecha_confirmacion',
         'tipo_cambio',
+        'observacion',
+        'condiciones_pago',
+        'tipo_venta',
         'estado',
         'motivo_anulacion',
         'created_at',
@@ -192,6 +192,46 @@ class CotizacionSociedadAdmin(admin.ModelAdmin):
         'cotizacion_venta_detalle',
         'sociedad',
         'cantidad',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',      
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(CotizacionDescuentoGlobal)
+class CotizacionDescuentoGlobal(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'cotizacion_venta',
+        'sociedad',
+        'descuento_global',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',      
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(CotizacionObservacion)
+class CotizacionObservacion(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'cotizacion_venta',
+        'sociedad',
+        'observacion',
         'created_at',
         'created_by',
         'updated_at',

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from applications.cotizacion.models import CotizacionObservacion
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 
 def vendible(content_type, id_registro, id_sociedad):
@@ -58,3 +59,10 @@ def calidad(content_type, id_registro, id_sociedad):
 
 def stock(content_type, id_registro, id_sociedad):
     return vendible(content_type, id_registro, id_sociedad) + calidad(content_type, id_registro, id_sociedad) - reservado(content_type, id_registro, id_sociedad)
+
+def observacion(cotizacion, sociedad):
+    busqueda = CotizacionObservacion.objects.get(
+        cotizacion_venta = cotizacion,
+        sociedad = sociedad,
+    )
+    return busqueda.observacion

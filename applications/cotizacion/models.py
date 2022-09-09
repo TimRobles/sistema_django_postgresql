@@ -44,11 +44,6 @@ class CotizacionVenta(models.Model):
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor', blank=True, null=True)
     fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_validez = models.DateField('Fecha Validez', auto_now=False, auto_now_add=False, blank=True, null=True)
-    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='CotizacionVenta_tipo_cambio', blank=True, null=True)
-    observaciones_adicionales = models.TextField(blank=True, null=True)
-    condiciones_pago = models.TextField(blank=True, null=True)
-    tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
-    descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
@@ -74,6 +69,10 @@ class CotizacionVenta(models.Model):
     @property
     def fecha(self):
         return self.fecha_cotizacion
+
+    @property
+    def descuento_global(self):
+        return self.CotizacionDescuentoGlobal_cotizacion_venta.all().aggregate(models.Sum('descuento_global'))['descuento_global__sum']
 
     def __str__(self):
         return str(self.id)
@@ -103,6 +102,7 @@ class CotizacionVentaDetalle(models.Model):
         verbose_name = 'Cotizacion Venta Detalle'
         verbose_name_plural = 'Cotizaciones Venta Detalle'
         ordering = ['item',]
+
 
     def __str__(self):
         return str(self.id)
@@ -154,6 +154,9 @@ class ConfirmacionVenta(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     fecha_confirmacion = models.DateField('Fecha Confirmación', auto_now=False, auto_now_add=False)
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ConfirmacionVenta_tipo_cambio')
+    observacion = models.TextField(blank=True, null=True)
+    condiciones_pago = models.TextField(blank=True, null=True)
+    tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
     estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA)
     motivo_anulacion = models.TextField()
 
@@ -213,6 +216,42 @@ class CotizacionSociedad(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta_detalle, self.sociedad, self.cantidad)
+
+
+class CotizacionDescuentoGlobal(models.Model):
+    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionDescuentoGlobal_cotizacion_venta')
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionDescuentoGlobal_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionDescuentoGlobal_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Cotizacion Descuento Global'
+        verbose_name_plural = 'Cotizacion Descuento Globales'
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.descuento_global)
+
+
+class CotizacionObservacion(models.Model):
+    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionObservacion_cotizacion_venta')
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    observacion = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionObservacion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionObservacion_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Cotizacion Observación'
+        verbose_name_plural = 'Cotizacion Observaciones'
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.observacion)
 
 
 def cotizacion_venta_material_detalle_post_delete(sender, instance, *args, **kwargs):

@@ -1,3 +1,4 @@
+from applications.datos_globales.managers import TipoCambioManager
 from applications.variables import ESTADOS
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -489,13 +490,15 @@ class ProductoSunat(models.Model):
 class TipoCambio(models.Model):
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
     tipo_cambio_venta = models.DecimalField('Tipo de Cambio Venta', max_digits=4, decimal_places=3)
-    tipo_cambio_compra = models.DecimalField('Tipo de Cambio Compra', max_digits=4, decimal_places=3)
+    tipo_cambio_compra = models.DecimalField('Tipo de Cambio Compra', max_digits=4, decimal_places=3, default= 0)
     tipo_cambio_venta_sunat = models.DecimalField('Tipo de Cambio Venta Sunat', max_digits=4, decimal_places=3, default= 0)
     tipo_cambio_compra_sunat = models.DecimalField('Tipo de Cambio Compra Sunat', max_digits=4, decimal_places=3, default= 0)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambio_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambio_updated_by', editable=False)
+
+    objects = TipoCambioManager()
 
     class Meta:
         verbose_name = 'Tipo de Cambio'
@@ -563,4 +566,23 @@ class ImpuestoGeneralVentas(models.Model):
         ]
 
     def __str__(self):     
-        return self.monto
+        return str(self.monto)
+
+
+class ImpuestoPromocionMunicipal(models.Model):
+    fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False)
+    monto = models.DecimalField('Monto', max_digits=4, decimal_places=2)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ImpuestoPromocionMunicipal_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ImpuestoPromocionMunicipal_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Impuesto de Promoción Municipal'
+        verbose_name_plural = 'Impuesto de Promoción Municipal'
+        ordering = [
+            '-fecha_inicio',
+        ]
+
+    def __str__(self):     
+        return str(self.monto)
