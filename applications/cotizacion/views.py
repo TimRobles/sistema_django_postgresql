@@ -55,7 +55,10 @@ def CotizacionVentaTabla(request):
 def CotizacionVentaCreateView(request):
     obj = CotizacionVenta.objects.create(
         slug = slug_aleatorio(CotizacionVenta),
+        created_by=request.user,
+        updated_by=request.user,
     )
+
     return HttpResponseRedirect(reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':obj.id}))
 
 
