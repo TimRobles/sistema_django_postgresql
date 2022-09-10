@@ -12,17 +12,25 @@ urlpatterns = [
     path('cotizacion-venta/ver/tabla/<int:id_cotizacion>/', views.CotizacionVentaVerTabla, name='cotizacion_venta_ver_tabla'),
     path('cotizacion-venta/ver/agregar-material/<int:cotizacion_id>/', views.CotizacionVentaMaterialDetalleView.as_view(), name='cotizacion_venta_agregar_material'),
     path('cotizacion-venta/ver/cliente/<pk>/', views.CotizacionVentaClienteView.as_view(), name='cotizacion_venta_cliente'),
+    
+    path('cotizacion-venta/descuento-global/<pk>/', views.CotizacionDescuentoGlobalUpdateView.as_view(), name='cotizacion_venta_descuento_global'),
+    path('cotizacion-venta/descuento-global/guardar/<str:monto>/<int:id_cotizacion>/<str:abreviatura>/', views.GuardarCotizacionDescuentoGlobal, name='guardar_cotizacion_venta_descuento_global'),
+
+    path('cotizacion-venta/observacion/<pk>/', views.CotizacionObservacionUpdateView.as_view(), name='cotizacion_venta_observacion'),
+    path('cotizacion-venta/observacion/guardar/<str:texto>/<int:id_cotizacion>/<str:abreviatura>/', views.GuardarCotizacionObservacion, name='guardar_cotizacion_venta_observacion'),
 
     path('cotizacion-cliente-interlocutor/<int:id_cliente>/', views.ClienteInterlocutorView, name='cotizacion_cliente_interlocutor'),
 
-
     path('cotizacion-venta/sociedad/<pk>/', views.CotizacionSociedadUpdateView.as_view(), name='cotizacion_venta_sociedad'),
-    path('cotizacion-venta/sociedad/guardar/<int:cantidad>/<int:item>/<str:abreviatura>/', views.GuardarCotizacionSociedad, name='guardar_cotizacion_venta_sociedad'),
+    path('cotizacion-venta/sociedad/guardar/<str:cantidad>/<int:item>/<str:abreviatura>/', views.GuardarCotizacionSociedad, name='guardar_cotizacion_venta_sociedad'),
 
     path('cotizacion-venta/guardar/<pk>/', views.CotizacionVentaGuardarView.as_view(), name='cotizacion_venta_guardar'),
     
     path('cotizacion-venta/reservar/<pk>/', views.CotizacionVentaReservaView.as_view(), name='cotizacion_venta_reservar'),
     path('cotizacion-venta/anular-reserva/<pk>/', views.CotizacionVentaReservaAnularView.as_view(), name='cotizacion_venta_anular_reserva'),
+
+    path('cotizacion-venta/confirmar/<pk>/', views.CotizacionVentaConfirmarView.as_view(), name='cotizacion_venta_confirmar'),
+    path('cotizacion-venta/anular-confirmar/<pk>/', views.CotizacionVentaConfirmarAnularView.as_view(), name='cotizacion_venta_anular_confirmar'),
 
     path('cotizacion-venta/costeador/<pk>/', views.CotizacionVentaCosteadorDetalleView.as_view(), name='cotizacion_venta_costeador'),
     path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_eliminar'),

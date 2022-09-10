@@ -1,10 +1,13 @@
 inputs = document.getElementsByTagName('input')
 
 function inicio() {
-    cantidades = document.getElementById('cantidades').innerHTML;
-    for (let index = 2; index < inputs.length-1; index++) {
-        const element = inputs[index];
-        element.value = cantidades.split('|')[index-2]
+    if (document.getElementById('cantidades')) {
+        cantidades = document.getElementById('cantidades').innerHTML;
+        for (let index = 2; index < inputs.length-1; index++) {
+            const element = inputs[index];
+            element.value = cantidades.split('|')[index-2]
+        }
+        calcular();
     }
 }
 
@@ -16,7 +19,7 @@ function calcular() {
         contador++;
         if (contador == 1) {
             if (element.value != "") {
-                cantidad = parseInt(element.value);
+                cantidad = parseFloat(element.value);
             } else {
                 cantidad = 0;
             }
@@ -24,7 +27,7 @@ function calcular() {
             // Nada
         }else {
             if (element.value != "") {
-                suma = suma + parseInt(element.value);
+                suma = suma + parseFloat(element.value);
             } else {
                 suma = suma + 0;
             }
@@ -41,7 +44,6 @@ for (let index = 1; index < inputs.length; index++) {
 
 $('#modal').unbind().on('shown.bs.modal', function (e) {
     inicio();
-    calcular();
 });
 
 function guardar() {
@@ -56,7 +58,7 @@ function guardar() {
             // Nada
         }else {
             if (element.value != "") {
-                cantidad = parseInt(element.value);
+                cantidad = parseFloat(element.value);
             } else {
                 cantidad = 0;
             }

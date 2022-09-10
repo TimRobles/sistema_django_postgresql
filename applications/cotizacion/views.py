@@ -4,10 +4,10 @@ from django import forms
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import TipoCambio
-from applications.material.funciones import calidad, reservado, stock, vendible
+from applications.material.funciones import calidad, observacion, reservado, stock, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
-from applications.funciones import calculos_linea, calculos_totales, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
 
 from applications.sociedad.models import Sociedad
 
@@ -16,14 +16,18 @@ from applications.recepcion_compra.models import RecepcionCompra
 
 from .forms import (
     CotizacionVentaClienteForm,
+    CotizacionVentaDescuentoGlobalForm,
     CotizacionVentaDetalleForm,
     CotizacionVentaForm,
     CotizacionVentaMaterialDetalleForm,
     CotizacionVentaMaterialDetalleUpdateForm,
+    CotizacionVentaObservacionForm,
     PrecioListaMaterialForm,
 )
 
 from .models import (
+    CotizacionDescuentoGlobal,
+    CotizacionObservacion,
     CotizacionSociedad,
     CotizacionTerminosCondiciones,
     CotizacionVenta,
@@ -58,7 +62,17 @@ def CotizacionVentaCreateView(request):
         created_by=request.user,
         updated_by=request.user,
     )
-
+    sociedades = Sociedad.objects.all()
+    
+    for sociedad in sociedades:
+        obj2 = CotizacionDescuentoGlobal.objects.create(
+            cotizacion_venta = obj,
+            sociedad = sociedad,
+        )
+        obj3 = CotizacionObservacion.objects.create(
+            cotizacion_venta = obj,
+            sociedad = sociedad,
+        )
     return HttpResponseRedirect(reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':obj.id}))
 
 
@@ -67,15 +81,9 @@ class CotizacionVentaVerView(TemplateView):
 
     def get_context_data(self, **kwargs):
         obj = CotizacionVenta.objects.get(id = kwargs['id_cotizacion'])
-        try:
-            tipo_cambio_hoy = TipoCambio.objects.filter(fecha=date.today()).latest('updated_at').tipo_cambio_venta
-        except:
-            tipo_cambio_hoy = None
-        try:
-            tipo_cambio = TipoCambio.objects.filter(fecha=obj.fecha_cotizacion).latest('updated_at').tipo_cambio_venta
-        except:
-            tipo_cambio = None
-
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
+        
         materiales = None
         try:
             materiales = obj.CotizacionVentaDetalle_cotizacion_venta.all()
@@ -85,7 +93,9 @@ class CotizacionVentaVerView(TemplateView):
         except:
             pass
 
-        sociedades = Sociedad.objects.all()
+        sociedades = Sociedad.objects.filter(estado_sunat=1)
+        for sociedad in sociedades:
+            sociedad.observacion = observacion(obj, sociedad)
 
         context = super(CotizacionVentaVerView, self).get_context_data(**kwargs)
         context['cotizacion'] = obj
@@ -93,11 +103,7 @@ class CotizacionVentaVerView(TemplateView):
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
         context['tipo_cambio'] = tipo_cambio
         context['totales'] = obtener_totales(CotizacionVenta.objects.get(id=self.kwargs['id_cotizacion']))
-        if not tipo_cambio:
-            if tipo_cambio_hoy:
-                tipo_cambio = tipo_cambio_hoy
-            else:
-                tipo_cambio = 1
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
         context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
         context['sociedades'] = sociedades
 
@@ -109,15 +115,9 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
     if request.method == 'GET':
         template = 'cotizacion/cotizacion_venta/detalle_tabla.html'
         obj = CotizacionVenta.objects.get(id=id_cotizacion)
-        try:
-            tipo_cambio_hoy = TipoCambio.objects.filter(fecha=date.today()).latest('updated_at').tipo_cambio_venta
-        except:
-            tipo_cambio_hoy = None
-        try:
-            tipo_cambio = TipoCambio.objects.filter(fecha=obj.fecha_cotizacion).latest('updated_at').tipo_cambio_venta
-        except:
-            tipo_cambio = None
-
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
+        
         materiales = None
         try:
             materiales = obj.CotizacionVentaDetalle_cotizacion_venta.all()
@@ -135,11 +135,7 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
         context['tipo_cambio'] = tipo_cambio
         context['totales'] = obtener_totales(obj)
-        if not tipo_cambio:
-            if tipo_cambio_hoy:
-                tipo_cambio = tipo_cambio_hoy
-            else:
-                tipo_cambio = 1
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
         context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
         context['sociedades'] = sociedades
 
@@ -326,6 +322,82 @@ def GuardarCotizacionSociedad(request, cantidad, item, abreviatura):
         sociedad = sociedad,
     )
     obj.cantidad = cantidad
+    obj.save()
+    return HttpResponse('Fin')
+
+
+class CotizacionDescuentoGlobalUpdateView(BSModalUpdateView):
+    model = CotizacionVenta
+    template_name = "cotizacion/cotizacion_venta/form_descuento.html"
+    form_class = CotizacionVentaDescuentoGlobalForm
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionDescuentoGlobalUpdateView, self).get_context_data(**kwargs)
+        texto = []
+        for sociedad in self.object.CotizacionDescuentoGlobal_cotizacion_venta.all():
+            texto.append(str(sociedad.descuento_global))
+
+        sociedades = Sociedad.objects.all()
+        
+        context['titulo'] = "Actualizar Descuento Global"
+        context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_descuento_global', kwargs={'monto':1,'id_cotizacion':1,'abreviatura':"a",})[:-6]
+        context['sociedades'] = sociedades
+        context['descuentos'] = "|".join(texto)
+        context['id_cotizacion'] = self.object.id
+        context['igv'] = igv()
+        return context
+
+
+def GuardarCotizacionDescuentoGlobal(request, monto, id_cotizacion, abreviatura):
+    if monto == 1 and id_cotizacion == 1 and abreviatura == 'a':
+        return HttpResponse('Nada')
+    cotizacion_venta = CotizacionVenta.objects.get(id=id_cotizacion)
+    sociedad = Sociedad.objects.get(abreviatura = abreviatura)
+
+    obj, created = CotizacionDescuentoGlobal.objects.get_or_create(
+        cotizacion_venta = cotizacion_venta,
+        sociedad = sociedad,
+    )
+    obj.descuento_global = monto
+    obj.save()
+    return HttpResponse('Fin')
+
+
+class CotizacionObservacionUpdateView(BSModalUpdateView):
+    model = CotizacionVenta
+    template_name = "cotizacion/cotizacion_venta/form_observacion.html"
+    form_class = CotizacionVentaObservacionForm
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionObservacionUpdateView, self).get_context_data(**kwargs)
+        texto = []
+        for sociedad in self.object.CotizacionObservacion_cotizacion_venta.all():
+            texto.append(str(sociedad.observacion))
+
+        sociedades = Sociedad.objects.all()
+        
+        context['titulo'] = "Actualizar Observaciones"
+        context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_observacion', kwargs={'texto':1,'id_cotizacion':1,'abreviatura':"a",})[:-6]
+        context['sociedades'] = sociedades
+        context['observaciones'] = "|".join(texto)
+        context['id_cotizacion'] = self.object.id
+        context['igv'] = igv()
+        return context
+
+
+def GuardarCotizacionObservacion(request, monto, id_cotizacion, abreviatura):
+    if monto == 1 and id_cotizacion == 1 and abreviatura == 'a':
+        return HttpResponse('Nada')
+    cotizacion_venta = CotizacionVenta.objects.get(id=id_cotizacion)
+    sociedad = Sociedad.objects.get(abreviatura = abreviatura)
+
+    obj, created = CotizacionObservacion.objects.get_or_create(
+        cotizacion_venta = cotizacion_venta,
+        sociedad = sociedad,
+    )
+    obj.observacion = monto
     obj.save()
     return HttpResponse('Fin')
 
@@ -567,6 +639,10 @@ class CotizacionVentaConfirmarView(DeleteView):
         self.object = self.get_object()
 
         detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
+        print(detalles)
+
+
+
         # if self.object.estado == 3: #Si está reservado
         #     reserva = TipoMovimiento.objects.get(codigo=118)
         #     for detalle in detalles:

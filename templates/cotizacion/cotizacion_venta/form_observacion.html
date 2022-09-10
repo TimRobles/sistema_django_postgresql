@@ -1,0 +1,28 @@
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+<form action="" method="post" id="formulario-sociedad">
+    {% csrf_token %}
+    
+    {% for sociedad in sociedades %}
+    <div class="flex-nowrap mt-3">
+        <label class="input-group-text text-wrap fondo-personalizado" for="{{ id_cotizacion }}" style="--color-fondo: {{ sociedad.color }};">{{ sociedad }}</label>
+        <textarea class="form-control text-end" name="{{ id_cotizacion }}" id="{{ sociedad.abreviatura }}">
+    </div>
+    {% endfor %}
+    
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" id="guardar_formulario">Guardar</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+    <span id="url_guardar" hidden>{{ url_guardar }}</span>
+    <span id="observaciones" hidden>{{ observaciones }}</span>
+</form>
+{% endblock content %}    
+
+{% block js %}
+    <script src="{% static 'js/cotizacion/cotizacion_venta/form_observacion.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}

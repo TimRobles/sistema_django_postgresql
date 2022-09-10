@@ -1,3 +1,4 @@
+from datetime import date
 import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
@@ -150,9 +151,9 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
     descuento_unitario = (precio_unitario_sin_igv - precio_final_sin_igv).quantize(Decimal('0.0000000001'))
     descuento = (descuento_unitario * Decimal(cantidad)).quantize(Decimal('0.01'))
 
-    subtotal = (Decimal(cantidad) * precio_unitario_sin_igv - descuento).quantize(Decimal('0.01'))
-    igv = (subtotal * Decimal(valor_igv)).quantize(Decimal('0.01'))
-    total = (subtotal + igv).quantize(Decimal('0.01'))
+    total = (Decimal(cantidad) * precio_final_con_igv).quantize(Decimal('0.01'))
+    subtotal = (total / (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
+    igv = (total - subtotal).quantize(Decimal('0.01'))
 
     respuesta['precio_unitario_sin_igv'] = precio_unitario_sin_igv
     respuesta['descuento'] = descuento
@@ -167,7 +168,6 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     respuesta = {}
 
     suma_igv = Decimal('0.00')
-    descuento_global = Decimal('0.00')
     total_descuento = Decimal('0.00')
     total_gravada = Decimal('0.00')
     total_inafecta = Decimal('0.00')
@@ -188,6 +188,7 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
             total_exonerada += resultado_linea['subtotal']
     
     total_descuento += descuento_global
+    total_gravada -= descuento_global
     total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
     if anticipo:
         total_anticipo = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
@@ -271,3 +272,20 @@ def obtener_totales_soles(resultado, tipo_cambio):
 
 def numeroXn(numero, n):
     return '0'*(n-len(str(numero))) + str(numero)
+
+
+def igv(fecha=date.today()):
+    igv = applications.datos_globales.models.ImpuestoGeneralVentas.objects.filter(fecha_inicio__lte=fecha)
+    ipm = applications.datos_globales.models.ImpuestoPromocionMunicipal.objects.filter(fecha_inicio__lte=fecha)
+    return igv[0].monto + ipm[0].monto
+
+
+def tipo_de_cambio(cambio1, cambio2):
+    if cambio1 and cambio2:
+        return max(cambio1, cambio2)
+    elif cambio1:
+        return cambio1
+    elif cambio2:
+        return cambio2
+    else:
+        return 1
