@@ -181,7 +181,7 @@ class Material(models.Model):
             return ""
 
     @property
-    def vendible(self):
+    def disponible(self):
         disponible = TipoStock.objects.get(codigo=3)
         total = Decimal('0.00')
         try:
@@ -199,6 +199,10 @@ class Material(models.Model):
         return total
 
     @property
+    def vendible(self):
+        return self.disponible - self.reservado - self.confirmado
+
+    @property
     def reservado(self):
         reservado = TipoStock.objects.get(codigo=16)
         total = Decimal('0.00')
@@ -208,6 +212,24 @@ class Material(models.Model):
                             id_registro_producto = self.id,
                         ).filter(
                             tipo_stock = reservado,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def confirmado(self):
+        confirmado = TipoStock.objects.get(codigo=17)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = confirmado,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador
@@ -237,7 +259,7 @@ class Material(models.Model):
 
     @property
     def stock(self):
-        return self.vendible + self.calidad - self.reservado
+        return self.vendible + self.calidad
 
     def __str__(self):
         return self.descripcion_venta

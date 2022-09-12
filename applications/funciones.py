@@ -189,7 +189,8 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     
     total_descuento += descuento_global
     total_gravada -= descuento_global
-    total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
+    total_igv = suma_igv
+    # total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
     if anticipo:
         total_anticipo = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
     else:
@@ -235,6 +236,8 @@ def obtener_totales(cabecera):
         detalles = cabecera.ComprobanteCompraActivoDetalle_comprobante_compra_activo.all()
     elif hasattr(cabecera, 'CotizacionVentaDetalle_cotizacion_venta'):
         detalles = cabecera.CotizacionVentaDetalle_cotizacion_venta.all()
+    elif hasattr(cabecera, 'ConfirmacionVentaDetalle_confirmacion_venta'):
+        detalles = cabecera.ConfirmacionVentaDetalle_confirmacion_venta.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:

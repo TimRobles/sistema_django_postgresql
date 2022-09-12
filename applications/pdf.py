@@ -1,4 +1,6 @@
 import os, io
+from django.conf import settings
+import urllib.parse
 
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -11,6 +13,9 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 rutaBase=os.getcwd()
+
+def ruta_media(ruta):
+    return settings.MEDIA_ROOT + '/' + urllib.parse.unquote(ruta.replace(settings.MEDIA_URL, ''))
 
 fuentes = [
     'ComicNeue-Bold',
@@ -104,7 +109,7 @@ def hipervinculo(ruta, texto):
     return '<a href="%s" color="blue"><u>%s</u></a>' % (ruta, texto)
 
 def insertarImagen(ruta, ancho, alto):
-    return '<img src="%s" width="%s" height="%s" valign="top"/>' % (ruta, str(cmToPx(ancho)), str(cmToPx(alto)))
+    return '<img src="%s" width="%s" height="%s" valign="top"/>' % (ruta_media(ruta), str(cmToPx(ancho)), str(cmToPx(alto)))
     
 def insertarImagenGrande(ruta, ancho=0, alto=0):
     I = Image(ruta)

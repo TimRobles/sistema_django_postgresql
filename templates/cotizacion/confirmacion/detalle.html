@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Cotización Confirmada
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'cotizacion/confirmacion/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+

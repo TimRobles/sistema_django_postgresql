@@ -144,3 +144,7 @@ class PrecioListaMaterialForm (BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class CotizacionVentaPdfsForm(BSModalForm):
+    pass
+
+    # TODO: Define form fields here

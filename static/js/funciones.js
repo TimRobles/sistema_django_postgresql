@@ -158,10 +158,17 @@ $(function () {
 
     function readModalForm() {
         $(".read").each(function () {
-            $(this).modalForm({
-                formURL: $(this).data("form-url"),
-                modalID: "#modal-xl-detail"
-            });
+            if ($(this).data("small")) {
+                $(this).modalForm({
+                    formURL: $(this).data("form-url"),
+                    modalID: "#modal-detail"
+                });
+            }else{
+                $(this).modalForm({
+                    formURL: $(this).data("form-url"),
+                    modalID: "#modal-xl-detail"
+                });
+            };
         });
     }
     readModalForm();

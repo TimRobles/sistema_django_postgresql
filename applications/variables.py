@@ -184,6 +184,12 @@ ESTADOS_COTIZACION_VENTA = (
     (8, 'DE BAJA'),
     )
 
+ESTADOS_CONFIRMACION = (
+    (1, 'PENDIENTE'),
+    (2, 'FINALIZADO'),
+    (3, 'DE BAJA'),
+    )
+
 
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'

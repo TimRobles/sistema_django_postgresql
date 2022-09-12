@@ -5,7 +5,7 @@
             <th>Cliente</th>
             <th>Fecha Cotización</th>
             <th>Fecha Validez</th>
-            <th>Total</th>
+            <th class="text-end">Total</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
         </tr>
@@ -21,7 +21,7 @@
                 <td>{{ cotizacion.cliente }}</td>
                 <td>{{ cotizacion.fecha_cotizacion|date:'d/m/Y' }}</td>
                 <td>{{ cotizacion.fecha_validez|date:'d/m/Y' }}</td>
-                <td>{{ cotizacion.total }}</td>
+                <td class="text-end">$ {{ cotizacion.total }}</td>
                 <td>{{ cotizacion.get_estado_display }}</td>
                 <td class="text-center">
                     <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id %}"

@@ -22,10 +22,13 @@ from .forms import (
     CotizacionVentaMaterialDetalleForm,
     CotizacionVentaMaterialDetalleUpdateForm,
     CotizacionVentaObservacionForm,
+    CotizacionVentaPdfsForm,
     PrecioListaMaterialForm,
 )
 
 from .models import (
+    ConfirmacionVenta,
+    ConfirmacionVentaDetalle,
     CotizacionDescuentoGlobal,
     CotizacionObservacion,
     CotizacionSociedad,
@@ -38,7 +41,7 @@ from .models import (
 
 class CotizacionVentaListView(ListView):
     model = CotizacionVenta
-    template_name = ('cotizacion/cotizacion_venta/inicio.html')
+    template_name = 'cotizacion/cotizacion_venta/inicio.html'
     context_object_name = 'contexto_cotizacion_venta'
 
 def CotizacionVentaTabla(request):
@@ -126,7 +129,9 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         except:
             pass
 
-        sociedades = Sociedad.objects.all()
+        sociedades = Sociedad.objects.filter(estado_sunat=1)
+        for sociedad in sociedades:
+            sociedad.observacion = observacion(obj, sociedad)
 
         context = {}
         context['materiales'] = materiales
@@ -373,7 +378,11 @@ class CotizacionObservacionUpdateView(BSModalUpdateView):
         context = super(CotizacionObservacionUpdateView, self).get_context_data(**kwargs)
         texto = []
         for sociedad in self.object.CotizacionObservacion_cotizacion_venta.all():
-            texto.append(str(sociedad.observacion))
+            if sociedad.observacion:
+                texto.append(str(sociedad.observacion))
+            else:
+                texto.append("")
+
 
         sociedades = Sociedad.objects.all()
         
@@ -386,8 +395,8 @@ class CotizacionObservacionUpdateView(BSModalUpdateView):
         return context
 
 
-def GuardarCotizacionObservacion(request, monto, id_cotizacion, abreviatura):
-    if monto == 1 and id_cotizacion == 1 and abreviatura == 'a':
+def GuardarCotizacionObservacion(request, texto, id_cotizacion, abreviatura):
+    if texto == 1 and id_cotizacion == 1 and abreviatura == 'a':
         return HttpResponse('Nada')
     cotizacion_venta = CotizacionVenta.objects.get(id=id_cotizacion)
     sociedad = Sociedad.objects.get(abreviatura = abreviatura)
@@ -396,7 +405,10 @@ def GuardarCotizacionObservacion(request, monto, id_cotizacion, abreviatura):
         cotizacion_venta = cotizacion_venta,
         sociedad = sociedad,
     )
-    obj.observacion = monto
+    if texto == 'null':
+        obj.observacion = None
+    else:
+        obj.observacion = texto
     obj.save()
     return HttpResponse('Fin')
 
@@ -636,35 +648,118 @@ class CotizacionVentaConfirmarView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-
+        sociedades_confirmar = []
         detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
-        print(detalles)
-
-
-
-        # if self.object.estado == 3: #Si está reservado
-        #     reserva = TipoMovimiento.objects.get(codigo=118)
-        #     for detalle in detalles:
-        #         sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
-        #         for cotizacion_sociedad in sociedades:
-        #             if cotizacion_sociedad.cantidad > 0:
-        #                 movimiento_dos = MovimientosAlmacen.objects.create(
-        #                         content_type_producto = detalle.content_type,
-        #                         id_registro_producto = detalle.id_registro,
-        #                         cantidad = cotizacion_sociedad.cantidad,
-        #                         tipo_movimiento = reserva,
-        #                         tipo_stock = reserva.tipo_stock_final,
-        #                         signo_factor_multiplicador = +1,
-        #                         content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-        #                         id_registro_documento_proceso = self.object.id,
-        #                         almacen = None,
-        #                         sociedad = cotizacion_sociedad.sociedad,
-        #                         movimiento_anterior = None,
-        #                         movimiento_reversion = False,
-        #                         created_by = self.request.user,
-        #                         updated_by = self.request.user,
-        #                     )
-        #     self.object.estado = 4
+        
+        if self.object.estado == 3: #Si está reservado
+            movimiento_inicial = TipoMovimiento.objects.get(codigo=118) #Reservar
+            movimiento_final = TipoMovimiento.objects.get(codigo=119) #Confirmación de reserva
+            for detalle in detalles:
+                sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                for cotizacion_sociedad in sociedades:
+                    if cotizacion_sociedad.cantidad > 0:
+                        if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
+                        movimiento_anterior = MovimientosAlmacen.objects.get(
+                            content_type_producto = detalle.content_type,
+                            id_registro_producto = detalle.id_registro,
+                            tipo_movimiento = movimiento_inicial,
+                            tipo_stock = movimiento_inicial.tipo_stock_final,
+                            signo_factor_multiplicador = +1,
+                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso = self.object.id,
+                            sociedad = cotizacion_sociedad.sociedad,
+                            movimiento_reversion = False,
+                        )
+                        movimiento_uno = MovimientosAlmacen.objects.create(
+                            content_type_producto = detalle.content_type,
+                            id_registro_producto = detalle.id_registro,
+                            cantidad = cotizacion_sociedad.cantidad,
+                            tipo_movimiento = movimiento_final,
+                            tipo_stock = movimiento_final.tipo_stock_inicial,
+                            signo_factor_multiplicador = -1,
+                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso = self.object.id,
+                            almacen = None,
+                            sociedad = cotizacion_sociedad.sociedad,
+                            movimiento_anterior = movimiento_anterior,
+                            movimiento_reversion = False,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
+                        movimiento_dos = MovimientosAlmacen.objects.create(
+                            content_type_producto = detalle.content_type,
+                            id_registro_producto = detalle.id_registro,
+                            cantidad = cotizacion_sociedad.cantidad,
+                            tipo_movimiento = movimiento_final,
+                            tipo_stock = movimiento_final.tipo_stock_final,
+                            signo_factor_multiplicador = +1,
+                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso = self.object.id,
+                            almacen = None,
+                            sociedad = cotizacion_sociedad.sociedad,
+                            movimiento_anterior = movimiento_uno,
+                            movimiento_reversion = False,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
+            self.object.estado = 4
+        else: #Si no está reservado
+            movimiento_final = TipoMovimiento.objects.get(codigo=120) #Confirmación de venta
+            for detalle in detalles:
+                sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                for cotizacion_sociedad in sociedades:
+                    if cotizacion_sociedad.cantidad > 0:
+                        if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
+                        movimiento_dos = MovimientosAlmacen.objects.create(
+                            content_type_producto = detalle.content_type,
+                            id_registro_producto = detalle.id_registro,
+                            cantidad = cotizacion_sociedad.cantidad,
+                            tipo_movimiento = movimiento_final,
+                            tipo_stock = movimiento_final.tipo_stock_final,
+                            signo_factor_multiplicador = +1,
+                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso = self.object.id,
+                            almacen = None,
+                            sociedad = cotizacion_sociedad.sociedad,
+                            movimiento_anterior = None,
+                            movimiento_reversion = False,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
+            self.object.estado = 5
+        
+        for sociedad in sociedades_confirmar:
+            cotizacion_observacion = observacion(self.object, sociedad)
+            confirmacion_venta = ConfirmacionVenta.objects.create(
+                cotizacion_venta = self.object,
+                sociedad = sociedad,
+                tipo_cambio = TipoCambio.objects.get(fecha=self.object.fecha),
+                observacion = cotizacion_observacion,
+                total = self.object.total,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+            for detalle in detalles:
+                cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
+                if cotizacion_sociedad.cantidad > 0:
+                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv())
+                    ConfirmacionVentaDetalle.objects.create(
+                        item = detalle.item,
+                        content_type = detalle.content_type,
+                        id_registro = detalle.id_registro,
+                        cantidad_confirmada = cotizacion_sociedad.cantidad,
+                        precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv'],
+                        precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                        precio_final_con_igv = detalle.precio_final_con_igv,
+                        descuento = respuesta['descuento'],
+                        sub_total = respuesta['subtotal'],
+                        igv = respuesta['igv'],
+                        total = respuesta['total'],
+                        tipo_igv = detalle.tipo_igv,
+                        confirmacion_venta = confirmacion_venta,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
 
         registro_guardar(self.object, self.request)
         self.object.save()
@@ -691,19 +786,33 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        reserva = TipoMovimiento.objects.get(codigo=118)
+        if self.object.estado == 4: #Si partió de reservado
+            confirmar = TipoMovimiento.objects.get(codigo=119)
+            self.object.estado = 3
+        else: #Si no partió de reservado
+            confirmar = TipoMovimiento.objects.get(codigo=120)
+            self.object.estado = 2
+
         movimientos = MovimientosAlmacen.objects.filter(
-                tipo_movimiento = reserva,
-                tipo_stock = reserva.tipo_stock_final,
+                tipo_movimiento = confirmar,
+                tipo_stock = confirmar.tipo_stock_final,
                 signo_factor_multiplicador = +1,
                 content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
                 id_registro_documento_proceso = self.object.id,
                 almacen = None,
             )
         for movimiento in movimientos:
+            movimiento_uno = movimiento.movimiento_anterior
             movimiento.delete()
+            if movimiento_uno:
+                movimiento_uno.delete()
 
-        self.object.estado = 2
+        confirmaciones_venta = ConfirmacionVenta.objects.filter(
+            cotizacion_venta = self.object,
+        )
+        for confirmacion_venta in confirmaciones_venta:
+            confirmacion_venta.delete()
+
         registro_guardar(self.object, self.request)
         self.object.save()
 
@@ -794,3 +903,186 @@ class CotizacionVentaPdfView(View):
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
         return respuesta
+
+
+
+class CotizacionVentaPdfsView(BSModalFormView):
+    template_name = "cotizacion/cotizacion_venta/form_pdfs.html"
+    form_class = CotizacionVentaPdfsForm
+
+    def get_context_data(self, **kwargs):
+        obj = CotizacionVenta.objects.get(id=self.kwargs['pk'])
+        sociedades = []
+        for detalle in obj.CotizacionVentaDetalle_cotizacion_venta.all():
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                if cotizacion_sociedad.cantidad > 0:
+                    if not cotizacion_sociedad.sociedad in sociedades: sociedades.append(cotizacion_sociedad.sociedad)
+        context = super(CotizacionVentaPdfsView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Ver PDFs'
+        context['cotizacion'] = obj
+        context['sociedades'] = sociedades
+        return context
+    
+
+class CotizacionVentaSociedadPdfView(View):
+    def get(self, request, *args, **kwargs):
+        sociedad = Sociedad.objects.get(abreviatura=self.kwargs['sociedad'])
+        color = sociedad.color
+        titulo = 'Cotización'
+        vertical = False
+        logo = sociedad.logo.url
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+
+        obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
+
+        fecha=datetime.strftime(obj.fecha_cotizacion,'%d - %m - %Y')
+
+        nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion)
+        razon_social = 'Razón Social: ' + str(obj.cliente)
+        direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
+        interlocutor = 'Interlocutor: ' + str(obj.cliente_interlocutor)
+        nro_documento = str(DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]) + ': ' + str(obj.cliente.numero_documento)
+        fecha_cotizacion = 'Fecha Cotizacion: ' + str(obj.fecha_cotizacion)
+        fecha_validez = 'Fecha Validez: ' + str(obj.fecha_validez)
+
+        Texto = []
+        Texto.extend([  nro_cotizacion, 
+                        razon_social,
+                        direccion, 
+                        interlocutor, 
+                        nro_documento,
+                        fecha_cotizacion,
+                        fecha_validez,
+                        ])
+
+        TablaEncabezado = [ 'Item',
+                            'Descripción',
+                            'Unidad',
+                            'Cantidad',
+                            'Prec. Unit. sin IGV',
+                            'Prec. Unit. con IGV',
+                            'P. Final IGV',
+                            'Descuento',
+                            'Sub Total',
+                            'IGV',
+                            'Total',
+                            ]
+
+        cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+        TablaDatos = []
+        for detalle in cotizacion_venta_detalle:
+            fila = []
+
+            detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            fila.append(detalle.item)
+            fila.append(detalle.material)
+            fila.append(detalle.material.unidad_base)
+            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_unitario_sin_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_final_con_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.descuento.quantize(Decimal('0.01')))
+            fila.append(detalle.sub_total.quantize(Decimal('0.01')))
+            fila.append(detalle.igv.quantize(Decimal('0.01')))
+            fila.append(detalle.total.quantize(Decimal('0.01')))
+
+            TablaDatos.append(fila)
+        
+        terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
+        
+        condiciones = ['Condiciones: ']
+        for condicion in terminos_condiciones:
+            condiciones.append(condicion)
+
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta
+
+
+#################################################################################################################
+
+class ConfirmacionListView(TemplateView):
+    template_name = 'cotizacion/confirmacion/inicio.html'
+
+    def get_context_data(self, **kwargs):
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.all()
+        try:
+            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(cotizacion_venta__id = kwargs['id_cotizacion'])
+        except:
+            print("Error")
+
+        context = super(ConfirmacionListView, self).get_context_data(**kwargs)
+        context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
+        return context
+
+
+class ConfirmarVerView(TemplateView):
+    template_name = "cotizacion/confirmacion/detalle.html"
+
+    def get_context_data(self, **kwargs):
+        obj = ConfirmacionVenta.objects.get(id = kwargs['id_cotizacion'])
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_confirmacion)
+        
+        materiales = None
+        try:
+            materiales = obj.ConfirmacionVentaDetalle_confirmacion_venta.all()
+
+            for material in materiales:
+                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+        except:
+            pass
+
+        context = super(ConfirmarVerView, self).get_context_data(**kwargs)
+        context['confirmacion'] = obj
+        context['cotizacion'] = obj.cotizacion_venta
+        context['materiales'] = materiales
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        context['tipo_cambio'] = tipo_cambio
+        context['totales'] = obtener_totales(obj)
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        
+        return context
+
+
+def ConfirmarVerTabla(request, id_cotizacion):
+    data = dict()
+    if request.method == 'GET':
+        template = 'cotizacion/cotizacion_venta/detalle_tabla.html'
+        obj = CotizacionVenta.objects.get(id=id_cotizacion)
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
+        
+        materiales = None
+        try:
+            materiales = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+
+            for material in materiales:
+                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+        except:
+            pass
+
+        sociedades = Sociedad.objects.filter(estado_sunat=1)
+        for sociedad in sociedades:
+            sociedad.observacion = observacion(obj, sociedad)
+
+        context = {}
+        context['materiales'] = materiales
+        context['cotizacion'] = obj
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        context['tipo_cambio'] = tipo_cambio
+        context['totales'] = obtener_totales(obj)
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        context['sociedades'] = sociedades
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)

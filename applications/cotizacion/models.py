@@ -2,10 +2,11 @@ from functools import total_ordering
 import keyword
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from applications.funciones import obtener_totales
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
 from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
-from applications.variables import ESTADOS, ESTADOS_COTIZACION_VENTA, TIPO_IGV_CHOICES, TIPO_VENTA
+from applications.variables import ESTADOS, ESTADOS_CONFIRMACION, ESTADOS_COTIZACION_VENTA, TIPO_IGV_CHOICES, TIPO_VENTA
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 from django.conf import settings
@@ -107,6 +108,23 @@ class CotizacionVentaDetalle(models.Model):
     def __str__(self):
         return str(self.id)
 
+def cotizacion_venta_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.cotizacion_venta)
+    obj.cotizacion_venta.total = respuesta['total']
+    obj.cotizacion_venta.save()
+
+def cotizacion_venta_material_detalle_post_delete(sender, instance, *args, **kwargs):
+    materiales = CotizacionVentaDetalle.objects.filter(cotizacion_venta=instance.cotizacion_venta)
+    contador = 1
+    for material in materiales:
+        material.item = contador
+        material.save()
+        contador += 1
+
+post_save.connect(cotizacion_venta_detalle_post_save, sender=CotizacionVentaDetalle)
+post_delete.connect(cotizacion_venta_material_detalle_post_delete, sender=CotizacionVentaDetalle)
+
 
 class CotizacionOrdenCompra(models.Model):
     numero_orden = models.TextField()
@@ -152,13 +170,14 @@ class CotizacionTerminosCondiciones(models.Model):
 class ConfirmacionVenta(models.Model):
     cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    fecha_confirmacion = models.DateField('Fecha Confirmación', auto_now=False, auto_now_add=False)
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ConfirmacionVenta_tipo_cambio')
     observacion = models.TextField(blank=True, null=True)
-    condiciones_pago = models.TextField(blank=True, null=True)
+    condiciones_pago = models.CharField('Condiciones de Pago', max_length=50, blank=True, null=True)
     tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
-    estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA)
-    motivo_anulacion = models.TextField()
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    estado = models.IntegerField(choices=ESTADOS_CONFIRMACION, default=1)
+    motivo_anulacion = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionVenta_created_by', editable=False)
@@ -169,18 +188,34 @@ class ConfirmacionVenta(models.Model):
         verbose_name = 'Confirmación Venta'
         verbose_name_plural = 'Confirmación Ventas'
         ordering = [
-            '-fecha_confirmacion',
+            '-created_at',
             ]
+
+    @property
+    def internacional_nacional(self):
+        return 2
+
+    @property
+    def fecha_confirmacion(self):
+        return self.created_at
 
     def __str__(self):
         return str(self.id)
 
 
 class ConfirmacionVentaDetalle(models.Model):
-    cantidad_confirmada = models.DecimalField('Cantidad confirmada', max_digits=22, decimal_places=10)
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
+    cantidad_confirmada = models.DecimalField('Cantidad confirmada', max_digits=22, decimal_places=10)
+    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=0)
+    precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=0)
+    precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10, default=0)
+    descuento = models.DecimalField('Descuento',max_digits=14, decimal_places=2, default=0)
+    sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2, default=0)
+    igv = models.DecimalField('IGV',max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
     confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.CASCADE, related_name='ConfirmacionVentaDetalle_confirmacion_venta')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -196,8 +231,20 @@ class ConfirmacionVentaDetalle(models.Model):
             'item',
             ]
 
+    @property
+    def cantidad(self):
+        return self.cantidad_confirmada
+
     def __str__(self):
         return str(self.id)
+
+def confirmacion_venta_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.confirmacion_venta)
+    obj.confirmacion_venta.total = respuesta['total']
+    obj.confirmacion_venta.save()
+
+post_save.connect(confirmacion_venta_detalle_post_save, sender=ConfirmacionVentaDetalle)
 
 
 class CotizacionSociedad(models.Model):
@@ -213,6 +260,9 @@ class CotizacionSociedad(models.Model):
     class Meta:
         verbose_name = 'Cotizacion Sociedad'
         verbose_name_plural = 'Cotizacion Sociedades'
+        ordering = [
+            'sociedad',
+        ]
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta_detalle, self.sociedad, self.cantidad)
@@ -231,6 +281,9 @@ class CotizacionDescuentoGlobal(models.Model):
     class Meta:
         verbose_name = 'Cotizacion Descuento Global'
         verbose_name_plural = 'Cotizacion Descuento Globales'
+        ordering = [
+            'sociedad',
+        ]
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.descuento_global)
@@ -249,17 +302,11 @@ class CotizacionObservacion(models.Model):
     class Meta:
         verbose_name = 'Cotizacion Observación'
         verbose_name_plural = 'Cotizacion Observaciones'
+        ordering = [
+            'sociedad',
+        ]
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.observacion)
 
 
-def cotizacion_venta_material_detalle_post_delete(sender, instance, *args, **kwargs):
-    materiales = CotizacionVentaDetalle.objects.filter(cotizacion_venta=instance.cotizacion_venta)
-    contador = 1
-    for material in materiales:
-        material.item = contador
-        material.save()
-        contador += 1
-
-post_delete.connect(cotizacion_venta_material_detalle_post_delete, sender=CotizacionVentaDetalle)

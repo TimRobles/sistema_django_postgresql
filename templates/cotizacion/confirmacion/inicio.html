@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Cotizaciones Confirmadas
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Cotizaciones Confirmadas</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'cotizacion/confirmacion/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
