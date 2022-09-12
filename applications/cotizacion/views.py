@@ -62,8 +62,9 @@ def CotizacionVentaTabla(request):
 def CotizacionVentaCreateView(request):
     obj = CotizacionVenta.objects.create(
         slug = slug_aleatorio(CotizacionVenta),
+        created_by=request.user,
+        updated_by=request.user,
     )
-    registro_guardar(obj, request)
     sociedades = Sociedad.objects.all()
     
     for sociedad in sociedades:
@@ -831,14 +832,13 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
 class CotizacionVentaPdfView(View):
     def get(self, request, *args, **kwargs):
         color = COLOR_DEFAULT
-        titulo = 'Cotización'
         vertical = False
         logo = None
         pie_pagina = PIE_DE_PAGINA_DEFAULT
 
         obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
 
-        fecha=datetime.strftime(obj.fecha_cotizacion,'%d - %m - %Y')
+        titulo = 'Cotización_' + str(obj.numero_cotizacion) + '_' + str(obj.cliente.razon_social)
 
         nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion)
         razon_social = 'Razón Social: ' + str(obj.cliente)
@@ -862,13 +862,12 @@ class CotizacionVentaPdfView(View):
                             'Descripción',
                             'Unidad',
                             'Cantidad',
-                            'Prec. Unit. sin IGV',
                             'Prec. Unit. con IGV',
-                            'P. Final IGV',
+                            'Prec. Final con IGV',
                             'Descuento',
-                            'Sub Total',
-                            'IGV',
                             'Total',
+                            'Stock',
+                            'u',
                             ]
 
         cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
@@ -877,27 +876,41 @@ class CotizacionVentaPdfView(View):
             fila = []
 
             detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
-            fila.append(detalle.item)
-            fila.append(detalle.material)
-            fila.append(detalle.material.unidad_base)
-            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
-            fila.append(detalle.precio_unitario_sin_igv.quantize(Decimal('0.01')))
-            fila.append(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))
-            fila.append(detalle.precio_final_con_igv.quantize(Decimal('0.01')))
-            fila.append(detalle.descuento.quantize(Decimal('0.01')))
-            fila.append(detalle.sub_total.quantize(Decimal('0.01')))
-            fila.append(detalle.igv.quantize(Decimal('0.01')))
-            fila.append(detalle.total.quantize(Decimal('0.01')))
+            fila.append(intcomma(detalle.item))
+            fila.append(intcomma(detalle.material))
+            fila.append(intcomma(detalle.material.unidad_base))
+            fila.append(intcomma(detalle.cantidad.quantize(Decimal('0.01'))))
+            fila.append(intcomma(detalle.precio_unitario_con_igv.quantize(Decimal('0.01'))))
+            fila.append(intcomma(detalle.precio_final_con_igv.quantize(Decimal('0.01'))))
+            fila.append(intcomma(detalle.descuento.quantize(Decimal('0.01'))))
+            fila.append(intcomma(detalle.total.quantize(Decimal('0.01'))))
 
             TablaDatos.append(fila)
         
-        terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
+        totales = obtener_totales(obj)
+        lista =[]
+        for k,v in totales.items():
+            if v==0:continue
+            fila = []
+            fila.append(k)
+            fila.append(v)
+
+            lista.append(fila)
+
+        TablaTotales = []
+        for detalle in lista:
+            fila = []
+            fila.append(DICCIONARIO_TOTALES[detalle[0]])
+            fila.append(intcomma(detalle[1]))
+
+            TablaTotales.append(fila)
         
+        terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
         condiciones = ['Condiciones: ']
         for condicion in terminos_condiciones:
             condiciones.append(condicion)
 
-        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones)
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
