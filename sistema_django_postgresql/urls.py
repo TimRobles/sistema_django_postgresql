@@ -30,6 +30,7 @@ urlpatterns = [
     path('aptc/', include('applications.sorteo_aptc.urls')),
     path('activos/', include('applications.activos.urls')),
     path('cotizacion/', include('applications.cotizacion.urls')),
+    path('cobranza/', include('applications.cobranza.urls')),
 
 ]
 

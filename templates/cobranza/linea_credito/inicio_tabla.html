@@ -1,0 +1,38 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Monto</th>
+            <th>Moneda</th>
+            <th>Condiciones de pago </th>
+            <th>Creado por</th>
+            <th>Modificado por</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for linea_credito in contexto_linea_credito %}
+        <tr>
+            <td>{{ linea_credito.cliente }}</td>
+            <td>{{ linea_credito.monto }}</td>
+            <td>{{ linea_credito.moneda }}</td>
+            <td>{{ linea_credito.condiciones_pago }}</td>
+            <td>{{ linea_credito.created_by}}</td>
+            <td>{{ linea_credito.updated_by}}</td>
+            <td>{{ linea_credito.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'cobranza_app:linea_credito_actualizar' linea_credito.id %}"
+                    data-table-url="{% url 'cobranza_app:linea_credito_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+            </button>
+            </td>
+        </tr>
+        {% endfor %}
+            
+    </tbody>
+</table>
