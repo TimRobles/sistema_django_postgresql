@@ -99,6 +99,7 @@ def listaGuion(filas, fuente, tamaño=8, tipo="Regular", color='black'):
     return ListFlowable(
         lista,
         bulletType='bullet',
+        start='-',
         )
 
 def listaViñeta(texto, fuente, tamaño=8, tipo="Regular", color='black'):
