@@ -59,6 +59,7 @@ LOCAL_APPS = (
     'applications.encuesta',
     'applications.sorteo_aptc',
     'applications.cotizacion',
+    'applications.cobranza',
 
 )
 
