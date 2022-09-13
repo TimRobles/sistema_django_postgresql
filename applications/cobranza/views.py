@@ -45,18 +45,4 @@ class LineaCreditoCreateView(BSModalCreateView):
         context['titulo']="Linea de Crédito"
         return context
 
-class LineaCreditoUpdateView(BSModalUpdateView):
-    model = LineaCredito
-    template_name = "includes/formulario generico.html"
-    form_class = LineaCreditoForm
-    success_url = reverse_lazy('cobranza_app:linea_credito_inicio')
 
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super(LineaCreditoUpdateView, self).get_context_data(**kwargs)
-        context['accion'] = "Actualizar"
-        context['titulo'] = "Linea de Crédito"
-        return context

@@ -6,9 +6,9 @@
             <th>Moneda</th>
             <th>Condiciones de pago </th>
             <th>Creado por</th>
-            <th>Modificado por</th>
+            <th>Creado el</th>
             <th>Estado</th>
-            <th>Acciones</th>
+            <th class="text-center">Acciones</th>
         </tr>
     </thead>
 
@@ -20,17 +20,9 @@
             <td>{{ linea_credito.moneda }}</td>
             <td>{{ linea_credito.condiciones_pago }}</td>
             <td>{{ linea_credito.created_by}}</td>
-            <td>{{ linea_credito.updated_by}}</td>
+            <td>{{ linea_credito.created_at|date:'d/m/Y'}}</td>
             <td>{{ linea_credito.get_estado_display }}</td>
-            <td class="text-center text-nowrap">
-                <button data-form-url="{% url 'cobranza_app:linea_credito_actualizar' linea_credito.id %}"
-                    data-table-url="{% url 'cobranza_app:linea_credito_tabla' %}"
-                    data-keep-open="true"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-            </button>
-            </td>
+
         </tr>
         {% endfor %}
             
