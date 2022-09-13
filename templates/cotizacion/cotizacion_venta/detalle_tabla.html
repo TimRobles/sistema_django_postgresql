@@ -376,7 +376,18 @@
                 <td colspan="4"></td>
             </tr>
             <tr>
-                <td colspan="10" class="text-end">Otros Cargos:</td>
+                <td colspan="10" class="text-end">
+                    {% if cotizacion.estado < 3 %}
+                    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_otros_cargos' cotizacion.id %}"
+                        data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Otros Cargos">
+                        <i class="bi bi-plus-square"></i>
+                    </button>
+                    {% endif %}
+                    Otros Cargos:
+                </td>
                 <td class="text-end text-nowrap">$ {{ totales.total_otros_cargos|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_otros_cargos|redondear|intcomma }}</td>
                 <td colspan="4"></td>

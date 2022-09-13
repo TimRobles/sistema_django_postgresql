@@ -78,8 +78,28 @@ def parrafoJustificado(texto, fuente, tamaño=8, tipo="Regular", color='black'):
     
     return Paragraph('''<para color=%s align=justify>%s</para>''' % (color, texto), styleSheet[fuente + '-' + tipo + '-' + str(tamaño)])
 
+def parrafoHeader(texto, alinear, fuente, tamaño=8, tipo="Regular", color='black'):
+    try:
+        texto = texto.replace("\n", "<br/>")
+    except:
+        pass
+    
+    return Paragraph('''<para color=%s align=%s leftIndent=35 rightIndent=35>%s</para>''' % (color, alinear, texto), styleSheet[fuente + '-' + tipo + '-' + str(tamaño)])
+
 def vacio(factor=1):
     return Spacer(10, factor*10)
+
+def listaGuion(filas, fuente, tamaño=8, tipo="Regular", color='black'):
+    lista = []
+    for fila in filas:
+        lista.append(ListItem(
+            parrafoIzquierda(fila, fuente, tamaño, tipo, color),
+            bulletColor='black',
+            ))
+    return ListFlowable(
+        lista,
+        bulletType='bullet',
+        )
 
 def listaViñeta(texto, fuente, tamaño=8, tipo="Regular", color='black'):
     filas = texto.splitlines()
@@ -125,17 +145,17 @@ def insertarImagenGrande(ruta, ancho=0, alto=0):
     return I
 
 
-def header_content(logo):
+def header_content(logo, alinear):
     if logo:
         cabecera = insertarImagen(logo, 5, 1)
-        return parrafoCentro(cabecera, "CourierPrime", 7, "Regular")
+        return parrafoHeader(cabecera, alinear, "CourierPrime", 7, "Regular")
     else:
-        return parrafoCentro('', "CourierPrime", 7, "Regular")
+        return parrafoHeader('', alinear, "CourierPrime", 7, "Regular")
 
 
 def footer_content(texto):
     piedepagina = texto
-    return parrafoCentro(piedepagina, "CourierPrime", 6, "Regular")
+    return parrafoIzquierda(piedepagina, "CourierPrime", 6, "Regular")
 
 
 def header(canvas, doc, content):
@@ -167,21 +187,18 @@ def footer_Lands(canvas, doc, texto):
 A4Portrait = Frame(cmToPx(1), cmToPx(2.5), cmToPx(19), cmToPx(24.7), id='normal') #leftMargin, bottomMargin, width, height
 A4Landscape = Frame(cmToPx(1), cmToPx(2.45), cmToPx(27.65), cmToPx(17), id='normal') #leftMargin, bottomMargin, width, height
 
-def generarPDF(titulo, elementos, orientacion_vertical=True, logo=rutaBase + '/logos/logo header.png', texto='Probando Pie de página'):
+def generarPDF(titulo, elementos, orientacion_vertical=True, logo=rutaBase + '/logos/logo header.png', texto='Probando Pie de página', alinear='center'):
     # container for the 'Flowable' objects
 
     buf = io.BytesIO()
 
     if orientacion_vertical:
-        print('************')
-        print(logo)
-        print('************')
         frame = A4Portrait
-        template = PageTemplate(id='test', frames=frame, onPage=partial(header, content=header_content(logo)), onPageEnd=partial(footer, texto=texto))
+        template = PageTemplate(id='test', frames=frame, onPage=partial(header, content=header_content(logo, alinear)), onPageEnd=partial(footer, texto=texto))
         doc = BaseDocTemplate(buf, title=titulo, pagesize=A4, pageTemplates=[template], showBoundary=0, leftMargin=cmToPx(0.3), rightMargin=cmToPx(0.3), topMargin=cmToPx(0.3), bottomMargin=cmToPx(0.3))
     else:
         frame = A4Landscape
-        template = PageTemplate(id='test', frames=frame, onPage=partial(header_Lands, content=header_content(logo)), onPageEnd=partial(footer_Lands, texto=texto))
+        template = PageTemplate(id='test', frames=frame, onPage=partial(header_Lands, content=header_content(logo, alinear)), onPageEnd=partial(footer_Lands, texto=texto))
         doc = BaseDocTemplate(buf, title=titulo, pagesize=(A4[1],A4[0]), pageTemplates=[template], showBoundary=0, leftMargin=cmToPx(0.3), rightMargin=cmToPx(0.3), topMargin=cmToPx(0.3), bottomMargin=cmToPx(0.3))
 
     # write the document to disk

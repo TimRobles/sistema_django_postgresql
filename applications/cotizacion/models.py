@@ -1,3 +1,4 @@
+from email.policy import default
 from functools import total_ordering
 import keyword
 from django.db import models
@@ -45,6 +46,7 @@ class CotizacionVenta(models.Model):
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor', blank=True, null=True)
     fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_validez = models.DateField('Fecha Validez', auto_now=False, auto_now_add=False, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, default=1)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     estado = models.IntegerField(choices=ESTADOS_COTIZACION_VENTA, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
@@ -74,6 +76,10 @@ class CotizacionVenta(models.Model):
     @property
     def descuento_global(self):
         return self.CotizacionDescuentoGlobal_cotizacion_venta.all().aggregate(models.Sum('descuento_global'))['descuento_global__sum']
+
+    @property
+    def otros_cargos(self):
+        return self.CotizacionOtrosCargos_cotizacion_venta.all().aggregate(models.Sum('otros_cargos'))['otros_cargos__sum']
 
     def __str__(self):
         return str(self.id)
@@ -175,6 +181,7 @@ class ConfirmacionVenta(models.Model):
     condiciones_pago = models.CharField('Condiciones de Pago', max_length=50, blank=True, null=True)
     tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
+    otros_cargos = models.DecimalField('Otros cargos', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     estado = models.IntegerField(choices=ESTADOS_CONFIRMACION, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
@@ -287,6 +294,27 @@ class CotizacionDescuentoGlobal(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.descuento_global)
+
+
+class CotizacionOtrosCargos(models.Model):
+    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionOtrosCargos_cotizacion_venta')
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    otros_cargos = models.DecimalField('Otros cargos', max_digits=14, decimal_places=2, default=0)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionOtrosCargos_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionOtrosCargos_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Cotizacion Otros Cargos'
+        verbose_name_plural = 'Cotizacion Otros Cargos'
+        ordering = [
+            'sociedad',
+        ]
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.otros_cargos)
 
 
 class CotizacionObservacion(models.Model):

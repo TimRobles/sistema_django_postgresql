@@ -1,6 +1,65 @@
 from applications.pdf import *
 
-def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color):
+def dataCabeceraCotizacionVenta(Cabecera, fuenteBase):
+    data = []
+    fila=[]
+    fila.append(parrafoIzquierda('Nro. Cotización', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['nro_cotizacion'], fuenteBase, 10))
+    fila.append(parrafoDerecha('Lima, ' + Cabecera['fecha_cotizacion'], fuenteBase, 10))
+    fila.append('')
+    fila.append('')
+    data.append(fila)
+
+    fila=[]
+    fila.append(parrafoIzquierda('Razón Social', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['razon_social'], fuenteBase, 10))
+    fila.append(parrafoIzquierda(Cabecera['tipo_documento'], fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['nro_documento'], fuenteBase, 10))
+    data.append(fila)
+
+    fila=[]
+    fila.append(parrafoIzquierda('Dirección', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['direccion'], fuenteBase, 10))
+    fila.append('')
+    fila.append('')
+    fila.append('')
+    data.append(fila)
+
+    fila=[]
+    fila.append(parrafoIzquierda('Contacto', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['interlocutor'], fuenteBase, 10))
+    fila.append(parrafoIzquierda('Fecha de Vencimiento', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['fecha_validez'], fuenteBase, 10))
+    data.append(fila)
+
+    t=Table(
+        data,
+        style=[
+            # ('GRID',(0,0),(-1,-1),1,colors.black),
+            # ('BOX',(0,0),(-1,-1),2,colors.black),
+            ('VALIGN',(0,0),(-1,-1),'TOP'),
+            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+            ('SPAN',(3,0),(-1,0)),
+            ('SPAN',(2,1),(2,1)),
+            ('SPAN',(2,2),(-1,2)),
+            ('SPAN',(2,3),(2,3)),
+            ]
+        )
+    t._argW[0]=cmToPx(3)
+    t._argW[1]=cmToPx(0.5)
+    t._argW[3]=cmToPx(3.8)
+    t._argW[4]=cmToPx(0.5)
+    t._argW[5]=cmToPx(5)
+
+    return t
+
+def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda):
     encabezado = []
     for encab in TablaEncabezado:
         encabezado.append(parrafoCentro(encab, fuenteBase, 8, 'Bold'))
@@ -14,10 +73,10 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
         fila.append(parrafoIzquierda(dato[1], fuenteBase))
         fila.append(parrafoIzquierda(dato[2], fuenteBase))
         fila.append(parrafoDerecha(dato[3], fuenteBase))
-        fila.append(parrafoDerecha(dato[4], fuenteBase))
-        fila.append(parrafoDerecha(dato[5], fuenteBase))        
-        fila.append(parrafoDerecha(dato[6], fuenteBase))        
-        fila.append(parrafoDerecha(dato[7], fuenteBase))        
+        fila.append(parrafoDerecha("%s %s" % (moneda, dato[4]), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (moneda, dato[5]), fuenteBase))        
+        fila.append(parrafoDerecha("%s %s" % (moneda, dato[6]), fuenteBase))        
+        fila.append(parrafoDerecha("%s %s" % (moneda, dato[7]), fuenteBase))        
 
         data.append(fila)
 
@@ -30,7 +89,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
         fila.append(parrafoCentro(" ", fuenteBase))
         fila.append(parrafoCentro(" ", fuenteBase))
         fila.append(parrafoDerecha(dato[0], fuenteBase))        
-        fila.append(parrafoDerecha(dato[1], fuenteBase))        
+        fila.append(parrafoDerecha("%s %s" % (moneda, dato[1]), fuenteBase))        
 
         data.append(fila)  
 
@@ -39,11 +98,11 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
     t=Table(
         data,
         style=[
-            ('GRID',(0,0),(-1,-(totales+1)),1,colors.black),
+            ('GRID',(0,0),(-2,-(totales+1)),1,colors.black),
             ('GRID',(6,-(totales)),(-3,-1),1,colors.black),
-            ('BOX',(0,0),(-1,-(totales+1)),2,colors.black),
+            ('BOX',(0,0),(-2,-(totales+1)),2,colors.black),
             ('BOX',(6,-(totales)),(-3,-1),2,colors.black),
-            ('BACKGROUND', (0, 0), (-1, 0), color),
+            ('BACKGROUND', (0, 0), (-2, 0), color),
             ('VALIGN',(0,0),(-1,-1),'TOP'),
             ('ALIGN',(0,0),(-1,-1),'CENTER')
             ]
@@ -87,25 +146,28 @@ def dataTotales(TablaTotales, fuenteBase, color):
     return t
 
 
-def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales):
-    fuenteBase = "ComicNeue"
-
-    data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color)
+def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, alinear, fuenteBase, moneda, observaciones):
+    data_cabecera = dataCabeceraCotizacionVenta(Cabecera, fuenteBase)
+    data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
     
     elementos = []
-    for texto in Texto:
-        elementos.append(parrafoIzquierda(texto, fuenteBase, 10))
-        elementos.append(vacio())
+    elementos.append(parrafoCentro('SOLICITUD DE COTIZACIÓN DEL CLIENTE', fuenteBase, 12, 'Bold'))
+    elementos.append(data_cabecera)
+    
+    elementos.append(vacio())
 
     elementos.append(data_tabla)
     elementos.append(vacio())
 
-
-    for condicion in condiciones:
-        elementos.append(parrafoIzquierda(condicion, fuenteBase, 9))
-        elementos.append(vacio())
+    elementos.append(parrafoIzquierda('OBSERVACIONES:', fuenteBase, 10, 'Bold'))
+    elementos.append(listaGuion(observaciones.splitlines(), fuenteBase, 9))
+    elementos.append(vacio())
     
-    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+    elementos.append(parrafoIzquierda('CONDICIONES:', fuenteBase, 10, 'Bold'))
+    elementos.append(listaGuion(condiciones, fuenteBase, 9))
+    elementos.append(vacio())
+    
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina, alinear)
 
     return buf
 

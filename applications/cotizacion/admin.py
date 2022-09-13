@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import (
     ConfirmacionVentaDetalle,
     CotizacionDescuentoGlobal,
+    CotizacionOtrosCargos,
     CotizacionSociedad,
     PrecioListaMaterial,
     CotizacionVenta,
@@ -240,6 +241,26 @@ class CotizacionObservacion(admin.ModelAdmin):
         'cotizacion_venta',
         'sociedad',
         'observacion',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',      
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(CotizacionOtrosCargos)
+class CotizacionOtrosCargos(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'cotizacion_venta',
+        'sociedad',
+        'otros_cargos',
         'created_at',
         'created_by',
         'updated_at',

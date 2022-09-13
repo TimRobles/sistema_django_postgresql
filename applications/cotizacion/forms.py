@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.cotizacion.models import CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
+from applications.cotizacion.models import CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.material.models import Material
 
@@ -69,6 +69,17 @@ class CotizacionVentaObservacionForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CotizacionVentaObservacionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class CotizacionVentaOtrosCargosForm(BSModalModelForm):
+    class Meta:
+        model = CotizacionOtrosCargos
+        fields = ()
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaOtrosCargosForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

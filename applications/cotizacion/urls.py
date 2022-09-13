@@ -19,6 +19,9 @@ urlpatterns = [
     path('cotizacion-venta/observacion/<pk>/', views.CotizacionObservacionUpdateView.as_view(), name='cotizacion_venta_observacion'),
     path('cotizacion-venta/observacion/guardar/<str:texto>/<int:id_cotizacion>/<str:abreviatura>/', views.GuardarCotizacionObservacion, name='guardar_cotizacion_venta_observacion'),
 
+    path('cotizacion-venta/otros-cargos/<pk>/', views.CotizacionOtrosCargosUpdateView.as_view(), name='cotizacion_venta_otros_cargos'),
+    path('cotizacion-venta/otros-cargos/guardar/<str:monto>/<int:id_cotizacion>/<str:abreviatura>/', views.GuardarCotizacionOtrosCargos, name='guardar_cotizacion_venta_otros_cargos'),
+
     path('cotizacion-cliente-interlocutor/<int:id_cliente>/', views.ClienteInterlocutorView, name='cotizacion_cliente_interlocutor'),
 
     path('cotizacion-venta/sociedad/<pk>/', views.CotizacionSociedadUpdateView.as_view(), name='cotizacion_venta_sociedad'),

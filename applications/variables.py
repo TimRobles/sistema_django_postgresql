@@ -217,8 +217,10 @@ EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'
 MENSAJE_ANULAR_ORDEN_COMPRA = 'Operación exitosa: La Orden de Compra fue anulada.'
 
 DICCIONARIO_TOTALES={
-    'descuento_global':'Descuento Global',
-    'total_descuento':'Descuento',
+    # 'descuento_global':'Descuento Global',
+    # 'descuento_global_con_igv':'Descuento Global',
+    # 'total_descuento':'Descuento',
+    'total_descuento_con_igv':'Descuento',
     'total_anticipo':'Anticipo',
     'total_gravada':'Gravada',
     'total_inafecta':'Inafecta',

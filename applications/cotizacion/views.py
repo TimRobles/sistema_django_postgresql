@@ -7,7 +7,7 @@ from applications.datos_globales.models import TipoCambio
 from applications.material.funciones import calidad, observacion, reservado, stock, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
-from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
+from applications.funciones import calculos_linea, fecha_en_letras, igv, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
 
 from applications.sociedad.models import Sociedad
 
@@ -22,6 +22,7 @@ from .forms import (
     CotizacionVentaMaterialDetalleForm,
     CotizacionVentaMaterialDetalleUpdateForm,
     CotizacionVentaObservacionForm,
+    CotizacionVentaOtrosCargosForm,
     CotizacionVentaPdfsForm,
     PrecioListaMaterialForm,
 )
@@ -31,6 +32,7 @@ from .models import (
     ConfirmacionVentaDetalle,
     CotizacionDescuentoGlobal,
     CotizacionObservacion,
+    CotizacionOtrosCargos,
     CotizacionSociedad,
     CotizacionTerminosCondiciones,
     CotizacionVenta,
@@ -65,6 +67,8 @@ def CotizacionVentaCreateView(request):
         created_by=request.user,
         updated_by=request.user,
     )
+    obj.fecha_validez = obj.fecha_cotizacion + 7
+    obj.save()
     sociedades = Sociedad.objects.all()
     
     for sociedad in sociedades:
@@ -73,6 +77,10 @@ def CotizacionVentaCreateView(request):
             sociedad = sociedad,
         )
         obj3 = CotizacionObservacion.objects.create(
+            cotizacion_venta = obj,
+            sociedad = sociedad,
+        )
+        obj4 = CotizacionOtrosCargos.objects.create(
             cotizacion_venta = obj,
             sociedad = sociedad,
         )
@@ -410,6 +418,44 @@ def GuardarCotizacionObservacion(request, texto, id_cotizacion, abreviatura):
         obj.observacion = None
     else:
         obj.observacion = texto
+    obj.save()
+    return HttpResponse('Fin')
+
+
+class CotizacionOtrosCargosUpdateView(BSModalUpdateView):
+    model = CotizacionVenta
+    template_name = "cotizacion/cotizacion_venta/form_otros_cargos.html"
+    form_class = CotizacionVentaOtrosCargosForm
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionOtrosCargosUpdateView, self).get_context_data(**kwargs)
+        texto = []
+        for sociedad in self.object.CotizacionOtrosCargos_cotizacion_venta.all():
+            texto.append(str(sociedad.otros_cargos))
+
+        sociedades = Sociedad.objects.all()
+        
+        context['titulo'] = "Actualizar Otros Cargos"
+        context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_otros_cargos', kwargs={'monto':1,'id_cotizacion':1,'abreviatura':"a",})[:-6]
+        context['sociedades'] = sociedades
+        context['otros_cargos'] = "|".join(texto)
+        context['id_cotizacion'] = self.object.id
+        context['igv'] = igv()
+        return context
+
+
+def GuardarCotizacionOtrosCargos(request, monto, id_cotizacion, abreviatura):
+    if monto == 1 and id_cotizacion == 1 and abreviatura == 'a':
+        return HttpResponse('Nada')
+    cotizacion_venta = CotizacionVenta.objects.get(id=id_cotizacion)
+    sociedad = Sociedad.objects.get(abreviatura = abreviatura)
+
+    obj, created = CotizacionOtrosCargos.objects.get_or_create(
+        cotizacion_venta = cotizacion_venta,
+        sociedad = sociedad,
+    )
+    obj.otros_cargos = monto
     obj.save()
     return HttpResponse('Fin')
 
@@ -899,6 +945,7 @@ class CotizacionVentaPdfView(View):
 
         TablaTotales = []
         for detalle in lista:
+            if not detalle[0] in DICCIONARIO_TOTALES: continue
             fila = []
             fila.append(DICCIONARIO_TOTALES[detalle[0]])
             fila.append(intcomma(detalle[1]))
@@ -945,69 +992,75 @@ class CotizacionVentaSociedadPdfView(View):
         vertical = False
         logo = sociedad.logo.url
         pie_pagina = PIE_DE_PAGINA_DEFAULT
+        alinear = 'right'
+        fuenteBase = "ComicNeue"
 
         obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
 
-        fecha=datetime.strftime(obj.fecha_cotizacion,'%d - %m - %Y')
+        moneda = obj.moneda.simbolo
+        titulo = 'Cotización %s%s %s' % (self.kwargs['sociedad'], str(obj.numero_cotizacion), str(obj.cliente.razon_social))
 
-        nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion)
-        razon_social = 'Razón Social: ' + str(obj.cliente)
-        direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
-        interlocutor = 'Interlocutor: ' + str(obj.cliente_interlocutor)
-        nro_documento = str(DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]) + ': ' + str(obj.cliente.numero_documento)
-        fecha_cotizacion = 'Fecha Cotizacion: ' + str(obj.fecha_cotizacion)
-        fecha_validez = 'Fecha Validez: ' + str(obj.fecha_validez)
-
-        Texto = []
-        Texto.extend([  nro_cotizacion, 
-                        razon_social,
-                        direccion, 
-                        interlocutor, 
-                        nro_documento,
-                        fecha_cotizacion,
-                        fecha_validez,
-                        ])
+        Cabecera = {}
+        Cabecera['nro_cotizacion'] = '%s%s' % (self.kwargs['sociedad'], str(obj.numero_cotizacion))
+        Cabecera['fecha_cotizacion'] = fecha_en_letras(obj.fecha_cotizacion)
+        Cabecera['razon_social'] = str(obj.cliente)
+        Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
+        Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
+        Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
+        Cabecera['interlocutor'] = str(obj.cliente_interlocutor)
+        Cabecera['fecha_validez'] = obj.fecha_validez.strftime('%d/%m/%Y')
 
         TablaEncabezado = [ 'Item',
                             'Descripción',
                             'Unidad',
                             'Cantidad',
-                            'Prec. Unit. sin IGV',
                             'Prec. Unit. con IGV',
-                            'P. Final IGV',
+                            'Prec. Final con IGV',
                             'Descuento',
-                            'Sub Total',
-                            'IGV',
                             'Total',
+                            'Stock',
+                            '',
                             ]
 
         cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+
         TablaDatos = []
+        item = 1
         for detalle in cotizacion_venta_detalle:
             fila = []
-
+            confirmacion_detalle = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
+            if confirmacion_detalle.cantidad == 0: continue
+            calculo = calculos_linea(confirmacion_detalle.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(obj.fecha))
             detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
-            fila.append(detalle.item)
-            fila.append(detalle.material)
-            fila.append(detalle.material.unidad_base)
-            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
-            fila.append(detalle.precio_unitario_sin_igv.quantize(Decimal('0.01')))
-            fila.append(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))
-            fila.append(detalle.precio_final_con_igv.quantize(Decimal('0.01')))
-            fila.append(detalle.descuento.quantize(Decimal('0.01')))
-            fila.append(detalle.sub_total.quantize(Decimal('0.01')))
-            fila.append(detalle.igv.quantize(Decimal('0.01')))
-            fila.append(detalle.total.quantize(Decimal('0.01')))
+            fila.append(item)
+            fila.append(intcomma(detalle.material))
+            fila.append(intcomma(detalle.material.unidad_base))
+            fila.append(intcomma(confirmacion_detalle.cantidad.quantize(Decimal('0.01'))))
+            fila.append(intcomma(detalle.precio_unitario_con_igv.quantize(Decimal('0.01'))))
+            fila.append(intcomma(detalle.precio_final_con_igv.quantize(Decimal('0.01'))))
+            fila.append(intcomma(calculo['descuento_con_igv'].quantize(Decimal('0.01'))))
+            fila.append(intcomma(calculo['total'].quantize(Decimal('0.01'))))
 
             TablaDatos.append(fila)
+            item += 1
         
-        terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
-        
-        condiciones = ['Condiciones: ']
-        for condicion in terminos_condiciones:
-            condiciones.append(condicion)
+        totales = obtener_totales(obj, sociedad)
 
-        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones)
+        TablaTotales = []
+        for k,v in totales.items():
+            if not k in DICCIONARIO_TOTALES: continue
+            if v==0:continue
+            fila = []
+            fila.append(DICCIONARIO_TOTALES[k])
+            fila.append(intcomma(v))
+
+            TablaTotales.append(fila)
+        
+        condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
+        
+        observaciones = obj.CotizacionObservacion_cotizacion_venta.get(sociedad=sociedad).observacion
+
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, alinear, fuenteBase, moneda, observaciones)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
