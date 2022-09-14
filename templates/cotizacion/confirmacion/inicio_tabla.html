@@ -1,0 +1,33 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro Cotización</th>
+            <th>Cliente</th>
+            <th>Fecha Confirmación</th>
+            <th class="text-end">Total</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for confirmacion in contexto_cotizacion_venta %}
+            <tr>
+                <td>
+                    {{ confirmacion.sociedad.abreviatura }}
+                    {{ confirmacion.cotizacion_venta.numero_cotizacion }}
+                </td>
+                <td>{{ confirmacion.cotizacion_venta.cliente }}</td>
+                <td>{{ confirmacion.cotizacion_venta.fecha|date:'d/m/Y' }}</td>
+                <td class="text-end">$ {{ confirmacion.total }}</td>
+                <td>{{ confirmacion.get_estado_display }}</td>
+                <td class="text-center">
+                    <a href="{% url 'cotizacion_app:confirmacion_ver' confirmacion.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %} 
+    </tbody>
+</table>

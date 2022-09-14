@@ -8,6 +8,16 @@ TIPO_DOCUMENTO_SUNAT = (
     ('0', 'NO DOMICILIADO, SIN RUC (EXPORTACIÓN)'),
     )
 
+DICCIONARIO_TIPO_DOCUMENTO_SUNAT = {
+    '6' : 'RUC',
+    '1' : 'DNI',
+    '-' : 'VENTAS MENORES',
+    '4' : 'C. EXTRANJERÍA',
+    '7' : 'PASAPORTE',
+    'A' : 'CÉDULA DIPLOMÁTICA DE IDENTIDAD',
+    '0' : 'SIN RUC (EXPORTACIÓN)',
+    }
+
 TIPO_REPRESENTANTE_LEGAL_SUNAT = (
     ('001', 'Administrador'),
     ('002', 'Administrador Judicial'),
@@ -164,12 +174,20 @@ ESTADOS_ORDEN_COMPRA = (
     )
 
 ESTADOS_COTIZACION_VENTA = (
+    (1, 'BORRADOR'),
+    (2, 'PENDIENTE'),
+    (3, 'RESERVADO'),
+    (4, 'CONFIRMADO'), #Regresa a Reservado
+    (5, 'CONFIRMADO'), #Regresa a Pendiente
+    (6, 'FINALIZADO'),
+    (7, 'VENCIDO'),
+    (8, 'DE BAJA'),
+    )
+
+ESTADOS_CONFIRMACION = (
     (1, 'PENDIENTE'),
-    (2, 'RESERVADO'),
-    (3, 'CONFIRMADO'),
-    (4, 'VENCIDO'),
-    (5, 'SIN CONFIRMAR'),
-    (6, 'DE BAJA'),
+    (2, 'FINALIZADO'),
+    (3, 'DE BAJA'),
     )
 
 
@@ -187,6 +205,8 @@ MENSAJE_GENERAR_ORDEN_COMPRA = 'Operación exitosa: Generar Orden de Compra.'
 MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Generar Comprobante de Compra PI.'
 MENSAJE_FINALIZAR_INVENTARIO_ACTIVO = 'Operación exitosa: El Inventario fue Finalizado.'
 
+MENSAJE_GUARDAR_COTIZACION = 'Operación exitosa: La cotización fue guardada con éxito.'
+MENSAJE_RESERVAR_COTIZACION = 'Operación exitosa: La cotización fue reservada con éxito.'
 
 COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
@@ -195,3 +215,21 @@ EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'
 
 
 MENSAJE_ANULAR_ORDEN_COMPRA = 'Operación exitosa: La Orden de Compra fue anulada.'
+
+DICCIONARIO_TOTALES={
+    # 'descuento_global':'Descuento Global',
+    # 'descuento_global_con_igv':'Descuento Global',
+    # 'total_descuento':'Descuento',
+    # 'total_descuento_con_igv':'Descuento',
+    'descuento_cotizacion':'Descuento Extra',
+    'total_anticipo':'Anticipo',
+    'total_gravada':'Gravada',
+    'total_inafecta':'Inafecta',
+    'total_exonerada':'exonerada',
+    'total_igv':'I.G.V.',
+    'total_gratuita':'Gratuita',
+    # 'total_otros_cargos':'Otros Cargos',
+    'otros_cargos_cotizacion':'Otros Cargos',
+    'total_icbper':'ICBPER',
+    'total':'Total',
+}

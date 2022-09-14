@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.cotizacion.models import CotizacionVenta, CotizacionVentaDetalle
+from applications.cotizacion.models import CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.material.models import Material
 
@@ -51,16 +51,51 @@ class CotizacionVentaClienteForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class CotizacionVentaDescuentoGlobalForm(BSModalModelForm):
+    class Meta:
+        model = CotizacionDescuentoGlobal
+        fields = ()
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaDescuentoGlobalForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class CotizacionVentaObservacionForm(BSModalModelForm):
+    class Meta:
+        model = CotizacionObservacion
+        fields = ()
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaObservacionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class CotizacionVentaOtrosCargosForm(BSModalModelForm):
+    class Meta:
+        model = CotizacionOtrosCargos
+        fields = ()
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaOtrosCargosForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class CotizacionVentaMaterialDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
     precio_lista = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)
+    stock = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)
     class Meta:
         model = CotizacionVentaDetalle
         fields=(
             'material',
             'cantidad',
             'precio_lista',
+            'stock',
             )
 
     def __init__(self, *args, **kwargs):
@@ -68,4 +103,60 @@ class CotizacionVentaMaterialDetalleForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
+    class Meta:
+        model = CotizacionVentaDetalle
+        fields=(
+            'tipo_igv',
+            'cantidad',
+            'precio_final_con_igv',
+            'tiempo_entrega',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaMaterialDetalleUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
         
+
+        
+class CotizacionVentaDetalleForm(BSModalModelForm):
+    cantidad = forms.DecimalField(required=False, disabled=True)
+    class Meta:
+        model = CotizacionVentaDetalle
+        fields = (
+            'cantidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control text-end'
+
+
+class PrecioListaMaterialForm (BSModalModelForm):
+    comprobante = forms.ChoiceField(choices=[(0,0)], required=False)
+    class Meta:
+        model = PrecioListaMaterial
+        fields = (
+            'comprobante',
+            'moneda',
+            'precio_compra',
+            'logistico',
+            'margen_venta',
+            'precio_lista',
+            'precio_sin_igv',
+        )
+
+    def __init__(self, *args, **kwargs):
+        precios = kwargs.pop('precios')
+        super(PrecioListaMaterialForm, self).__init__(*args, **kwargs)
+        self.fields['comprobante'].choices = precios
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class CotizacionVentaPdfsForm(BSModalForm):
+    pass
+
+    # TODO: Define form fields here

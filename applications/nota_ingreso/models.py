@@ -30,6 +30,10 @@ class NotaIngreso(models.Model):
         verbose_name = 'Nota de Ingreso'
         verbose_name_plural = 'Notas de Ingreso'
 
+    @property
+    def fecha(self):
+        return self.fecha_ingreso
+
     def __str__(self):
         return self.nro_nota_ingreso
 

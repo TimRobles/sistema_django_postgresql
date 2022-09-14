@@ -6,6 +6,7 @@ from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 @admin.register(NotaIngreso)
 class NotaIngresoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nro_nota_ingreso',
         'recepcion_compra',
         'sociedad',
@@ -29,6 +30,7 @@ class NotaIngresoAdmin(admin.ModelAdmin):
 @admin.register(NotaIngresoDetalle)
 class NotaIngresoDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'item',
         'comprobante_compra_detalle',
         'cantidad_conteo',

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from applications.importaciones import *
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from django import forms
@@ -1406,16 +1407,19 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
             
             detalle.logistico = comprobante_compra.logistico
             
-            recepcion = RecepcionCompra.objects.get(
-                content_type = ContentType.objects.get_for_model(comprobante_compra),
-                id_registro = comprobante_compra.id,
-                estado = 1,
-            )
-            
-            detalle.fecha_recepcion = recepcion.fecha_recepcion
-            detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
-            valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.kwargs['material_id'], self.kwargs['material_content_type'])
-            precios.append((valor, recepcion.numero_comprobante_compra))
+            try:
+                recepcion = RecepcionCompra.objects.get(
+                    content_type = ContentType.objects.get_for_model(comprobante_compra),
+                    id_registro = comprobante_compra.id,
+                    estado = 1,
+                )
+                
+                detalle.fecha_recepcion = recepcion.fecha_recepcion
+                detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
+                valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.kwargs['material_id'], self.kwargs['material_content_type'])
+                precios.append((valor, recepcion.numero_comprobante_compra))
+            except:
+                pass
         self.kwargs['precios'] = orden_detalle
         kwargs['precios'] = precios
         return kwargs
@@ -1439,15 +1443,19 @@ def ComprobanteView(request, id_comprobante, comprobante_content_type, id_materi
         content_type = material_content_type,
         id_registro = id_material,
     )
+
+    precio = Decimal('0.00')
+    moneda = None
+    logistico = Decimal('0.00')
     
     for detalle in orden_detalle:
         comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
         if comprobante_compra.id == id_comprobante and ContentType.objects.get_for_model(comprobante_compra) == comprobante_content_type:
             if detalle.id_registro == id_material and detalle.content_type == material_content_type:
                 precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+                moneda = comprobante_compra.moneda
+                logistico = comprobante_compra.logistico
 
-    moneda = comprobante_compra.moneda
-    logistico = comprobante_compra.logistico
     
     return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
     # return HttpResponse("%s|%s" % (moneda, logistico))
@@ -1457,5 +1465,13 @@ def PrecioListaView(request, id_material):
     if request.method == 'GET':
         try:
             return HttpResponse(Material.objects.get(id=id_material).precio_lista.precio_lista)
+        except:
+            return HttpResponse("")
+
+
+def StockView(request, id_material):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(Material.objects.get(id=id_material).stock)
         except:
             return HttpResponse("")

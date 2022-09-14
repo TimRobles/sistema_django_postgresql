@@ -18,6 +18,14 @@ class NotaIngresoView(TemplateView):
         context['regresar'] = reverse_lazy('recepcion_compra_app:recepcion_compra_detalle', kwargs={'pk':self.kwargs['recepcion_id']})
         return context
 
+class NotaIngresoListaView(TemplateView):
+    template_name = "nota_ingreso/nota_ingreso/inicio.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoListaView, self).get_context_data(**kwargs)
+        context['contexto_nota_ingreso'] = NotaIngreso.objects.all()
+        return context
+
 
 class NotaIngresoDetailView(DetailView):
     model = NotaIngreso

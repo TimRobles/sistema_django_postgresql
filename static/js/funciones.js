@@ -158,10 +158,17 @@ $(function () {
 
     function readModalForm() {
         $(".read").each(function () {
-            $(this).modalForm({
-                formURL: $(this).data("form-url"),
-                modalID: "#modal-xl-detail"
-            });
+            if ($(this).data("small")) {
+                $(this).modalForm({
+                    formURL: $(this).data("form-url"),
+                    modalID: "#modal-detail"
+                });
+            }else{
+                $(this).modalForm({
+                    formURL: $(this).data("form-url"),
+                    modalID: "#modal-xl-detail"
+                });
+            };
         });
     }
     readModalForm();
@@ -237,12 +244,12 @@ $(function () {
         }
     }
 
-    $('#modal').on('shown.bs.modal', function (e) {
+    $('#modal').unbind().on('shown.bs.modal', function (e) {
         funcionesDentroModal();
         reemplazarTexto(e);
     });
 
-    $('#modal-xl').on('shown.bs.modal', function (e) {
+    $('#modal-xl').unbind().on('shown.bs.modal', function (e) {
         funcionesDentroModal();
         reemplazarTexto(e);
     });

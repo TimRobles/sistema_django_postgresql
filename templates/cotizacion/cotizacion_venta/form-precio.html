@@ -1,0 +1,62 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+{% load humanize %}
+{% load funciones_propias %}
+
+{% block arriba %}
+<div class="row">
+    <div class="col-lg-6 table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Documento</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Logístico</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for precio in precios %}  
+                <tr>
+                    <td>{{ precio.fecha_recepcion|date:'d/m/Y' }}</td>
+                    <td>{{ precio.numero_comprobante_compra }}</td>
+                    <td class="cantidad" data-cantidad="{{ precio.numero_comprobante_compra }}">{{ precio.cantidad|redondear|intcomma }}</td>
+                    <td>{{ precio.precio|redondear|intcomma }}</td>
+                    <td>{{ precio.logistico }}</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6">
+{% endblock arriba %}
+        
+
+{% block abajo %}
+    </div>
+</div>
+{% endblock abajo %}
+
+
+
+{% block js %}
+    <script src="{% static 'js/cotizacion/material/form_precio.js' %}?{{ cache_bust }}"></script>
+
+    <script>
+        $(function () {
+
+            $("#id_comprobante").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            });
+    </script>    
+{% endblock js %}
+

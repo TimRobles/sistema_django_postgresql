@@ -1,0 +1,52 @@
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+
+
+{% for moneda in monedas %}
+    <div class="mb-5">
+    <h2>{{ moneda.nombre }}</h2>
+    {% for sociedad in moneda.sociedades %}
+    <div class="row">
+        <div class="col-lg-5 mb-2">
+            <label class="input-group-text text-wrap text-center fw-bold fondo-personalizado" style="--color-fondo: {{ sociedad.color }};">{{ sociedad.razon_social }}</label>
+            <div class="input-group">
+                <label class="input-group-text fondo-personalizado" style="--color-fondo: {{ sociedad.color }};">Monto a Depositar:</label>
+                <input class="form-control" type="text" disabled value="{{ moneda.simbolo }} {{ sociedad.total }}">
+            </div>
+        </div>
+        <div class="col-lg-7 table-responsive">
+            <table class="table">
+                <thead class="fondo-personalizado" style="--color-fondo: {{ sociedad.color }};">
+                    <tr>
+                        <th>BANCO</th>
+                        <th class="text-center">NÚMERO DE CUENTA</th>
+                        <th class="text-center">CCI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for banco in sociedad.cuentas %}
+                    <tr>
+                        <td>{{ banco.banco.nombre_comercial }} - {{ moneda.nombre }}</td>
+                        <td class="text-center">{{ banco.numero_cuenta }}</td>
+                        <td class="text-center">{{ banco.numero_cuenta_interbancaria }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% endfor %}
+    <hr>    
+    </div>
+
+{% endfor %}
+{% endblock content %}    
+
+{% block js %}
+    <script src="{% static 'js/cotizacion/cotizacion_venta/form_observacion.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}

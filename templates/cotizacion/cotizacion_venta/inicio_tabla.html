@@ -1,27 +1,37 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Sociedad</th>
             <th>Nro Cotización</th>
             <th>Cliente</th>
             <th>Fecha Cotización</th>
             <th>Fecha Validez</th>
-            <th>Total</th>
+            <th class="text-end">Total</th>
             <th>Estado</th>
-            <th>Acciones</th>
+            <th>Usuario</th>
+            <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
         {% for cotizacion in contexto_cotizacion_venta %}
             <tr>
-                <td>{{ cotizacion.sociedad }}</td>
-                <td>{{ cotizacion.numero_cotizacion }}</td>
+                <td>
+                    {% if cotizacion.numero_cotizacion %}    
+                    {{ cotizacion.numero_cotizacion }}
+                    {% endif %}
+                </td>
                 <td>{{ cotizacion.cliente }}</td>
-                <td>{{ cotizacion.fecha_cotizacion }}</td>
-                <td>{{ cotizacion.fecha_validez }}</td>
-                <td>{{ cotizacion.total }}</td>
+                <td>{{ cotizacion.fecha_cotizacion|date:'d/m/Y' }}</td>
+                <td>{{ cotizacion.fecha_validez|date:'d/m/Y' }}</td>
+                <td class="text-end">$ {{ cotizacion.total }}</td>
                 <td>{{ cotizacion.get_estado_display }}</td>
-                <td>{{ cotizacion.validez }}</td>
+                <td>{{ cotizacion.created_by }}</td>
+                <td class="text-center">
+                    <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                </td>
             </tr>
         {% endfor %} 
     </tbody>

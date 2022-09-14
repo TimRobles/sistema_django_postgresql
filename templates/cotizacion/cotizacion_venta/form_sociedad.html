@@ -1,0 +1,85 @@
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th class="text-end">Vendible</th>
+                <th class="text-end">Calidad</th>
+                <th class="text-end">Stock</th>
+                <th class="text-end">Tránsito</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sociedad in sociedades %}
+            <tr>
+                <td>{{ sociedad.alias }}</td>
+                <td class="text-end text-nowrap">
+                    {{ sociedad.vendible|redondear|intcomma }}
+                    {% if sociedad.reservado %}
+                    <br>
+                    <span class="text-danger">
+                        (-{{ sociedad.reservado|redondear|intcomma }})
+                    </span>
+                    {% endif %}
+                </td>
+                <td class="text-end text-nowrap">{{ sociedad.calidad|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ sociedad.stock|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ sociedad.transito|redondear|intcomma }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<form action="" method="post" id="formulario-sociedad">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
+            {% if field.help_text %}
+            data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+            {% endif %}
+            >
+            {% if field in form.visible_fields %}
+            <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% endif %}
+            {{ field }}
+        </div>
+        {% if field.help_text %}
+        <p class="mt-0">Pista:{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+        {% endfor %}
+    {% endfor %}
+    <hr>
+    
+    {% for sociedad in sociedades %}
+    <div class="flex-nowrap mt-3">
+        <label class="input-group-text text-wrap fondo-personalizado" for="{{ item }}" style="--color-fondo: {{ sociedad.color }};">{{ sociedad }}</label>
+        <input class="form-control text-end" type="float" name="{{ item }}" id="{{ sociedad.abreviatura }}">
+    </div>
+    {% endfor %}
+
+    <div class="input-group flex-nowrap mt-3">
+        <label class="input-group-text" for="pendiente">Pendiente</label>
+        <input class="form-control text-end" type="float" name="pendiente" id="pendiente" disabled>
+    </div>
+    
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" id="guardar_formulario">Guardar</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+    <span id="url_guardar" hidden>{{ url_guardar }}</span>
+    <span id="cantidades" hidden>{{ cantidades }}</span>
+</form>
+{% endblock content %}    
+
+{% block js %}
+<script src="{% static 'js/cotizacion/cotizacion_venta/form_sociedad.js' %}?{{ cache_bust }}"></script> 
+{% endblock js %}

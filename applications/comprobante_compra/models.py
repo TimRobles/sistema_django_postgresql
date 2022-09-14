@@ -53,6 +53,7 @@ class ComprobanteCompraPI(models.Model):
         else:
             return True
 
+    @property
     def fecha(self):
         return self.fecha_comprobante
 

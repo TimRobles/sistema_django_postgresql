@@ -1,7 +1,10 @@
+from decimal import Decimal
 from applications.cotizacion.models import PrecioListaMaterial
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications.variables import ESTADOS
 from django.db import models
 from django.conf import settings
+from django.db.models import Q
 
 from applications.datos_globales.models import Unidad,ProductoSunat
 from applications.proveedores.models import Proveedor
@@ -176,6 +179,106 @@ class Material(models.Model):
                     ).latest('created_at')
         except:
             return ""
+
+    @property
+    def disponible(self):
+        disponible = TipoStock.objects.get(codigo=3)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = disponible,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def vendible(self):
+        return self.disponible - self.reservado - self.confirmado
+
+    @property
+    def reservado(self):
+        reservado = TipoStock.objects.get(codigo=16)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = reservado,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def transito(self):
+        transito = TipoStock.objects.get(codigo=1)
+        recibido = TipoStock.objects.get(codigo=2)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock__in = [transito, recibido],
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def confirmado(self):
+        confirmado = TipoStock.objects.get(codigo=17)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = confirmado,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def calidad(self):
+        bloqueo_sin_serie = TipoStock.objects.get(id=4)
+        bloqueo_sin_qa = TipoStock.objects.get(id=5)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            Q(tipo_stock=bloqueo_sin_serie) | Q(tipo_stock=bloqueo_sin_qa)
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
+    def stock(self):
+        return self.vendible + self.calidad
 
     def __str__(self):
         return self.descripcion_venta

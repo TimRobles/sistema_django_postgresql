@@ -34,7 +34,10 @@ class NivelDos(models.Model):
     class Meta:
         verbose_name = 'Nivel Dos'
         verbose_name_plural = 'Niveles Dos'
-        ordering = ['nivel_uno__orden', 'orden',]
+        ordering = [
+            'nivel_uno',
+            'orden',
+            ]
 
     def __str__(self):
         return str(self.orden) + ' - ' + self.nombre + ' | ' + str(self.nivel_uno)
@@ -54,7 +57,10 @@ class NivelTres(models.Model):
     class Meta:
         verbose_name = 'Nivel Tres'
         verbose_name_plural = 'Niveles Tres'
-        ordering = ['nivel_dos__orden', 'orden',]
+        ordering = [
+            'nivel_dos',
+            'orden',
+            ]
 
     def __str__(self):
         return str(self.orden) + ' - ' + self.nombre + ' | ' + str(self.nivel_dos)
@@ -74,7 +80,10 @@ class NivelCuatro(models.Model):
     class Meta:
         verbose_name = 'Nivel Cuatro'
         verbose_name_plural = 'Niveles Cuatro'
-        ordering = ['nivel_tres__orden', 'orden',]
+        ordering = [
+            'nivel_tres', 
+            'orden',
+            ]
 
     def __str__(self):
         return str(self.orden) + ' - ' + self.nombre + ' | ' + str(self.nivel_tres)
