@@ -3,8 +3,8 @@ from django.shortcuts import render
 from django import forms
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
-from applications.datos_globales.models import TipoCambio
-from applications.material.funciones import calidad, observacion, reservado, stock, vendible
+from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
+from applications.material.funciones import calidad, observacion, reservado, stock, transito, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
 from applications.funciones import calculos_linea, fecha_en_letras, igv, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
@@ -315,6 +315,7 @@ class CotizacionSociedadUpdateView(BSModalUpdateView):
             sociedad.calidad = calidad(self.object.content_type, self.object.id_registro, sociedad.id)
             sociedad.reservado = reservado(self.object.content_type, self.object.id_registro, sociedad.id)
             sociedad.stock = stock(self.object.content_type, self.object.id_registro, sociedad.id)
+            sociedad.transito = transito(self.object.content_type, self.object.id_registro, sociedad.id)
 
         context['titulo'] = "Stock por Sociedad"
         context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_sociedad', kwargs={'cantidad':1,'item':1,'abreviatura':"a",})[:-6]
@@ -991,13 +992,13 @@ class CotizacionVentaSociedadPdfView(View):
         titulo = 'Cotización'
         vertical = False
         logo = sociedad.logo.url
-        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        pie_pagina = sociedad.pie_pagina
         alinear = 'right'
         fuenteBase = "ComicNeue"
 
         obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
 
-        moneda = obj.moneda.simbolo
+        moneda = obj.moneda
         titulo = 'Cotización %s%s %s' % (self.kwargs['sociedad'], str(obj.numero_cotizacion), str(obj.cliente.razon_social))
 
         Cabecera = {}
@@ -1040,6 +1041,20 @@ class CotizacionVentaSociedadPdfView(View):
             fila.append(intcomma(detalle.precio_final_con_igv.quantize(Decimal('0.01'))))
             fila.append(intcomma(calculo['descuento_con_igv'].quantize(Decimal('0.01'))))
             fila.append(intcomma(calculo['total'].quantize(Decimal('0.01'))))
+            stock_disponible = stock(detalle.content_type, detalle.id_registro, sociedad.id)
+            if stock_disponible >= confirmacion_detalle.cantidad:
+                disponibilidad = "DISPONIBLE"
+            elif stock_disponible == 0:
+                if detalle.tiempo_entrega:
+                    disponibilidad = "LLEGADA EN %s DÍAS" % (detalle.tiempo_entrega)
+                else:
+                    disponibilidad = "NO DISPONIBLE"
+            else:
+                if detalle.tiempo_entrega:
+                    disponibilidad = "%s DISPONIBLE\nSALDO EN %s DÍAS" % (intcomma((stock_disponible).quantize(Decimal('0.01'))), detalle.tiempo_entrega)
+                else:
+                    disponibilidad = "%s DISPONIBLE" % (intcomma((stock_disponible).quantize(Decimal('0.01'))))
+            fila.append(disponibilidad)
 
             TablaDatos.append(fila)
             item += 1
@@ -1067,6 +1082,48 @@ class CotizacionVentaSociedadPdfView(View):
 
         return respuesta
 
+
+
+class CotizacionVentaResumenView(BSModalReadView):
+    model = CotizacionVenta
+    template_name = "cotizacion/cotizacion_venta/form_resumen.html"
+
+    def get_context_data(self, **kwargs):
+        monedas = Moneda.objects.all()
+        tipo_de_cambio_cotizacion = TipoCambio.objects.tipo_cambio_venta(self.object.fecha)
+        tipo_de_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        print(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
+        tipo_de_cambio_final = tipo_de_cambio(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
+        for moneda in monedas:
+            cotizacion_sociedad = []
+            sociedades = Sociedad.objects.all()
+            for sociedad in sociedades:
+                total = obtener_totales(self.object, sociedad)['total']
+                if total > 0:
+                    if moneda.simbolo == '$':
+                        sociedad.total = total
+                    else:
+                        sociedad.total = total * tipo_de_cambio_final
+
+                    cotizacion_sociedad.append(sociedad)
+
+            for sociedad in cotizacion_sociedad:
+                cuentas = CuentaBancariaSociedad.objects.filter(
+                    sociedad=sociedad,
+                    moneda=moneda,
+                    )
+                sociedad.cuentas = cuentas
+            moneda.sociedades = cotizacion_sociedad
+
+        print("***************************************")
+        print(self.object)
+        print("***************************************")
+
+        context = super(CotizacionVentaResumenView, self).get_context_data(**kwargs)
+        context['monedas'] = monedas
+        context['titulo'] = 'Resumen a Depositar'
+        return context
+    
 
 #################################################################################################################
 

@@ -13,6 +13,8 @@ urlpatterns = [
     path('cotizacion-venta/ver/agregar-material/<int:cotizacion_id>/', views.CotizacionVentaMaterialDetalleView.as_view(), name='cotizacion_venta_agregar_material'),
     path('cotizacion-venta/ver/cliente/<pk>/', views.CotizacionVentaClienteView.as_view(), name='cotizacion_venta_cliente'),
     
+    path('cotizacion-venta/resumen/<pk>/', views.CotizacionVentaResumenView.as_view(), name='cotizacion_venta_resumen'),
+    
     path('cotizacion-venta/descuento-global/<pk>/', views.CotizacionDescuentoGlobalUpdateView.as_view(), name='cotizacion_venta_descuento_global'),
     path('cotizacion-venta/descuento-global/guardar/<str:monto>/<int:id_cotizacion>/<str:abreviatura>/', views.GuardarCotizacionDescuentoGlobal, name='guardar_cotizacion_venta_descuento_global'),
 

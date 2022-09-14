@@ -7,7 +7,7 @@ def retornar_fecha(movimiento):
 
 class MovimientoAlmacenManager(models.Manager):
     def ver_movimientos(self, content_type, id_registro):
-        movimientos_fuera = [16, 17]
+        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19]
         consulta = self.filter(
             content_type_producto = content_type,
             id_registro_producto = id_registro,
@@ -24,6 +24,7 @@ class MovimientoAlmacenManager(models.Manager):
         return lista, total
 
     def ver_stock(self, content_type, id_registro, tipo_stock):
+        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19]
         lista_estados = list(tipo_stock)
         stocks = {}
         totales = {}
@@ -47,9 +48,11 @@ class MovimientoAlmacenManager(models.Manager):
                 stocks[dato.sociedad][0][dato.almacen] = almacenes
 
             stocks[dato.sociedad][0][dato.almacen][index] = stocks[dato.sociedad][0][dato.almacen][index] + cantidad
-            stocks[dato.sociedad][0][dato.almacen][-1] = stocks[dato.sociedad][0][dato.almacen][-1] + cantidad
+            if not dato.tipo_stock.codigo in movimientos_fuera:
+                stocks[dato.sociedad][0][dato.almacen][-1] = stocks[dato.sociedad][0][dato.almacen][-1] + cantidad
 
             stocks[dato.sociedad][1][index] = stocks[dato.sociedad][1][index] + cantidad
-            stocks[dato.sociedad][1][-1] = stocks[dato.sociedad][1][-1] + cantidad
+            if not dato.tipo_stock.codigo in movimientos_fuera:
+                stocks[dato.sociedad][1][-1] = stocks[dato.sociedad][1][-1] + cantidad
 
         return stocks, tipo_stock

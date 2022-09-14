@@ -12,12 +12,13 @@
                 <th class="text-end">Vendible</th>
                 <th class="text-end">Calidad</th>
                 <th class="text-end">Stock</th>
+                <th class="text-end">Tránsito</th>
             </tr>
         </thead>
         <tbody>
             {% for sociedad in sociedades %}
             <tr>
-                <td>{{ sociedad }}</td>
+                <td>{{ sociedad.alias }}</td>
                 <td class="text-end text-nowrap">
                     {{ sociedad.vendible|redondear|intcomma }}
                     {% if sociedad.reservado %}
@@ -29,6 +30,7 @@
                 </td>
                 <td class="text-end text-nowrap">{{ sociedad.calidad|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">{{ sociedad.stock|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ sociedad.transito|redondear|intcomma }}</td>
             </tr>
             {% endfor %}
         </tbody>

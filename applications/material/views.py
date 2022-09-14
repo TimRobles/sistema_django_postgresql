@@ -1407,16 +1407,19 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
             
             detalle.logistico = comprobante_compra.logistico
             
-            recepcion = RecepcionCompra.objects.get(
-                content_type = ContentType.objects.get_for_model(comprobante_compra),
-                id_registro = comprobante_compra.id,
-                estado = 1,
-            )
-            
-            detalle.fecha_recepcion = recepcion.fecha_recepcion
-            detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
-            valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.kwargs['material_id'], self.kwargs['material_content_type'])
-            precios.append((valor, recepcion.numero_comprobante_compra))
+            try:
+                recepcion = RecepcionCompra.objects.get(
+                    content_type = ContentType.objects.get_for_model(comprobante_compra),
+                    id_registro = comprobante_compra.id,
+                    estado = 1,
+                )
+                
+                detalle.fecha_recepcion = recepcion.fecha_recepcion
+                detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
+                valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.kwargs['material_id'], self.kwargs['material_content_type'])
+                precios.append((valor, recepcion.numero_comprobante_compra))
+            except:
+                pass
         self.kwargs['precios'] = orden_detalle
         kwargs['precios'] = precios
         return kwargs

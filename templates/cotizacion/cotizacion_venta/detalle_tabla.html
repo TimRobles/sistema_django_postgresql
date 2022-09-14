@@ -37,6 +37,15 @@
     </div>
     {% endif %}
 
+    {% if cotizacion.estado > 1 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_resumen' cotizacion.id %}"
+            class="read btn btn-primary">
+            Resumen
+        </button>
+    </div>
+    {% endif %}
+
     {% if cotizacion.estado != 1 %}
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_pdfs' cotizacion.id %}"
@@ -195,7 +204,7 @@
 
 <div class="row mt-3">
     {% for sociedad in sociedades %}
-    <div class="col-lg-6 table-responsive mb-3">
+    <div class="col-lg-6 table-responsive mb-3" style="overflow-y: scroll; max-height: 100px;">
         <table class="table">
             <thead>
                 <tr>
@@ -238,9 +247,10 @@
                 <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
-                <th class="table-primary">Vendible</th>
-                <th class="table-primary">Calidad</th>
-                <th class="table-primary">Stock</th>
+                <th class="table-primary text-center">Vendible</th>
+                <th class="table-primary text-center">Calidad</th>
+                <th class="table-primary text-center">Stock</th>
+                <th class="table-primary text-center">En Camino</th>
                 <th class="text-center">Acciones</th>
                 {% for sociedad in sociedades %}
                 <th class="text-center">{{ sociedad.abreviatura }}</th>
@@ -272,6 +282,7 @@
                     </td>
                     <td class="text-end text-nowrap table-primary">{{ material.material.calidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap table-primary">{{ material.material.stock|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.transito|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
                             class="read btn swatch-purple btn-sm"

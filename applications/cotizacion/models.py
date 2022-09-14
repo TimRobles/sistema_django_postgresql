@@ -98,6 +98,7 @@ class CotizacionVentaDetalle(models.Model):
     igv = models.DecimalField('IGV',max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
+    tiempo_entrega = models.IntegerField(default=0)
     cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionVentaDetalle_cotizacion_venta')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

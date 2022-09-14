@@ -111,6 +111,7 @@ class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
             'tipo_igv',
             'cantidad',
             'precio_final_con_igv',
+            'tiempo_entrega',
             )
 
     def __init__(self, *args, **kwargs):

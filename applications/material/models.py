@@ -221,6 +221,25 @@ class Material(models.Model):
         return total
 
     @property
+    def transito(self):
+        transito = TipoStock.objects.get(codigo=1)
+        recibido = TipoStock.objects.get(codigo=2)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock__in = [transito, recibido],
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
     def confirmado(self):
         confirmado = TipoStock.objects.get(codigo=17)
         total = Decimal('0.00')

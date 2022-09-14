@@ -13,12 +13,14 @@ class Sociedad(models.Model):
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=100, blank=True, null=True)
     abreviatura = models.CharField('Abreviatura', max_length=3, blank=True, null=True)
+    alias = models.CharField('Alias', max_length=100, blank=True, null=True)
     direccion_legal = models.CharField('Dirección Legal', max_length=100)
     ubigeo = models.CharField('Ubigeo', max_length=6)
     distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT, default=1)
     condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
     logo = models.ImageField('Logo', upload_to=RUTA_SOCIEDAD_LOGO, height_field=None, width_field=None, max_length=None, blank=True, null=True)
+    pie_pagina = models.TextField(blank=True, null=True)
     color = ColorField(default='#FF0000')
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Sociedad_created_by', editable=False)
@@ -36,6 +38,7 @@ class Sociedad(models.Model):
 
         self.razon_social = self.razon_social.upper()
         self.nombre_comercial = self.nombre_comercial.upper()
+        self.alias = self.alias.upper()
         self.direccion_legal = self.direccion_legal.upper()
         super().save(*args, **kwargs)
 

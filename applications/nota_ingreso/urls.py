@@ -5,6 +5,7 @@ app_name = 'nota_ingreso_app'
 
 urlpatterns = [
     path('nota-ingreso/lista/<int:recepcion_id>/', views.NotaIngresoView.as_view(), name='nota_ingreso_lista'),
+    path('nota-ingreso/lista/', views.NotaIngresoListaView.as_view(), name='nota_ingreso_lista_total'),
     path('nota-ingreso/detalle/<pk>/', views.NotaIngresoDetailView.as_view(), name='nota_ingreso_detalle'),
     path('nota-ingreso/detalle/tabla/<int:recepcion_id>/', views.NotaIngresoDetailTabla, name='nota_ingreso_detalle_tabla'),
     path('nota-ingreso/agregar-material/<int:id_nota_ingreso>/', views.NotaIngresoAgregarMaterialView.as_view(), name='nota_ingreso_agregar_material'),
