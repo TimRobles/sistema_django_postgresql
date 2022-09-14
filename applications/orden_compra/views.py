@@ -53,7 +53,7 @@ class OrdenCompraAnularView(BSModalUpdateView):
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
 
     def form_valid(self, form):
-        form.instance.estado = 3
+        form.instance.estado = 4
         registro_guardar(form.instance, self.request)
                 
         messages.success(self.request, MENSAJE_ANULAR_ORDEN_COMPRA)
@@ -112,7 +112,7 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
     def form_valid(self, form):
         if self.request.session['primero']:
             obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
-            numero_orden_compra = obj.sociedad_id.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad_id = obj.sociedad_id ))+1, 5)
+            numero_orden_compra = obj.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = obj.sociedad ))+1, 5)
             orden_compra_anterior = obj
             oferta_proveedor = obj.oferta_proveedor
 
@@ -131,7 +131,7 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
                 numero_orden_compra= numero_orden_compra,
                 oferta_proveedor= oferta_proveedor,
                 orden_compra_anterior= orden_compra_anterior,
-                sociedad_id= obj.sociedad_id,
+                sociedad= obj.sociedad,
                 fecha_orden= obj.fecha_orden,
                 moneda= obj.moneda,
                 descuento_global = obj.descuento_global ,
@@ -368,7 +368,7 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
             internacional_nacional = orden.internacional_nacional,
             incoterms = orden.incoterms,
             orden_compra = orden,
-            sociedad = orden.sociedad_id,
+            sociedad = orden.sociedad,
             moneda = orden.moneda,
             slug = slug_aleatorio(ComprobanteCompraPI),
             created_by = self.request.user,

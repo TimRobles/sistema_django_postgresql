@@ -207,6 +207,10 @@ class ConfirmacionVenta(models.Model):
     def fecha_confirmacion(self):
         return self.created_at
 
+    @property
+    def cliente(self):
+        return self.cotizacion_venta.cliente
+
     def __str__(self):
         return str(self.id)
 

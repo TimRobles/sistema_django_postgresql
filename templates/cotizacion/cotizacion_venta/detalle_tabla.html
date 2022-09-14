@@ -37,7 +37,7 @@
     </div>
     {% endif %}
 
-    {% if cotizacion.estado > 1 %}
+    {% if cotizacion.estado > 1 and cotizacion.estado < 7 %}
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_resumen' cotizacion.id %}"
             class="read btn btn-primary">
@@ -46,14 +46,33 @@
     </div>
     {% endif %}
 
-    {% if cotizacion.estado != 1 %}
+    {% if cotizacion.estado != 1 and cotizacion.estado < 7 %}
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_pdfs' cotizacion.id %}"
             data-small="true"
             class="read btn btn-primary">
             PDFs
         </button>
-        <a href="{% url 'cotizacion_app:cotizacion_venta_pdf' cotizacion.slug  %}" target="_blank" class="btn btn-primary">PDF</a>
+    </div>
+    {% endif %}
+
+    {% if cotizacion.estado == 2 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular' cotizacion.id %}"
+            data-small="true"
+            class="delete btn btn-danger">
+            Anular
+        </button>
+    </div>
+    {% endif %}
+
+    {% if cotizacion.estado != 1 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_clonar' cotizacion.id %}"
+            data-small="true"
+            class="delete btn btn-info">
+            Clonar
+        </button>
     </div>
     {% endif %}
 

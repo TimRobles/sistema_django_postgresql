@@ -19,6 +19,12 @@
             Recepción
         </button>
     {% endif %}
+    {% if contexto_comprobante_compra_pi.estado == 1 %}
+        <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_anular' contexto_comprobante_compra_pi.slug %}"
+            class="delete btn btn-danger">
+            Anular CI
+        </button>
+    {% endif %}
     {% if contexto_comprobante_compra_pi.estado == 2 and contexto_comprobante_compra_pi.no_existe_CI %}
         <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_registrar' contexto_comprobante_compra_pi.slug %}"
             class="delete btn btn-primary">

@@ -12,6 +12,8 @@ urlpatterns = [
     path('cotizacion-venta/ver/tabla/<int:id_cotizacion>/', views.CotizacionVentaVerTabla, name='cotizacion_venta_ver_tabla'),
     path('cotizacion-venta/ver/agregar-material/<int:cotizacion_id>/', views.CotizacionVentaMaterialDetalleView.as_view(), name='cotizacion_venta_agregar_material'),
     path('cotizacion-venta/ver/cliente/<pk>/', views.CotizacionVentaClienteView.as_view(), name='cotizacion_venta_cliente'),
+    path('cotizacion-venta/anular/<pk>/', views.CotizacionVentaAnularView.as_view(), name='cotizacion_venta_anular'),
+    path('cotizacion-venta/clonar/<pk>/', views.CotizacionVentaClonarView.as_view(), name='cotizacion_venta_clonar'),
     
     path('cotizacion-venta/resumen/<pk>/', views.CotizacionVentaResumenView.as_view(), name='cotizacion_venta_resumen'),
     
@@ -43,7 +45,6 @@ urlpatterns = [
 
     path('cotizacion-venta/pdfs/<pk>/', views.CotizacionVentaPdfsView.as_view(), name='cotizacion_venta_pdfs'),
     path('cotizacion-venta/pdf/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadPdfView.as_view(), name='cotizacion_venta_pdf'),
-    path('cotizacion-venta/pdf/<slug>/', views.CotizacionVentaPdfView.as_view(), name='cotizacion_venta_pdf'),
 
     path('confirmacion/',views.ConfirmacionListView.as_view(),name='confirmacion_inicio'),
     path('confirmacion/<int:id_cotizacion>/',views.ConfirmacionListView.as_view(),name='confirmacion_cotizacion_inicio'),

@@ -30,12 +30,21 @@
             class="delete badge bg-primary">
             Generar Nuevo Requerimiento
         </button>
+    {% endif %}
 
+    {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 and not contexto_oferta_proveedor.OrdenCompra_oferta_proveedor %}
         <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_orden_compra' contexto_oferta_proveedor.slug %}"
             class="delete badge bg-primary">
             Generar Orden de Compra
         </button>
     {% endif %}
+
+    <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle' contexto_oferta_proveedor.requerimiento_material.id %}"><span class="badge bg-primary">Requerimiento</span></a>
+    
+    {% if contexto_oferta_proveedor.OrdenCompra_oferta_proveedor %}
+        <a href="{% url 'orden_compra_app:orden_compra_detalle' contexto_oferta_proveedor.OrdenCompra_oferta_proveedor.slug %}"><span class="badge bg-primary">Orden de Compra</span></a>
+    {% endif %}
+        
     </h3>
     <br>
     <div class="table-responsive">
@@ -46,6 +55,7 @@
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
                     <th>Comentario</th>
+                    <th>Estado</th>
                 </tr>
             </thead>
             <tbody>
@@ -54,6 +64,7 @@
                     <td>{{ contexto_oferta_proveedor.requerimiento_material.proveedor }}</td>
                     <td>{{ contexto_oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
                     <td>{{ contexto_oferta_proveedor.requerimiento_material.comentario }}</td>
+                    <td>{{ contexto_oferta_proveedor.get_estado_display }}</td>
 
                 </tr>
             </tbody>
