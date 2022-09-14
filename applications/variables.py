@@ -190,6 +190,16 @@ ESTADOS_CONFIRMACION = (
     (3, 'DE BAJA'),
     )
 
+TIPO_PERCEPCION = (
+    (1, 'PERCEPCIÓN VENTA INTERNA - TASA 2%'),
+    (2, 'PERCEPCIÓN ADQUISICIÓN DE COMBUSTIBLE-TASA 1%'),
+    (3, 'PERCEPCIÓN REALIZADA AL AGENTE DE PERCEPCIÓN CON TASA ESPECIAL - TASA 0.5%')
+)
+
+TIPO_RETENCION = (
+    (1, 'TASA 3%'),
+    (2, 'TASA 6%'),
+)
 
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'

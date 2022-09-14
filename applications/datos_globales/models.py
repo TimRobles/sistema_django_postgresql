@@ -586,3 +586,20 @@ class ImpuestoPromocionMunicipal(models.Model):
 
     def __str__(self):     
         return str(self.monto)
+
+
+class SeriesComprobante(models.Model):
+    tipo_comprobante = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
+    serie = models.CharField('Serie', max_length=50)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SeriesComprobante_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SeriesComprobante_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Series Comprobante'
+        verbose_name_plural = 'Series Comprobantes'
+
+    def __str__(self):
+        return str(self.serie)
