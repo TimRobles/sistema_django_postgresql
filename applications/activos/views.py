@@ -760,6 +760,18 @@ class ActivoSociedadCreateView(PermissionRequiredMixin,BSModalCreateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('activos_app:activo_detalle', kwargs={'pk':self.kwargs['activo_id']})
 
+    def get_form_kwargs(self, *args, **kwargs):
+        sociedades = ActivoSociedad.objects.filter(activo_id = self.kwargs['activo_id'])
+        lista_sociedad = []
+        for sociedad in sociedades:
+            lista_sociedad.append(sociedad.id)
+        # print('************************************************')
+        # print(lista_sociedad)
+        # print('************************************************')
+        kwargs = super(ActivoSociedadCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['sociedades'] = lista_sociedad
+        return kwargs
+
     def form_valid(self, form):
         form.instance.activo = Activo.objects.get(id = self.kwargs['activo_id'])
         form.instance.usuario = self.request.user
@@ -830,6 +842,15 @@ class ActivoSociedadUpdateView(PermissionRequiredMixin,BSModalUpdateView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('activos_app:activo_detalle', kwargs={'pk':self.object.activo.id})
+    
+    def get_form_kwargs(self, *args, **kwargs):
+        sociedades = ActivoSociedad.objects.filter(activo_id = self.object.activo.id)
+        lista_sociedad = []
+        for sociedad in sociedades:
+            lista_sociedad.append(sociedad.id)
+        kwargs = super(ActivoSociedadUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['sociedades'] = lista_sociedad
+        return kwargs
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
