@@ -107,7 +107,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
     t_items._argW[4]=cmToPx(2)
     t_items._argW[5]=cmToPx(2)
     t_items._argW[6]=cmToPx(2)
-    t_items._argW[7]=cmToPx(2)
+    t_items._argW[7]=cmToPx(2.5)
     t_items._argW[8]=cmToPx(2.5)
     t_items._argW[9]=cmToPx(0.5)
 
@@ -147,7 +147,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
             ]
         )
     t_totales._argW[1]=cmToPx(3.5)
-    t_totales._argW[2]=cmToPx(2)
+    t_totales._argW[2]=cmToPx(2.5)
     t_totales._argW[3]=cmToPx(3)
 
     return t_items, t_totales
@@ -184,15 +184,16 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEn
         )
     elementos.append(vacio())
 
-    elementos.append(
-        bloque(
-                [
-                parrafoIzquierda('OBSERVACIONES:', fuenteBase, 10, 'Bold'),
-                listaGuion(observaciones.splitlines(), fuenteBase, 9),
-                ]
+    if observaciones:
+        elementos.append(
+            bloque(
+                    [
+                    parrafoIzquierda('OBSERVACIONES:', fuenteBase, 10, 'Bold'),
+                    listaGuion(observaciones.splitlines(), fuenteBase, 9),
+                    ]
+                )
             )
-        )
-    elementos.append(vacio())
+        elementos.append(vacio())
 
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina, alinear)
 

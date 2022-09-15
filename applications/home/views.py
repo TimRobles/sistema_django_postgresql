@@ -1,3 +1,4 @@
+from decimal import Decimal
 from applications.home.pdf import generarPrueba
 from applications.importaciones import *
 from django.utils.crypto import get_random_string
@@ -208,7 +209,7 @@ def CalculoItemLineaView(request, cantidad, precio_unitario_con_igv, precio_fina
         # precio_unitario_con_igv = request.POST.get('precio_unitario_con_igv')
         # precio_final_con_igv = request.POST.get('precio_final_con_igv')
         # valor_igv = request.POST.get('valor_igv')
-        calculos = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv)
+        calculos = calculos_linea(Decimal(cantidad), Decimal(precio_unitario_con_igv), Decimal(precio_final_con_igv), Decimal(valor_igv))
         informacion = simplejson.dumps(calculos)
 
         data['info'] = render_to_string(

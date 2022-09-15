@@ -41,7 +41,7 @@
 
 
                 <td class="text-center text-nowrap">
-                    {% if contexto_orden_compra.estado == 0 %}
+                    {% if contexto_orden_compra.estado == 1 %}
                     <button data-form-url="{% url 'orden_compra_app:orden_compra_actualizar_material' detalle.id %}"
                         data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.slug %}"
                         class="delete btn btn-warning btn-sm"

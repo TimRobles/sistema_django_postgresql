@@ -180,9 +180,10 @@ ESTADOS_COTIZACION_VENTA = (
     (3, 'RESERVADO'),
     (4, 'CONFIRMADO'), #Regresa a Reservado
     (5, 'CONFIRMADO'), #Regresa a Pendiente
-    (6, 'FINALIZADO'),
-    (7, 'VENCIDO'),
-    (8, 'ANULADO'),
+    (6, 'CONFIRMADO ANTICIPADO'), 
+    (7, 'FINALIZADO'),
+    (8, 'VENCIDO'),
+    (9, 'ANULADO'),
     )
 
 ESTADOS_CONFIRMACION = (
@@ -223,6 +224,9 @@ MENSAJE_GUARDAR_COTIZACION = 'Operación exitosa: La cotización fue guardada co
 MENSAJE_ANULAR_COTIZACION = 'Operación exitosa: La cotización fue anulada con éxito.'
 MENSAJE_CLONAR_COTIZACION = 'Operación exitosa: La cotización fue clonada con éxito.'
 MENSAJE_RESERVAR_COTIZACION = 'Operación exitosa: La cotización fue reservada con éxito.'
+MENSAJE_ANULAR_RESERVAR_COTIZACION = 'Operación exitosa: La reserva fue anulada con éxito.'
+MENSAJE_CONFIRMAR_COTIZACION = 'Operación exitosa: La cotización fue confirmada con éxito.'
+MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue anulada con éxito.'
 
 COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'

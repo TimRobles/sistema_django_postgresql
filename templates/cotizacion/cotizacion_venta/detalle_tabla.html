@@ -84,6 +84,13 @@
             Confirmar
         </button>
     </div>
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar_anticipo' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-primary">
+            Confirmar Anticipo
+        </button>
+    </div>
     {% endif %}
     {% if cotizacion.estado > 3 and cotizacion.estado < 6 %}
     <div class="col-auto ms-auto">
@@ -93,6 +100,17 @@
             Anular Confirmación
         </button>
     </div>
+    {% endif %}
+    {% if cotizacion.estado == 6 %}
+    <div class="col-auto ms-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar_anticipo' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-danger">
+            Anular Confirmación
+        </button>
+    </div>
+    {% endif %}
+    {% if cotizacion.estado > 3 and cotizacion.estado < 7 %}
     <div class="col-auto">
         <a href="{% url 'cotizacion_app:confirmacion_cotizacion_inicio' cotizacion.id  %}" class="btn btn-primary">Confirmaciones</a>
     </div>
@@ -301,7 +319,7 @@
                     </td>
                     <td class="text-end text-nowrap table-primary">{{ material.material.calidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap table-primary">{{ material.material.stock|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap table-primary">{{ material.material.transito|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.en_camino|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
                             class="read btn swatch-purple btn-sm"
