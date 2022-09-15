@@ -9,7 +9,7 @@
     </div>
 
     <div class="col-auto">
-        <a href="{% url 'cotizacion_app:cotizacion_venta_pdf' cotizacion.slug  %}" target="_blank" class="btn btn-primary">PDF</a>
+        <a href="{% url 'cotizacion_app:cotizacion_venta_pdf' confirmacion.sociedad.abreviatura cotizacion.slug  %}" target="_blank" class="btn btn-primary">PDF</a>
     </div>
 
     <div class="col-auto ms-auto">
