@@ -258,6 +258,24 @@ class Material(models.Model):
         return total
 
     @property
+    def confirmado_anticipo(self):
+        confirmado = TipoStock.objects.get(codigo=21)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = confirmado,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
     def calidad(self):
         bloqueo_sin_serie = TipoStock.objects.get(id=4)
         bloqueo_sin_qa = TipoStock.objects.get(id=5)
@@ -279,6 +297,10 @@ class Material(models.Model):
     @property
     def stock(self):
         return self.vendible + self.calidad
+
+    @property
+    def en_camino(self):
+        return self.transito - self.confirmado_anticipo
 
     def __str__(self):
         return self.descripcion_venta

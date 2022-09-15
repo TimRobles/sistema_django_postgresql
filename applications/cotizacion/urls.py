@@ -39,6 +39,9 @@ urlpatterns = [
     path('cotizacion-venta/confirmar/<pk>/', views.CotizacionVentaConfirmarView.as_view(), name='cotizacion_venta_confirmar'),
     path('cotizacion-venta/anular-confirmar/<pk>/', views.CotizacionVentaConfirmarAnularView.as_view(), name='cotizacion_venta_anular_confirmar'),
 
+    path('cotizacion-venta/confirmar-anticipo/<pk>/', views.CotizacionVentaConfirmarAnticipoView.as_view(), name='cotizacion_venta_confirmar_anticipo'),
+    path('cotizacion-venta/anular-confirmar-anticipo/<pk>/', views.CotizacionVentaConfirmarAnticipoAnularView.as_view(), name='cotizacion_venta_anular_confirmar_anticipo'),
+
     path('cotizacion-venta/costeador/<pk>/', views.CotizacionVentaCosteadorDetalleView.as_view(), name='cotizacion_venta_costeador'),
     path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_eliminar'),
     path('cotizacion-venta/actualizar/<pk>/', views.CotizacionVentaMaterialDetalleUpdateView.as_view(), name='cotizacion_venta_actualizar'),
