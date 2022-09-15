@@ -20,12 +20,19 @@
     </button>
 
     <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_pdf' requerimiento.slug  %}" target="_blank"><span class="btn btn-primary">PDF</span></a>
-
+    
+    {% if not requerimiento.OfertaProveedor_requerimiento_material %}
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_enviar_correo' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
         class="delete btn btn-primary">
         Enviar Correo
     </button>    
+    {% endif %}
+
+    
+    {% if requerimiento.OfertaProveedor_requerimiento_material %}
+    <a href="{% url 'oferta_proveedor_app:oferta_proveedor_detalle' requerimiento.OfertaProveedor_requerimiento_material.slug  %}"><span class="btn btn-primary">Oferta Proveedor</span></a>
+    {% endif %}
     
     <div class="table-responsive">
         <table class="table">

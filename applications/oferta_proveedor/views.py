@@ -75,6 +75,9 @@ class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
         self.object.estado = 3
         registro_guardar(self.object, self.request)
         self.object.save()
+        self.object.requerimiento_material.estado = 4
+        registro_guardar(self.object.requerimiento_material, self.request)
+        self.object.requerimiento_material.save()
         messages.success(request, MENSAJE_RECHAZAR_OFERTA_PROVEEDOR)
         return HttpResponseRedirect(self.get_success_url())
 
@@ -425,14 +428,14 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
     def form_valid(self, form):
         if self.request.session['primero']:
             oferta = OfertaProveedor.objects.get(slug=self.kwargs['slug_oferta'])
-            numero_orden_compra = form.cleaned_data['sociedad'].abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad_id = form.cleaned_data['sociedad']))+1, 5)
+            numero_orden_compra = form.cleaned_data['sociedad'].abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = form.cleaned_data['sociedad']))+1, 5)
 
             orden_compra = OrdenCompra.objects.create(
                 internacional_nacional = oferta.internacional_nacional,
                 incoterms = oferta.incoterms,
                 numero_orden_compra = numero_orden_compra,
                 oferta_proveedor = oferta,
-                sociedad_id = form.cleaned_data['sociedad'],
+                sociedad = form.cleaned_data['sociedad'],
                 fecha_orden = date.today(),
                 moneda = oferta.moneda,
                 slug = slug_aleatorio(OrdenCompra),

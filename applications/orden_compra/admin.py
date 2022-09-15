@@ -15,7 +15,7 @@ class OrdenCompraAdmin(admin.ModelAdmin):
         'incoterms',
         'oferta_proveedor',
         'orden_compra_anterior',
-        'sociedad_id',
+        'sociedad',
         'fecha_orden',
         'moneda',
         'descuento_global',

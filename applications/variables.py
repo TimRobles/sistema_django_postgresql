@@ -170,7 +170,8 @@ ESTADOS_ORDEN_COMPRA = (
     (0, 'NUEVA VERSIÓN'),
     (1, 'POR VERIFICAR'),
     (2, 'ENVIADO'),
-    (3, 'ANULADO'),
+    (3, 'CONFIRMADO'),
+    (4, 'ANULADO'),
     )
 
 ESTADOS_COTIZACION_VENTA = (
@@ -181,13 +182,13 @@ ESTADOS_COTIZACION_VENTA = (
     (5, 'CONFIRMADO'), #Regresa a Pendiente
     (6, 'FINALIZADO'),
     (7, 'VENCIDO'),
-    (8, 'DE BAJA'),
+    (8, 'ANULADO'),
     )
 
 ESTADOS_CONFIRMACION = (
     (1, 'PENDIENTE'),
     (2, 'FINALIZADO'),
-    (3, 'DE BAJA'),
+    (3, 'ANULADO'),
     )
 
 TIPO_PERCEPCION = (
@@ -213,9 +214,14 @@ MENSAJE_RECHAZAR_OFERTA_PROVEEDOR = 'Operación exitosa: La Oferta fue Rechazada
 MENSAJE_GENERAR_REQUERIMIENTO_PROVEEDOR = 'Operación exitosa: Generar Requerimiento Proveedor.'
 MENSAJE_GENERAR_ORDEN_COMPRA = 'Operación exitosa: Generar Orden de Compra.'
 MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Generar Comprobante de Compra PI.'
+MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Comprobante de Compra PI Anulado.'
+MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI= 'No se puede anular el Comprobante de Compra PI, verifique los procesos siguientes.'
+
 MENSAJE_FINALIZAR_INVENTARIO_ACTIVO = 'Operación exitosa: El Inventario fue Finalizado.'
 
 MENSAJE_GUARDAR_COTIZACION = 'Operación exitosa: La cotización fue guardada con éxito.'
+MENSAJE_ANULAR_COTIZACION = 'Operación exitosa: La cotización fue anulada con éxito.'
+MENSAJE_CLONAR_COTIZACION = 'Operación exitosa: La cotización fue clonada con éxito.'
 MENSAJE_RESERVAR_COTIZACION = 'Operación exitosa: La cotización fue reservada con éxito.'
 
 COLOR_DEFAULT = '#8B32A8'

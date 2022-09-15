@@ -54,6 +54,7 @@ class RequerimientoMaterialProveedor(models.Model):
         (1, 'BORRADOR'),
         (2, 'PENDIENTE DE ENVÍO'),
         (3, 'ENVIADO'),
+        (4, 'ANULADO'),
     )
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)

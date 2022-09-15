@@ -34,11 +34,20 @@
     </button>
     {% endif %}
 
+    {% if contexto_orden_compra.estado < 3 %}
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_anular' contexto_orden_compra.id %}"
+        class="delete btn btn-danger">
+        Anular
+    </button>
+    {% endif %}
 
-    {% if contexto_orden_compra.estado == 3 %}
+
+    {% if contexto_orden_compra.estado == 4 %}
         <a href="{% url 'orden_compra_app:orden_compra_pdf_anular' contexto_orden_compra.slug  %}" target="_blank"><span class="btn btn-primary">Motivo Anulación</span></a>
     {% endif %}
 
+    <a href="{% url 'oferta_proveedor_app:oferta_proveedor_detalle' contexto_orden_compra.oferta_proveedor.slug  %}"><span class="btn btn-primary">Ver Oferta</span></a>
+    
     <br>
     <div class="table-responsive">
         <table class="table">
