@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Factura Venta
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Factura Venta</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'comprobante_venta/factura_venta/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

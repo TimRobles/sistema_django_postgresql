@@ -1,0 +1,87 @@
+from django.db import models
+from django.contrib.contenttypes.models import ContentType
+from applications.activos.models import MarcaActivo
+from applications.datos_globales.models import Moneda, SeriesComprobante, TipoCambio, Unidad
+from applications.sociedad.models import Sociedad
+from applications.clientes.models import Cliente, InterlocutorCliente
+from applications.variables import TIPO_IGV_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA, ESTADOS
+from django.conf import settings
+
+
+class FacturaVenta(models.Model):
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT)
+    numero_factura = models.CharField('Nro. Factura', max_length=50)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='FacturaVenta', blank=True, null=True)
+    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='FacturaVenta_interlocutor', blank=True, null=True)
+    fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_vencimiento = models.DateField('Fecha Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, default=1)
+    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='FacturaVenta_tipo_cambio')
+    tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
+    condiciones_pago = models.CharField('Condiciones de Pago', max_length=250)
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
+    total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=0)
+    total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=0)
+    total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=0)
+    total_inafecta = models.DecimalField('Total Inafecta', max_digits=14, decimal_places=2, default=0)
+    total_exonerada = models.DecimalField('Total Exonerada', max_digits=14, decimal_places=2, default=0)
+    total_gratuita = models.DecimalField('Total Gratuita', max_digits=14, decimal_places=2, default=0)
+    total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    percepcion_tipo = models.IntegerField(choices=TIPO_PERCEPCION)
+    percepcion_base_imponible = models.DecimalField('Percepcion Base Imponible', max_digits=14, decimal_places=2, default=0)
+    total_percepcion = models.DecimalField('Total Percepcion', max_digits=14, decimal_places=2, default=0)
+    total_incluido_percepcion = models.DecimalField('Total Incluido Percepcion', max_digits=14, decimal_places=2, default=0)
+    retencion_tipo = models.IntegerField(choices=TIPO_RETENCION)
+    retencion_base_imponible = models.DecimalField('Retencion Base Imponible', max_digits=14, decimal_places=2, default=0)
+    total_retencion = models.DecimalField('Total Retencion', max_digits=14, decimal_places=2, default=0)
+    total_impuestos_bolsas = models.DecimalField('Total Impuestos Bolsas', max_digits=14, decimal_places=2, default=0)
+    detraccion = models.BooleanField()
+    url = models.TextField()
+    observaciones = models.TextField()
+    estado = models.IntegerField(choices = ESTADOS, default=1)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FacturaVenta_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FacturaVenta_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Factura Venta'
+        verbose_name_plural = 'Facturas Venta'
+
+    def __str__(self):
+        return str(self.numero_factura)
+
+class FacturaVentaDetalle(models.Model):
+    item = models.IntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    id_registro = models.IntegerField()
+    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE, blank=True, null=True)
+    unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
+    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=0)
+    precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=0)
+    precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10, default=0)
+    descuento = models.DecimalField('Descuento',max_digits=22, decimal_places=10, default=0)
+    descuento_sin_igv = models.DecimalField('Descuento Sin IGV',max_digits=22, decimal_places=10, default=0)
+    descuento_con_igv = models.DecimalField('Descuento Con IGV',max_digits=22, decimal_places=10, default=0)
+    sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2, default=0)
+    igv = models.DecimalField('IGV',max_digits=14, decimal_places=2, default=0)
+    tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
+    factura_venta = models.ForeignKey(FacturaVenta, on_delete=models.CASCADE, related_name='FacturaVentaDetalle_cotizacion_venta')
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FacturaVentaDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FacturaVentaDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Factura Venta Detalle'
+        verbose_name_plural = 'Facturas Venta Detalle'
+
+    def __str__(self):
+        return str(self.id)
+
