@@ -1,6 +1,7 @@
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 from applications.activos.models import MarcaActivo
-from applications.datos_globales.models import Moneda, TipoCambio, Unidad
+from applications.datos_globales.models import Moneda, SeriesComprobante, TipoCambio, Unidad
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.variables import TIPO_IGV_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA, ESTADOS
@@ -9,14 +10,14 @@ from django.conf import settings
 
 class FacturaVenta(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    serie_comprobante = models.IntegerField()
+    serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT)
     numero_factura = models.CharField('Nro. Factura', max_length=50)
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente', blank=True, null=True)
-    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor', blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='FacturaVenta', blank=True, null=True)
+    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='FacturaVenta_interlocutor', blank=True, null=True)
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_vencimiento = models.DateField('Fecha Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, default=1)
-    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ConfirmacionVenta_tipo_cambio')
+    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='FacturaVenta_tipo_cambio')
     tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
     condiciones_pago = models.CharField('Condiciones de Pago', max_length=250)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
@@ -56,7 +57,8 @@ class FacturaVenta(models.Model):
 
 class FacturaVentaDetalle(models.Model):
     item = models.IntegerField()
-
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    id_registro = models.IntegerField()
     marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE, blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
@@ -70,7 +72,7 @@ class FacturaVentaDetalle(models.Model):
     igv = models.DecimalField('IGV',max_digits=14, decimal_places=2, default=0)
     tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
     factura_venta = models.ForeignKey(FacturaVenta, on_delete=models.CASCADE, related_name='FacturaVentaDetalle_cotizacion_venta')
-
+    
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FacturaVentaDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -81,6 +83,5 @@ class FacturaVentaDetalle(models.Model):
         verbose_name_plural = 'Facturas Venta Detalle'
 
     def __str__(self):
-        """Unicode representation of FacturaVentaDetalle."""
-        pass
+        return str(self.id)
 

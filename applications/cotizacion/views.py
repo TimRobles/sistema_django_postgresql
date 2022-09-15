@@ -781,7 +781,7 @@ class CotizacionVentaConfirmarView(DeleteView):
             confirmacion_venta = ConfirmacionVenta.objects.create(
                 cotizacion_venta = self.object,
                 sociedad = sociedad,
-                tipo_cambio = TipoCambio.objects.get(fecha=self.object.fecha),
+                tipo_cambio = TipoCambio.objects.get(fecha=datetime.today()),
                 observacion = cotizacion_observacion,
                 total = self.object.total,
                 created_by = self.request.user,
