@@ -49,9 +49,11 @@ urlpatterns = [
     path('cotizacion-venta/pdfs/<pk>/', views.CotizacionVentaPdfsView.as_view(), name='cotizacion_venta_pdfs'),
     path('cotizacion-venta/pdf/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadPdfView.as_view(), name='cotizacion_venta_pdf'),
 
+    path('confirmacion/ver/<int:id_confirmacion>/', views.ConfirmarVerView.as_view(), name='confirmacion_ver'),
+    path('confirmacion/ver/tabla/<int:id_confirmacion>/', views.ConfirmarVerTabla, name='confirmacion_ver_tabla'),
+    path('confirmacion/ver/cliente/<pk>/', views.ConfirmacionClienteView.as_view(), name='confirmacion_cliente'),
+
     path('confirmacion/',views.ConfirmacionListView.as_view(),name='confirmacion_inicio'),
     path('confirmacion/<int:id_cotizacion>/',views.ConfirmacionListView.as_view(),name='confirmacion_cotizacion_inicio'),
-
-    path('confirmacion/ver/<int:id_cotizacion>/', views.ConfirmarVerView.as_view(), name='confirmacion_ver'),
-    path('confirmacion/ver/tabla/<int:id_cotizacion>/', views.ConfirmarVerTabla, name='confirmacion_ver_tabla'),
+    path('confirmacion/forma-pago/<pk>/',views.ConfirmacionVentaFormaPagoView.as_view(),name='confirmacion_forma_pago'),
 ]

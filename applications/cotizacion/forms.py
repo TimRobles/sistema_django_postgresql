@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.cotizacion.models import CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
+from applications.cotizacion.models import ConfirmacionVenta, CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.material.models import Material
 
@@ -160,3 +160,48 @@ class CotizacionVentaPdfsForm(BSModalForm):
     pass
 
     # TODO: Define form fields here
+
+
+class ConfirmacionVentaFormaPagoForm(BSModalModelForm):
+    class Meta:
+        model = ConfirmacionVenta
+        fields = (
+            'tipo_venta',
+            'condiciones_pago',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ConfirmacionVentaFormaPagoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ConfirmacionClienteForm(BSModalModelForm):
+    class Meta:
+        model = ConfirmacionVenta
+        fields = (
+            'cliente',
+            'cliente_interlocutor',
+            )
+
+    def clean_cliente(self):
+        cliente = self.cleaned_data.get('cliente')
+        if cliente:
+            cliente_interlocutor = self.fields['cliente_interlocutor']
+            lista = []
+            relaciones = ClienteInterlocutor.objects.filter(cliente = cliente.id)
+            for relacion in relaciones:
+                lista.append(relacion.interlocutor.id)
+
+            cliente_interlocutor.queryset = InterlocutorCliente.objects.filter(id__in = lista)
+    
+        return cliente
+
+    def __init__(self, *args, **kwargs):
+        interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        interlocutor = kwargs.pop('interlocutor')
+        super(ConfirmacionClienteForm, self).__init__(*args, **kwargs)
+        self.fields['cliente_interlocutor'].queryset = interlocutor_queryset
+        self.fields['cliente_interlocutor'].initial = interlocutor
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

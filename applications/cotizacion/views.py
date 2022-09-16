@@ -16,6 +16,8 @@ from applications.orden_compra.models import OrdenCompraDetalle
 from applications.recepcion_compra.models import RecepcionCompra
 
 from .forms import (
+    ConfirmacionClienteForm,
+    ConfirmacionVentaFormaPagoForm,
     CotizacionVentaClienteForm,
     CotizacionVentaDescuentoGlobalForm,
     CotizacionVentaDetalleForm,
@@ -167,6 +169,7 @@ class CotizacionVentaClienteView(BSModalUpdateView):
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
     def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_form_kwargs(self):
@@ -465,6 +468,19 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_guardar.html"
 
+    
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_tipo_cambio = False
+        context['titulo'] = 'Error de guardar'
+        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+            error_tipo_cambio = True
+
+        if error_tipo_cambio:
+            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(CotizacionVentaGuardarView, self).dispatch(request, *args, **kwargs)
+    
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
@@ -825,6 +841,7 @@ class CotizacionVentaConfirmarView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         error_cantidad_stock = False
         error_cantidad_sociedad = False
+        error_tipo_cambio = False
         context = {}
         context['titulo'] = 'Error de Confirmación'
         for detalle in self.get_object().CotizacionVentaDetalle_cotizacion_venta.all():
@@ -836,6 +853,13 @@ class CotizacionVentaConfirmarView(DeleteView):
             if sumar != detalle.cantidad:
                 error_cantidad_sociedad = True
         
+        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+            error_tipo_cambio = True
+
+        if error_tipo_cambio:
+            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
         if error_cantidad_sociedad:
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -934,8 +958,10 @@ class CotizacionVentaConfirmarView(DeleteView):
             cotizacion_observacion = observacion(self.object, sociedad)
             confirmacion_venta = ConfirmacionVenta.objects.create(
                 cotizacion_venta = self.object,
+                cliente = self.object.cliente,
+                cliente_interlocutor = self.object.cliente_interlocutor,
                 sociedad = sociedad,
-                tipo_cambio = TipoCambio.objects.get(fecha=datetime.today()),
+                tipo_cambio = TipoCambio.objects.filter(fecha=datetime.today()).latest('created_at'),
                 observacion = cotizacion_observacion,
                 total = self.object.total,
                 created_by = self.request.user,
@@ -1036,6 +1062,7 @@ class CotizacionVentaConfirmarAnticipoView(DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         error_cantidad_sociedad = False
+        error_tipo_cambio = False
         context = {}
         context['titulo'] = 'Error de Confirmación'
         for detalle in self.get_object().CotizacionVentaDetalle_cotizacion_venta.all():
@@ -1045,6 +1072,13 @@ class CotizacionVentaConfirmarAnticipoView(DeleteView):
             if sumar != detalle.cantidad:
                 error_cantidad_sociedad = True
         
+        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+            error_tipo_cambio = True
+
+        if error_tipo_cambio:
+            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
         if error_cantidad_sociedad:
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -1087,8 +1121,10 @@ class CotizacionVentaConfirmarAnticipoView(DeleteView):
             cotizacion_observacion = observacion(self.object, sociedad)
             confirmacion_venta = ConfirmacionVenta.objects.create(
                 cotizacion_venta = self.object,
+                cliente = self.object.cliente,
+                cliente_interlocutor = self.object.cliente_interlocutor,
                 sociedad = sociedad,
-                tipo_cambio = TipoCambio.objects.get(fecha=self.object.fecha),
+                tipo_cambio = TipoCambio.objects.filter(fecha=self.object.fecha).latest('created_at'),
                 observacion = cotizacion_observacion,
                 total = self.object.total,
                 created_by = self.request.user,
@@ -1314,7 +1350,6 @@ class CotizacionVentaSociedadPdfView(View):
         return respuesta
 
 
-
 class CotizacionVentaResumenView(BSModalReadView):
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_resumen.html"
@@ -1373,9 +1408,7 @@ class ConfirmarVerView(TemplateView):
     template_name = "cotizacion/confirmacion/detalle.html"
 
     def get_context_data(self, **kwargs):
-        obj = ConfirmacionVenta.objects.get(id = kwargs['id_cotizacion'])
-        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_confirmacion)
+        obj = ConfirmacionVenta.objects.get(id = kwargs['id_confirmacion'])
         
         materiales = None
         try:
@@ -1390,45 +1423,35 @@ class ConfirmarVerView(TemplateView):
         context['confirmacion'] = obj
         context['cotizacion'] = obj.cotizacion_venta
         context['materiales'] = materiales
-        context['tipo_cambio_hoy'] = tipo_cambio_hoy
-        context['tipo_cambio'] = tipo_cambio
+        context['tipo_cambio'] = obj.tipo_cambio.tipo_cambio_venta
         context['totales'] = obtener_totales(obj)
-        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        context['totales_soles'] = obtener_totales_soles(context['totales'], obj.tipo_cambio.tipo_cambio_venta)
         
         return context
 
 
-def ConfirmarVerTabla(request, id_cotizacion):
+def ConfirmarVerTabla(request, id_confirmacion):
     data = dict()
     if request.method == 'GET':
-        template = 'cotizacion/cotizacion_venta/detalle_tabla.html'
-        obj = CotizacionVenta.objects.get(id=id_cotizacion)
-        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
+        template = 'cotizacion/confirmacion/detalle_tabla.html'
+        obj = ConfirmacionVenta.objects.get(id=id_confirmacion)
         
         materiales = None
         try:
-            materiales = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+            materiales = obj.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
             for material in materiales:
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
         except:
             pass
 
-        sociedades = Sociedad.objects.filter(estado_sunat=1)
-        for sociedad in sociedades:
-            sociedad.observacion = observacion(obj, sociedad)
-
         context = {}
+        context['confirmacion'] = obj
+        context['cotizacion'] = obj.cotizacion_venta
         context['materiales'] = materiales
-        context['cotizacion'] = obj
-        context['tipo_cambio_hoy'] = tipo_cambio_hoy
-        context['tipo_cambio'] = tipo_cambio
+        context['tipo_cambio'] = obj.tipo_cambio.tipo_cambio_venta
         context['totales'] = obtener_totales(obj)
-        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
-        context['sociedades'] = sociedades
+        context['totales_soles'] = obtener_totales_soles(context['totales'], obj.tipo_cambio.tipo_cambio_venta)
 
         data['table'] = render_to_string(
             template,
@@ -1436,3 +1459,54 @@ def ConfirmarVerTabla(request, id_cotizacion):
             request=request
         )
         return JsonResponse(data)
+
+
+class ConfirmacionVentaFormaPagoView(BSModalUpdateView):
+    model = ConfirmacionVenta
+    template_name = "cotizacion/confirmacion/form_forma_pago.html"
+    form_class = ConfirmacionVentaFormaPagoForm
+    success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionVentaFormaPagoView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Forma de Pago"
+        context['forma'] = self.object.cliente.linea_credito_condiciones_pago
+        return context
+
+
+class ConfirmacionClienteView(BSModalUpdateView):
+    model = ConfirmacionVenta
+    template_name = "cotizacion/cotizacion_venta/form_cliente.html"
+    form_class = ConfirmacionClienteForm
+    success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def form_valid(self, form):
+        if form.instance.cliente.linea_credito_monto == 0:
+            form.instance.tipo_venta = 1
+            form.instance.condiciones_pago = None
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        cotizacion = kwargs['instance']
+        lista = []
+        relaciones = ClienteInterlocutor.objects.filter(cliente = cotizacion.cliente)
+        for relacion in relaciones:
+            lista.append(relacion.interlocutor.id)
+
+        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+        kwargs['interlocutor'] = cotizacion.cliente_interlocutor
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionClienteView, self).get_context_data(**kwargs)
+        context['accion'] = "Elegir"
+        context['titulo'] = "Cliente"
+        return context

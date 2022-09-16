@@ -4,6 +4,8 @@ from applications.datos_globales.models import Moneda
 from applications.variables import ESTADOS
 from django.conf import settings
 
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+
 
 class LineaCredito(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='LineaCredito_cliente', blank=True, null=True)
@@ -24,3 +26,16 @@ class LineaCredito(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+def linea_credito_post_save(*args, **kwargs):
+    if kwargs['created']:
+        obj = kwargs['instance']
+        lineas = LineaCredito.objects.filter(
+                cliente=obj.cliente,
+                estado=1,
+            ).exclude(id=obj.id)
+        for linea in lineas:
+            linea.estado = 2
+            linea.save()
+
+post_save.connect(linea_credito_post_save, sender=LineaCredito)

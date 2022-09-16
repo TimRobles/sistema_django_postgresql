@@ -30,12 +30,11 @@ def LineaCreditoTabla(request):
 
 class LineaCreditoCreateView(BSModalCreateView):
     model = LineaCredito
-    template_name = "includes/formulario generico.html"
+    template_name = "cobranza/linea_credito/form.html"
     form_class = LineaCreditoForm
     success_url = reverse_lazy('cobranza_app:linea_credito_inicio')
 
     def form_valid(self, form):
-
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

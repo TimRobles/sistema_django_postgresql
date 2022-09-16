@@ -206,20 +206,20 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Línea de crédito:</th>
-                    <td>{{ linea_credito }}</td>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.linea_credito_monto|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Deuda:</th>
-                    <td>{{ deuda }}</td>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.deuda_monto|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Disponible:</th>
-                    <td>{{ disponible }}</td>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.disponible_monto|intcomma }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <div class="col-lg-6 table-responsive mb-3">
+    <!-- <div class="col-lg-6 table-responsive mb-3">
         <table>
             <tbody>
                 <tr>
@@ -236,7 +236,7 @@
                 </tr>
             </tbody>
         </table>
-    </div>
+    </div> -->
 </div>
 
 <div class="row mt-3">

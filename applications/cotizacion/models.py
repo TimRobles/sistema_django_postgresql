@@ -176,6 +176,8 @@ class CotizacionTerminosCondiciones(models.Model):
 
 class ConfirmacionVenta(models.Model):
     cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ConfirmacionVenta_cliente', blank=True, null=True)
+    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ConfirmacionVenta_cliente_interlocutor', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ConfirmacionVenta_tipo_cambio')
     observacion = models.TextField(blank=True, null=True)
@@ -206,10 +208,6 @@ class ConfirmacionVenta(models.Model):
     @property
     def fecha_confirmacion(self):
         return self.created_at
-
-    @property
-    def cliente(self):
-        return self.cotizacion_venta.cliente
 
     def __str__(self):
         return str(self.id)
