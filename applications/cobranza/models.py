@@ -111,3 +111,5 @@ class SolicitudCreditoCuota(models.Model):
 
     def __str__(self):
         return "%s - %s - %s - %s" % (self.solicitud_credito, self.monto, self.dias_pago, self.fecha_pago)
+
+

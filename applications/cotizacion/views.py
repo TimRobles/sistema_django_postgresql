@@ -977,6 +977,12 @@ class CotizacionVentaConfirmarView(DeleteView):
         
         for sociedad in sociedades_confirmar:
             cotizacion_observacion = observacion(self.object, sociedad)
+            condiciones_pago = None
+            tipo_venta = 1
+            if self.object.SolicitudCredito_cotizacion_venta:
+                if self.object.SolicitudCredito_cotizacion_venta.estado == 3:
+                    condiciones_pago = self.object.SolicitudCredito_cotizacion_venta.condiciones_pago
+                    tipo_venta = 2
             confirmacion_venta = ConfirmacionVenta.objects.create(
                 cotizacion_venta = self.object,
                 cliente = self.object.cliente,
@@ -985,6 +991,8 @@ class CotizacionVentaConfirmarView(DeleteView):
                 tipo_cambio = TipoCambio.objects.filter(fecha=datetime.today()).latest('created_at'),
                 observacion = cotizacion_observacion,
                 total = self.object.total,
+                condiciones_pago = condiciones_pago,
+                tipo_venta = tipo_venta,
                 created_by = self.request.user,
                 updated_by = self.request.user,
             )
@@ -1009,6 +1017,7 @@ class CotizacionVentaConfirmarView(DeleteView):
                         created_by = self.request.user,
                         updated_by = self.request.user,
                     )
+            
 
         registro_guardar(self.object, self.request)
         self.object.save()
