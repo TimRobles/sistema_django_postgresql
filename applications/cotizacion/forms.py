@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.cotizacion.models import ConfirmacionVenta, CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
@@ -203,5 +204,48 @@ class ConfirmacionClienteForm(BSModalModelForm):
         super(ConfirmacionClienteForm, self).__init__(*args, **kwargs)
         self.fields['cliente_interlocutor'].queryset = interlocutor_queryset
         self.fields['cliente_interlocutor'].initial = interlocutor
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SolicitudCreditoForm(BSModalModelForm):
+    class Meta:
+        model = SolicitudCredito
+        fields = (
+            'total_credito',
+            'condiciones_pago',
+            'interlocutor_solicita',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SolicitudCreditoForm, self).__init__(*args, **kwargs)
+        lista_interlocutor = []
+        for tabla in self.instance.cotizacion_venta.cliente.ClienteInterlocutor_cliente.all():
+            lista_interlocutor.append(tabla.interlocutor.id)
+        interlocutores = InterlocutorCliente.objects.filter(id__in=lista_interlocutor)
+        self.fields['interlocutor_solicita'].queryset = interlocutores
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SolicitudCreditoCuotaForm(BSModalModelForm):
+    class Meta:
+        model = SolicitudCreditoCuota
+        fields = (
+            'monto',
+            'dias_pago',
+            'fecha_pago',
+            )
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(SolicitudCreditoCuotaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

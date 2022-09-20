@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Solicitar Crédito
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Solicitar Crédito</h3>
+    <div id="tabla">
+        {% include 'cotizacion/cotizacion_venta/form_solicitud_credito_tabla.html' %}
+    </div>
+{% endblock contenido %}

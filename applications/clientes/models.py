@@ -72,9 +72,23 @@ class Cliente(models.Model):
             return Decimal('0.00')
 
     @property
+    def nota_credito_monto(self):
+        try:
+            return Decimal('0.00')
+        except:
+            return Decimal('0.00')
+
+    @property
+    def nota_credito_monto(self):
+        try:
+            return Decimal('0.00')
+        except:
+            return Decimal('0.00')
+
+    @property
     def disponible_monto(self):
         try:
-            return self.linea_credito_monto - Decimal('0.00')
+            return self.linea_credito_monto - self.deuda_monto + self.nota_credito_monto
         except:
             return Decimal('0.00')
 

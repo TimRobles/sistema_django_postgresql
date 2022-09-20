@@ -12,6 +12,7 @@ from .models import (
     ImpuestoPromocionMunicipal,
     Moneda,
     Magnitud,
+    TipoCambioSunat,
     Unidad, 
     Area, 
     Cargo,
@@ -42,6 +43,9 @@ class MonedaAdmin(admin.ModelAdmin):
         'nombre',
         'abreviatura',
         'simbolo',
+        'principal',
+        'secundario',
+        'moneda_pais',
         'estado',
         'created_by',
         'created_at',
@@ -431,8 +435,26 @@ class TipoCambioAdmin(admin.ModelAdmin):
         'fecha',
         'tipo_cambio_venta',
         'tipo_cambio_compra',
-        'tipo_cambio_venta_sunat',
-        'tipo_cambio_compra_sunat',
+        'moneda_origen',
+        'moneda_destino',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+class TipoCambioSunatAdmin(admin.ModelAdmin):
+    list_display = (
+        'fecha',
+        'tipo_cambio_venta',
+        'tipo_cambio_compra',
         'created_by',
         'created_at',
         'updated_by',
@@ -542,6 +564,7 @@ admin.site.register(ClaseSunat, ClaseSunatAdmin)
 admin.site.register(ProductoSunat, ProductoSunatAdmin)
 
 admin.site.register(TipoCambio, TipoCambioAdmin)
+admin.site.register(TipoCambioSunat, TipoCambioSunatAdmin)
 admin.site.register(RemuneracionMinimaVital, RemuneracionMinimaVitalAdmin)
 admin.site.register(UnidadImpositivaTributaria, UnidadImpositivaTributariaAdmin)
 admin.site.register(ImpuestoGeneralVentas, ImpuestoGeneralVentasAdmin)

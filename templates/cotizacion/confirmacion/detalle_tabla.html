@@ -95,12 +95,16 @@
                     <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ confirmacion.cliente.linea_credito_monto|intcomma }}</td>
                 </tr>
                 <tr>
+                    <th class="pe-2">Crédito temporal:</th>
+                    <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ credito_temporal|intcomma }}</td>
+                </tr>
+                <tr>
                     <th class="pe-2">Deuda:</th>
                     <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ confirmacion.cliente.deuda_monto|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Disponible:</th>
-                    <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ confirmacion.cliente.disponible_monto|intcomma }}</td>
+                    <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ disponible|intcomma }}</td>
                 </tr>
             </tbody>
         </table>
@@ -117,14 +121,6 @@
                             data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
                             class="update btn btn-primary">
                             Cambiar Forma de Pago
-                        </button>
-                        {% endif %}
-
-                        {% if confirmacion.estado == 1 and confirmacion.cliente.linea_credito_monto == 0 or confirmacion.cliente.disponible_monto < totales.total %}
-                        <button data-form-url="{% url 'cotizacion_app:confirmacion_forma_pago' confirmacion.id %}"
-                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
-                            class="update btn btn-danger">
-                            Solicitar Crédito
                         </button>
                         {% endif %}
                     </td>

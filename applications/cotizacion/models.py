@@ -175,7 +175,7 @@ class CotizacionTerminosCondiciones(models.Model):
 
 
 class ConfirmacionVenta(models.Model):
-    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE)
+    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='ConfirmacionVenta_cotizacion_venta')
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ConfirmacionVenta_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ConfirmacionVenta_cliente_interlocutor', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)

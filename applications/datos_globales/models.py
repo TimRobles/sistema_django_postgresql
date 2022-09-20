@@ -15,6 +15,10 @@ class Moneda(models.Model):
     abreviatura = models.CharField('Abreviatura', max_length=5, unique=True)
     simbolo = models.CharField('Símbolo', max_length=5)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    principal = models.BooleanField(default=False)
+    secundario = models.BooleanField(default=False)
+    moneda_pais = models.BooleanField('Moneda del país', default=False)
+
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Moneda_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -491,8 +495,9 @@ class TipoCambio(models.Model):
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
     tipo_cambio_venta = models.DecimalField('Tipo de Cambio Venta', max_digits=4, decimal_places=3)
     tipo_cambio_compra = models.DecimalField('Tipo de Cambio Compra', max_digits=4, decimal_places=3, default= 0)
-    tipo_cambio_venta_sunat = models.DecimalField('Tipo de Cambio Venta Sunat', max_digits=4, decimal_places=3, default= 0)
-    tipo_cambio_compra_sunat = models.DecimalField('Tipo de Cambio Compra Sunat', max_digits=4, decimal_places=3, default= 0)
+    moneda_origen = models.ForeignKey(Moneda, on_delete=models.CASCADE, related_name='TipoCambio_moneda_origen')
+    moneda_destino = models.ForeignKey(Moneda, on_delete=models.CASCADE, related_name='TipoCambio_moneda_destino')
+    
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambio_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -503,6 +508,38 @@ class TipoCambio(models.Model):
     class Meta:
         verbose_name = 'Tipo de Cambio'
         verbose_name_plural = 'Tipos de Cambio'
+        ordering = [
+            '-fecha',
+            '-updated_at',
+        ]
+    
+    @property
+    def venta(self):
+        return self.tipo_cambio_venta
+    
+    @property
+    def compra(self):
+        if self.tipo_cambio_compra:
+            return self.tipo_cambio_compra
+        else:
+            return self.tipo_cambio_venta
+
+    def __str__(self):     
+        return str(self.fecha)
+
+
+class TipoCambioSunat(models.Model):
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
+    tipo_cambio_venta = models.DecimalField('Tipo de Cambio Venta', max_digits=4, decimal_places=3)
+    tipo_cambio_compra = models.DecimalField('Tipo de Cambio Compra', max_digits=4, decimal_places=3)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambioSunat_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambioSunat_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Tipo de Cambio Sunat'
+        verbose_name_plural = 'Tipos de Cambio Sunat'
         ordering = [
             '-fecha',
             '-updated_at',

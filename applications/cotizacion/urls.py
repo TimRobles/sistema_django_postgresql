@@ -56,4 +56,15 @@ urlpatterns = [
     path('confirmacion/',views.ConfirmacionListView.as_view(),name='confirmacion_inicio'),
     path('confirmacion/<int:id_cotizacion>/',views.ConfirmacionListView.as_view(),name='confirmacion_cotizacion_inicio'),
     path('confirmacion/forma-pago/<pk>/',views.ConfirmacionVentaFormaPagoView.as_view(),name='confirmacion_forma_pago'),
+
+    path('solicitud-credito/<int:id_cotizacion>/',views.SolicitudCreditoView.as_view(),name='solicitud_credito'),
+    path('solicitud-credito/tabla/<int:id_cotizacion>/',views.SolicitudCreditoTabla,name='solicitud_credito_tabla'),
+    path('solicitud-credito/actualizar/<pk>/',views.SolicitudCreditoUpdateView.as_view(),name='solicitud_credito_actualizar'),
+    path('solicitud-credito/eliminar/<pk>/',views.SolicitudCreditoEliminarView.as_view(),name='solicitud_credito_eliminar'),
+    path('solicitud-credito/finalizar/<pk>/',views.SolicitudCreditoFinalizarView.as_view(),name='solicitud_credito_finalizar'),
+    path('solicitud-credito/aprobar/<pk>/',views.SolicitudCreditoAprobarView.as_view(),name='solicitud_credito_aprobar'),
+    path('solicitud-credito/rechazar/<pk>/',views.SolicitudCreditoRechazarView.as_view(),name='solicitud_credito_rechazar'),
+    path('solicitud-credito/cuota/agregar/<int:id_solicitud>/',views.SolicitudCreditoCuotaCreateView.as_view(),name='solicitud_credito_cuota_agregar'),
+    path('solicitud-credito/cuota/actualizar/<pk>/',views.SolicitudCreditoCuotaUpdateView.as_view(),name='solicitud_credito_cuota_actualizar'),
+    path('solicitud-credito/cuota/eliminar/<pk>/',views.SolicitudCreditoCuotaDeleteView.as_view(),name='solicitud_credito_cuota_eliminar'),
 ]
