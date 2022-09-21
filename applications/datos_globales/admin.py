@@ -539,6 +539,7 @@ class ImpuestoPromocionMunicipalAdmin(admin.ModelAdmin):
 @admin.register(SeriesComprobante)
 class SeriesComprobanteAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'tipo_comprobante',
         'serie',
         'created_at',

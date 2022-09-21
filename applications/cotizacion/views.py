@@ -98,9 +98,12 @@ class CotizacionVentaVerView(TemplateView):
     def get_context_data(self, **kwargs):
         obj = CotizacionVenta.objects.get(id = kwargs['id_cotizacion'])
 
-        if obj.SolicitudCredito_cotizacion_venta.estado == 3:
-            credito_temporal = obj.SolicitudCredito_cotizacion_venta.total_credito
-        else:
+        try:
+            if obj.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
             credito_temporal = Decimal('0.00')
         disponible = obj.cliente.disponible_monto + credito_temporal
 
@@ -141,9 +144,12 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         template = 'cotizacion/cotizacion_venta/detalle_tabla.html'
         obj = CotizacionVenta.objects.get(id=id_cotizacion)
 
-        if obj.SolicitudCredito_cotizacion_venta.estado == 3:
-            credito_temporal = obj.SolicitudCredito_cotizacion_venta.total_credito
-        else:
+        try:
+            if obj.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
             credito_temporal = Decimal('0.00')
         disponible = obj.cliente.disponible_monto + credito_temporal
 
@@ -979,7 +985,8 @@ class CotizacionVentaConfirmarView(DeleteView):
             cotizacion_observacion = observacion(self.object, sociedad)
             condiciones_pago = None
             tipo_venta = 1
-            if self.object.SolicitudCredito_cotizacion_venta:
+
+            if hasattr(self.object, 'SolicitudCredito_cotizacion_venta'):
                 if self.object.SolicitudCredito_cotizacion_venta.estado == 3:
                     condiciones_pago = self.object.SolicitudCredito_cotizacion_venta.condiciones_pago
                     tipo_venta = 2
@@ -1441,9 +1448,12 @@ class ConfirmarVerView(TemplateView):
     def get_context_data(self, **kwargs):
         obj = ConfirmacionVenta.objects.get(id = kwargs['id_confirmacion'])
         
-        if obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
-            credito_temporal = obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
-        else:
+        try:
+            if obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
             credito_temporal = Decimal('0.00')
         disponible = obj.cliente.disponible_monto + credito_temporal
 
@@ -1475,9 +1485,12 @@ def ConfirmarVerTabla(request, id_confirmacion):
         template = 'cotizacion/confirmacion/detalle_tabla.html'
         obj = ConfirmacionVenta.objects.get(id=id_confirmacion)
 
-        if obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
-            credito_temporal = obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
-        else:
+        try:
+            if obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
             credito_temporal = Decimal('0.00')
         disponible = obj.cliente.disponible_monto + credito_temporal
         

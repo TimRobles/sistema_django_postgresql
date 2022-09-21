@@ -1,6 +1,7 @@
 from urllib import request
 from django.shortcuts import render
 from applications.cotizacion.models import ConfirmacionVenta
+from applications.datos_globales.models import SeriesComprobante
 from applications.funciones import slug_aleatorio
 from applications.importaciones import *
 
@@ -96,41 +97,56 @@ class FacturaVentaCrearView(DeleteView):
 
         detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
+        serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(FacturaVenta)).earliest('created_at')
         factura_venta = FacturaVenta.objects.create(
             sociedad = self.object.sociedad,
+            serie_comprobante = serie_comprobante,
+            cliente = self.object.cliente,
+            cliente_interlocutor = self.object.cliente_interlocutor,
+            moneda = self.object.moneda,
             tipo_cambio = self.object.tipo_cambio,
-            observaciones = self.object.observacion,
-            condiciones_pago = self.object.condiciones_pago,
             tipo_venta = self.object.tipo_venta,
+            condiciones_pago = self.object.condiciones_pago,
             descuento_global = self.object.descuento_global,
-            otros_cargos = self.object.otros_cargos,
-            total = self.object.total,
+            total_otros_cargos = self.object.otros_cargos,
+            observaciones = self.object.observacion,
             slug = slug_aleatorio(FacturaVenta),
             created_by=self.request.user,
             updated_by=self.request.user,
         )
-        
 
         for detalle in detalles:
+            producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
             factura_venta_detalle = FacturaVentaDetalle.objects.create(
-            item=detalle.item,
-            content_type=detalle.content_type,
-            id_registro=detalle.id_registro,
-            cantidad=detalle.cantidad_confirmada,
-            precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
-            precio_unitario_con_igv=detalle.precio_unitario_con_igv,
-            precio_final_con_igv=detalle.precio_final_con_igv,
-            descuento=detalle.descuento,
-            sub_total=detalle.sub_total,
-            igv=detalle.igv,
-            total=detalle.total,
-            tipo_igv=detalle.tipo_igv,
-            factura_venta=factura_venta,
-            created_by=self.request.user,
-            updated_by=self.request.user,
+                item=detalle.item,
+                content_type=detalle.content_type,
+                id_registro=detalle.id_registro,
+                unidad=producto.unidad_base,
+                descripcion_documento=producto.descripcion_documento,
+                cantidad=detalle.cantidad_confirmada,
+                precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
+                precio_unitario_con_igv=detalle.precio_unitario_con_igv,
+                precio_final_con_igv=detalle.precio_final_con_igv,
+                descuento=detalle.descuento,
+                sub_total=detalle.sub_total,
+                tipo_igv=detalle.tipo_igv,
+                igv=detalle.igv,
+                total=detalle.total,
+                codigo_producto_sunat=producto.codigo_producto_sunat,
+                factura_venta=factura_venta,
+                created_by=self.request.user,
+                updated_by=self.request.user,
             )
 
         messages.success(request, MENSAJE_CLONAR_COTIZACION)
         # return HttpResponseRedirect(self.get_success_url())
         return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':factura_venta.id}))
 
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaCrearView, self).get_context_data(**kwargs)
+        context['accion'] = 'Generar'
+        context['titulo'] = 'Factura de venta'
+        context['texto'] = '¿Seguro que desea generar la Factura de venta?'
+        context['item'] = self.object
+        return context
+    

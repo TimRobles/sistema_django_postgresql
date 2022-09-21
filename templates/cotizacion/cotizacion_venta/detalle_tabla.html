@@ -340,7 +340,7 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td style="min-width: 500px;">{{ material.material.descripcion_venta }}</td>
+                    <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                     <td class="text-nowrap">{{ material.material.unidad_base }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>

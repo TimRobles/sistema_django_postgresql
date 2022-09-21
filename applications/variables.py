@@ -109,6 +109,12 @@ TIPO_IGV_CHOICES = (
     (17, 'Exonerado - Transferencia Gratuita'),
     )
 
+TIPO_ISC_CHOICES = (
+    (1,1),
+    (2,2),
+    (3,3),
+)
+
 TIPO_DOCUMENTO_CHOICES = (
     ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
     ('4', 'CARNET DE EXTRANJERÍA'),
@@ -197,6 +203,13 @@ ESTADOS_CONFIRMACION = (
     (1, 'PENDIENTE'),
     (2, 'FINALIZADO'),
     (3, 'ANULADO'),
+    )
+
+ESTADOS_FACTURA = (
+    (1, 'BORRADOR'),
+    (2, 'EMITIDO'),
+    (3, 'RECHAZADO'),
+    (4, 'ANULADO'),
     )
 
 TIPO_PERCEPCION = (
