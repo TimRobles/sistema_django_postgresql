@@ -35,6 +35,7 @@ from .models import (
     RemuneracionMinimaVital,
     UnidadImpositivaTributaria,
     ImpuestoGeneralVentas,
+    SeriesComprobante,
 )
 
 class MonedaAdmin(admin.ModelAdmin):
@@ -505,6 +506,23 @@ class ImpuestoPromocionMunicipalAdmin(admin.ModelAdmin):
         'created_at',
         'updated_by',
         'updated_at',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(SeriesComprobante)
+class SeriesComprobanteAdmin(admin.ModelAdmin):
+    list_display = (
+        'tipo_comprobante',
+        'serie',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
         )
 
     def save_model(self, request, obj, form, change):

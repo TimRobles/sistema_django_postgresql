@@ -71,7 +71,7 @@ class FacturaVentaDetalle(models.Model):
     sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2, default=0)
     igv = models.DecimalField('IGV',max_digits=14, decimal_places=2, default=0)
     tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
-    factura_venta = models.ForeignKey(FacturaVenta, on_delete=models.CASCADE, related_name='FacturaVentaDetalle_cotizacion_venta')
+    factura_venta = models.ForeignKey(FacturaVenta, on_delete=models.CASCADE, related_name='FacturaVentaDetalle_factura_venta')
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FacturaVentaDetalle_created_by', editable=False)
