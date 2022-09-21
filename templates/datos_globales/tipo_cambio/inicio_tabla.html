@@ -2,10 +2,10 @@
     <thead>
         <tr>
             <th>Fecha</th>
-            <th>Tipo de Cambio Venta</th>
-            <th>Tipo de Cambio Compra</th>
-            <th>Tipo de Cambio Venta (SUNAT)</th>
-            <th>Tipo de Cambio Compra (SUNAT)</th>
+            <th class="text-center">Tipo de Cambio Venta</th>
+            <th class="text-center">Tipo de Cambio Compra</th>
+            <th class="text-center">Ejemplo Venta</th>
+            <th class="text-center">Ejemplo Compra</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -13,10 +13,10 @@
         {% for tipo_cambio in contexto_tipo_cambio %}
         <tr>
             <td>{{ tipo_cambio.fecha|date:'d/m/Y' }}</td>
-            <td>{{ tipo_cambio.tipo_cambio_venta }}</td>
-            <td>{{ tipo_cambio.tipo_cambio_compra }}</td>
-            <td>{{ tipo_cambio.tipo_cambio_venta_sunat }}</td>
-            <td>{{ tipo_cambio.tipo_cambio_compra_sunat }}</td>
+            <td class="text-center">{{ tipo_cambio.tipo_cambio_venta }}</td>
+            <td class="text-center">{{ tipo_cambio.tipo_cambio_compra }}</td>
+            <td class="text-center">1 {{ tipo_cambio.moneda_origen }} = {{ tipo_cambio.venta }} {{ tipo_cambio.moneda_destino }}</td>
+            <td class="text-center">{{ tipo_cambio.compra }} {{ tipo_cambio.moneda_destino }} = 1 {{ tipo_cambio.moneda_origen }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'datos_globales_app:tipo_cambio_actualizar' tipo_cambio.id %}"
                     data-table-url="{% url 'datos_globales_app:tipo_cambio_tabla' %}"

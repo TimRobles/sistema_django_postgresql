@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
@@ -41,6 +42,55 @@ class Cliente(models.Model):
 
     def documento(self):
         return DICCIONARIO_TIPO_DOCUMENTO_SUNAT[self.tipo_documento]
+
+    @property
+    def linea_credito_condiciones_pago(self):
+        try:
+            return self.LineaCredito_cliente.get(estado=1).condiciones_pago
+        except:
+            return ''
+
+    @property
+    def linea_credito_monto(self):
+        try:
+            return self.LineaCredito_cliente.get(estado=1).monto
+        except:
+            return Decimal('0.00')
+
+    @property
+    def linea_credito_moneda_simbolo(self):
+        try:
+            return self.LineaCredito_cliente.get(estado=1).moneda.simbolo
+        except:
+            return ''
+
+    @property
+    def deuda_monto(self):
+        try:
+            return Decimal('0.00')
+        except:
+            return Decimal('0.00')
+
+    @property
+    def nota_credito_monto(self):
+        try:
+            return Decimal('0.00')
+        except:
+            return Decimal('0.00')
+
+    @property
+    def nota_credito_monto(self):
+        try:
+            return Decimal('0.00')
+        except:
+            return Decimal('0.00')
+
+    @property
+    def disponible_monto(self):
+        try:
+            return self.linea_credito_monto - self.deuda_monto + self.nota_credito_monto
+        except:
+            return Decimal('0.00')
 
     def __str__(self):
         return self.razon_social

@@ -1,5 +1,5 @@
 from django import forms
-from applications.datos_globales.models import Area, Cargo, Moneda, TipoCambio, TipoInterlocutor, Pais
+from applications.datos_globales.models import Area, Cargo, Moneda, TipoCambio, TipoCambioSunat, TipoInterlocutor, Pais
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 class MonedaForm(forms.ModelForm):
@@ -9,6 +9,9 @@ class MonedaForm(forms.ModelForm):
             'nombre',
             'abreviatura',
             'simbolo',
+            'principal',
+            'secundario',
+            'moneda_pais',
             'estado',
             )
 
@@ -97,8 +100,8 @@ class TipoCambioForm(BSModalModelForm):
             'fecha',
             'tipo_cambio_venta',
             'tipo_cambio_compra',
-            'tipo_cambio_venta_sunat',
-            'tipo_cambio_compra_sunat',
+            'moneda_origen',
+            'moneda_destino',
             )
         widgets = {
             'fecha' : forms.DateInput(
@@ -111,5 +114,29 @@ class TipoCambioForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(TipoCambioForm, self).__init__(*args, **kwargs)
+        self.fields['moneda_origen'].initial = Moneda.objects.get(principal=True)
+        self.fields['moneda_destino'].initial = Moneda.objects.get(secundario=True)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class TipoCambioSunatForm(BSModalModelForm):
+    class Meta:
+        model = TipoCambioSunat
+        fields = (
+            'fecha',
+            'tipo_cambio_venta',
+            'tipo_cambio_compra',
+            )
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(TipoCambioSunatForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

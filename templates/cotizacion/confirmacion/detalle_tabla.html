@@ -28,31 +28,30 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Razón Social:</th>
-                    <td>{{ cotizacion.cliente.razon_social }}</td>
+                    <td>{{ confirmacion.cliente.razon_social }}</td>
                     <td class="ps-2" rowspan="3">
-                        {% if cotizacion.estado < 3 %}
-                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_cliente' cotizacion.id %}"
-                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                        {% if confirmacion.estado == 1 %}
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
                             class="update btn btn-primary" title="Seleccionar Cliente">
                             Seleccionar Cliente
                         </button>
                         {% endif %}
                     </td>
-                    
                 </tr>
                 <tr>
-                    <th class="pe-2">{{ cotizacion.cliente.documento }}:</th>
+                    <th class="pe-2">{{ confirmacion.cliente.documento }}:</th>
                     <td>
-                        {% if cotizacion.cliente.numero_documento %}
-                        {{ cotizacion.cliente.numero_documento }}
+                        {% if confirmacion.cliente.numero_documento %}
+                        {{ confirmacion.cliente.numero_documento }}
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <th class="pe-2">Interlocutor:</th>
                     <td>
-                        {% if cotizacion.cliente_interlocutor %}
-                        {{ cotizacion.cliente_interlocutor }}
+                        {% if confirmacion.cliente_interlocutor %}
+                        {{ confirmacion.cliente_interlocutor }}
                         {% endif %}
                     </td>
                 </tr>
@@ -66,16 +65,7 @@
                 <tr>
                     <th class="pe-2">Fecha:</th>
                     <td>{{ cotizacion.fecha_cotizacion|date:'d/m/Y' }}</td>
-                    <td class="px-2" rowspan="2"> 
-                        {% if cotizacion.estado == 1 %}
-                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_guardar' cotizacion.id %}"
-                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_inicio' %}"
-                            class="delete btn btn-primary">
-                            Guardar Cotización
-                        </button>
-                        {% endif %}
-                    </td>
-                    <th class="pe-2">Tipo de Cambio (COTIZACIÓN):</th>
+                    <th class="px-2">Tipo de Cambio:</th>
                     <td>
                         {% if tipo_cambio %}
                         {{ tipo_cambio }}
@@ -89,16 +79,12 @@
                         {{ cotizacion.numero_cotizacion }}
                         {% endif %}
                     </td>
-                    <th class="pe-2">Tipo de Cambio (HOY):</th>
-                    <td>
-                        {% if tipo_cambio_hoy %}
-                        {{ tipo_cambio_hoy }}
-                        {% endif %}
-                    </td>
                 </tr>
                 <tr>
-                    <th>Estado:</th>
+                    <th>Estado Cotización:</th>
                     <td>{{ cotizacion.get_estado_display }}</td>
+                    <th class="px-2">Estado Confirmación:</th>
+                    <td>{{ confirmacion.get_estado_display }}</td>
                 </tr>
             </tbody>
         </table>
@@ -111,15 +97,19 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Línea de crédito:</th>
-                    <td>{{ linea_credito }}</td>
+                    <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ confirmacion.cliente.linea_credito_monto|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Crédito temporal:</th>
+                    <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ credito_temporal|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Deuda:</th>
-                    <td>{{ deuda }}</td>
+                    <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ confirmacion.cliente.deuda_monto|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Disponible:</th>
-                    <td>{{ disponible }}</td>
+                    <td class="text-end">{{ confirmacion.cliente.linea_credito_moneda_simbolo }} {{ disponible|intcomma }}</td>
                 </tr>
             </tbody>
         </table>
@@ -128,17 +118,30 @@
         <table>
             <tbody>
                 <tr>
-                    <th class="pe-2">Línea de crédito:</th>
-                    <td>{{ linea_credito }}</td>
+                    <th class="pe-2">Tipo de Venta:</th>
+                    <td>{{ confirmacion.get_tipo_venta_display }}</td>
+                    <td class="ps-2" rowspan="2">
+                        {% if confirmacion.estado == 1 and confirmacion.cliente.linea_credito_monto != 0 %}
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_forma_pago' confirmacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
+                            class="update btn btn-primary">
+                            Cambiar Forma de Pago
+                        </button>
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">Deuda:</th>
-                    <td>{{ deuda }}</td>
+                    <th class="pe-2">Condiciones de Pago:</th>
+                    <td>
+                        {% if confirmacion.condiciones_pago %}
+                        {{ confirmacion.condiciones_pago }}
+                        {% endif %}    
+                    </td>
                 </tr>
-                <tr>
+                <!-- <tr>
                     <th class="pe-2">Disponible:</th>
                     <td>{{ cotizacion.descuento }}</td>
-                </tr>
+                </tr> -->
             </tbody>
         </table>
     </div>
