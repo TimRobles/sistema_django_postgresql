@@ -29,7 +29,6 @@ def FacturaVentaTabla(request):
         )
         return JsonResponse(data)
 
-
 class FacturaVentaDetalleView(TemplateView):
     template_name = "comprobante_venta/factura_venta/detalle.html"
 
@@ -50,7 +49,6 @@ class FacturaVentaDetalleView(TemplateView):
         context['materiales'] = materiales
 
         return context
-
 
 def FacturaVentaDetalleVerTabla(request, id_factura_venta):
     data = dict()
@@ -78,9 +76,6 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         )
         return JsonResponse(data)
 
-
-
-
 class FacturaVentaCrearView(DeleteView):
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
@@ -90,10 +85,6 @@ class FacturaVentaCrearView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-
-        print('*********************')
-        print(self.object)
-        print('*********************')
 
         detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
@@ -139,7 +130,6 @@ class FacturaVentaCrearView(DeleteView):
             )
 
         messages.success(request, MENSAJE_CLONAR_COTIZACION)
-        # return HttpResponseRedirect(self.get_success_url())
         return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':factura_venta.id}))
 
     def get_context_data(self, **kwargs):

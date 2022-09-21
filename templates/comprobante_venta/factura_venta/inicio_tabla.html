@@ -19,13 +19,9 @@
             <td>{{factura_venta.numero_factura}}</td>
             <td>{{factura_venta.cliente}}</td>
             <td>{{factura_venta.total}}</td>
-            <td>{{factura_venta.estado}}</td>
+            <td>{{factura_venta.get_estado_display}}</td>
             <td>
-                <a href="{% url 'comprobante_venta_app:factura_venta_ver' factura_venta.id %}"
-                    class="btn btn-info btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
-                    <i class="bi bi-eye-fill"></i>
-                </a>                
+         
             </td>
         </tr>
         {% endfor %}
