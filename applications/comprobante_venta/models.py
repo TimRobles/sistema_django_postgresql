@@ -6,6 +6,8 @@ from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.variables import TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA, ESTADOS
 from django.conf import settings
+from applications.funciones import obtener_totales
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 
 class FacturaVenta(models.Model):
@@ -92,3 +94,10 @@ class FacturaVentaDetalle(models.Model):
     def __str__(self):
         return str(self.id)
 
+def factura_venta_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.factura_venta)
+    obj.factura_venta.total = respuesta['total']
+    obj.factura_venta.save()
+
+post_save.connect(factura_venta_detalle_post_save, sender=FacturaVentaDetalle)

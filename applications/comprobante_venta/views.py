@@ -137,6 +137,6 @@ class FacturaVentaCrearView(DeleteView):
         context['accion'] = 'Generar'
         context['titulo'] = 'Factura de venta'
         context['texto'] = '¿Seguro que desea generar la Factura de venta?'
-        context['item'] = self.object
+        context['item'] = str(self.object.cliente) 
         return context
     
