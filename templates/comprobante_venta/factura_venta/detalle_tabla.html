@@ -7,7 +7,6 @@
     <div class="col-auto">
         <a href="{% url 'comprobante_venta_app:factura_venta_inicio' %}" class="btn btn-primary">Regresar</a>
     </div>
-
 </div>
 
 <div class="row mt-3">
@@ -58,10 +57,9 @@
                         {{ factura.numero_factura }}
                         {% endif %}
                     </td>
-                   
                 </tr>
                 <tr>
-                    <th>Estado:</th>
+                    <th>Estado Factura:</th>
                     <td>{{ factura.get_estado_display }}</td>
                 </tr>
             </tbody>
