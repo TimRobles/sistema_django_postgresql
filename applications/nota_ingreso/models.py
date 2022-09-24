@@ -11,7 +11,7 @@ from applications.variables import ESTADO_NOTA_INGRESO
 
 # Create your models here.
 class NotaIngreso(models.Model):
-    nro_nota_ingreso = models.CharField('Número de Nota de Ingreso', max_length=6, help_text='Correlativo', blank=True, null=True)
+    nro_nota_ingreso = models.IntegerField('Número de Nota de Ingreso', help_text='Correlativo', blank=True, null=True)
     recepcion_compra = models.ForeignKey(RecepcionCompra, on_delete=models.PROTECT)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)

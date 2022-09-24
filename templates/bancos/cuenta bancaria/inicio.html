@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Cuenta Bancaria
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Cuenta Bancaria</h3>
+
+    <div class="table-responsive" id="tabla">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sociedad</th>
+                    <th>Banco</th>
+                    <th>Moneda</th>
+                    <th>Número de Cuenta</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+        
+            <tbody>
+                {% for cuenta_bancaria in contexto_cuenta_bancaria %}
+                <tr>
+                    <td>{{ cuenta_bancaria.sociedad.razon_social }}</td>
+                    <td>{{ cuenta_bancaria.banco }}</td>
+                    <td>{{ cuenta_bancaria.moneda }}</td>
+                    <td>{{ cuenta_bancaria.numero_cuenta }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'cobranza_app:deudores_detalle' cuenta_bancaria.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock contenido %}

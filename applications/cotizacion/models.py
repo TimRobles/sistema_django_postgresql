@@ -41,7 +41,7 @@ class PrecioListaMaterial(models.Model):
 
 
 class CotizacionVenta(models.Model):
-    numero_cotizacion = models.CharField('Número de Cotización', max_length=6, blank=True, null=True)
+    numero_cotizacion = models.IntegerField('Número de Cotización', blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor', blank=True, null=True)
     fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False, blank=True, null=True)

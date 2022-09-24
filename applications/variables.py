@@ -265,7 +265,7 @@ DICCIONARIO_TOTALES={
     'total_anticipo':'Anticipo',
     'total_gravada':'Gravada',
     'total_inafecta':'Inafecta',
-    'total_exonerada':'exonerada',
+    'total_exonerada':'Exonerada',
     'total_igv':'I.G.V.',
     'total_gratuita':'Gratuita',
     # 'total_otros_cargos':'Otros Cargos',

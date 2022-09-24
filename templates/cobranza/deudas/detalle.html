@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Detalle Deuda
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Deuda</h3>
+
+    <div class="table-responsive" id="tabla">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-center">Fecha</th>
+                    <th>Documento</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">Amortizado</th>
+                    <th class="text-end">Deuda</th>
+                    <th class="text-center">Fecha de Vencimiento</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+        
+            <tbody>
+                {% for deuda in contexto_deuda %}
+                <tr>
+                    <td class="text-center">{{ deuda.fecha_deuda|date:'d/m/Y' }}</td>
+                    <td>{{ deuda.documento }}</td>
+                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.monto }}</td>
+                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.pagos }}</td>
+                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.saldo }}</td>
+                    <td class="text-center">{{ deuda.fecha_vencimiento|date:'d/m/Y' }}</td>
+                    <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock contenido %}

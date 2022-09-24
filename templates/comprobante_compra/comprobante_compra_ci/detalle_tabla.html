@@ -39,12 +39,12 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th>Tipo IGV</th>
-                <th>Cantidad</th>
-                <th>Prec. Unit. sin IGV</th>
-                <th>Prec. Unit. con IGV</th>
-                <th>Prec. Final con IGV</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
+                <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
+                <th class="text-nowrap">Prec. Final<br>con IGV</th>
                 <th>Descuento</th>
-                <th>Sub Total</th>
+                <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
                 <th class="text-center">Acciones</th>
@@ -59,13 +59,13 @@
                     <td>{{ material.material.unidad_base }}</td>
                     <td>{{ material.get_tipo_igv_display }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.descuento|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.sub_total|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.igv|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.descuento|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.sub_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.total|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_comprobante_compra_ci.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_actualizar_material' material.id %}"

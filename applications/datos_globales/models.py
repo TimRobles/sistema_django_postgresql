@@ -374,9 +374,14 @@ class CuentaBancariaSociedad(models.Model):
 
         verbose_name = 'Cuenta Bancaria Sociedad'
         verbose_name_plural = 'Cuentas Bancarias Sociedad'
+        ordering = [
+            'sociedad',
+            'banco',
+            'moneda',
+            ]
 
     def __str__(self):
-        return str(self.banco.nombre_comercial) + ' : ' + str(self.numero_cuenta) + ' | ' + str(self.numero_cuenta_interbancaria) + ' - ' +  str(self.sociedad)
+        return "%s %s : %s | %s - %s" % (self.banco.nombre_comercial, self.moneda, self.numero_cuenta, self.numero_cuenta_interbancaria, self.sociedad)
 
 
 class CuentaBancariaPersonal(models.Model):

@@ -91,10 +91,6 @@ class FacturaVentaCrearView(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        print('*********************')
-        print(self.object)
-        print('*********************')
-
         detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
         serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(FacturaVenta)).earliest('created_at')

@@ -669,11 +669,6 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                     proveedor = requerimiento.proveedor,
                     estado_alta_baja = 1,
                 )
-                print("**************************")
-                print(internacional_nacional)
-                print(internacional_nacional==1)
-                print(type(internacional_nacional))
-                print("**************************")
                 if internacional_nacional=='1':
                     igv = 8
                 else:

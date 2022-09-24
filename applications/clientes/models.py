@@ -67,7 +67,16 @@ class Cliente(models.Model):
     @property
     def deuda_monto(self):
         try:
-            return Decimal('0.00')
+            total = Decimal('0.00')
+            deudas = self.Deuda_cliente.all()
+            for deuda in deudas:
+                if deuda.moneda.principal:
+                    total += deuda.monto
+                else:
+                    total += deuda.monto / deuda.tipo_cambio
+                total -= deuda.pagos
+
+            return total
         except:
             return Decimal('0.00')
 

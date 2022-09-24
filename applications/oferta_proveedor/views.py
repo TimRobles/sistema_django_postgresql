@@ -2,7 +2,7 @@ from django.shortcuts import render
 from applications.importaciones import *
 from applications.oferta_proveedor.models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
 from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorDetalleProveedorMaterialUpdateForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm, OrdenCompraSociedadForm
-from applications.funciones import numeroXn, obtener_totales
+from applications.funciones import igv, numeroXn, obtener_totales
 from applications.funciones import slug_aleatorio
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from applications.requerimiento_de_materiales.models import ListaRequerimientoMaterialDetalle, RequerimientoMaterialProveedor, RequerimientoMaterialProveedorDetalle
@@ -149,6 +149,7 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
         context['material'] = self.object.proveedor_material
+        context['valor_igv'] = igv()
         return context
 
 class OfertaProveedorDetalleProveedorMaterialUpdateView(PermissionRequiredMixin, BSModalFormView):

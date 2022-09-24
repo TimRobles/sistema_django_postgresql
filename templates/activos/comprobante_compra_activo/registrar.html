@@ -15,6 +15,7 @@
         <button type="submit" class="btn btn-primary">{{ accion }}</button>
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
     </div>
+    <span id="valor_igv" hidden>{{ valor_igv }}</span>
 </form>
 
 <script src="{% static 'js/activos/comprobante_compra_activo/calculos_linea.js' %}?{{ cache_bust }}"></script>

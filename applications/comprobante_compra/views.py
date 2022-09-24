@@ -1,6 +1,6 @@
 from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, RecepcionComprobanteCompraPIForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import obtener_totales
+from applications.funciones import igv, obtener_totales
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -368,6 +368,7 @@ class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdat
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
         context['material'] = str(self.object.content_type.get_object_for_this_type(id = self.object.id_registro))
+        context['valor_igv'] = igv()
         return context
 
 

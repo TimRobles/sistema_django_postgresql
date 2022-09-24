@@ -13,6 +13,7 @@ class ProveedorForm(BSModalModelForm):
         model = Proveedor
         fields = (
             'nombre',
+            'ruc',
             'pais',
             'direccion',
             )
