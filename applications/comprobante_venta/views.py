@@ -232,10 +232,7 @@ class BoletaVentaCrearView(DeleteView):
         detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
         serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(BoletaVenta)).earliest('created_at')
-        print('*************************************')
-        print(detalles)
-        print(serie_comprobante)
-        print('*************************************')
+
         boleta_venta = BoletaVenta.objects.create(
             sociedad = self.object.sociedad,
             serie_comprobante = serie_comprobante,
@@ -265,8 +262,7 @@ class BoletaVentaCrearView(DeleteView):
                 tipo_igv=detalle.tipo_igv,
                 igv=detalle.igv,
                 total=detalle.total,
-                codigo_producto_sunat=producto.codigo_producto_sunat,
-                factura_venta=boleta_venta,
+                boleta_venta=boleta_venta,
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )

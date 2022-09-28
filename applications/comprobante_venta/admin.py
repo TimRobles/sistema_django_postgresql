@@ -108,7 +108,6 @@ class BoletaVentaAdmin(admin.ModelAdmin):
         'total',
         'url',
         'estado',
-        'motivo_anulacion',
         'created_at',
         'created_by',
         'updated_at',

@@ -109,7 +109,7 @@ class BoletaVenta(models.Model):
     serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
     numero_boleta = models.IntegerField('Nro. Boleta', blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='BoletaVenta_cliente', blank=True, null=True)
-    dni = models.IntegerField()
+    dni = models.IntegerField(blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='BoletaVenta_interlocutor', blank=True, null=True)
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_vencimiento = models.DateField('Fecha Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
