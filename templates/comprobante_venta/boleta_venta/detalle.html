@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Boleta Venta
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'comprobante_venta/boleta_venta/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

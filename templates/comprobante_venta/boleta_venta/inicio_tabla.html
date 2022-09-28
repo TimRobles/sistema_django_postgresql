@@ -1,0 +1,28 @@
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. Boleta</th>
+            <th>Cliente</th>
+            <th>Fecha Emision</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for boleta_venta in contexto_boleta_venta %}
+        <tr>
+            <td>{{boleta_venta.numero_boleta}}</td>
+            <td>{{boleta_venta.cliente}}</td>
+            <td>{{boleta_venta.fecha_emision}}</td>
+            <td>{{boleta_venta.total}}</td>
+            <td>{{boleta_venta.get_estado_display}}</td>
+
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>

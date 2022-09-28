@@ -14,7 +14,7 @@ class FacturaVenta(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
     numero_factura = models.IntegerField('Nro. Factura', blank=True, null=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='FacturaVenta', blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='FacturaVenta_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='FacturaVenta_interlocutor', blank=True, null=True)
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_vencimiento = models.DateField('Fecha Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -94,10 +94,74 @@ class FacturaVentaDetalle(models.Model):
     def __str__(self):
         return str(self.id)
 
-def factura_venta_detalle_post_save(*args, **kwargs):
-    obj = kwargs['instance']
-    respuesta = obtener_totales(obj.factura_venta)
-    obj.factura_venta.total = respuesta['total']
-    obj.factura_venta.save()
 
-post_save.connect(factura_venta_detalle_post_save, sender=FacturaVentaDetalle)
+# def factura_venta_detalle_post_save(*args, **kwargs):
+#     obj = kwargs['instance']
+#     respuesta = obtener_totales(obj.factura_venta)
+#     obj.factura_venta.total = respuesta['total']
+#     obj.factura_venta.save()
+
+# post_save.connect(factura_venta_detalle_post_save, sender=FacturaVentaDetalle)
+
+
+class BoletaVenta(models.Model):
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
+    numero_boleta = models.IntegerField('Nro. Boleta', blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='BoletaVenta_cliente', blank=True, null=True)
+    dni = models.IntegerField()
+    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='BoletaVenta_interlocutor', blank=True, null=True)
+    fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_vencimiento = models.DateField('Fecha Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, default=1)
+    tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='BoletaVenta_tipo_cambio')
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0, blank=True, null=True)
+    url = models.TextField(blank=True, null=True)
+    estado = models.IntegerField(choices = ESTADOS, default=1)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='BoletaVenta_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='BoletaVenta_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Boleta Venta'
+        verbose_name_plural = 'Boletas Venta'
+
+    def __str__(self):
+        return str(self.id)
+
+class BoletaVentaDetalle(models.Model):
+    item = models.IntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    id_registro = models.IntegerField()
+    unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
+    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=0)
+    precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=0)
+    descuento = models.DecimalField('Descuento',max_digits=22, decimal_places=10, default=0)
+    descuento_sin_igv = models.DecimalField('Descuento sin IGV',max_digits=22, decimal_places=10, default=0)
+    descuento_con_igv = models.DecimalField('Descuento con IGV',max_digits=22, decimal_places=10, default=0)
+    precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10, default=0)
+    sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2, default=0)
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=0)
+    tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    boleta_venta = models.ForeignKey(BoletaVenta, on_delete=models.CASCADE, related_name='BoletaVentaDetalle_boleta_venta')
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='BoletaVentaDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='BoletaVentaDetalle_updated_by', editable=False)
+ 
+    class Meta:
+        verbose_name = 'Boleta Venta Detalle'
+        verbose_name_plural = 'Boletas Venta Detalle'
+
+    def __str__(self):
+        return str(self.id)
+
+
