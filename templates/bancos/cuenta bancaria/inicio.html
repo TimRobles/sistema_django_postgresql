@@ -28,7 +28,7 @@ Cuenta Bancaria
                     <td>{{ cuenta_bancaria.moneda }}</td>
                     <td>{{ cuenta_bancaria.numero_cuenta }}</td>
                     <td class="text-center">
-                        <a href="{% url 'cobranza_app:deudores_detalle' cuenta_bancaria.id %}"
+                        <a href="{% url 'cobranza_app:cuenta_bancaria_detalle' cuenta_bancaria.id %}"
                             class="btn btn-info btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                             <i class="bi bi-eye-fill"></i>

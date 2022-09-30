@@ -53,6 +53,10 @@ class FacturaVenta(models.Model):
         verbose_name = 'Factura Venta'
         verbose_name_plural = 'Facturas Venta'
 
+    @property
+    def documento(self):
+        return "%s-%s" % (self.serie_comprobante, self.numero_factura)
+
     def __str__(self):
         return str(self.numero_factura)
 

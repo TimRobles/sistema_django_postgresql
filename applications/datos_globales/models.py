@@ -644,4 +644,4 @@ class SeriesComprobante(models.Model):
         verbose_name_plural = 'Series Comprobantes'
 
     def __str__(self):
-        return str(self.serie)
+        return self.serie

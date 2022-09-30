@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load funciones_propias %}
 
 {% block titulo %}
 Detalle Deuda
@@ -19,6 +20,7 @@ Detalle Deuda
                     <th class="text-end">Deuda</th>
                     <th class="text-center">Fecha de Vencimiento</th>
                     <th>Estado</th>
+                    <th class="text-center text-nowrap">Acciones</th>
                 </tr>
             </thead>
         
@@ -26,12 +28,54 @@ Detalle Deuda
                 {% for deuda in contexto_deuda %}
                 <tr>
                     <td class="text-center">{{ deuda.fecha_deuda|date:'d/m/Y' }}</td>
-                    <td>{{ deuda.documento }}</td>
+                    <td>
+                        {% if deuda.Cuota_deuda.all %}
+                        <div class="accordion" id="accordion{{deuda.id}}">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed p-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ deuda.id }}" aria-expanded="false" aria-controls="collapse{{ deuda.id }}">
+                                        {{ deuda.documento }}
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ deuda.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion{{deuda.id}}">
+                                    <div class="accordion-body">
+                                        <table class="table">
+                                            <thead>
+                                                <tr><th colspan="4">Cuotas</th></tr>
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th class="text-end">Monto</th>
+                                                    <th class="text-end">Saldo</th>
+                                                    <th>Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for cuota in deuda.Cuota_deuda.all %}
+                                                <tr>
+                                                    <td>{{ cuota.fecha|date:'d/m/Y' }}</td>
+                                                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ cuota.monto }}</td>
+                                                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ cuota.saldo }}</td>
+                                                    <td class="texto-personalizado" style="--color-texto: {{ cuota.color }};">{{ cuota.estado }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>                          
+                        </div>
+                        {% else %}
+                        {{ deuda.documento }}
+                        {% endif %}
+                    </td>
                     <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.monto }}</td>
                     <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.pagos }}</td>
                     <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.saldo }}</td>
                     <td class="text-center">{{ deuda.fecha_vencimiento|date:'d/m/Y' }}</td>
                     <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado }}</td>
+                    <td class="text-center text-nowrap">
+                        
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

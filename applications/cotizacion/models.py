@@ -81,6 +81,10 @@ class CotizacionVenta(models.Model):
     def otros_cargos(self):
         return self.CotizacionOtrosCargos_cotizacion_venta.all().aggregate(models.Sum('otros_cargos'))['otros_cargos__sum']
 
+    @property
+    def documento(self):
+        return "%s" % (self.numero_cotizacion)
+
     def __str__(self):
         return str(self.id)
 

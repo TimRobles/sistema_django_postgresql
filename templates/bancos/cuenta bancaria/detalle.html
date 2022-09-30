@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Detalle de Cuenta Bancaria
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle de Cuenta Bancaria</h3>
+    <div class="table-responsive">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.sociedad }}</td>
+                    <th class="pe-2">Estado:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.get_estado_display }}</td>
+                    <th class="pe-2">Número de Cuenta:</th>
+                    <td>{{ cuenta_bancaria.numero_cuenta }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Banco:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.banco }}</td>
+                    <th class="pe-2">Moneda:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.moneda }}</td>
+                    <th class="pe-2">Número de Cuenta Interbancaria:</th>
+                    <td>{{ cuenta_bancaria.numero_cuenta_interbancaria }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <button class="delete btn btn-primary"      
+        data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso' cuenta_bancaria.id %}">
+        Agregar Ingreso
+    </button>    
+
+    <div class="table-responsive" id="tabla">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Operación</th>
+                    <th class="text-end">Ingreso</th>
+                    <th class="text-end">Egreso</th>
+                    <th class="text-end">Saldo</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+        
+            <tbody>
+                {% for movimiento in movimientos %}
+                <tr>
+                    <td>{{ movimiento.fecha|date:'d/m/Y' }}</td>
+                    <td>
+                        {% if movimiento.pagos %}
+                        <div class="accordion" id="accordion{{ movimiento.tipo }}{{ movimiento.id }}">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed p-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ movimiento.tipo }}{{ movimiento.id }}" aria-expanded="false" aria-controls="collapse{{ movimiento.tipo }}{{ movimiento.id }}">
+                                        {{ movimiento.numero_operacion }}
+                                        {% if movimiento.cuenta_origen %}
+                                        | {{ movimiento.cuenta_origen }}
+                                        {% endif %}
+                                        {% if movimiento.comentario %}
+                                        | {{ movimiento.comentario }}
+                                        {% endif %}
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ movimiento.tipo }}{{ movimiento.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion{{ movimiento.tipo }}{{ movimiento.id }}">
+                                    <div class="accordion-body">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Documento</th>
+                                                    <th class="text-end">Deuda</th>
+                                                    <th class="text-end">Monto</th>
+                                                    <th class="text-end">Saldo</th>
+                                                    <th>Estado</th>
+                                                    <th class="text-center text-nowrap">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for pago in movimiento.pagos %}
+                                                <tr>
+                                                    <td>
+                                                        {% if pago.deuda.Cuota_deuda.all %}
+                                                        <div class="accordion" id="accordion{{pago.deuda.id}}">
+                                                            <div class="accordion-item">
+                                                                <h2 class="accordion-header" id="headingOne">
+                                                                    <button class="accordion-button collapsed p-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ pago.deuda.id }}" aria-expanded="false" aria-controls="collapse{{ pago.deuda.id }}">
+                                                                        {{ pago.deuda.documento }}
+                                                                    </button>
+                                                                </h2>
+                                                                <div id="collapse{{ pago.deuda.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion{{pago.deuda.id}}">
+                                                                    <div class="accordion-body">
+                                                                        <table class="table">
+                                                                            <thead>
+                                                                                <tr><th>Cuotas</th></tr>
+                                                                                <tr>
+                                                                                    <th>Fecha</th>
+                                                                                    <th class="text-end">Monto</th>
+                                                                                    <th class="text-end">Saldo</th>
+                                                                                    <th>Estado</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for cuota in pago.deuda.Cuota_deuda.all %}
+                                                                                <tr>
+                                                                                    <td>{{ cuota.fecha|date:'d/m/Y' }}</td>
+                                                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.monto }}</td>
+                                                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.saldo }}</td>
+                                                                                    <td class="texto-personalizado" style="--color-texto: {{ cuota.color }};">{{ cuota.estado }}</td>
+                                                                                </tr>
+                                                                                {% endfor %}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div>                          
+                                                        </div>
+                                                        {% else %}
+                                                        {{ deuda.documento }}
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.monto }}</td>
+                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.monto_final }}</td>
+                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.saldo }}</td>
+                                                    <td class="texto-personalizado" style="--color-texto: {{ pago.deuda.color }};">{{ pago.deuda.estado }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>                          
+                        </div>
+                        {% else %}
+                        {{ movimiento.numero_operacion }}
+                        {% if movimiento.cuenta_origen %}
+                        | {{ movimiento.cuenta_origen }}
+                        {% endif %}
+                        {% if movimiento.comentario %}
+                        | {{ movimiento.comentario }}
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if movimiento.ingreso %}
+                        {{ movimiento.moneda.simbolo }} {{ movimiento.ingreso }}
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if movimiento.egreso %}
+                        {{ movimiento.moneda.simbolo }} {{ movimiento.egreso }}
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if movimiento.saldo %}
+                        {{ movimiento.moneda.simbolo }} {{ movimiento.saldo }}
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' cuenta_bancaria.id movimiento.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
+                            <i class="bi bi-wallet2"></i>
+                        </button>
+                        <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_ingreso' cuenta_bancaria.id movimiento.id %}"
+                            class="delete btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_eliminar_ingreso' cuenta_bancaria.id movimiento.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock contenido %}

@@ -1,6 +1,8 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from django.db import models
+from django.db.models import Sum
+from reportlab.lib import colors
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.cobranza.funciones import convertir_moneda
 from applications.cotizacion.models import CotizacionVenta
@@ -141,10 +143,11 @@ class SolicitudCreditoCuota(models.Model):
 
 class Ingreso(models.Model):
     monto = models.DecimalField(max_digits=14, decimal_places=2)
-    cuenta_bamcaria = models.ForeignKey(CuentaBancariaSociedad, on_delete=models.PROTECT)
+    cuenta_bancaria = models.ForeignKey(CuentaBancariaSociedad, on_delete=models.PROTECT)
     fecha = models.DateField(auto_now=False, auto_now_add=False)
     numero_operacion = models.CharField('Número de operación', max_length=100)
     cuenta_origen = models.CharField('Cuenta de Origen', max_length=100, blank=True, null=True)
+    comentario = models.CharField('Comentario', max_length=100, blank=True, null=True)
     comision = models.DecimalField('Comisión', max_digits=5, decimal_places=2)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=3)
 
@@ -158,8 +161,19 @@ class Ingreso(models.Model):
         verbose_name_plural = 'Ingresos'
 
     @property
+    def tipo(self):
+        return 'Ingreso'
+
+    @property
     def moneda(self):
-        return self.cuenta_bamcaria.moneda
+        return self.cuenta_bancaria.moneda
+
+    @property
+    def pagos(self):
+        return Pago.objects.filter(
+            content_type = ContentType.objects.get_for_model(self),
+            id_registro = self.id,
+            )
 
     def __str__(self):
         return "%s" % (self.monto)
@@ -167,10 +181,11 @@ class Ingreso(models.Model):
 
 class Egreso(models.Model):
     monto = models.DecimalField(max_digits=14, decimal_places=2)
-    cuenta_bamcaria = models.ForeignKey(CuentaBancariaSociedad, on_delete=models.PROTECT)
+    cuenta_bancaria = models.ForeignKey(CuentaBancariaSociedad, on_delete=models.PROTECT)
     fecha = models.DateField(auto_now=False, auto_now_add=False)
     numero_operacion = models.CharField('Número de operación', max_length=100)
     cuenta_destino = models.CharField('Cuenta de Origen', max_length=100, blank=True, null=True)
+    comentario = models.CharField('Comentario', max_length=100, blank=True, null=True)
     comision = models.DecimalField('Comisión', max_digits=5, decimal_places=2)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=3)
 
@@ -185,12 +200,13 @@ class Egreso(models.Model):
 
     @property
     def moneda(self):
-        return self.cuenta_bamcaria.moneda
+        return self.cuenta_bancaria.moneda
 
     def __str__(self):
         return "%s" % (self.monto)
 
 
+DIAS_SEGUIMIENTO = 5
 class Deuda(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
     id_registro = models.IntegerField(blank=True, null=True)
@@ -218,7 +234,7 @@ class Deuda(models.Model):
             total = Decimal('0.00')
             for pago in pagos:
                 ingreso_nota = pago.content_type.get_object_for_this_type(id = pago.id_registro)
-                total += pago.monto * convertir_moneda(ingreso_nota.tipo_cambio, self.moneda, ingreso_nota.moneda)
+                total += (pago.monto * convertir_moneda(pago.tipo_cambio, ingreso_nota.moneda, self.moneda)).quantize(Decimal('0.00'))
             return total
         except Exception as e:
             print(e)
@@ -228,12 +244,40 @@ class Deuda(models.Model):
     def saldo(self):
         return self.monto - self.pagos
 
+    @property
+    def color(self):
+        if self.saldo == Decimal('0.00'):
+            return "#" + colors.black.hexval()[2:]
+        elif self.fecha_vencimiento > (date.today() + timedelta(DIAS_SEGUIMIENTO)):
+            return "#" + colors.green.hexval()[2:]
+        elif self.fecha_vencimiento < date.today():
+            return "#" + colors.red.hexval()[2:]
+        else:
+            return "#" + colors.orange.hexval()[2:]
+
+    @property
+    def estado(self):
+        if self.saldo == Decimal('0.00'):
+            return 'CANCELADO'
+        elif self.fecha_vencimiento > (date.today() + timedelta(DIAS_SEGUIMIENTO)):
+            return 'PENDIENTE'
+        elif self.fecha_vencimiento < date.today():
+            return 'VENCIDO'
+        else:
+            return '%s DÍAS PARA VENCER' % ((self.fecha_vencimiento - date.today()).days)
+
+    @property
+    def documento(self):
+        if self.content_type:
+            return '%s %s' % (self.content_type.name, self.content_type.get_object_for_this_type(id = self.id_registro).documento)
+        return ""
+
     def __str__(self):
         return "%s" % (self.monto)
 
 
 class Cuota(models.Model):
-    deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE)
+    deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE, related_name='Cuota_deuda')
     fecha = models.DateField(auto_now=False, auto_now_add=False)
     monto = models.DecimalField(max_digits=14, decimal_places=2)
 
@@ -245,6 +289,43 @@ class Cuota(models.Model):
     class Meta:
         verbose_name = 'Cuota'
         verbose_name_plural = 'Cuotas'
+        ordering = [
+            'deuda',
+            'fecha',
+            ]
+
+    @property
+    def saldo(self):
+        saldo = self.deuda.Cuota_deuda.filter(fecha__lte=self.fecha).aggregate(Sum('monto'))['monto__sum'] - self.deuda.pagos
+        if saldo > self.monto:
+            return self.monto
+        elif saldo <= Decimal('0.00'):
+            return Decimal('0.00')
+        else:
+            return saldo
+        # return self.deuda.Cuota_deuda.filter(fecha__lte=self.fecha).aggregate(Sum('monto'))['monto__sum'] - self.deuda.pagos
+
+    @property
+    def color(self):
+        if self.saldo <= Decimal('0.00'):
+            return "#" + colors.black.hexval()[2:]
+        elif self.fecha > (date.today() + timedelta(DIAS_SEGUIMIENTO)):
+            return "#" + colors.green.hexval()[2:]
+        elif self.fecha < date.today():
+            return "#" + colors.red.hexval()[2:]
+        else:
+            return "#" + colors.orange.hexval()[2:]
+
+    @property
+    def estado(self):
+        if self.saldo <= Decimal('0.00'):
+            return 'CANCELADO'
+        elif self.fecha > (date.today() + timedelta(DIAS_SEGUIMIENTO)):
+            return 'PENDIENTE'
+        elif self.fecha < date.today():
+            return 'VENCIDO'
+        else:
+            return '%s DÍAS PARA VENCER' % ((self.fecha - date.today()).days)
 
     def __str__(self):
         return "%s - %s" % (self.fecha, self.monto)
@@ -274,8 +355,8 @@ class Pago(models.Model):
     deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE, related_name='Pago_deuda')
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
     id_registro = models.IntegerField(blank=True, null=True)
-    monto = models.DecimalField('Monto', max_digits=14, decimal_places=2)
-    tipo_cambio = models.DecimalField('Tipo de cambio', max_digits=5, decimal_places=3)
+    monto = models.DecimalField('Monto', max_digits=14, decimal_places=2, blank=True, null=True)
+    tipo_cambio = models.DecimalField('Tipo de cambio', max_digits=5, decimal_places=3, blank=True, null=True)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Pago_created_by', editable=False)
@@ -286,6 +367,17 @@ class Pago(models.Model):
         verbose_name = 'Pago'
         verbose_name_plural = 'Pagos'
 
+    @property
+    def documento(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    @property
+    def monto_final(self):
+        if self.deuda.moneda == self.documento.moneda:
+            return self.monto
+        else:
+            return (self.monto * convertir_moneda(self.tipo_cambio, self.documento.moneda, self.deuda.moneda)).quantize(Decimal('0.00'))
+
     def __str__(self):
         return "%s" % (self.monto)
 
@@ -294,8 +386,8 @@ class Retiro(models.Model):
     egreso = models.ForeignKey(Egreso, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
     id_registro = models.IntegerField(blank=True, null=True)
-    monto = models.DecimalField('Monto', max_digits=14, decimal_places=2)
-    tipo_cambio = models.DecimalField('Tipo de cambio', max_digits=5, decimal_places=3)
+    monto = models.DecimalField('Monto', max_digits=14, decimal_places=2, blank=True, null=True)
+    tipo_cambio = models.DecimalField('Tipo de cambio', max_digits=5, decimal_places=3, blank=True, null=True)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Retiro_created_by', editable=False)

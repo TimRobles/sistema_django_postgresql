@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.cobranza.models import LineaCredito
+from applications.cobranza.models import Deuda, Ingreso, LineaCredito, Pago
 
 class LineaCreditoForm(BSModalModelForm):
     class Meta:
@@ -15,5 +15,48 @@ class LineaCreditoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(LineaCreditoForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class CuentaBancariaIngresoForm(BSModalModelForm):
+    class Meta:
+        model = Ingreso
+        fields=(
+            'fecha',
+            'monto',
+            'numero_operacion',
+            'cuenta_origen',
+            'comentario',
+            'comision',
+            'tipo_cambio',
+            )
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CuentaBancariaIngresoForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class CuentaBancariaIngresoPagarForm(BSModalModelForm):
+    class Meta:
+        model = Pago
+        fields = (
+            'deuda',
+            'monto',
+            'tipo_cambio',
+            )
+
+    def __init__(self, *args, **kwargs):
+        # queryset=Deuda.objects.all()
+        super(CuentaBancariaIngresoPagarForm, self).__init__(*args, **kwargs)   
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
