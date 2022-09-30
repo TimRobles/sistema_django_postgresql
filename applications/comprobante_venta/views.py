@@ -1,8 +1,8 @@
 from urllib import request
 from django.shortcuts import render
 from applications.cotizacion.models import ConfirmacionVenta
-from applications.datos_globales.models import SeriesComprobante
-from applications.funciones import slug_aleatorio
+from applications.datos_globales.models import SeriesComprobante, TipoCambio
+from applications.funciones import obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
 from applications.importaciones import *
 
 from . models import(
@@ -45,11 +45,16 @@ class FacturaVentaDetalleView(TemplateView):
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
         except:
             pass
-
+        
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         context = super(FacturaVentaDetalleView, self).get_context_data(**kwargs)
         context['factura'] = obj
         context['materiales'] = materiales
-        
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        # context['tipo_cambio'] = tipo_cambio
+        context['totales'] = obtener_totales(FacturaVenta.objects.get(id=self.kwargs['id_factura_venta']))
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
 
         return context
 
@@ -58,6 +63,8 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
     if request.method == 'GET':
         template = 'comprobante_venta/factura_venta/detalle_tabla.html'
         obj = FacturaVenta.objects.get(id=id_factura_venta)
+
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
 
         materiales = None
         try:
@@ -71,6 +78,11 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         context = {}
         context['factura'] = obj
         context['materiales'] = materiales
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        # context['tipo_cambio'] = tipo_cambio
+        context['totales'] = obtener_totales(obj)     
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
 
         data['table'] = render_to_string(
             template,
@@ -109,13 +121,6 @@ class FacturaVentaCrearView(DeleteView):
             created_by=self.request.user,
             updated_by=self.request.user,
         )
-
-        print('*************************+')
-        print('TOTAL')
-        print(self.object.total)
-        print(self.object.tipo_cambio)
-        print(self.object.tipo_venta)
-        print('*************************+')
 
         for detalle in detalles:
             producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
@@ -169,7 +174,7 @@ def BoletaVentaTabla(request):
             context,
             request=request
         )
-        return JsonResponse(data)
+    return JsonResponse(data)
 
 class BoletaVentaDetalleView(TemplateView):
     template_name = "comprobante_venta/boleta_venta/detalle.html"

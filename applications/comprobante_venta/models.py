@@ -9,6 +9,8 @@ from django.conf import settings
 from applications.funciones import obtener_totales
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
+from applications.cotizacion.models import ConfirmacionVenta
+
 
 class FacturaVenta(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
@@ -44,6 +46,7 @@ class FacturaVenta(models.Model):
     observaciones = models.TextField(blank=True, null=True)
     estado = models.IntegerField(choices = ESTADOS, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
+    confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.CASCADE, related_name='FacturaVenta_confirmacion', blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -91,17 +94,21 @@ class FacturaVentaDetalle(models.Model):
         verbose_name = 'Factura Venta Detalle'
         verbose_name_plural = 'Facturas Venta Detalle'
 
+    @property
+    def internacional_nacional(self):
+        return 2
+
     def __str__(self):
         return str(self.id)
 
 
-# def factura_venta_detalle_post_save(*args, **kwargs):
-#     obj = kwargs['instance']
-#     respuesta = obtener_totales(obj.factura_venta)
-#     obj.factura_venta.total = respuesta['total']
-#     obj.factura_venta.save()
+def factura_venta_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.factura_venta)
+    obj.factura_venta.total = respuesta['total']
+    obj.factura_venta.save()
 
-# post_save.connect(factura_venta_detalle_post_save, sender=FacturaVentaDetalle)
+post_save.connect(factura_venta_detalle_post_save, sender=FacturaVentaDetalle)
 
 
 class BoletaVenta(models.Model):
@@ -127,9 +134,12 @@ class BoletaVenta(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='BoletaVenta_updated_by', editable=False)
 
     class Meta:
-
         verbose_name = 'Boleta Venta'
         verbose_name_plural = 'Boletas Venta'
+
+    @property
+    def internacional_nacional(self):
+        return 2
 
     def __str__(self):
         return str(self.id)
