@@ -1,11 +1,11 @@
 {% load humanize %}
 {% load funciones_propias %}
 
-<h3>Detalle Factura Venta</h3>
+<h3>Detalle Boleta Venta</h3>
 
 <div class="row mt-3">
     <div class="col-auto">
-        <a href="{% url 'comprobante_venta_app:factura_venta_inicio' %}" class="btn btn-primary">Regresar</a>
+        <a href="{% url 'comprobante_venta_app:boleta_venta_inicio' %}" class="btn btn-primary">Regresar</a>
     </div>
 </div>
 
@@ -15,21 +15,21 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Razón Social:</th>
-                    <td>{{ factura.cliente.razon_social }}</td>
+                    <td>{{ boleta.cliente.razon_social }}</td>
                 </tr>
                 <tr>
-                    <th class="pe-2">{{ factura.cliente.documento }}:</th>
+                    <th class="pe-2">{{ boleta.cliente.documento }}:</th>
                     <td>
-                        {% if factura.cliente.numero_documento %}
-                        {{ factura.cliente.numero_documento }}
+                        {% if boleta.cliente.numero_documento %}
+                        {{ boleta.cliente.numero_documento }}
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <th class="pe-2">Interlocutor:</th>
                     <td>
-                        {% if factura.cliente_interlocutor %}
-                        {{ factura.cliente_interlocutor.nombre_completo }}   
+                        {% if boleta.cliente_interlocutor %}
+                        {{ boleta.cliente_interlocutor.nombre_completo }}   
                         {% endif %}
                     </td>
                 </tr>
@@ -42,7 +42,7 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Fecha:</th>
-                    <td>{{ factura.fecha_factura|date:'d/m/Y' }}</td>
+                    <td>{{ boleta.fecha_emision|date:'d/m/Y' }}</td>
                     <th class="pe-2">Tipo de Cambio (HOY):</th>
                     <td>
                         {% if tipo_cambio_hoy %}
@@ -51,46 +51,25 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">N° Factura:</th>
+                    <th class="pe-2">N° boleta:</th>
                     <td>
-                        {% if factura.numero_factura %}
-                        {{ factura.numero_factura }}
+                        {% if boleta.numero_boleta %}
+                        {{ boleta.numero_boleta }}
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <th>Estado Factura:</th>
-                    <td>{{ factura.get_estado_display }}</td>
+                    <th>Estado boleta:</th>
+                    <td>{{ boleta.get_estado_display }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>   
 
-<div class="row mt-3">
-    <div class="table-responsive mb-3">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="fondo-personalizado" style="--color-fondo: {{ factura.sociedad.color }};">OBSERVACIONES {{ factura.sociedad.razon_social }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        {% if factura.observacion %}
-                        {{ factura.observacion|linebreaks }}
-                        {% endif %}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
 <div class="table-responsive mt-3">
     <table class="table">
-        <thead class="fondo-personalizado" style="--color-fondo: {{ factura.sociedad.color }};">
+        <thead class="fondo-personalizado" style="--color-fondo: {{ boleta.sociedad.color }};">
             <tr>
                 <th>Item</th>
                 <th style="min-width: 500px;">Material</th>
@@ -143,67 +122,67 @@
                 <td colspan="10" class="text-end">
                     Descuento Global:
                 </td>
-                <td class="text-end text-nowrap">$ {{ factura.descuento_global|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.descuento_global|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>            
             <tr>
                 <td colspan="10" class="text-end">Descuento Total:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_descuento|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_descuento|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_descuento|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>           
             <tr>
                 <td colspan="10" class="text-end">Anticipo:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_anticipo|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_anticipo|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_anticipo|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Exonerada:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_exonerada|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_exonerada|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_exonerada|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Inafecta:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_inafecta|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_inafecta|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_inafecta|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Gravada:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_gravada|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_gravada|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_gravada|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">IGV:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_igv|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_igv|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Gratuita:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_gratuita|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_gratuita|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_gratuita|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Otros Cargos:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_otros_cargos|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_otros_cargos|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_otros_cargos|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">ICBPER:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total_icbper|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total_icbper|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_icbper|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Total:</td>
-                <td class="text-end text-nowrap">$ {{ factura.total|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">$ {{ boleta.total|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>

@@ -2,7 +2,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Nro. Factura</th>
+            <th>Nro. Boleta</th>
             <th>Cliente</th>
             <th>Fecha Emision</th>
             <th>Total</th>
@@ -13,15 +13,15 @@
     </thead>
 
     <tbody>
-        {% for factura_venta in contexto_factura_venta %}
+        {% for boleta_venta in contexto_boleta_venta %}
         <tr>
-            <td>{{factura_venta.numero_factura}}</td>
-            <td>{{factura_venta.cliente}}</td>
-            <td>{{factura_venta.fecha_emision}}</td>
-            <td>{{factura_venta.total}}</td>
-            <td>{{factura_venta.get_estado_display}}</td>
+            <td>{{boleta_venta.numero_boleta}}</td>
+            <td>{{boleta_venta.cliente}}</td>
+            <td>{{boleta_venta.fecha_emision}}</td>
+            <td>{{boleta_venta.total}}</td>
+            <td>{{boleta_venta.get_estado_display}}</td>
             <td class="text-center">
-                <a href="{% url 'comprobante_venta_app:factura_venta_detalle' factura_venta.id %}"
+                <a href="{% url 'comprobante_venta_app:boleta_venta_detalle' boleta_venta.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>

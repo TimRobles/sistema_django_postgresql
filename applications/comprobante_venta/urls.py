@@ -12,4 +12,11 @@ urlpatterns = [
 
     path('factura-venta/crear/<pk>/', views.FacturaVentaCrearView.as_view(), name='factura_venta_crear'),
 
+    path('boleta-venta/',views.BoletaVentaListView.as_view(),name='boleta_venta_inicio'),
+    path('boleta-venta-tabla/',views.BoletaVentaTabla,name='boleta_venta_tabla'),
+
+    path('boleta-venta/detalle/<int:id_boleta_venta>/', views.BoletaVentaDetalleView.as_view(), name='boleta_venta_detalle'),
+    path('boleta-venta/detalle/tabla/<int:boleta_venta>/', views.BoletaVentaDetalleVerTabla, name='boleta_venta_detalle_tabla'),
+
+    path('boleta-venta/crear/<pk>/', views.BoletaVentaCrearView.as_view(), name='boleta_venta_crear'),
 ]
