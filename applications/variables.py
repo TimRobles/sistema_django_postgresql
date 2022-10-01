@@ -208,6 +208,9 @@ MENSAJE_FINALIZAR_INVENTARIO_ACTIVO = 'Operación exitosa: El Inventario fue Fin
 MENSAJE_GUARDAR_COTIZACION = 'Operación exitosa: La cotización fue guardada con éxito.'
 MENSAJE_RESERVAR_COTIZACION = 'Operación exitosa: La cotización fue reservada con éxito.'
 
+MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
+MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'
+
 COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
 

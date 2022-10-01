@@ -1,0 +1,50 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th class="text-end">Cantidad</th>
+                <th>Observacion</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.material.descripcion_venta }}</td>
+                    <td>{{ material.material.unidad_base }}</td>
+                    <td class="text-end">{{ material.cantidad_prestamo|redondear|intcomma }}</td>
+                    <td>
+                        {% if material.observacion != None %}
+                            {{ material.observacion}}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_solicitud_prestamo_materiales_detalle.estado == 1 %}
+                            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_actualizar' material.id %}"
+                                data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_tabla' contexto_solicitud_prestamo_materiales_detalle.id  %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_eliminar' material.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

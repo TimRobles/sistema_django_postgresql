@@ -31,6 +31,7 @@ urlpatterns = [
     path('activos/', include('applications.activos.urls')),
     path('cotizacion/', include('applications.cotizacion.urls')),
     path('cobranza/', include('applications.cobranza.urls')),
+    path('logistica/', include('applications.logistica.urls')),
 
 ]
 
