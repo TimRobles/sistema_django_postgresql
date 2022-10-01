@@ -279,7 +279,7 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         else:
             descuento_global = Decimal('0.00')
             otros_cargos = Decimal('0.00')
-    
+            
     internacional = cabecera.internacional_nacional
     anticipo = False
     return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv, tipo_cambio)

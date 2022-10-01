@@ -58,6 +58,10 @@ class FacturaVenta(models.Model):
         verbose_name = 'Factura Venta'
         verbose_name_plural = 'Facturas Venta'
 
+    @property
+    def internacional_nacional(self):
+        return 2
+
     def __str__(self):
         return str(self.numero_factura)
 
@@ -93,10 +97,9 @@ class FacturaVentaDetalle(models.Model):
     class Meta:
         verbose_name = 'Factura Venta Detalle'
         verbose_name_plural = 'Facturas Venta Detalle'
-
-    @property
-    def internacional_nacional(self):
-        return 2
+        ordering = [
+                '-created_at',
+                ]
 
     def __str__(self):
         return str(self.id)
@@ -136,6 +139,9 @@ class BoletaVenta(models.Model):
     class Meta:
         verbose_name = 'Boleta Venta'
         verbose_name_plural = 'Boletas Venta'
+        ordering = [
+                '-created_at',
+                ]
 
     @property
     def internacional_nacional(self):

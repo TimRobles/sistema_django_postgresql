@@ -47,14 +47,14 @@ class FacturaVentaDetalleView(TemplateView):
             pass
         
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
         context = super(FacturaVentaDetalleView, self).get_context_data(**kwargs)
         context['factura'] = obj
         context['materiales'] = materiales
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
-        # context['tipo_cambio'] = tipo_cambio
-        context['totales'] = obtener_totales(FacturaVenta.objects.get(id=self.kwargs['id_factura_venta']))
+        context['tipo_cambio'] = tipo_cambio
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        context['totales'] = obtener_totales(FacturaVenta.objects.get(id=self.kwargs['id_factura_venta']))
 
         return context
 
@@ -65,7 +65,7 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         obj = FacturaVenta.objects.get(id=id_factura_venta)
 
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
         materiales = None
         try:
             materiales = obj.FacturaVentaDetalle_factura_venta.all()
@@ -79,10 +79,9 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         context['factura'] = obj
         context['materiales'] = materiales
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
-        # context['tipo_cambio'] = tipo_cambio
-        context['totales'] = obtener_totales(obj)     
+        context['tipo_cambio'] = tipo_cambio
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        context['totales'] = obtener_totales(obj)     
 
         data['table'] = render_to_string(
             template,
@@ -105,6 +104,7 @@ class FacturaVentaCrearView(DeleteView):
 
         serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(FacturaVenta)).earliest('created_at')
         factura_venta = FacturaVenta.objects.create(
+            confirmacion=self.object,
             sociedad = self.object.sociedad,
             serie_comprobante = serie_comprobante,
             cliente = self.object.cliente,
@@ -144,6 +144,9 @@ class FacturaVentaCrearView(DeleteView):
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
+            
+        registro_guardar(self.object, self.request)
+        self.object.save()
 
         messages.success(request, MENSAJE_CLONAR_COTIZACION)
         return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':factura_venta.id}))
