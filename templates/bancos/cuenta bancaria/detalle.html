@@ -156,6 +156,13 @@ Detalle de Cuenta Bancaria
                                                         {{ pago.ingreso_nota.moneda.simbolo }} {{ pago.monto|redondear|intcomma }}
                                                     </td>
                                                     <td class="text-center">
+                                                        {% if pago.deuda.saldo != 0 %}    
+                                                        <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_cancelar_deuda' cuenta_bancaria.id pago.deuda.id %}"
+                                                            class="delete btn btn-info btn-sm"
+                                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Cancelar Deuda">
+                                                            <i class="bi bi-bandaid-fill"></i>
+                                                        </button>
+                                                        {% endif %}
                                                         <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_pago' cuenta_bancaria.id movimiento.id pago.id %}"
                                                             class="delete btn btn-warning btn-sm"
                                                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
@@ -166,6 +173,9 @@ Detalle de Cuenta Bancaria
                                                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                                                             <i class="bi-x-lg"></i>
                                                         </button>
+                                                        <a href="{% url 'cobranza_app:deudores_detalle' pago.deuda.cliente.id %}" class="btn btn-success btn-sm">
+                                                            <i class="bi bi-eye-fill"></i>
+                                                        </a>
                                                     </td>
                                                 </tr>
                                                 {% endfor %}

@@ -246,6 +246,18 @@ class Deuda(models.Model):
             for pago in pagos:
                 ingreso_nota = pago.content_type.get_object_for_this_type(id = pago.id_registro)
                 total += (pago.monto * convertir_moneda(pago.tipo_cambio, ingreso_nota.moneda, self.moneda)).quantize(Decimal('0.00'))
+            return total + self.redondeos
+        except Exception as e:
+            print(e)
+            return Decimal('0.00') + self.redondeos
+
+    @property
+    def redondeos(self):
+        try:
+            redondeos = self.Redondeo_deuda.all()
+            total = Decimal('0.00')
+            for redondeo in redondeos:
+                total += redondeo.monto
             return total
         except Exception as e:
             print(e)
@@ -343,7 +355,7 @@ class Cuota(models.Model):
 
 
 class Redondeo(models.Model):
-    deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE)
+    deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE, related_name='Redondeo_deuda')
     fecha = models.DateField(auto_now=False, auto_now_add=False)
     monto = models.DecimalField(max_digits=14, decimal_places=2)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)

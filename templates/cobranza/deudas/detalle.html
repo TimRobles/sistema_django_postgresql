@@ -59,6 +59,7 @@ Detalle Deuda
                                                 <tr>
                                                     <td>{{ pago.ingreso_nota.fecha|date:'d/m/Y' }}</td>
                                                     <td>
+                                                        {{ pago.ingreso_nota }}
                                                         {{ pago.ingreso_nota.numero_operacion }}
                                                         {% if pago.ingreso_nota.cuenta_origen %}
                                                         | {{ pago.ingreso_nota.cuenta_origen }}
@@ -83,6 +84,26 @@ Detalle Deuda
                                                             <i class="bi bi-pencil-fill"></i>
                                                         </button>
                                                         <button data-form-url="{% url 'cobranza_app:deudores_eliminar_pago' id_cliente pago.id %}"
+                                                            class="delete btn btn-danger btn-sm"
+                                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                                            <i class="bi-x-lg"></i>
+                                                        </button>
+                                                        <a href="{% url 'cobranza_app:cuenta_bancaria_detalle' pago.ingreso_nota.cuenta_bancaria.id %}" class="btn btn-success btn-sm">
+                                                            <i class="bi bi-eye-fill"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %} 
+                                                {% for redondeo in deuda.Redondeo_deuda.all %}
+                                                <tr>
+                                                    <td>{{ redondeo.fecha|date:'d/m/Y' }}</td>
+                                                    <td>REDONDEO</td>
+                                                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ redondeo.monto|redondear|intcomma }}</td>
+                                                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ redondeo.monto|redondear|intcomma }}</td>
+                                                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} 0.00</td>
+                                                    <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ redondeo.monto|redondear|intcomma }}</td>
+                                                    <td class="text-center text-nowrap">
+                                                        <button data-form-url="{% url 'cobranza_app:deudores_eliminar_redondeo' id_cliente redondeo.id %}"
                                                             class="delete btn btn-danger btn-sm"
                                                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                                                             <i class="bi-x-lg"></i>
@@ -140,6 +161,14 @@ Detalle Deuda
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
                             <i class="bi bi-wallet2"></i>
                         </button>
+                        
+                        {% if deuda.saldo != 0 %}    
+                        <button data-form-url="{% url 'cobranza_app:deudores_cancelar_deuda' id_cliente deuda.id %}"
+                            class="delete btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Cancelar Deuda">
+                            <i class="bi bi-bandaid-fill"></i>
+                        </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

@@ -10,6 +10,7 @@ from .models import(
     Ingreso,
     LineaCredito,
     Pago,
+    Redondeo,
 )
 
 from .forms import(
@@ -190,6 +191,39 @@ class DeudaPagarDeleteView(DeleteView):
         context = super(DeudaPagarDeleteView, self).get_context_data(**kwargs)
         context['accion'] = 'Eliminar'
         context['titulo'] = 'Pago'
+        context['item'] = self.get_object()
+        return context
+    
+
+class DeudaCancelarView(DeleteView):
+    model = Deuda
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
+
+    def delete(self, request, *args, **kwargs):
+        deuda = self.get_object()
+        fecha = date.today()
+        monto = deuda.saldo
+        moneda = deuda.moneda
+        tipo_cambio = deuda.tipo_cambio
+        Redondeo.objects.create(
+            deuda=deuda,
+            fecha=fecha,
+            monto=monto,
+            moneda=moneda,
+            tipo_cambio=tipo_cambio,
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(DeudaCancelarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Cancelar'
+        context['titulo'] = 'Deuda'
+        context['texto'] = '¿Está seguro de Cancelar la deuda?'
         context['item'] = self.get_object()
         return context
 
@@ -375,3 +409,49 @@ class CuentaBancariaIngresoDeleteView(BSModalDeleteView):
         return context
     
 
+class CuentaBancariaIngresoCancelarView(DeleteView):
+    model = Deuda
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def delete(self, request, *args, **kwargs):
+        deuda = self.get_object()
+        fecha = date.today()
+        monto = deuda.saldo
+        moneda = deuda.moneda
+        tipo_cambio = deuda.tipo_cambio
+        Redondeo.objects.create(
+            deuda=deuda,
+            fecha=fecha,
+            monto=monto,
+            moneda=moneda,
+            tipo_cambio=tipo_cambio,
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaIngresoCancelarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Cancelar'
+        context['titulo'] = 'Deuda'
+        context['texto'] = '¿Está seguro de Cancelar la deuda?'
+        context['item'] = self.get_object()
+        return context
+
+
+class RedondeoDeleteView(DeleteView):
+    model = Redondeo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
+
+    def get_context_data(self, **kwargs):
+        context = super(RedondeoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Redondeo'
+        context['item'] = self.get_object()
+        return context
