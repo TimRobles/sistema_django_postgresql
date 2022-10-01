@@ -144,7 +144,7 @@ class FacturaVentaCrearView(DeleteView):
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
-            
+
         registro_guardar(self.object, self.request)
         self.object.save()
 
@@ -194,11 +194,17 @@ class BoletaVentaDetalleView(TemplateView):
         except:
             pass
 
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+
         context = super(BoletaVentaDetalleView, self).get_context_data(**kwargs)
         context['boleta'] = obj
         context['materiales'] = materiales
-        
-
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        context['tipo_cambio'] = tipo_cambio
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales'] = obtener_totales(FacturaVenta.objects.get(id=self.kwargs['id_factura_venta']))
+      
         return context
 
 def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
@@ -206,7 +212,10 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
     if request.method == 'GET':
         template = 'comprobante_venta/boleta_venta/detalle_tabla.html'
         obj = BoletaVenta.objects.get(id=id_boleta_venta)
-
+        
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+ 
         materiales = None
         try:
             materiales = obj.BoletaVentaDetalle_boleta_venta.all()
@@ -219,6 +228,10 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         context = {}
         context['boleta'] = obj
         context['materiales'] = materiales
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        context['tipo_cambio'] = tipo_cambio
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales'] = obtener_totales(obj)     
 
         data['table'] = render_to_string(
             template,
