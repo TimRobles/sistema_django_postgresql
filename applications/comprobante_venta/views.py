@@ -255,14 +255,20 @@ class BoletaVentaCrearView(DeleteView):
         serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(BoletaVenta)).earliest('created_at')
 
         boleta_venta = BoletaVenta.objects.create(
+            confirmacion=self.object,
             sociedad = self.object.sociedad,
             serie_comprobante = serie_comprobante,
             cliente = self.object.cliente,
             cliente_interlocutor = self.object.cliente_interlocutor,
             moneda = self.object.moneda,
             tipo_cambio = self.object.tipo_cambio,
+            tipo_venta = self.object.tipo_venta,
+            condiciones_pago = self.object.condiciones_pago,
             descuento_global = self.object.descuento_global,
+            total_otros_cargos = self.object.otros_cargos,
+            observaciones = self.object.observacion,
             total = self.object.total,
+            slug = slug_aleatorio(BoletaVenta),
             created_by=self.request.user,
             updated_by=self.request.user,
         )
@@ -274,6 +280,7 @@ class BoletaVentaCrearView(DeleteView):
                 content_type=detalle.content_type,
                 id_registro=detalle.id_registro,
                 unidad=producto.unidad_base,
+                descripcion_documento=producto.descripcion_documento,
                 cantidad=detalle.cantidad_confirmada,
                 precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
                 precio_unitario_con_igv=detalle.precio_unitario_con_igv,
@@ -283,10 +290,14 @@ class BoletaVentaCrearView(DeleteView):
                 tipo_igv=detalle.tipo_igv,
                 igv=detalle.igv,
                 total=detalle.total,
+                codigo_producto_sunat=producto.codigo_producto_sunat,
                 boleta_venta=boleta_venta,
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
+            
+        registro_guardar(self.object, self.request)
+        self.object.save()
 
         messages.success(request, MENSAJE_CLONAR_COTIZACION)
         return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':boleta_venta.id}))
