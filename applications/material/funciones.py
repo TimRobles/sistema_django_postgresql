@@ -59,6 +59,24 @@ def confirmado(content_type, id_registro, id_sociedad):
 
     return total
 
+def confirmado_anticipo(content_type, id_registro, id_sociedad):
+    confirmado = TipoStock.objects.get(codigo=21)
+    total = Decimal('0.00')
+    try:
+        movimientos = MovimientosAlmacen.objects.filter(
+                        content_type_producto = content_type,
+                        id_registro_producto = id_registro,
+                        sociedad__id = id_sociedad,
+                    ).filter(
+                        tipo_stock = confirmado,
+                    )
+        for movimiento in movimientos:
+            total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+    except:
+        pass
+
+    return total
+
 def calidad(content_type, id_registro, id_sociedad):
     bloqueo_sin_serie = TipoStock.objects.get(id=4)
     bloqueo_sin_qa = TipoStock.objects.get(id=5)
@@ -99,6 +117,9 @@ def transito(content_type, id_registro, id_sociedad):
 
 def stock(content_type, id_registro, id_sociedad):
     return vendible(content_type, id_registro, id_sociedad) + calidad(content_type, id_registro, id_sociedad)
+
+def en_camino(content_type, id_registro, id_sociedad):
+    return transito(content_type, id_registro, id_sociedad) - confirmado_anticipo(content_type, id_registro, id_sociedad)
 
 def observacion(cotizacion, sociedad):
     busqueda = CotizacionObservacion.objects.get(

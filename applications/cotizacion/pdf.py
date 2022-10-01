@@ -1,3 +1,4 @@
+from decimal import Decimal
 from applications.datos_globales.models import CuentaBancariaSociedad
 from applications.pdf import *
 
@@ -76,8 +77,11 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
         fila.append(parrafoIzquierda(dato[2], fuenteBase))
         fila.append(parrafoDerecha(dato[3], fuenteBase))
         fila.append(parrafoDerecha("%s %s" % (simbolo, dato[4]), fuenteBase))
-        fila.append(parrafoDerecha("%s %s" % (simbolo, dato[5]), fuenteBase))        
-        fila.append(parrafoDerecha("%s -%s" % (simbolo, dato[6]), fuenteBase, color='red'))        
+        fila.append(parrafoDerecha("%s %s" % (simbolo, dato[5]), fuenteBase))
+        if Decimal(dato[6]) > Decimal('0.00'):
+            fila.append(parrafoDerecha("%s -%s" % (simbolo, dato[6]), fuenteBase, color='red'))        
+        else:
+            fila.append(parrafoDerecha("%s %s" % (simbolo, dato[6]), fuenteBase))        
         fila.append(parrafoDerecha("%s %s" % (simbolo, dato[7]), fuenteBase))        
         fila.append(parrafoDerecha(dato[8], fuenteBase, tamaño=6))        
 
@@ -107,7 +111,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
     t_items._argW[4]=cmToPx(2)
     t_items._argW[5]=cmToPx(2)
     t_items._argW[6]=cmToPx(2)
-    t_items._argW[7]=cmToPx(2)
+    t_items._argW[7]=cmToPx(2.5)
     t_items._argW[8]=cmToPx(2.5)
     t_items._argW[9]=cmToPx(0.5)
 
@@ -147,7 +151,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
             ]
         )
     t_totales._argW[1]=cmToPx(3.5)
-    t_totales._argW[2]=cmToPx(2)
+    t_totales._argW[2]=cmToPx(2.5)
     t_totales._argW[3]=cmToPx(3)
 
     return t_items, t_totales
@@ -184,15 +188,16 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEn
         )
     elementos.append(vacio())
 
-    elementos.append(
-        bloque(
-                [
-                parrafoIzquierda('OBSERVACIONES:', fuenteBase, 10, 'Bold'),
-                listaGuion(observaciones.splitlines(), fuenteBase, 9),
-                ]
+    if observaciones:
+        elementos.append(
+            bloque(
+                    [
+                    parrafoIzquierda('OBSERVACIONES:', fuenteBase, 10, 'Bold'),
+                    listaGuion(observaciones.splitlines(), fuenteBase, 9),
+                    ]
+                )
             )
-        )
-    elementos.append(vacio())
+        elementos.append(vacio())
 
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina, alinear)
 

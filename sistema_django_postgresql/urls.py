@@ -32,7 +32,7 @@ urlpatterns = [
     path('cotizacion/', include('applications.cotizacion.urls')),
     path('cobranza/', include('applications.cobranza.urls')),
     path('logistica/', include('applications.logistica.urls')),
-
+    path('comprobante_venta/', include('applications.comprobante_venta.urls')),
 ]
 
 urlpatterns += [url(r'^media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT})]

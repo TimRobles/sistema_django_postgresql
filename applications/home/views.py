@@ -1,3 +1,4 @@
+from decimal import Decimal
 from applications.home.pdf import generarPrueba
 from applications.importaciones import *
 from django.utils.crypto import get_random_string
@@ -201,14 +202,10 @@ class PruebaPdfView(LoginRequiredMixin, View):
         return respuesta
 
 
-def CalculoItemLineaView(request, cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv):
+def CalculoItemLineaView(request, cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv):
     data = dict()
     if request.method == 'GET':
-        # cantidad = request.POST.get('cantidad')
-        # precio_unitario_con_igv = request.POST.get('precio_unitario_con_igv')
-        # precio_final_con_igv = request.POST.get('precio_final_con_igv')
-        # valor_igv = request.POST.get('valor_igv')
-        calculos = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv)
+        calculos = calculos_linea(Decimal(cantidad), Decimal(precio_unitario_con_igv), Decimal(precio_final_con_igv), Decimal(valor_igv), Decimal(tipo_igv))
         informacion = simplejson.dumps(calculos)
 
         data['info'] = render_to_string(

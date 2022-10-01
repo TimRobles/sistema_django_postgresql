@@ -16,7 +16,7 @@
                     {{ confirmacion.sociedad.abreviatura }}
                     {{ confirmacion.cotizacion_venta.numero_cotizacion }}
                 </td>
-                <td>{{ confirmacion.cotizacion_venta.cliente }}</td>
+                <td>{{ confirmacion.cliente }}</td>
                 <td>{{ confirmacion.cotizacion_venta.fecha|date:'d/m/Y' }}</td>
                 <td class="text-end">$ {{ confirmacion.total }}</td>
                 <td>{{ confirmacion.get_estado_display }}</td>

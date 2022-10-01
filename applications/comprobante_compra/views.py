@@ -1,6 +1,6 @@
 from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, RecepcionComprobanteCompraPIForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import obtener_totales
+from applications.funciones import igv, obtener_totales
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -69,7 +69,68 @@ class ComprobanteCompraPIUpdateView(BSModalUpdateView):
         context['accion'] = "Actualizar"
         context['titulo'] = "Comprobante"
         return context
+
+
+class ComprobanteCompraPIAnularView(BSModalDeleteView):
+    model = ComprobanteCompraPI
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('comprobante_compra_app:comprobante_compra_pi_lista')
+    context_object_name = 'contexto_comprobante_compra' 
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        comprobante = self.get_object()
+
+        materiales = comprobante.ComprobanteCompraPIDetalle_comprobante_compra.all()
+        movimiento_final = TipoMovimiento.objects.get(codigo=100) # Tránsito
+        for material in materiales:
+            movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto = material.orden_compra_detalle.content_type,
+                    id_registro_producto = material.orden_compra_detalle.id_registro,
+                    cantidad = material.cantidad,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
+                    id_registro_documento_proceso = comprobante.id,
+                    almacen = None,
+                    sociedad = comprobante.sociedad,
+                    movimiento_anterior = None,
+                    movimiento_reversion = False,
+                )
+            if len(movimiento_dos.MovimientosAlmacen_movimiento_anterior.all()) > 0:
+                messages.warning(request, MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI)
+                return HttpResponseRedirect(reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':comprobante.slug}))
+
+        for material in materiales:
+            movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto = material.orden_compra_detalle.content_type,
+                    id_registro_producto = material.orden_compra_detalle.id_registro,
+                    cantidad = material.cantidad,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
+                    id_registro_documento_proceso = comprobante.id,
+                    almacen = None,
+                    sociedad = comprobante.sociedad,
+                    movimiento_anterior = None,
+                    movimiento_reversion = False,
+                )
+            movimiento_dos.delete()
+
+        comprobante.delete()
+
+        messages.success(request, MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI)
+        return HttpResponseRedirect(self.get_success_url())
     
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraPIAnularView, self).get_context_data(**kwargs)
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Comprobante de Compra PI'
+        context['item'] = self.get_object()
+
+        return context
 
 class ArchivoComprobanteCompraPICreateView(BSModalCreateView):
     model = ArchivoComprobanteCompraPI
@@ -120,8 +181,8 @@ class RecepcionComprobanteCompraPIView(BSModalFormView):
 
             comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
             detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
-            movimiento_inicial = TipoMovimiento.objects.get(codigo=100)
-            movimiento_final = TipoMovimiento.objects.get(codigo=101)
+            movimiento_inicial = TipoMovimiento.objects.get(codigo=100) #Tránsito
+            movimiento_final = TipoMovimiento.objects.get(codigo=101) #Disponible
 
             recepcion = RecepcionCompra.objects.create(
                 numero_comprobante_compra = comprobante_pi.numero_comprobante_compra,
@@ -307,6 +368,7 @@ class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdat
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
         context['material'] = str(self.object.content_type.get_object_for_this_type(id = self.object.id_registro))
+        context['valor_igv'] = igv()
         return context
 
 

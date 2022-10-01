@@ -98,7 +98,7 @@ class SubFamilia(models.Model):
         return self.nombre
 
 class Modelo(models.Model):
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=41)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Modelo_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -114,7 +114,7 @@ class Modelo(models.Model):
         return self.nombre
 
 class Marca(models.Model):
-    nombre = models.CharField('Nombre', max_length=50)
+    nombre = models.CharField('Nombre', max_length=42)
     modelos = models.ManyToManyField(Modelo)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Marca_created_by', editable=False)
@@ -131,8 +131,8 @@ class Marca(models.Model):
         return self.nombre
 
 class Material(models.Model):
-    descripcion_venta = models.CharField('Descripción Venta', max_length=500)
-    descripcion_corta = models.CharField('Descripción Corta', max_length=150)
+    descripcion_venta = models.CharField('Descripción Venta', max_length=150)
+    descripcion_corta = models.CharField('Descripción Corta', max_length=55)
     unidad_base = models.ForeignKey(Unidad, on_delete=models.PROTECT, related_name='Material_unidad_base')
     peso_unidad_base = models.DecimalField('Peso Unidad Base', max_digits=6, decimal_places=2)
     marca = models.ForeignKey(Marca, on_delete=models.PROTECT, related_name='Material_marca', blank=True, null=True)
@@ -169,6 +169,24 @@ class Material(models.Model):
 
     def content_type(self):
         return ContentType.objects.get_for_model(self).id
+
+    @property
+    def codigo_producto_sunat(self):
+        if self.producto_sunat:
+            return self.producto_sunat.codigo
+        else:
+            return ''
+
+    @property
+    def descripcion_documento(self):
+        if self.marca and self.modelo:
+            return "%s MARCA: %s MODELO: %s" % (self.descripcion_venta, self.marca.nombre, self.modelo.nombre)
+        elif self.marca:
+            return "%s MARCA: %s" % (self.descripcion_venta, self.marca.nombre)
+        elif self.modelo:
+            return "%s MARCA: %s" % (self.descripcion_venta, self.modelo.nombre)
+        else:
+            return "%s" % (self.descripcion_venta)
 
     @property
     def precio_lista(self):
@@ -258,6 +276,24 @@ class Material(models.Model):
         return total
 
     @property
+    def confirmado_anticipo(self):
+        confirmado = TipoStock.objects.get(codigo=21)
+        total = Decimal('0.00')
+        try:
+            movimientos = MovimientosAlmacen.objects.filter(
+                            content_type_producto = ContentType.objects.get_for_model(self),
+                            id_registro_producto = self.id,
+                        ).filter(
+                            tipo_stock = confirmado,
+                        )
+            for movimiento in movimientos:
+                total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+        except:
+            pass
+
+        return total
+
+    @property
     def calidad(self):
         bloqueo_sin_serie = TipoStock.objects.get(id=4)
         bloqueo_sin_qa = TipoStock.objects.get(id=5)
@@ -279,6 +315,10 @@ class Material(models.Model):
     @property
     def stock(self):
         return self.vendible + self.calidad
+
+    @property
+    def en_camino(self):
+        return self.transito - self.confirmado_anticipo
 
     def __str__(self):
         return self.descripcion_venta

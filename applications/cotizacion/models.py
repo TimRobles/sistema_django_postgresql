@@ -41,7 +41,7 @@ class PrecioListaMaterial(models.Model):
 
 
 class CotizacionVenta(models.Model):
-    numero_cotizacion = models.CharField('Número de Cotización', max_length=6, blank=True, null=True)
+    numero_cotizacion = models.IntegerField('Número de Cotización', blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CotizacionVenta_cliente_interlocutor', blank=True, null=True)
     fecha_cotizacion = models.DateField('Fecha Cotización', auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -80,6 +80,10 @@ class CotizacionVenta(models.Model):
     @property
     def otros_cargos(self):
         return self.CotizacionOtrosCargos_cotizacion_venta.all().aggregate(models.Sum('otros_cargos'))['otros_cargos__sum']
+
+    @property
+    def documento(self):
+        return "%s" % (self.numero_cotizacion)
 
     def __str__(self):
         return str(self.id)
@@ -175,10 +179,13 @@ class CotizacionTerminosCondiciones(models.Model):
 
 
 class ConfirmacionVenta(models.Model):
-    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE)
+    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='ConfirmacionVenta_cotizacion_venta')
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ConfirmacionVenta_cliente', blank=True, null=True)
+    cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ConfirmacionVenta_cliente_interlocutor', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ConfirmacionVenta_tipo_cambio')
     observacion = models.TextField(blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, default=1)
     condiciones_pago = models.CharField('Condiciones de Pago', max_length=50, blank=True, null=True)
     tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)

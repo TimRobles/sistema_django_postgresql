@@ -2,7 +2,7 @@ from django.shortcuts import render
 from applications.importaciones import *
 from applications.oferta_proveedor.models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
 from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorDetalleProveedorMaterialUpdateForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm, OrdenCompraSociedadForm
-from applications.funciones import numeroXn, obtener_totales
+from applications.funciones import igv, numeroXn, obtener_totales
 from applications.funciones import slug_aleatorio
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from applications.requerimiento_de_materiales.models import ListaRequerimientoMaterialDetalle, RequerimientoMaterialProveedor, RequerimientoMaterialProveedorDetalle
@@ -75,6 +75,9 @@ class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
         self.object.estado = 3
         registro_guardar(self.object, self.request)
         self.object.save()
+        self.object.requerimiento_material.estado = 4
+        registro_guardar(self.object.requerimiento_material, self.request)
+        self.object.requerimiento_material.save()
         messages.success(request, MENSAJE_RECHAZAR_OFERTA_PROVEEDOR)
         return HttpResponseRedirect(self.get_success_url())
 
@@ -146,6 +149,7 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
         context['material'] = self.object.proveedor_material
+        context['valor_igv'] = igv()
         return context
 
 class OfertaProveedorDetalleProveedorMaterialUpdateView(PermissionRequiredMixin, BSModalFormView):
@@ -425,14 +429,14 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
     def form_valid(self, form):
         if self.request.session['primero']:
             oferta = OfertaProveedor.objects.get(slug=self.kwargs['slug_oferta'])
-            numero_orden_compra = form.cleaned_data['sociedad'].abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad_id = form.cleaned_data['sociedad']))+1, 5)
+            numero_orden_compra = form.cleaned_data['sociedad'].abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = form.cleaned_data['sociedad']))+1, 5)
 
             orden_compra = OrdenCompra.objects.create(
                 internacional_nacional = oferta.internacional_nacional,
                 incoterms = oferta.incoterms,
                 numero_orden_compra = numero_orden_compra,
                 oferta_proveedor = oferta,
-                sociedad_id = form.cleaned_data['sociedad'],
+                sociedad = form.cleaned_data['sociedad'],
                 fecha_orden = date.today(),
                 moneda = oferta.moneda,
                 slug = slug_aleatorio(OrdenCompra),

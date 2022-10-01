@@ -1,0 +1,200 @@
+{% load funciones_propias %}
+{% load humanize %}
+<div class="row mt-3">
+    <div class="col-auto">
+        <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id %}" class="btn btn-primary">Regresar</a>
+    </div>
+    <div class="col-auto">
+        {% if cotizacion.SolicitudCredito_cotizacion_venta.estado == 1 %}
+        <button data-form-url="{% url 'cotizacion_app:solicitud_credito_finalizar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
+            class="delete btn btn-danger">
+            Finalizar
+        </button>
+        {% endif %}
+        {% if cotizacion.SolicitudCredito_cotizacion_venta.estado == 2 %}
+        <button data-form-url="{% url 'cotizacion_app:solicitud_credito_aprobar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
+            class="delete btn btn-success">
+            Aprobar
+        </button>
+        {% endif %}
+        {% if cotizacion.SolicitudCredito_cotizacion_venta.estado == 2 %}
+        <button data-form-url="{% url 'cotizacion_app:solicitud_credito_rechazar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
+            class="delete btn btn-danger">
+            Rechazar
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Razón Social:</th>
+                    <td>{{ cotizacion.cliente.razon_social }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ cotizacion.cliente.documento }}:</th>
+                    <td>
+                        {% if cotizacion.cliente.numero_documento %}
+                        {{ cotizacion.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if cotizacion.cliente_interlocutor %}
+                        {{ cotizacion.cliente_interlocutor }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Fecha:</th>
+                    <td>{{ cotizacion.fecha_cotizacion|date:'d/m/Y' }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">N° Cotización:</th>
+                    <td>{{ cotizacion.numero_cotizacion }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Total Cotización:</th>
+                    <td>{{ cotizacion.moneda.simbolo }} {{ cotizacion.total|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th>Estado:</th>
+                    <td>{{ cotizacion.get_estado_display }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Línea de crédito:</th>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.linea_credito_monto|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Deuda:</th>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.deuda_monto|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Disponible:</th>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.disponible_monto|intcomma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Solicitud de Crédito:</th>
+                    <td>{{ cotizacion.moneda.simbolo }} {{ cotizacion.SolicitudCredito_cotizacion_venta.total_credito|intcomma }}</td>
+                    {% if cotizacion.SolicitudCredito_cotizacion_venta.estado == 1 %}
+                    <td rowspan="4" class="ps-2">
+                        <button data-form-url="{% url 'cotizacion_app:solicitud_credito_actualizar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
+                            data-table-url="{% url 'cotizacion_app:solicitud_credito_tabla' cotizacion.id %}"
+                            class="update btn btn-primary">
+                            Actualizar
+                        </button>
+                    </td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    <th class="pe-2">Condición de Pago:</th>
+                    <td>
+                    {% if cotizacion.SolicitudCredito_cotizacion_venta.condiciones_pago %}    
+                    {{ cotizacion.SolicitudCredito_cotizacion_venta.condiciones_pago }}
+                    {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>{{ cotizacion.SolicitudCredito_cotizacion_venta.get_estado_display }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Aprobado por:</th>
+                    <td>
+                    {% if cotizacion.SolicitudCredito_cotizacion_venta.aprobado_por %}
+                    {{ cotizacion.SolicitudCredito_cotizacion_venta.aprobado_por.get_full_name }}
+                    {% endif %}    
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if cotizacion.SolicitudCredito_cotizacion_venta.estado == 1 %}
+<button data-form-url="{% url 'cotizacion_app:solicitud_credito_cuota_agregar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
+    data-table-url="{% url 'cotizacion_app:solicitud_credito_tabla' cotizacion.id  %}"
+    data-keep-open="True"
+    class="create btn btn-primary" title="Agregar Cuota">
+    Agregar Cuota
+</button>
+{% endif %}
+
+<div class="table-responsive mt-3">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-end">#</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">Días de pago</th>
+                <th class="text-center">Fecha de pago</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cuota in cotizacion.SolicitudCredito_cotizacion_venta.SolicitudCreditoCuota_solicitud_credito.all %}
+                <tr>
+                    <td class="text-end">{{ forloop.counter }}</td>
+                    <td class="text-end text-nowrap">{{ cotizacion.moneda.simbolo }} {{ cuota.monto }}</td>
+                    <td class="text-end">{{ cuota.dias_calculo }}</td>
+                    <td class="text-center">{{ cuota.fecha_calculo|date:'d/m/Y' }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if cotizacion.SolicitudCredito_cotizacion_venta.estado == 1 %}
+                        <button data-form-url="{% url 'cotizacion_app:solicitud_credito_cuota_actualizar' cuota.id %}"
+                            data-table-url="{% url 'cotizacion_app:solicitud_credito_tabla' cotizacion.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'cotizacion_app:solicitud_credito_cuota_eliminar' cuota.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="text-end">Total:</th>
+                <td class="text-end text-nowrap">
+                    {% if total %}
+                    {{ cotizacion.moneda.simbolo }} {{ total|redondear|intcomma }}
+                    {% endif %}
+                </td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

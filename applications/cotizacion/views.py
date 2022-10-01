@@ -1,10 +1,12 @@
+from datetime import timedelta
 from decimal import Decimal
 from django.shortcuts import render
 from django import forms
+from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
-from applications.material.funciones import calidad, observacion, reservado, stock, transito, vendible
+from applications.material.funciones import calidad, en_camino, observacion, reservado, stock, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
 from applications.funciones import calculos_linea, fecha_en_letras, igv, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
@@ -15,6 +17,8 @@ from applications.orden_compra.models import OrdenCompraDetalle
 from applications.recepcion_compra.models import RecepcionCompra
 
 from .forms import (
+    ConfirmacionClienteForm,
+    ConfirmacionVentaFormaPagoForm,
     CotizacionVentaClienteForm,
     CotizacionVentaDescuentoGlobalForm,
     CotizacionVentaDetalleForm,
@@ -25,6 +29,8 @@ from .forms import (
     CotizacionVentaOtrosCargosForm,
     CotizacionVentaPdfsForm,
     PrecioListaMaterialForm,
+    SolicitudCreditoCuotaForm,
+    SolicitudCreditoForm,
 )
 
 from .models import (
@@ -67,7 +73,6 @@ def CotizacionVentaCreateView(request):
         created_by=request.user,
         updated_by=request.user,
     )
-    obj.fecha_validez = obj.fecha_cotizacion + 7
     obj.save()
     sociedades = Sociedad.objects.all()
     
@@ -92,6 +97,16 @@ class CotizacionVentaVerView(TemplateView):
 
     def get_context_data(self, **kwargs):
         obj = CotizacionVenta.objects.get(id = kwargs['id_cotizacion'])
+
+        try:
+            if obj.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
+            credito_temporal = Decimal('0.00')
+        disponible = obj.cliente.disponible_monto + credito_temporal
+
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
         
@@ -117,6 +132,8 @@ class CotizacionVentaVerView(TemplateView):
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
         context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
         context['sociedades'] = sociedades
+        context['credito_temporal'] = credito_temporal
+        context['disponible'] = disponible
 
         return context
 
@@ -126,6 +143,16 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
     if request.method == 'GET':
         template = 'cotizacion/cotizacion_venta/detalle_tabla.html'
         obj = CotizacionVenta.objects.get(id=id_cotizacion)
+
+        try:
+            if obj.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
+            credito_temporal = Decimal('0.00')
+        disponible = obj.cliente.disponible_monto + credito_temporal
+
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
         
@@ -151,6 +178,8 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
         context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
         context['sociedades'] = sociedades
+        context['credito_temporal'] = credito_temporal
+        context['disponible'] = disponible
 
         data['table'] = render_to_string(
             template,
@@ -167,6 +196,7 @@ class CotizacionVentaClienteView(BSModalUpdateView):
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
     def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_form_kwargs(self):
@@ -241,7 +271,7 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
                     precio_unitario_con_igv = 0
                     precio_final_con_igv = 0
 
-                respuesta = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, 0.18)
+                respuesta = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), 1)
                 obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
                 obj.precio_unitario_con_igv = precio_unitario_con_igv
                 obj.precio_final_con_igv = precio_final_con_igv
@@ -253,7 +283,7 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
                 precio_unitario_con_igv = obj.precio_unitario_con_igv
                 precio_final_con_igv = obj.precio_final_con_igv
                 obj.cantidad = obj.cantidad + cantidad
-                respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, 0.18)
+                respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), 1)
                 obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
                 obj.precio_unitario_con_igv = precio_unitario_con_igv
                 obj.precio_final_con_igv = precio_final_con_igv
@@ -315,7 +345,7 @@ class CotizacionSociedadUpdateView(BSModalUpdateView):
             sociedad.calidad = calidad(self.object.content_type, self.object.id_registro, sociedad.id)
             sociedad.reservado = reservado(self.object.content_type, self.object.id_registro, sociedad.id)
             sociedad.stock = stock(self.object.content_type, self.object.id_registro, sociedad.id)
-            sociedad.transito = transito(self.object.content_type, self.object.id_registro, sociedad.id)
+            sociedad.en_camino = en_camino(self.object.content_type, self.object.id_registro, sociedad.id)
 
         context['titulo'] = "Stock por Sociedad"
         context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_sociedad', kwargs={'cantidad':1,'item':1,'abreviatura':"a",})[:-6]
@@ -465,6 +495,19 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_guardar.html"
 
+    
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_tipo_cambio = False
+        context['titulo'] = 'Error de guardar'
+        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+            error_tipo_cambio = True
+
+        if error_tipo_cambio:
+            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(CotizacionVentaGuardarView, self).dispatch(request, *args, **kwargs)
+    
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
@@ -472,8 +515,9 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
         self.object = self.get_object()
         self.object.estado = 2
         numero_cotizacion = CotizacionVenta.objects.all().aggregate(Count('numero_cotizacion'))['numero_cotizacion__count'] + 1
-        self.object.numero_cotizacion = numeroXn(numero_cotizacion, 6)
+        self.object.numero_cotizacion = numero_cotizacion
         self.object.fecha_cotizacion = datetime. now()
+        self.object.fecha_validez = self.object.fecha_cotizacion + timedelta(7)
 
         registro_guardar(self.object, self.request)
         self.object.save()
@@ -559,7 +603,7 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         precio_unitario_con_igv = form.instance.precio_unitario_con_igv
         precio_final_con_igv = form.instance.precio_final_con_igv
         form.instance.cantidad = form.instance.cantidad
-        respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, 0.18)
+        respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), form.instance.tipo_igv)
         form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
         form.instance.precio_unitario_con_igv = precio_unitario_con_igv
         form.instance.precio_final_con_igv = precio_final_con_igv
@@ -600,9 +644,139 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         return context
 
 
+class CotizacionVentaAnularView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 9
+        registro_guardar(self.object, self.request)
+        self.object.save()
+
+        messages.success(request, MENSAJE_ANULAR_COTIZACION)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaAnularView, self).get_context_data(**kwargs)
+        context['accion'] = "Anular"
+        context['titulo'] = "Cotización"
+        context['texto'] = "¿Está seguro de Anular la cotización?"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+
+
+class CotizacionVentaClonarView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
+        descuento_globales = self.object.CotizacionDescuentoGlobal_cotizacion_venta.all()
+        otros_cargos = self.object.CotizacionOtrosCargos_cotizacion_venta.all()
+        observaciones = self.object.CotizacionObservacion_cotizacion_venta.all()
+        nueva_cotizacion = CotizacionVenta.objects.create(
+            cliente=self.object.cliente,
+            cliente_interlocutor=self.object.cliente_interlocutor,
+            moneda=self.object.moneda,
+            total=self.object.total,
+            slug = slug_aleatorio(CotizacionVenta),
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
+        
+        for descuento_global in descuento_globales:
+            CotizacionDescuentoGlobal.objects.create(
+                cotizacion_venta=nueva_cotizacion,
+                sociedad=descuento_global.sociedad,
+                descuento_global=descuento_global.descuento_global,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+        
+        for otro_cargo in otros_cargos:
+            CotizacionOtrosCargos.objects.create(
+                cotizacion_venta=nueva_cotizacion,
+                sociedad=otro_cargo.sociedad,
+                otros_cargos=otro_cargo.otros_cargos,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+        
+        for observacion in observaciones:
+            CotizacionObservacion.objects.create(
+                cotizacion_venta=nueva_cotizacion,
+                sociedad=observacion.sociedad,
+                observacion=observacion.observacion,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+
+        for detalle in detalles:
+            cotizacion_venta_detalle = CotizacionVentaDetalle.objects.create(
+                item=detalle.item,
+                content_type=detalle.content_type,
+                id_registro=detalle.id_registro,
+                cantidad=detalle.cantidad,
+                precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
+                precio_unitario_con_igv=detalle.precio_unitario_con_igv,
+                precio_final_con_igv=detalle.precio_final_con_igv,
+                descuento=detalle.descuento,
+                sub_total=detalle.sub_total,
+                igv=detalle.igv,
+                total=detalle.total,
+                tipo_igv=detalle.tipo_igv,
+                cotizacion_venta=nueva_cotizacion,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+            cotizacion_sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+            for cotizacion_sociedad in cotizacion_sociedades:
+                CotizacionSociedad.objects.create(
+                    cotizacion_venta_detalle=cotizacion_venta_detalle,
+                    sociedad=cotizacion_sociedad.sociedad,
+                    cantidad=cotizacion_sociedad.cantidad,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+
+        messages.success(request, MENSAJE_CLONAR_COTIZACION)
+        return HttpResponseRedirect(reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':nueva_cotizacion.id}))
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaClonarView, self).get_context_data(**kwargs)
+        context['accion'] = "Clonar"
+        context['titulo'] = "Cotización"
+        context['texto'] = "¿Está seguro de Clonar la cotización?"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+
+
 class CotizacionVentaReservaView(DeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        error_cantidad_sociedad = False
+        context = {}
+        context['titulo'] = 'Error de Reserva'
+        for detalle in self.get_object().CotizacionVentaDetalle_cotizacion_venta.all():
+            sumar = Decimal('0.00')
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                sumar += cotizacion_sociedad.cantidad
+            if sumar != detalle.cantidad:
+                error_cantidad_sociedad = True
+        if error_cantidad_sociedad:
+            context['texto'] = 'Revise las cantidades por Sociedad.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
@@ -675,7 +849,7 @@ class CotizacionVentaReservaAnularView(DeleteView):
         registro_guardar(self.object, self.request)
         self.object.save()
 
-        messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+        messages.success(request, MENSAJE_ANULAR_RESERVAR_COTIZACION)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -690,6 +864,37 @@ class CotizacionVentaReservaAnularView(DeleteView):
 class CotizacionVentaConfirmarView(DeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        error_cantidad_stock = False
+        error_cantidad_sociedad = False
+        error_tipo_cambio = False
+        context = {}
+        context['titulo'] = 'Error de Confirmación'
+        for detalle in self.get_object().CotizacionVentaDetalle_cotizacion_venta.all():
+            sumar = Decimal('0.00')
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                sumar += cotizacion_sociedad.cantidad
+                if cotizacion_sociedad.cantidad > stock(detalle.content_type, detalle.id_registro, cotizacion_sociedad.sociedad.id):
+                    error_cantidad_stock = True
+            if sumar != detalle.cantidad:
+                error_cantidad_sociedad = True
+        
+        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+            error_tipo_cambio = True
+
+        if error_tipo_cambio:
+            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
+        if error_cantidad_sociedad:
+            context['texto'] = 'Revise las cantidades por Sociedad.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
+        if error_cantidad_stock:
+            context['texto'] = 'No hay stock suficiente en un producto.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
@@ -778,19 +983,31 @@ class CotizacionVentaConfirmarView(DeleteView):
         
         for sociedad in sociedades_confirmar:
             cotizacion_observacion = observacion(self.object, sociedad)
+            condiciones_pago = None
+            tipo_venta = 1
+
+            if hasattr(self.object, 'SolicitudCredito_cotizacion_venta'):
+                if self.object.SolicitudCredito_cotizacion_venta.estado == 3:
+                    condiciones_pago = self.object.SolicitudCredito_cotizacion_venta.condiciones_pago
+                    tipo_venta = 2
             confirmacion_venta = ConfirmacionVenta.objects.create(
                 cotizacion_venta = self.object,
+                cliente = self.object.cliente,
+                cliente_interlocutor = self.object.cliente_interlocutor,
                 sociedad = sociedad,
-                tipo_cambio = TipoCambio.objects.get(fecha=self.object.fecha),
+                tipo_cambio = TipoCambio.objects.filter(fecha=datetime.today()).latest('created_at'),
+                moneda = self.object.moneda,
                 observacion = cotizacion_observacion,
                 total = self.object.total,
+                condiciones_pago = condiciones_pago,
+                tipo_venta = tipo_venta,
                 created_by = self.request.user,
                 updated_by = self.request.user,
             )
             for detalle in detalles:
                 cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
                 if cotizacion_sociedad.cantidad > 0:
-                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv())
+                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
                     ConfirmacionVentaDetalle.objects.create(
                         item = detalle.item,
                         content_type = detalle.content_type,
@@ -808,11 +1025,12 @@ class CotizacionVentaConfirmarView(DeleteView):
                         created_by = self.request.user,
                         updated_by = self.request.user,
                     )
+            
 
         registro_guardar(self.object, self.request)
         self.object.save()
 
-        messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+        messages.success(request, MENSAJE_CONFIRMAR_COTIZACION)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -826,7 +1044,7 @@ class CotizacionVentaConfirmarView(DeleteView):
 
 class CotizacionVentaConfirmarAnularView(DeleteView):
     model = CotizacionVenta
-    template_name = "includes/form generico.html"
+    template_name = "includes/form generico.html"   
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
@@ -864,7 +1082,7 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
         registro_guardar(self.object, self.request)
         self.object.save()
 
-        messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+        messages.success(request, MENSAJE_ANULAR_CONFIRMAR_COTIZACION)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -874,102 +1092,190 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
         context['texto'] = "¿Está seguro de Anular la Confirmar de la cotización?"
         context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
         return context
+
+
+class CotizacionVentaConfirmarAnticipoView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        error_cantidad_sociedad = False
+        error_tipo_cambio = False
+        context = {}
+        context['titulo'] = 'Error de Confirmación'
+        for detalle in self.get_object().CotizacionVentaDetalle_cotizacion_venta.all():
+            sumar = Decimal('0.00')
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                sumar += cotizacion_sociedad.cantidad
+            if sumar != detalle.cantidad:
+                error_cantidad_sociedad = True
         
+        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+            error_tipo_cambio = True
 
-class CotizacionVentaPdfView(View):
-    def get(self, request, *args, **kwargs):
-        color = COLOR_DEFAULT
-        vertical = False
-        logo = None
-        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        if error_tipo_cambio:
+            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
 
-        obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
+        if error_cantidad_sociedad:
+            context['texto'] = 'Revise las cantidades por Sociedad.'
+            return render(request, 'includes/modal sin permiso.html', context)
 
-        titulo = 'Cotización_' + str(obj.numero_cotizacion) + '_' + str(obj.cliente.razon_social)
+        return super().dispatch(request, *args, **kwargs)
 
-        nro_cotizacion = 'Nro. de Cotización: ' + str(obj.numero_cotizacion)
-        razon_social = 'Razón Social: ' + str(obj.cliente)
-        direccion = 'Dirección: ' + str(obj.cliente.direccion_fiscal)
-        interlocutor = 'Interlocutor: ' + str(obj.cliente_interlocutor)
-        nro_documento = str(DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]) + ': ' + str(obj.cliente.numero_documento)
-        fecha_cotizacion = 'Fecha Cotizacion: ' + str(obj.fecha_cotizacion)
-        fecha_validez = 'Fecha Validez: ' + str(obj.fecha_validez)
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
-        Texto = []
-        Texto.extend([  nro_cotizacion, 
-                        razon_social,
-                        direccion, 
-                        interlocutor, 
-                        nro_documento,
-                        fecha_cotizacion,
-                        fecha_validez,
-                        ])
-
-        TablaEncabezado = [ 'Item',
-                            'Descripción',
-                            'Unidad',
-                            'Cantidad',
-                            'Prec. Unit. con IGV',
-                            'Prec. Final con IGV',
-                            'Descuento',
-                            'Total',
-                            'Stock',
-                            'u',
-                            ]
-
-        cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
-        TablaDatos = []
-        for detalle in cotizacion_venta_detalle:
-            fila = []
-
-            detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
-            fila.append(intcomma(detalle.item))
-            fila.append(intcomma(detalle.material))
-            fila.append(intcomma(detalle.material.unidad_base))
-            fila.append(intcomma(detalle.cantidad.quantize(Decimal('0.01'))))
-            fila.append(intcomma(detalle.precio_unitario_con_igv.quantize(Decimal('0.01'))))
-            fila.append(intcomma(detalle.precio_final_con_igv.quantize(Decimal('0.01'))))
-            fila.append(intcomma(detalle.descuento.quantize(Decimal('0.01'))))
-            fila.append(intcomma(detalle.total.quantize(Decimal('0.01'))))
-
-            TablaDatos.append(fila)
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        sociedades_confirmar = []
+        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
         
-        totales = obtener_totales(obj)
-        lista =[]
-        for k,v in totales.items():
-            if v==0:continue
-            fila = []
-            fila.append(k)
-            fila.append(v)
-
-            lista.append(fila)
-
-        TablaTotales = []
-        for detalle in lista:
-            if not detalle[0] in DICCIONARIO_TOTALES: continue
-            fila = []
-            fila.append(DICCIONARIO_TOTALES[detalle[0]])
-            fila.append(intcomma(detalle[1]))
-
-            TablaTotales.append(fila)
+        movimiento_final = TipoMovimiento.objects.get(codigo=129) #Confirmación Anticipada de venta
+        for detalle in detalles:
+            sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+            for cotizacion_sociedad in sociedades:
+                if cotizacion_sociedad.cantidad > 0:
+                    if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.content_type,
+                        id_registro_producto = detalle.id_registro,
+                        cantidad = cotizacion_sociedad.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso = self.object.id,
+                        almacen = None,
+                        sociedad = cotizacion_sociedad.sociedad,
+                        movimiento_anterior = None,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+        self.object.estado = 6
         
-        terminos_condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
-        condiciones = ['Condiciones: ']
-        for condicion in terminos_condiciones:
-            condiciones.append(condicion)
+        for sociedad in sociedades_confirmar:
+            cotizacion_observacion = observacion(self.object, sociedad)
+            confirmacion_venta = ConfirmacionVenta.objects.create(
+                cotizacion_venta = self.object,
+                cliente = self.object.cliente,
+                cliente_interlocutor = self.object.cliente_interlocutor,
+                sociedad = sociedad,
+                tipo_cambio = TipoCambio.objects.filter(fecha=self.object.fecha).latest('created_at'),
+                moneda = self.object.moneda,
+                observacion = cotizacion_observacion,
+                total = self.object.total,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+            for detalle in detalles:
+                cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
+                if cotizacion_sociedad.cantidad > 0:
+                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
+                    ConfirmacionVentaDetalle.objects.create(
+                        item = detalle.item,
+                        content_type = detalle.content_type,
+                        id_registro = detalle.id_registro,
+                        cantidad_confirmada = cotizacion_sociedad.cantidad,
+                        precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv'],
+                        precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                        precio_final_con_igv = detalle.precio_final_con_igv,
+                        descuento = respuesta['descuento'],
+                        sub_total = respuesta['subtotal'],
+                        igv = respuesta['igv'],
+                        total = respuesta['total'],
+                        tipo_igv = detalle.tipo_igv,
+                        confirmacion_venta = confirmacion_venta,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
 
-        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales)
+        registro_guardar(self.object, self.request)
+        self.object.save()
 
-        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
-        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        messages.success(request, MENSAJE_CONFIRMAR_COTIZACION)
+        return HttpResponseRedirect(self.get_success_url())
 
-        return respuesta
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaConfirmarAnticipoView, self).get_context_data(**kwargs)
+        context['accion'] = "Confirmar"
+        context['titulo'] = "Cotización"
+        context['texto'] = "¿Está seguro de Confirmar la cotización?"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
 
+
+class CotizacionVentaConfirmarAnticipoAnularView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/form generico.html"   
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        confirmar = TipoMovimiento.objects.get(codigo=129)
+        self.object.estado = 2
+
+        movimientos = MovimientosAlmacen.objects.filter(
+                tipo_movimiento = confirmar,
+                tipo_stock = confirmar.tipo_stock_final,
+                signo_factor_multiplicador = +1,
+                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                id_registro_documento_proceso = self.object.id,
+                almacen = None,
+            )
+        for movimiento in movimientos:
+            movimiento_uno = movimiento.movimiento_anterior
+            movimiento.delete()
+            if movimiento_uno:
+                movimiento_uno.delete()
+
+        confirmaciones_venta = ConfirmacionVenta.objects.filter(
+            cotizacion_venta = self.object,
+        )
+        for confirmacion_venta in confirmaciones_venta:
+            confirmacion_venta.delete()
+
+        registro_guardar(self.object, self.request)
+        self.object.save()
+
+        messages.success(request, MENSAJE_ANULAR_CONFIRMAR_COTIZACION)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaConfirmarAnticipoAnularView, self).get_context_data(**kwargs)
+        context['accion'] = "Anular"
+        context['titulo'] = "Confirmar de Cotización"
+        context['texto'] = "¿Está seguro de Anular la Confirmar de la cotización?"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
 
 
 class CotizacionVentaPdfsView(BSModalFormView):
     template_name = "cotizacion/cotizacion_venta/form_pdfs.html"
     form_class = CotizacionVentaPdfsForm
+
+    def dispatch(self, request, *args, **kwargs):
+        error_cantidad_sociedad = False
+        obj = CotizacionVenta.objects.get(id=self.kwargs['pk'])
+        context = {}
+        context['titulo'] = 'Error de Confirmación'
+        for detalle in obj.CotizacionVentaDetalle_cotizacion_venta.all():
+            sumar = Decimal('0.00')
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                sumar += cotizacion_sociedad.cantidad
+
+            if sumar != detalle.cantidad:
+                error_cantidad_sociedad = True
+        
+        if error_cantidad_sociedad:
+            context['texto'] = 'Revise las cantidades por Sociedad.'
+            return render(request, 'includes/modal sin permiso.html', context)
+            
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         obj = CotizacionVenta.objects.get(id=self.kwargs['pk'])
@@ -1031,7 +1337,7 @@ class CotizacionVentaSociedadPdfView(View):
             fila = []
             confirmacion_detalle = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
             if confirmacion_detalle.cantidad == 0: continue
-            calculo = calculos_linea(confirmacion_detalle.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(obj.fecha))
+            calculo = calculos_linea(confirmacion_detalle.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(obj.fecha), detalle.tipo_igv)
             detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
             fila.append(item)
             fila.append(intcomma(detalle.material))
@@ -1083,7 +1389,6 @@ class CotizacionVentaSociedadPdfView(View):
         return respuesta
 
 
-
 class CotizacionVentaResumenView(BSModalReadView):
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_resumen.html"
@@ -1092,7 +1397,6 @@ class CotizacionVentaResumenView(BSModalReadView):
         monedas = Moneda.objects.all()
         tipo_de_cambio_cotizacion = TipoCambio.objects.tipo_cambio_venta(self.object.fecha)
         tipo_de_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        print(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
         tipo_de_cambio_final = tipo_de_cambio(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
         for moneda in monedas:
             cotizacion_sociedad = []
@@ -1103,7 +1407,7 @@ class CotizacionVentaResumenView(BSModalReadView):
                     if moneda.simbolo == '$':
                         sociedad.total = total
                     else:
-                        sociedad.total = total * tipo_de_cambio_final
+                        sociedad.total = (total * tipo_de_cambio_final).quantize(Decimal('0.01'))
 
                     cotizacion_sociedad.append(sociedad)
 
@@ -1114,10 +1418,6 @@ class CotizacionVentaResumenView(BSModalReadView):
                     )
                 sociedad.cuentas = cuentas
             moneda.sociedades = cotizacion_sociedad
-
-        print("***************************************")
-        print(self.object)
-        print("***************************************")
 
         context = super(CotizacionVentaResumenView, self).get_context_data(**kwargs)
         context['monedas'] = monedas
@@ -1146,10 +1446,17 @@ class ConfirmarVerView(TemplateView):
     template_name = "cotizacion/confirmacion/detalle.html"
 
     def get_context_data(self, **kwargs):
-        obj = ConfirmacionVenta.objects.get(id = kwargs['id_cotizacion'])
-        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_confirmacion)
+        obj = ConfirmacionVenta.objects.get(id = kwargs['id_confirmacion'])
         
+        try:
+            if obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
+            credito_temporal = Decimal('0.00')
+        disponible = obj.cliente.disponible_monto + credito_temporal
+
         materiales = None
         try:
             materiales = obj.ConfirmacionVentaDetalle_confirmacion_venta.all()
@@ -1163,45 +1470,48 @@ class ConfirmarVerView(TemplateView):
         context['confirmacion'] = obj
         context['cotizacion'] = obj.cotizacion_venta
         context['materiales'] = materiales
-        context['tipo_cambio_hoy'] = tipo_cambio_hoy
-        context['tipo_cambio'] = tipo_cambio
+        context['tipo_cambio'] = obj.tipo_cambio.tipo_cambio_venta
         context['totales'] = obtener_totales(obj)
-        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
+        context['totales_soles'] = obtener_totales_soles(context['totales'], obj.tipo_cambio.tipo_cambio_venta)
+        context['credito_temporal'] = credito_temporal
+        context['disponible'] = disponible
         
         return context
 
 
-def ConfirmarVerTabla(request, id_cotizacion):
+def ConfirmarVerTabla(request, id_confirmacion):
     data = dict()
     if request.method == 'GET':
-        template = 'cotizacion/cotizacion_venta/detalle_tabla.html'
-        obj = CotizacionVenta.objects.get(id=id_cotizacion)
-        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
+        template = 'cotizacion/confirmacion/detalle_tabla.html'
+        obj = ConfirmacionVenta.objects.get(id=id_confirmacion)
+
+        try:
+            if obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = obj.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
+            credito_temporal = Decimal('0.00')
+        disponible = obj.cliente.disponible_monto + credito_temporal
         
         materiales = None
         try:
-            materiales = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+            materiales = obj.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
             for material in materiales:
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
         except:
             pass
 
-        sociedades = Sociedad.objects.filter(estado_sunat=1)
-        for sociedad in sociedades:
-            sociedad.observacion = observacion(obj, sociedad)
-
         context = {}
+        context['confirmacion'] = obj
+        context['cotizacion'] = obj.cotizacion_venta
         context['materiales'] = materiales
-        context['cotizacion'] = obj
-        context['tipo_cambio_hoy'] = tipo_cambio_hoy
-        context['tipo_cambio'] = tipo_cambio
+        context['tipo_cambio'] = obj.tipo_cambio.tipo_cambio_venta
         context['totales'] = obtener_totales(obj)
-        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales_soles'] = obtener_totales_soles(context['totales'], tipo_cambio)
-        context['sociedades'] = sociedades
+        context['totales_soles'] = obtener_totales_soles(context['totales'], obj.tipo_cambio.tipo_cambio_venta)
+        context['credito_temporal'] = credito_temporal
+        context['disponible'] = disponible
 
         data['table'] = render_to_string(
             template,
@@ -1209,3 +1519,250 @@ def ConfirmarVerTabla(request, id_cotizacion):
             request=request
         )
         return JsonResponse(data)
+
+
+class ConfirmacionVentaFormaPagoView(BSModalUpdateView):
+    model = ConfirmacionVenta
+    template_name = "cotizacion/confirmacion/form_forma_pago.html"
+    form_class = ConfirmacionVentaFormaPagoForm
+    success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionVentaFormaPagoView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Forma de Pago"
+        context['forma'] = self.object.cliente.linea_credito_condiciones_pago
+        return context
+
+
+class ConfirmacionClienteView(BSModalUpdateView):
+    model = ConfirmacionVenta
+    template_name = "cotizacion/cotizacion_venta/form_cliente.html"
+    form_class = ConfirmacionClienteForm
+    success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def form_valid(self, form):
+        if form.instance.cliente.linea_credito_monto == 0:
+            form.instance.tipo_venta = 1
+            form.instance.condiciones_pago = None
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        cotizacion = kwargs['instance']
+        lista = []
+        relaciones = ClienteInterlocutor.objects.filter(cliente = cotizacion.cliente)
+        for relacion in relaciones:
+            lista.append(relacion.interlocutor.id)
+
+        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+        kwargs['interlocutor'] = cotizacion.cliente_interlocutor
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionClienteView, self).get_context_data(**kwargs)
+        context['accion'] = "Elegir"
+        context['titulo'] = "Cliente"
+        return context
+
+
+class SolicitudCreditoView(TemplateView):
+    template_name = "cotizacion/cotizacion_venta/form_solicitud_credito.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudCreditoView, self).get_context_data(**kwargs)
+        cotizacion = CotizacionVenta.objects.get(id=self.kwargs['id_cotizacion'])
+        solicitud_credito, created = SolicitudCredito.objects.get_or_create(cotizacion_venta=cotizacion)
+        if created:
+            solicitud_credito.total_cotizado = cotizacion.total
+            solicitud_credito.interlocutor_solicita = cotizacion.cliente_interlocutor
+            solicitud_credito.save()
+        total = cotizacion.SolicitudCredito_cotizacion_venta.SolicitudCreditoCuota_solicitud_credito.all().aggregate(Sum('monto'))['monto__sum']
+
+        context['cotizacion'] = cotizacion
+        context['total'] = total
+        return context
+
+
+def SolicitudCreditoTabla(request, id_cotizacion):
+    data = dict()
+    if request.method == 'GET':
+        template = "cotizacion/cotizacion_venta/form_solicitud_credito_tabla.html"
+        context = {}
+        cotizacion = CotizacionVenta.objects.get(id=id_cotizacion)
+        total = cotizacion.SolicitudCredito_cotizacion_venta.SolicitudCreditoCuota_solicitud_credito.all().aggregate(Sum('monto'))['monto__sum']
+        context['cotizacion'] = cotizacion
+        context['total'] = total
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+    
+
+class SolicitudCreditoUpdateView(BSModalUpdateView):
+    model = SolicitudCredito
+    template_name = "includes/formulario generico.html"
+    form_class = SolicitudCreditoForm
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudCreditoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Solicitud de Crédito"
+        return context
+
+
+class SolicitudCreditoEliminarView(DeleteView):
+    model = SolicitudCredito
+    template_name = "includes/form generico.html"   
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.cotizacion_venta.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudCreditoEliminarView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Solicitud de Crédito"
+        context['texto'] = "¿Está seguro de Eliminar la Solicitud de Crédito?"
+        context['item'] = "%s" % (self.object)
+        return context
+    
+
+class SolicitudCreditoCuotaCreateView(BSModalCreateView):
+    model = SolicitudCreditoCuota
+    template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
+    form_class = SolicitudCreditoCuotaForm
+    success_url = '.'
+    
+    def form_valid(self, form):
+        form.instance.solicitud_credito = SolicitudCredito.objects.get(id=self.kwargs['id_solicitud'])
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        obj = SolicitudCredito.objects.get(id=self.kwargs['id_solicitud'])
+        solicitado = obj.total_credito
+        if obj.SolicitudCreditoCuota_solicitud_credito.all():
+            suma = obj.SolicitudCreditoCuota_solicitud_credito.all().aggregate(Sum('monto'))['monto__sum']
+        else:
+            suma = Decimal('0.00')
+        context = super(SolicitudCreditoCuotaCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Agregar"
+        context['titulo'] = "Cuota"
+        context['saldo'] = solicitado - suma
+        return context
+    
+
+class SolicitudCreditoCuotaUpdateView(BSModalUpdateView):
+    model = SolicitudCreditoCuota
+    template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
+    form_class = SolicitudCreditoCuotaForm
+    success_url = '.'
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        obj = self.object.solicitud_credito
+        solicitado = obj.total_credito
+        suma = obj.SolicitudCreditoCuota_solicitud_credito.exclude(id=self.object.id).aggregate(Sum('monto'))['monto__sum']
+        context = super(SolicitudCreditoCuotaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Cuota"
+        context['saldo'] = solicitado - suma
+        return context
+    
+
+class SolicitudCreditoCuotaDeleteView(BSModalDeleteView):
+    model = SolicitudCreditoCuota
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().solicitud_credito.cotizacion_venta.id})
+    
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudCreditoCuotaDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Cuota"
+        context['item'] = self.get_object()
+        return context
+
+
+class SolicitudCreditoFinalizarView(DeleteView):
+    model = SolicitudCredito
+    template_name = "includes/form generico.html" 
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 2
+        registro_guardar(self.object, request)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudCreditoFinalizarView, self).get_context_data(**kwargs)
+        context['accion'] = "Finalizar"
+        context['titulo'] = "Solicitud de crédito"
+        context['texto'] = "¿Está seguro de Finalizar la Solicitud de crédito?"
+        context['item'] = self.object
+        return context
+
+
+class SolicitudCreditoAprobarView(DeleteView):
+    model = SolicitudCredito
+    template_name = "includes/form generico.html" 
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 3
+        self.object.aprobado_por = request.user
+        registro_guardar(self.object, request)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudCreditoAprobarView, self).get_context_data(**kwargs)
+        context['accion'] = "Aprobar"
+        context['titulo'] = "Solicitud de crédito"
+        context['texto'] = "¿Está seguro de Aprobar la Solicitud de crédito?"
+        context['item'] = self.object
+        return context
+
+
+class SolicitudCreditoRechazarView(DeleteView):
+    model = SolicitudCredito
+    template_name = "includes/form generico.html" 
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 4
+        registro_guardar(self.object, request)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudCreditoRechazarView, self).get_context_data(**kwargs)
+        context['accion'] = "Rechazar"
+        context['titulo'] = "Solicitud de crédito"
+        context['texto'] = "¿Está seguro de Rechazar la Solicitud de crédito?"
+        context['item'] = self.object
+        return context

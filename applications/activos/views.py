@@ -25,7 +25,7 @@ from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseS
 from applications.importaciones import *
 from django import forms
 from bootstrap_modal_forms.generic import BSModalCreateView
-from applications.funciones import obtener_totales
+from applications.funciones import igv, obtener_totales
 
 from .forms import (
     ActivoBaseForm,
@@ -1125,6 +1125,7 @@ class ComprobanteCompraActivoDetalleCreateView(PermissionRequiredMixin,BSModalCr
         context = super(ComprobanteCompraActivoDetalleCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Activo"
+        context['valor_igv']=igv()
         return context
 
 
@@ -1306,6 +1307,7 @@ class ComprobanteCompraActivoDetalleUpdateView(PermissionRequiredMixin, BSModalU
         context = super(ComprobanteCompraActivoDetalleUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
+        context['valor_igv'] = igv()
         return context
 
 class ComprobanteCompraActivoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):

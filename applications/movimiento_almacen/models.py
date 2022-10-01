@@ -58,7 +58,7 @@ class MovimientosAlmacen(models.Model):
     id_registro_documento_proceso = models.IntegerField()
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True)
-    movimiento_anterior = models.ForeignKey('self', on_delete=models.PROTECT, blank=True, null=True)
+    movimiento_anterior = models.ForeignKey('self', on_delete=models.PROTECT, blank=True, null=True, related_name='MovimientosAlmacen_movimiento_anterior')
     movimiento_reversion = models.BooleanField(default=False)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

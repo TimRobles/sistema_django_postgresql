@@ -1,0 +1,212 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<h3>Detalle Factura Venta</h3>
+
+<div class="row mt-3">
+    <div class="col-auto">
+        <a href="{% url 'comprobante_venta_app:factura_venta_inicio' %}" class="btn btn-primary">Regresar</a>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Razón Social:</th>
+                    <td>{{ factura.cliente.razon_social }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ factura.cliente.documento }}:</th>
+                    <td>
+                        {% if factura.cliente.numero_documento %}
+                        {{ factura.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if factura.cliente_interlocutor %}
+                        {{ factura.cliente_interlocutor.nombre_completo }}   
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Fecha:</th>
+                    <td>{{ factura.fecha_factura|date:'d/m/Y' }}</td>
+                    <th class="pe-2">Tipo de Cambio (HOY):</th>
+                    <td>
+                        {% if tipo_cambio_hoy %}
+                        {{ tipo_cambio_hoy }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">N° Factura:</th>
+                    <td>
+                        {% if factura.numero_factura %}
+                        {{ factura.numero_factura }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Estado Factura:</th>
+                    <td>{{ factura.get_estado_display }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>   
+
+<div class="row mt-3">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ factura.sociedad.color }};">OBSERVACIONES {{ factura.sociedad.razon_social }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if factura.observacion %}
+                        {{ factura.observacion|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-responsive mt-3">
+    <table class="table">
+        <thead class="fondo-personalizado" style="--color-fondo: {{ factura.sociedad.color }};">
+            <tr>
+                <th>Item</th>
+                <th style="min-width: 500px;">Material</th>
+                <th>Unidad</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
+                <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
+                <th class="text-nowrap">Prec. Final<br>con IGV</th>
+                <th>Descuento</th>
+                <th class="text-nowrap">Sub Total</th>
+                <th>IGV</th>
+                <th>Total</th>
+                <th class="text-center">Vendible</th>
+                <th class="text-center">Calidad</th>
+                <th class="text-center">Stock</th>
+                <th class="text-center">En Camino</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
+                    <td class="text-nowrap">{{ material.material.unidad_base }}</td>
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">$ {{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">$ {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-secondary">$ {{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">$ {{ material.descuento|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">$ {{ material.sub_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">$ {{ material.igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">$ {{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">
+                        {{ material.material.vendible|redondear|intcomma }}
+                        {% if material.material.reservado %}
+                        <br>
+                        <span class="text-danger">
+                            (-{{ material.material.reservado|redondear|intcomma }})
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.calidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.stock|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.en_camino|redondear|intcomma }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="10" class="text-end">
+                    Descuento Global:
+                </td>
+                <td class="text-end text-nowrap">$ {{ factura.descuento_global|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>            
+            <tr>
+                <td colspan="10" class="text-end">Descuento Total:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_descuento|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_descuento|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>           
+            <tr>
+                <td colspan="10" class="text-end">Anticipo:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_anticipo|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_anticipo|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">Exonerada:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_exonerada|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_exonerada|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">Inafecta:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_inafecta|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_inafecta|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">Gravada:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_gravada|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_gravada|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">IGV:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_igv|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">Gratuita:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_gratuita|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_gratuita|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">Otros Cargos:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_otros_cargos|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_otros_cargos|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">ICBPER:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total_icbper|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total_icbper|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">Total:</td>
+                <td class="text-end text-nowrap">$ {{ factura.total|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.total|redondear|intcomma }}</td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

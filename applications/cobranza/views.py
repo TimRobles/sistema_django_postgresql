@@ -1,11 +1,21 @@
-from django.shortcuts import render
-from django import forms
+from datetime import timedelta
+from reportlab.lib import colors
+from applications.clientes.models import Cliente
+from applications.cobranza.funciones import movimientos_bancarios
+from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
+from applications.funciones import tipo_de_cambio
 from applications.importaciones import *
 from .models import(
+    Deuda,
+    Ingreso,
     LineaCredito,
+    Pago,
 )
 
 from .forms import(
+    CuentaBancariaIngresoForm,
+    CuentaBancariaIngresoPagarForm,
+    DeudaPagarForm,
     LineaCreditoForm,
 )
 
@@ -30,12 +40,11 @@ def LineaCreditoTabla(request):
 
 class LineaCreditoCreateView(BSModalCreateView):
     model = LineaCredito
-    template_name = "includes/formulario generico.html"
+    template_name = "cobranza/linea_credito/form.html"
     form_class = LineaCreditoForm
     success_url = reverse_lazy('cobranza_app:linea_credito_inicio')
 
     def form_valid(self, form):
-
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -45,4 +54,324 @@ class LineaCreditoCreateView(BSModalCreateView):
         context['titulo']="Linea de Crédito"
         return context
 
+
+class DeudoresView(TemplateView):
+    template_name = "cobranza/deudas/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(DeudoresView, self).get_context_data(**kwargs)
+        context['contexto_cliente'] = Cliente.objects.all()
+        context['moneda'] = Moneda.objects.get(principal=True)
+        return context
+    
+
+class DeudaView(TemplateView):
+    template_name = "cobranza/deudas/detalle.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(DeudaView, self).get_context_data(**kwargs)
+        deudas = Deuda.objects.filter(cliente__id=self.kwargs['id_cliente'])
+            
+        context['contexto_deuda'] = deudas
+        context['id_cliente'] = self.kwargs['id_cliente']
+        return context
+    
+
+class DeudaPagarCreateView(BSModalFormView):
+    template_name = "cobranza/deudas/form pagar.html"
+    form_class = DeudaPagarForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+            monto = form.cleaned_data.get('monto')
+            tipo_cambio = form.cleaned_data.get('tipo_cambio')
+            ingresos = form.cleaned_data.get('ingresos')
+            content_type = ContentType.objects.get_for_model(ingresos)
+            id_registro = ingresos.id
+            obj, created = Pago.objects.get_or_create(
+                deuda = deuda,
+                content_type = content_type,
+                id_registro = id_registro,
+            )
+            if created:
+                obj.monto = monto
+            else:
+                obj.monto = obj.monto + monto
+            obj.tipo_cambio = tipo_cambio
+            registro_guardar(obj, self.request)
+            obj.save()
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        lista_ingresos = []
+        for ingreso in Ingreso.objects.all():
+            if ingreso.saldo > 0:
+                lista_ingresos.append(ingreso.id)
+
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(deuda.fecha_deuda)
+        tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
+        kwargs['tipo_cambio'] = tipo_cambio
+        kwargs['lista_ingresos'] = lista_ingresos
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        context = super(DeudaPagarCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Pagar'
+        context['titulo'] = 'Deuda'
+        context['deuda'] = deuda
+        return context
+
+
+class DeudaPagarUpdateView(BSModalUpdateView):
+    model = Pago
+    template_name = "cobranza/deudas/form pagar.html"
+    form_class = DeudaPagarForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        lista_ingresos = []
+        for ingreso in Ingreso.objects.all():
+            if ingreso.saldo > 0:
+                lista_ingresos.append(ingreso.id)
+        lista_ingresos.append(self.object.id_registro)
+        
+        # lista_notas = []
+        # for nota in Nota.objects.all():
+        #     if nota.saldo > 0:
+        #         lista_notas.append(nota.id)
+        # if self.object.content_type == ContentType.objects.get_for_model(Ingreso):
+        #    lista_ingresos.append(self.object.id_registro)
+        # else:
+        # lista_notas.append(self.object.id_registro)
+
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(deuda.fecha_deuda)
+        tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
+        kwargs['tipo_cambio'] = tipo_cambio
+        kwargs['lista_ingresos'] = lista_ingresos
+        # kwargs['lista_notas'] = lista_notas
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        context = super(DeudaPagarUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Pago'
+        context['deuda'] = deuda
+        return context
+
+
+class DeudaPagarDeleteView(DeleteView):
+    model = Pago
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
+
+    def get_context_data(self, **kwargs):
+        context = super(DeudaPagarDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Pago'
+        context['item'] = self.get_object()
+        return context
+
+
+class CuentaBancariaView(TemplateView):
+    template_name = "bancos/cuenta bancaria/inicio.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaView, self).get_context_data(**kwargs)
+        context['contexto_cuenta_bancaria'] = CuentaBancariaSociedad.objects.filter(estado=1)
+        return context
+
+
+class CuentaBancariaDetalleView(DetailView):
+    model = CuentaBancariaSociedad
+    template_name = "bancos/cuenta bancaria/detalle.html"
+    context_object_name = 'cuenta_bancaria'
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaDetalleView, self).get_context_data(**kwargs)
+        context['movimientos'] = movimientos_bancarios(self.object.id)
+        return context
+    
+
+class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
+    template_name = "bancos/cuenta bancaria/form pagar.html"
+    form_class = CuentaBancariaIngresoPagarForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            deuda = form.cleaned_data.get('deuda')
+            monto = form.cleaned_data.get('monto')
+            tipo_cambio = form.cleaned_data.get('tipo_cambio')
+            content_type = ContentType.objects.get_for_model(Ingreso)
+            id_registro = self.kwargs['id_ingreso']
+            obj, created = Pago.objects.get_or_create(
+                deuda = deuda,
+                content_type = content_type,
+                id_registro = id_registro,
+            )
+            if created:
+                obj.monto = monto
+            else:
+                obj.monto = obj.monto + monto
+            obj.tipo_cambio = tipo_cambio
+            registro_guardar(obj, self.request)
+            obj.save()
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
+        lista_deudas = []
+        for deuda in Deuda.objects.all():
+            if deuda.saldo > 0:
+                lista_deudas.append(deuda.id)
+
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(ingreso.fecha)
+        tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
+        kwargs['tipo_cambio'] = tipo_cambio
+        kwargs['lista_deudas'] = lista_deudas
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
+        context = super(CuentaBancariaIngresoPagarCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Pagar'
+        context['titulo'] = 'Deuda'
+        context['ingreso'] = ingreso
+        return context
+    
+
+class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
+    model = Pago
+    template_name = "bancos/cuenta bancaria/form pagar.html"
+    form_class = CuentaBancariaIngresoPagarForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
+        lista_deudas = []
+        for deuda in Deuda.objects.all():
+            if deuda.saldo > 0:
+                lista_deudas.append(deuda.id)
+        lista_deudas.append(self.object.deuda.id)
+
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(ingreso.fecha)
+        tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
+        kwargs['tipo_cambio'] = tipo_cambio
+        kwargs['lista_deudas'] = lista_deudas
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
+        context = super(CuentaBancariaIngresoPagarUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Pago'
+        context['ingreso'] = ingreso
+        return context
+
+
+class CuentaBancariaIngresoPagarDeleteView(DeleteView):
+    model = Pago
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaIngresoPagarDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Pago'
+        context['item'] = self.get_object()
+        return context
+    
+
+class CuentaBancariaIngresoView(BSModalCreateView):
+    model = Ingreso
+    template_name = "includes/formulario generico.html"
+    form_class = CuentaBancariaIngresoForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def form_valid(self, form):
+        cuenta_bancaria = CuentaBancariaSociedad.objects.get(id=self.kwargs['id_cuenta_bancaria'])
+        form.instance.cuenta_bancaria = cuenta_bancaria
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaIngresoView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Ingreso'
+        return context
+    
+
+class CuentaBancariaIngresoUpdateView(BSModalUpdateView):
+    model = Ingreso
+    template_name = "includes/formulario generico.html"
+    form_class = CuentaBancariaIngresoForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaIngresoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Ingreso'
+        return context
+    
+
+class CuentaBancariaIngresoDeleteView(BSModalDeleteView):
+    model = Ingreso
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaIngresoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Ingreso'
+        context['item'] = self.get_object()
+        return context
+    
 

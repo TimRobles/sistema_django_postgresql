@@ -109,6 +109,12 @@ TIPO_IGV_CHOICES = (
     (17, 'Exonerado - Transferencia Gratuita'),
     )
 
+TIPO_ISC_CHOICES = (
+    (1,1),
+    (2,2),
+    (3,3),
+)
+
 TIPO_DOCUMENTO_CHOICES = (
     ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
     ('4', 'CARNET DE EXTRANJERÍA'),
@@ -153,6 +159,13 @@ ESTADO_COMPROBANTE_CI = (
     (2, 'FINALIZADO'),
     )
 
+ESTADO_SOLICITUD = (
+    (1, 'BORRADOR'),
+    (2, 'ESPERA DE APROBACIÓN'),
+    (3, 'APROBADO'),
+    (4, 'RECHAZADO'),
+)
+
 INTERNACIONAL_NACIONAL = (
     (1,'INTERNACIONAL'),
     (2,'NACIONAL'),
@@ -170,7 +183,8 @@ ESTADOS_ORDEN_COMPRA = (
     (0, 'NUEVA VERSIÓN'),
     (1, 'POR VERIFICAR'),
     (2, 'ENVIADO'),
-    (3, 'ANULADO'),
+    (3, 'CONFIRMADO'),
+    (4, 'ANULADO'),
     )
 
 ESTADOS_COTIZACION_VENTA = (
@@ -179,17 +193,35 @@ ESTADOS_COTIZACION_VENTA = (
     (3, 'RESERVADO'),
     (4, 'CONFIRMADO'), #Regresa a Reservado
     (5, 'CONFIRMADO'), #Regresa a Pendiente
-    (6, 'FINALIZADO'),
-    (7, 'VENCIDO'),
-    (8, 'DE BAJA'),
+    (6, 'CONFIRMADO ANTICIPADO'), 
+    (7, 'FINALIZADO'),
+    (8, 'VENCIDO'),
+    (9, 'ANULADO'),
     )
 
 ESTADOS_CONFIRMACION = (
     (1, 'PENDIENTE'),
     (2, 'FINALIZADO'),
-    (3, 'DE BAJA'),
+    (3, 'ANULADO'),
     )
 
+ESTADOS_FACTURA = (
+    (1, 'BORRADOR'),
+    (2, 'EMITIDO'),
+    (3, 'RECHAZADO'),
+    (4, 'ANULADO'),
+    )
+
+TIPO_PERCEPCION = (
+    (1, 'PERCEPCIÓN VENTA INTERNA - TASA 2%'),
+    (2, 'PERCEPCIÓN ADQUISICIÓN DE COMBUSTIBLE-TASA 1%'),
+    (3, 'PERCEPCIÓN REALIZADA AL AGENTE DE PERCEPCIÓN CON TASA ESPECIAL - TASA 0.5%')
+)
+
+TIPO_RETENCION = (
+    (1, 'TASA 3%'),
+    (2, 'TASA 6%'),
+)
 
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
@@ -203,10 +235,18 @@ MENSAJE_RECHAZAR_OFERTA_PROVEEDOR = 'Operación exitosa: La Oferta fue Rechazada
 MENSAJE_GENERAR_REQUERIMIENTO_PROVEEDOR = 'Operación exitosa: Generar Requerimiento Proveedor.'
 MENSAJE_GENERAR_ORDEN_COMPRA = 'Operación exitosa: Generar Orden de Compra.'
 MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Generar Comprobante de Compra PI.'
+MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Comprobante de Compra PI Anulado.'
+MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI= 'No se puede anular el Comprobante de Compra PI, verifique los procesos siguientes.'
+
 MENSAJE_FINALIZAR_INVENTARIO_ACTIVO = 'Operación exitosa: El Inventario fue Finalizado.'
 
 MENSAJE_GUARDAR_COTIZACION = 'Operación exitosa: La cotización fue guardada con éxito.'
+MENSAJE_ANULAR_COTIZACION = 'Operación exitosa: La cotización fue anulada con éxito.'
+MENSAJE_CLONAR_COTIZACION = 'Operación exitosa: La cotización fue clonada con éxito.'
 MENSAJE_RESERVAR_COTIZACION = 'Operación exitosa: La cotización fue reservada con éxito.'
+MENSAJE_ANULAR_RESERVAR_COTIZACION = 'Operación exitosa: La reserva fue anulada con éxito.'
+MENSAJE_CONFIRMAR_COTIZACION = 'Operación exitosa: La cotización fue confirmada con éxito.'
+MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue anulada con éxito.'
 
 MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
 MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'
@@ -228,7 +268,7 @@ DICCIONARIO_TOTALES={
     'total_anticipo':'Anticipo',
     'total_gravada':'Gravada',
     'total_inafecta':'Inafecta',
-    'total_exonerada':'exonerada',
+    'total_exonerada':'Exonerada',
     'total_igv':'I.G.V.',
     'total_gratuita':'Gratuita',
     # 'total_otros_cargos':'Otros Cargos',

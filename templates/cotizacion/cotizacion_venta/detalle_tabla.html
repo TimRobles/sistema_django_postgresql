@@ -37,7 +37,7 @@
     </div>
     {% endif %}
 
-    {% if cotizacion.estado > 1 %}
+    {% if cotizacion.estado > 1 and cotizacion.estado < 7 %}
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_resumen' cotizacion.id %}"
             class="read btn btn-primary">
@@ -46,14 +46,33 @@
     </div>
     {% endif %}
 
-    {% if cotizacion.estado != 1 %}
+    {% if cotizacion.estado != 1 and cotizacion.estado < 7 %}
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_pdfs' cotizacion.id %}"
             data-small="true"
             class="read btn btn-primary">
             PDFs
         </button>
-        <a href="{% url 'cotizacion_app:cotizacion_venta_pdf' cotizacion.slug  %}" target="_blank" class="btn btn-primary">PDF</a>
+    </div>
+    {% endif %}
+
+    {% if cotizacion.estado == 2 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular' cotizacion.id %}"
+            data-small="true"
+            class="delete btn btn-danger">
+            Anular
+        </button>
+    </div>
+    {% endif %}
+
+    {% if cotizacion.estado != 1 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_clonar' cotizacion.id %}"
+            data-small="true"
+            class="delete btn btn-info">
+            Clonar
+        </button>
     </div>
     {% endif %}
 
@@ -65,6 +84,13 @@
             Confirmar
         </button>
     </div>
+    <div class="col-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar_anticipo' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-primary">
+            Confirmar Anticipo
+        </button>
+    </div>
     {% endif %}
     {% if cotizacion.estado > 3 and cotizacion.estado < 6 %}
     <div class="col-auto ms-auto">
@@ -74,6 +100,17 @@
             Anular Confirmación
         </button>
     </div>
+    {% endif %}
+    {% if cotizacion.estado == 6 %}
+    <div class="col-auto ms-auto">
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar_anticipo' cotizacion.id %}"
+            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+            class="delete btn btn-danger">
+            Anular Confirmación
+        </button>
+    </div>
+    {% endif %}
+    {% if cotizacion.estado > 3 and cotizacion.estado < 7 %}
     <div class="col-auto">
         <a href="{% url 'cotizacion_app:confirmacion_cotizacion_inicio' cotizacion.id  %}" class="btn btn-primary">Confirmaciones</a>
     </div>
@@ -169,37 +206,79 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Línea de crédito:</th>
-                    <td>{{ linea_credito }}</td>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.linea_credito_monto|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Crédito temporal:</th>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ credito_temporal|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Deuda:</th>
-                    <td>{{ deuda }}</td>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ cotizacion.cliente.deuda_monto|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Disponible:</th>
-                    <td>{{ disponible }}</td>
+                    <td class="text-end">{{ cotizacion.cliente.linea_credito_moneda_simbolo }} {{ disponible|intcomma }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
+    {% if cotizacion.estado < 4 and cotizacion.cliente.linea_credito_monto == 0 or cotizacion.cliente.disponible_monto < totales.total or cotizacion.SolicitudCredito_cotizacion_venta %}
     <div class="col-lg-6 table-responsive mb-3">
         <table>
             <tbody>
                 <tr>
-                    <th class="pe-2">Línea de crédito:</th>
-                    <td>{{ linea_credito }}</td>
+                    {% if cotizacion.SolicitudCredito_cotizacion_venta %}
+                    <th class="pe-2">Solicitud de Crédito:</th>
+                    <td>{{ cotizacion.moneda.simbolo }} {{ cotizacion.SolicitudCredito_cotizacion_venta.total_credito|intcomma }}</td>
+                    {% endif %}
+                    <td rowspan="2" class="ps-2">
+                        <a href="{% url 'cotizacion_app:solicitud_credito' cotizacion.id %}"
+                        class="update btn btn-warning">
+                            Solicitud de Crédito
+                        </a>
+                    </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">Deuda:</th>
-                    <td>{{ deuda }}</td>
+                    {% if cotizacion.SolicitudCredito_cotizacion_venta %}
+                    <th class="pe-2">Condición de Pago:</th>
+                    <td>
+                        {% if cotizacion.SolicitudCredito_cotizacion_venta.condiciones_pago %}    
+                        {{ cotizacion.SolicitudCredito_cotizacion_venta.condiciones_pago }}
+                        {% endif %}
+                    </td>
+                    {% endif %}
                 </tr>
                 <tr>
-                    <th class="pe-2">Disponible:</th>
-                    <td>{{ cotizacion.descuento }}</td>
+                    {% if cotizacion.SolicitudCredito_cotizacion_venta %}    
+                    <th class="pe-2">Estado:</th>
+                    <td>{{ cotizacion.SolicitudCredito_cotizacion_venta.get_estado_display }}</td>
+                    <td rowspan="2" class="ps-2">
+                        
+                        {% if cotizacion.estado < 4 %}
+                        <button data-form-url="{% url 'cotizacion_app:solicitud_credito_eliminar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_inicio' %}"
+                            class="delete btn btn-danger">
+                            Eliminar Solicitud
+                        </button>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    {% if cotizacion.SolicitudCredito_cotizacion_venta %}    
+                    <th class="pe-2">Aprobado por:</th>
+                    <td>
+                        {% if cotizacion.SolicitudCredito_cotizacion_venta.aprobado_por %}
+                        {{ cotizacion.SolicitudCredito_cotizacion_venta.aprobado_por.get_full_name }}
+                        {% endif %}
+                    </td>
+                    {% endif %}
                 </tr>
             </tbody>
         </table>
     </div>
+    {% endif %}
 </div>
 
 <div class="row mt-3">
@@ -261,7 +340,7 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td style="min-width: 500px;">{{ material.material.descripcion_venta }}</td>
+                    <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                     <td class="text-nowrap">{{ material.material.unidad_base }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
@@ -282,7 +361,7 @@
                     </td>
                     <td class="text-end text-nowrap table-primary">{{ material.material.calidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap table-primary">{{ material.material.stock|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap table-primary">{{ material.material.transito|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-primary">{{ material.material.en_camino|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
                             class="read btn swatch-purple btn-sm"

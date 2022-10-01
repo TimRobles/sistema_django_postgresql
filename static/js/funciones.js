@@ -36,6 +36,14 @@ function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+function getSelectedValueText(selectObj, valor) {
+    for (var i = 0; i < selectObj.options.length; i++) {
+        if (selectObj.options[i].value == valor) {
+            return selectObj.options[i].text;
+        }
+    }
+}
+
 function setSelectedValueText(selectObj, valueToSet) {
     for (var i = 0; i < selectObj.options.length; i++) {
         if (selectObj.options[i].text.toLowerCase() == valueToSet.toLowerCase()) {

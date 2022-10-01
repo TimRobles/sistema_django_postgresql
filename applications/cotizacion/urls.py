@@ -12,6 +12,8 @@ urlpatterns = [
     path('cotizacion-venta/ver/tabla/<int:id_cotizacion>/', views.CotizacionVentaVerTabla, name='cotizacion_venta_ver_tabla'),
     path('cotizacion-venta/ver/agregar-material/<int:cotizacion_id>/', views.CotizacionVentaMaterialDetalleView.as_view(), name='cotizacion_venta_agregar_material'),
     path('cotizacion-venta/ver/cliente/<pk>/', views.CotizacionVentaClienteView.as_view(), name='cotizacion_venta_cliente'),
+    path('cotizacion-venta/anular/<pk>/', views.CotizacionVentaAnularView.as_view(), name='cotizacion_venta_anular'),
+    path('cotizacion-venta/clonar/<pk>/', views.CotizacionVentaClonarView.as_view(), name='cotizacion_venta_clonar'),
     
     path('cotizacion-venta/resumen/<pk>/', views.CotizacionVentaResumenView.as_view(), name='cotizacion_venta_resumen'),
     
@@ -37,17 +39,32 @@ urlpatterns = [
     path('cotizacion-venta/confirmar/<pk>/', views.CotizacionVentaConfirmarView.as_view(), name='cotizacion_venta_confirmar'),
     path('cotizacion-venta/anular-confirmar/<pk>/', views.CotizacionVentaConfirmarAnularView.as_view(), name='cotizacion_venta_anular_confirmar'),
 
+    path('cotizacion-venta/confirmar-anticipo/<pk>/', views.CotizacionVentaConfirmarAnticipoView.as_view(), name='cotizacion_venta_confirmar_anticipo'),
+    path('cotizacion-venta/anular-confirmar-anticipo/<pk>/', views.CotizacionVentaConfirmarAnticipoAnularView.as_view(), name='cotizacion_venta_anular_confirmar_anticipo'),
+
     path('cotizacion-venta/costeador/<pk>/', views.CotizacionVentaCosteadorDetalleView.as_view(), name='cotizacion_venta_costeador'),
     path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_eliminar'),
     path('cotizacion-venta/actualizar/<pk>/', views.CotizacionVentaMaterialDetalleUpdateView.as_view(), name='cotizacion_venta_actualizar'),
 
     path('cotizacion-venta/pdfs/<pk>/', views.CotizacionVentaPdfsView.as_view(), name='cotizacion_venta_pdfs'),
     path('cotizacion-venta/pdf/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadPdfView.as_view(), name='cotizacion_venta_pdf'),
-    path('cotizacion-venta/pdf/<slug>/', views.CotizacionVentaPdfView.as_view(), name='cotizacion_venta_pdf'),
+
+    path('confirmacion/ver/<int:id_confirmacion>/', views.ConfirmarVerView.as_view(), name='confirmacion_ver'),
+    path('confirmacion/ver/tabla/<int:id_confirmacion>/', views.ConfirmarVerTabla, name='confirmacion_ver_tabla'),
+    path('confirmacion/ver/cliente/<pk>/', views.ConfirmacionClienteView.as_view(), name='confirmacion_cliente'),
 
     path('confirmacion/',views.ConfirmacionListView.as_view(),name='confirmacion_inicio'),
     path('confirmacion/<int:id_cotizacion>/',views.ConfirmacionListView.as_view(),name='confirmacion_cotizacion_inicio'),
+    path('confirmacion/forma-pago/<pk>/',views.ConfirmacionVentaFormaPagoView.as_view(),name='confirmacion_forma_pago'),
 
-    path('confirmacion/ver/<int:id_cotizacion>/', views.ConfirmarVerView.as_view(), name='confirmacion_ver'),
-    path('confirmacion/ver/tabla/<int:id_cotizacion>/', views.ConfirmarVerTabla, name='confirmacion_ver_tabla'),
+    path('solicitud-credito/<int:id_cotizacion>/',views.SolicitudCreditoView.as_view(),name='solicitud_credito'),
+    path('solicitud-credito/tabla/<int:id_cotizacion>/',views.SolicitudCreditoTabla,name='solicitud_credito_tabla'),
+    path('solicitud-credito/actualizar/<pk>/',views.SolicitudCreditoUpdateView.as_view(),name='solicitud_credito_actualizar'),
+    path('solicitud-credito/eliminar/<pk>/',views.SolicitudCreditoEliminarView.as_view(),name='solicitud_credito_eliminar'),
+    path('solicitud-credito/finalizar/<pk>/',views.SolicitudCreditoFinalizarView.as_view(),name='solicitud_credito_finalizar'),
+    path('solicitud-credito/aprobar/<pk>/',views.SolicitudCreditoAprobarView.as_view(),name='solicitud_credito_aprobar'),
+    path('solicitud-credito/rechazar/<pk>/',views.SolicitudCreditoRechazarView.as_view(),name='solicitud_credito_rechazar'),
+    path('solicitud-credito/cuota/agregar/<int:id_solicitud>/',views.SolicitudCreditoCuotaCreateView.as_view(),name='solicitud_credito_cuota_agregar'),
+    path('solicitud-credito/cuota/actualizar/<pk>/',views.SolicitudCreditoCuotaUpdateView.as_view(),name='solicitud_credito_cuota_actualizar'),
+    path('solicitud-credito/cuota/eliminar/<pk>/',views.SolicitudCreditoCuotaDeleteView.as_view(),name='solicitud_credito_cuota_eliminar'),
 ]

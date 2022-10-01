@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Boleta Venta
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Boleta Venta</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'comprobante_venta/boleta_venta/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

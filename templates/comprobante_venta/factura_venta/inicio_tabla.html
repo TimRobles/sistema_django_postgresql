@@ -1,0 +1,34 @@
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. Factura</th>
+            <th>Cliente</th>
+            <th>Fecha Emision</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for factura_venta in contexto_factura_venta %}
+        <tr>
+            <td>{{factura_venta.numero_factura}}</td>
+            <td>{{factura_venta.cliente}}</td>
+            <td>{{factura_venta.fecha_emision}}</td>
+            <td>{{factura_venta.total}}</td>
+            <td>{{factura_venta.get_estado_display}}</td>
+            <td class="text-center">
+                <a href="{% url 'comprobante_venta_app:factura_venta_detalle' factura_venta.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
