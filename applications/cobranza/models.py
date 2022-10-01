@@ -174,9 +174,20 @@ class Ingreso(models.Model):
             content_type = ContentType.objects.get_for_model(self),
             id_registro = self.id,
             )
+    
+    @property
+    def usado(self):
+        if self.pagos.aggregate(Sum('monto'))['monto__sum']:
+            return self.pagos.aggregate(Sum('monto'))['monto__sum']
+        else:
+            return Decimal('0.00')
+
+    @property
+    def saldo(self):
+        return self.monto - self.usado
 
     def __str__(self):
-        return "%s" % (self.monto)
+        return "Ingreso %s %s %s %s (%s %s)" % (self.cuenta_bancaria.sociedad.alias, self.cuenta_bancaria.banco.nombre_comercial, self.cuenta_bancaria.moneda.simbolo, self.monto, self.cuenta_bancaria.moneda.simbolo, self.saldo)
 
 
 class Egreso(models.Model):
@@ -273,7 +284,7 @@ class Deuda(models.Model):
         return ""
 
     def __str__(self):
-        return "%s" % (self.monto)
+        return "%s %s %s (%s %s)" % (self.documento, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
 
 
 class Cuota(models.Model):
@@ -368,15 +379,15 @@ class Pago(models.Model):
         verbose_name_plural = 'Pagos'
 
     @property
-    def documento(self):
+    def ingreso_nota(self):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     @property
     def monto_final(self):
-        if self.deuda.moneda == self.documento.moneda:
+        if self.deuda.moneda == self.ingreso_nota.moneda:
             return self.monto
         else:
-            return (self.monto * convertir_moneda(self.tipo_cambio, self.documento.moneda, self.deuda.moneda)).quantize(Decimal('0.00'))
+            return (self.monto * convertir_moneda(self.tipo_cambio, self.ingreso_nota.moneda, self.deuda.moneda)).quantize(Decimal('0.00'))    
 
     def __str__(self):
         return "%s" % (self.monto)

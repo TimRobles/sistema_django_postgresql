@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load funciones_propias %}
+{% load humanize %}
 
 {% block titulo %}
 Detalle de Cuenta Bancaria
@@ -29,6 +31,10 @@ Detalle de Cuenta Bancaria
             </tbody>
         </table>
     </div>
+    <a href="{% url 'cobranza_app:cuenta_bancaria_inicio' %}"
+    class="btn btn-primary">
+        Regresar
+    </a>
     <button class="delete btn btn-primary"      
         data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso' cuenta_bancaria.id %}">
         Agregar Ingreso
@@ -71,11 +77,28 @@ Detalle de Cuenta Bancaria
                                         <table class="table">
                                             <thead>
                                                 <tr>
+                                                    <th class="text-center">Monto</th>
+                                                    <th class="text-center">Usado</th>
+                                                    <th class="text-center">Disponible</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.monto|redondear|intcomma }}</td>
+                                                    <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}</td>
+                                                    <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
                                                     <th>Documento</th>
                                                     <th class="text-end">Deuda</th>
                                                     <th class="text-end">Monto</th>
                                                     <th class="text-end">Saldo</th>
                                                     <th>Estado</th>
+                                                    <th class="text-end">Monto Usado</th>
                                                     <th class="text-center text-nowrap">Acciones</th>
                                                 </tr>
                                             </thead>
@@ -107,8 +130,8 @@ Detalle de Cuenta Bancaria
                                                                                 {% for cuota in pago.deuda.Cuota_deuda.all %}
                                                                                 <tr>
                                                                                     <td>{{ cuota.fecha|date:'d/m/Y' }}</td>
-                                                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.monto }}</td>
-                                                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.saldo }}</td>
+                                                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.monto|redondear|intcomma }}</td>
+                                                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.saldo|redondear|intcomma }}</td>
                                                                                     <td class="texto-personalizado" style="--color-texto: {{ cuota.color }};">{{ cuota.estado }}</td>
                                                                                 </tr>
                                                                                 {% endfor %}
@@ -122,13 +145,38 @@ Detalle de Cuenta Bancaria
                                                         {{ deuda.documento }}
                                                         {% endif %}
                                                     </td>
-                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.monto }}</td>
-                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.monto_final }}</td>
-                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.saldo }}</td>
+                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.monto|redondear|intcomma }}</td>
+                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.pagos|redondear|intcomma }}</td>
+                                                    <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.saldo|redondear|intcomma }}</td>
                                                     <td class="texto-personalizado" style="--color-texto: {{ pago.deuda.color }};">{{ pago.deuda.estado }}</td>
+                                                    <td class="text-end text-nowrap">
+                                                        {% if pago.monto_final != pago.monto %}
+                                                        ({{ pago.deuda.moneda.simbolo }} {{ pago.monto_final|redondear|intcomma }})
+                                                        {% endif %}
+                                                        {{ pago.ingreso_nota.moneda.simbolo }} {{ pago.monto|redondear|intcomma }}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_pago' cuenta_bancaria.id movimiento.id pago.id %}"
+                                                            class="delete btn btn-warning btn-sm"
+                                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                                            <i class="bi bi-pencil-fill"></i>
+                                                        </button>
+                                                        <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_eliminar_pago' cuenta_bancaria.id pago.id %}"
+                                                            class="delete btn btn-danger btn-sm"
+                                                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                                            <i class="bi-x-lg"></i>
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th class="text-end" colspan="5">Total Usado:</th>
+                                                    <td class="text-end">{{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
                                 </div>
@@ -146,20 +194,20 @@ Detalle de Cuenta Bancaria
                     </td>
                     <td class="text-end text-nowrap">
                         {% if movimiento.ingreso %}
-                        {{ movimiento.moneda.simbolo }} {{ movimiento.ingreso }}
+                        {{ movimiento.moneda.simbolo }} {{ movimiento.ingreso|redondear|intcomma }}
                         {% endif %}
                     </td>
                     <td class="text-end text-nowrap">
                         {% if movimiento.egreso %}
-                        {{ movimiento.moneda.simbolo }} {{ movimiento.egreso }}
+                        {{ movimiento.moneda.simbolo }} {{ movimiento.egreso|redondear|intcomma }}
                         {% endif %}
                     </td>
                     <td class="text-end text-nowrap">
-                        {% if movimiento.saldo %}
-                        {{ movimiento.moneda.simbolo }} {{ movimiento.saldo }}
+                        {% if movimiento.saldo_cuenta %}
+                        {{ movimiento.moneda.simbolo }} {{ movimiento.saldo_cuenta|redondear|intcomma }}
                         {% endif %}
                     </td>
-                    <td class="text-center">
+                    <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' cuenta_bancaria.id movimiento.id %}"
                             class="delete btn btn-success btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">

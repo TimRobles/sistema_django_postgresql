@@ -56,7 +56,41 @@ class CuentaBancariaIngresoPagarForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
-        # queryset=Deuda.objects.all()
+        tipo_cambio = kwargs.pop('tipo_cambio')
+        lista_deudas = kwargs.pop('lista_deudas')
         super(CuentaBancariaIngresoPagarForm, self).__init__(*args, **kwargs)   
+        if not self.fields['tipo_cambio'].initial:
+            self.fields['tipo_cambio'].initial = tipo_cambio
+        self.fields['deuda'].queryset = Deuda.objects.filter(id__in=lista_deudas)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DeudaPagarForm(BSModalModelForm):
+    ingresos = forms.ModelChoiceField(queryset=Ingreso.objects.all())
+    class Meta:
+        model = Pago
+        fields = (
+            'ingresos',
+            'monto',
+            'tipo_cambio',
+            )
+
+    def __init__(self, *args, **kwargs):
+        tipo_cambio = kwargs.pop('tipo_cambio')
+        lista_ingresos = kwargs.pop('lista_ingresos')
+        super(DeudaPagarForm, self).__init__(*args, **kwargs)   
+        if not self.fields['tipo_cambio'].initial:
+            self.fields['tipo_cambio'].initial = tipo_cambio
+        self.fields['ingresos'].queryset = Ingreso.objects.filter(id__in=lista_ingresos)
+        print("***************************************")
+        print(self.instance.id)
+        print(type(self.instance.id))
+        print("***************************************")
+        if self.instance.id:
+            print("//////////////////////")
+            ingreso = Ingreso.objects.get(id=self.instance.id_registro)
+            self.fields['ingresos'].initial = ingreso
+            print("//////////////////////")
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
