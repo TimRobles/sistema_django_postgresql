@@ -50,6 +50,7 @@ class FacturaVentaDetalleView(TemplateView):
         tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
         context = super(FacturaVentaDetalleView, self).get_context_data(**kwargs)
         context['factura'] = obj
+        context['confirmacion'] = obj.confirmacion
         context['materiales'] = materiales
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
         context['tipo_cambio'] = tipo_cambio

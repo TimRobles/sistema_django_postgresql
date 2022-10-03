@@ -7,6 +7,11 @@
     <div class="col-auto">
         <a href="{% url 'comprobante_venta_app:factura_venta_inicio' %}" class="btn btn-primary">Regresar</a>
     </div>
+
+    <div class="col-auto ms-auto">
+        <a href="{% url 'cotizacion_app:confirmacion_ver' confirmacion.id  %}" class="btn btn-primary">Confirmacion</a>
+    </div>
+
 </div>
 
 <div class="row mt-3">
