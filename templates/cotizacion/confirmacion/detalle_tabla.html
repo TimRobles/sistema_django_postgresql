@@ -15,17 +15,17 @@
     <div class="col-auto ms-auto">
         <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id  %}" class="btn btn-primary">Cotización</a>
     </div>
-    
-    
+
+
     {% if confirmacion.cliente.estado_sunat == 1 and confirmacion.cliente.condicion_sunat == 1 %}
-    
+
     {% if confirmacion.cliente.tipo_documento == 6 %}
     <div class="col-auto">
         <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
             class="delete btn btn-primary">
             FACTURA
         </button>
-    </div>    
+    </div>
     {% endif %}
 
     <div class="col-auto">
@@ -34,8 +34,6 @@
             BOLETA
         </button>
     </div>
-    
-    {% endif %}
 
 </div>
 
@@ -160,7 +158,7 @@
                     <td>
                         {% if confirmacion.condiciones_pago %}
                         {{ confirmacion.condiciones_pago }}
-                        {% endif %}    
+                        {% endif %}
                     </td>
                 </tr>
                 <!-- <tr>
@@ -251,13 +249,13 @@
                 <td class="text-end text-nowrap">$ {{ totales.descuento_global|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global|redondear|intcomma }}</td>
                 <td colspan="3"></td>
-            </tr>            
+            </tr>
             <tr>
                 <td colspan="10" class="text-end">Descuento Total:</td>
                 <td class="text-end text-nowrap">$ {{ totales.total_descuento|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_descuento|redondear|intcomma }}</td>
                 <td colspan="3"></td>
-            </tr>           
+            </tr>
             <tr>
                 <td colspan="10" class="text-end">Anticipo:</td>
                 <td class="text-end text-nowrap">$ {{ totales.total_anticipo|redondear|intcomma }}</td>

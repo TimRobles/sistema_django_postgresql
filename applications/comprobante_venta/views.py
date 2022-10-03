@@ -2,7 +2,7 @@ from urllib import request
 from django.shortcuts import render
 from applications.cotizacion.models import ConfirmacionVenta
 from applications.datos_globales.models import SeriesComprobante, TipoCambio
-from applications.funciones import obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
+from applications.funciones import obtener_totales, slug_aleatorio, tipo_de_cambio
 from applications.importaciones import *
 
 from . models import(
@@ -50,6 +50,7 @@ class FacturaVentaDetalleView(TemplateView):
         tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
         context = super(FacturaVentaDetalleView, self).get_context_data(**kwargs)
         context['factura'] = obj
+        context['confirmacion'] = obj.confirmacion
         context['materiales'] = materiales
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
         context['tipo_cambio'] = tipo_cambio
