@@ -49,6 +49,7 @@
             <tr>
                 <th>Sede</th>
                 <th>Piso</th>
+                <th>Fecha Ubicación</th>
                 <th>Comentario</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -57,7 +58,12 @@
             {% for activo in activo_ubicacion %}
             <tr>
                 <td>{{ activo.sede }}</td>
-                <td>{{ activo.piso}}</td>
+                <td>
+                    {% if activo.piso %}
+                        {{ activo.piso}}
+                    {% endif %}
+                </td>
+                <td>{{ activo.fecha_ubicacion|date:'d/m/Y'}}</td>
                 <td>{{ activo.comentario}}</td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'activos_app:activo_ubicacion_actualizar' activo.id %}"

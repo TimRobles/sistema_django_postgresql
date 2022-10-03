@@ -112,7 +112,7 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
     def form_valid(self, form):
         if self.request.session['primero']:
             obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
-            numero_orden_compra = obj.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = obj.sociedad ))+1, 5)
+            numero_orden_compra = obj.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = obj.sociedad ))+1, 6)
             orden_compra_anterior = obj
             oferta_proveedor = obj.oferta_proveedor
 

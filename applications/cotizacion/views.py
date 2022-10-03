@@ -1305,10 +1305,10 @@ class CotizacionVentaSociedadPdfView(View):
         obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
 
         moneda = obj.moneda
-        titulo = 'Cotización %s%s %s' % (self.kwargs['sociedad'], str(obj.numero_cotizacion), str(obj.cliente.razon_social))
+        titulo = 'Cotización %s%s %s' % (self.kwargs['sociedad'], numeroXn(obj.numero_cotizacion, 6), str(obj.cliente.razon_social))
 
         Cabecera = {}
-        Cabecera['nro_cotizacion'] = '%s%s' % (self.kwargs['sociedad'], str(obj.numero_cotizacion))
+        Cabecera['nro_cotizacion'] = '%s%s' % (self.kwargs['sociedad'], numeroXn(obj.numero_cotizacion, 6))
         Cabecera['fecha_cotizacion'] = fecha_en_letras(obj.fecha_cotizacion)
         Cabecera['razon_social'] = str(obj.cliente)
         Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]

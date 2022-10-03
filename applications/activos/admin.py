@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from applications.activos.forms import MarcaActivoForm, ModeloActivoForm
+from applications.activos.forms import MarcaActivoFormAdmin, ModeloActivoFormAdmin
 
 from .models import (
     Activo,
@@ -88,7 +88,7 @@ class ModeloAdmin(admin.ModelAdmin):
         'updated_by',
         )
     
-    form = ModeloActivoForm
+    form = ModeloActivoFormAdmin
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -106,7 +106,7 @@ class MarcaAdmin(admin.ModelAdmin):
         'updated_by',
         )
     
-    form = MarcaActivoForm
+    form = MarcaActivoFormAdmin
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -142,6 +142,8 @@ class ActivoAdmin(admin.ModelAdmin):
         'content_type',
         'id_registro',
         'activo_base',
+        'unidad',
+        'peso',
         'marca',
         'modelo',
         'fecha_compra',
@@ -239,6 +241,7 @@ class ActivoUbicacionAdmin(admin.ModelAdmin):
     list_display = (
         'sede',
         'piso',
+        'fecha_ubicacion',
         'activo',
         'comentario',
         'created_at',

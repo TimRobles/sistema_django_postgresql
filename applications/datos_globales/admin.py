@@ -12,6 +12,8 @@ from .models import (
     ImpuestoPromocionMunicipal,
     Moneda,
     Magnitud,
+    NubefactAcceso,
+    NubefactRespuesta,
     TipoCambioSunat,
     Unidad, 
     Area, 
@@ -588,3 +590,47 @@ admin.site.register(RemuneracionMinimaVital, RemuneracionMinimaVitalAdmin)
 admin.site.register(UnidadImpositivaTributaria, UnidadImpositivaTributariaAdmin)
 admin.site.register(ImpuestoGeneralVentas, ImpuestoGeneralVentasAdmin)
 admin.site.register(ImpuestoPromocionMunicipal, ImpuestoPromocionMunicipalAdmin)
+
+
+@admin.register(NubefactAcceso)
+class NubefactAccesoAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'sociedad',
+        'content_type',
+        'serie_comprobante',
+        'ruta',
+        'token',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(NubefactRespuesta)
+class NubefactRespuestaAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'content_type',
+        'id_registro',
+        'aceptado',
+        'envio',
+        'respuesta',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
