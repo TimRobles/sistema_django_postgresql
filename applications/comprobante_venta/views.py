@@ -2,7 +2,7 @@ from urllib import request
 from django.shortcuts import render
 from applications.cotizacion.models import ConfirmacionVenta
 from applications.datos_globales.models import SeriesComprobante, TipoCambio
-from applications.funciones import obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
+from applications.funciones import obtener_totales, slug_aleatorio, tipo_de_cambio
 from applications.importaciones import *
 
 from . models import(
