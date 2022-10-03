@@ -319,7 +319,7 @@ def igv(fecha=date.today()):
     return igv[0].monto + ipm[0].monto
 
 
-def tipo_de_cambio(cambio1, cambio2):
+def tipo_de_cambio(cambio1=None, cambio2=None):
     if cambio1 and cambio2:
         return max(cambio1, cambio2)
     elif cambio1:
@@ -327,7 +327,10 @@ def tipo_de_cambio(cambio1, cambio2):
     elif cambio2:
         return cambio2
     else:
-        return 1
+        try:
+            return applications.datos_globales.models.TipoCambio.objects.tipo_cambio_venta(date.today())
+        except:
+            return 1
 
 
 def mes_en_letras(valor):

@@ -46,10 +46,13 @@ class LineaCreditoCreateView(BSModalCreateView):
     success_url = reverse_lazy('cobranza_app:linea_credito_inicio')
 
     def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(LineaCreditoCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Linea de Crédito"
@@ -71,11 +74,27 @@ class DeudaView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super(DeudaView, self).get_context_data(**kwargs)
-        deudas = Deuda.objects.filter(cliente__id=self.kwargs['id_cliente'])
-            
+        deudas = Deuda.objects.filter(cliente__id=self.kwargs['id_cliente'])    
         context['contexto_deuda'] = deudas
         context['id_cliente'] = self.kwargs['id_cliente']
         return context
+
+
+def DeudaTabla(request, id_cliente):
+    data = dict()
+    if request.method == 'GET':
+        template = "cobranza/deudas/detalle tabla.html"
+        context = {}
+        deudas = Deuda.objects.filter(cliente__id=id_cliente)    
+        context['contexto_deuda'] = deudas
+        context['id_cliente'] = id_cliente
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
     
 
 class DeudaPagarCreateView(BSModalFormView):
@@ -142,7 +161,9 @@ class DeudaPagarUpdateView(BSModalUpdateView):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
 
     def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
         return super().form_valid(form)
 
     def get_form_kwargs(self):
@@ -172,6 +193,7 @@ class DeudaPagarUpdateView(BSModalUpdateView):
         return kwargs
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
         context = super(DeudaPagarUpdateView, self).get_context_data(**kwargs)
         context['accion'] = 'Actualizar'
@@ -180,7 +202,7 @@ class DeudaPagarUpdateView(BSModalUpdateView):
         return context
 
 
-class DeudaPagarDeleteView(DeleteView):
+class DeudaPagarDeleteView(BSModalDeleteView):
     model = Pago
     template_name = "includes/eliminar generico.html"
 
@@ -195,7 +217,7 @@ class DeudaPagarDeleteView(DeleteView):
         return context
     
 
-class DeudaCancelarView(DeleteView):
+class DeudaCancelarView(BSModalDeleteView):
     model = Deuda
     template_name = "includes/form generico.html"
 
@@ -203,23 +225,26 @@ class DeudaCancelarView(DeleteView):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
 
     def delete(self, request, *args, **kwargs):
-        deuda = self.get_object()
-        fecha = date.today()
-        monto = deuda.saldo
-        moneda = deuda.moneda
-        tipo_cambio = deuda.tipo_cambio
-        Redondeo.objects.create(
-            deuda=deuda,
-            fecha=fecha,
-            monto=monto,
-            moneda=moneda,
-            tipo_cambio=tipo_cambio,
-            created_by=self.request.user,
-            updated_by=self.request.user,
-        )
+        if self.request.session['primero']:
+            deuda = self.get_object()
+            fecha = date.today()
+            monto = deuda.saldo
+            moneda = deuda.moneda
+            tipo_cambio = deuda.tipo_cambio
+            Redondeo.objects.create(
+                deuda=deuda,
+                fecha=fecha,
+                monto=monto,
+                moneda=moneda,
+                tipo_cambio=tipo_cambio,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+            self.request.session['primero'] = False
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(DeudaCancelarView, self).get_context_data(**kwargs)
         context['accion'] = 'Cancelar'
         context['titulo'] = 'Deuda'
@@ -246,6 +271,22 @@ class CuentaBancariaDetalleView(DetailView):
         context = super(CuentaBancariaDetalleView, self).get_context_data(**kwargs)
         context['movimientos'] = movimientos_bancarios(self.object.id)
         return context
+
+
+def CuentaBancariaDetalleTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = "bancos/cuenta bancaria/detalle tabla.html"
+        context = {}
+        context['cuenta_bancaria'] = CuentaBancariaSociedad.objects.get(id=pk)
+        context['movimientos'] = movimientos_bancarios(pk)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
     
 
 class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
@@ -311,7 +352,9 @@ class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
     def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
         return super().form_valid(form)
 
     def get_form_kwargs(self):
@@ -331,6 +374,7 @@ class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
         return kwargs
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
         context = super(CuentaBancariaIngresoPagarUpdateView, self).get_context_data(**kwargs)
         context['accion'] = 'Actualizar'
@@ -339,7 +383,7 @@ class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
         return context
 
 
-class CuentaBancariaIngresoPagarDeleteView(DeleteView):
+class CuentaBancariaIngresoPagarDeleteView(BSModalDeleteView):
     model = Pago
     template_name = "includes/eliminar generico.html"
 
@@ -363,12 +407,15 @@ class CuentaBancariaIngresoView(BSModalCreateView):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
     def form_valid(self, form):
-        cuenta_bancaria = CuentaBancariaSociedad.objects.get(id=self.kwargs['id_cuenta_bancaria'])
-        form.instance.cuenta_bancaria = cuenta_bancaria
-        registro_guardar(form.instance, self.request)
+        if self.request.session['primero']:
+            cuenta_bancaria = CuentaBancariaSociedad.objects.get(id=self.kwargs['id_cuenta_bancaria'])
+            form.instance.cuenta_bancaria = cuenta_bancaria
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(CuentaBancariaIngresoView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Ingreso'
@@ -384,10 +431,13 @@ class CuentaBancariaIngresoUpdateView(BSModalUpdateView):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
     def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(CuentaBancariaIngresoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = 'Actualizar'
         context['titulo'] = 'Ingreso'
@@ -409,7 +459,7 @@ class CuentaBancariaIngresoDeleteView(BSModalDeleteView):
         return context
     
 
-class CuentaBancariaIngresoCancelarView(DeleteView):
+class CuentaBancariaIngresoCancelarView(BSModalDeleteView):
     model = Deuda
     template_name = "includes/form generico.html"
 
@@ -417,23 +467,26 @@ class CuentaBancariaIngresoCancelarView(DeleteView):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
     def delete(self, request, *args, **kwargs):
-        deuda = self.get_object()
-        fecha = date.today()
-        monto = deuda.saldo
-        moneda = deuda.moneda
-        tipo_cambio = deuda.tipo_cambio
-        Redondeo.objects.create(
-            deuda=deuda,
-            fecha=fecha,
-            monto=monto,
-            moneda=moneda,
-            tipo_cambio=tipo_cambio,
-            created_by=self.request.user,
-            updated_by=self.request.user,
-        )
+        if self.request.session['primero']:
+            deuda = self.get_object()
+            fecha = date.today()
+            monto = deuda.saldo
+            moneda = deuda.moneda
+            tipo_cambio = deuda.tipo_cambio
+            Redondeo.objects.create(
+                deuda=deuda,
+                fecha=fecha,
+                monto=monto,
+                moneda=moneda,
+                tipo_cambio=tipo_cambio,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+            self.request.session['primero'] = False
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(CuentaBancariaIngresoCancelarView, self).get_context_data(**kwargs)
         context['accion'] = 'Cancelar'
         context['titulo'] = 'Deuda'
@@ -442,7 +495,7 @@ class CuentaBancariaIngresoCancelarView(DeleteView):
         return context
 
 
-class RedondeoDeleteView(DeleteView):
+class RedondeoDeleteView(BSModalDeleteView):
     model = Redondeo
     template_name = "includes/eliminar generico.html"
 
@@ -453,5 +506,44 @@ class RedondeoDeleteView(DeleteView):
         context = super(RedondeoDeleteView, self).get_context_data(**kwargs)
         context['accion'] = 'Eliminar'
         context['titulo'] = 'Redondeo'
+        context['item'] = self.get_object()
+        return context
+
+
+class DepositosView(TemplateView):
+    template_name = "bancos/cuenta bancaria/depositos.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(DepositosView, self).get_context_data(**kwargs)
+        context['movimientos'] = Ingreso.objects.all()
+        return context
+
+
+def DepositosTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = "bancos/cuenta bancaria/depositos tabla.html"
+        context = {}
+        context['movimientos'] = Ingreso.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class DepositosPagarDeleteView(BSModalDeleteView):
+    model = Pago
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_depositos_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(DepositosPagarDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Pago'
         context['item'] = self.get_object()
         return context

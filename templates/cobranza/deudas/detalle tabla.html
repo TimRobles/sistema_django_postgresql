@@ -1,0 +1,170 @@
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-center">Fecha</th>
+            <th>Documento</th>
+            <th class="text-end">Total</th>
+            <th class="text-end">Amortizado</th>
+            <th class="text-end">Deuda</th>
+            <th class="text-center">Fecha de Vencimiento</th>
+            <th>Estado</th>
+            <th class="text-center text-nowrap">Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for deuda in contexto_deuda %}
+        <tr>
+            <td class="text-center">{{ deuda.fecha_deuda|date:'d/m/Y' }}</td>
+            <td>
+                {% if deuda.Cuota_deuda.all %}
+                <div class="accordion" id="accordion{{deuda.id}}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed p-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ deuda.id }}" aria-expanded="false" aria-controls="collapse{{ deuda.id }}">
+                                {{ deuda.documento }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ deuda.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion{{deuda.id}}">
+                            <div class="accordion-body">
+                                {% if deuda.Pago_deuda.all or deuda.Redondeo_deuda.all %}
+                                <table class="table">
+                                    <thead>
+                                        <tr><th colspan="6">Ingresos o Notas</th></tr>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Operación</th>
+                                            <th class="text-end">Ingreso</th>
+                                            <th class="text-end">Usado</th>
+                                            <th class="text-end">Disponible</th>
+                                            <th class="text-end">Amortizado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pago in deuda.Pago_deuda.all %}
+                                        <tr>
+                                            <td>{{ pago.ingreso_nota.fecha|date:'d/m/Y' }}</td>
+                                            <td>
+                                                {{ pago.ingreso_nota }}
+                                                {{ pago.ingreso_nota.numero_operacion }}
+                                                {% if pago.ingreso_nota.cuenta_origen %}
+                                                | {{ pago.ingreso_nota.cuenta_origen }}
+                                                {% endif %}
+                                                {% if pago.ingreso_nota.comentario %}
+                                                | {{ pago.ingreso_nota.comentario }}
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end text-nowrap">{{ pago.ingreso_nota.moneda.simbolo }} {{ pago.ingreso_nota.monto|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">{{ pago.ingreso_nota.moneda.simbolo }} {{ pago.ingreso_nota.usado|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">{{ pago.ingreso_nota.moneda.simbolo }} {{ pago.ingreso_nota.saldo|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">
+                                                {% if pago.monto_final != pago.monto %}
+                                                ({{ pago.deuda.moneda.simbolo }} {{ pago.monto_final|redondear|intcomma }})
+                                                {% endif %}
+                                                {{ pago.ingreso_nota.moneda.simbolo }} {{ pago.monto|redondear|intcomma }}
+                                            </td>
+                                            <td class="text-center text-nowrap">
+                                                <button data-form-url="{% url 'cobranza_app:deudores_actualizar_pago' id_cliente deuda.id pago.id %}"
+                                                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"
+                                                    class="create btn btn-warning btn-sm"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                <button data-form-url="{% url 'cobranza_app:deudores_eliminar_pago' id_cliente pago.id %}"
+                                                    class="delete btn btn-danger btn-sm"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                                    <i class="bi-x-lg"></i>
+                                                </button>
+                                                <a href="{% url 'cobranza_app:cuenta_bancaria_detalle' pago.ingreso_nota.cuenta_bancaria.id %}" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %} 
+                                        {% for redondeo in deuda.Redondeo_deuda.all %}
+                                        <tr>
+                                            <td>{{ redondeo.fecha|date:'d/m/Y' }}</td>
+                                            <td>REDONDEO</td>
+                                            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ redondeo.monto|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ redondeo.monto|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} 0.00</td>
+                                            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ redondeo.monto|redondear|intcomma }}</td>
+                                            <td class="text-center text-nowrap">
+                                                <button data-form-url="{% url 'cobranza_app:deudores_eliminar_redondeo' id_cliente redondeo.id %}"
+                                                    class="delete btn btn-danger btn-sm"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                                    <i class="bi-x-lg"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %} 
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="5" class="text-end">Total Amortizado:</th>
+                                            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.pagos|redondear|intcomma }}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                {% endif %}
+                                <table class="table">
+                                    <thead>
+                                        <tr><th colspan="4">Cuotas</th></tr>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th class="text-end">Monto</th>
+                                            <th class="text-end">Saldo</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cuota in deuda.Cuota_deuda.all %}
+                                        <tr>
+                                            <td>{{ cuota.fecha|date:'d/m/Y' }}</td>
+                                            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ cuota.monto|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ cuota.saldo|redondear|intcomma }}</td>
+                                            <td class="texto-personalizado" style="--color-texto: {{ cuota.color }};">{{ cuota.estado }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>                          
+                </div>
+                {% else %}
+                {{ deuda.documento }}
+                {% endif %}
+            </td>
+            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.monto|redondear|intcomma }}</td>
+            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.pagos|redondear|intcomma }}</td>
+            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.saldo|redondear|intcomma }}</td>
+            <td class="text-center">{{ deuda.fecha_vencimiento|date:'d/m/Y' }}</td>
+            <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'cobranza_app:deudores_pagar_deuda' id_cliente deuda.id %}"
+                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"
+                    class="create btn btn-success btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
+                    <i class="bi bi-wallet2"></i>
+                </button>
+                
+                {% if deuda.saldo != 0 %}    
+                <button data-form-url="{% url 'cobranza_app:deudores_cancelar_deuda' id_cliente deuda.id %}"
+                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"
+                    class="create btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Cancelar Deuda">
+                    <i class="bi bi-bandaid-fill"></i>
+                </button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

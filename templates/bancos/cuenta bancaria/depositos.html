@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
+
 {% load static %}
 {% load funciones_propias %}
 {% load humanize %}
 
 {% block titulo %}
-Detalle Deuda
+Depósitos
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Deuda</h3>
-
+    <h3>Depósitos</h3>
     <div class="table-responsive" id="tabla">
-        {% include 'cobranza/deudas/detalle tabla.html' %}
+        {% include 'bancos/cuenta bancaria/depositos tabla.html' %}
     </div>
 
 {% endblock contenido %}

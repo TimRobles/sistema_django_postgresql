@@ -1,4 +1,5 @@
 from django import forms
+from applications.funciones import tipo_de_cambio
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.cobranza.models import Deuda, Ingreso, LineaCredito, Pago
 
@@ -42,6 +43,8 @@ class CuentaBancariaIngresoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CuentaBancariaIngresoForm, self).__init__(*args, **kwargs)   
+        if not self.fields['tipo_cambio'].initial:
+            self.fields['tipo_cambio'].initial = tipo_de_cambio()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -83,14 +86,8 @@ class DeudaPagarForm(BSModalModelForm):
         if not self.fields['tipo_cambio'].initial:
             self.fields['tipo_cambio'].initial = tipo_cambio
         self.fields['ingresos'].queryset = Ingreso.objects.filter(id__in=lista_ingresos)
-        print("***************************************")
-        print(self.instance.id)
-        print(type(self.instance.id))
-        print("***************************************")
         if self.instance.id:
-            print("//////////////////////")
             ingreso = Ingreso.objects.get(id=self.instance.id_registro)
             self.fields['ingresos'].initial = ingreso
-            print("//////////////////////")
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

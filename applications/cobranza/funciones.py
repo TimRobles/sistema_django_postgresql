@@ -18,11 +18,6 @@ def movimientos_bancarios(cuenta_bancaria):
     movimientos = []
     ingresos = cobranza.models.Ingreso.objects.filter(cuenta_bancaria__id=cuenta_bancaria)
     egresos = cobranza.models.Egreso.objects.filter(cuenta_bancaria__id=cuenta_bancaria)
-    print("*****************")
-    print(cuenta_bancaria)
-    print(ingresos)
-    print(egresos)
-    print("*****************")
     for ingreso in ingresos:
         ingreso.ingreso = ingreso.monto
         movimientos.append(ingreso)
