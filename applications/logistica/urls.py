@@ -18,5 +18,7 @@ urlpatterns = [
     path('solicitud-prestamo-materiales-detalle/imprimir/<pk>/', views.SolicitudPrestamoMaterialesDetalleImprimirView.as_view(), name='solicitud_prestamo_materiales_detalle_imprimir'),
     path('solicitud-prestamo-materiales-detalle/actualizar/<pk>/', views.SolicitudPrestamoMaterialesDetalleUpdateView.as_view(), name='solicitud_prestamo_materiales_detalle_actualizar'),
     path('solicitud-prestamo-materiales-detalle/eliminar/<pk>/', views.SolicitudPrestamoMaterialesDetalleDeleteView.as_view(), name='solicitud_prestamo_materiales_detalle_eliminar'),
+    path('solicitud-prestamo-materiales-detalle/archivo/agregar/<int:solicitud_prestamo_materiales_id>/', views.DocumentoSolicitudPrestamoMaterialesCreateView.as_view(), name='solicitud_prestamo_materiales_documento_agregar'),
+    path('solicitud-prestamo-materiales-detalle/archivo/eliminar/<pk>/', views.DocumentoSolicitudPrestamoMaterialesDeleteView.as_view(), name='solicitud_prestamo_materiales_documento_eliminar'),
     path('cliente-interlocutor/<str:id_cliente_interlocutor>/', views.ClienteView, name='cliente_interlocutor'),
 ]

@@ -1609,6 +1609,7 @@ class InventarioActivoDetailView(PermissionRequiredMixin, DetailView):
         inventario_activo = InventarioActivo.objects.get(id = self.kwargs['pk'])
         context = super(InventarioActivoDetailView, self).get_context_data(**kwargs)
         context['detalle_inventario_activo'] = InventarioActivoDetalle.objects.filter(inventario_activo = inventario_activo)
+        context['documentos'] = DocumentoInventarioActivo.objects.filter(inventario_activo = inventario_activo)
         return context
 
 def InventarioActivoDetailTabla(request, pk):

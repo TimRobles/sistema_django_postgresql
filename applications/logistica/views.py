@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from django import forms
+from decimal import Decimal
 from applications.importaciones import *
-from applications.logistica.models import SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
-from applications.logistica.forms import SolicitudPrestamoMaterialesDetalleForm, SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm
+from applications.logistica.models import DocumentoPrestamoMateriales, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.forms import DocumentoPrestamoMaterialesForm, SolicitudPrestamoMaterialesDetalleForm, SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.logistica.pdf import generarSolicitudPrestamoMateriales
+from applications.funciones import fecha_en_letras
+from applications.sociedad.models import Sociedad
 
 class SolicitudPrestamoMaterialesListView(PermissionRequiredMixin, ListView):
     permission_required = ('logistica.view_solicitudprestamomateriales')
@@ -130,6 +133,7 @@ class SolicitudPrestamoMaterialesDetailView(PermissionRequiredMixin, DetailView)
             pass
 
         context['materiales'] = materiales
+        context['documentos'] = DocumentoPrestamoMateriales.objects.filter(solicitud_prestamo_materiales = obj)
         return context
 
 def SolicitudPrestamoMaterialesDetailTabla(request, pk):
@@ -149,6 +153,7 @@ def SolicitudPrestamoMaterialesDetailTabla(request, pk):
 
         context['contexto_solicitud_prestamo_materiales_detalle'] = obj
         context['materiales'] = materiales
+        context['documentos'] = DocumentoPrestamoMateriales.objects.filter(solicitud_prestamo_materiales = obj)
 
         data['table'] = render_to_string(
             template,
@@ -209,19 +214,28 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
     def get(self, request, *args, **kwargs):
         color = COLOR_DEFAULT
         titulo = 'SOLICITUD DE PRÉSTAMO DE EQUIPOS'
-        vertical = True
+        vertical = False
         logo = None
         pie_pagina = PIE_DE_PAGINA_DEFAULT
 
         obj = SolicitudPrestamoMateriales.objects.get(id=self.kwargs['pk'])
 
-        Texto = str(titulo) + '\n' +'Nro.: '+str(obj.numero_prestamo) + '\n' + 'Razón Social: '+str(obj.cliente) + '\n' + 'Contacto :'+str(obj.cliente_interlocutor) + '\n'
-        TablaEncabezado = [
-            'ITEM', 
-            'DESCRIPCIÓN',
-            'UNIDAD', 
-            'CANTIDAD', 
-            ]
+        titulo = str(titulo)
+
+        Cabecera = {}
+        Cabecera['numero_prestamo'] = str(obj.numero_prestamo)
+        Cabecera['fecha_prestamo'] = fecha_en_letras(obj.fecha_prestamo)
+        Cabecera['razon_social'] = str(obj.cliente)
+        Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
+        Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
+        Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
+        Cabecera['interlocutor'] = str(obj.cliente_interlocutor.interlocutor)
+        
+        TablaEncabezado = [ 'Item',
+                            'Descripción',
+                            'Unidad',
+                            'Cantidad',
+                            ]
 
         detalle = obj.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales
         solicitud_prestamo_materiales = detalle.all()
@@ -230,28 +244,17 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
         count = 1
         for solicitud in solicitud_prestamo_materiales:
             fila = []
+            # confirmacion_detalle = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
+            solicitud.material = solicitud.content_type.get_object_for_this_type(id = solicitud.id_registro)
             fila.append(solicitud.item)
-            # fila.append(solicitud.activo.numero_serie)
-            # if activo.activo.marca:
-            #     fila.append(activo.activo.marca.nombre)
-            # else:
-            #     fila.append('-')
-            # if activo.activo.color:
-            #     fila.append(activo.activo.color)
-            # else:
-            #     fila.append('-')
-            # fila.append(activo.activo.empresa)
-            # fila.append(activo.activo.piso)
-            # fila.append(activo.activo.colaborador)
-            # if activo.observacion:
-            #     fila.append(activo.observacion)
-            # else:
-            #     fila.append('-')
-            # fila.append('')
+            fila.append(intcomma(solicitud.material))
+            fila.append(intcomma(solicitud.material.unidad_base))
+            fila.append(intcomma(solicitud.cantidad_prestamo.quantize(Decimal('0.01'))))
+    
             TablaDatos.append(fila)
             count += 1
 
-        buf = generarSolicitudPrestamoMateriales(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+        buf = generarSolicitudPrestamoMateriales(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
@@ -307,6 +310,44 @@ class SolicitudPrestamoMaterialesDetalleDeleteView(PermissionRequiredMixin, BSMo
         context['dar_baja'] = "true"
         return context
 
+class DocumentoSolicitudPrestamoMaterialesCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('logistica.add_documentoprestamomateriales')
+    model = DocumentoPrestamoMateriales
+    template_name = "includes/formulario generico.html"
+    form_class = DocumentoPrestamoMaterialesForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk':self.kwargs['solicitud_prestamo_materiales_id']})
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.solicitud_prestamo_materiales = SolicitudPrestamoMateriales.objects.get(id = self.kwargs['solicitud_prestamo_materiales_id'])
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoSolicitudPrestamoMaterialesCreateView, self).get_context_data(**kwargs)
+        context['accion']="Agregar"
+        context['titulo']="Documento"
+        return context
+
+class DocumentoSolicitudPrestamoMaterialesDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.delete_documentoinventarioactivo')
+    model = DocumentoPrestamoMateriales
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk':self.object.solicitud_prestamo_materiales.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoSolicitudPrestamoMaterialesDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Documento"
+        return context
 
 class ClienteForm(forms.Form):
     cliente_interlocutor = forms.ModelChoiceField(queryset = ClienteInterlocutor.objects.all(), required=False)

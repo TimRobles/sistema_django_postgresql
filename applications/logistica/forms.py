@@ -1,5 +1,5 @@
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.logistica.models import SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.models import DocumentoPrestamoMateriales, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from django import forms
 
 from applications.material.models import Material
@@ -63,5 +63,18 @@ class SolicitudPrestamoMaterialesDetalleUpdateForm(BSModalModelForm):
         self.fields['material'].initial = busqueda_material.descripcion_venta
         self.fields['material'].disabled = True
 
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class DocumentoPrestamoMaterialesForm(BSModalModelForm):
+    class Meta:
+        model = DocumentoPrestamoMateriales
+        fields=(
+            'comentario',
+            'documento',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(DocumentoPrestamoMaterialesForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
