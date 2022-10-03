@@ -24,7 +24,11 @@
             <td>{{ comprobante_compra.fecha_comprobante|date:'d/m/Y' }}</td>
             <td>{{ comprobante_compra.get_internacional_nacional_display }}</td>
             <td>{{ comprobante_compra.sociedad }}</td>
-            <td>{{ comprobante_compra.get_incoterms_display }}</td>
+            <td>
+                {% if comprobante_compra.incoterms %}
+                    {{ comprobante_compra.get_incoterms_display }}
+                {% endif %} 
+            </td>
             <td>
                 {% if comprobante_compra.orden_compra %}
                     {{ comprobante_compra.orden_compra }}

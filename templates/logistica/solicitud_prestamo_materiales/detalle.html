@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Solicitud Prestamo Materiales
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Solicitud Prestamo Materiales
+        {% if contexto_solicitud_prestamo_materiales_detalle.estado == 1 %}
+            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_registrar' contexto_solicitud_prestamo_materiales_detalle.id %}"
+                data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_tabla' contexto_solicitud_prestamo_materiales_detalle.id %}"
+                class="create badge bg-primary">
+                Registrar Material
+            </button>
+            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_finalizar' contexto_solicitud_prestamo_materiales_detalle.id %}"
+                data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"
+                class="delete badge bg-primary">
+                Finalizar Solicitud
+            </button>
+        {% endif %}
+        {% if contexto_solicitud_prestamo_materiales_detalle.estado != 1 and contexto_solicitud_prestamo_materiales_detalle.estado != 3 %}
+            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_confirmar' contexto_solicitud_prestamo_materiales_detalle.id %}"
+                data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"
+                class="delete badge bg-primary">
+                Confirmar Oferta
+            </button>
+        {% endif %}
+        {% if contexto_solicitud_prestamo_materiales_detalle.estado != 1 %}
+            <a href="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_imprimir' contexto_solicitud_prestamo_materiales_detalle.id %}" target="_blank">
+                <span class="badge bg-primary">Imprimir</span></a>
+        {% endif %}
+        <a href="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
+    <div id="tabla">
+        {% include 'logistica/solicitud_prestamo_materiales/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

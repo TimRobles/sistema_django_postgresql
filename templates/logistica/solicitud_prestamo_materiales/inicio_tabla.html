@@ -1,0 +1,51 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Número Prestamo</th>
+            <th>Sociedad</th>
+            <th>Cliente</th>
+            <th>Cliente Interlocutor</th>
+            <th>Fecha Prestamo</th>
+            <th>Comentario</th>
+            <th>Motivo Anulación</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>  
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for solicitud in contexto_solicitud_prestamo_materiales %}
+            <tr>
+                <td> 
+                    {% if  solicitud.numero_prestamo %}
+                        {{ solicitud.numero_prestamo }} 
+                    {% endif %}
+                </td>
+                <td>{{ solicitud.sociedad }}</td>
+                <td>{{ solicitud.cliente }}</td>
+                <td>{{ solicitud.cliente_interlocutor.interlocutor }}</td>
+                <td>{{ solicitud.fecha_prestamo|date:'d/m/Y'}}</td>
+                <td>{{ solicitud.comentario }}</td>
+                <td>{{ solicitud.motivo_anulacion }}</td>
+                <td class="text-center">{{ solicitud.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    {% if solicitud.estado == 1 %}
+                        <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_actualizar' solicitud.id %}"
+                            data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    {% endif %}
+                    <a href="{% url 'logistica_app:solicitud_prestamo_materiales_detalle' solicitud.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>

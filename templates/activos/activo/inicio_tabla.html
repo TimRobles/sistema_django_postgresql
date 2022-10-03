@@ -7,7 +7,7 @@
             <th>Marca</th>    
             <th>Modelo</th>    
             <th>Fecha de Compra</th>    
-            <th>Tiempo de Garantía</th>    
+            <th>Tiempo de Garantía (meses)</th>    
             <th>Color</th>    
             <th>Información Adicional</th>    
             <th>Declarable</th>    
@@ -19,7 +19,11 @@
         
         {% for activo in contexto_activo %}
             <tr>
-                <td> {{ activo.numero_serie }}</td>
+                <td> 
+                    {% if  activo.numero_serie %}
+                        {{ activo.numero_serie }} 
+                    {% endif %}
+                </td>
                 <td> {{ activo.descripcion }}</td>
                 <td> {{ activo.activo_base }}</td>
                 <td> {{ activo.marca }}</td>
@@ -35,7 +39,7 @@
                         No
                     {% endif %}  
                 </td>
-                <td class="text-center">{{ activo.get_estado_display }}</td>
+                <td class="text-center">{{ activo.estado }}</td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'activos_app:activo_actualizar' activo.id %}"
                         data-table-url="{% url 'activos_app:activo_tabla' %}"
