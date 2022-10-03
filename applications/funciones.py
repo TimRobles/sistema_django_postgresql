@@ -123,7 +123,7 @@ def consulta_distancia(longitud, latitud, sede_id):
         return "Estás a %i metros de la oficina." % int(distancia*1000)
     else:
         return "Estás en la oficina"
-    
+
 
 def slug_aleatorio(modelo):
     letters = string.ascii_uppercase
@@ -198,7 +198,7 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, ant
             total_exonerada += resultado_linea['subtotal']
         else:
             total_gravada += resultado_linea['subtotal']
-    
+
     total_descuento += descuento_global
     total_descuento_con_igv += descuento_global_con_igv
     total_gravada -= descuento_global
@@ -250,15 +250,17 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
     elif hasattr(cabecera, 'ComprobanteCompraPIDetalle_comprobante_compra'):
         detalles = cabecera.ComprobanteCompraPIDetalle_comprobante_compra.all()
     elif hasattr(cabecera, 'ComprobanteCompraCIDetalle_comprobante_compra'):
-        detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()    
+        detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()
     elif hasattr(cabecera, 'OrdenCompraDetalle_orden_compra'):
-        detalles = cabecera.OrdenCompraDetalle_orden_compra.all()    
+        detalles = cabecera.OrdenCompraDetalle_orden_compra.all()
     elif hasattr(cabecera, 'ComprobanteCompraActivoDetalle_comprobante_compra_activo'):
         detalles = cabecera.ComprobanteCompraActivoDetalle_comprobante_compra_activo.all()
     elif hasattr(cabecera, 'CotizacionVentaDetalle_cotizacion_venta'):
         detalles = cabecera.CotizacionVentaDetalle_cotizacion_venta.all()
     elif hasattr(cabecera, 'ConfirmacionVentaDetalle_confirmacion_venta'):
         detalles = cabecera.ConfirmacionVentaDetalle_confirmacion_venta.all()
+    elif hasattr(cabecera, 'FacturaVentaDetalle_factura_venta'):
+        detalles = cabecera.FacturaVentaDetalle_factura_venta.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:
@@ -285,6 +287,8 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         else:
             descuento_global = Decimal('0.00')
             otros_cargos = Decimal('0.00')
+
+    internacional = cabecera.internacional_nacional
     anticipo = False
     return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, anticipo, valor_igv, tipo_cambio)
 
