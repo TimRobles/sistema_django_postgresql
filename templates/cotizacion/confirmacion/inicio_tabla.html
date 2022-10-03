@@ -1,3 +1,5 @@
+{% load funciones_propias %}
+
 <table class="table">
     <thead>
         <tr>
@@ -13,8 +15,7 @@
         {% for confirmacion in contexto_cotizacion_venta %}
             <tr>
                 <td>
-                    {{ confirmacion.sociedad.abreviatura }}
-                    {{ confirmacion.cotizacion_venta.numero_cotizacion }}
+                    {{ confirmacion.sociedad.abreviatura }}{{ confirmacion.cotizacion_venta.numero_cotizacion|numeroXn:6 }}
                 </td>
                 <td>{{ confirmacion.cliente }}</td>
                 <td>{{ confirmacion.cotizacion_venta.fecha|date:'d/m/Y' }}</td>
