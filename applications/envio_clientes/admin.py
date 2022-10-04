@@ -4,6 +4,7 @@ from .models import Transportista
 @admin.register(Transportista)
 class TransportistaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'tipo_documento',
         'numero_documento',
         'razon_social',

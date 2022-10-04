@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Guía
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Guía</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'comprobante_despacho/guia/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

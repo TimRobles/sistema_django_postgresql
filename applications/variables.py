@@ -212,6 +212,13 @@ ESTADOS_FACTURA = (
     (4, 'ANULADO'),
     )
 
+
+ESTADOS_GUIA = (
+    (1, 'EN PROCESO'),
+    (2, 'EMITIDA'),
+    (3, 'ANULADA'),
+    )
+
 TIPO_PERCEPCION = (
     (1, 'PERCEPCIÓN VENTA INTERNA - TASA 2%'),
     (2, 'PERCEPCIÓN ADQUISICIÓN DE COMBUSTIBLE-TASA 1%'),

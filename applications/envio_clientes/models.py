@@ -1,9 +1,11 @@
 from django.db import models
 from django.conf import settings
 
+from applications.variables import TIPO_DOCUMENTO_SUNAT
+
 
 class Transportista(models.Model):
-    tipo_documento = models.IntegerField()
+    tipo_documento = models.CharField( 'Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT)
     numero_documento = models.CharField('Número de Documento', max_length=15)
     razon_social = models.CharField('Razón Social', max_length=100)
     
@@ -17,4 +19,4 @@ class Transportista(models.Model):
         verbose_name_plural = 'Transportistas'
 
     def __str__(self):
-        return str(self.id)
+        return str(self.razon_social)

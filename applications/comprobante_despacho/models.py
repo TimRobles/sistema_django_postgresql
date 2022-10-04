@@ -7,7 +7,7 @@ from applications.datos_globales.models import Moneda, SeriesComprobante, TipoCa
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.envio_clientes.models import Transportista
-from applications.variables import TIPO_DOCUMENTO_SUNAT, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA, ESTADOS
+from applications.variables import ESTADOS_GUIA, TIPO_DOCUMENTO_SUNAT, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA, ESTADOS
 from django.conf import settings
 
 class Guia(models.Model):
@@ -27,7 +27,7 @@ class Guia(models.Model):
     ubigeo_partida = models.IntegerField()
     ubigeo_destino = models.IntegerField()
     url = models.URLField('URL Guia', max_length=200)
-    estado = models.IntegerField()
+    estado = models.IntegerField('Estado', choices=ESTADOS_GUIA, default=1)
     motivo_anulación = models.TextField()
    
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

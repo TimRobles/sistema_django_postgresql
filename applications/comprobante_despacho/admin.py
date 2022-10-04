@@ -7,6 +7,7 @@ from .models import(
 @admin.register(Guia)
 class GuiaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'sociedad',
         'serie_comprobante',
         'cliente',
@@ -42,6 +43,7 @@ class GuiaDetalleAdmin(admin.ModelAdmin):
     '''Admin View for GuiaDetalle'''
 
     list_display = (
+        'id',
         'item',
         'content_type',
         'id_registro',
