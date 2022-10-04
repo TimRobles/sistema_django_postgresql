@@ -60,6 +60,7 @@ LOCAL_APPS = (
     'applications.sorteo_aptc',
     'applications.cotizacion',
     'applications.cobranza',
+    'applications.logistica',
     'applications.comprobante_venta',
     'applications.envio_clientes',
     'applications.comprobante_despacho',

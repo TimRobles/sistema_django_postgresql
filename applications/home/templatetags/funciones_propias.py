@@ -29,3 +29,7 @@ def redondear(texto):
 @register.filter
 def filename(value):
     return os.path.basename(value.file.name)
+
+@register.filter
+def numeroXn(numero, n):
+    return '0'*(n-len(str(numero))) + str(numero)

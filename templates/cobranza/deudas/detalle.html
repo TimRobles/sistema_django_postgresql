@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block titulo %}
+Detalle Deuda
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Deuda</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'cobranza/deudas/detalle tabla.html' %}
+    </div>
+
+{% endblock contenido %}

@@ -1,0 +1,205 @@
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Operación</th>
+            <th class="text-end">Ingreso</th>
+            <th class="text-end">Egreso</th>
+            <th class="text-end">Saldo</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for movimiento in movimientos %}
+        <tr>
+            <td>{{ movimiento.fecha|date:'d/m/Y' }}</td>
+            <td>
+                {% if movimiento.pagos %}
+                <div class="accordion" id="accordion{{ movimiento.tipo }}{{ movimiento.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed p-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ movimiento.tipo }}{{ movimiento.id }}" aria-expanded="false" aria-controls="collapse{{ movimiento.tipo }}{{ movimiento.id }}">
+                                {{ movimiento.numero_operacion }}
+                                {% if movimiento.cuenta_origen %}
+                                | {{ movimiento.cuenta_origen }}
+                                {% endif %}
+                                {% if movimiento.comentario %}
+                                | {{ movimiento.comentario }}
+                                {% endif %}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ movimiento.tipo }}{{ movimiento.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion{{ movimiento.tipo }}{{ movimiento.id }}">
+                            <div class="accordion-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Monto</th>
+                                            <th class="text-center">Usado</th>
+                                            <th class="text-center">Disponible</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.monto|redondear|intcomma }}</td>
+                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}</td>
+                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Documento</th>
+                                            <th class="text-end">Deuda</th>
+                                            <th class="text-end">Monto</th>
+                                            <th class="text-end">Saldo</th>
+                                            <th>Estado</th>
+                                            <th class="text-end">Monto Usado</th>
+                                            <th class="text-center text-nowrap">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pago in movimiento.pagos %}
+                                        <tr>
+                                            <td>
+                                                {% if pago.deuda.Cuota_deuda.all %}
+                                                <div class="accordion" id="accordion{{pago.deuda.id}}">
+                                                    <div class="accordion-item">
+                                                        <h2 class="accordion-header" id="headingOne">
+                                                            <button class="accordion-button collapsed p-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ pago.deuda.id }}" aria-expanded="false" aria-controls="collapse{{ pago.deuda.id }}">
+                                                                {{ pago.deuda.documento }}
+                                                            </button>
+                                                        </h2>
+                                                        <div id="collapse{{ pago.deuda.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion{{pago.deuda.id}}">
+                                                            <div class="accordion-body">
+                                                                <table class="table">
+                                                                    <thead>
+                                                                        <tr><th>Cuotas</th></tr>
+                                                                        <tr>
+                                                                            <th>Fecha</th>
+                                                                            <th class="text-end">Monto</th>
+                                                                            <th class="text-end">Saldo</th>
+                                                                            <th>Estado</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for cuota in pago.deuda.Cuota_deuda.all %}
+                                                                        <tr>
+                                                                            <td>{{ cuota.fecha|date:'d/m/Y' }}</td>
+                                                                            <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.monto|redondear|intcomma }}</td>
+                                                                            <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ cuota.saldo|redondear|intcomma }}</td>
+                                                                            <td class="texto-personalizado" style="--color-texto: {{ cuota.color }};">{{ cuota.estado }}</td>
+                                                                        </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>                          
+                                                </div>
+                                                {% else %}
+                                                {{ deuda.documento }}
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.monto|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.pagos|redondear|intcomma }}</td>
+                                            <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.saldo|redondear|intcomma }}</td>
+                                            <td class="texto-personalizado" style="--color-texto: {{ pago.deuda.color }};">{{ pago.deuda.estado }}</td>
+                                            <td class="text-end text-nowrap">
+                                                {% if pago.monto_final != pago.monto %}
+                                                ({{ pago.deuda.moneda.simbolo }} {{ pago.monto_final|redondear|intcomma }})
+                                                {% endif %}
+                                                {{ pago.ingreso_nota.moneda.simbolo }} {{ pago.monto|redondear|intcomma }}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if pago.deuda.saldo != 0 %}    
+                                                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_cancelar_deuda' cuenta_bancaria.id pago.deuda.id %}"
+                                                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                                                    class="create btn btn-info btn-sm"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Cancelar Deuda">
+                                                    <i class="bi bi-bandaid-fill"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_pago' cuenta_bancaria.id movimiento.id pago.id %}"
+                                                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                                                    class="create btn btn-warning btn-sm"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_eliminar_pago' cuenta_bancaria.id pago.id %}"
+                                                    class="delete btn btn-danger btn-sm"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                                    <i class="bi-x-lg"></i>
+                                                </button>
+                                                <a href="{% url 'cobranza_app:deudores_detalle' pago.deuda.cliente.id %}" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-end" colspan="5">Total Usado:</th>
+                                            <td class="text-end">{{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>                          
+                </div>
+                {% else %}
+                {{ movimiento.numero_operacion }}
+                {% if movimiento.cuenta_origen %}
+                | {{ movimiento.cuenta_origen }}
+                {% endif %}
+                {% if movimiento.comentario %}
+                | {{ movimiento.comentario }}
+                {% endif %}
+                {% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+                {% if movimiento.ingreso %}
+                {{ movimiento.moneda.simbolo }} {{ movimiento.ingreso|redondear|intcomma }}
+                {% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+                {% if movimiento.egreso %}
+                {{ movimiento.moneda.simbolo }} {{ movimiento.egreso|redondear|intcomma }}
+                {% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+                {% if movimiento.saldo_cuenta %}
+                {{ movimiento.moneda.simbolo }} {{ movimiento.saldo_cuenta|redondear|intcomma }}
+                {% endif %}
+            </td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' cuenta_bancaria.id movimiento.id %}"
+                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                    class="create btn btn-success btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
+                    <i class="bi bi-wallet2"></i>
+                </button>
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_ingreso' cuenta_bancaria.id movimiento.id %}"
+                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                    class="create btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_eliminar_ingreso' cuenta_bancaria.id movimiento.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi-x-lg"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

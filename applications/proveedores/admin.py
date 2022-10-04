@@ -11,6 +11,7 @@ from .models import (
 class ProveedorAdmin(admin.ModelAdmin):
     list_display = (
         'nombre',
+        'ruc',
         'pais',
         'direccion',
         'estado',

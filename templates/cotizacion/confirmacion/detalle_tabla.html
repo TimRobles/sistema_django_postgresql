@@ -15,20 +15,25 @@
     <div class="col-auto ms-auto">
         <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id  %}" class="btn btn-primary">Cotización</a>
     </div>
-  
+
+
+    {% if confirmacion.cliente.estado_sunat == 1 and confirmacion.cliente.condicion_sunat == 1 %}
+
+    {% if confirmacion.cliente.tipo_documento == 6 %}
     <div class="col-auto">
         <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
             class="delete btn btn-primary">
             FACTURA
         </button>
-    </div>    
+    </div>
+    {% endif %}
 
     <div class="col-auto">
         <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_crear' confirmacion.id %}"
             class="delete btn btn-primary">
             BOLETA
         </button>
-    </div>    
+    </div>
 
 </div>
 
@@ -39,7 +44,7 @@
                 <tr>
                     <th class="pe-2">Razón Social:</th>
                     <td>{{ confirmacion.cliente.razon_social }}</td>
-                    <td class="ps-2" rowspan="3">
+                    <td class="ps-2" rowspan="4">
                         {% if confirmacion.estado == 1 %}
                         <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
                             data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
@@ -65,6 +70,14 @@
                         {% endif %}
                     </td>
                 </tr>
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>
+                        {% if confirmacion.cliente %}
+                        {{ confirmacion.cliente.get_estado_sunat_display }} - {{ confirmacion.cliente.get_condicion_sunat_display }}
+                        {% endif %}
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -86,7 +99,7 @@
                     <th class="pe-2">N° Cotización:</th>
                     <td>
                         {% if cotizacion.numero_cotizacion %}
-                        {{ cotizacion.numero_cotizacion }}
+                        {{ confirmacion.sociedad.abreviatura }}{{ cotizacion.numero_cotizacion|numeroXn:6 }}
                         {% endif %}
                     </td>
                 </tr>
@@ -141,11 +154,11 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">Condiciones de Pago:</th>
+                    <th class="pe-2">Condición de Pago:</th>
                     <td>
                         {% if confirmacion.condiciones_pago %}
                         {{ confirmacion.condiciones_pago }}
-                        {% endif %}    
+                        {% endif %}
                     </td>
                 </tr>
                 <!-- <tr>
@@ -236,13 +249,13 @@
                 <td class="text-end text-nowrap">$ {{ totales.descuento_global|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global|redondear|intcomma }}</td>
                 <td colspan="3"></td>
-            </tr>            
+            </tr>
             <tr>
                 <td colspan="10" class="text-end">Descuento Total:</td>
                 <td class="text-end text-nowrap">$ {{ totales.total_descuento|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.total_descuento|redondear|intcomma }}</td>
                 <td colspan="3"></td>
-            </tr>           
+            </tr>
             <tr>
                 <td colspan="10" class="text-end">Anticipo:</td>
                 <td class="text-end text-nowrap">$ {{ totales.total_anticipo|redondear|intcomma }}</td>

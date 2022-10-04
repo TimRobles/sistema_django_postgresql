@@ -76,6 +76,8 @@
     </div>
     {% endif %}
 
+    {% if cotizacion.cliente.estado_sunat == 1 and cotizacion.cliente.condicion_sunat == 1 %}
+
     {% if cotizacion.estado > 1 and cotizacion.estado < 4 %}
     <div class="col-auto ms-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar' cotizacion.id %}"
@@ -110,6 +112,9 @@
         </button>
     </div>
     {% endif %}
+
+    {% endif %}
+
     {% if cotizacion.estado > 3 and cotizacion.estado < 7 %}
     <div class="col-auto">
         <a href="{% url 'cotizacion_app:confirmacion_cotizacion_inicio' cotizacion.id  %}" class="btn btn-primary">Confirmaciones</a>
@@ -124,7 +129,7 @@
                 <tr>
                     <th class="pe-2">Razón Social:</th>
                     <td>{{ cotizacion.cliente.razon_social }}</td>
-                    <td class="ps-2" rowspan="3">
+                    <td class="ps-2" rowspan="4">
                         {% if cotizacion.estado < 3 %}
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_cliente' cotizacion.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
@@ -148,6 +153,14 @@
                     <td>
                         {% if cotizacion.cliente_interlocutor %}
                         {{ cotizacion.cliente_interlocutor }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>
+                        {% if cotizacion.cliente %}
+                        {{ cotizacion.cliente.get_estado_sunat_display }} - {{ cotizacion.cliente.get_condicion_sunat_display }}
                         {% endif %}
                     </td>
                 </tr>
@@ -181,7 +194,7 @@
                     <th class="pe-2">N° Cotización:</th>
                     <td>
                         {% if cotizacion.numero_cotizacion %}
-                        {{ cotizacion.numero_cotizacion }}
+                        {{ cotizacion.numero_cotizacion|numeroXn:6 }}
                         {% endif %}
                     </td>
                     <th class="pe-2">Tipo de Cambio (HOY):</th>

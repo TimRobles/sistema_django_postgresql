@@ -248,6 +248,9 @@ MENSAJE_ANULAR_RESERVAR_COTIZACION = 'Operación exitosa: La reserva fue anulada
 MENSAJE_CONFIRMAR_COTIZACION = 'Operación exitosa: La cotización fue confirmada con éxito.'
 MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue anulada con éxito.'
 
+MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
+MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'
+
 COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
 
@@ -265,7 +268,7 @@ DICCIONARIO_TOTALES={
     'total_anticipo':'Anticipo',
     'total_gravada':'Gravada',
     'total_inafecta':'Inafecta',
-    'total_exonerada':'exonerada',
+    'total_exonerada':'Exonerada',
     'total_igv':'I.G.V.',
     'total_gratuita':'Gratuita',
     # 'total_otros_cargos':'Otros Cargos',

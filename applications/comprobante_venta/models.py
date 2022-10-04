@@ -65,6 +65,10 @@ class FacturaVenta(models.Model):
     def internacional_nacional(self):
         return 2
 
+    @property
+    def documento(self):
+        return "%s-%s" % (self.serie_comprobante, self.numero_factura)
+
     def __str__(self):
         return str(self.numero_factura)
 

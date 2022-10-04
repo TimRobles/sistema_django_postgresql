@@ -1,3 +1,5 @@
+{% load funciones_propias %}
+
 <table class="table">
     <thead>
         <tr>
@@ -16,7 +18,7 @@
             <tr>
                 <td>
                     {% if cotizacion.numero_cotizacion %}    
-                    {{ cotizacion.numero_cotizacion }}
+                    {{ cotizacion.numero_cotizacion|numeroXn:6 }}
                     {% endif %}
                 </td>
                 <td>{{ cotizacion.cliente }}</td>

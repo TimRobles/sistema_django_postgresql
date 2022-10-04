@@ -1,4 +1,5 @@
 from datetime import date
+
 from .models import (
     ActivoBase,
     ArchivoAsignacionActivo,
@@ -238,6 +239,27 @@ class ArchivoAsignacionActivoForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class ModeloActivoFormAdmin(forms.ModelForm):
+    class Meta:
+        model = ModeloActivo
+        fields=(
+            'nombre',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ModeloActivoFormAdmin, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre')
+        filtro = ModeloActivo.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe un Modelo con este nombre')
+
+        return nombre
+
 class ModeloActivoForm(BSModalModelForm):
     class Meta:
         model = ModeloActivo
@@ -258,6 +280,32 @@ class ModeloActivoForm(BSModalModelForm):
                 self.add_error('nombre', 'Ya existe un Modelo con este nombre')
 
         return nombre
+
+class MarcaActivoFormAdmin(forms.ModelForm):
+    class Meta:
+        model = MarcaActivo
+        fields=(
+            'nombre',
+            'modelos',
+            )
+
+        widgets = {
+            'modelos': forms.CheckboxSelectMultiple(),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre')
+        filtro = MarcaActivo.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe un Marca con este nombre')
+
+    def __init__(self, *args, **kwargs):
+        super(MarcaActivoFormAdmin, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['modelos'].widget.attrs['class'] = 'nobull'
 
 class MarcaActivoForm(BSModalModelForm):
     class Meta:
@@ -292,6 +340,8 @@ class ActivoForm(BSModalModelForm):
             'numero_serie',
             'descripcion',
             'activo_base',
+            'unidad',
+            'peso',
             'marca',
             'modelo',
             'fecha_compra',
@@ -324,9 +374,16 @@ class ActivoSociedadForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
+        self.lista_sociedad = kwargs.pop('sociedades')
         super(ActivoSociedadForm, self).__init__(*args, **kwargs)   
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if len(self.lista_sociedad) == 1:
+            if self.instance.sociedad == None:
+                self.add_error('sociedad', 'No se pueden relacionar mas sociedad')
 
 class ActivoUbicacionForm(BSModalModelForm):
     class Meta:
@@ -334,8 +391,18 @@ class ActivoUbicacionForm(BSModalModelForm):
         fields=(
             'sede',
             'piso',
+            'fecha_ubicacion',
             'comentario',
             )
+
+        widgets = {
+            'fecha_ubicacion' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
 
     def __init__(self, *args, **kwargs):
         super(ActivoUbicacionForm, self).__init__(*args, **kwargs)   

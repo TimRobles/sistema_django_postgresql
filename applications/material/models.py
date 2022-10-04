@@ -185,6 +185,8 @@ class Material(models.Model):
             return "%s MARCA: %s" % (self.descripcion_venta, self.marca.nombre)
         elif self.modelo:
             return "%s MARCA: %s" % (self.descripcion_venta, self.modelo.nombre)
+        else:
+            return "%s" % (self.descripcion_venta)
 
     @property
     def precio_lista(self):

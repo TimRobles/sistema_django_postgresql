@@ -164,25 +164,22 @@ class AsignacionDetalleActivo(models.Model):
         return str(self.activo.descripcion)
 
 class Activo(models.Model):
-    ESTADOS_ACTIVO = [
-        (1, 'ALTA'),
-        (2, 'EN PROCESO ASIGNACIÓN'),
-        (3, 'ASIGNADO'),
-        (4, 'EN PROCESO DEVOLUCIÓN'),
-        ]
-    numero_serie = models.CharField('Número de Serie', max_length=25)
-    descripcion = models.CharField('Descripción', max_length=150, blank=True, null=True)
+    numero_serie = models.CharField('Número de Serie', max_length=25, blank=True, null=True)
+    descripcion = models.CharField('Descripción', max_length=150)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
     id_registro = models.IntegerField(blank=True, null=True)
-    activo_base = models.ForeignKey(ActivoBase, verbose_name='Activo Base', on_delete=models.CASCADE, blank=True, null=True)
-    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE, blank=True, null=True)
-    modelo = models.ForeignKey(ModeloActivo, on_delete=models.CASCADE, blank=True, null=True)
+    activo_base = models.ForeignKey(ActivoBase, verbose_name='Activo Base', on_delete=models.CASCADE)
+    unidad = models.ForeignKey(Unidad,on_delete=models.CASCADE, blank=True, null=True)
+    peso = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE)
+    modelo = models.ForeignKey(ModeloActivo, on_delete=models.CASCADE)
     fecha_compra = models.DateField('Fecha de Compra', auto_now=False, auto_now_add=False, blank=True, null=True)
-    tiempo_garantia = models.IntegerField('Tiempo de Garantía (meses)', blank=True, null=True)
-    color = models.CharField('Color', max_length=25, blank=True, null=True)
+    tiempo_garantia = models.IntegerField('Tiempo de Garantía (meses)', blank=True, null=True, default = 0)
+    color = models.CharField('Color', max_length=25)
     informacion_adicional = models.TextField('Información Adicional', blank=True, null=True)
     declarable = models.BooleanField('Declarable', default=False)
-    estado = models.IntegerField('Estado Activo', choices=ESTADOS_ACTIVO, default=1)
+    estado = models.ForeignKey('EstadoActivo', on_delete=models.CASCADE, default=1)
+
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_created_by', editable=False)
@@ -215,6 +212,10 @@ class Activo(models.Model):
             return self.ActivoUbicacion_activo.all()[0].piso
         else:
             return ""
+    
+    def save(self, *args, **kwargs):
+        self.color = self.color.upper()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return str(self.descripcion)
@@ -411,13 +412,14 @@ class ActivoSociedad(models.Model):
         ordering = ['activo',]
 
     def __str__(self):
-        return str(self.activo)
+        return str(self.sociedad)
 
 
 class ActivoUbicacion(models.Model):
 
     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
     piso = models.IntegerField( blank=True, null=True)
+    fecha_ubicacion = models.DateField('Fecha Ubicación', auto_now=False, auto_now_add=False)
     activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True, related_name ='ActivoUbicacion_activo')
     comentario = models.TextField( blank=True, null=True)
 
@@ -430,21 +432,21 @@ class ActivoUbicacion(models.Model):
 
         verbose_name = 'Activo Ubicacion'
         verbose_name_plural = 'Activos Ubicacion'
-        ordering = ['activo',]
+        ordering = ['-fecha_ubicacion',]
 
     def __str__(self):
-        return self.activo
+        return str(self.sede)
 
 
 class ComprobanteCompraActivo(models.Model):
 
-    numero_comprobante = models.CharField('Número de Comprobante', max_length=50, blank=True, null=True)
+    numero_comprobante = models.CharField('Número de Comprobante', max_length=50)
     internacional_nacional = models.IntegerField('Tipo de Compra', choices=INTERNACIONAL_NACIONAL)
     incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     tipo_comprobante = models.IntegerField('Tipo de Comprobante', choices=TIPO_COMPROBANTE)
     orden_compra = models.ForeignKey(OrdenCompra, verbose_name='Orden de Compra', null=True, blank=True, on_delete=models.CASCADE)
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
-    fecha_comprobante = models.DateField('Fecha de Comprobante', auto_now=False, auto_now_add=False, blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
+    fecha_comprobante = models.DateField('Fecha de Comprobante', auto_now=False, auto_now_add=False)
     moneda = models.ForeignKey(Moneda, null=True,  on_delete=models.PROTECT)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
     total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=0)

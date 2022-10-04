@@ -5,8 +5,8 @@ from applications.variables import ESTADOS
 from applications.datos_globales.models import Pais
 
 class Proveedor(models.Model):
-
     nombre = models.CharField('Nombre', max_length=50)
+    ruc = models.CharField('RUC', max_length=15, blank=True, null=True)
     pais = models.ForeignKey(Pais, on_delete=models.PROTECT)
     direccion = models.CharField('Dirección', max_length=255)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)

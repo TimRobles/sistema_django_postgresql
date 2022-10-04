@@ -271,7 +271,7 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
                     precio_unitario_con_igv = 0
                     precio_final_con_igv = 0
 
-                respuesta = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, 0.18)
+                respuesta = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), 1)
                 obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
                 obj.precio_unitario_con_igv = precio_unitario_con_igv
                 obj.precio_final_con_igv = precio_final_con_igv
@@ -283,7 +283,7 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
                 precio_unitario_con_igv = obj.precio_unitario_con_igv
                 precio_final_con_igv = obj.precio_final_con_igv
                 obj.cantidad = obj.cantidad + cantidad
-                respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, 0.18)
+                respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), 1)
                 obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
                 obj.precio_unitario_con_igv = precio_unitario_con_igv
                 obj.precio_final_con_igv = precio_final_con_igv
@@ -515,7 +515,7 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
         self.object = self.get_object()
         self.object.estado = 2
         numero_cotizacion = CotizacionVenta.objects.all().aggregate(Count('numero_cotizacion'))['numero_cotizacion__count'] + 1
-        self.object.numero_cotizacion = numeroXn(numero_cotizacion, 6)
+        self.object.numero_cotizacion = numero_cotizacion
         self.object.fecha_cotizacion = datetime. now()
         self.object.fecha_validez = self.object.fecha_cotizacion + timedelta(7)
 
@@ -603,7 +603,7 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         precio_unitario_con_igv = form.instance.precio_unitario_con_igv
         precio_final_con_igv = form.instance.precio_final_con_igv
         form.instance.cantidad = form.instance.cantidad
-        respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, 0.18)
+        respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), form.instance.tipo_igv)
         form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
         form.instance.precio_unitario_con_igv = precio_unitario_con_igv
         form.instance.precio_final_con_igv = precio_final_con_igv
@@ -1007,7 +1007,7 @@ class CotizacionVentaConfirmarView(DeleteView):
             for detalle in detalles:
                 cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
                 if cotizacion_sociedad.cantidad > 0:
-                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv())
+                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
                     ConfirmacionVentaDetalle.objects.create(
                         item = detalle.item,
                         content_type = detalle.content_type,
@@ -1172,7 +1172,7 @@ class CotizacionVentaConfirmarAnticipoView(DeleteView):
             for detalle in detalles:
                 cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
                 if cotizacion_sociedad.cantidad > 0:
-                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv())
+                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
                     ConfirmacionVentaDetalle.objects.create(
                         item = detalle.item,
                         content_type = detalle.content_type,
@@ -1305,10 +1305,10 @@ class CotizacionVentaSociedadPdfView(View):
         obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
 
         moneda = obj.moneda
-        titulo = 'Cotización %s%s %s' % (self.kwargs['sociedad'], str(obj.numero_cotizacion), str(obj.cliente.razon_social))
+        titulo = 'Cotización %s%s %s' % (self.kwargs['sociedad'], numeroXn(obj.numero_cotizacion, 6), str(obj.cliente.razon_social))
 
         Cabecera = {}
-        Cabecera['nro_cotizacion'] = '%s%s' % (self.kwargs['sociedad'], str(obj.numero_cotizacion))
+        Cabecera['nro_cotizacion'] = '%s%s' % (self.kwargs['sociedad'], numeroXn(obj.numero_cotizacion, 6))
         Cabecera['fecha_cotizacion'] = fecha_en_letras(obj.fecha_cotizacion)
         Cabecera['razon_social'] = str(obj.cliente)
         Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
@@ -1337,7 +1337,7 @@ class CotizacionVentaSociedadPdfView(View):
             fila = []
             confirmacion_detalle = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
             if confirmacion_detalle.cantidad == 0: continue
-            calculo = calculos_linea(confirmacion_detalle.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(obj.fecha))
+            calculo = calculos_linea(confirmacion_detalle.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(obj.fecha), detalle.tipo_igv)
             detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
             fila.append(item)
             fila.append(intcomma(detalle.material))

@@ -1,10 +1,6 @@
 function CalculosLinea() {
     $tipo_igv = $('#id_tipo_igv')[0].value;
-    if ($tipo_igv == 1) {
-        $valor_igv = 0.18
-    } else {
-        $valor_igv = 0.00
-    }
+    $valor_igv = $('#valor_igv')[0].innerHTML;
     
     $cantidad = $('#id_cantidad')[0].value;
     $precio_unitario_con_igv = $('#id_precio_unitario_con_igv')[0].value;
@@ -15,7 +11,7 @@ function CalculosLinea() {
     $igv = $('#id_igv')[0];
     $total = $('#id_total')[0];
 
-    url = '/calculo-item-linea/' + $cantidad + "/" + $precio_unitario_con_igv + "/" + $precio_final_con_igv + "/" + $valor_igv;
+    url = '/calculo-item-linea/' + $cantidad + "/" + $precio_unitario_con_igv + "/" + $precio_final_con_igv + "/" + $valor_igv + "/" + $tipo_igv;
 
     console.log(url);
     var xhr = new XMLHttpRequest();

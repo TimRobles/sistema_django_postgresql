@@ -53,3 +53,7 @@
 .fondo-personalizado{
     background-color: var(--color-fondo) !important;
 }
+
+.texto-personalizado{
+    color: var(--color-texto) !important;
+}

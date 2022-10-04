@@ -17,12 +17,12 @@
                 <th>Descripción</th>
                 <th>Orden de Compra</th>
                 <th>Tipo IGV</th>
-                <th>Cantidad</th>
-                <th>Prec. Unit. sin IGV</th>
-                <th>Prec. Unit. con IGV</th>
-                <th>Prec. Final con IGV</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
+                <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
+                <th class="text-nowrap">Prec. Final<br>con IGV</th>
                 <th>Descuento</th>
-                <th>Sub Total</th>
+                <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
                 <th class="text-center">Acciones</th>
@@ -44,13 +44,13 @@
                     </td>
                     <td>{{ activo.get_tipo_igv_display }}</td>
                     <td class="text-end">{{ activo.cantidad|intcomma }}</td>
-                    <td class="text-end">{{ activo.precio_unitario_sin_igv|intcomma }}</td>
-                    <td class="text-end">{{ activo.precio_unitario_con_igv|intcomma }}</td>
-                    <td class="text-end">{{ activo.precio_final_con_igv|intcomma }}</td>
-                    <td class="text-end">{{ activo.descuento|intcomma }}</td>
-                    <td class="text-end">{{ activo.sub_total|intcomma }}</td>
-                    <td class="text-end">{{ activo.igv|intcomma }}</td>
-                    <td class="text-end">{{ activo.total|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ activo.precio_unitario_sin_igv|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ activo.precio_unitario_con_igv|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ activo.precio_final_con_igv|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ activo.descuento|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ activo.sub_total|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ activo.igv|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ activo.total|intcomma }}</td>
  
                     <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_actualizar' activo.id %}"

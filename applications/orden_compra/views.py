@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.shortcuts import render
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import numeroXn, obtener_totales
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
 from applications.funciones import slug_aleatorio
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -112,7 +112,7 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
     def form_valid(self, form):
         if self.request.session['primero']:
             obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
-            numero_orden_compra = obj.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = obj.sociedad ))+1, 5)
+            numero_orden_compra = obj.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = obj.sociedad ))+1, 6)
             orden_compra_anterior = obj
             oferta_proveedor = obj.oferta_proveedor
 
@@ -217,34 +217,66 @@ def OrdenCompraDetailTabla(request, slug):
 
 class OrdenCompraPdfView(View):
     def get(self, request, *args, **kwargs):
-        color = COLOR_DEFAULT
-        titulo = 'Orden de Compra'
-        vertical = True
-        logo = None
-        pie_pagina = PIE_DE_PAGINA_DEFAULT
-
         obj = OrdenCompra.objects.get(slug=self.kwargs['slug'])
+        color = obj.sociedad.color
+        titulo = 'Orden de Compra'
+        vertical = False
+        logo = obj.sociedad.logo.url
+        pie_pagina = obj.sociedad.pie_pagina
 
-        fecha=datetime.strftime(obj.fecha_orden,'%d - %m - %Y')
+        sociedad = obj.sociedad
+        orden = obj
+        proveedor = obj.oferta_proveedor.requerimiento_material.proveedor
+        interlocutor = obj.oferta_proveedor.requerimiento_material.interlocutor_proveedor
+        usuario = request.user
 
-        Texto = titulo + '\n' +str(obj.oferta_proveedor.requerimiento_material.proveedor) + '\n' + str(fecha)
-
-        TablaEncabezado = ['Item','Material', 'Unidad', 'Cantidad']
+        TablaEncabezado = ['Item',
+                            'Material',
+                            'Unidad',
+                            'Cantidad',
+                            'Prec. Unit. sin IGV',
+                            'Prec. Unit. con IGV',
+                            'Prec. Final con IGV',
+                            'Descuento',
+                            'Sub Total',
+                            'IGV',
+                            'Total',
+                            ]
 
         orden_detalle = obj.OrdenCompraDetalle_orden_compra.all()
         TablaDatos = []
+        item = 1
         for detalle in orden_detalle:
             fila = []
-
+            calculo = calculos_linea(detalle.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(obj.fecha_orden), detalle.tipo_igv)
             detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
-            fila.append(detalle.item)
-            fila.append(detalle.material)
-            fila.append(detalle.material.unidad_base)
-            fila.append(detalle.cantidad.quantize(Decimal('0.01')))
-
+            fila.append(item)
+            fila.append(intcomma(detalle.material))
+            fila.append(intcomma(detalle.material.unidad_base))
+            fila.append(intcomma(detalle.cantidad.quantize(Decimal('0.01'))))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(calculo['precio_unitario_sin_igv'].quantize(Decimal('0.01')))))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(detalle.precio_final_con_igv.quantize(Decimal('0.01')))))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(calculo['descuento_con_igv'].quantize(Decimal('0.01')))))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(calculo['subtotal'].quantize(Decimal('0.01')))))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(calculo['igv'].quantize(Decimal('0.01')))))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(calculo['total'].quantize(Decimal('0.01')))))
             TablaDatos.append(fila)
+            item += 1
+        
+        totales = obtener_totales(obj, sociedad)
 
-        buf = generarOrdenCompra(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+        TablaTotales = []
+        for k,v in totales.items():
+            if not k in DICCIONARIO_TOTALES: continue
+            if v==0:continue
+            fila = []
+            fila.append(DICCIONARIO_TOTALES[k])
+            fila.append(intcomma(v))
+
+            TablaTotales.append(fila)
+
+        buf = generarOrdenCompra(titulo, vertical, logo, pie_pagina, sociedad, orden, proveedor, interlocutor, usuario, TablaEncabezado, TablaDatos, TablaTotales, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
@@ -312,6 +344,7 @@ class OfertaProveedorDetalleUpdateView(BSModalUpdateView):
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
         context['material'] = self.object
+        context['valor_igv'] = igv()
         return context
 
 

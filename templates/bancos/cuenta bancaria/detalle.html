@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block titulo %}
+Detalle de Cuenta Bancaria
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle de Cuenta Bancaria</h3>
+    <div class="table-responsive">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.sociedad }}</td>
+                    <th class="pe-2">Estado:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.get_estado_display }}</td>
+                    <th class="pe-2">Número de Cuenta:</th>
+                    <td>{{ cuenta_bancaria.numero_cuenta }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Banco:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.banco }}</td>
+                    <th class="pe-2">Moneda:</th>
+                    <td class="pe-3">{{ cuenta_bancaria.moneda }}</td>
+                    <th class="pe-2">Número de Cuenta Interbancaria:</th>
+                    <td>{{ cuenta_bancaria.numero_cuenta_interbancaria }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'cobranza_app:cuenta_bancaria_inicio' %}"
+    class="btn btn-primary">
+        Regresar
+    </a>
+    <button class="delete btn btn-primary"      
+        data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso' cuenta_bancaria.id %}">
+        Agregar Ingreso
+    </button>    
+
+    <div class="table-responsive" id="tabla">
+        {% include 'bancos/cuenta bancaria/detalle tabla.html' %}
+    </div>
+{% endblock contenido %}

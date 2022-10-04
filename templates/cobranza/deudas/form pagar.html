@@ -1,0 +1,35 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block arriba %}
+<div class="input-group flex-nowrap mt-3">
+    <label class="input-group-text" for="id_monto">Deuda</label>
+    <input type="text" class="form-control" value="{{ deuda.moneda.simbolo }} {{ deuda.saldo }}" disabled>
+    <span id="moneda" hidden>{{ deuda.moneda.simbolo }}</span>
+    <span id="disponible" hidden>{{ deuda.saldo }}</span>
+</div>
+<hr>
+{% endblock arriba %}
+
+{% block abajo %}
+<hr>
+<div class="input-group flex-nowrap mt-3">
+    <label class="input-group-text" for="id_monto">Monto Final</label>
+    <input type="text" class="form-control" disabled id="monto_final">
+</div>
+{% endblock abajo %}
+    
+
+{% block js %}
+<script src="{% static 'js/cobranza/deudas/form pagar.js' %}?{{ cache_bust }}"></script>
+<script>
+    $(function () {
+        $("#id_ingresos").select2({
+            width:'100%',
+            dropdownParent: $(".modal-body"),
+            matcher: buscar_select2
+        });
+    });
+</script>
+{% endblock js %}
+    

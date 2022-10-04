@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block titulo %}
+Depósitos
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Depósitos</h3>
+    <div class="table-responsive" id="tabla">
+        {% include 'bancos/cuenta bancaria/depositos tabla.html' %}
+    </div>
+
+{% endblock contenido %}

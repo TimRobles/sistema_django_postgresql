@@ -123,7 +123,7 @@ def consulta_distancia(longitud, latitud, sede_id):
         return "Estás a %i metros de la oficina." % int(distancia*1000)
     else:
         return "Estás en la oficina"
-    
+
 
 def slug_aleatorio(modelo):
     letters = string.ascii_uppercase
@@ -141,31 +141,38 @@ def slug_aleatorio(modelo):
     return slug
 
 
-def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_cambio=Decimal('1')):
+def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, tipo_cambio=Decimal('1')):
     respuesta = {}
 
-    precio_unitario_sin_igv = Decimal(Decimal(precio_unitario_con_igv)/(1 + Decimal(valor_igv))).quantize(Decimal('0.0000000001'))
-
-    precio_final_sin_igv = Decimal(Decimal(precio_final_con_igv)/(1 + Decimal(valor_igv))).quantize(Decimal('0.0000000001'))
+    if tipo_igv==8:
+        precio_unitario_sin_igv = precio_unitario_con_igv
+        precio_final_sin_igv = precio_final_con_igv
+    else:
+        precio_unitario_sin_igv = Decimal(Decimal(precio_unitario_con_igv)/(1 + Decimal(valor_igv))).quantize(Decimal('0.0000000001'))
+        precio_final_sin_igv = Decimal(Decimal(precio_final_con_igv)/(1 + Decimal(valor_igv))).quantize(Decimal('0.0000000001'))
 
     descuento_unitario = (precio_unitario_sin_igv - precio_final_sin_igv).quantize(Decimal('0.0000000001'))
     descuento = (descuento_unitario * Decimal(cantidad)).quantize(Decimal('0.01'))
 
     total = (Decimal(cantidad) * precio_final_con_igv).quantize(Decimal('0.01'))
-    subtotal = (total / (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
+    if tipo_igv==8:
+        subtotal = total
+    else:
+        subtotal = (total / (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
     igv = (total - subtotal).quantize(Decimal('0.01'))
 
-    respuesta['precio_unitario_sin_igv'] = precio_unitario_sin_igv
-    respuesta['descuento'] = descuento
-    respuesta['descuento_con_igv'] = (precio_unitario_con_igv * cantidad - total).quantize(Decimal('0.01'))
-    respuesta['subtotal'] = subtotal
-    respuesta['igv'] = igv
-    respuesta['total'] = total
+    respuesta['precio_unitario_sin_igv'] = (precio_unitario_sin_igv).quantize(Decimal('0.01'))
+    respuesta['descuento'] = (descuento).quantize(Decimal('0.01'))
+    respuesta['descuento_con_igv'] = ((precio_unitario_con_igv * cantidad - total).quantize(Decimal('0.01'))).quantize(Decimal('0.01'))
+    respuesta['subtotal'] = (subtotal).quantize(Decimal('0.01'))
+    respuesta['igv'] = (igv).quantize(Decimal('0.01'))
+    respuesta['total'] = (total).quantize(Decimal('0.01'))
+    respuesta['tipo_igv'] = tipo_igv
 
     return respuesta
 
 
-def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv, tipo_cambio=Decimal('1')):
+def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, anticipo, valor_igv, tipo_cambio=Decimal('1')):
     respuesta = {}
 
     descuento_global_con_igv = (descuento_global * (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
@@ -187,11 +194,11 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
 
         total_descuento += resultado_linea['descuento']
         total_descuento_con_igv += resultado_linea['descuento_con_igv']
-        if internacional == 2:
-            total_gravada += resultado_linea['subtotal']
-        else:
+        if resultado_linea['tipo_igv']==8:
             total_exonerada += resultado_linea['subtotal']
-    
+        else:
+            total_gravada += resultado_linea['subtotal']
+
     total_descuento += descuento_global
     total_descuento_con_igv += descuento_global_con_igv
     total_gravada -= descuento_global
@@ -202,25 +209,25 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, int
     else:
         total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
 
-    respuesta['descuento_global'] = descuento_global * tipo_cambio
-    respuesta['descuento_global_con_igv'] = descuento_global_con_igv * tipo_cambio
+    respuesta['descuento_global'] = (descuento_global * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['descuento_global_con_igv'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
     if descuento_global_con_igv >= total_otros_cargos:
-        respuesta['descuento_cotizacion'] = (descuento_global_con_igv - total_otros_cargos) * tipo_cambio
-        respuesta['otros_cargos_cotizacion'] = Decimal('0.00') * tipo_cambio
+        respuesta['descuento_cotizacion'] = ((descuento_global_con_igv - total_otros_cargos) * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['otros_cargos_cotizacion'] = (Decimal('0.00') * tipo_cambio).quantize(Decimal('0.01'))
     else:
-        respuesta['descuento_cotizacion'] = descuento_global_con_igv * tipo_cambio
-        respuesta['otros_cargos_cotizacion'] = total_otros_cargos * tipo_cambio
-    respuesta['total_descuento'] = total_descuento * tipo_cambio
-    respuesta['total_descuento_con_igv'] = total_descuento_con_igv * tipo_cambio
-    respuesta['total_anticipo'] = total_anticipo * tipo_cambio
-    respuesta['total_gravada'] = total_gravada * tipo_cambio
-    respuesta['total_inafecta'] = total_inafecta * tipo_cambio
-    respuesta['total_exonerada'] = total_exonerada * tipo_cambio
-    respuesta['total_igv'] = total_igv * tipo_cambio
-    respuesta['total_gratuita'] = total_gratuita * tipo_cambio
-    respuesta['total_otros_cargos'] = total_otros_cargos * tipo_cambio
-    respuesta['total_icbper'] = total_icbper * tipo_cambio
-    respuesta['total'] = total * tipo_cambio
+        respuesta['descuento_cotizacion'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['otros_cargos_cotizacion'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_descuento'] = (total_descuento * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_descuento_con_igv'] = (total_descuento_con_igv * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_anticipo'] = (total_anticipo * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_gravada'] = (total_gravada * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_inafecta'] = (total_inafecta * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_exonerada'] = (total_exonerada * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_igv'] = (total_igv * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_gratuita'] = (total_gratuita * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_otros_cargos'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total_icbper'] = (total_icbper * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['total'] = (total * tipo_cambio).quantize(Decimal('0.01'))
     return respuesta
 
 
@@ -243,9 +250,9 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
     elif hasattr(cabecera, 'ComprobanteCompraPIDetalle_comprobante_compra'):
         detalles = cabecera.ComprobanteCompraPIDetalle_comprobante_compra.all()
     elif hasattr(cabecera, 'ComprobanteCompraCIDetalle_comprobante_compra'):
-        detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()    
+        detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()
     elif hasattr(cabecera, 'OrdenCompraDetalle_orden_compra'):
-        detalles = cabecera.OrdenCompraDetalle_orden_compra.all()    
+        detalles = cabecera.OrdenCompraDetalle_orden_compra.all()
     elif hasattr(cabecera, 'ComprobanteCompraActivoDetalle_comprobante_compra_activo'):
         detalles = cabecera.ComprobanteCompraActivoDetalle_comprobante_compra_activo.all()
     elif hasattr(cabecera, 'CotizacionVentaDetalle_cotizacion_venta'):
@@ -257,7 +264,8 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:
-        if sociedad:
+        tipo_igv = detalle.tipo_igv
+        if sociedad and hasattr(detalle, 'CotizacionSociedad_cotizacion_venta_detalle'):
             cantidad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad).cantidad
         else:
             cantidad = detalle.cantidad
@@ -267,9 +275,9 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
             valor_igv = 0.18
         else:
             valor_igv = 0
-        calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv)
+        calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv)
         lista_resultados_linea.append(calculo)
-    if sociedad:
+    if sociedad and hasattr(cabecera, 'CotizacionDescuentoGlobal_cotizacion_venta'):
         descuento_global = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global
         otros_cargos = cabecera.CotizacionOtrosCargos_cotizacion_venta.get(sociedad=sociedad).otros_cargos
     else:
@@ -279,10 +287,10 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         else:
             descuento_global = Decimal('0.00')
             otros_cargos = Decimal('0.00')
-            
+
     internacional = cabecera.internacional_nacional
     anticipo = False
-    return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, internacional, anticipo, valor_igv, tipo_cambio)
+    return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, anticipo, valor_igv, tipo_cambio)
 
 
 def obtener_totales_soles(resultado, tipo_cambio, sociedad=None):
@@ -311,7 +319,7 @@ def igv(fecha=date.today()):
     return igv[0].monto + ipm[0].monto
 
 
-def tipo_de_cambio(cambio1, cambio2):
+def tipo_de_cambio(cambio1=None, cambio2=None):
     if cambio1 and cambio2:
         return max(cambio1, cambio2)
     elif cambio1:
@@ -319,7 +327,10 @@ def tipo_de_cambio(cambio1, cambio2):
     elif cambio2:
         return cambio2
     else:
-        return 1
+        try:
+            return applications.datos_globales.models.TipoCambio.objects.tipo_cambio_venta(date.today())
+        except:
+            return 1
 
 
 def mes_en_letras(valor):

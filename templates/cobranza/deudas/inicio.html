@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+Deudores
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Deudores</h3>
+
+    <div class="table-responsive" id="tabla">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Monto</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+        
+            <tbody>
+                {% for cliente in contexto_cliente %}
+        
+                {% if cliente.deuda_monto > 0 %}
+                <tr>
+                    <td>{{ cliente.razon_social }}</td>
+                    <td>{{ moneda.simbolo }} {{ cliente.deuda_monto }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'cobranza_app:deudores_detalle' cliente.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+        
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock contenido %}
