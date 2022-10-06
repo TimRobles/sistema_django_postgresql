@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import (
+    ConfirmacionVentaCuota,
     ConfirmacionVentaDetalle,
     CotizacionDescuentoGlobal,
     CotizacionOtrosCargos,
@@ -8,7 +9,7 @@ from .models import (
     CotizacionVenta,
     CotizacionVentaDetalle,
     CotizacionObservacion,
-    CotizacionOrdenCompra,
+    ConfirmacionOrdenCompra,
     CotizacionTerminosCondiciones,
     ConfirmacionVenta,
 )
@@ -98,14 +99,14 @@ class CotizacionVentaDetalleAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(CotizacionOrdenCompra)
-class CotizacionOrdenCompraAdmin(admin.ModelAdmin):
+@admin.register(ConfirmacionOrdenCompra)
+class ConfirmacionOrdenCompraAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'numero_orden',
         'fecha_orden',
         'documento',
-        'cotizacion_venta',
+        'confirmacion_venta',
         'created_at',
         'created_by',
         'updated_at',
@@ -152,6 +153,7 @@ class ConfirmacionVentaAdmin(admin.ModelAdmin):
         'total',
         'estado',
         'motivo_anulacion',
+        'sunat_transaction',
         'created_at',
         'created_by',
         'updated_at',
@@ -182,6 +184,28 @@ class ConfirmacionVentaDetalleAdmin(admin.ModelAdmin):
         'total',
         'tipo_igv',
         'confirmacion_venta',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',      
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(ConfirmacionVentaCuota)
+class ConfirmacionVentaCuotaAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'confirmacion_venta',
+        'monto',
+        'dias_pago',
+        'fecha_pago',
+        'dias_calculo',
         'created_at',
         'created_by',
         'updated_at',

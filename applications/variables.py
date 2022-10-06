@@ -1,3 +1,15 @@
+SUNAT_TRANSACTION = (
+    (1, 'VENTA INTERNA'),
+    (2, 'EXPORTACIÓN'),
+    (4, 'VENTA INTERNA - ANTICIPOS'),
+    (29, 'VENTAS NO DOMICILIADOS QUE NO CALIFICAN COMO EXPORTACIÓN.'),
+    (30, 'OPERACIÓN SUJETA A DETRACCIÓN.'),
+    (33, 'DETRACCIÓN - SERVICIOS DE TRANSPORTE CARGA'),
+    (34, 'OPERACIÓN SUJETA A PERCEPCIÓN'),
+    (32, 'DETRACCIÓN - SERVICIOS DE TRANSPORTE DE PASAJEROS.'),
+    (31, 'DETRACCIÓN - RECURSOS HIDROBIOLÓGICOS'),
+)
+
 TIPO_DOCUMENTO_SUNAT = (
     ('6', 'RUC - REGISTRO ÚNICO DE CONTRIBUYENTE'),
     ('1', 'DNI - DOC. NACIONAL DE IDENTIDAD'),
@@ -125,15 +137,27 @@ TIPO_DOCUMENTO_CHOICES = (
 TIPO_COMPROBANTE = (
     (1, 'FACTURA'),
     (2, 'BOLETA'),
+    (3, 'NOTA DE CRÉDITO'),
+    (4, 'NOTA DE DÉBITO'),
     )
+
 TIPO_VENTA= (
     (1, 'CONTADO'),
     (2, 'CREDITO'),
     )
 
 ESTADOS = (
-    (1, 'Alta'),
-    (2, 'Baja'),
+    (1, 'ALTA'),
+    (2, 'BAJA'),
+    )
+
+ESTADOS_DOCUMENTO = (
+    (1, 'BORRADOR'),
+    (2, 'ACTIVO'),
+    (3, 'ANULADO'),
+    (4, 'ACEPTADO POR SUNAT'),
+    (5, 'RECHAZADO POR SUNAT'),
+    (6, 'CON ERRORES'),
     )
 
 ESTADO_NOTA_INGRESO = (
@@ -250,6 +274,9 @@ MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue 
 
 MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
 MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'
+
+MENSAJE_ELIMINAR_DEUDA = 'Operación exitosa: Deuda eliminada.'
+MENSAJE_ERROR_ELIMINAR_DEUDA = 'No se pudo eliminar la deuda, contactar con el administrador.'
 
 COLOR_DEFAULT = '#8B32A8'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'

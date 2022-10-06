@@ -19,21 +19,43 @@
 
     {% if confirmacion.cliente.estado_sunat == 1 and confirmacion.cliente.condicion_sunat == 1 %}
 
-    {% if confirmacion.cliente.tipo_documento == 6 %}
-    <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
-            class="delete btn btn-primary">
-            FACTURA
-        </button>
-    </div>
-    {% endif %}
+        {% if confirmacion.cliente.tipo_documento == '6' %}
+        
+            {% if id_factura %}
+            <div class="col-auto">
+                <a href="#"
+                class="btn btn-success">
+                    Ver Factura
+                </a>
+            </div>
+            {% else %}
+            <div class="col-auto">
+                <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
+                    class="delete btn btn-primary">
+                    FACTURA
+                </button>
+            </div>
+            {% endif %}
+        
+        {% endif %}
+        
+        {% if id_boleta %}
+        <div class="col-auto">
+            <a href="{% url 'comprobante_venta_app:boleta_venta_detalle' id_boleta %}"
+            class="btn btn-success">
+                Ver Boleta
+            </a>
+        </div>
+        {% else %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_crear' confirmacion.id %}"
+                class="delete btn btn-primary">
+                BOLETA
+            </button>
+        </div>
+        {% endif %}
 
-    <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_crear' confirmacion.id %}"
-            class="delete btn btn-primary">
-            BOLETA
-        </button>
-    </div>
+    {% endif %}
 
 </div>
 
@@ -104,10 +126,32 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Estado Cotización:</th>
+                    <th class="pe-2">Estado Cotización:</th>
                     <td>{{ cotizacion.get_estado_display }}</td>
                     <th class="px-2">Estado Confirmación:</th>
                     <td>{{ confirmacion.get_estado_display }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Transacción:</th>
+                    <td>{{ confirmacion.get_sunat_transaction_display }}</td>
+                    <td class="px-2" rowspan="2">
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
+                            class="update btn btn-primary" title="Seleccionar Cliente">
+                            Orden de Compra
+                        </button>
+                        {% if confirmacion.ConfirmacionOrdenCompra_confirmacion_venta %}
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
+                            class="update btn btn-primary" title="Seleccionar Cliente">
+                            Ver Orden de Compra
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Orden de Compra:</th>
+                    <td>{{ confirmacion.ConfirmacionOrdenCompra_confirmacion_venta }}</td>
                 </tr>
             </tbody>
         </table>
@@ -151,6 +195,12 @@
                             Cambiar Forma de Pago
                         </button>
                         {% endif %}
+                        {% if confirmacion.tipo_venta == 2 %}
+                        <a href="{% url 'cotizacion_app:confirmacion_cuotas' confirmacion.id %}"
+                        class="update btn btn-warning">
+                            Cuotas
+                        </a>
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
@@ -161,10 +211,21 @@
                         {% endif %}
                     </td>
                 </tr>
-                <!-- <tr>
-                    <th class="pe-2">Disponible:</th>
-                    <td>{{ cotizacion.descuento }}</td>
-                </tr> -->
+                {% if confirmacion.tipo_venta == 2 %}
+                <tr>
+                    <th class="pe-2">Cuotas:</th>
+                    <td>
+                        {% for cuota in confirmacion.ConfirmacionVentaCuota_confirmacion_venta.all %}
+                        {% if forloop.counter > 1 %}
+                        |
+                        {% endif %}
+
+                        {{ cuota.dias_calculo }}
+                            
+                        {% endfor %}    
+                    </td>
+                </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>

@@ -1,3 +1,4 @@
+from datetime import date
 from django import forms
 from applications.datos_globales.models import Area, Cargo, Moneda, TipoCambio, TipoCambioSunat, TipoInterlocutor, Pais
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
@@ -12,6 +13,7 @@ class MonedaForm(forms.ModelForm):
             'principal',
             'secundario',
             'moneda_pais',
+            'nubefact',
             'estado',
             )
 
@@ -114,6 +116,8 @@ class TipoCambioForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(TipoCambioForm, self).__init__(*args, **kwargs)
+        if not self.fields['fecha'].initial:
+            self.fields['fecha'].initial = date.today()
         self.fields['moneda_origen'].initial = Moneda.objects.get(principal=True)
         self.fields['moneda_destino'].initial = Moneda.objects.get(secundario=True)
         for visible in self.visible_fields():

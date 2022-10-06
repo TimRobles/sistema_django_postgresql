@@ -52,6 +52,12 @@ urlpatterns = [
     path('confirmacion/ver/<int:id_confirmacion>/', views.ConfirmarVerView.as_view(), name='confirmacion_ver'),
     path('confirmacion/ver/tabla/<int:id_confirmacion>/', views.ConfirmarVerTabla, name='confirmacion_ver_tabla'),
     path('confirmacion/ver/cliente/<pk>/', views.ConfirmacionClienteView.as_view(), name='confirmacion_cliente'),
+    path('confirmacion/ver/cuotas/<pk>/', views.ConfirmacionVentaVerCuotaView.as_view(), name='confirmacion_ver_cuotas'),
+    path('confirmacion/cuotas/<int:id_confirmacion>/', views.ConfirmacionVentaCuotaView.as_view(), name='confirmacion_cuotas'),
+    path('confirmacion/cuotas/tabla/<int:id_confirmacion>/', views.ConfirmacionVentaCuotaTabla, name='confirmacion_cuotas_tabla'),
+    path('confirmacion/cuota/agregar/<int:id_confirmacion>/',views.ConfirmacionVentaCuotaCreateView.as_view(),name='confirmacion_cuota_agregar'),
+    path('confirmacion/cuota/actualizar/<pk>/',views.ConfirmacionVentaCuotaUpdateView.as_view(),name='confirmacion_cuota_actualizar'),
+    path('confirmacion/cuota/eliminar/<pk>/',views.ConfirmacionVentaCuotaDeleteView.as_view(),name='confirmacion_cuota_eliminar'),
 
     path('confirmacion/',views.ConfirmacionListView.as_view(),name='confirmacion_inicio'),
     path('confirmacion/<int:id_cotizacion>/',views.ConfirmacionListView.as_view(),name='confirmacion_cotizacion_inicio'),

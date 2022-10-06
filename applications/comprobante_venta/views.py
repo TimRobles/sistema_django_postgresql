@@ -1,7 +1,11 @@
+import json
 from urllib import request
 from django.shortcuts import render
+from applications.cobranza.funciones import eliminarDeuda, generarDeuda
+from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaSerieForm
+from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact
 from applications.cotizacion.models import ConfirmacionVenta
-from applications.datos_globales.models import SeriesComprobante, TipoCambio
+from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio
 from applications.funciones import obtener_totales, slug_aleatorio, tipo_de_cambio
 from applications.importaciones import *
 
@@ -103,7 +107,7 @@ class FacturaVentaCrearView(DeleteView):
 
         detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
-        serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(FacturaVenta)).earliest('created_at')
+        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(FacturaVenta))
         factura_venta = FacturaVenta.objects.create(
             confirmacion=self.object,
             sociedad = self.object.sociedad,
@@ -115,9 +119,16 @@ class FacturaVentaCrearView(DeleteView):
             tipo_venta = self.object.tipo_venta,
             condiciones_pago = self.object.condiciones_pago,
             descuento_global = self.object.descuento_global,
+            total_descuento = self.object.total_descuento,
+            total_anticipo = self.object.total_anticipo,
+            total_gravada = self.object.total_gravada,
+            total_inafecta = self.object.total_inafecta,
+            total_exonerada = self.object.total_exonerada,
+            total_igv = self.object.total_igv,
+            total_gratuita = self.object.total_gratuita,
             total_otros_cargos = self.object.otros_cargos,
-            observaciones = self.object.observacion,
             total = self.object.total,
+            observaciones = self.object.observacion,
             slug = slug_aleatorio(FacturaVenta),
             created_by=self.request.user,
             updated_by=self.request.user,
@@ -204,7 +215,8 @@ class BoletaVentaDetalleView(TemplateView):
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
         context['tipo_cambio'] = tipo_cambio
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales'] = obtener_totales(FacturaVenta.objects.get(id=self.kwargs['id_factura_venta']))
+        context['totales'] = obtener_totales(obj)
+        context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
       
         return context
 
@@ -232,7 +244,8 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         context['tipo_cambio_hoy'] = tipo_cambio_hoy
         context['tipo_cambio'] = tipo_cambio
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
-        context['totales'] = obtener_totales(obj)     
+        context['totales'] = obtener_totales(obj)
+        context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
 
         data['table'] = render_to_string(
             template,
@@ -253,7 +266,7 @@ class BoletaVentaCrearView(DeleteView):
 
         detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
 
-        serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(BoletaVenta)).earliest('created_at')
+        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(BoletaVenta))
 
         boleta_venta = BoletaVenta.objects.create(
             confirmacion=self.object,
@@ -266,9 +279,16 @@ class BoletaVentaCrearView(DeleteView):
             tipo_venta = self.object.tipo_venta,
             condiciones_pago = self.object.condiciones_pago,
             descuento_global = self.object.descuento_global,
+            total_descuento = self.object.total_descuento,
+            total_anticipo = self.object.total_anticipo,
+            total_gravada = self.object.total_gravada,
+            total_inafecta = self.object.total_inafecta,
+            total_exonerada = self.object.total_exonerada,
+            total_igv = self.object.total_igv,
+            total_gratuita = self.object.total_gratuita,
             total_otros_cargos = self.object.otros_cargos,
-            observaciones = self.object.observacion,
             total = self.object.total,
+            observaciones = self.object.observacion,
             slug = slug_aleatorio(BoletaVenta),
             created_by=self.request.user,
             updated_by=self.request.user,
@@ -311,3 +331,162 @@ class BoletaVentaCrearView(DeleteView):
         context['item'] = str(self.object.cliente) 
         return context
 
+
+
+class BoletaVentaSerieUpdateView(BSModalUpdateView):
+    model = BoletaVenta
+    template_name = "includes/formulario generico.html"
+    form_class = BoletaVentaSerieForm
+    success_url = '.'
+    
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaSerieUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Seleccionar'
+        context['titulo'] = 'Serie'
+        return context
+    
+
+class BoletaVentaGuardarView(DeleteView):
+    model = BoletaVenta
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_tipo_cambio = False
+        context['titulo'] = 'Error de guardar'
+        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+            error_tipo_cambio = True
+
+        if error_tipo_cambio:
+            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(BoletaVentaGuardarView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        fecha_vencimiento = generarDeuda(obj, self.request)
+
+        obj.fecha_emision = date.today()
+        obj.fecha_vencimiento = fecha_vencimiento
+        obj.estado = 2
+        obj.numero_boleta = BoletaVenta.objects.nuevo_numero(obj)
+        registro_guardar(obj, self.request)
+        obj.save()
+        obj.confirmacion.estado = 2
+        obj.confirmacion.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaGuardarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Guardar'
+        context['titulo'] = 'Boleta de Venta'
+        context['texto'] = '¿Seguro de guardar la Boleta de Venta?'
+        context['item'] = self.get_object()
+        return context
+    
+
+class BoletaVentaAnularView(BSModalUpdateView):
+    model = BoletaVenta
+    template_name = "includes/formulario generico.html"
+    form_class = BoletaVentaAnularForm
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        eliminar = eliminarDeuda(form.instance)
+        if eliminar:
+            messages.success(self.request, MENSAJE_ELIMINAR_DEUDA)
+        else:
+            messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
+        form.instance.estado = 3
+        form.instance.confirmacion.estado = 1
+        form.instance.confirmacion.save()
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaAnularView, self).get_context_data(**kwargs)
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Boleta de Venta'
+        return context
+    
+
+class BoletaVentaNubeFactEnviarView(DeleteView):
+    model = BoletaVenta
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_nubefact = False
+        context['titulo'] = 'Error de guardar'
+        if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+            error_nubefact = True
+
+        if error_nubefact:
+            context['texto'] = 'No hay una ruta para envío a NubeFact'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(BoletaVentaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        respuesta = boleta_nubefact(obj, self.request.user)
+        if respuesta.error:
+            obj.estado = 6
+        elif respuesta.aceptado:
+            obj.estado = 4
+        else:
+            obj.estado = 5
+        registro_guardar(obj, self.request)
+        obj.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaNubeFactEnviarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Enviar'
+        context['titulo'] = 'Boleta de Venta a NubeFact'
+        context['texto'] = '¿Seguro de enviar la Boleta de Venta a NubeFact?'
+        context['item'] = self.get_object()
+        return context
+    
+
+class BoletaVentaNubeFactAnularView(BSModalUpdateView):
+    model = BoletaVenta
+    template_name = "includes/formulario generico.html"
+    form_class = BoletaVentaAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_fecha = False
+        context['titulo'] = 'Error de guardar'
+        if (date.today() - self.get_object().fecha_emision).days > 0:
+            error_fecha = True
+
+        if error_fecha:
+            context['texto'] = 'No se puede anular, realizar nota de crédito.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(BoletaVentaNubeFactAnularView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        respuesta = anular_nubefact(form.instance, self.request.user)
+        if respuesta.error:
+            form.instance.estado = 6
+        else:
+            form.instance.estado = 3
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaNubeFactAnularView, self).get_context_data(**kwargs)
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Boleta de Venta a NubeFact'
+        return context

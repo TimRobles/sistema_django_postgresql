@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Cuotas Confirmación
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Cuotas</h3>
+    <div id="tabla">
+        {% include 'cotizacion/confirmacion/cuotas_tabla.html' %}
+    </div>
+{% endblock contenido %}

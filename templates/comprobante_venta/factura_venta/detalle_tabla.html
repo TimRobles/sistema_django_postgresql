@@ -38,6 +38,14 @@
                         {% endif %}
                     </td>
                 </tr>
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>
+                        {% if factura.cliente %}
+                        {{ factura.cliente.get_estado_sunat_display }} - {{ factura.cliente.get_condicion_sunat_display }}
+                        {% endif %}
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -60,6 +68,15 @@
                     <td>
                         {% if factura.numero_factura %}
                         {{ factura.numero_factura }}
+                        {% endif %}
+                    </td>
+                    <td class="ps-2" rowspan="2">
+                        {% if factura.estado == 1 %}
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
+                            class="update btn btn-primary" title="Seleccionar Cliente">
+                            Seleccionar Cliente
+                        </button>
                         {% endif %}
                     </td>
                 </tr>
@@ -121,13 +138,13 @@
                     <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                     <td class="text-nowrap">{{ material.material.unidad_base }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">$ {{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">$ {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap table-secondary">$ {{ material.precio_final_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">$ {{ material.descuento|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">$ {{ material.sub_total|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">$ {{ material.igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">$ {{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap table-secondary">{{ factura.moneda.simbolo }} {{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.descuento|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.sub_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.total|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap table-primary">
                         {{ material.material.vendible|redondear|intcomma }}
                         {% if material.material.reservado %}
@@ -148,57 +165,57 @@
                 <td colspan="10" class="text-end">
                     Descuento Global:
                 </td>
-                <td class="text-end text-nowrap">$ {{ totales.descuento_global|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.descuento_global|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>            
             <tr>
                 <td colspan="10" class="text-end">Descuento Total:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_descuento|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_descuento|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>           
             <tr>
                 <td colspan="10" class="text-end">Anticipo:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_anticipo|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_anticipo|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Exonerada:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_exonerada|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_exonerada|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Inafecta:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_inafecta|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_inafecta|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Gravada:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_gravada|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_gravada|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">IGV:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_igv|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Gratuita:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_gratuita|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_gratuita|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Otros Cargos:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_otros_cargos|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_otros_cargos|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">ICBPER:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total_icbper|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total_icbper|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
             <tr>
                 <td colspan="10" class="text-end">Total:</td>
-                <td class="text-end text-nowrap">$ {{ totales.total|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ totales.total|redondear|intcomma }}</td>
                 <td colspan="3"></td>
             </tr>
         </tfoot>

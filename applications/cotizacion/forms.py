@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.cotizacion.models import ConfirmacionVenta, CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
+from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaCuota, CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.material.models import Material
 
@@ -247,5 +247,28 @@ class SolicitudCreditoCuotaForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SolicitudCreditoCuotaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ConfirmacionVentaCuotaForm(BSModalModelForm):
+    class Meta:
+        model = ConfirmacionVentaCuota
+        fields = (
+            'monto',
+            'dias_pago',
+            'fecha_pago',
+            )
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ConfirmacionVentaCuotaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

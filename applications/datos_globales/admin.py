@@ -14,6 +14,7 @@ from .models import (
     Magnitud,
     NubefactAcceso,
     NubefactRespuesta,
+    NubefactSerieAcceso,
     TipoCambioSunat,
     Unidad, 
     Area, 
@@ -49,6 +50,7 @@ class MonedaAdmin(admin.ModelAdmin):
         'principal',
         'secundario',
         'moneda_pais',
+        'nubefact',
         'estado',
         'created_by',
         'created_at',
@@ -596,11 +598,30 @@ admin.site.register(ImpuestoPromocionMunicipal, ImpuestoPromocionMunicipalAdmin)
 class NubefactAccesoAdmin(admin.ModelAdmin):
     list_display = (
         'id',
+        'descripcion',
+        'ruta',
+        'token',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(NubefactSerieAcceso)
+class NubefactSerieAccesoAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
         'sociedad',
         'content_type',
         'serie_comprobante',
-        'ruta',
-        'token',
+        'acceso',
         'created_at',
         'created_by',
         'updated_at',
@@ -621,6 +642,7 @@ class NubefactRespuestaAdmin(admin.ModelAdmin):
         'content_type',
         'id_registro',
         'aceptado',
+        'error',
         'envio',
         'respuesta',
         'created_at',

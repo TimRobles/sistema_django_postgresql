@@ -62,7 +62,7 @@ class Cliente(models.Model):
         try:
             return self.LineaCredito_cliente.get(estado=1).moneda.simbolo
         except:
-            return ''
+            return '$'
 
     @property
     def deuda_monto(self):
@@ -166,7 +166,7 @@ class ClienteInterlocutor(models.Model):
 class CorreoCliente(models.Model):
 
     correo = models.EmailField('Correo')
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='CorreoCliente_cliente')
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

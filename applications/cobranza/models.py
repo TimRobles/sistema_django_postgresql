@@ -292,7 +292,8 @@ class Deuda(models.Model):
     @property
     def documento(self):
         if self.content_type:
-            return '%s %s - %s' % (self.content_type.name, self.content_type.get_object_for_this_type(id = self.id_registro).documento, self.content_type.get_object_for_this_type(id = self.id_registro).cliente)
+            documento_venta = self.content_type.get_object_for_this_type(id = self.id_registro)
+            return '%s %s - %s' % (documento_venta.get_tipo_comprobante_display(), documento_venta.documento, documento_venta.cliente)
         return ""
 
     def __str__(self):

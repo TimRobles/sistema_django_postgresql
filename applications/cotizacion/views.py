@@ -18,6 +18,7 @@ from applications.recepcion_compra.models import RecepcionCompra
 
 from .forms import (
     ConfirmacionClienteForm,
+    ConfirmacionVentaCuotaForm,
     ConfirmacionVentaFormaPagoForm,
     CotizacionVentaClienteForm,
     CotizacionVentaDescuentoGlobalForm,
@@ -35,6 +36,7 @@ from .forms import (
 
 from .models import (
     ConfirmacionVenta,
+    ConfirmacionVentaCuota,
     ConfirmacionVentaDetalle,
     CotizacionDescuentoGlobal,
     CotizacionObservacion,
@@ -105,7 +107,11 @@ class CotizacionVentaVerView(TemplateView):
                 credito_temporal = Decimal('0.00')
         except:
             credito_temporal = Decimal('0.00')
-        disponible = obj.cliente.disponible_monto + credito_temporal
+        
+        if obj.cliente:
+            disponible = obj.cliente.disponible_monto + credito_temporal
+        else:
+            disponible = Decimal('0.00')
 
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
@@ -151,7 +157,11 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
                 credito_temporal = Decimal('0.00')
         except:
             credito_temporal = Decimal('0.00')
-        disponible = obj.cliente.disponible_monto + credito_temporal
+        
+        if obj.cliente:
+            disponible = obj.cliente.disponible_monto + credito_temporal
+        else:
+            disponible = Decimal('0.00')
 
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.fecha_cotizacion)
@@ -283,7 +293,7 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
                 precio_unitario_con_igv = obj.precio_unitario_con_igv
                 precio_final_con_igv = obj.precio_final_con_igv
                 obj.cantidad = obj.cantidad + cantidad
-                respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), 1)
+                respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), obj.tipo_igv)
                 obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
                 obj.precio_unitario_con_igv = precio_unitario_con_igv
                 obj.precio_final_con_igv = precio_final_con_igv
@@ -495,7 +505,6 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_guardar.html"
 
-    
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_tipo_cambio = False
@@ -1077,7 +1086,8 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
             cotizacion_venta = self.object,
         )
         for confirmacion_venta in confirmaciones_venta:
-            confirmacion_venta.delete()
+            confirmacion_venta.estado = 3
+            confirmacion_venta.save()
 
         registro_guardar(self.object, self.request)
         self.object.save()
@@ -1166,6 +1176,7 @@ class CotizacionVentaConfirmarAnticipoView(DeleteView):
                 moneda = self.object.moneda,
                 observacion = cotizacion_observacion,
                 total = self.object.total,
+                sunat_transaction = 4,
                 created_by = self.request.user,
                 updated_by = self.request.user,
             )
@@ -1466,6 +1477,11 @@ class ConfirmarVerView(TemplateView):
         except:
             pass
 
+        id_factura = None
+        id_boleta = None
+        if len(obj.BoletaVenta_confirmacion.exclude(estado=3)) == 1:
+            id_boleta = obj.BoletaVenta_confirmacion.exclude(estado=3)[0].id
+
         context = super(ConfirmarVerView, self).get_context_data(**kwargs)
         context['confirmacion'] = obj
         context['cotizacion'] = obj.cotizacion_venta
@@ -1475,6 +1491,8 @@ class ConfirmarVerView(TemplateView):
         context['totales_soles'] = obtener_totales_soles(context['totales'], obj.tipo_cambio.tipo_cambio_venta)
         context['credito_temporal'] = credito_temporal
         context['disponible'] = disponible
+        context['id_factura'] = id_factura
+        context['id_boleta'] = id_boleta
         
         return context
 
@@ -1569,6 +1587,129 @@ class ConfirmacionClienteView(BSModalUpdateView):
         context = super(ConfirmacionClienteView, self).get_context_data(**kwargs)
         context['accion'] = "Elegir"
         context['titulo'] = "Cliente"
+        return context
+
+
+class ConfirmacionVentaVerCuotaView(BSModalReadView):
+    model = ConfirmacionVenta
+    template_name = "cotizacion/confirmacion/modal cuotas.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionVentaVerCuotaView, self).get_context_data(**kwargs)
+        confirmacion = self.object
+        total = confirmacion.ConfirmacionVentaCuota_confirmacion_venta.all().aggregate(Sum('monto'))['monto__sum']
+        try:
+            if confirmacion.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = confirmacion.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
+            credito_temporal = Decimal('0.00')
+        disponible = confirmacion.cliente.disponible_monto + credito_temporal
+        context['confirmacion'] = confirmacion
+        context['credito_temporal'] = credito_temporal
+        context['disponible'] = disponible
+        context['total'] = total
+        context['titulo'] = 'Cuotas'
+        return context
+
+
+class ConfirmacionVentaCuotaView(TemplateView):
+    template_name = "cotizacion/confirmacion/cuotas.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionVentaCuotaView, self).get_context_data(**kwargs)
+        confirmacion = ConfirmacionVenta.objects.get(id=self.kwargs['id_confirmacion'])
+        total = confirmacion.ConfirmacionVentaCuota_confirmacion_venta.all().aggregate(Sum('monto'))['monto__sum']
+        try:
+            if confirmacion.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = confirmacion.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
+            credito_temporal = Decimal('0.00')
+        disponible = confirmacion.cliente.disponible_monto + credito_temporal
+        context['confirmacion'] = confirmacion
+        context['credito_temporal'] = credito_temporal
+        context['disponible'] = disponible
+        context['total'] = total
+        return context
+
+
+def ConfirmacionVentaCuotaTabla(request, id_confirmacion):
+    data = dict()
+    if request.method == 'GET':
+        template = "cotizacion/confirmacion/cuotas_tabla.html"
+        context = {}
+        confirmacion = ConfirmacionVenta.objects.get(id=id_confirmacion)
+        context['confirmacion'] = confirmacion
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ConfirmacionVentaCuotaCreateView(BSModalCreateView):
+    model = ConfirmacionVentaCuota
+    template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
+    form_class = ConfirmacionVentaCuotaForm
+    success_url = '.'
+    
+    def form_valid(self, form):
+        form.instance.confirmacion_venta = ConfirmacionVenta.objects.get(id=self.kwargs['id_confirmacion'])
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        obj = ConfirmacionVenta.objects.get(id=self.kwargs['id_confirmacion'])
+        solicitado = obj.total
+        if obj.ConfirmacionVentaCuota_confirmacion_venta.all():
+            suma = obj.ConfirmacionVentaCuota_confirmacion_venta.all().aggregate(Sum('monto'))['monto__sum']
+        else:
+            suma = Decimal('0.00')
+        context = super(ConfirmacionVentaCuotaCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Agregar"
+        context['titulo'] = "Cuota"
+        context['saldo'] = solicitado - suma
+        return context
+    
+
+class ConfirmacionVentaCuotaUpdateView(BSModalUpdateView):
+    model = ConfirmacionVentaCuota
+    template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
+    form_class = ConfirmacionVentaCuotaForm
+    success_url = '.'
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        obj = self.object.confirmacion_venta
+        solicitado = obj.total
+        suma = obj.ConfirmacionVentaCuota_confirmacion_venta.exclude(id=self.object.id).aggregate(Sum('monto'))['monto__sum']
+        context = super(ConfirmacionVentaCuotaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Cuota"
+        context['saldo'] = solicitado - suma
+        return context
+    
+
+class ConfirmacionVentaCuotaDeleteView(BSModalDeleteView):
+    model = ConfirmacionVentaCuota
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cotizacion_app:confirmacion_cuotas', kwargs={'id_confirmacion':self.get_object().confirmacion_venta.id})
+    
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionVentaCuotaDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Cuota"
+        context['item'] = self.get_object()
         return context
 
 

@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from email.policy import default
 from functools import total_ordering
 import keyword
@@ -7,7 +8,7 @@ from applications.funciones import obtener_totales
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
 from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
-from applications.variables import ESTADOS, ESTADOS_CONFIRMACION, ESTADOS_COTIZACION_VENTA, TIPO_IGV_CHOICES, TIPO_VENTA
+from applications.variables import ESTADOS, ESTADOS_CONFIRMACION, ESTADOS_COTIZACION_VENTA, SUNAT_TRANSACTION, TIPO_IGV_CHOICES, TIPO_VENTA
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 from django.conf import settings
@@ -137,25 +138,6 @@ post_save.connect(cotizacion_venta_detalle_post_save, sender=CotizacionVentaDeta
 post_delete.connect(cotizacion_venta_material_detalle_post_delete, sender=CotizacionVentaDetalle)
 
 
-class CotizacionOrdenCompra(models.Model):
-    numero_orden = models.TextField()
-    fecha_orden = models.DateField('Fecha Orden', auto_now=False, auto_now_add=False)
-    documento = models.FileField('Documento', upload_to=None, max_length=100)
-    cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.PROTECT)
-
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionOrdenCompra_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionOrdenCompra_updated_by', editable=False)
-
-    class Meta:
-        verbose_name = 'Cotizacion Orden Compra'
-        verbose_name_plural = 'Cotizaciones Orden Compra'
-
-    def __str__(self):
-        return str(self.numero_orden)
-
-
 class CotizacionTerminosCondiciones(models.Model):
     condicion = models.TextField()
     condicion_visible = models.BooleanField()
@@ -189,9 +171,17 @@ class ConfirmacionVenta(models.Model):
     condiciones_pago = models.CharField('Condiciones de Pago', max_length=50, blank=True, null=True)
     tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
+    total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=0)
+    total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=0)
+    total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=0)
+    total_inafecta = models.DecimalField('Total Inafecta', max_digits=14, decimal_places=2, default=0)
+    total_exonerada = models.DecimalField('Total Exonerada', max_digits=14, decimal_places=2, default=0)
+    total_igv = models.DecimalField('Total IGV', max_digits=14, decimal_places=2, default=0)
+    total_gratuita = models.DecimalField('Total Gratuita', max_digits=14, decimal_places=2, default=0)
     otros_cargos = models.DecimalField('Otros cargos', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     estado = models.IntegerField(choices=ESTADOS_CONFIRMACION, default=1)
+    sunat_transaction = models.IntegerField(choices=SUNAT_TRANSACTION, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -256,10 +246,67 @@ class ConfirmacionVentaDetalle(models.Model):
 def confirmacion_venta_detalle_post_save(*args, **kwargs):
     obj = kwargs['instance']
     respuesta = obtener_totales(obj.confirmacion_venta)
+    obj.confirmacion_venta.total_descuento = respuesta['total_descuento']
+    obj.confirmacion_venta.total_anticipo = respuesta['total_anticipo']
+    obj.confirmacion_venta.total_gravada = respuesta['total_gravada']
+    obj.confirmacion_venta.total_inafecta = respuesta['total_inafecta']
+    obj.confirmacion_venta.total_exonerada = respuesta['total_exonerada']
+    obj.confirmacion_venta.total_igv = respuesta['total_igv']
+    obj.confirmacion_venta.total_gratuita = respuesta['total_gratuita']
+    obj.confirmacion_venta.otros_cargos = respuesta['total_otros_cargos']
     obj.confirmacion_venta.total = respuesta['total']
     obj.confirmacion_venta.save()
 
 post_save.connect(confirmacion_venta_detalle_post_save, sender=ConfirmacionVentaDetalle)
+
+
+class ConfirmacionVentaCuota(models.Model):
+    confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.CASCADE, related_name='ConfirmacionVentaCuota_confirmacion_venta')
+    monto = models.DecimalField(max_digits=14, decimal_places=2)
+    dias_pago = models.IntegerField('Días de pago', blank=True, null=True)
+    fecha_pago = models.DateField('Fecha de pago', auto_now=False, auto_now_add=False, blank=True, null=True)
+    dias_calculo = models.IntegerField('Días de calculo', blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionVentaCuota_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionVentaCuota_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Confirmación Venta Cuota'
+        verbose_name_plural = 'Confirmación Venta Cuotas'
+        ordering = [
+            'confirmacion_venta',
+            'dias_calculo',
+            ]
+
+    @property
+    def fecha(self):
+        return date.today()
+
+    @property
+    def fecha_mostrar(self):
+        if self.fecha_pago:
+            return self.fecha_pago
+        return date.today() + timedelta(self.dias_calculo)
+
+    @property
+    def dias_mostrar(self):
+        return (self.fecha_mostrar - date.today()).days
+
+    def save(self):
+        if self.dias_pago:
+            self.dias_calculo = self.dias_pago
+        else:
+            if self.fecha_pago:
+                self.dias_calculo = (self.fecha_pago - self.fecha).days
+            else:
+                self.dias_calculo = 0
+        
+        return super().save()
+
+    def __str__(self):
+        return "%s - %s - %s - %s" % (self.confirmacion_venta, self.monto, self.dias_pago, self.fecha_pago)
 
 
 class CotizacionSociedad(models.Model):
@@ -346,3 +393,20 @@ class CotizacionObservacion(models.Model):
         return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.observacion)
 
 
+class ConfirmacionOrdenCompra(models.Model):
+    numero_orden = models.TextField()
+    fecha_orden = models.DateField('Fecha Orden', auto_now=False, auto_now_add=False)
+    documento = models.FileField('Documento', upload_to=None, max_length=100)
+    confirmacion_venta = models.OneToOneField(ConfirmacionVenta, on_delete=models.PROTECT, related_name='ConfirmacionOrdenCompra_confirmacion_venta')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionOrdenCompra_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionOrdenCompra_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Confirmacion Orden Compra'
+        verbose_name_plural = 'Confirmaciones Orden Compra'
+
+    def __str__(self):
+        return str(self.numero_orden)

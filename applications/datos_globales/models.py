@@ -1,4 +1,5 @@
-from applications.datos_globales.managers import TipoCambioManager
+from email.policy import default
+from applications.datos_globales.managers import NubefactAccesoManager, SeriesComprobanteManager, TipoCambioManager
 from applications.rutas import NUBEFACT_ACCESO_ENVIO, NUBEFACT_ACCESO_RESPUESTA
 from applications.variables import ESTADOS
 from django.conf import settings
@@ -19,6 +20,7 @@ class Moneda(models.Model):
     principal = models.BooleanField(default=False)
     secundario = models.BooleanField(default=False)
     moneda_pais = models.BooleanField('Moneda del país', default=False)
+    nubefact = models.IntegerField()
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Moneda_created_by', editable=False)
@@ -634,12 +636,16 @@ class ImpuestoPromocionMunicipal(models.Model):
 class SeriesComprobante(models.Model):
     tipo_comprobante = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
     serie = models.CharField('Serie', max_length=4)
+    defecto = models.BooleanField(default=False)
+    contingencia = models.BooleanField(default=False)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SeriesComprobante_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SeriesComprobante_updated_by', editable=False)
 
+    objects = SeriesComprobanteManager()
+    
     class Meta:
         verbose_name = 'Series Comprobante'
         verbose_name_plural = 'Series Comprobantes'
@@ -649,31 +655,53 @@ class SeriesComprobante(models.Model):
 
 
 class NubefactAcceso(models.Model):
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
-    serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT)
+    descripcion = models.CharField(max_length=100)
     ruta = models.URLField(max_length=200)
-    token = models.CharField(max_length=50)
+    token = models.CharField(max_length=200)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NubefactAcceso_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NubefactAcceso_updated_by', editable=False)
 
+    objects = NubefactAccesoManager()
+
     class Meta:
         verbose_name = 'Nubefact Acceso'
         verbose_name_plural = 'Nubefact Accesos'
 
     def __str__(self):
-        return self.token
+        return self.descripcion
+
+
+class NubefactSerieAcceso(models.Model):
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, related_name='NubefactSerieAcceso_serie_comprobante')
+    acceso = models.ForeignKey(NubefactAcceso, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NubefactSerieAcceso_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NubefactSerieAcceso_updated_by', editable=False)
+
+    objects = NubefactAccesoManager()
+
+    class Meta:
+        verbose_name = 'Nubefact Serie Acceso'
+        verbose_name_plural = 'Nubefact Serie Accesos'
+
+    def __str__(self):
+        return "%s - %s" % (self.acceso, self.id)
 
 
 class NubefactRespuesta(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
     aceptado = models.BooleanField(default=False)
-    envio = models.FileField(upload_to=NUBEFACT_ACCESO_ENVIO, max_length=100)
-    respuesta = models.FileField(upload_to=NUBEFACT_ACCESO_RESPUESTA, max_length=100)
+    error = models.BooleanField(default=False)
+    envio = models.JSONField() #Usar json.loads() para leer el diccionario
+    respuesta = models.JSONField(blank=True, null=True) #Usar json.loads() para leer el diccionario
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NubefactRespuesta_created_by', editable=False)
@@ -683,6 +711,9 @@ class NubefactRespuesta(models.Model):
     class Meta:
         verbose_name = 'Nubefact Respuesta'
         verbose_name_plural = 'Nubefact Respuestas'
+        ordering = [
+            'updated_at',
+            ]
 
     def __str__(self):
         return "%s" % self.aceptado

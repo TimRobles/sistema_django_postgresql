@@ -1,0 +1,120 @@
+{% load funciones_propias %}
+{% load humanize %}
+<div class="row mt-3">
+    <div class="col-auto">
+        <a href="{% url 'cotizacion_app:confirmacion_ver' confirmacion.id %}" class="btn btn-primary">Regresar</a>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Razón Social:</th>
+                    <td>{{ confirmacion.cliente.razon_social }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ confirmacion.cliente.documento }}:</th>
+                    <td>
+                        {% if confirmacion.cliente.numero_documento %}
+                        {{ confirmacion.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if confirmacion.cliente_interlocutor %}
+                        {{ confirmacion.cliente_interlocutor }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">N° Cotización:</th>
+                    <td>{{ confirmacion.sociedad.abreviatura }} {{ confirmacion.cotizacion_venta.numero_cotizacion|numeroXn:6 }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Solicitud de Crédito:</th>
+                    <td>{{ confirmacion.moneda.simbolo }} {{ confirmacion.total|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Condición de Pago:</th>
+                    <td>
+                    {% if confirmacion.condiciones_pago %}    
+                    {{ confirmacion.condiciones_pago }}
+                    {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if confirmacion.estado == 1 %}
+<button data-form-url="{% url 'cotizacion_app:confirmacion_cuota_agregar' confirmacion.id %}"
+    data-table-url="{% url 'cotizacion_app:confirmacion_cuotas_tabla' confirmacion.id  %}"
+    data-keep-open="True"
+    class="create btn btn-primary" title="Agregar Cuota">
+    Agregar Cuota
+</button>
+{% endif %}
+
+<div class="table-responsive mt-3">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-end">#</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">Días de pago</th>
+                <th class="text-center">Fecha de pago</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cuota in confirmacion.ConfirmacionVentaCuota_confirmacion_venta.all %}
+                <tr>
+                    <td class="text-end">{{ forloop.counter }}</td>
+                    <td class="text-end text-nowrap">{{ confirmacion.moneda.simbolo }} {{ cuota.monto }}</td>
+                    <td class="text-end">{{ cuota.dias_mostrar }}</td>
+                    <td class="text-center">{{ cuota.fecha_mostrar|date:'d/m/Y' }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if confirmacion.estado == 1 %}
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cuota_actualizar' cuota.id %}"
+                            data-table-url="{% url 'cotizacion_app:confirmacion_cuotas_tabla' confirmacion.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cuota_eliminar' cuota.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="text-end">Total:</th>
+                <td class="text-end text-nowrap">
+                    {% if total %}
+                    {{ confirmacion.moneda.simbolo }} {{ total|redondear|intcomma }}
+                    {% endif %}
+                </td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

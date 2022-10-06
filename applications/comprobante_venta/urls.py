@@ -16,7 +16,13 @@ urlpatterns = [
     path('boleta-venta-tabla/',views.BoletaVentaTabla,name='boleta_venta_tabla'),
 
     path('boleta-venta/detalle/<int:id_boleta_venta>/', views.BoletaVentaDetalleView.as_view(), name='boleta_venta_detalle'),
-    path('boleta-venta/detalle/tabla/<int:boleta_venta>/', views.BoletaVentaDetalleVerTabla, name='boleta_venta_detalle_tabla'),
+    path('boleta-venta/detalle/tabla/<int:id_boleta_venta>/', views.BoletaVentaDetalleVerTabla, name='boleta_venta_detalle_tabla'),
 
     path('boleta-venta/crear/<pk>/', views.BoletaVentaCrearView.as_view(), name='boleta_venta_crear'),
+    path('boleta-venta/serie/<pk>/', views.BoletaVentaSerieUpdateView.as_view(), name='boleta_venta_serie'),
+    path('boleta-venta/guardar/<pk>/', views.BoletaVentaGuardarView.as_view(), name='boleta_venta_guardar'),
+    path('boleta-venta/anular/<pk>/', views.BoletaVentaAnularView.as_view(), name='boleta_venta_anular'),
+    
+    path('boleta-venta/nubefact/enviar/<pk>/', views.BoletaVentaNubeFactEnviarView.as_view(), name='boleta_venta_nubefact_enviar'),
+    path('boleta-venta/nubefact/anular/<pk>/', views.BoletaVentaNubeFactAnularView.as_view(), name='boleta_venta_nubefact_anular'),
 ]
