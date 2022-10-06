@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 
 class TipoCambioManager(models.Manager):
     def tipo_cambio_venta(self, fecha):
@@ -35,6 +36,19 @@ class NubefactAccesoManager(models.Manager):
                 sociedad = sociedad,
                 content_type = modelo,
             )
+            return filtro
+        except:
+            pass
+        return None
+
+
+class NubefactRespuestaManager(models.Manager):
+    def respuesta(self, obj):
+        try:
+            filtro = self.filter(
+                content_type = ContentType.objects.get_for_model(obj),
+                id_registro = obj.id
+            ).latest('updated_at')
             return filtro
         except:
             pass

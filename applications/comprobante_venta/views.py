@@ -217,6 +217,7 @@ class BoletaVentaDetalleView(TemplateView):
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
         context['totales'] = obtener_totales(obj)
         context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
+        context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
       
         return context
 
@@ -246,6 +247,7 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
         context['totales'] = obtener_totales(obj)
         context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
+        context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
 
         data['table'] = render_to_string(
             template,
@@ -483,6 +485,11 @@ class BoletaVentaNubeFactAnularView(BSModalUpdateView):
         else:
             form.instance.estado = 3
         registro_guardar(form.instance, self.request)
+        eliminar = eliminarDeuda(form.instance)
+        if eliminar:
+            messages.success(self.request, MENSAJE_ELIMINAR_DEUDA)
+        else:
+            messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):

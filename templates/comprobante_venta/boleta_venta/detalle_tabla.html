@@ -44,6 +44,20 @@
         </button>
     </div>
     {% endif %}
+
+    {% if url_nubefact %}
+    <div class="col-auto">
+        <a href="{{ url_nubefact|get_enlace_nubefact }}" class="btn btn-primary" target="_blank">URL Nubefact</a>
+    </div>
+    {% endif %}
+
+    {% if url_nubefact %}
+    <div class="col-auto">
+        <a href="{{ url_nubefact|get_enlace_pdf_nubefact }}" class="btn btn-danger" target="_blank">PDF Nubefact</a>
+    </div>
+    {% endif %}
+        
+
     <div class="col-auto ms-auto">
         <a href="{% url 'cotizacion_app:confirmacion_ver' boleta.confirmacion.id %}" class="btn btn-primary">Confirmación</a>
     </div>

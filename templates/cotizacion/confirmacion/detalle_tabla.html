@@ -16,43 +16,46 @@
         <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id  %}" class="btn btn-primary">Cotización</a>
     </div>
 
+    {% if confirmacion.estado != 3 %}
 
-    {% if confirmacion.cliente.estado_sunat == 1 and confirmacion.cliente.condicion_sunat == 1 %}
+        {% if confirmacion.cliente.estado_sunat == 1 and confirmacion.cliente.condicion_sunat == 1 %}
 
-        {% if confirmacion.cliente.tipo_documento == '6' %}
-        
-            {% if id_factura %}
+            {% if confirmacion.cliente.tipo_documento == '6' %}
+            
+                {% if id_factura %}
+                <div class="col-auto">
+                    <a href="#"
+                    class="btn btn-success">
+                        Ver Factura
+                    </a>
+                </div>
+                {% else %}
+                <div class="col-auto">
+                    <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
+                        class="delete btn btn-primary">
+                        FACTURA
+                    </button>
+                </div>
+                {% endif %}
+            
+            {% endif %}
+            
+            {% if id_boleta %}
             <div class="col-auto">
-                <a href="#"
+                <a href="{% url 'comprobante_venta_app:boleta_venta_detalle' id_boleta %}"
                 class="btn btn-success">
-                    Ver Factura
+                    Ver Boleta
                 </a>
             </div>
             {% else %}
             <div class="col-auto">
-                <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
+                <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_crear' confirmacion.id %}"
                     class="delete btn btn-primary">
-                    FACTURA
+                    BOLETA
                 </button>
             </div>
             {% endif %}
-        
-        {% endif %}
-        
-        {% if id_boleta %}
-        <div class="col-auto">
-            <a href="{% url 'comprobante_venta_app:boleta_venta_detalle' id_boleta %}"
-            class="btn btn-success">
-                Ver Boleta
-            </a>
-        </div>
-        {% else %}
-        <div class="col-auto">
-            <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_crear' confirmacion.id %}"
-                class="delete btn btn-primary">
-                BOLETA
-            </button>
-        </div>
+
         {% endif %}
 
     {% endif %}

@@ -1442,7 +1442,7 @@ class ConfirmacionListView(TemplateView):
     template_name = 'cotizacion/confirmacion/inicio.html'
 
     def get_context_data(self, **kwargs):
-        contexto_cotizacion_venta = ConfirmacionVenta.objects.all()
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3)
         try:
             contexto_cotizacion_venta = contexto_cotizacion_venta.filter(cotizacion_venta__id = kwargs['id_cotizacion'])
         except:

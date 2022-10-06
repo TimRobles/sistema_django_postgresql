@@ -1,5 +1,5 @@
 from email.policy import default
-from applications.datos_globales.managers import NubefactAccesoManager, SeriesComprobanteManager, TipoCambioManager
+from applications.datos_globales.managers import NubefactAccesoManager, NubefactRespuestaManager, SeriesComprobanteManager, TipoCambioManager
 from applications.rutas import NUBEFACT_ACCESO_ENVIO, NUBEFACT_ACCESO_RESPUESTA
 from applications.variables import ESTADOS
 from django.conf import settings
@@ -708,6 +708,8 @@ class NubefactRespuesta(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NubefactRespuesta_updated_by', editable=False)
 
+    objects = NubefactRespuestaManager()
+    
     class Meta:
         verbose_name = 'Nubefact Respuesta'
         verbose_name_plural = 'Nubefact Respuestas'

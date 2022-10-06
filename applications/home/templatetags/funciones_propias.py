@@ -1,3 +1,4 @@
+import json
 import os
 from django import template
 from django.utils.safestring import mark_safe
@@ -33,3 +34,11 @@ def filename(value):
 @register.filter
 def numeroXn(numero, n):
     return '0'*(n-len(str(numero))) + str(numero)
+
+@register.filter
+def get_enlace_nubefact(respuesta):
+    return respuesta.respuesta['enlace']
+
+@register.filter
+def get_enlace_pdf_nubefact(respuesta):
+    return respuesta.respuesta['enlace_del_pdf']

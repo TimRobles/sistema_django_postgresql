@@ -105,9 +105,7 @@ def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, clie
             data["venta_al_credito"].append(item)
             contador += 1
         
-        data_json = json.dumps(data)
-
-        return data_json
+        return data
 
     except Exception as e:
         print("**************************************************")
@@ -124,9 +122,8 @@ def anularDocumento(tipo_de_comprobante, serie, numero, motivo):
         data["serie"] = serie
         data["numero"] = numero
         data["motivo"] = motivo
-        data_json = json.dumps(data)
-
-        return data_json
+        
+        return data
 
     except Exception as e:
         print("**************************************************")
