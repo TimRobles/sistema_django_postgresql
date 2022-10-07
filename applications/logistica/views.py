@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django import forms
 from decimal import Decimal
 from applications.importaciones import *
-from applications.logistica.models import DocumentoPrestamoMateriales, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
-from applications.logistica.forms import DocumentoPrestamoMaterialesForm, SolicitudPrestamoMaterialesDetalleForm, SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm
+from applications.logistica.models import DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.forms import DocumentoPrestamoMaterialesForm, NotaSalidaForm, SolicitudPrestamoMaterialesAnularForm, SolicitudPrestamoMaterialesDetalleForm, SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.logistica.pdf import generarSolicitudPrestamoMateriales
 from applications.funciones import fecha_en_letras
@@ -43,6 +43,8 @@ class SolicitudPrestamoMaterialesCreateView(PermissionRequiredMixin, BSModalCrea
         return context
 
     def form_valid(self, form):
+        item = len(SolicitudPrestamoMateriales.objects.all())
+        form.instance.numero_prestamo = item + 1
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -111,6 +113,31 @@ class SolicitudPrestamoMaterialesConfirmarView(PermissionRequiredMixin, BSModalD
         context['titulo'] = "Solicitud Prestamo Materiales"
         context['dar_baja'] = "true"
         context['item'] = self.object.numero_prestamo
+        return context
+
+class SolicitudPrestamoMaterialesAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.delete_solicitudprestamomateriales')
+    model = SolicitudPrestamoMateriales
+    template_name = "includes/formulario generico.html"
+    form_class = SolicitudPrestamoMaterialesAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_inicio')
+
+    def form_valid(self, form):
+        form.instance.estado = 4
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudPrestamoMaterialesAnularView, self).get_context_data(**kwargs)
+        context['accion']="Anular"
+        context['titulo']="Solicitud Prestamo Materiales"
         return context
 
 class SolicitudPrestamoMaterialesDetailView(PermissionRequiredMixin, DetailView):
@@ -206,8 +233,8 @@ class SolicitudPrestamoMaterialesDetalleCreateView(PermissionRequiredMixin, BSMo
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(SolicitudPrestamoMaterialesDetalleCreateView, self).get_context_data(**kwargs)
-        context['titulo'] = 'Agregar Material '
-        context['accion'] = 'Guardar'
+        context['titulo'] = 'Material'
+        context['accion'] = 'Agregar'
         return context
 
 class SolicitudPrestamoMaterialesDetalleImprimirView(View):
@@ -229,7 +256,7 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
         Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
         Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
         Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
-        Cabecera['interlocutor'] = str(obj.cliente_interlocutor.interlocutor)
+        Cabecera['interlocutor'] = str(obj.interlocutor_cliente)
         
         TablaEncabezado = [ 'Item',
                             'Descripción',
@@ -336,7 +363,7 @@ class DocumentoSolicitudPrestamoMaterialesCreateView(PermissionRequiredMixin, BS
         return context
 
 class DocumentoSolicitudPrestamoMaterialesDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('activos.delete_documentoinventarioactivo')
+    permission_required = ('activos.delete_documentoprestamomateriales')
     model = DocumentoPrestamoMateriales
     template_name = "includes/eliminar generico.html"
 
@@ -349,16 +376,64 @@ class DocumentoSolicitudPrestamoMaterialesDeleteView(PermissionRequiredMixin, BS
         context['titulo']="Documento"
         return context
 
-class ClienteForm(forms.Form):
-    cliente_interlocutor = forms.ModelChoiceField(queryset = ClienteInterlocutor.objects.all(), required=False)
+class SolicitudPrestamoMaterialesGenerarNotaSalidaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_solicitudprestamomaterialesdetalle')
 
-def ClienteView(request, id_cliente_interlocutor):
+    model = SolicitudPrestamoMateriales
+    template_name = "logistica/solicitud_prestamo_materiales/boton.html"
+    success_url = reverse_lazy('logistica_app:nota_salida_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.session['primero']:
+            self.object = self.get_object()
+            prestamo = self.get_object()
+            item = len(NotaSalida.objects.all())
+            nota_salida = NotaSalida.objects.create(
+                numero_salida = item + 1,
+                solicitud_prestamo_materiales = prestamo,
+                observacion_adicional = "",
+                motivo_anulacion = "",
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+
+            # prestamo_detalle = prestamo.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales.all()
+            # for detalle in prestamo_detalle:
+            #     nota_salida_detalle = NotaSalidaDetalle.objects.create(
+            #         solicitud_prestamo_materiales_detalle = detalle,
+            #         nota_salida = nota_salida,
+            #         created_by = self.request.user,
+            #         updated_by = self.request.user,
+            #         )
+            self.request.session['primero'] = False
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(SolicitudPrestamoMaterialesGenerarNotaSalidaView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Nota Salida"
+        context['dar_baja'] = "true"
+        return context
+
+class ClienteForm(forms.Form):
+    interlocutor_cliente = forms.ModelChoiceField(queryset = ClienteInterlocutor.objects.all(), required=False)
+
+def ClienteView(request, id_interlocutor_cliente):
     form = ClienteForm()
     lista = []
-    relaciones = ClienteInterlocutor.objects.filter(cliente = id_cliente_interlocutor)
+    relaciones = ClienteInterlocutor.objects.filter(cliente = id_interlocutor_cliente)
     for relacion in relaciones:
         lista.append(relacion.interlocutor.id)
-    form.fields['cliente_interlocutor'].queryset = InterlocutorCliente.objects.filter(id__in = lista)
+    form.fields['interlocutor_cliente'].queryset = InterlocutorCliente.objects.filter(id__in = lista)
     data = dict()
     if request.method == 'GET':
         template = 'includes/form.html'
@@ -371,3 +446,68 @@ def ClienteView(request, id_cliente_interlocutor):
         ).replace('selected', 'selected=""')
         return JsonResponse(data)
 
+class NotaSalidaListView(PermissionRequiredMixin, ListView):
+    permission_required = ('logistica.view_notasalida')
+    model = NotaSalida
+    template_name = "logistica/nota_salida/inicio.html"
+    context_object_name = 'contexto_nota_salida'
+
+def NotaSalidaTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/nota_salida/inicio_tabla.html'
+        context = {}
+        context['contexto_nota_salida'] = NotaSalida.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class NotaSalidaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_notasalida')
+
+    model = NotaSalida
+    template_name = "includes/formulario generico.html"
+    form_class = NotaSalidaForm
+    success_url = reverse_lazy('logistica_app:nota_salida_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaSalidaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Nota de Salida"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class NotaSalidaDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('logistica.view_notasalida')
+
+    model = NotaSalida
+    template_name = "logistica/nota_salida/detalle.html"
+    context_object_name = 'contexto_nota_salida_detalle'
+
+    def get_context_data(self, **kwargs):
+        nota_salida = NotaSalida.objects.get(id = self.kwargs['pk'])
+        context = super(NotaSalidaDetailView, self).get_context_data(**kwargs)
+        return context
+
+def NotaSalidaDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/nota_salida/detalle_tabla.html'
+        context = {}
+        nota_salida = NotaSalida.objects.get(id = pk)
+        context['contexto_nota_salida_detalle'] = nota_salida
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)

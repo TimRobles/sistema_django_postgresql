@@ -1,5 +1,5 @@
 function seleccionar_cliente(id_cliente) {
-    $interlocutor = $('#id_cliente_interlocutor')[0];
+    $interlocutor = $('#id_interlocutor_cliente')[0];
     
     url = '/logistica/cliente-interlocutor/' + id_cliente + '/';
 
@@ -11,7 +11,7 @@ function seleccionar_cliente(id_cliente) {
             var parser, xmlDoc;
             parser = new DOMParser();
             xmlDoc = parser.parseFromString(info, "text/xml");
-            $interlocutor.innerHTML = xmlDoc.getElementById('id_cliente_interlocutor').innerHTML;
+            $interlocutor.innerHTML = xmlDoc.getElementById('id_interlocutor_cliente').innerHTML;
             console.log($interlocutor.innerHTML)
         }else{
             console.log('error')

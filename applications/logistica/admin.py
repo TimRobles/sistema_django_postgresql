@@ -4,10 +4,11 @@ from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPr
 
 class SolicitudPrestamoMaterialesAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'numero_prestamo',
         'sociedad',
         'cliente',
-        'cliente_interlocutor',
+        'interlocutor_cliente',
         'fecha_prestamo',
         'comentario',
         'motivo_anulacion',
@@ -27,6 +28,7 @@ class SolicitudPrestamoMaterialesAdmin(admin.ModelAdmin):
 
 class SolicitudPrestamoMaterialesDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'item',
         'content_type',
         'id_registro',
@@ -47,6 +49,7 @@ class SolicitudPrestamoMaterialesDetalleAdmin(admin.ModelAdmin):
 
 class DocumentoPrestamoMaterialesAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'comentario',
         'documento',
         'solicitud_prestamo_materiales',
@@ -64,6 +67,7 @@ class DocumentoPrestamoMaterialesAdmin(admin.ModelAdmin):
 
 class NotaSalidaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'confirmacion_venta',
         'solicitud_prestamo_materiales',
         'numero_salida',
@@ -84,8 +88,10 @@ class NotaSalidaAdmin(admin.ModelAdmin):
 
 class NotaSalidaDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'item',
         'confirmacion_venta_detalle',
+        'solicitud_prestamo_materiales_detalle',
         'sede',
         'almacen',
         'cantidad_salida',
@@ -105,6 +111,7 @@ class NotaSalidaDetalleAdmin(admin.ModelAdmin):
 
 class DespachoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'sociedad',
         'confirmacion_venta',
         'numero_despacho',
@@ -126,6 +133,7 @@ class DespachoAdmin(admin.ModelAdmin):
 
 class DespachoDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'item',
         'confirmacion_venta_detalle',
         'cantidad_despachada',

@@ -4,7 +4,7 @@
             <th>Número Prestamo</th>
             <th>Sociedad</th>
             <th>Cliente</th>
-            <th>Cliente Interlocutor</th>
+            <th>Interlocutor</th>
             <th>Fecha Prestamo</th>
             <th>Comentario</th>
             <th>Motivo Anulación</th>
@@ -23,10 +23,18 @@
                 </td>
                 <td>{{ solicitud.sociedad }}</td>
                 <td>{{ solicitud.cliente }}</td>
-                <td>{{ solicitud.cliente_interlocutor.interlocutor }}</td>
+                <td>
+                    {% if solicitud.interlocutor_cliente %}
+                        {{ solicitud.interlocutor_cliente }}
+                    {% endif %}
+                </td>
                 <td>{{ solicitud.fecha_prestamo|date:'d/m/Y'}}</td>
                 <td>{{ solicitud.comentario }}</td>
-                <td>{{ solicitud.motivo_anulacion }}</td>
+                <td>
+                    {% if solicitud.motivo_anulacion %}  
+                        {{ solicitud.motivo_anulacion }}    
+                    {% endif %}  
+                </td>
                 <td class="text-center">{{ solicitud.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
                     {% if solicitud.estado == 1 %}
@@ -36,6 +44,14 @@
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    {% endif %}
+                    {% if solicitud.estado == 3 %}
+                        <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_anular' solicitud.id %}"
+                            data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_tabla' %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Anular Solicitud">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
                         </button>
                     {% endif %}
                     <a href="{% url 'logistica_app:solicitud_prestamo_materiales_detalle' solicitud.id %}"
