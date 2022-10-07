@@ -149,7 +149,7 @@ class FacturaVentaCrearView(DeleteView):
         registro_guardar(self.object, self.request)
         self.object.save()
 
-        messages.success(request, MENSAJE_CLONAR_COTIZACION)
+        messages.success(request, MENSAJE_GENERAR_FACTURA)
         return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':factura_venta.id}))
 
     def get_context_data(self, **kwargs):
@@ -300,7 +300,7 @@ class BoletaVentaCrearView(DeleteView):
         registro_guardar(self.object, self.request)
         self.object.save()
 
-        messages.success(request, MENSAJE_CLONAR_COTIZACION)
+        messages.success(request, MENSAJE_GENERAR_BOLETA)
         return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':boleta_venta.id}))
 
     def get_context_data(self, **kwargs):

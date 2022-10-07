@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Despacho
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Despacho</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'logistica/despacho/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

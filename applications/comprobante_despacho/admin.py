@@ -10,6 +10,7 @@ class GuiaAdmin(admin.ModelAdmin):
         'id',
         'sociedad',
         'serie_comprobante',
+        'numero_guia',
         'cliente',
         'cliente_interlocutor',
         'fecha_emision',

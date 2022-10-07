@@ -1,31 +1,29 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Nro. Guía</th>
+            <th>Nro. Despacho</th>
             <th>Cliente</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
 
         </tr>
     </thead>
-
+    
     <tbody>
-        {% for guia in contexto_guia %}
+        {% for despacho in contexto_despacho %}
         <tr>
-            <td> {{guia.numero_guia}} </td>
-            <td> {{guia.cliente}} </td>
-            <td> {{guia.get_estado_display}} </td>
+            <td> {{despacho.numero_despacho}} </td>
+            <td> {{despacho.cliente}} </td>
+            <td> {{despacho.get_estado_display}} </td>
             <td class="text-center">
-                <a href="{% url 'comprobante_despacho_app:guia_detalle' guia.id %}"
+                <a href="{% url 'logistica_app:despacho_detalle' despacho.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
                 </a>
             </td>
-        </tr>
-            
+        </tr> 
         {% endfor %}
             
-
     </tbody>
 </table>

@@ -125,14 +125,14 @@ class NotaSalidaDetalle(models.Model):
         return str(self.item)
 
 class Despacho(models.Model):
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
-    confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.CASCADE)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
+    nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE,blank=True, null=True)
     numero_despacho = models.CharField('Número Despacho', max_length=50, blank=True, null=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE,blank=True, null=True)
+    fecha_despacho = models.DateField('Fecha Despacho', auto_now=False, auto_now_add=False, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS, default=1)
-
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Despacho_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -149,9 +149,10 @@ class Despacho(models.Model):
 
 class DespachoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
+    id_registro = models.IntegerField(blank=True, null=True)   
     cantidad_despachada = models.DecimalField('Cantidad Despachada', max_digits=22, decimal_places=10, default=0)
-    despacho = models.ForeignKey(Despacho, on_delete=models.CASCADE)
+    despacho = models.ForeignKey(Despacho, on_delete=models.CASCADE, related_name='DespachoDetalle_despacho')
     estado = models.IntegerField(choices=ESTADOS, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

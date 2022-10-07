@@ -11,24 +11,24 @@ from applications.variables import ESTADOS_GUIA, TIPO_DOCUMENTO_SUNAT, TIPO_IGV_
 from django.conf import settings
 
 class Guia(models.Model):
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
-    numero_guia = models.IntegerField()
+    numero_guia = models.IntegerField('Número Guía',blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='Guia_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='Guia_interlocutor', blank=True, null=True)
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_traslado = models.DateField('Fecha Traslado', auto_now=False, auto_now_add=False, blank=True, null=True)
-    sede = models.ForeignKey(Sede, on_delete=models.CASCADE)
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
     transportista = models.ForeignKey(Transportista, on_delete=models.PROTECT, blank=True, null=True)
-    observaciones = models.TextField()
-    numero_bultos = models.IntegerField()
-    direccion_partida = models.TextField()
-    direccion_destino = models.TextField()
-    ubigeo_partida = models.IntegerField()
-    ubigeo_destino = models.IntegerField()
-    url = models.URLField('URL Guia', max_length=200)
+    observaciones = models.TextField(blank=True, null=True)
+    numero_bultos = models.IntegerField(blank=True, null=True)
+    direccion_partida = models.TextField(blank=True, null=True)
+    direccion_destino = models.TextField(blank=True, null=True)
+    ubigeo_partida = models.IntegerField(blank=True, null=True)
+    ubigeo_destino = models.IntegerField(blank=True, null=True)
+    url = models.URLField('URL Guia', max_length=200, blank=True, null=True)
+    motivo_anulación = models.TextField('Motivo Anulación', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_GUIA, default=1)
-    motivo_anulación = models.TextField()
    
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Guia_created_by', editable=False)
@@ -44,11 +44,11 @@ class Guia(models.Model):
 
 
 class GuiaDetalle(models.Model):
-    item = models.IntegerField()
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
-    id_registro = models.IntegerField()
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
-    peso = models.DecimalField('Peso', max_digits=5, decimal_places=2)
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True)
+    id_registro = models.IntegerField(blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10,blank=True, null=True)
+    peso = models.DecimalField('Peso', max_digits=5, decimal_places=2, blank=True, null=True)
     guia = models.ForeignKey(Guia, on_delete=models.CASCADE, related_name='GuiaDetalle_guia_venta', blank=True, null=True)
   
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
