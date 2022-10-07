@@ -20,8 +20,8 @@
         {% for deuda in contexto_deuda %}
         <tr>
             <td class="text-center">{{ deuda.fecha_deuda|date:'d/m/Y' }}</td>
-            <td>
-                {% if deuda.Cuota_deuda.all %}
+            <td class="fondo-personalizado" style="--color-fondo: {{ deuda.sociedad.color }};">
+                {% if deuda.Cuota_deuda.all or deuda.Pago_deuda.all or deuda.Redondeo_deuda.all %}
                 <div class="accordion" id="accordion{{deuda.id}}">
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="headingOne">
@@ -113,6 +113,8 @@
                                     </tfoot>
                                 </table>
                                 {% endif %}
+                                
+                                {% if deuda.Cuota_deuda.all %}
                                 <table class="table">
                                     <thead>
                                         <tr><th colspan="4">Cuotas</th></tr>
@@ -134,6 +136,7 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
+                                {% endif %}
                             </div>
                         </div>
                     </div>                          

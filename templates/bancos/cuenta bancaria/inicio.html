@@ -23,7 +23,7 @@ Cuenta Bancaria
             <tbody>
                 {% for cuenta_bancaria in contexto_cuenta_bancaria %}
                 <tr>
-                    <td>{{ cuenta_bancaria.sociedad.razon_social }}</td>
+                    <td class="fondo-personalizado" style="--color-fondo: {{ cuenta_bancaria.sociedad.color }};">{{ cuenta_bancaria.sociedad.razon_social }}</td>
                     <td>{{ cuenta_bancaria.banco }}</td>
                     <td>{{ cuenta_bancaria.moneda }}</td>
                     <td>{{ cuenta_bancaria.numero_cuenta }}</td>

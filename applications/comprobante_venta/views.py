@@ -276,12 +276,19 @@ class FacturaVentaNubeFactEnviarView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_nubefact = False
+        error_codigo_sunat = False
         context['titulo'] = 'Error de guardar'
         if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
             error_nubefact = True
+        for detalle in self.get_object().FacturaVentaDetalle_factura_venta.all():
+            if not detalle.producto.producto_sunat:
+                error_codigo_sunat = True
 
         if error_nubefact:
             context['texto'] = 'No hay una ruta para envío a NubeFact'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_codigo_sunat:
+            context['texto'] = 'Hay productos sin Código de Sunat'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(FacturaVentaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
 
@@ -312,6 +319,47 @@ class FacturaVentaNubeFactEnviarView(DeleteView):
         return context
 
 
+class FacturaVentaNubeFactAnularView(BSModalUpdateView):
+    model = FacturaVenta
+    template_name = "includes/formulario generico.html"
+    form_class = FacturaVentaAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_fecha = False
+        context['titulo'] = 'Error de guardar'
+        if (date.today() - self.get_object().fecha_emision).days > 0:
+            error_fecha = True
+
+        if error_fecha:
+            context['texto'] = 'No se puede anular, realizar nota de crédito.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(FacturaVentaNubeFactAnularView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        respuesta = anular_nubefact(form.instance, self.request.user)
+        if respuesta.error:
+            form.instance.estado = 6
+        else:
+            form.instance.estado = 3
+        registro_guardar(form.instance, self.request)
+        eliminar = eliminarDeuda(form.instance)
+        if eliminar:
+            messages.success(self.request, MENSAJE_ELIMINAR_DEUDA)
+        else:
+            messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaNubeFactAnularView, self).get_context_data(**kwargs)
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Factura de Venta a NubeFact'
+        return context
+
+
 class FacturaVentaNubefactRespuestaDetailView(BSModalReadView):
     model = FacturaVenta
     template_name = "comprobante_venta/nubefact_respuesta.html"
@@ -321,7 +369,46 @@ class FacturaVentaNubefactRespuestaDetailView(BSModalReadView):
         context['titulo'] = 'Movimientos Nubefact'
         context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
         return context
+
+
+class FacturaVentaEliminarView(DeleteView):
+    model = FacturaVenta
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # context = {}
+        # error_nubefact = False
+        # error_codigo_sunat = False
+        # context['titulo'] = 'Error de guardar'
+        # if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+        #     error_nubefact = True
+        # for detalle in self.get_object().FacturaVentaDetalle_factura_venta.all():
+        #     if not detalle.producto.producto_sunat:
+        #         error_codigo_sunat = True
+
+        # if error_nubefact:
+        #     context['texto'] = 'No hay una ruta para envío a NubeFact'
+        #     return render(request, 'includes/modal sin permiso.html', context)
+        # if error_codigo_sunat:
+        #     context['texto'] = 'Hay productos sin Código de Sunat'
+        #     return render(request, 'includes/modal sin permiso.html', context)
+        return super(FacturaVentaEliminarView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.request.session['id_confirmacion']})
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaEliminarView, self).get_context_data(**kwargs)
+        obj = self.get_object()
+        self.request.session['id_confirmacion'] = obj.confirmacion.id
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Factura de Venta'
+        context['texto'] = '¿Seguro de eliminar la Factura de Venta?'
+        context['item'] = self.get_object()
+        return context
     
+
+###########################################################################################
 
 class BoletaVentaListView(ListView):
     model = BoletaVenta
@@ -586,12 +673,19 @@ class BoletaVentaNubeFactEnviarView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_nubefact = False
+        error_codigo_sunat = False
         context['titulo'] = 'Error de guardar'
         if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
             error_nubefact = True
+        for detalle in self.get_object().BoletaVentaDetalle_boleta_venta.all():
+            if not detalle.producto.producto_sunat:
+                error_codigo_sunat = True
 
         if error_nubefact:
             context['texto'] = 'No hay una ruta para envío a NubeFact'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_codigo_sunat:
+            context['texto'] = 'Hay productos sin Código de Sunat'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(BoletaVentaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
 

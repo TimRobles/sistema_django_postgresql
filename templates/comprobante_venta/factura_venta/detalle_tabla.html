@@ -35,19 +35,39 @@
     </div>
     {% endif %}
 
+    {% if factura.estado > 3 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_nubefact_anular' factura.id %}"
+            class="delete btn btn-danger">
+            Anular en NubeFact
+        </button>
+    </div>
+    {% endif %}
+
     {% if url_nubefact %}
+    <div class="col-auto">
+        <a href="{{ url_nubefact|get_enlace_nubefact }}" class="btn btn-primary" target="_blank">URL Nubefact</a>
+    </div>
+    {% endif %}
+
+    {% if url_nubefact %}
+    <div class="col-auto">
+        <a href="{{ url_nubefact|get_enlace_pdf_nubefact }}" class="btn btn-danger" target="_blank">PDF Nubefact</a>
+    </div>
+    {% endif %}
+
     <div class="col-auto ms-auto">
+        <a href="{% url 'cotizacion_app:confirmacion_ver' factura.confirmacion.id  %}" class="btn btn-primary">Confirmacion</a>
+    </div>
+
+    {% if url_nubefact %}
+    <div class="col-auto">
         <button data-form-url="{% url 'comprobante_venta_app:factura_venta_nubefact_detalle' factura.id %}"
             class="read btn btn-info">
             Movimientos NubeFact
         </button>
     </div>
     {% endif %}
-
-    <div class="col-auto">
-        <a href="{% url 'cotizacion_app:confirmacion_ver' factura.confirmacion.id  %}" class="btn btn-primary">Confirmacion</a>
-    </div>
-
 </div>
 
 <div class="row mt-3">

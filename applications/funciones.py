@@ -292,6 +292,9 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         if hasattr(cabecera, 'otros_cargos'):
             descuento_global = cabecera.descuento_global
             otros_cargos = cabecera.otros_cargos
+        elif hasattr(cabecera, 'total_otros_cargos'):
+            descuento_global = cabecera.descuento_global
+            otros_cargos = cabecera.total_otros_cargos
         else:
             descuento_global = Decimal('0.00')
             otros_cargos = Decimal('0.00')

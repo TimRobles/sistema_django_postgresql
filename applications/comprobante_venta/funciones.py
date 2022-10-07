@@ -180,7 +180,10 @@ def factura_nubefact(obj, user):
 def anular_nubefact(obj, user):
     tipo_de_comprobante = obj.tipo_comprobante
     serie = obj.serie_comprobante.serie
-    numero = obj.numero_boleta
+    if hasattr(obj, 'numero_boleta'):
+        numero = obj.numero_boleta
+    elif hasattr(obj, 'numero_factura'):
+        numero = obj.numero_factura
     motivo = obj.motivo_anulacion
     data = funciones.anularDocumento(tipo_de_comprobante, serie, numero, motivo)
 

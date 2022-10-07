@@ -1,4 +1,5 @@
 {% load funciones_propias %}
+{% load humanize %}
 
 <table class="table">
     <thead>
@@ -14,12 +15,12 @@
     <tbody>
         {% for confirmacion in contexto_cotizacion_venta %}
             <tr>
-                <td>
+                <td class="text-nowrap">
                     {{ confirmacion.sociedad.abreviatura }}{{ confirmacion.cotizacion_venta.numero_cotizacion|numeroXn:6 }}
                 </td>
                 <td>{{ confirmacion.cliente }}</td>
                 <td>{{ confirmacion.cotizacion_venta.fecha|date:'d/m/Y' }}</td>
-                <td class="text-end">$ {{ confirmacion.total }}</td>
+                <td class="text-end text-nowrap">$ {{ confirmacion.total|redondear|intcomma }}</td>
                 <td>{{ confirmacion.get_estado_display }}</td>
                 <td class="text-center">
                     <a href="{% url 'cotizacion_app:confirmacion_ver' confirmacion.id %}"

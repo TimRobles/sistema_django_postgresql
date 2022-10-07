@@ -1009,9 +1009,11 @@ class CotizacionVentaConfirmarView(DeleteView):
                 tipo_cambio = TipoCambio.objects.filter(fecha=datetime.today()).latest('created_at'),
                 moneda = self.object.moneda,
                 observacion = cotizacion_observacion,
-                total = self.object.total,
                 condiciones_pago = condiciones_pago,
                 tipo_venta = tipo_venta,
+                descuento_global = self.object.descuento_global,
+                otros_cargos = self.object.otros_cargos,
+                total = self.object.total,
                 created_by = self.request.user,
                 updated_by = self.request.user,
             )

@@ -7,18 +7,17 @@
             <th>Nro. Factura</th>
             <th>Cliente</th>
             <th>Fecha Emision</th>
-            <th>Total</th>
+            <th class="text-end">Total</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
-
         </tr>
     </thead>
 
     <tbody>
         {% for factura_venta in contexto_factura_venta %}
         <tr class="{% if factura_venta.estado == 3 %}text-danger text-decoration-line-through{% endif %}">
-            <td>{{ factura_venta.serie_comprobante }}-{{ factura_venta.numero_factura|numeroXn:6 }}</td>
-            <td>{{factura_venta.cliente}}</td>
+            <td class="text-nowrap">{{ factura_venta.serie_comprobante }}-{{ factura_venta.numero_factura|numeroXn:6 }}</td>
+            <td>{{ factura_venta.cliente }}</td>
             <td>{{ factura_venta.fecha_emision|date:'d/m/Y' }}</td>
             <td class="text-end text-nowrap">{{ factura_venta.moneda.simbolo }} {{ factura_venta.total|redondear|intcomma }}</td>
             <td>{{factura_venta.get_estado_display}}</td>

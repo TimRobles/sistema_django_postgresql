@@ -47,7 +47,7 @@ class FacturaVenta(models.Model):
     total_retencion = models.DecimalField('Total Retencion', max_digits=14, decimal_places=2, default=0, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     estado = models.IntegerField(choices = ESTADOS_DOCUMENTO, default=1)
-    motivo_anulacion = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
     confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, related_name='FacturaVenta_confirmacion', blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
 
@@ -126,6 +126,10 @@ class FacturaVentaDetalle(models.Model):
     class Meta:
         verbose_name = 'Factura Venta Detalle'
         verbose_name_plural = 'Facturas Venta Detalle'
+        ordering = [
+            'factura_venta',
+            'item',
+            ]
 
     @property
     def producto(self):
@@ -178,7 +182,7 @@ class BoletaVenta(models.Model):
     detraccion = models.BooleanField(default=False)
     observaciones = models.TextField(blank=True, null=True)
     estado = models.IntegerField(choices = ESTADOS_DOCUMENTO, default=1)
-    motivo_anulacion = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
     confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, related_name='BoletaVenta_confirmacion', blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
 
@@ -259,6 +263,10 @@ class BoletaVentaDetalle(models.Model):
     class Meta:
         verbose_name = 'Boleta Venta Detalle'
         verbose_name_plural = 'Boletas Venta Detalle'
+        ordering = [
+            'boleta_venta',
+            'item',
+            ]
 
     @property
     def producto(self):

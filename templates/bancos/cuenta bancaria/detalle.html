@@ -14,7 +14,7 @@ Detalle de Cuenta Bancaria
             <tbody>
                 <tr>
                     <th class="pe-2">Sociedad:</th>
-                    <td class="pe-3">{{ cuenta_bancaria.sociedad }}</td>
+                    <td class="pe-3 fondo-personalizado" style="--color-fondo: {{ cuenta_bancaria.sociedad.color }};">{{ cuenta_bancaria.sociedad }}</td>
                     <th class="pe-2">Estado:</th>
                     <td class="pe-3">{{ cuenta_bancaria.get_estado_display }}</td>
                     <th class="pe-2">Número de Cuenta:</th>
