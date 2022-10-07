@@ -89,7 +89,10 @@ class FacturaVenta(models.Model):
             return []
 
     def __str__(self):
-        return str(self.numero_factura)
+        if self.numero_factura:
+            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_factura, self.cliente, self.moneda.simbolo, self.total)
+        else:
+            return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente, self.moneda.simbolo, self.total)
 
 class FacturaVentaDetalle(models.Model):
     item = models.IntegerField()
@@ -123,7 +126,10 @@ class FacturaVentaDetalle(models.Model):
     class Meta:
         verbose_name = 'Factura Venta Detalle'
         verbose_name_plural = 'Facturas Venta Detalle'
- 
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
         return str(self.id)
@@ -204,7 +210,7 @@ class BoletaVenta(models.Model):
 
     @property
     def guias(self):
-        return []
+        return [] # self.confirmacion.NotaSalida.NotaDespacho.Guias
     
     @property
     def cuotas(self):

@@ -53,3 +53,14 @@ class NubefactRespuestaManager(models.Manager):
         except:
             pass
         return None
+    
+    def respuestas(self, obj):
+        try:
+            filtro = self.filter(
+                content_type = ContentType.objects.get_for_model(obj),
+                id_registro = obj.id
+            )
+            return filtro
+        except:
+            pass
+        return None

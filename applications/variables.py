@@ -271,6 +271,8 @@ MENSAJE_RESERVAR_COTIZACION = 'Operación exitosa: La cotización fue reservada 
 MENSAJE_ANULAR_RESERVAR_COTIZACION = 'Operación exitosa: La reserva fue anulada con éxito.'
 MENSAJE_CONFIRMAR_COTIZACION = 'Operación exitosa: La cotización fue confirmada con éxito.'
 MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue anulada con éxito.'
+MENSAJE_GENERAR_FACTURA = 'Operación exitosa: La factura fue creada con éxito.'
+MENSAJE_GENERAR_BOLETA = 'Operación exitosa: La boleta fue creada con éxito.'
 
 MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
 MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'

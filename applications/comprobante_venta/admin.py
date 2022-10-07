@@ -9,6 +9,7 @@ from .models import(
 @admin.register(FacturaVenta)
 class FacturaVentaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'sociedad',
         'serie_comprobante',
         'numero_factura',
@@ -98,6 +99,7 @@ class FacturaVentaDetalleAdmin(admin.ModelAdmin):
 @admin.register(BoletaVenta)
 class BoletaVentaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'sociedad',
         'serie_comprobante',
         'numero_boleta',
@@ -149,6 +151,7 @@ class BoletaVentaAdmin(admin.ModelAdmin):
 @admin.register(BoletaVentaDetalle)
 class BoletaVentaDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'item',
         'content_type',
         'id_registro',

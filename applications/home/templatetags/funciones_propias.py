@@ -1,5 +1,6 @@
 import json
 import os
+from textwrap import indent
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -21,9 +22,9 @@ def recortar_popover(texto):
         return texto
 
 @register.filter
-def redondear(texto):
+def redondear(texto, decimales=2):
     try:
-        return round(texto,2)
+        return round(texto, decimales)
     except:
         return texto
 
@@ -42,3 +43,14 @@ def get_enlace_nubefact(respuesta):
 @register.filter
 def get_enlace_pdf_nubefact(respuesta):
     return respuesta.respuesta['enlace_del_pdf']
+
+@register.filter
+def diccionario(respuesta):
+    return respuesta.items()
+
+@register.filter
+def es_diccionario_nubefact(respuesta):
+    try:
+        return type(respuesta[0]) == type(dict())
+    except:
+        return False

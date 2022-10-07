@@ -2,6 +2,7 @@ from django.shortcuts import render
 from applications.importaciones import *
 from django import forms
 from applications.datos_globales.models import (
+    NubefactRespuesta,
     Provincia, 
     Distrito, 
     Departamento, 

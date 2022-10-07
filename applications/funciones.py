@@ -158,15 +158,15 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
     if tipo_igv==8:
         subtotal = total
     else:
-        subtotal = (total / (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
+        subtotal = (Decimal(cantidad) * precio_final_sin_igv).quantize(Decimal('0.01'))
     igv = (total - subtotal).quantize(Decimal('0.01'))
 
-    respuesta['precio_unitario_sin_igv'] = (precio_unitario_sin_igv).quantize(Decimal('0.01'))
-    respuesta['descuento'] = (descuento).quantize(Decimal('0.01'))
-    respuesta['descuento_con_igv'] = ((precio_unitario_con_igv * cantidad - total).quantize(Decimal('0.01'))).quantize(Decimal('0.01'))
-    respuesta['subtotal'] = (subtotal).quantize(Decimal('0.01'))
-    respuesta['igv'] = (igv).quantize(Decimal('0.01'))
-    respuesta['total'] = (total).quantize(Decimal('0.01'))
+    respuesta['precio_unitario_sin_igv'] = precio_unitario_sin_igv
+    respuesta['descuento'] = descuento
+    respuesta['descuento_con_igv'] = (precio_unitario_con_igv * cantidad).quantize(Decimal('0.0000000001')) - total
+    respuesta['subtotal'] = subtotal
+    respuesta['igv'] = igv
+    respuesta['total'] = total
     respuesta['tipo_igv'] = tipo_igv
     respuesta['anticipo_regularizacion'] = anticipo_regularizacion
 

@@ -27,7 +27,7 @@
     </div>
     {% endif %}
     
-    {% if boleta.estado == 2 %}
+    {% if boleta.estado == 2 and nubefact_acceso == 'NUBEFACT' or boleta.estado == 6 %}
     <div class="col-auto">
         <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_nubefact_enviar' boleta.id %}"
             class="delete btn btn-info">
@@ -56,9 +56,17 @@
         <a href="{{ url_nubefact|get_enlace_pdf_nubefact }}" class="btn btn-danger" target="_blank">PDF Nubefact</a>
     </div>
     {% endif %}
-        
-
+    
+    {% if url_nubefact %}
     <div class="col-auto ms-auto">
+        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_nubefact_detalle' boleta.id %}"
+            class="read btn btn-info">
+            Movimientos NubeFact
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="col-auto">
         <a href="{% url 'cotizacion_app:confirmacion_ver' boleta.confirmacion.id %}" class="btn btn-primary">Confirmación</a>
     </div>
 </div>
@@ -113,7 +121,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">N° boleta:</th>
+                    <th class="pe-2">N° Boleta:</th>
                     <td>
                         {{ boleta.serie_comprobante }}
                         -
@@ -133,7 +141,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">Estado boleta:</th>
+                    <th class="pe-2">Estado Boleta:</th>
                     <td>{{ boleta.get_estado_display }}</td>
                 </tr>
             </tbody>
@@ -183,6 +191,27 @@
     </div>
 </div>   
 
+<div class="row mt-3">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ boleta.sociedad.color }};">OBSERVACIONES {{ boleta.sociedad.razon_social }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if boleta.observaciones %}
+                        {{ boleta.observaciones|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <div class="table-responsive mt-3">
     <table class="table">
         <thead class="fondo-personalizado" style="--color-fondo: {{ boleta.sociedad.color }};">
@@ -207,7 +236,7 @@
                     <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                     <td class="text-nowrap">{{ material.material.unidad_base }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ boleta.moneda.simbolo }} {{ material.precio_unitario_sin_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ boleta.moneda.simbolo }} {{ material.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ boleta.moneda.simbolo }} {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap table-secondary">{{ boleta.moneda.simbolo }} {{ material.precio_final_con_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ boleta.moneda.simbolo }} {{ material.descuento|redondear|intcomma }}</td>

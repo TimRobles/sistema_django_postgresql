@@ -1,0 +1,104 @@
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+
+{% block content %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Envío</th>
+                <th>Respuesta</th>
+                <th>Aceptador por Sunat</th>
+                <th>Con Errores</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movimiento in movimientos %}
+            <tr>
+                <td>{{ movimiento.updated_at|date:'d/m/Y' }}</td>
+                <td class="accordion" id="envio-{{ movimiento.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne-{{ movimiento.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-envio-{{ movimiento.id }}" aria-expanded="false" aria-controls="collapseOne">
+                                <span class="d-inline-block text-truncate" style="max-width: 250px;">{{ movimiento.envio }}</span>
+                            </button>
+                        </h2>
+                        <div id="collapse-envio-{{ movimiento.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne-{{ movimiento.id }}" data-bs-parent="#envio-{{ movimiento.id }}">
+                            <div class="accordion-body">
+                                <table class="table">
+                                    
+                                    {% for k,v in movimiento.envio|diccionario %}
+                                    <tr>
+                                        <th>{{ k }}</th>
+                                        <td>
+                                            {% if v|es_diccionario_nubefact %}
+                                            {% for valor in v %}
+                                            <table class="table">
+                                                {% for key, value in valor|diccionario %}
+                                                <tr>
+                                                    <th>{{ key }}</th>
+                                                    <td>{{ value }}</th>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                            {% endfor %}
+                                            {% else %}
+                                            {{ v }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                        
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="accordion" id="respuesta-{{ movimiento.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne-{{ movimiento.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-respuesta-{{ movimiento.id }}" aria-expanded="false" aria-controls="collapseOne">
+                                <span class="d-inline-block text-truncate" style="max-width: 250px;">{{ movimiento.respuesta }}</span>
+                            </button>
+                        </h2>
+                        <div id="collapse-respuesta-{{ movimiento.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne-{{ movimiento.id }}" data-bs-parent="#respuesta-{{ movimiento.id }}">
+                            <div class="accordion-body">
+                                <table class="table">
+                                    
+                                    {% for k,v in movimiento.respuesta|diccionario %}
+                                    <tr>
+                                        <th>{{ k }}</th>
+                                        <td>
+                                            {% if v|es_diccionario_nubefact %}
+                                            {% for valor in v %}
+                                            <table class="table">
+                                                {% for key, value in valor|diccionario %}
+                                                <tr>
+                                                    <th>{{ key }}</th>
+                                                    <td>{{ value }}</th>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                            {% endfor %}
+                                            {% else %}
+                                            {{ v }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                        
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ movimiento.aceptado }}</td>
+                <td>{{ movimiento.error }}</td>
+            </tr>
+            {% endfor %} 
+        </tbody>
+    </table>
+</div>
+{% endblock content %}
+    

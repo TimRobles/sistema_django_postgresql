@@ -1478,6 +1478,8 @@ class ConfirmarVerView(TemplateView):
             pass
 
         id_factura = None
+        if len(obj.FacturaVenta_confirmacion.exclude(estado=3)) == 1:
+            id_factura = obj.FacturaVenta_confirmacion.exclude(estado=3)[0].id
         id_boleta = None
         if len(obj.BoletaVenta_confirmacion.exclude(estado=3)) == 1:
             id_boleta = obj.BoletaVenta_confirmacion.exclude(estado=3)[0].id
@@ -1691,6 +1693,8 @@ class ConfirmacionVentaCuotaUpdateView(BSModalUpdateView):
         obj = self.object.confirmacion_venta
         solicitado = obj.total
         suma = obj.ConfirmacionVentaCuota_confirmacion_venta.exclude(id=self.object.id).aggregate(Sum('monto'))['monto__sum']
+        if not suma:
+            suma = Decimal('0.00')
         context = super(ConfirmacionVentaCuotaUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Cuota"

@@ -8,9 +8,16 @@ urlpatterns = [
     path('factura-venta-tabla/',views.FacturaVentaTabla,name='factura_venta_tabla'),
 
     path('factura-venta/detalle/<int:id_factura_venta>/', views.FacturaVentaDetalleView.as_view(), name='factura_venta_detalle'),
-    path('factura-venta/detalle/tabla/<int:factura_venta>/', views.FacturaVentaDetalleVerTabla, name='factura_venta_detalle_tabla'),
-
+    path('factura-venta/detalle/tabla/<int:id_factura_venta>/', views.FacturaVentaDetalleVerTabla, name='factura_venta_detalle_tabla'),
+    
     path('factura-venta/crear/<pk>/', views.FacturaVentaCrearView.as_view(), name='factura_venta_crear'),
+    path('factura-venta/serie/<pk>/', views.FacturaVentaSerieUpdateView.as_view(), name='factura_venta_serie'),
+    path('factura-venta/guardar/<pk>/', views.FacturaVentaGuardarView.as_view(), name='factura_venta_guardar'),
+    path('factura-venta/anular/<pk>/', views.FacturaVentaAnularView.as_view(), name='factura_venta_anular'),
+
+    path('factura-venta/nubefact/enviar/<pk>/', views.FacturaVentaNubeFactEnviarView.as_view(), name='factura_venta_nubefact_enviar'),
+    path('factura-venta/nubefact/anular/<pk>/', views.BoletaVentaNubeFactAnularView.as_view(), name='factura_venta_nubefact_anular'),
+    path('factura-venta/nubefact/detalle/<pk>/', views.FacturaVentaNubefactRespuestaDetailView.as_view(), name='factura_venta_nubefact_detalle'),
 
     path('boleta-venta/',views.BoletaVentaListView.as_view(),name='boleta_venta_inicio'),
     path('boleta-venta-tabla/',views.BoletaVentaTabla,name='boleta_venta_tabla'),
@@ -25,4 +32,5 @@ urlpatterns = [
     
     path('boleta-venta/nubefact/enviar/<pk>/', views.BoletaVentaNubeFactEnviarView.as_view(), name='boleta_venta_nubefact_enviar'),
     path('boleta-venta/nubefact/anular/<pk>/', views.BoletaVentaNubeFactAnularView.as_view(), name='boleta_venta_nubefact_anular'),
+    path('boleta-venta/nubefact/detalle/<pk>/', views.BoletaVentaNubefactRespuestaDetailView.as_view(), name='boleta_venta_nubefact_detalle'),
 ]
