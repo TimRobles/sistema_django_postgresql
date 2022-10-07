@@ -147,16 +147,18 @@
                     <th class="pe-2">Transacción:</th>
                     <td>{{ confirmacion.get_sunat_transaction_display }}</td>
                     <td class="px-2" rowspan="2">
-                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
+                        {% if confirmacion.ConfirmacionOrdenCompra_confirmacion_venta %}
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_orden_compra' confirmacion.id confirmacion.ConfirmacionOrdenCompra_confirmacion_venta.id %}"
+                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
+                            data-modal="modal-xl"
+                            class="update btn btn-primary" title="Seleccionar Cliente">
+                            Editar Orden de Compra
+                        </button>
+                        {% else %}
+                        <button data-form-url="{% url 'cotizacion_app:confirmacion_orden_compra' confirmacion.id %}"
                             data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
                             class="update btn btn-primary" title="Seleccionar Cliente">
                             Orden de Compra
-                        </button>
-                        {% if confirmacion.ConfirmacionOrdenCompra_confirmacion_venta %}
-                        <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
-                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
-                            class="update btn btn-primary" title="Seleccionar Cliente">
-                            Ver Orden de Compra
                         </button>
                         {% endif %}
                     </td>

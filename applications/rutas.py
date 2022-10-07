@@ -7,3 +7,4 @@ ARCHIVO_RECEPCION_COMPRA_ARCHIVO = 'file/recepcion compra/archivo recepcion comp
 FOTO_RECEPCION_COMPRA_FOTO = 'img/recepcion compra/foto recepcion compra/'
 NUBEFACT_ACCESO_ENVIO = 'nubefact/envio/'
 NUBEFACT_ACCESO_RESPUESTA = 'nubefact/respuesta/'
+ORDEN_COMPRA_CONFIRMACION = 'confirmacion_venta/orden_compra/'

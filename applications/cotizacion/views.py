@@ -18,6 +18,7 @@ from applications.recepcion_compra.models import RecepcionCompra
 
 from .forms import (
     ConfirmacionClienteForm,
+    ConfirmacionOrdenCompraForm,
     ConfirmacionVentaCuotaForm,
     ConfirmacionVentaFormaPagoForm,
     CotizacionVentaClienteForm,
@@ -35,6 +36,7 @@ from .forms import (
 )
 
 from .models import (
+    ConfirmacionOrdenCompra,
     ConfirmacionVenta,
     ConfirmacionVentaCuota,
     ConfirmacionVentaDetalle,
@@ -1714,6 +1716,45 @@ class ConfirmacionVentaCuotaDeleteView(BSModalDeleteView):
         context['accion'] = "Eliminar"
         context['titulo'] = "Cuota"
         context['item'] = self.get_object()
+        return context
+    
+
+class ConfirmacionVentaOrdenCompraCrearView(BSModalCreateView):
+    model = ConfirmacionOrdenCompra
+    template_name = "includes/formulario generico.html"
+    form_class = ConfirmacionOrdenCompraForm
+
+    def get_success_url(self):
+        return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.kwargs['id_confirmacion']})
+
+    def form_valid(self, form):
+        form.instance.confirmacion_venta = ConfirmacionVenta.objects.get(id = self.kwargs['id_confirmacion'])
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionVentaOrdenCompraCrearView, self).get_context_data(**kwargs)
+        context['accion'] = "Guardar"
+        context['titulo'] = "Orden de Compra"
+        return context
+
+
+class ConfirmacionVentaOrdenCompraActualizarView(BSModalUpdateView):
+    model = ConfirmacionOrdenCompra
+    template_name = "includes/formulario generico.html"
+    form_class = ConfirmacionOrdenCompraForm
+
+    def get_success_url(self):
+        return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.kwargs['id_confirmacion']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionVentaOrdenCompraActualizarView, self).get_context_data(**kwargs)
+        context['accion'] = "Guardar"
+        context['titulo'] = "Orden de Compra"
         return context
 
 
