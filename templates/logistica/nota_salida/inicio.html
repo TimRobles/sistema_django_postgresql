@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Nota Salida
+{% endblock titulo %}
+
+
+{% block contenido %}
+    <div class="table-responsive" id="tabla">
+        {% include 'logistica/nota_salida/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
+    

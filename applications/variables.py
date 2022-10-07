@@ -263,8 +263,8 @@ MENSAJE_REGISTRAR_SALIDA = 'Operación exitosa: La Hora de Salida fue registrada
 
 MENSAJE_ELIMINAR_ITEM = 'Operación exitosa: El registro fue eliminado.'
 MENSAJE_RECHAZAR_OFERTA_PROVEEDOR = 'Operación exitosa: La Oferta fue Rechazada.'
-MENSAJE_GENERAR_REQUERIMIENTO_PROVEEDOR = 'Operación exitosa: Generar Requerimiento Proveedor.'
-MENSAJE_GENERAR_ORDEN_COMPRA = 'Operación exitosa: Generar Orden de Compra.'
+MENSAJE_GENERAR_REQUERIMIENTO_PROVEEDOR = 'Operación exitosa: Requerimiento Proveedor generado.'
+MENSAJE_GENERAR_ORDEN_COMPRA = 'Operación exitosa: Orden de Compra generada.'
 MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Generar Comprobante de Compra PI.'
 MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Comprobante de Compra PI Anulado.'
 MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI= 'No se puede anular el Comprobante de Compra PI, verifique los procesos siguientes.'
@@ -284,6 +284,9 @@ MENSAJE_GENERAR_GUIA= 'Operación exitosa: La guía fue generada con éxito.'
 
 MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
 MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'
+MENSAJE_ANULAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue anulada.'
+MENSAJE_GENERAR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue generada.'
+
 
 MENSAJE_ELIMINAR_DEUDA = 'Operación exitosa: Deuda eliminada.'
 MENSAJE_ERROR_ELIMINAR_DEUDA = 'No se pudo eliminar la deuda, contactar con el administrador.'
@@ -313,3 +316,11 @@ DICCIONARIO_TOTALES={
     'total_icbper':'ICBPER',
     'total':'Total',
 }
+
+ESTADOS_DESPACHO = (
+    (1, 'EN PROCESO'),
+    (2, 'DESPACHADO'),
+    (3, 'ANULADO'),
+    (4, 'CONCLUIDO SIN GUIA'),
+    (5, 'CONCLUIDO CON GUIA'),
+)

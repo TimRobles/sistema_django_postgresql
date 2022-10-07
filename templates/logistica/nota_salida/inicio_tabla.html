@@ -1,0 +1,53 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Número Salida</th>
+            <th>Confirmación Venta</th>
+            <th>Solicitud Prestamo Materiales</th>
+            <th>Observacion Adicional</th>
+            <th>Motivo Anulación</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>  
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for nota_salida in contexto_nota_salida %}
+            <tr>
+                <td> 
+                    {% if  nota_salida.numero_salida %}
+                        {{ nota_salida.numero_salida }} 
+                    {% endif %}
+                </td>
+                <td>
+                    {% if nota_salida.confirmacion_venta %}
+                        {{ nota_salida.confirmacion_venta }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if nota_salida.solicitud_prestamo_materiales %}
+                        {{ nota_salida.solicitud_prestamo_materiales }}
+                    {% endif %}
+                </td>
+                <td>{{ nota_salida.observacion_adicional }}</td>
+                <td>{{ nota_salida.motivo_anulacion }}</td>
+                <td class="text-center">{{ nota_salida.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'logistica_app:nota_salida_actualizar' nota_salida.id %}"
+                        data-table-url="{% url 'logistica_app:nota_salida_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <a href="{% url 'logistica_app:nota_salida_detalle' nota_salida.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>
