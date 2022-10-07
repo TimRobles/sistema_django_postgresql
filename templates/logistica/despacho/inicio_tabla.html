@@ -1,0 +1,29 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. Despacho</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for despacho in contexto_despacho %}
+        <tr>
+            <td> {{despacho.numero_despacho}} </td>
+            <td> {{despacho.cliente}} </td>
+            <td> {{despacho.get_estado_display}} </td>
+            <td class="text-center">
+                <a href="{% url 'logistica_app:despacho_detalle' despacho.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr> 
+        {% endfor %}
+            
+    </tbody>
+</table>

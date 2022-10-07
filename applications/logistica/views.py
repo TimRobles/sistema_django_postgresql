@@ -1,8 +1,9 @@
+from os import listxattr
 from django.shortcuts import render
 from django import forms
 from decimal import Decimal
 from applications.importaciones import *
-from applications.logistica.models import DocumentoPrestamoMateriales, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from applications.logistica.forms import DocumentoPrestamoMaterialesForm, SolicitudPrestamoMaterialesDetalleForm, SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.logistica.pdf import generarSolicitudPrestamoMateriales
@@ -369,5 +370,73 @@ def ClienteView(request, id_cliente_interlocutor):
             context,
             request=request
         ).replace('selected', 'selected=""')
+        return JsonResponse(data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------------------
+
+
+class DespachoListView(ListView):
+    model = Despacho
+    template_name = 'logistica/despacho/inicio.html'
+    context_object_name = 'contexto_despacho'
+
+def DespachoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/despacho/inicio_tabla.html'
+        context = {}
+        context['contexto_guia'] = Despacho.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class DespachoDetalleView(TemplateView):
+    template_name = "logistica/despacho/detalle.html"
+
+    def get_context_data(self, **kwargs):
+        obj = Despacho.objects.get(id = kwargs['id_despacho'])
+        
+        context = super(DespachoDetalleView, self).get_context_data(**kwargs)
+        context['despacho'] = obj
+        context['depacho_detalle'] = obj.DespachoDetalle_despacho.all()
+
+        return context
+
+def DespachoDetalleVerTabla(request, id_despacho):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/despacho/detalle_tabla.html'
+        obj = Despacho.objects.get(id=id_despacho)
+
+        context = {}
+        context['despacho'] = obj
+        context['depacho_detalle'] = obj.DespachoDetalle_despacho.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
         return JsonResponse(data)
 

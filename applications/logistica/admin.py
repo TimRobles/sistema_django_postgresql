@@ -106,9 +106,10 @@ class NotaSalidaDetalleAdmin(admin.ModelAdmin):
 class DespachoAdmin(admin.ModelAdmin):
     list_display = (
         'sociedad',
-        'confirmacion_venta',
+        'nota_salida',
         'numero_despacho',
         'cliente',
+        'fecha_despacho',
         'observacion',
         'motivo_anulacion',
         'estado',
@@ -127,7 +128,8 @@ class DespachoAdmin(admin.ModelAdmin):
 class DespachoDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'item',
-        'confirmacion_venta_detalle',
+        'content_type',
+        'id_registro',
         'cantidad_despachada',
         'despacho',
         'estado',

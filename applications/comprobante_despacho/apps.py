@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class EnvioClientesConfig(AppConfig):
+class ComprobanteDespachoConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'applications.envio_clientes'
+    name = 'applications.comprobante_despacho'

@@ -21,4 +21,11 @@ urlpatterns = [
     path('solicitud-prestamo-materiales-detalle/archivo/agregar/<int:solicitud_prestamo_materiales_id>/', views.DocumentoSolicitudPrestamoMaterialesCreateView.as_view(), name='solicitud_prestamo_materiales_documento_agregar'),
     path('solicitud-prestamo-materiales-detalle/archivo/eliminar/<pk>/', views.DocumentoSolicitudPrestamoMaterialesDeleteView.as_view(), name='solicitud_prestamo_materiales_documento_eliminar'),
     path('cliente-interlocutor/<str:id_cliente_interlocutor>/', views.ClienteView, name='cliente_interlocutor'),
+
+    path('despacho/',views.DespachoListView.as_view(),name='despacho_inicio'),
+    path('despacho-tabla/',views.DespachoTabla,name='despacho_tabla'),    
+    
+    path('despacho/detalle/<int:id_despacho>/',views.DespachoDetalleView.as_view(),name='despacho_detalle'),
+    path('despacho/detalle/tabla/<int:id_despacho>/',views.DespachoDetalleVerTabla,name='despacho_detalle_tabla'),
+
 ]

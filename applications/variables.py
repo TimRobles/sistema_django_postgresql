@@ -217,7 +217,7 @@ ESTADOS_COTIZACION_VENTA = (
     (3, 'RESERVADO'),
     (4, 'CONFIRMADO'), #Regresa a Reservado
     (5, 'CONFIRMADO'), #Regresa a Pendiente
-    (6, 'CONFIRMADO ANTICIPADO'), 
+    (6, 'CONFIRMADO ANTICIPADO'),
     (7, 'FINALIZADO'),
     (8, 'VENCIDO'),
     (9, 'ANULADO'),
@@ -234,6 +234,13 @@ ESTADOS_FACTURA = (
     (2, 'EMITIDO'),
     (3, 'RECHAZADO'),
     (4, 'ANULADO'),
+    )
+
+
+ESTADOS_GUIA = (
+    (1, 'EN PROCESO'),
+    (2, 'EMITIDA'),
+    (3, 'ANULADA'),
     )
 
 TIPO_PERCEPCION = (
@@ -271,8 +278,9 @@ MENSAJE_RESERVAR_COTIZACION = 'Operación exitosa: La cotización fue reservada 
 MENSAJE_ANULAR_RESERVAR_COTIZACION = 'Operación exitosa: La reserva fue anulada con éxito.'
 MENSAJE_CONFIRMAR_COTIZACION = 'Operación exitosa: La cotización fue confirmada con éxito.'
 MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue anulada con éxito.'
-MENSAJE_GENERAR_FACTURA = 'Operación exitosa: La factura fue creada con éxito.'
-MENSAJE_GENERAR_BOLETA = 'Operación exitosa: La boleta fue creada con éxito.'
+MENSAJE_GENERAR_FACTURA= 'Operación exitosa: La factura fue generada con éxito.'
+MENSAJE_GENERAR_BOLETA= 'Operación exitosa: La boleta fue generada con éxito.'
+MENSAJE_GENERAR_GUIA= 'Operación exitosa: La guía fue generada con éxito.'
 
 MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
 MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'

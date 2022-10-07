@@ -1,0 +1,31 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. Guía</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for guia in contexto_guia %}
+        <tr>
+            <td> {{guia.numero_guia}} </td>
+            <td> {{guia.cliente}} </td>
+            <td> {{guia.get_estado_display}} </td>
+            <td class="text-center">
+                <a href="{% url 'comprobante_despacho_app:guia_detalle' guia.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+            
+        {% endfor %}
+            
+
+    </tbody>
+</table>
