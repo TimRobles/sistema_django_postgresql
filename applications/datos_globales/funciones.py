@@ -70,7 +70,7 @@ def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, clie
             item={}
             item['unidad_de_medida'] = producto.unidad.unidad_sunat
             item["codigo"] = numero_espacio(producto.codigo_interno)
-            item["codigo_producto_sunat"] = producto.producto.producto_sunat.codigo
+            item["codigo_producto_sunat"] = producto.codigo_producto_sunat
             item["descripcion"] = producto.descripcion_documento
             item["cantidad"] = numero_espacio(producto.cantidad)
             item["valor_unitario"] = numero_espacio(producto.precio_unitario_sin_igv)

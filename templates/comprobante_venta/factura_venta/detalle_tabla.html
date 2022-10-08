@@ -59,6 +59,15 @@
     <div class="col-auto ms-auto">
         <a href="{% url 'cotizacion_app:confirmacion_ver' factura.confirmacion.id  %}" class="btn btn-primary">Confirmacion</a>
     </div>
+    
+    {% if not factura.numero_factura or factura.estado == 3 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_eliminar' factura.id %}"
+            class="delete btn btn-danger">
+            Eliminar Factura
+        </button>
+    </div>
+    {% endif %}
 
     {% if url_nubefact %}
     <div class="col-auto">
@@ -232,8 +241,18 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
-                    <td class="text-nowrap">{{ material.material.unidad_base }}</td>
+                    <td style="min-width: 500px;">
+                        {{ material.descripcion_documento }}
+                        {% if factura.confirmacion.sunat_transaction == 4 and factura.estado == 1 %}
+                        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_detalle_actualizar' material.id %}"
+                            data-table-url="{% url 'comprobante_venta_app:factura_venta_detalle_tabla' factura.id %}"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">{{ material.unidad }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ factura.moneda.simbolo }} {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>

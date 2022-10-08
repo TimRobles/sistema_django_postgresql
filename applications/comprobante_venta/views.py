@@ -2,11 +2,11 @@ import json
 from urllib import request
 from django.shortcuts import render
 from applications.cobranza.funciones import eliminarDeuda, generarDeuda
-from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaSerieForm, FacturaVentaAnularForm, FacturaVentaSerieForm
+from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaSerieForm, FacturaVentaAnularForm, FacturaVentaDetalleForm, FacturaVentaSerieForm
 from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, factura_nubefact
 from applications.cotizacion.models import ConfirmacionVenta
-from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio
-from applications.funciones import obtener_totales, slug_aleatorio, tipo_de_cambio
+from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, slug_aleatorio, tipo_de_cambio
 from applications.importaciones import *
 
 from . models import(
@@ -158,7 +158,7 @@ class FacturaVentaCrearView(DeleteView):
                 tipo_igv=detalle.tipo_igv,
                 igv=detalle.igv,
                 total=detalle.total,
-                codigo_producto_sunat=producto.codigo_producto_sunat,
+                codigo_producto_sunat=producto.producto_sunat.codigo,
                 factura_venta=factura_venta,
                 created_by=self.request.user,
                 updated_by=self.request.user,
@@ -175,6 +175,181 @@ class FacturaVentaCrearView(DeleteView):
         context['accion'] = 'Generar'
         context['titulo'] = 'Factura de venta'
         context['texto'] = '¿Seguro que desea generar la Factura de venta?'
+        context['item'] = str(self.object.cliente) 
+        return context
+
+
+class FacturaVentaAnticipoCrearView(DeleteView):
+    model = ConfirmacionVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(FacturaVenta))
+
+        factura_venta = FacturaVenta.objects.create(
+            confirmacion=self.object,
+            sociedad = self.object.sociedad,
+            serie_comprobante = serie_comprobante,
+            cliente = self.object.cliente,
+            cliente_interlocutor = self.object.cliente_interlocutor,
+            moneda = self.object.moneda,
+            tipo_cambio = self.object.tipo_cambio,
+            tipo_venta = self.object.tipo_venta,
+            condiciones_pago = self.object.condiciones_pago,
+            descuento_global = self.object.descuento_global,
+            total_descuento = self.object.total_descuento,
+            total_anticipo = self.object.total_anticipo,
+            total_gravada = self.object.total_gravada,
+            total_inafecta = self.object.total_inafecta,
+            total_exonerada = self.object.total_exonerada,
+            total_igv = self.object.total_igv,
+            total_gratuita = self.object.total_gratuita,
+            total_otros_cargos = self.object.otros_cargos,
+            total = self.object.total,
+            observaciones = self.object.observacion,
+            slug = slug_aleatorio(FacturaVenta),
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
+    
+        FacturaVentaDetalle.objects.create(
+            item=1,
+            unidad=Unidad.objects.get(unidad_sunat='ZZ'),
+            descripcion_documento="DETALLE DEL PRIMER ANTICIPO",
+            cantidad=1,
+            precio_unitario_sin_igv=self.object.total_gravada,
+            precio_unitario_con_igv=self.object.total,
+            precio_final_con_igv=self.object.total,
+            sub_total=self.object.total_gravada,
+            igv=self.object.total_igv,
+            total=self.object.total,
+            codigo_producto_sunat='10000000',
+            factura_venta=factura_venta,
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
+
+        registro_guardar(self.object, self.request)
+        self.object.save()
+
+        messages.success(request, MENSAJE_GENERAR_FACTURA)
+        return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':factura_venta.id}))
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaAnticipoCrearView, self).get_context_data(**kwargs)
+        context['accion'] = 'Generar'
+        context['titulo'] = 'Factura de Venta Anticipada'
+        context['texto'] = '¿Seguro que desea generar la Factura de Venta Anticipada?'
+        context['item'] = str(self.object.cliente) 
+        return context
+
+
+class FacturaVentaAnticipoRegularizarCrearView(DeleteView):
+    model = ConfirmacionVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.object.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        factura_anticipada = self.object.FacturaVenta_confirmacion.get(
+            estado = 4,
+        )
+        
+        detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
+
+        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(FacturaVenta))
+
+        factura_venta = FacturaVenta.objects.create(
+            confirmacion=self.object,
+            sociedad = self.object.sociedad,
+            serie_comprobante = serie_comprobante,
+            cliente = self.object.cliente,
+            cliente_interlocutor = self.object.cliente_interlocutor,
+            moneda = self.object.moneda,
+            tipo_cambio = self.object.tipo_cambio,
+            tipo_venta = self.object.tipo_venta,
+            condiciones_pago = self.object.condiciones_pago,
+            descuento_global = self.object.descuento_global,
+            total_descuento = self.object.total_descuento,
+            total_anticipo = self.object.total_anticipo,
+            total_gravada = self.object.total_gravada,
+            total_inafecta = self.object.total_inafecta,
+            total_exonerada = self.object.total_exonerada,
+            total_igv = self.object.total_igv,
+            total_gratuita = self.object.total_gratuita,
+            total_otros_cargos = self.object.otros_cargos,
+            total = self.object.total,
+            observaciones = self.object.observacion,
+            slug = slug_aleatorio(FacturaVenta),
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
+
+        contador = 0
+        for detalle in detalles:
+            contador += 1
+            producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            factura_venta_detalle = FacturaVentaDetalle.objects.create(
+                item=detalle.item,
+                content_type=detalle.content_type,
+                id_registro=detalle.id_registro,
+                unidad=producto.unidad_base,
+                descripcion_documento=producto.descripcion_documento,
+                cantidad=detalle.cantidad_confirmada,
+                precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
+                precio_unitario_con_igv=detalle.precio_unitario_con_igv,
+                precio_final_con_igv=detalle.precio_final_con_igv,
+                descuento=detalle.descuento,
+                sub_total=detalle.sub_total,
+                tipo_igv=detalle.tipo_igv,
+                igv=detalle.igv,
+                total=detalle.total,
+                codigo_producto_sunat=producto.producto_sunat.codigo,
+                factura_venta=factura_venta,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+
+        FacturaVentaDetalle.objects.create(
+            item=contador + 1,
+            unidad=Unidad.objects.get(unidad_sunat='ZZ'),
+            descripcion_documento="FACTURA ANTICIPADA %s-%s" % (factura_anticipada.serie_comprobante.serie, numeroXn(factura_anticipada.numero_factura, 6)),
+            cantidad=1,
+            precio_unitario_sin_igv=factura_anticipada.total_gravada,
+            precio_unitario_con_igv=factura_anticipada.total,
+            precio_final_con_igv=factura_anticipada.total,
+            sub_total=factura_anticipada.total_gravada,
+            igv=factura_anticipada.total_igv,
+            total=factura_anticipada.total,
+            codigo_producto_sunat='20000000',
+            anticipo_regularizacion = True,
+            anticipo_documento_serie = factura_anticipada.serie_comprobante,
+            anticipo_documento_numero = factura_anticipada.numero_factura,
+            factura_venta=factura_venta,
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
+
+        registro_guardar(self.object, self.request)
+        self.object.save()
+
+        messages.success(request, MENSAJE_GENERAR_FACTURA)
+        # return HttpResponseRedirect(reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.object.id}))
+        return HttpResponseRedirect(reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':factura_venta.id}))
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaAnticipoRegularizarCrearView, self).get_context_data(**kwargs)
+        context['accion'] = 'Regularizar'
+        context['titulo'] = 'Factura de Venta'
+        context['texto'] = '¿Seguro que desea regularizar la Factura de Venta?'
         context['item'] = str(self.object.cliente) 
         return context
 
@@ -281,7 +456,7 @@ class FacturaVentaNubeFactEnviarView(DeleteView):
         if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
             error_nubefact = True
         for detalle in self.get_object().FacturaVentaDetalle_factura_venta.all():
-            if not detalle.producto.producto_sunat:
+            if not detalle.codigo_producto_sunat:
                 error_codigo_sunat = True
 
         if error_nubefact:
@@ -383,7 +558,7 @@ class FacturaVentaEliminarView(DeleteView):
         # if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
         #     error_nubefact = True
         # for detalle in self.get_object().FacturaVentaDetalle_factura_venta.all():
-        #     if not detalle.producto.producto_sunat:
+        #     if not detalle.codigo_producto_sunat:
         #         error_codigo_sunat = True
 
         # if error_nubefact:
@@ -397,6 +572,15 @@ class FacturaVentaEliminarView(DeleteView):
     def get_success_url(self) -> str:
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.request.session['id_confirmacion']})
 
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        eliminar = eliminarDeuda(obj)
+        if eliminar:
+            messages.success(self.request, MENSAJE_ELIMINAR_DEUDA)
+        else:
+            messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
+        return super().delete(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(FacturaVentaEliminarView, self).get_context_data(**kwargs)
         obj = self.get_object()
@@ -406,7 +590,34 @@ class FacturaVentaEliminarView(DeleteView):
         context['texto'] = '¿Seguro de eliminar la Factura de Venta?'
         context['item'] = self.get_object()
         return context
-    
+
+
+
+class FacturaVentaDetalleUpdateView(BSModalUpdateView):
+    model = FacturaVentaDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = FacturaVentaDetalleForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        form.instance.descripcion_documento = "%s (Cotización %s%s)" % (form.instance.descripcion_documento, form.instance.factura_venta.confirmacion.sociedad.abreviatura, numeroXn(form.instance.factura_venta.confirmacion.cotizacion_venta.numero_cotizacion, 6))
+        respuesta = calculos_linea(form.instance.cantidad, form.instance.total, form.instance.total, igv(), form.instance.tipo_igv)
+        form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+        form.instance.precio_unitario_con_igv = form.instance.total
+        form.instance.precio_final_con_igv = form.instance.total
+        form.instance.descuento = respuesta['descuento']
+        form.instance.sub_total = respuesta['subtotal']
+        form.instance.igv = respuesta['igv']
+        form.instance.total = respuesta['total']
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Descripción Contingencia'
+        return context
+
 
 ###########################################################################################
 
@@ -554,7 +765,7 @@ class BoletaVentaCrearView(DeleteView):
                 tipo_igv=detalle.tipo_igv,
                 igv=detalle.igv,
                 total=detalle.total,
-                codigo_producto_sunat=producto.codigo_producto_sunat,
+                codigo_producto_sunat=producto.producto_sunat.codigo,
                 boleta_venta=boleta_venta,
                 created_by=self.request.user,
                 updated_by=self.request.user,
@@ -678,7 +889,7 @@ class BoletaVentaNubeFactEnviarView(DeleteView):
         if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
             error_nubefact = True
         for detalle in self.get_object().BoletaVentaDetalle_boleta_venta.all():
-            if not detalle.producto.producto_sunat:
+            if not detalle.codigo_producto_sunat:
                 error_codigo_sunat = True
 
         if error_nubefact:
@@ -765,4 +976,50 @@ class BoletaVentaNubefactRespuestaDetailView(BSModalReadView):
         context = super(BoletaVentaNubefactRespuestaDetailView, self).get_context_data(**kwargs)
         context['titulo'] = 'Movimientos Nubefact'
         context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
+        return context
+
+
+class BoletaVentaEliminarView(DeleteView):
+    model = BoletaVenta
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # context = {}
+        # error_nubefact = False
+        # error_codigo_sunat = False
+        # context['titulo'] = 'Error de guardar'
+        # if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+        #     error_nubefact = True
+        # for detalle in self.get_object().BoletaVentaDetalle_factura_venta.all():
+        #     if not detalle.codigo_producto_sunat:
+        #         error_codigo_sunat = True
+
+        # if error_nubefact:
+        #     context['texto'] = 'No hay una ruta para envío a NubeFact'
+        #     return render(request, 'includes/modal sin permiso.html', context)
+        # if error_codigo_sunat:
+        #     context['texto'] = 'Hay productos sin Código de Sunat'
+        #     return render(request, 'includes/modal sin permiso.html', context)
+        return super(BoletaVentaEliminarView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.request.session['id_confirmacion']})
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        eliminar = eliminarDeuda(obj)
+        if eliminar:
+            messages.success(self.request, MENSAJE_ELIMINAR_DEUDA)
+        else:
+            messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaEliminarView, self).get_context_data(**kwargs)
+        obj = self.get_object()
+        self.request.session['id_confirmacion'] = obj.confirmacion.id
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Boleta de Venta'
+        context['texto'] = '¿Seguro de eliminar la Boleta de Venta?'
+        context['item'] = self.get_object()
         return context

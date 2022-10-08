@@ -1482,8 +1482,12 @@ class ConfirmarVerView(TemplateView):
             pass
 
         id_factura = None
+        id_factura_anticipo = None
         if len(obj.FacturaVenta_confirmacion.exclude(estado=3)) == 1:
             id_factura = obj.FacturaVenta_confirmacion.exclude(estado=3)[0].id
+        elif len(obj.FacturaVenta_confirmacion.exclude(estado=3)) == 2:
+            id_factura = obj.FacturaVenta_confirmacion.exclude(estado=3).latest('updated_at').id
+            id_factura_anticipo = obj.FacturaVenta_confirmacion.exclude(estado=3).earliest('updated_at').id
         id_boleta = None
         if len(obj.BoletaVenta_confirmacion.exclude(estado=3)) == 1:
             id_boleta = obj.BoletaVenta_confirmacion.exclude(estado=3)[0].id
@@ -1498,6 +1502,7 @@ class ConfirmarVerView(TemplateView):
         context['credito_temporal'] = credito_temporal
         context['disponible'] = disponible
         context['id_factura'] = id_factura
+        context['id_factura_anticipo'] = id_factura_anticipo
         context['id_boleta'] = id_boleta
         
         return context

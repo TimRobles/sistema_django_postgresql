@@ -57,9 +57,18 @@
     </div>
     {% endif %}
     
-    <div class="col-auto">
+    <div class="col-auto ms-auto">
         <a href="{% url 'cotizacion_app:confirmacion_ver' boleta.confirmacion.id %}" class="btn btn-primary">Confirmación</a>
     </div>
+
+    {% if not boleta.serie_comprobante %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_eliminar' boleta.id %}"
+            class="delete btn btn-danger">
+            Anular en NubeFact
+        </button>
+    </div>
+    {% endif %}
     
     {% if url_nubefact %}
     <div class="col-auto">
@@ -233,8 +242,17 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
-                    <td class="text-nowrap">{{ material.material.unidad_base }}</td>
+                    <td style="min-width: 500px;">
+                        {{ material.descripcion_documento }}
+                        {% if boleta.confirmacion.sunat_transaction == 4 %}
+                        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_serie' boleta.id %}"
+                            data-table-url="{% url 'comprobante_venta_app:boleta_venta_detalle_tabla' boleta.id %}"
+                            class="update btn btn-primary">
+                            Seleccionar Serie
+                        </button>
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">{{ material.unidad }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ boleta.moneda.simbolo }} {{ material.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ boleta.moneda.simbolo }} {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>

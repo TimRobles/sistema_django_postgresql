@@ -26,26 +26,65 @@
                 {% if confirmacion.cliente.tipo_documento == '6' %}
                 
                     {% if id_factura %}
-                    <div class="col-auto">
-                        <a href="{% url 'comprobante_venta_app:factura_venta_detalle' id_factura %}"
-                        class="btn btn-success">
-                            Ver Factura
-                        </a>
-                    </div>
+
+                        {% if confirmacion.sunat_transaction == 1 %}
+                        <div class="col-auto">
+                            <a href="{% url 'comprobante_venta_app:factura_venta_detalle' id_factura %}"
+                            class="btn btn-success">
+                                Ver Factura
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="col-auto">
+                            <a href="{% url 'comprobante_venta_app:factura_venta_detalle' id_factura %}"
+                            class="btn btn-success">
+                                Ver Factura
+                            </a>
+                        </div>
+                        
+                            {% if id_factura_anticipo %}
+                            <div class="col-auto">
+                                <a href="{% url 'comprobante_venta_app:factura_venta_detalle' id_factura_anticipo %}"
+                                class="btn btn-success">
+                                    Ver Factura Anticipada
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="col-auto">
+                                <button data-form-url="{% url 'comprobante_venta_app:factura_venta_anticipo_regularizar_crear' confirmacion.id %}"
+                                    class="delete btn btn-primary">
+                                    REGULARIZAR FACTURA ANTICIPO
+                                </button>
+                            </div>
+                            {% endif %}
+                            
+                        {% endif %}
+                        
                     {% else %}
-                    <div class="col-auto">
-                        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
-                            class="delete btn btn-primary">
-                            FACTURA
-                        </button>
-                    </div>
+                    
+                        {% if confirmacion.sunat_transaction == 1 %}
+                        <div class="col-auto">
+                            <button data-form-url="{% url 'comprobante_venta_app:factura_venta_crear' confirmacion.id %}"
+                                class="delete btn btn-primary">
+                                FACTURA
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="col-auto">
+                            <button data-form-url="{% url 'comprobante_venta_app:factura_venta_anticipo_crear' confirmacion.id %}"
+                                class="delete btn btn-primary">
+                                FACTURA ANTICIPADA
+                            </button>
+                        </div>
+                        {% endif %}
+                        
                     {% endif %}
                 
                 {% endif %}
 
             {% endif %}
 
-            {% if not id_factura %}
+            {% if not id_factura and confirmacion.sunat_transaction == 1 %}
             
                 {% if id_boleta %}
                 <div class="col-auto">

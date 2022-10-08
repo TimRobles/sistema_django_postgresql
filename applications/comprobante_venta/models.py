@@ -100,7 +100,7 @@ class FacturaVentaDetalle(models.Model):
     id_registro = models.IntegerField(blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
     codigo_interno = models.CharField('Código Interno', max_length=250, blank=True, null=True)
-    descripcion_documento = models.CharField('Descripción para documento', max_length=250)
+    descripcion_documento = models.CharField('Descripción', max_length=250)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=0)
     precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=0)
@@ -142,6 +142,14 @@ class FacturaVentaDetalle(models.Model):
 def factura_venta_detalle_post_save(*args, **kwargs):
     obj = kwargs['instance']
     respuesta = obtener_totales(obj.factura_venta)
+    obj.factura_venta.total_descuento = respuesta['total_descuento']
+    obj.factura_venta.total_anticipo = respuesta['total_anticipo']
+    obj.factura_venta.total_gravada = respuesta['total_gravada']
+    obj.factura_venta.total_inafecta = respuesta['total_inafecta']
+    obj.factura_venta.total_exonerada = respuesta['total_exonerada']
+    obj.factura_venta.total_igv = respuesta['total_igv']
+    obj.factura_venta.total_gratuita = respuesta['total_gratuita']
+    obj.factura_venta.otros_cargos = respuesta['total_otros_cargos']
     obj.factura_venta.total = respuesta['total']
     obj.factura_venta.save()
 
@@ -235,7 +243,7 @@ class BoletaVentaDetalle(models.Model):
     id_registro = models.IntegerField(blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
     codigo_interno = models.CharField('Código Interno', max_length=250, blank=True, null=True)
-    descripcion_documento = models.CharField('Descripción para documento', max_length=250)
+    descripcion_documento = models.CharField('Descripción', max_length=250)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=0)
     precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=0)
@@ -275,4 +283,18 @@ class BoletaVentaDetalle(models.Model):
     def __str__(self):
         return str(self.id)
 
+def boleta_venta_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.boleta_venta)
+    obj.boleta_venta.total_descuento = respuesta['total_descuento']
+    obj.boleta_venta.total_anticipo = respuesta['total_anticipo']
+    obj.boleta_venta.total_gravada = respuesta['total_gravada']
+    obj.boleta_venta.total_inafecta = respuesta['total_inafecta']
+    obj.boleta_venta.total_exonerada = respuesta['total_exonerada']
+    obj.boleta_venta.total_igv = respuesta['total_igv']
+    obj.boleta_venta.total_gratuita = respuesta['total_gratuita']
+    obj.boleta_venta.otros_cargos = respuesta['total_otros_cargos']
+    obj.boleta_venta.total = respuesta['total']
+    obj.boleta_venta.save()
 
+post_save.connect(boleta_venta_detalle_post_save, sender=BoletaVentaDetalle)
