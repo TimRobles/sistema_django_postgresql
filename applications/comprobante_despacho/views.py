@@ -47,10 +47,6 @@ class GuiaDetalleView(TemplateView):
         materiales = None
         try:
             materiales = obj.GuiaDetalle_guia_venta.all()
-            print('*****************************************')
-            print(materiales)
-            print('*****************************************')
-
             for material in materiales:
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
         except:
