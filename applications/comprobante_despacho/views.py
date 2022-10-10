@@ -11,6 +11,8 @@ from .models import(
 )
 
 from .forms import(
+    GuiaDestinoForm,
+    GuiaPartidaForm,
     GuiaTransportistaForm,
 )
 
@@ -146,3 +148,36 @@ class GuiaTransportistaView(BSModalUpdateView):
         context['titulo'] = "Transportista"
         return context
 
+
+class GuiaPartidaView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaPartidaForm
+    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaPartidaView, self).get_context_data(**kwargs)
+        context['accion'] = "Elegir"
+        context['titulo'] = "Dirección de Partida"
+        return context
+
+
+class GuiaDestinoView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaDestinoForm
+    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaDestinoView, self).get_context_data(**kwargs)
+        context['accion'] = "Elegir"
+        context['titulo'] = "Dirección de Destino"
+        return context

@@ -18,7 +18,6 @@ class Guia(models.Model):
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='Guia_interlocutor', blank=True, null=True)
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_traslado = models.DateField('Fecha Traslado', auto_now=False, auto_now_add=False, blank=True, null=True)
-    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
     transportista = models.ForeignKey(Transportista, on_delete=models.PROTECT, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     numero_bultos = models.IntegerField(blank=True, null=True)
