@@ -7,10 +7,11 @@ from applications.datos_globales.models import Distrito, Moneda, SeriesComproban
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.envio_clientes.models import Transportista
-from applications.variables import ESTADOS_GUIA, TIPO_DOCUMENTO_SUNAT, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA, ESTADOS
+from applications.variables import ESTADOS_GUIA, MOTIVO_TRASLADO, TIPO_COMPROBANTE, TIPO_DOCUMENTO_SUNAT, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA, ESTADOS
 from django.conf import settings
 
 class Guia(models.Model):
+    tipo_comprobante = models.IntegerField('Tipo de Comprobante', choices=TIPO_COMPROBANTE, default=7)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
     numero_guia = models.IntegerField('Número Guía',blank=True, null=True)
@@ -19,7 +20,12 @@ class Guia(models.Model):
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_traslado = models.DateField('Fecha Traslado', auto_now=False, auto_now_add=False, blank=True, null=True)
     transportista = models.ForeignKey(Transportista, on_delete=models.PROTECT, blank=True, null=True)
+    conductor_tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT, blank=True, null=True)
+    conductor_numero_documento = models.CharField('Número de Documento', max_length=15, blank=True, null=True)
+    conductor_denominacion = models.CharField('Nombre completo', max_length=100, blank=True, null=True)
+    placa_numero = models.CharField('Número de placa', max_length=8, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
+    motivo_traslado = models.CharField('Motivo de Traslado', choices=MOTIVO_TRASLADO, default='01', max_length=2)
     numero_bultos = models.IntegerField(blank=True, null=True)
     direccion_partida = models.TextField(blank=True, null=True)
     direccion_destino = models.TextField(blank=True, null=True)

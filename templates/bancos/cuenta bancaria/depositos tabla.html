@@ -9,6 +9,7 @@
             <th>Cuenta Bancaria</th>
             <th>Operación</th>
             <th class="text-end">Monto</th>
+            <th class="text-end">Disponible</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -38,9 +39,9 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.monto|redondear|intcomma }}</td>
-                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}</td>
-                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}</td>
+                                            <td class="text-center text-nowrap">{{ movimiento.moneda.simbolo }} {{ movimiento.monto|redondear|intcomma }}</td>
+                                            <td class="text-center text-nowrap">{{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}</td>
+                                            <td class="text-center text-nowrap">{{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -59,7 +60,7 @@
                                     <tbody>
                                         {% for pago in movimiento.pagos %}
                                         <tr>
-                                            <td>
+                                            <td class="fondo-personalizado" style="--color-fondo: {{ pago.deuda.sociedad.color }};">
                                                 {% if pago.deuda.Cuota_deuda.all %}
                                                 <div class="accordion" id="accordion{{pago.deuda.id}}">
                                                     <div class="accordion-item">
@@ -96,7 +97,7 @@
                                                     </div>                          
                                                 </div>
                                                 {% else %}
-                                                {{ deuda.documento }}
+                                                {{ pago.deuda.documento }}
                                                 {% endif %}
                                             </td>
                                             <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.monto|redondear|intcomma }}</td>
@@ -109,7 +110,7 @@
                                                 {% endif %}
                                                 {{ pago.ingreso_nota.moneda.simbolo }} {{ pago.monto|redondear|intcomma }}
                                             </td>
-                                            <td class="text-center">
+                                            <td class="text-center text-nowrap">
                                                 {% if pago.deuda.saldo != 0 %}    
                                                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_cancelar_deuda' movimiento.cuenta_bancaria.id pago.deuda.id %}"
                                                     data-table-url="{% url 'cobranza_app:cuenta_bancaria_depositos_tabla' %}"
@@ -163,6 +164,9 @@
             </td>
             <td class="text-end text-nowrap">
                 {{ movimiento.moneda.simbolo }} {{ movimiento.monto|redondear|intcomma }}
+            </td>
+            <td class="text-end text-nowrap">
+                {{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}
             </td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' movimiento.cuenta_bancaria.id movimiento.id %}"

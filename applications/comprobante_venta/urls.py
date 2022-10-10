@@ -10,7 +10,11 @@ urlpatterns = [
     path('factura-venta/detalle/<int:id_factura_venta>/', views.FacturaVentaDetalleView.as_view(), name='factura_venta_detalle'),
     path('factura-venta/detalle/tabla/<int:id_factura_venta>/', views.FacturaVentaDetalleVerTabla, name='factura_venta_detalle_tabla'),
     
+    path('factura-venta-detalle/actualizar/<pk>/', views.FacturaVentaDetalleUpdateView.as_view(), name='factura_venta_detalle_actualizar'),
+    
     path('factura-venta/crear/<pk>/', views.FacturaVentaCrearView.as_view(), name='factura_venta_crear'),
+    path('factura-venta/anticipo/crear/<pk>/', views.FacturaVentaAnticipoCrearView.as_view(), name='factura_venta_anticipo_crear'),
+    path('factura-venta/anticipo/regularizar/crear/<pk>/', views.FacturaVentaAnticipoRegularizarCrearView.as_view(), name='factura_venta_anticipo_regularizar_crear'),
     path('factura-venta/serie/<pk>/', views.FacturaVentaSerieUpdateView.as_view(), name='factura_venta_serie'),
     path('factura-venta/guardar/<pk>/', views.FacturaVentaGuardarView.as_view(), name='factura_venta_guardar'),
     path('factura-venta/anular/<pk>/', views.FacturaVentaAnularView.as_view(), name='factura_venta_anular'),
@@ -30,6 +34,7 @@ urlpatterns = [
     path('boleta-venta/serie/<pk>/', views.BoletaVentaSerieUpdateView.as_view(), name='boleta_venta_serie'),
     path('boleta-venta/guardar/<pk>/', views.BoletaVentaGuardarView.as_view(), name='boleta_venta_guardar'),
     path('boleta-venta/anular/<pk>/', views.BoletaVentaAnularView.as_view(), name='boleta_venta_anular'),
+    path('boleta-venta/eliminar/<pk>/', views.BoletaVentaEliminarView.as_view(), name='boleta_venta_eliminar'),
     
     path('boleta-venta/nubefact/enviar/<pk>/', views.BoletaVentaNubeFactEnviarView.as_view(), name='boleta_venta_nubefact_enviar'),
     path('boleta-venta/nubefact/anular/<pk>/', views.BoletaVentaNubeFactAnularView.as_view(), name='boleta_venta_nubefact_anular'),
