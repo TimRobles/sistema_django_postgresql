@@ -4,6 +4,7 @@ from applications.importaciones import*
 from applications.logistica.models import Despacho
 from applications.envio_clientes.models import Transportista
 from applications.datos_globales.models import SeriesComprobante
+from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 from .models import(
     Guia,
@@ -12,6 +13,8 @@ from .models import(
 
 from .forms import(
     GuiaBultosForm,
+    GuiaClienteForm,
+    GuiaConductorForm,
     GuiaDestinoForm,
     GuiaPartidaForm,
     GuiaTransportistaForm,
@@ -145,7 +148,6 @@ class GuiaTransportistaView(BSModalUpdateView):
         context['titulo'] = "Transportista"
         return context
 
-
 class GuiaPartidaView(BSModalUpdateView):
     model = Guia
     template_name = "comprobante_despacho/guia/form.html"
@@ -161,7 +163,6 @@ class GuiaPartidaView(BSModalUpdateView):
         context['accion'] = "Elegir"
         context['titulo'] = "Dirección de Partida"
         return context
-
 
 class GuiaDestinoView(BSModalUpdateView):
     model = Guia
@@ -181,7 +182,7 @@ class GuiaDestinoView(BSModalUpdateView):
 
 class GuiaBultosView(BSModalUpdateView):
     model = Guia
-    template_name = "includes/form generico.html"
+    template_name = "includes/formulario generico.html"
     form_class = GuiaBultosForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
@@ -194,3 +195,36 @@ class GuiaBultosView(BSModalUpdateView):
         context['accion'] = "Asignar"
         context['titulo'] = "Número de Bultos"
         return context
+
+class GuiaConductorView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaConductorForm
+    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaConductorView, self).get_context_data(**kwargs)
+        context['accion'] = "Asignar"
+        context['titulo'] = "Conductor"
+        return context
+
+class GuiaClienteView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaClienteForm
+    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaClienteView, self).get_context_data(**kwargs)
+        context['accion'] = "Asignar"
+        context['titulo'] = "Interlocutor"
+        return context
+

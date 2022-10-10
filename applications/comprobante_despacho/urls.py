@@ -16,5 +16,7 @@ urlpatterns = [
     path('guia/partida/<pk>/', views.GuiaPartidaView.as_view(), name='guia_partida'),
     path('guia/destino/<pk>/', views.GuiaDestinoView.as_view(), name='guia_destino'),
     path('guia/bultos/<pk>/', views.GuiaBultosView.as_view(), name='guia_bultos'),
+    path('guia/conductor/<pk>/', views.GuiaConductorView.as_view(), name='guia_conductor'),
+    path('guia/cliente/<pk>/', views.GuiaClienteView.as_view(), name='guia_cliente'),
 
 ]

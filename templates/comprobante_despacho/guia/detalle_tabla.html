@@ -15,7 +15,11 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Razón Social:</th>
-                    <td>{{ guia.cliente.razon_social }}</td>
+                    <td>
+                        {% if guia.cliente.razon_social %}    
+                        {{ guia.cliente.razon_social }}
+                        {% endif %}   
+                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">{{ guia.cliente.documento }}:</th>
@@ -26,22 +30,60 @@
                     </td>
                 </tr>
                 <tr>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if guia.cliente_interlocutor %}
+                        {{ guia.cliente_interlocutor.nombre_completo }}   
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_cliente' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="update btn btn-primary" title="Seleccionar Interlocutor">
+                            Interlocutor
+                        </button>
+                    </td>
+                </tr>
+                <tr>
                     <th class="pe-2">Transportista:</th>
-                    <td>{{guia.transportista}}</td>
+                    <td>
+                        {% if guia.transportista %}
+                        {{ guia.transportista }}
+                        {% endif %}    
+                    </td>
                     <td>
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_transportista' guia.id%}"
-                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Transportista">
                             Transportista
                         </button>
                     </td>
                 </tr>
                 <tr>
+                    <th class="pe-2">Conductor:</th>
+                    <td>
+                        {% if guia.conductor_denominacion %}
+                        {{guia.conductor_denominacion}}
+                        {% endif %}    
+                    </td>
+                    <td>
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_conductor' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="update btn btn-primary" title="Seleccionar Conductor">
+                            Conductor
+                        </button>
+                    </td>
+                </tr>
+                <tr>
                     <th class="pe-2">Número de Bultos:</th>
-                    <td>{{guia.numero_bultos}}</td>
+                    <td>
+                        {% if guia.numero_bultos %}
+                        {{guia.numero_bultos}}
+                        {% endif %}
+                    </td>
                     <td>
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_bultos' guia.id%}"
-                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="">
                             N° de Bultos
                         </button>
@@ -77,7 +119,7 @@
                     <td>{{guia.ubigeo_partida}}</td>
                     <td>
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_partida' guia.id%}"
-                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Partida">
                             Partida
                         </button>
@@ -90,7 +132,7 @@
                     <td>{{guia.ubigeo_destino}}</td>
                     <td>
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
-                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Destino">
                             Destino
                         </button>
