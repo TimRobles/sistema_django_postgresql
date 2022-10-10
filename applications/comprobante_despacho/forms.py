@@ -19,3 +19,20 @@ class GuiaTransportistaForm(BSModalModelForm):
         super(GuiaTransportistaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class GuiaDireccionesForm(BSModalModelForm):
+    class Meta:
+        model = Guia
+        fields=(
+            'transportista',
+            )
+
+    def clean_transportista(self):
+        transportista = self.cleaned_data.get('transportista')
+        return transportista
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaTransportistaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
