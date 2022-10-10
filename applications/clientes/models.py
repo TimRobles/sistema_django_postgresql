@@ -249,6 +249,37 @@ class CorreoInterlocutorCliente(models.Model):
         return str(self.correo) + ' - ' + str(self.interlocutor)
 
 
+class ClienteAnexo(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='ClienteAnexo_cliente')
+    direccion = models.CharField('Dirección', max_length=100)
+    ubigeo = models.CharField('Ubigeo', max_length=6)
+    distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
+    fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteAnexo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteAnexo_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Cliente Anexo'
+        verbose_name_plural = 'Clientes Anexos'
+        ordering = ['estado', '-fecha_baja',]
+
+    def save(self, *args, **kwargs):
+        if self.ubigeo:
+            try:
+                self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
+            except:
+                self.distrito = None
+        self.direccion = self.direccion.upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.correo) + ' - ' + str(self.interlocutor)
+
+
 # def interlocutor_cliente_pre_save(*args, **kwargs):
 #     print('pre save')
 #     print(kwargs)
