@@ -15,5 +15,6 @@ urlpatterns = [
     path('guia/transportista/<pk>/', views.GuiaTransportistaView.as_view(), name='guia_transportista'),
     path('guia/partida/<pk>/', views.GuiaPartidaView.as_view(), name='guia_partida'),
     path('guia/destino/<pk>/', views.GuiaDestinoView.as_view(), name='guia_destino'),
+    path('guia/bultos/<pk>/', views.GuiaBultosView.as_view(), name='guia_bultos'),
 
 ]

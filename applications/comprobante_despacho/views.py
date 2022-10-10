@@ -11,6 +11,7 @@ from .models import(
 )
 
 from .forms import(
+    GuiaBultosForm,
     GuiaDestinoForm,
     GuiaPartidaForm,
     GuiaTransportistaForm,
@@ -134,7 +135,7 @@ class GuiaCrearView(DeleteView):
 
 class GuiaTransportistaView(BSModalUpdateView):
     model = Guia
-    template_name = "includes/formulario generico.html"
+    template_name = "comprobante_despacho/guia/form.html"
     form_class = GuiaTransportistaForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
@@ -151,7 +152,7 @@ class GuiaTransportistaView(BSModalUpdateView):
 
 class GuiaPartidaView(BSModalUpdateView):
     model = Guia
-    template_name = "includes/formulario generico.html"
+    template_name = "comprobante_despacho/guia/form.html"
     form_class = GuiaPartidaForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
@@ -168,7 +169,7 @@ class GuiaPartidaView(BSModalUpdateView):
 
 class GuiaDestinoView(BSModalUpdateView):
     model = Guia
-    template_name = "includes/formulario generico.html"
+    template_name = "comprobante_despacho/guia/form.html"
     form_class = GuiaDestinoForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
@@ -180,4 +181,20 @@ class GuiaDestinoView(BSModalUpdateView):
         context = super(GuiaDestinoView, self).get_context_data(**kwargs)
         context['accion'] = "Elegir"
         context['titulo'] = "Dirección de Destino"
+        return context
+
+class GuiaBultosView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/form generico.html"
+    form_class = GuiaBultosForm
+    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaBultosView, self).get_context_data(**kwargs)
+        context['accion'] = "Asignar"
+        context['titulo'] = "Número de Bultos"
         return context

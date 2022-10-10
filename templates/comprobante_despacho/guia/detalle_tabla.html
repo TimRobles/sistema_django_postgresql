@@ -36,6 +36,17 @@
                         </button>
                     </td>
                 </tr>
+                <tr>
+                    <th class="pe-2">Número de Bultos:</th>
+                    <td>{{guia.numero_bultos}}</td>
+                    <td>
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_bultos' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            class="update btn btn-primary" title="">
+                            N° de Bultos
+                        </button>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

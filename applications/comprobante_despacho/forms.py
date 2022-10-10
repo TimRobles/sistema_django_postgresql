@@ -11,10 +11,6 @@ class GuiaTransportistaForm(BSModalModelForm):
             'transportista',
             )
 
-    def clean_transportista(self):
-        transportista = self.cleaned_data.get('transportista')
-        return transportista
-
     def __init__(self, *args, **kwargs):
         super(GuiaTransportistaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -28,10 +24,6 @@ class GuiaPartidaForm(BSModalModelForm):
             'direccion_partida',
             'ubigeo_partida',
             )
-
-    # def clean_direccion_partida(self):
-    #     direccion_partida = self.cleaned_data.get('direccion_partida')
-    #     return direccion_partida
 
     def __init__(self, *args, **kwargs):
         super(GuiaPartidaForm, self).__init__(*args, **kwargs)
@@ -48,12 +40,20 @@ class GuiaDestinoForm(BSModalModelForm):
             'ubigeo_destino',
             )
 
-    # def clean_direccion_destino(self):
-    #     direccion_destino = self.cleaned_data.get('direccion_destino')
-    #     return direccion_destino
-
     def __init__(self, *args, **kwargs):
         super(GuiaDestinoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+class GuiaBultosForm(BSModalModelForm):
+    class Meta:
+        model = Guia
+        fields=(
+            'numero_bultos',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaBultosForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
