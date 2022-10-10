@@ -23,7 +23,6 @@ class GuiaAdmin(admin.ModelAdmin):
         'direccion_destino',
         'ubigeo_partida',
         'ubigeo_destino',
-        'url',
         'estado',
         'motivo_anulación',
         'created_at',

@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from applications.activos.models import MarcaActivo
 from applications.sede.models import Sede
 
-from applications.datos_globales.models import Moneda, SeriesComprobante, TipoCambio, Unidad
+from applications.datos_globales.models import Distrito, Moneda, SeriesComprobante, TipoCambio, Unidad
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.envio_clientes.models import Transportista
@@ -24,9 +24,8 @@ class Guia(models.Model):
     numero_bultos = models.IntegerField(blank=True, null=True)
     direccion_partida = models.TextField(blank=True, null=True)
     direccion_destino = models.TextField(blank=True, null=True)
-    ubigeo_partida = models.IntegerField(blank=True, null=True)
-    ubigeo_destino = models.IntegerField(blank=True, null=True)
-    url = models.URLField('URL Guia', max_length=200, blank=True, null=True)
+    ubigeo_partida = models.ForeignKey(Distrito, on_delete=models.PROTECT, related_name='Guia_ubigeo_partida',blank=True, null=True)
+    ubigeo_destino = models.ForeignKey(Distrito, on_delete=models.PROTECT, related_name='Guia_ubigeo_destino',blank=True, null=True)
     motivo_anulación = models.TextField('Motivo Anulación', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_GUIA, default=1)
    

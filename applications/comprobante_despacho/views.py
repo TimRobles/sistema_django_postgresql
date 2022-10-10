@@ -108,20 +108,13 @@ class GuiaCrearView(DeleteView):
             updated_by = self.request.user,
         )
 
-
-        print('*******************************')
         for detalle in detalles:
-            
-            print('*******************************')    
-            print(detalle.item)  
-            print('*******************************')    
-
-            # guia_detalle = GuiaDetalle.objects.create(
-            #     item = detalle.item,
-            #     guia=guia,
-            #     created_by=self.request.user,
-            #     updated_by=self.request.user,                
-            # )
+            guia_detalle = GuiaDetalle.objects.create(
+                item = detalle.item,
+                guia=guia,
+                created_by=self.request.user,
+                updated_by=self.request.user,                
+            )
 
         registro_guardar(self.object, self.request)
         self.object.save()
