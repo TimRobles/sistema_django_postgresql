@@ -19,7 +19,6 @@ class Guia(models.Model):
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='Guia_interlocutor', blank=True, null=True)
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_traslado = models.DateField('Fecha Traslado', auto_now=False, auto_now_add=False, blank=True, null=True)
-    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
     transportista = models.ForeignKey(Transportista, on_delete=models.PROTECT, blank=True, null=True)
     conductor_tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT, blank=True, null=True)
     conductor_numero_documento = models.CharField('Número de Documento', max_length=15, blank=True, null=True)

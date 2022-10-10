@@ -33,7 +33,18 @@
                             data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
                             class="update btn btn-primary" title="Seleccionar Transportista">
                             Transportista
-                    </button>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Número de Bultos:</th>
+                    <td>{{guia.numero_bultos}}</td>
+                    <td>
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_bultos' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            class="update btn btn-primary" title="">
+                            N° de Bultos
+                        </button>
                     </td>
                 </tr>
             </tbody>
@@ -58,6 +69,32 @@
                 <tr>
                     <th>Estado Guía:</th>
                     <td>{{ guia.get_estado_display }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Dirección de Partida</th>
+                    <td>{{guia.direccion_partida}}</td>
+                    <th class="pe-2">Ubigeo de Partida</th>
+                    <td>{{guia.ubigeo_partida}}</td>
+                    <td>
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_partida' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            class="update btn btn-primary" title="Seleccionar Partida">
+                            Partida
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Dirección de Destino</th>
+                    <td>{{guia.direccion_destino}}</td>
+                    <th class="pe-2">Ubigeo de Destino</th>
+                    <td>{{guia.ubigeo_destino}}</td>
+                    <td>
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_inicio' %}"
+                            class="update btn btn-primary" title="Seleccionar Destino">
+                            Destino
+                        </button>
+                    </td>
                 </tr>
             </tbody>
         </table>

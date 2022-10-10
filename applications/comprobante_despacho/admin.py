@@ -15,7 +15,6 @@ class GuiaAdmin(admin.ModelAdmin):
         'cliente_interlocutor',
         'fecha_emision',
         'fecha_traslado',
-        'sede',
         'transportista',
         'observaciones',
         'numero_bultos',
