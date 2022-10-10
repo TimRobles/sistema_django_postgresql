@@ -139,6 +139,7 @@ TIPO_COMPROBANTE = (
     (2, 'BOLETA'),
     (3, 'NOTA DE CRÉDITO'),
     (4, 'NOTA DE DÉBITO'),
+    (7, 'GUÍA REMISIÓN REMITENTE'),
     )
 
 TIPO_VENTA= (

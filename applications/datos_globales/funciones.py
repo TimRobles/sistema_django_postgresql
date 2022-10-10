@@ -130,3 +130,69 @@ def anularDocumento(tipo_de_comprobante, serie, numero, motivo):
         print(e)
         print("**************************************************")
         return None
+
+
+def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, observaciones, motivo_de_traslado, peso_bruto_total, numero_de_bultos, tipo_de_transporte, fecha_de_inicio_de_traslado, transportista_documento_tipo, transportista_documento_numero, transportista_denominacion, transportista_placa_numero, conductor_documento_tipo, conductor_documento_numero, conductor_denominacion, punto_de_partida_ubigeo, punto_de_partida_direccion, punto_de_llegada_ubigeo, punto_de_llegada_direccion, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, formato_de_pdf, productos):
+    try:
+        data = {}
+        data['operacion'] = "generar_guia"
+        data['tipo_de_comprobante'] = tipo_de_comprobante
+        data["serie"] = serie
+        data["numero"] = numero
+        data["cliente_tipo_de_documento"] = cliente_tipo_de_documento
+        data["cliente_numero_de_documento"] = cliente_numero_de_documento
+        data["cliente_denominacion"] = cliente_denominacion
+        data["cliente_direccion"] = cliente_direccion
+        correo1=""
+        correo2=""
+        correo3=""
+        if len(correos)>2:
+            correo1=correos[0].correo
+            correo2=correos[1].correo
+            correo3=correos[2].correo
+        elif len(correos)==2:
+            correo1=correos[0].correo
+            correo2=correos[1].correo
+        elif len(correos)==1:
+            correo1=correos[0].correo
+        data["cliente_email"] = correo1
+        data["cliente_email_1"] = correo2
+        data["cliente_email_2"] = correo3
+        data["fecha_de_emision"] = fecha_de_emision
+        data["observaciones"] = observaciones
+        data["motivo_de_traslado"] = motivo_de_traslado
+        data["peso_bruto_total"] = peso_bruto_total
+        data["numero_de_bultos"] = numero_de_bultos
+        data["tipo_de_transporte"] = tipo_de_transporte
+        data["fecha_de_inicio_de_traslado"] = fecha_de_inicio_de_traslado
+        data["transportista_documento_tipo"] = transportista_documento_tipo
+        data["transportista_documento_numero"] = transportista_documento_numero
+        data["transportista_denominacion"] = transportista_denominacion
+        data["transportista_placa_numero"] = numero_espacio(transportista_placa_numero)
+        data["conductor_documento_tipo"] = conductor_documento_tipo
+        data["conductor_documento_numero"] = conductor_documento_numero
+        data["conductor_denominacion"] = conductor_denominacion
+        data["punto_de_partida_ubigeo"] = punto_de_partida_ubigeo
+        data["punto_de_partida_direccion"] = punto_de_partida_direccion
+        data["punto_de_llegada_ubigeo"] = punto_de_llegada_ubigeo
+        data["punto_de_llegada_direccion"] = punto_de_llegada_direccion
+        data["enviar_automaticamente_a_la_sunat"] = enviar_automaticamente_a_la_sunat
+        data["enviar_automaticamente_al_cliente"] = enviar_automaticamente_al_cliente
+        data["formato_de_pdf"] = formato_de_pdf
+        data["items"]=[]
+        for producto in productos:
+            item={}
+            item['unidad_de_medida'] = producto.unidad.unidad_sunat
+            item["codigo"] = numero_espacio(producto.codigo_interno)
+            item["descripcion"] = producto.descripcion_documento
+            item["cantidad"] = numero_espacio(producto.cantidad)
+            
+            data['items'].append(item)
+        
+        return data
+
+    except Exception as e:
+        print("**************************************************")
+        print(e)
+        print("**************************************************")
+        return None
