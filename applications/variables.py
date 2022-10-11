@@ -234,6 +234,9 @@ ESTADOS_COTIZACION_VENTA = (
     (7, 'FINALIZADO'),
     (8, 'VENCIDO'),
     (9, 'ANULADO'),
+    (10, 'BORRADOR PRÉSTAMO'),
+    (11, 'PRÉSTAMO'),
+    (12, 'CONFIRMADO'), #Regresa a Préstamo
     )
 
 ESTADOS_CONFIRMACION = (
@@ -254,6 +257,7 @@ ESTADOS_GUIA = (
     (2, 'EMITIDA'),
     (3, 'RECHAZADO'),
     (4, 'ANULADA'),
+    (5, 'FINTA'),
     )
 
 TIPO_PERCEPCION = (

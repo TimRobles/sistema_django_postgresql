@@ -1,0 +1,31 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block arriba %}
+{{ cliente }}    
+{% endblock arriba %}
+    
+
+{% block js %}
+    <script src="{% static 'js/comprobante_despacho/guia/form_cliente.js' %}?{{ cache_bust }}"></script>
+
+    <script>
+        $(function () {
+
+            $("#id_cliente").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_cliente_interlocutor").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+
+            });
+
+            });
+    </script>
+
+{% endblock js %}
