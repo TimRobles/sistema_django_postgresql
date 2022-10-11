@@ -150,11 +150,13 @@ class GuiaTransportistaView(BSModalUpdateView):
 
 class GuiaPartidaView(BSModalUpdateView):
     model = Guia
-    template_name = "comprobante_despacho/guia/form.html"
+    template_name = "comprobante_despacho/guia/form direccion.html"
     form_class = GuiaPartidaForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
     def form_valid(self, form):
+        ubigeo = form.cleaned_data['ubigeo']
+        form.instance.ubigeo_partida = ubigeo
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -166,11 +168,13 @@ class GuiaPartidaView(BSModalUpdateView):
 
 class GuiaDestinoView(BSModalUpdateView):
     model = Guia
-    template_name = "comprobante_despacho/guia/form.html"
+    template_name = "comprobante_despacho/guia/form direccion.html"
     form_class = GuiaDestinoForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
     def form_valid(self, form):
+        ubigeo = form.cleaned_data['ubigeo']
+        form.instance.ubigeo_destino = ubigeo
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

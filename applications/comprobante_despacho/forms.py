@@ -3,6 +3,8 @@ from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.envio_clientes.models import Transportista
 from applications.comprobante_despacho.models import Guia
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
+from applications.datos_globales.models import Distrito
+from applications.sede.models import Sede
 
 
 class GuiaTransportistaForm(BSModalModelForm):
@@ -19,31 +21,50 @@ class GuiaTransportistaForm(BSModalModelForm):
 
 
 class GuiaPartidaForm(BSModalModelForm):
+    direcciones = forms.ModelChoiceField(queryset=Sede.objects.all(), required=False)
+    ubigeo = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=False)
     class Meta:
         model = Guia
         fields=(
+            'direcciones',
             'direccion_partida',
-            'ubigeo_partida',
+            'ubigeo',
             )
 
     def __init__(self, *args, **kwargs):
         super(GuiaPartidaForm, self).__init__(*args, **kwargs)
+        self.fields['ubigeo'].queryset = Distrito.objects.filter(codigo=self.instance.ubigeo_partida.codigo)
+        self.fields['ubigeo'].initial = self.instance.ubigeo_partida
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        if 'ubigeo' in self.data:
+            self.fields['ubigeo'].queryset=Distrito.objects.all()
 
 
 class GuiaDestinoForm(BSModalModelForm):
+    CHOICES = (
+        ('0', '----------------'),
+        ('1', 'Direccion 1 | 010105'),
+        ('2', 'Direccion 2 | 021208'),
+    )
+    direcciones = forms.ChoiceField(choices=CHOICES, required=False)
+    ubigeo = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=False)
     class Meta:
         model = Guia
         fields=(
+            'direcciones',
             'direccion_destino',
-            'ubigeo_destino',
+            'ubigeo',
             )
 
     def __init__(self, *args, **kwargs):
         super(GuiaDestinoForm, self).__init__(*args, **kwargs)
+        self.fields['ubigeo'].queryset = Distrito.objects.filter(codigo=self.instance.ubigeo_destino.codigo)
+        self.fields['ubigeo'].initial = self.instance.ubigeo_destino
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        if 'ubigeo' in self.data:
+            self.fields['ubigeo'].queryset=Distrito.objects.all()
 
 
 class GuiaBultosForm(BSModalModelForm):
