@@ -1,5 +1,6 @@
 from django.urls import path
 from applications.datos_globales.views import (
+    DistritoJsonView,
     ProvinciaView,
     DistritoView,
     DepartamentoView,
@@ -12,6 +13,7 @@ urlpatterns = [
     path('departamento/', DepartamentoView, name='departamento'),
     path('provincia/<str:id_departamento>/', ProvinciaView, name='provincia'),
     path('distrito/<str:id_provincia>/', DistritoView, name='distrito'),
+    path('distrito-json/', DistritoJsonView, name='distrito_json'),
     
     path('tipo-cambio/', views.TipoCambioListView.as_view(), name='tipo_cambio_inicio'),
     path('tipo-cambio-tabla/', views.TipoCambioTabla, name='tipo_cambio_tabla'),

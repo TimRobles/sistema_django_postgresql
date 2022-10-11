@@ -61,6 +61,20 @@ def DistritoView(request, id_provincia):
         ).replace('selected', 'selected=""')
         return JsonResponse(data)
 
+def DistritoJsonView(request):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        buscar = Distrito.objects.all().filter(
+            Q(nombre__icontains=term) | Q(codigo__icontains=term)
+            )
+        data = []
+        for dato in buscar:
+            data.append({
+                'id' : dato.codigo,
+                'nombre' : dato.__str__(),
+                })
+        return JsonResponse(data, safe=False)
+
 class TipoCambioListView(PermissionRequiredMixin, ListView):
     permission_required = ('datos_globales.view_tipocambio')
 

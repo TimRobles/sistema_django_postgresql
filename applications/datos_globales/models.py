@@ -198,7 +198,7 @@ class Departamento(models.Model):
         return super().save()
 
     def __str__(self):
-        return self.codigo + ' - ' + self.nombre
+        return self.nombre
 
 
 class Provincia(models.Model):
@@ -222,7 +222,7 @@ class Provincia(models.Model):
         return super().save()
 
     def __str__(self):
-        return self.codigo + ' - ' + self.nombre
+        return self.nombre + ' - ' + str(self.departamento)
 
 
 class Distrito(models.Model):
@@ -239,14 +239,17 @@ class Distrito(models.Model):
     class Meta:
         verbose_name = 'Distrito'
         verbose_name_plural = 'Distritos'
-        ordering = ['provincia__nombre', 'nombre',]
+        ordering = ['codigo',]
 
     def save(self):
         self.nombre = self.nombre.upper()
         return super().save()
 
+    def prueba(self):
+        return 'Tim'
+
     def __str__(self):
-        return self.codigo + ' - ' + self.nombre
+        return self.codigo + ' ' + self.nombre + ' - ' + str(self.provincia)
 
 
 class Banco(models.Model):

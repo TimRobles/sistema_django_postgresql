@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications.activos.models import MarcaActivo
@@ -42,6 +43,13 @@ class Guia(models.Model):
     class Meta:
         verbose_name = 'Guia'
         verbose_name_plural = 'Guias'
+
+    @property
+    def peso_total(self):
+        if self.GuiaDetalle_guia_venta.all():
+            return self.GuiaDetalle_guia_venta.aggregate(models.Sum('peso'))['peso__sum']
+        else:
+            return Decimal('0.00')
 
     def __str__(self):
         return str(self.id)

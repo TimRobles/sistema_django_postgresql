@@ -43,4 +43,7 @@ urlpatterns = [
     path('correo-interlocutor/actualizar/<pk>/', views.CorreoInterlocutorUpdateView.as_view(), name='correo_interlocutor_actualizar'),
     path('correo-interlocutor/baja/<pk>/', views.CorreoInterlocutorDarBajaView.as_view(), name='correo_interlocutor_baja'),
     
+    path('anexo/registrar/<int:cliente_id>/', views.ClienteAnexoCreateView.as_view(), name='anexo_registrar'),
+    path('anexo/baja/<pk>/', views.ClienteAnexoDarBajaView.as_view(), name='anexo_baja'),
+    
 ] + urlCliente + urlInterlocutor + urlCorreo + urlRepresentante_Legal
