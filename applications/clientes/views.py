@@ -659,8 +659,11 @@ class ClienteAnexoCreateView(PermissionRequiredMixin, BSModalFormView):
         if self.request.session['primero']:
             direccion = form.cleaned_data['direccion']
             ubigeo = form.cleaned_data['ubigeo']
+            print("//////////////////////////////////////////")
+            print(ubigeo)
+            print("//////////////////////////////////////////")
             cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
-            distrito = Distrito.objects.get(codigo=ubigeo)
+            distrito = Distrito.objects.get(codigo=ubigeo.codigo)
 
             anexo = ClienteAnexo.objects.create(
                 cliente = cliente,

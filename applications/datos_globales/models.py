@@ -245,6 +245,9 @@ class Distrito(models.Model):
         self.nombre = self.nombre.upper()
         return super().save()
 
+    def prueba(self):
+        return 'Tim'
+
     def __str__(self):
         return self.codigo + ' ' + self.nombre + ' - ' + str(self.provincia)
 

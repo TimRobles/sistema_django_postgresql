@@ -320,7 +320,7 @@ class CorreoInterlocutorDarBajaForm(BSModalModelForm):
             visible.field.required = True
 
 class ClienteAnexoForm(BSModalModelForm):
-    ubigeo = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=True)
+    ubigeo = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=False)
     class Meta:
         model = ClienteAnexo
         fields = (
@@ -328,18 +328,13 @@ class ClienteAnexoForm(BSModalModelForm):
             'ubigeo',
             )
     
-    def clean(self):
-        cleaned_data = super().clean()
-        ubigeo = cleaned_data.get('ubigeo')
-        print("*******************************************")
-        print(ubigeo)
-        print("*******************************************")
-        return cleaned_data
-
     def __init__(self, *args, **kwargs):
         super(ClienteAnexoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        if 'ubigeo' in self.data:
+            self.fields['ubigeo'].queryset=Distrito.objects.all()
+
 
 
 class ClienteAnexoDarBajaForm(BSModalModelForm):

@@ -71,7 +71,6 @@ class SorteoView(LoginRequiredMixin, TemplateView):
     template_name = "sorteoaptc/sorteo sortear.html"
 
 def Sortear(request):
-
     premios = UsuarioAPTC.objects.exclude(premio=None)
     elegidos = UsuarioAPTC.objects.filter(elegido=True).filter(premio=None)
     ticket = UsuarioAPTC.objects.filter(elegido=False).exclude(bloqueo=True).order_by('?').first()

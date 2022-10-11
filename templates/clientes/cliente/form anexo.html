@@ -15,12 +15,12 @@
                 processResults: function (data) {
                     return {
                         results: $.map(data, function (item) {
-                            return {id: item.id, text: item.itemName}
+                            return {id: item.id, text: item.nombre}
                         })
                     };
                 }
             },
-            minimumInputLength: 3,
+            minimumInputLength: 1,
         });
             
         });
