@@ -1,0 +1,28 @@
+{% extends 'includes/formulario generico.html' %}
+
+{% block js %}
+<script>
+    $(function () {
+
+        $("#id_ubigeo").select2({
+            width: '100%',
+            dropdownParent: $(".modal-body"),
+            matcher: buscar_select2,
+            ajax: {
+                url: "{% url 'datos_globales_app:distrito_json' %}",
+                dataType: 'json',
+                type: "GET",
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {id: item.id, text: item.itemName}
+                        })
+                    };
+                }
+            },
+            minimumInputLength: 3,
+        });
+            
+        });
+</script>
+{% endblock js %}

@@ -1,7 +1,10 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from applications.datos_globales.models import Distrito
 from applications.importaciones import *
 from .forms import (
+    ClienteAnexoDarBajaForm,
+    ClienteAnexoForm,
     ClienteBuscarForm,
     ClienteForm,
     CorreoClienteDarBajaForm,
@@ -17,6 +20,7 @@ from .forms import (
     )
 from .models import (
     Cliente,
+    ClienteAnexo,
     CorreoCliente,
     InterlocutorCliente,
     ClienteInterlocutor,
@@ -185,6 +189,7 @@ class ClienteDetailView(PermissionRequiredMixin, DetailView):
         context['interlocutores'] = ClienteInterlocutor.objects.filter(cliente = cliente)
         context['correos'] = CorreoCliente.objects.filter(cliente = cliente)
         context['representantes_legales'] = RepresentanteLegalCliente.objects.filter(cliente = cliente)
+        context['anexos'] = cliente.ClienteAnexo_cliente.all()
         return context
 
 def ClienteDetailTabla(request, pk):
@@ -197,6 +202,7 @@ def ClienteDetailTabla(request, pk):
         context['interlocutores'] = ClienteInterlocutor.objects.filter(cliente = cliente)
         context['correos'] = CorreoCliente.objects.filter(cliente = cliente)
         context['representantes_legales'] = RepresentanteLegalCliente.objects.filter(cliente = cliente)
+        context['anexos'] = cliente.ClienteAnexo_cliente.all()
         
         data['table'] = render_to_string(
             template,
@@ -637,4 +643,60 @@ class RepresentanteLegalClienteDarBajaView(PermissionRequiredMixin, BSModalUpdat
         context = super(RepresentanteLegalClienteDarBajaView, self).get_context_data(**kwargs)
         context['accion']="Dar Baja"
         context['titulo']="Representante Legal"
+        return context
+
+
+class ClienteAnexoCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('clientes.add_clienteanexo')
+
+    template_name = "clientes/cliente/form anexo.html"
+    form_class = ClienteAnexoForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            direccion = form.cleaned_data['direccion']
+            ubigeo = form.cleaned_data['ubigeo']
+            cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
+            distrito = Distrito.objects.get(codigo=ubigeo)
+
+            anexo = ClienteAnexo.objects.create(
+                cliente = cliente,
+                direccion = direccion,
+                distrito = distrito,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+            self.request.session['primero'] = False
+
+        return super().form_valid(form) 
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ClienteAnexoCreateView, self).get_context_data(**kwargs)
+        context['accion']="Crear"
+        context['titulo']="Anexo"
+        return context
+
+class ClienteAnexoDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_clienteanexo')
+
+    model = ClienteAnexo
+    template_name = "includes/formulario generico.html"
+    form_class = ClienteAnexoDarBajaForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
+
+    def form_valid(self, form):
+        form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteAnexoDarBajaView, self).get_context_data(**kwargs)
+        context['accion']="Dar Baja"
+        context['titulo']="Anexo"
         return context

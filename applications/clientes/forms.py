@@ -1,9 +1,11 @@
 from datetime import date
 from django import forms
+from applications.datos_globales.models import Distrito
 from applications.variables import TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
 from applications import datos_globales
 from .models import (
     Cliente,
+    ClienteAnexo,
     ClienteInterlocutor,
     CorreoCliente, 
     InterlocutorCliente,
@@ -313,6 +315,51 @@ class CorreoInterlocutorDarBajaForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CorreoInterlocutorDarBajaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
+
+class ClienteAnexoForm(BSModalModelForm):
+    ubigeo = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=True)
+    class Meta:
+        model = ClienteAnexo
+        fields = (
+            'direccion',
+            'ubigeo',
+            )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        ubigeo = cleaned_data.get('ubigeo')
+        print("*******************************************")
+        print(ubigeo)
+        print("*******************************************")
+        return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super(ClienteAnexoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ClienteAnexoDarBajaForm(BSModalModelForm):
+    class Meta:
+        model = ClienteAnexo
+        fields = (
+            'fecha_baja',
+            )
+
+        widgets = {
+            'fecha_baja' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+            
+    def __init__(self, *args, **kwargs):
+        super(ClienteAnexoDarBajaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True

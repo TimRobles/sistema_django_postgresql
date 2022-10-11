@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+Sorteo
+{% endblock titulo %}
+
+{% block contenido %}
+<h2>Sorteo</h2>
+<button data-form-url="{% url 'sorteo_webinar_app:sorteo_webinar_excel' %}"
+    class="delete btn btn-primary">
+    Cargar Participantes
+</button>
+<a href="{% url 'sorteo_webinar_app:sorteo_webinar_ruleta' %}"
+    class="btn btn-success">
+    Sortear
+</a>
+
+<div id="tabla">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Documento</th>
+                <th>Telefono</th>
+                <th>Correo</th>
+                <th>Premio</th>
+            </tr>
+        </thead>
+        <tbody>      
+            {% for participante in participantes %}
+            <tr>
+                <td>{{ participante.nombre_completo }}</td>
+                <td>{{ participante.documento }}</td>
+                <td>{{ participante.telefono }}</td>
+                <td>{{ participante.correo }}</td>
+                <td class="text-nowrap">
+                    {% if participante.premio %}
+                    {{ participante.premio }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+    
+        </tbody>
+    </table>
+</div>
+
+{% endblock contenido %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Sorteo
+{% endblock titulo %}
+    
+
+{% block contenido %}
+<h1>Sorteo</h1>
+<div class="row justify-content-center">
+    <div class="casillero-webinar col-auto">
+        <span id="nombre">GANADOR</span>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-5">
+    <button id="sortear" class="btn btn-success col-lg-2 mx-2">Sorteo</button>
+    <a href="{% url 'sorteo_webinar_app:sorteo_webinar_lista' %}" class="btn btn-primary col-lg-2 mx-2">Ver Lista</a>
+</div>
+
+{% endblock contenido %}
+
+
+{% block extrajs %}
+<script src="{% static 'js/sorteo webinar/sortear.js' %}?{{ cache_bust }}"></script>
+{% endblock extrajs %}
+    
+    

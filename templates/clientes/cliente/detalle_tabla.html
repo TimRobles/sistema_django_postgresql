@@ -146,3 +146,46 @@
         </tbody>
     </table>
 </div>
+<br>
+<h3>Locales Anexos
+    <button data-form-url="{% url 'clientes_app:anexo_registrar' contexto_clientes.id %}"
+        data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"
+        class="create badge bg-primary">
+        Agregar Dirección
+    </button>
+    <a href="{% url 'clientes_app:cliente_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Dirección</th>
+                <th>Ubigeo</th>
+                <th>Fecha de Baja</th>
+                <th>Estado</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for anexo in anexos %}
+            <tr>
+                <td>{{ anexo.direccion }}</td>
+                <td>{{ anexo.ubigeo }}</td>
+                <td>{{ anexo.fecha_baja|date:'d/m/Y' }}</td>
+                <td>{{ anexo.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    {% if anexo.estado == 1 %}
+                        <button data-form-url="{% url 'clientes_app:anexo_baja' anexo.id %}"
+                            data-table-url="{% url 'clientes_app:cliente_detalle_tabla' contexto_clientes.id %}"
+                            class="update btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
