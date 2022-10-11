@@ -218,7 +218,7 @@ class GuiaConductorView(BSModalUpdateView):
 
 class GuiaClienteView(BSModalUpdateView):
     model = Guia
-    template_name = "includes/formulario generico.html"
+    template_name = "comprobante_despacho/guia/form_cliente.html"
     form_class = GuiaClienteForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
@@ -226,9 +226,45 @@ class GuiaClienteView(BSModalUpdateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        guia = kwargs['instance']
+        lista = []
+        relaciones = ClienteInterlocutor.objects.filter(cliente = guia.cliente)
+        for relacion in relaciones:
+            lista.append(relacion.interlocutor.id)
+
+        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+        kwargs['interlocutor'] = guia.cliente_interlocutor
+        return kwargs  
+
     def get_context_data(self, **kwargs):
         context = super(GuiaClienteView, self).get_context_data(**kwargs)
         context['accion'] = "Asignar"
         context['titulo'] = "Interlocutor"
+        context['cliente'] = self.object.cliente
         return context
+
+class ClienteInterlocutorForm(forms.Form):
+    cliente_interlocutor = forms.ModelChoiceField(queryset = ClienteInterlocutor.objects.all(), required=False)
+
+def ClienteInterlocutorView(request, id_cliente):
+    form = ClienteInterlocutorForm()
+    lista = []
+    relaciones = ClienteInterlocutor.objects.filter(cliente = id_cliente)
+    for relacion in relaciones:
+        lista.append(relacion.interlocutor.id)
+
+    form.fields['cliente_interlocutor'].queryset = InterlocutorCliente.objects.filter(id__in = lista)
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
 
