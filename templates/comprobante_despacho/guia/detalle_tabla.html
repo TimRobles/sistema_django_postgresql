@@ -102,24 +102,50 @@
                 </tr>
                 <tr>
                     <th class="pe-2">N° Guia:</th>
-                    <td>
+                    <td class="text-nowrap">
+                        {{ guia.serie_comprobante }}
+                        -
                         {% if guia.numero_guia %}
-                        {{ guia.numero_guia }}
+                        {{ guia.numero_guia|numeroXn:6 }}
+                        {% endif %}
+                        ({{ nubefact_acceso }})
+                    </td>
+                    <td class="px-2" rowspan="2">
+                        {% if guia.estado == 1 %}
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_serie' guia.id %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="update btn btn-primary text-nowrap">
+                            Seleccionar Serie
+                        </button>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <th>Estado Guía:</th>
+                    <th class="pe-2">Estado Guía:</th>
                     <td>{{ guia.get_estado_display }}</td>
                 </tr>
+            </table>
+        </table>
+        
+        <table>
+            <tbody>
                 <tr>
                     <th class="pe-2">Dirección de Partida</th>
-                    <td>{{guia.direccion_partida}}</td>
-                    <th class="pe-2">Ubigeo de Partida</th>
-                    <td>{{guia.ubigeo_partida}}</td>
+                    <td>
+                        {% if guia.direccion_partida %}
+                        {{ guia.direccion_partida }}
+                        {% endif %}
+                    </td>
+                    <th class="px-2">Ubigeo de Partida</th>
+                    <td>
+                        {% if guia.ubigeo_partida %}
+                        {{ guia.ubigeo_partida }}
+                        {% endif %}
+                    </td>
                     <td>
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_partida' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            data-modal="modal-xl"
                             class="update btn btn-primary" title="Seleccionar Partida">
                             Partida
                         </button>
@@ -127,12 +153,21 @@
                 </tr>
                 <tr>
                     <th class="pe-2">Dirección de Destino</th>
-                    <td>{{guia.direccion_destino}}</td>
-                    <th class="pe-2">Ubigeo de Destino</th>
-                    <td>{{guia.ubigeo_destino}}</td>
+                    <td>
+                        {% if guia.direccion_destino %}    
+                        {{ guia.direccion_destino }}
+                        {% endif %}
+                    </td>
+                    <th class="px-2">Ubigeo de Destino</th>
+                    <td>
+                        {% if guia.ubigeo_destino %}    
+                        {{ guia.ubigeo_destino }}
+                        {% endif %}
+                    </td>
                     <td>
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            data-modal="modal-xl"
                             class="update btn btn-primary" title="Seleccionar Destino">
                             Destino
                         </button>
@@ -171,14 +206,18 @@
                 <th>Item</th>
                 <th style="min-width: 500px;">Material</th>
                 <th class="text-end">Cantidad</th>
-                <th class="text-nowrap">Peso</th>
+                <th class="text-end">Peso</th>
+                <th class="text-end">Peso Total</th>
             </tr>
         </thead>
         <tbody>
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td style="min-width: 500px;">{{ material.material }}</td>
+                    <td style="min-width: 500px;">{{ material.producto }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.peso|redondear|intcomma }} Kg</td>
+                    <td class="text-end">{{ material.peso_total|redondear|intcomma }} Kg</td>
                 </tr>
             {% endfor %}
         </tbody>        

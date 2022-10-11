@@ -173,5 +173,9 @@ class DespachoDetalle(models.Model):
         verbose_name_plural = 'Despachos Detalle'
         ordering = ['item',]
 
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
     def __str__(self):
         return str(self.item)

@@ -114,7 +114,7 @@
             </tbody>
         </table>
     </div>
-
+    
     <div class="col-lg-6 table-responsive mb-3">
         <table>
             <tbody>
@@ -130,7 +130,7 @@
                 </tr>
                 <tr>
                     <th class="pe-2">N° Factura:</th>
-                    <td>
+                    <td class="text-nowrap">
                         {{ factura.serie_comprobante }}
                         -
                         {% if factura.numero_factura %}
@@ -142,7 +142,7 @@
                         {% if factura.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_venta_app:factura_venta_serie' factura.id %}"
                             data-table-url="{% url 'comprobante_venta_app:factura_venta_detalle_tabla' factura.id %}"
-                            class="update btn btn-primary">
+                            class="update btn btn-primary text-nowrap">
                             Seleccionar Serie
                         </button>
                         {% endif %}

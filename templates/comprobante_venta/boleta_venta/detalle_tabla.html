@@ -143,7 +143,7 @@
                         {% if boleta.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_serie' boleta.id %}"
                             data-table-url="{% url 'comprobante_venta_app:boleta_venta_detalle_tabla' boleta.id %}"
-                            class="update btn btn-primary">
+                            class="update btn btn-primary text-nowrap">
                             Seleccionar Serie
                         </button>
                         {% endif %}

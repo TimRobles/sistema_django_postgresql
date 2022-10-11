@@ -17,6 +17,7 @@ from .forms import(
     GuiaConductorForm,
     GuiaDestinoForm,
     GuiaPartidaForm,
+    GuiaSerieForm,
     GuiaTransportistaForm,
 )
 
@@ -50,14 +51,14 @@ class GuiaDetalleView(TemplateView):
         materiales = None
         try:
             materiales = obj.GuiaDetalle_guia_venta.all()
-            for material in materiales:
-                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
         except:
             pass
         
         context = super(GuiaDetalleView, self).get_context_data(**kwargs)
         context['guia'] = obj
         context['materiales'] = materiales
+        if obj.serie_comprobante:
+            context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
 
         return context
 
@@ -69,16 +70,15 @@ def GuiaDetalleVerTabla(request, id_guia):
 
         materiales = None
         try:
-            materiales = obj.GuiaDetalle_factura_venta.all()
-
-            for material in materiales:
-                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+            materiales = obj.GuiaDetalle_guia_venta.all()
         except:
             pass
 
         context = {}
         context['guia'] = obj
         context['materiales'] = materiales
+        if obj.serie_comprobante:
+            context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
 
         data['table'] = render_to_string(
             template,
@@ -113,7 +113,11 @@ class GuiaCrearView(DeleteView):
         for detalle in detalles:
             guia_detalle = GuiaDetalle.objects.create(
                 item = detalle.item,
+                content_type = detalle.content_type,
+                id_registro = detalle.id_registro,
                 guia=guia,
+                cantidad=detalle.cantidad_despachada,
+                peso=detalle.producto.peso_unidad_base,
                 created_by=self.request.user,
                 updated_by=self.request.user,                
             )
@@ -147,6 +151,20 @@ class GuiaTransportistaView(BSModalUpdateView):
         context['accion'] = "Elegir"
         context['titulo'] = "Transportista"
         return context
+        
+
+class GuiaSerieUpdateView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaSerieForm
+    success_url = '.'
+    
+    def get_context_data(self, **kwargs):
+        context = super(GuiaSerieUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Seleccionar'
+        context['titulo'] = 'Serie'
+        return context
+
 
 class GuiaPartidaView(BSModalUpdateView):
     model = Guia
@@ -159,6 +177,16 @@ class GuiaPartidaView(BSModalUpdateView):
         form.instance.ubigeo_partida = ubigeo
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        lista = []
+        lista.append((0, "--------------------"))
+        
+        for anexo in self.object.sociedad.Sede_sociedad.filter(estado=1):
+            lista.append((anexo.id, "%s | %s" % (anexo.direccion, anexo.distrito.codigo)))
+        kwargs['lista'] = lista
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(GuiaPartidaView, self).get_context_data(**kwargs)
@@ -177,6 +205,17 @@ class GuiaDestinoView(BSModalUpdateView):
         form.instance.ubigeo_destino = ubigeo
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        lista = []
+        lista.append((0, "--------------------"))
+        lista.append((self.object.cliente.id, "%s | %s" % (self.object.cliente.direccion_fiscal, self.object.cliente.ubigeo)))
+        
+        for anexo in self.object.cliente.ClienteAnexo_cliente.filter(estado=1):
+            lista.append((anexo.id, "%s | %s" % (anexo.direccion, anexo.distrito.codigo)))
+        kwargs['lista'] = lista
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(GuiaDestinoView, self).get_context_data(**kwargs)

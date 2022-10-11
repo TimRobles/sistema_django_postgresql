@@ -1,0 +1,26 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Razón Social</th>
+            <th>Documento</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for transportista in contexto_pagina %}
+        <tr>
+            <td>{{ transportista.razon_social }}</td>
+            <td>{{ transportista.get_tipo_documento_display }}: {{ transportista.numero_documento }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'transportistas_app:transportista_actualizar' transportista.id %}"
+                    data-table-url="{% url 'transportistas_app:transportista_tabla' %}{{ contexto_filtro }}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

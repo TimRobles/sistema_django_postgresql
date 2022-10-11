@@ -249,11 +249,11 @@ ESTADOS_FACTURA = (
     (4, 'ANULADO'),
     )
 
-
 ESTADOS_GUIA = (
-    (1, 'EN PROCESO'),
+    (1, 'BORRADOR'),
     (2, 'EMITIDA'),
-    (3, 'ANULADA'),
+    (3, 'RECHAZADO'),
+    (4, 'ANULADA'),
     )
 
 TIPO_PERCEPCION = (

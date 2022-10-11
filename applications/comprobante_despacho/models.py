@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications.activos.models import MarcaActivo
+from applications.funciones import numeroXn
 from applications.sede.models import Sede
 
 from applications.datos_globales.models import Distrito, Moneda, SeriesComprobante, TipoCambio, Unidad
@@ -46,13 +47,25 @@ class Guia(models.Model):
 
     @property
     def peso_total(self):
+        total = Decimal('0.00')
         if self.GuiaDetalle_guia_venta.all():
-            return self.GuiaDetalle_guia_venta.aggregate(models.Sum('peso'))['peso__sum']
-        else:
-            return Decimal('0.00')
+            for detalle in self.GuiaDetalle_guia_venta.all():
+                total += detalle.peso_total
+        return total
+
+    @property
+    def documento(self):
+        return "%s-%s" % (self.serie_comprobante, numeroXn(self.numero_guia, 6))
+
+    @property
+    def detalles(self):
+        return self.GuiaDetalle_guia_venta.all()
 
     def __str__(self):
-        return str(self.id)
+        if self.numero_guia:
+            return "%s %s-%s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_guia, self.cliente)
+        else:
+            return "%s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente)
 
 
 class GuiaDetalle(models.Model):
@@ -71,6 +84,14 @@ class GuiaDetalle(models.Model):
     class Meta:
         verbose_name = 'Guia Detalle'
         verbose_name_plural = 'Guias Detalle'
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    @property
+    def peso_total(self):
+        return self.cantidad * self.peso
 
     def __str__(self):
         return str(self.id)

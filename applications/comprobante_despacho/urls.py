@@ -18,5 +18,6 @@ urlpatterns = [
     path('guia/bultos/<pk>/', views.GuiaBultosView.as_view(), name='guia_bultos'),
     path('guia/conductor/<pk>/', views.GuiaConductorView.as_view(), name='guia_conductor'),
     path('guia/cliente/<pk>/', views.GuiaClienteView.as_view(), name='guia_cliente'),
+    path('guia/serie/<pk>/', views.GuiaSerieUpdateView.as_view(), name='guia_serie'),
 
 ]
