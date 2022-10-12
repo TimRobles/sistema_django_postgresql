@@ -1,9 +1,10 @@
 import requests
 from django import forms
+from applications.comprobante_venta.funciones import anular_nubefact, guia_nubefact
 from applications.importaciones import*
 from applications.logistica.models import Despacho
 from applications.envio_clientes.models import Transportista
-from applications.datos_globales.models import SeriesComprobante
+from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 from .models import(
@@ -12,10 +13,13 @@ from .models import(
 )
 
 from .forms import(
+    GuiaAnularForm,
     GuiaBultosForm,
     GuiaClienteForm,
     GuiaConductorForm,
     GuiaDestinoForm,
+    GuiaFechaTrasladoForm,
+    GuiaMotivoTrasladoForm,
     GuiaPartidaForm,
     GuiaSerieForm,
     GuiaTransportistaForm,
@@ -59,6 +63,7 @@ class GuiaDetalleView(TemplateView):
         context['materiales'] = materiales
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
+        context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
 
         return context
 
@@ -79,6 +84,7 @@ def GuiaDetalleVerTabla(request, id_guia):
         context['materiales'] = materiales
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
+        context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
 
         data['table'] = render_to_string(
             template,
@@ -100,7 +106,7 @@ class GuiaCrearView(DeleteView):
 
         detalles = self.object.DespachoDetalle_despacho.all()
 
-        serie_comprobante = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(Guia)).earliest('created_at')
+        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
 
         guia = Guia.objects.create(
             sociedad = self.object.sociedad,
@@ -117,6 +123,8 @@ class GuiaCrearView(DeleteView):
                 id_registro = detalle.id_registro,
                 guia=guia,
                 cantidad=detalle.cantidad_despachada,
+                unidad=detalle.producto.unidad_base,
+                descripcion_documento=detalle.producto.descripcion_venta,
                 peso=detalle.producto.peso_unidad_base,
                 created_by=self.request.user,
                 updated_by=self.request.user,                
@@ -140,7 +148,9 @@ class GuiaTransportistaView(BSModalUpdateView):
     model = Guia
     template_name = "comprobante_despacho/guia/form.html"
     form_class = GuiaTransportistaForm
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -170,7 +180,9 @@ class GuiaPartidaView(BSModalUpdateView):
     model = Guia
     template_name = "comprobante_despacho/guia/form direccion.html"
     form_class = GuiaPartidaForm
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
         ubigeo = form.cleaned_data['ubigeo']
@@ -198,7 +210,9 @@ class GuiaDestinoView(BSModalUpdateView):
     model = Guia
     template_name = "comprobante_despacho/guia/form direccion.html"
     form_class = GuiaDestinoForm
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
         ubigeo = form.cleaned_data['ubigeo']
@@ -227,7 +241,9 @@ class GuiaBultosView(BSModalUpdateView):
     model = Guia
     template_name = "includes/formulario generico.html"
     form_class = GuiaBultosForm
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -243,7 +259,9 @@ class GuiaConductorView(BSModalUpdateView):
     model = Guia
     template_name = "comprobante_despacho/guia/form conductor.html"
     form_class = GuiaConductorForm
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -255,11 +273,49 @@ class GuiaConductorView(BSModalUpdateView):
         context['titulo'] = "Conductor"
         return context
 
+class GuiaMotivoTrasladoView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaMotivoTrasladoForm
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaMotivoTrasladoView, self).get_context_data(**kwargs)
+        context['accion'] = "Asignar"
+        context['titulo'] = "MotivoTraslado"
+        return context
+
+class GuiaFechaTrasladoView(BSModalUpdateView):
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaFechaTrasladoForm
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaFechaTrasladoView, self).get_context_data(**kwargs)
+        context['accion'] = "Cambiar"
+        context['titulo'] = "Fecha de Traslado"
+        return context
+
 class GuiaClienteView(BSModalUpdateView):
     model = Guia
     template_name = "comprobante_despacho/guia/form_cliente.html"
     form_class = GuiaClienteForm
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -302,28 +358,103 @@ class GuiaGuardarView(DeleteView):
         return super(GuiaGuardarView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
-        fecha_vencimiento = generarDeuda(obj, self.request)
-
         obj.fecha_emision = date.today()
-        obj.fecha_vencimiento = fecha_vencimiento
+        if not obj.fecha_traslado:
+            obj.fecha_traslado = date.today()
         obj.estado = 2
-        obj.numero_factura = Guia.objects.nuevo_numero(obj)
+        obj.numero_guia = Guia.objects.nuevo_numero(obj)
         registro_guardar(obj, self.request)
         obj.save()
-        obj.confirmacion.estado = 2
-        obj.confirmacion.save()
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(GuiaGuardarView, self).get_context_data(**kwargs)
         context['accion'] = 'Guardar'
-        context['titulo'] = 'Factura de Venta'
-        context['texto'] = '¿Seguro de guardar la Factura de Venta?'
+        context['titulo'] = 'Guía de Remisión'
+        context['texto'] = '¿Seguro de guardar la Guía de Remisión?'
         context['item'] = self.get_object()
+        return context
+
+
+class GuiaNubeFactEnviarView(DeleteView):
+    model = Guia
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_nubefact = False
+        context['titulo'] = 'Error de guardar'
+        if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+            error_nubefact = True
+        
+        if error_nubefact:
+            context['texto'] = 'No hay una ruta para envío a NubeFact'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(GuiaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        respuesta = guia_nubefact(obj, self.request.user)
+        if respuesta.error:
+            obj.estado = 6
+        elif respuesta.aceptado:
+            obj.estado = 4
+        else:
+            obj.estado = 5
+        registro_guardar(obj, self.request)
+        obj.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaNubeFactEnviarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Enviar'
+        context['titulo'] = 'Guía de Remisión a NubeFact'
+        context['texto'] = '¿Seguro de enviar la Guía de Remisión a NubeFact?'
+        context['item'] = self.get_object()
+        return context
+
+
+class GuiaAnularView(BSModalDeleteView):
+    model = Guia
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.estado = 3
+        if obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj)) == 'MANUAL':
+            obj.save()
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaAnularView, self).get_context_data(**kwargs)
+        obj = self.get_object()
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Guía de Remisión'
+        context['texto'] = '¿Seguro de anular la Guía de Remisión?'
+        context['item'] = self.get_object()
+        return context
+
+
+class GuiaNubefactRespuestaDetailView(BSModalReadView):
+    model = Guia
+    template_name = "comprobante_venta/nubefact_respuesta.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(GuiaNubefactRespuestaDetailView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Movimientos Nubefact'
+        context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
         return context
 
 

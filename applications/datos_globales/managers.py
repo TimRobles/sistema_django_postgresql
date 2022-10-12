@@ -12,7 +12,7 @@ class TipoCambioManager(models.Manager):
 class SeriesComprobanteManager(models.Manager):
     def por_defecto(self, modelo):
         try:
-            return self.filter(tipo_comprobante=modelo, defecto=True).earliest('updated_at')
+            return self.filter(tipo_comprobante=modelo, defecto=True, mostrar=True).earliest('updated_at')
         except:
             return None
 
@@ -48,7 +48,7 @@ class NubefactRespuestaManager(models.Manager):
             filtro = self.filter(
                 content_type = ContentType.objects.get_for_model(obj),
                 id_registro = obj.id
-            ).latest('updated_at')
+            ).filter(aceptado=True).latest('updated_at')
             return filtro
         except:
             pass

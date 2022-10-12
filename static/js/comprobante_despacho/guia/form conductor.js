@@ -64,7 +64,6 @@ function habilitar() {
     $tipo_documento = $('#id_conductor_tipo_documento')[0].value;
     $numero_documento = $('#id_conductor_numero_documento')[0];
     $boton = $('#consultar-documento')[0];
-    $numero_documento.required = true;
     $numero_documento.disabled = false;
     if ($tipo_documento == 6 ) {
         $boton.hidden = false;
@@ -82,7 +81,6 @@ function habilitar() {
         });
     } else if ($tipo_documento == '-' ) {
         $boton.hidden = true;
-        $numero_documento.required = false;
         $numero_documento.disabled = true;
     } else {
         $boton.hidden = true;

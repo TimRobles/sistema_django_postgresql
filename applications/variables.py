@@ -171,6 +171,7 @@ ESTADOS_DOCUMENTO = (
     (4, 'ACEPTADO POR SUNAT'),
     (5, 'RECHAZADO POR SUNAT'),
     (6, 'CON ERRORES'),
+    (7, 'FINTA'),
     )
 
 ESTADO_NOTA_INGRESO = (
@@ -243,21 +244,6 @@ ESTADOS_CONFIRMACION = (
     (1, 'PENDIENTE'),
     (2, 'FINALIZADO'),
     (3, 'ANULADO'),
-    )
-
-ESTADOS_FACTURA = (
-    (1, 'BORRADOR'),
-    (2, 'EMITIDO'),
-    (3, 'RECHAZADO'),
-    (4, 'ANULADO'),
-    )
-
-ESTADOS_GUIA = (
-    (1, 'BORRADOR'),
-    (2, 'EMITIDA'),
-    (3, 'RECHAZADO'),
-    (4, 'ANULADA'),
-    (5, 'FINTA'),
     )
 
 TIPO_PERCEPCION = (

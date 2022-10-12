@@ -184,6 +184,7 @@ def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, c
             item={}
             item['unidad_de_medida'] = producto.unidad.unidad_sunat
             item["codigo"] = numero_espacio(producto.codigo_interno)
+            # item["codigo"] = numero_espacio(producto.id_registro)
             item["descripcion"] = producto.descripcion_documento
             item["cantidad"] = numero_espacio(producto.cantidad)
             

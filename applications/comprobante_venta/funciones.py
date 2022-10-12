@@ -177,6 +177,61 @@ def factura_nubefact(obj, user):
         return None
 
 
+def guia_nubefact(obj, user):
+    try:
+        tipo_de_comprobante = obj.tipo_comprobante
+        serie = obj.serie_comprobante.serie
+        numero = obj.numero_guia
+        cliente_tipo_de_documento = obj.cliente.tipo_documento
+        cliente_numero_de_documento = obj.cliente.numero_documento
+        cliente_denominacion = obj.cliente.razon_social
+        cliente_direccion = obj.cliente.direccion_fiscal
+        correos = obj.cliente.CorreoCliente_cliente.filter(estado=1)
+        fecha_de_emision = obj.fecha_emision.strftime("%d-%m-%Y")
+        observaciones = obj.observaciones
+        motivo_de_traslado = obj.motivo_traslado
+        peso_bruto_total = numero_espacio(obj.peso_total)
+        numero_de_bultos = numero_espacio(obj.numero_bultos)
+        if obj.transportista:
+            tipo_de_transporte = '01' #TRANSPORTE PÚBLICO
+            transportista_documento_tipo = obj.transportista.tipo_documento
+            transportista_documento_numero = obj.transportista.numero_documento
+            transportista_denominacion = obj.transportista.razon_social
+        else:
+            tipo_de_transporte = '02' #TRANSPORTE PRIVADO
+            transportista_documento_tipo = ""
+            transportista_documento_numero = ""
+            transportista_denominacion = ""
+        fecha_de_inicio_de_traslado = obj.fecha_traslado.strftime("%d-%m-%Y")
+        transportista_placa_numero = numero_espacio(obj.placa_numero)
+        conductor_documento_tipo = numero_espacio(obj.conductor_tipo_documento)
+        conductor_documento_numero = numero_espacio(obj.conductor_numero_documento)
+        conductor_denominacion = numero_espacio(obj.conductor_denominacion)
+        punto_de_partida_ubigeo = obj.ubigeo_partida.codigo
+        punto_de_partida_direccion = obj.direccion_partida
+        punto_de_llegada_ubigeo = obj.ubigeo_destino.codigo
+        punto_de_llegada_direccion = obj.direccion_destino
+        enviar_automaticamente_a_la_sunat = True
+        if len(correos)>0:
+            enviar_automaticamente_al_cliente = True
+        else:
+            enviar_automaticamente_al_cliente = False
+        formato_de_pdf = 'A4'
+        productos = obj.detalles
+        data = funciones.generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, observaciones, motivo_de_traslado, peso_bruto_total, numero_de_bultos, tipo_de_transporte, fecha_de_inicio_de_traslado, transportista_documento_tipo, transportista_documento_numero, transportista_denominacion, transportista_placa_numero, conductor_documento_tipo, conductor_documento_numero, conductor_denominacion, punto_de_partida_ubigeo, punto_de_partida_direccion, punto_de_llegada_ubigeo, punto_de_llegada_direccion, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, formato_de_pdf, productos)
+
+        acceso_nubefact = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.envio(obj.sociedad, ContentType.objects.get_for_model(obj))
+        ruta = acceso_nubefact.acceso.ruta
+        token = acceso_nubefact.acceso.token
+        respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
+        return respuesta_nubefact
+    except Exception as e:
+        print("**************************")
+        print(e)
+        print("**************************")
+        return None
+
+
 def anular_nubefact(obj, user):
     tipo_de_comprobante = obj.tipo_comprobante
     serie = obj.serie_comprobante.serie
@@ -184,6 +239,8 @@ def anular_nubefact(obj, user):
         numero = obj.numero_boleta
     elif hasattr(obj, 'numero_factura'):
         numero = obj.numero_factura
+    elif hasattr(obj, 'numero_guia'):
+        numero = obj.numero_guia
     motivo = obj.motivo_anulacion
     data = funciones.anularDocumento(tipo_de_comprobante, serie, numero, motivo)
 

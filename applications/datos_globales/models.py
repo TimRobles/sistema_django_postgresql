@@ -641,6 +641,7 @@ class SeriesComprobante(models.Model):
     serie = models.CharField('Serie', max_length=4)
     defecto = models.BooleanField(default=False)
     contingencia = models.BooleanField(default=False)
+    mostrar = models.BooleanField(default=True)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SeriesComprobante_created_by', editable=False)

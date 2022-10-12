@@ -44,11 +44,17 @@ def numeroXn(numero, n):
 
 @register.filter
 def get_enlace_nubefact(respuesta):
-    return respuesta.respuesta['enlace']
+    try:
+        return respuesta.respuesta['enlace']
+    except:
+        return ""
 
 @register.filter
 def get_enlace_pdf_nubefact(respuesta):
-    return respuesta.respuesta['enlace_del_pdf']
+    try:
+        return respuesta.respuesta['enlace_del_pdf']
+    except:
+        return ""
 
 @register.filter
 def diccionario(respuesta):

@@ -7,12 +7,53 @@
     <div class="col-auto">
         <a href="{% url 'comprobante_despacho_app:guia_inicio' %}" class="btn btn-primary">Regresar</a>
     </div>
+    {% if guia.estado == 1 %}
     <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_despacho_app:guia_cliente' guia.id%}"
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_guardar' guia.id%}"
             class="delete btn btn-danger">
             Guardar
         </button>
     </div>
+    {% endif %}
+
+    {% if guia.estado > 1 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_anular' guia.id %}"
+            class="delete btn btn-danger">
+            Anular
+        </button>
+    </div>
+    {% endif %}
+
+    {% if guia.estado == 2 and nubefact_acceso == 'NUBEFACT' or guia.estado == 6 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_enviar' guia.id %}"
+            class="delete btn btn-info">
+            Enviar a NubeFact
+        </button>
+    </div>
+    {% endif %}
+
+    {% if url_nubefact %}
+    <div class="col-auto">
+        <a href="{{ url_nubefact|get_enlace_nubefact }}" class="btn btn-primary" target="_blank">URL Nubefact</a>
+    </div>
+    {% endif %}
+
+    {% if url_nubefact %}
+    <div class="col-auto">
+        <a href="{{ url_nubefact|get_enlace_pdf_nubefact }}" class="btn btn-danger" target="_blank">PDF Nubefact</a>
+    </div>
+    {% endif %}
+
+    {% if url_nubefact %}
+    <div class="col-auto ms-auto">
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_detalle' guia.id %}"
+            class="read btn btn-info">
+            Movimientos NubeFact
+        </button>
+    </div>
+    {% endif %}
 </div>
 
 <div class="row mt-3">
@@ -43,13 +84,16 @@
                         {% endif %}
                     </td>
                     <td>
+                        {% if guia.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_cliente' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Interlocutor">
                             Interlocutor
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
+                {% if not guia.conductor_denominacion %}
                 <tr>
                     <th class="pe-2">Transportista:</th>
                     <td>
@@ -58,26 +102,31 @@
                         {% endif %}    
                     </td>
                     <td rowspan="2">
+                        {% if guia.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_transportista' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Transportista">
                             Transportista
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <th class="pe-2">
                         {% if guia.transportista %}
                         {{ guia.transportista.tipo_documento|diccionario_tipo_documento }}
-                        {% endif %}
                         Transportista:
+                        {% endif %}
                     </th>
                     <td>
                         {% if guia.transportista %}
                         {{ guia.transportista.numero_documento }}
-                        {% endif %}    
+                        {% endif %}
                     </td>
                 </tr>
+                {% endif %}
+                
+                {% if not guia.transportista %}
                 <tr>
                     <th class="pe-2">Conductor:</th>
                     <td>
@@ -86,19 +135,21 @@
                         {% endif %}    
                     </td>
                     <td rowspan="3">
+                        {% if guia.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_conductor' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Conductor">
                             Conductor
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <th class="pe-2">
                         {% if guia.conductor_denominacion %}
                         {{ guia.conductor_tipo_documento|diccionario_tipo_documento }}
-                        {% endif %}
                         Conductor:
+                        {% endif %}
                     </th>
                     <td>
                         {% if guia.conductor_denominacion %}
@@ -107,13 +158,18 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">Placa:</th>
+                    <th class="pe-2">
+                        {% if guia.placa_numero %}
+                        Placa:
+                        {% endif %}
+                    </th>
                     <td>
-                        {% if guia.conductor_denominacion %}
+                        {% if guia.placa_numero %}
                         {{ guia.placa_numero }}
                         {% endif %}    
                     </td>
                 </tr>
+                {% endif %}
                 <tr>
                     <th class="pe-2">Número de Bultos:</th>
                     <td>
@@ -122,11 +178,13 @@
                         {% endif %}
                     </td>
                     <td>
+                        {% if guia.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_bultos' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="">
                             N° de Bultos
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
             </tbody>
@@ -141,7 +199,7 @@
                     <td>{{ guia.fecha_emision|date:'d/m/Y' }}</td>
                     <td class="px-2" rowspan="2">
                         {% if guia.estado == 1 %}
-                        <button data-form-url="{% url 'comprobante_despacho_app:guia_serie' guia.id %}"
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_fecha_traslado' guia.id %}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary text-nowrap">
                             Cambiar Fecha de Traslado
@@ -152,8 +210,8 @@
                 <tr>
                     <th class="pe-2">Fecha de Traslado:</th>
                     <td>
-                        {% if fecha_traslado %}
-                        {{ guia.fecha_emision|date:'d/m/Y' }}
+                        {% if guia.fecha_traslado %}
+                        {{ guia.fecha_traslado|date:'d/m/Y' }}
                         {% endif %}
                     </td>
                 </tr>
@@ -200,12 +258,14 @@
                         {% endif %}
                     </td>
                     <td>
+                        {% if guia.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_partida' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             data-modal="modal-xl"
                             class="update btn btn-primary" title="Seleccionar Partida">
                             Partida
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
@@ -222,12 +282,14 @@
                         {% endif %}
                     </td>
                     <td class="px-2">
+                        {% if guia.estado == 1 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             data-modal="modal-xl"
                             class="update btn btn-primary" title="Seleccionar Destino">
                             Destino
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
             </tbody>
@@ -239,12 +301,14 @@
                     <th class="pe-2">Motivo de Traslado:</th>
                     <td>{{ guia.get_motivo_traslado_display }}</td>
                     <td class="px-2 text-nowrap">
-                        <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
+                        {% if guia.estado == 1 %}
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_motivo_traslado' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             data-modal="modal-xl"
                             class="update btn btn-primary" title="Seleccionar Destino">
                             Cambiar Motivo
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
             </tbody>
@@ -280,6 +344,7 @@
                 <th>Item</th>
                 <th style="min-width: 500px;">Material</th>
                 <th class="text-end">Cantidad</th>
+                <th class="text-end">Unidad</th>
                 <th class="text-end">Peso</th>
                 <th class="text-end">Peso Total</th>
             </tr>
@@ -290,6 +355,7 @@
                     <td>{{ material.item }}</td>
                     <td style="min-width: 500px;">{{ material.producto }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.unidad }}</td>
                     <td class="text-end">{{ material.peso|redondear|intcomma }} Kg</td>
                     <td class="text-end">{{ material.peso_total|redondear|intcomma }} Kg</td>
                 </tr>

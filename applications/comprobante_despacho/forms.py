@@ -1,3 +1,4 @@
+from datetime import date
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.envio_clientes.models import Transportista
@@ -78,7 +79,7 @@ class GuiaSerieForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(GuiaSerieForm, self).__init__(*args, **kwargs)
-        self.fields['serie_comprobante'].queryset = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(Guia))
+        self.fields['serie_comprobante'].queryset = SeriesComprobante.objects.filter(tipo_comprobante=ContentType.objects.get_for_model(Guia), mostrar=True)
         self.fields['serie_comprobante'].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -111,6 +112,49 @@ class GuiaConductorForm(BSModalModelForm):
         super(GuiaConductorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = False
+
+
+class GuiaMotivoTrasladoForm(BSModalModelForm):
+    class Meta:
+        model = Guia
+        fields=(
+            'motivo_traslado',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaMotivoTrasladoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class GuiaFechaTrasladoForm(BSModalModelForm):
+    class Meta:
+        model = Guia
+        fields = (
+            'fecha_traslado',
+            )
+
+        widgets = {
+            'fecha_traslado' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+    
+    def clean_fecha_traslado(self):
+        fecha_traslado = self.cleaned_data.get('fecha_traslado')
+        if fecha_traslado < date.today():
+            self.add_error('fecha_traslado', 'La fecha de baja no puede ser menor a la fecha de hoy.')
+        return fecha_traslado
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaFechaTrasladoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
 
 
 class GuiaClienteForm(BSModalModelForm):
@@ -126,5 +170,18 @@ class GuiaClienteForm(BSModalModelForm):
         super(GuiaClienteForm, self).__init__(*args, **kwargs)
         self.fields['cliente_interlocutor'].queryset = interlocutor_queryset
         self.fields['cliente_interlocutor'].initial = interlocutor
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class GuiaAnularForm(BSModalModelForm):
+    class Meta:
+        model = Guia
+        fields = (
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaAnularForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
