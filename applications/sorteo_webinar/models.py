@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 class Participante(models.Model):
     nombre_completo = models.CharField('Nombre Completo', max_length=500)
-    documento = models.CharField('Número de Documento', max_length=50)
+    documento = models.CharField('Número de Documento', max_length=50, unique=True)
     telefono = models.CharField('Número de Telefono', max_length=50)
     correo = models.CharField('Correo electrónico', max_length=500)
     premio = models.CharField('Premio', max_length=50, blank=True, null=True)
