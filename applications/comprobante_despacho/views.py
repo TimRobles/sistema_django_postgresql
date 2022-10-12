@@ -241,7 +241,7 @@ class GuiaBultosView(BSModalUpdateView):
 
 class GuiaConductorView(BSModalUpdateView):
     model = Guia
-    template_name = "includes/formulario generico.html"
+    template_name = "comprobante_despacho/guia/form conductor.html"
     form_class = GuiaConductorForm
     success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
 
@@ -283,6 +283,49 @@ class GuiaClienteView(BSModalUpdateView):
         context['titulo'] = "Interlocutor"
         context['cliente'] = self.object.cliente
         return context
+
+
+class GuiaGuardarView(DeleteView):
+    model = Guia
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_punto_partida = False
+        context['titulo'] = 'Error de guardar'
+        if not self.get_object().direccion_partida:
+            error_punto_partida = True
+
+        if error_punto_partida:
+            context['texto'] = 'Ingrese un Punto de partida'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(GuiaGuardarView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        fecha_vencimiento = generarDeuda(obj, self.request)
+
+        obj.fecha_emision = date.today()
+        obj.fecha_vencimiento = fecha_vencimiento
+        obj.estado = 2
+        obj.numero_factura = Guia.objects.nuevo_numero(obj)
+        registro_guardar(obj, self.request)
+        obj.save()
+        obj.confirmacion.estado = 2
+        obj.confirmacion.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaGuardarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Guardar'
+        context['titulo'] = 'Factura de Venta'
+        context['texto'] = '¿Seguro de guardar la Factura de Venta?'
+        context['item'] = self.get_object()
+        return context
+
 
 class ClienteInterlocutorForm(forms.Form):
     cliente_interlocutor = forms.ModelChoiceField(queryset = ClienteInterlocutor.objects.all(), required=False)

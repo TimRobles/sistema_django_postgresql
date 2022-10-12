@@ -7,6 +7,12 @@
     <div class="col-auto">
         <a href="{% url 'comprobante_despacho_app:guia_inicio' %}" class="btn btn-primary">Regresar</a>
     </div>
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_cliente' guia.id%}"
+            class="delete btn btn-danger">
+            Guardar
+        </button>
+    </div>
 </div>
 
 <div class="row mt-3">
@@ -51,12 +57,25 @@
                         {{ guia.transportista }}
                         {% endif %}    
                     </td>
-                    <td>
+                    <td rowspan="2">
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_transportista' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Transportista">
                             Transportista
                         </button>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">
+                        {% if guia.transportista %}
+                        {{ guia.transportista.tipo_documento|diccionario_tipo_documento }}
+                        {% endif %}
+                        Transportista:
+                    </th>
+                    <td>
+                        {% if guia.transportista %}
+                        {{ guia.transportista.numero_documento }}
+                        {% endif %}    
                     </td>
                 </tr>
                 <tr>
@@ -66,12 +85,33 @@
                         {{guia.conductor_denominacion}}
                         {% endif %}    
                     </td>
-                    <td>
+                    <td rowspan="3">
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_conductor' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Conductor">
                             Conductor
                         </button>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">
+                        {% if guia.conductor_denominacion %}
+                        {{ guia.conductor_tipo_documento|diccionario_tipo_documento }}
+                        {% endif %}
+                        Conductor:
+                    </th>
+                    <td>
+                        {% if guia.conductor_denominacion %}
+                        {{ guia.conductor_numero_documento }}
+                        {% endif %}    
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Placa:</th>
+                    <td>
+                        {% if guia.conductor_denominacion %}
+                        {{ guia.placa_numero }}
+                        {% endif %}    
                     </td>
                 </tr>
                 <tr>
@@ -97,8 +137,25 @@
         <table>
             <tbody>
                 <tr>
-                    <th class="pe-2">Fecha:</th>
+                    <th class="pe-2">Fecha de Emisión:</th>
                     <td>{{ guia.fecha_emision|date:'d/m/Y' }}</td>
+                    <td class="px-2" rowspan="2">
+                        {% if guia.estado == 1 %}
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_serie' guia.id %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="update btn btn-primary text-nowrap">
+                            Cambiar Fecha de Traslado
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Fecha de Traslado:</th>
+                    <td>
+                        {% if fecha_traslado %}
+                        {{ guia.fecha_emision|date:'d/m/Y' }}
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">N° Guia:</th>
@@ -164,12 +221,29 @@
                         {{ guia.ubigeo_destino }}
                         {% endif %}
                     </td>
-                    <td>
+                    <td class="px-2">
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             data-modal="modal-xl"
                             class="update btn btn-primary" title="Seleccionar Destino">
                             Destino
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Motivo de Traslado:</th>
+                    <td>{{ guia.get_motivo_traslado_display }}</td>
+                    <td class="px-2 text-nowrap">
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            data-modal="modal-xl"
+                            class="update btn btn-primary" title="Seleccionar Destino">
+                            Cambiar Motivo
                         </button>
                     </td>
                 </tr>

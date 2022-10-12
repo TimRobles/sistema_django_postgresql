@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications.activos.models import MarcaActivo
 from applications.funciones import numeroXn
+from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.sede.models import Sede
 
 from applications.datos_globales.models import Distrito, Moneda, SeriesComprobante, TipoCambio, Unidad

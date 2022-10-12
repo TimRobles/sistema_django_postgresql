@@ -4,6 +4,8 @@ from textwrap import indent
 from django import template
 from django.utils.safestring import mark_safe
 
+from applications.variables import DICCIONARIO_TIPO_DOCUMENTO_SUNAT
+
 register = template.Library()
 
 @register.filter
@@ -27,6 +29,10 @@ def redondear(texto, decimales=2):
         return round(texto, decimales)
     except:
         return texto
+
+@register.filter
+def diccionario_tipo_documento(value):
+    return DICCIONARIO_TIPO_DOCUMENTO_SUNAT[value]
 
 @register.filter
 def filename(value):

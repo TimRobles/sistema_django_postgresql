@@ -9,7 +9,7 @@ def llenar_datos(excel):
         if row[0].value and row[1].value and row[2].value and row[3].value:
             Participante.objects.create(
                 nombre_completo = row[0].value,
-                documento = row[1].value,
-                telefono = row[2].value,
+                documento = str(row[1].value).replace('.0', ''),
+                telefono = str(row[2].value).replace('.0', ''),
                 correo = row[3].value,
             )
