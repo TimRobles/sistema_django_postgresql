@@ -3,6 +3,7 @@ from applications.logistica.models import DocumentoPrestamoMateriales, NotaSalid
 from django import forms
 
 from applications.material.models import Material
+from applications.almacenes.models import Almacen
 
 class SolicitudPrestamoMaterialesForm(BSModalModelForm):
     class Meta:
@@ -100,19 +101,68 @@ class NotaSalidaForm(BSModalModelForm):
         super(NotaSalidaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+ #.....XxRonnyxX
+class NotaSalidaDetalleForm(BSModalModelForm):  #.....XxRonnyxX
+    material = forms.ModelChoiceField(queryset=None) #.....XxRonnyxX
+ #.....XxRonnyxX
+    class Meta: #.....XxRonnyxX
+        model = NotaSalidaDetalle #.....XxRonnyxX
+        fields=( #.....XxRonnyxX
+            'material', #.....XxRonnyxX
+            ) #.....XxRonnyxX
+ #.....XxRonnyxX
+    def __init__(self, *args, **kwargs): #.....XxRonnyxX
+        lista_materiales = kwargs.pop('materiales') #.....XxRonnyxX
+        super(NotaSalidaDetalleForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
+        self.fields['material'].queryset = lista_materiales #.....XxRonnyxX
+        for visible in self.visible_fields(): #.....XxRonnyxX
+            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
+ #.....XxRonnyxX
+class NotaSalidaDetalleUpdateForm(BSModalModelForm): #.....XxRonnyxX
+    cantidad_prestamo = forms.DecimalField(label = 'Cantidad Prestamo', max_digits=22, decimal_places=10) #.....XxRonnyxX
+    class Meta: #.....XxRonnyxX
+        model = NotaSalidaDetalle #.....XxRonnyxX
+        fields = ( #.....XxRonnyxX
+            'sede', #.....XxRonnyxX
+            'almacen', #.....XxRonnyxX
+            'cantidad_prestamo', #.....XxRonnyxX
+            'cantidad_salida', #.....XxRonnyxX
+            ) #.....XxRonnyxX
+ #.....XxRonnyxX    
+    def clean_sede(self): #.....XxRonnyxX
+        sede = self.cleaned_data.get('sede') #.....XxRonnyxX
+        almacen = self.fields['almacen'] #.....XxRonnyxX
+        almacen.queryset = Almacen.objects.filter(sede = sede) #.....XxRonnyxX    
+        return sede #.....XxRonnyxX
+ #.....XxRonnyxX   
+    def __init__(self, *args, **kwargs): #.....XxRonnyxX
+        solicitud = kwargs.pop('solicitud') #.....XxRonnyxX
+        super(NotaSalidaDetalleUpdateForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
+        self.fields['cantidad_prestamo'].initial = solicitud.cantidad_prestamo #.....XxRonnyxX
+        self.fields['almacen'].queryset = Almacen.objects.none() #.....XxRonnyxX
+        self.fields['sede'].required = True #.....XxRonnyxX
+        self.fields['almacen'].required = True #.....XxRonnyxX
+        self.fields['cantidad_salida'].required = True #.....XxRonnyxX
+        self.fields['cantidad_prestamo'].disabled = True #.....XxRonnyxX
+        try: #.....XxRonnyxX
+            almacen = self.instance.almacen #.....XxRonnyxX
+            sede = almacen.sede #.....XxRonnyxX
+ #.....XxRonnyxX            
+            self.fields['sede'].initial = sede #.....XxRonnyxX
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede) #.....XxRonnyxX
+        except: #.....XxRonnyxX
+            pass #.....XxRonnyxX
+        for visible in self.visible_fields(): #.....XxRonnyxX
+            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
+ #.....XxRonnyxX
+class NotaSalidaAnularForm(BSModalModelForm): #.....XxRonnyxX
+    class Meta: #.....XxRonnyxX
+        model = NotaSalida #.....XxRonnyxX
+        fields=( #.....XxRonnyxX
+            'motivo_anulacion', #.....XxRonnyxX
+            ) #.....XxRonnyxX
 
-class NotaSalidaDetalleForm(BSModalModelForm):
-    class Meta:
-        model = NotaSalidaDetalle
-        fields = (
-            'confirmacion_venta_detalle',
-            'solicitud_prestamo_materiales_detalle',
-            'sede',
-            'almacen',
-            'cantidad_salida',
-            )
-
-    def __init__(self, *args, **kwargs):
-        super(NotaSalidaDetalleForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
+    def __init__(self, *args, **kwargs): #.....XxRonnyxX
+        super(NotaSalidaAnularForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
+        for visible in self.visible_fields(): #.....XxRonnyxX
+            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX

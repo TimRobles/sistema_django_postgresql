@@ -4,11 +4,17 @@ from . import views
 app_name='logistica_app'
 
 urlNotaSalida = [
-    path('nota-salida/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'),
-    path('nota-salida-tabla/', views.NotaSalidaTabla, name='nota_salida_tabla'),
-    path('nota-salida/actualizar/<pk>', views.NotaSalidaUpdateView.as_view(), name='nota_salida_actualizar'),
-    path('nota-salida/detalle/<pk>/', views.NotaSalidaDetailView.as_view(), name='nota_salida_detalle'),
-    path('nota-salida/detalle-tabla/<pk>/', views.NotaSalidaDetailTabla, name='nota_salida_detalle_tabla'),
+    path('nota-salida/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'), #.....XxRonnyxX
+    path('nota-salida-tabla/', views.NotaSalidaTabla, name='nota_salida_tabla'), #.....XxRonnyxX
+    path('nota-salida/actualizar/<pk>', views.NotaSalidaUpdateView.as_view(), name='nota_salida_actualizar'), #.....XxRonnyxX
+    path('nota-salida/concluir/<pk>/', views.NotaSalidaConcluirView.as_view(), name='nota_salida_concluir'), #.....XxRonnyxX
+    path('nota-salida/anular/<pk>/', views.NotaSalidaAnularView.as_view(), name='nota_salida_anular'), #.....XxRonnyxX
+    path('nota-salida/detalle/<pk>/', views.NotaSalidaDetailView.as_view(), name='nota_salida_detalle'), #.....XxRonnyxX
+    path('nota-salida/detalle-tabla/<pk>/', views.NotaSalidaDetailTabla, name='nota_salida_detalle_tabla'), #.....XxRonnyxX
+    path('nota-salida-detalle/registrar/<int:nota_salida_id>/', views.NotaSalidaDetalleCreateView.as_view(), name='nota_salida_detalle_registrar'), #.....XxRonnyxX
+    path('nota-salida-detalle/actualizar/<pk>/', views.NotaSalidaDetalleUpdateView.as_view(), name='nota_salida_detalle_actualizar'), #.....XxRonnyxX
+    path('nota-salida-detalle/eliminar/<pk>/', views.NotaSalidaDetalleDeleteView.as_view(), name='nota_salida_detalle_eliminar'), #.....XxRonnyxX
+    path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'), #.....XxRonnyxX
 ]
 
 urlpatterns = [

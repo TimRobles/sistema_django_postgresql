@@ -58,8 +58,16 @@ class SolicitudPrestamoMaterialesDetalle(models.Model):
         verbose_name_plural = 'Solicitudes Prestamo Materiales Detalle'
         ordering = ['item',]
 
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def unidad(self):
+        return self.producto.unidad_base
+
     def __str__(self):
-        return str(self.item)
+        return str(self.producto)
 
 class DocumentoPrestamoMateriales(models.Model):
     comentario = models.TextField(blank=True, null=True)
@@ -110,11 +118,11 @@ class NotaSalida(models.Model):
 class NotaSalidaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True)
-    solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE)
+    solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
-    cantidad_salida = models.DecimalField('Cantidad Salida', max_digits=22, decimal_places=10, default=0, blank=True, null=True)
-    nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE)
+    cantidad_salida = models.DecimalField('Cantidad Salida', max_digits=22, decimal_places=10, default=0)
+    nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_nota_salida')
     estado = models.IntegerField(choices=ESTADOS, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

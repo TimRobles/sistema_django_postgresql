@@ -1,10 +1,25 @@
 {% extends 'base.html' %}
 
 {% block titulo %}
-    Detalle Solicitud Prestamo Materiales
+    Detalle Nota de Salida
 {% endblock titulo %}
 
 {% block contenido %}
+    <h3>Detalle Nota de Salida
+        {% if contexto_nota_salida_detalle.estado == 1 %}
+            <button data-form-url="{% url 'logistica_app:nota_salida_detalle_registrar' contexto_nota_salida_detalle.id %}"
+                data-table-url="{% url 'logistica_app:nota_salida_detalle_tabla' contexto_nota_salida_detalle.id %}"
+                class="create badge bg-primary">
+                Agregar Material
+            </button>
+            <button data-form-url="{% url 'logistica_app:nota_salida_concluir' contexto_nota_salida_detalle.id %}"
+                data-table-url="{% url 'logistica_app:nota_salida_inicio' %}"
+                class="delete badge bg-primary">
+                Concluir Nota de Salida
+            </button> 
+        {% endif %}
+        <a href="{% url 'logistica_app:nota_salida_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
     <div id="tabla">
         {% include 'logistica/nota_salida/detalle_tabla.html' %}
     </div>

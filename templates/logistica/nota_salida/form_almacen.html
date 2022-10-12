@@ -1,0 +1,23 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block js %}
+    <script src="{% static 'js/logistica/nota_salida/form_almacen.js' %}?{{ cache_bust }}"></script>
+
+    <script>
+        $(function () {
+            $("#id_sede").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_almacen").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+            });
+    </script>
+
+{% endblock js %}
