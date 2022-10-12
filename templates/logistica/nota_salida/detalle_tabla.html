@@ -8,8 +8,9 @@
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
-                <th class="text-end">Cantidad</th>
-                <th>Observacion</th>
+                <th>Sede</th>
+                <th>Almacén</th>
+                <th class="text-end">Cantidad de Salida</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -17,31 +18,34 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td>{{ material.material.descripcion_venta }}</td>
-                    <td>{{ material.material.unidad_base }}</td>
-                    <td class="text-end">{{ material.cantidad_prestamo|redondear|intcomma }}</td>
+                    <td>{{ material.solicitud_prestamo_materiales_detalle.producto }}</td>
+                    <td>{{ material.solicitud_prestamo_materiales_detalle.producto.unidad_base }}</td>
                     <td>
-                        {% if material.observacion != None %}
-                            {{ material.observacion}}
-                        {% else %}
-                            -
+                        {% if material.sede %}
+                            {{ material.sede}}
                         {% endif %}
                     </td>
+                    <td>
+                        {% if material.almacen %}
+                            {{ material.almacen.nombre}}
+                        {% endif %}
+                    </td>
+                    <td class="text-end">{{ material.cantidad_salida|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
-                        <!-- {% if contexto_solicitud_prestamo_materiales_detalle.estado == 1 %}
-                            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_actualizar' material.id %}"
-                                data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_tabla' contexto_solicitud_prestamo_materiales_detalle.id  %}"
+                        {% if contexto_nota_salida_detalle.estado == 1 %}
+                            <button data-form-url="{% url 'logistica_app:nota_salida_detalle_actualizar' material.id %}"
+                                data-table-url="{% url 'logistica_app:nota_salida_detalle_tabla' contexto_nota_salida_detalle.id  %}"
                                 data-keep-open="true"
                                 class="update btn btn-warning btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                                 <i class="bi bi-pencil-fill"></i>
                             </button>
-                            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_eliminar' material.id %}"
+                            <button data-form-url="{% url 'logistica_app:nota_salida_detalle_eliminar' material.id %}"
                                 class="delete btn btn-danger btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                                 <i class="bi-x-lg"></i>
                             </button>
-                        {% endif %} -->
+                        {% endif %}
                     </td>
             </tr>
             {% endfor %}
