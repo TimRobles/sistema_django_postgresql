@@ -1,0 +1,34 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Detalle Fallas por Sub Familia
+    <a href="{% url 'calidad_app:falla_material' %}"><span class="badge bg-primary">Regresar</span></a>
+
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Comentario</th>
+                <th>Visible</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for falla in fallas %}
+                <tr>
+                    <td>{{ falla.titulo }}</td>
+                    <td>{{ falla.comentario }}</td>
+                    <td>{{ falla.visible }}</td>
+                    <td>
+                        
+                    </td>
+                </tr>
+            {% endfor %}
+                
+        </tbody>
+    </table>
+</div>

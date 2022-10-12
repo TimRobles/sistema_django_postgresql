@@ -44,10 +44,10 @@ class Serie(models.Model):
 
 class FallaMaterial(models.Model):
     sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE)
-    titulo = models.CharField('Tipo', max_length=50)
+    titulo = models.CharField('Titulo', max_length=50)
     comentario = models.TextField()
     visible = models.BooleanField()
-
+  
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FallaMaterial_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
