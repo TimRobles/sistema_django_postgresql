@@ -428,3 +428,28 @@ class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion']="Dar Baja"
         context['titulo']="Correo"
         return context
+
+class CorreoInterlocutorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('proveedores.change_correointerlocutorproveedor')
+
+    model = CorreoInterlocutorProveedor
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.get_object().interlocutor.id})
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.fech_baja = None
+        obj.estado = 1
+        registro_guardar(obj, self.request)
+        obj.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreoInterlocutorDarAltaView, self).get_context_data(**kwargs)
+        context['accion'] = "Dar Alta"
+        context['titulo'] = "Correo"
+        context['texto'] = "¿Seguro que desea dar de alta al correo?"
+        context['item'] = self.get_object()
+        return context

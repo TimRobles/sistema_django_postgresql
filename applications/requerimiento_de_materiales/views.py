@@ -642,6 +642,20 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+        context = {}
+        error_correo_proveedor = False
+        context['titulo'] = 'Error de Envío'
+        proveedor = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['slug']).proveedor
+        CORREOS_PROVEEDOR = []
+        for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
+            for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
+                CORREOS_PROVEEDOR.append((correo_interlocutor.correo, '%s %s (%s)' % (interlocutor_proveedor.interlocutor.nombres, interlocutor_proveedor.interlocutor.apellidos, correo_interlocutor.correo)))
+        if CORREOS_PROVEEDOR == []:
+            error_correo_proveedor = True
+
+        if error_correo_proveedor:
+            context['texto'] = 'Registrar correos del proveedor'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):

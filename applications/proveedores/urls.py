@@ -31,5 +31,6 @@ urlpatterns = [
     path('correo/registrar/<int:interlocutor_id>/', views.CorreoInterlocutorCreateView.as_view(), name='correo_registrar'),
     path('correo/actualizar/<pk>/', views.CorreoInterlocutorUpdateView.as_view(), name='correo_actualizar'),
     path('correo/baja/<pk>/', views.CorreoInterlocutorDarBajaView.as_view(), name='correo_baja'),
+    path('correo/alta/<pk>/', views.CorreoInterlocutorDarAltaView.as_view(), name='correo_alta'),
     
 ] + urlProveedor + urlInterlocutor
