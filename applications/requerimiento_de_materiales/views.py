@@ -600,7 +600,7 @@ class RequerimientoMaterialProveedorPdfView(View):
         interlocutor = obj.interlocutor_proveedor
         comentario = obj.comentario
 
-        TablaEncabezado = ['Item','Name', 'Brand', 'Description', 'Unidad', 'Cantidad']
+        TablaEncabezado = ['Item','Nombre', 'Marca', 'Descripción', 'Unidad', 'Cantidad']
 
         detalle = obj.RequerimientoMaterialProveedorDetalle_requerimiento_material
         materiales = detalle.all()
