@@ -31,7 +31,7 @@ from .models import (
 )
 
 
-class ListaRequerimientoMaterialListView(PermissionRequiredMixin,ListView):
+class ListaRequerimientoMaterialListView(PermissionRequiredMixin, ListView):
     permission_required = ('requerimiento_de_materiales.view_listarequerimientomaterial')
 
     model = ListaRequerimientoMaterial
@@ -125,7 +125,9 @@ class ListaRequerimientoMaterialUpdateView(PermissionRequiredMixin, FormView):
     permission_required = ('requerimiento_de_materiales.change_listarequerimientomaterialdetalle')
     template_name = "requerimiento_material/lista_requerimiento_material/detalle.html"
     form_class = ListaRequerimientoMaterialForm
-    success_url = reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
+
+    def get_success_url(self):
+        return reverse_lazy('requerimiento_material_app:lista_requerimiento_material_actualizar', kwargs={'pk':self.kwargs['pk']})
 
     def form_valid(self, form):
         obj = ListaRequerimientoMaterial.objects.get(id=self.kwargs['pk'])

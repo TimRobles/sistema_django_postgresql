@@ -8,14 +8,17 @@ from applications.recepcion_compra.models import RecepcionCompra
 
 # Create your views here.
 
+class ComprobanteCompraPIListView(PermissionRequiredMixin, ListView):
+    permission_required = ('comprobante_compra.view_comprobantecomprapi')
 
-class ComprobanteCompraPIListView(ListView):
     model = ComprobanteCompraPI
     template_name = "comprobante_compra/comprobante_compra_pi/inicio.html"
     context_object_name = 'contexto_comprobante_compra_pi'
 
 
-class ComprobanteCompraPIDetailView(DetailView):
+class ComprobanteCompraPIDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('comprobante_compra.view_comprobantecomprapi')
+
     model = ComprobanteCompraPI
     template_name = "comprobante_compra/comprobante_compra_pi/detalle.html"
     context_object_name = 'contexto_comprobante_compra_pi'
@@ -54,7 +57,8 @@ def ComprobanteCompraPIDetailTabla(request, slug):
         return JsonResponse(data)
 
 
-class ComprobanteCompraPIUpdateView(BSModalUpdateView):
+class ComprobanteCompraPIUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_compra.change_comprobantecomprapi')
     model = ComprobanteCompraPI
     template_name = "includes/formulario generico.html"
     form_class = ComprobanteCompraPIForm
@@ -71,7 +75,8 @@ class ComprobanteCompraPIUpdateView(BSModalUpdateView):
         return context
 
 
-class ComprobanteCompraPIAnularView(BSModalDeleteView):
+class ComprobanteCompraPIAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_compra.change_comprobantecomprapi')
     model = ComprobanteCompraPI
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('comprobante_compra_app:comprobante_compra_pi_lista')
@@ -132,7 +137,8 @@ class ComprobanteCompraPIAnularView(BSModalDeleteView):
 
         return context
 
-class ArchivoComprobanteCompraPICreateView(BSModalCreateView):
+class ArchivoComprobanteCompraPICreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('comprobante_compra.add_archivocomprobantecomprapi')
     model = ArchivoComprobanteCompraPI
     template_name = "includes/formulario generico.html"
     form_class = ArchivoComprobanteCompraPIForm
@@ -150,7 +156,8 @@ class ArchivoComprobanteCompraPICreateView(BSModalCreateView):
         return context
     
 
-class ArchivoComprobanteCompraPIDeleteView(BSModalDeleteView):
+class ArchivoComprobanteCompraPIDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_compra.delete_archivocomprobantecomprapi')
     model = ArchivoComprobanteCompraPI
     template_name = "includes/eliminar generico.html"
     
@@ -165,7 +172,8 @@ class ArchivoComprobanteCompraPIDeleteView(BSModalDeleteView):
         return context
 
 
-class RecepcionComprobanteCompraPIView(BSModalFormView):
+class RecepcionComprobanteCompraPIView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('comprobante_compra.add_recepcioncomprobantecomprapi')
     template_name = "includes/formulario generico.html"
     form_class = RecepcionComprobanteCompraPIForm
     
@@ -255,7 +263,8 @@ class RecepcionComprobanteCompraPIView(BSModalFormView):
         return context
 
 
-class ComprobanteCompraCIRegistrarView(BSModalFormView):
+class ComprobanteCompraCIRegistrarView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('comprobante_compra.add_comprobantecompraci')
     template_name = "includes/formulario generico.html"
     form_class = ComprobanteCompraCIForm
     
