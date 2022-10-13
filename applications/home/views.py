@@ -181,7 +181,7 @@ class PruebaPdfView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         titulo = 'Probando PDF'
         vertical = True
-        logo = 'https://www.multiplay.com.pe/img/header/20220530095828.png'
+        logo = ['https://www.multiplay.com.pe/img/header/20220530095828.png']
         pie_pagina = 'Texto para pie de página'
         color = '#eb4034'
 

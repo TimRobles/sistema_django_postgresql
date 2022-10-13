@@ -52,7 +52,7 @@ def dataRequerimientoMaterialProveedor(TablaEncabezado, TablaDatos, fuenteBase, 
         fila.append(parrafoIzquierda(dato[1], fuenteBase))
         fila.append(parrafoIzquierda(dato[2], fuenteBase))
         fila.append(parrafoIzquierda(dato[3], fuenteBase))
-        fila.append(parrafoIzquierda(dato[4], fuenteBase))
+        fila.append(parrafoCentro(dato[4], fuenteBase))
         fila.append(parrafoDerecha(dato[5], fuenteBase))
 
         data.append(fila)  
@@ -68,8 +68,10 @@ def dataRequerimientoMaterialProveedor(TablaEncabezado, TablaDatos, fuenteBase, 
             ]
         )
     t._argW[0]=cmToPx(1)
+    t._argW[1]=cmToPx(2.5)
+    t._argW[2]=cmToPx(2.5)
     t._argW[4]=cmToPx(2.5)
-    # t._argW[5]=cmToPx(2.5)
+    t._argW[5]=cmToPx(2.5)
 
     return t
 

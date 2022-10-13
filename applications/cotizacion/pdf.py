@@ -156,7 +156,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
 
     return t_items, t_totales
 
-def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, alinear, fuenteBase, moneda, observaciones):
+def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, fuenteBase, moneda, observaciones):
     data_cabecera = dataCabeceraCotizacionVenta(Cabecera, fuenteBase)
     # data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
     data_items, data_totales = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
@@ -199,7 +199,7 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEn
             )
         elementos.append(vacio())
 
-    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina, alinear)
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
     return buf
 

@@ -36,10 +36,10 @@ class Sociedad(models.Model):
         if self.ubigeo:
             self.distrito = datos_globales.models.Distrito.objects.get(codigo = self.ubigeo)
 
-        self.razon_social = self.razon_social.upper()
-        self.nombre_comercial = self.nombre_comercial.upper()
-        self.alias = self.alias.upper()
-        self.direccion_legal = self.direccion_legal.upper()
+        if self.razon_social: self.razon_social = self.razon_social.upper()
+        if self.nombre_comercial: self.nombre_comercial = self.nombre_comercial.upper()
+        if self.alias: self.alias = self.alias.upper()
+        if self.direccion_legal: self.direccion_legal = self.direccion_legal.upper()
         super().save(*args, **kwargs)
 
     def __str__(self):

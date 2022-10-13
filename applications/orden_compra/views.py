@@ -221,7 +221,7 @@ class OrdenCompraPdfView(View):
         color = obj.sociedad.color
         titulo = 'Orden de Compra'
         vertical = False
-        logo = obj.sociedad.logo.url
+        logo = [obj.sociedad.logo.url]
         pie_pagina = obj.sociedad.pie_pagina
 
         sociedad = obj.sociedad

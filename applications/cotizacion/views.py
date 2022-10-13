@@ -1312,9 +1312,9 @@ class CotizacionVentaSociedadPdfView(View):
         color = sociedad.color
         titulo = 'Cotización'
         vertical = False
-        logo = sociedad.logo.url
-        pie_pagina = sociedad.pie_pagina
         alinear = 'right'
+        logo = [[sociedad.logo.url, alinear]]
+        pie_pagina = sociedad.pie_pagina
         fuenteBase = "ComicNeue"
 
         obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
@@ -1396,7 +1396,7 @@ class CotizacionVentaSociedadPdfView(View):
         
         observaciones = obj.CotizacionObservacion_cotizacion_venta.get(sociedad=sociedad).observacion
 
-        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, alinear, fuenteBase, moneda, observaciones)
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, fuenteBase, moneda, observaciones)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo

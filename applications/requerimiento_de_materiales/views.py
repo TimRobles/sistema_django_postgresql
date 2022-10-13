@@ -588,7 +588,7 @@ class RequerimientoMaterialProveedorPdfView(View):
     def get(self, request, *args, **kwargs):
         color = COLOR_DEFAULT
         vertical = True
-        logo = None
+        logo = [Sociedad.objects.get(abreviatura='MP').logo.url, Sociedad.objects.get(abreviatura='MC').logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
 
         obj = RequerimientoMaterialProveedor.objects.get(slug=self.kwargs['slug'])
@@ -620,7 +620,7 @@ class RequerimientoMaterialProveedorPdfView(View):
             fila.append(proveedor_material.brand)
             fila.append(proveedor_material.description)
             fila.append(material.material.unidad_base)
-            fila.append(material.cantidad.quantize(Decimal('0.01')))
+            fila.append(intcomma(material.cantidad.quantize(Decimal('0.01'))))
 
             TablaDatos.append(fila)
 

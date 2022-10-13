@@ -14,6 +14,7 @@ class SociedadForm(BSModalModelForm):
             'razon_social',
             'nombre_comercial',
             'abreviatura',
+            'alias',
             'direccion_legal',
             'ubigeo',
             'estado_sunat',
