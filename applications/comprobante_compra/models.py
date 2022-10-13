@@ -47,8 +47,9 @@ class ComprobanteCompraPI(models.Model):
         verbose_name = 'Comprobante de Compra PI'
         verbose_name_plural = 'Comprobantes de Compra PIs'
 
+    @property
     def no_existe_CI(self):
-        if self.ComprobanteCompraCI_comprobante_compra_PI:
+        if hasattr(self, 'ComprobanteCompraCI_comprobante_compra_PI'):
             return False
         else:
             return True

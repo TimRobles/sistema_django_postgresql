@@ -22,7 +22,7 @@
     {% if contexto_comprobante_compra_pi.estado == 1 %}
         <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_anular' contexto_comprobante_compra_pi.slug %}"
             class="delete btn btn-danger">
-            Anular CI
+            Anular PI
         </button>
     {% endif %}
     {% if contexto_comprobante_compra_pi.estado == 2 and contexto_comprobante_compra_pi.no_existe_CI %}
@@ -40,7 +40,7 @@
     {% if contexto_comprobante_compra_pi.ComprobanteCompraCI_comprobante_compra_PI %}
     <a href="{% url 'comprobante_compra_app:comprobante_compra_ci_detalle' contexto_comprobante_compra_pi.slug %}"
     class="btn btn-primary">
-        Ver CI
+        Ver PI
     </a>
     {% endif %}
     <br>
