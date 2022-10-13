@@ -281,7 +281,7 @@ class ListaRequerimientoMaterialDetalleDeleteView(PermissionRequiredMixin, BSMod
         context = super(ListaRequerimientoMaterialDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Material del requerimiento"
-        context['item'] = self.get_object().item
+        context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
 
@@ -527,7 +527,7 @@ class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, B
         context = super(RequerimientoMaterialProveedorDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Material."
-        context['item'] = self.get_object().item
+        context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
 

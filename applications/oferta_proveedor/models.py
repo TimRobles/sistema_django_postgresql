@@ -82,7 +82,10 @@ class OfertaProveedorDetalle(models.Model):
             ]
 
     def __str__(self):
-        return str(self.proveedor_material)
+        try:
+            return "%s. %s - %s - %s" % (self.item, self.proveedor_material.name, self.proveedor_material.brand, self.proveedor_material.description)
+        except:
+            return "%s. %s" % (self.item, self.proveedor_material.content_type.get_object_for_this_type(id = self.proveedor_material.id_registro))
 
 class ArchivoOfertaProveedor(models.Model):
 

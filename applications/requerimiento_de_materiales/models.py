@@ -44,9 +44,13 @@ class ListaRequerimientoMaterialDetalle(models.Model):
         ordering = [
             'item',
         ]
+    
+    @property
+    def descripcion_venta(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro).descripcion_venta
 
     def __str__(self):
-        return self.content_type.get_object_for_this_type(id=self.id_registro).descripcion_venta
+        return "%s. %s" % (self.item, self.descripcion_venta)
 
 
 class RequerimientoMaterialProveedor(models.Model):
@@ -103,7 +107,7 @@ class RequerimientoMaterialProveedorDetalle(models.Model):
         ]
 
     def __str__(self):
-        return str(self.cantidad)
+        return "%s. %s" % (self.item, self.id_requerimiento_material_detalle.descripcion_venta)
 
 
 def requerimiento_material_proveedor_post_save(*args, **kwargs):
