@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from django.conf import settings
 
@@ -63,7 +64,7 @@ class OfertaProveedorDetalle(models.Model):
     sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=0)
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
-    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
+    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, default=8)
     oferta_proveedor = models.ForeignKey(OfertaProveedor, on_delete=models.CASCADE, related_name='OfertaProveedorDetalle_oferta_proveedor')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
