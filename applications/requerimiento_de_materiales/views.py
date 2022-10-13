@@ -585,6 +585,28 @@ class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
         return context
 
 class RequerimientoMaterialProveedorPdfView(View):
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_descripciones = False
+        context['titulo'] = 'Error de Envío'
+        requerimiento = RequerimientoMaterialProveedor.objects.get(slug=self.kwargs['slug'])
+        
+        for material in requerimiento.RequerimientoMaterialProveedorDetalle_requerimiento_material.all():
+            material.material = material.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id = material.id_requerimiento_material_detalle.id_registro)
+            proveedor_material = ProveedorMaterial.objects.get(
+                content_type = ContentType.objects.get_for_model(material.material),
+                id_registro = material.material.id,
+                proveedor = requerimiento.proveedor,
+                estado_alta_baja = 1,
+            )
+            if proveedor_material.name == "" or proveedor_material.brand == "" or proveedor_material.description == "":
+                error_descripciones = True
+
+        if error_descripciones:
+            context['texto'] = 'Completar las descripciones'
+            return render(request, '403.html', context)
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self, request, *args, **kwargs):
         color = COLOR_DEFAULT
         vertical = True
@@ -646,8 +668,10 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
             return render(request, 'includes/modal sin permiso.html')
         context = {}
         error_correo_proveedor = False
+        error_descripciones = False
         context['titulo'] = 'Error de Envío'
-        proveedor = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['slug']).proveedor
+        requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
+        proveedor = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id']).proveedor
         CORREOS_PROVEEDOR = []
         for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
             for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
@@ -655,15 +679,28 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
         if CORREOS_PROVEEDOR == []:
             error_correo_proveedor = True
 
+        for material in requerimiento.RequerimientoMaterialProveedorDetalle_requerimiento_material.all():
+            material.material = material.id_requerimiento_material_detalle.content_type.get_object_for_this_type(id = material.id_requerimiento_material_detalle.id_registro)
+            proveedor_material = ProveedorMaterial.objects.get(
+                content_type = ContentType.objects.get_for_model(material.material),
+                id_registro = material.material.id,
+                proveedor = requerimiento.proveedor,
+                estado_alta_baja = 1,
+            )
+            if proveedor_material.name == "" or proveedor_material.brand == "" or proveedor_material.description == "":
+                error_descripciones = True
+
         if error_correo_proveedor:
             context['texto'] = 'Registrar correos del proveedor'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_descripciones:
+            context['texto'] = 'Completar las descripciones'
             return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if self.request.session['primero']:
-            # requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
-            requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['slug'])
+            requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
             correos_proveedor = form.cleaned_data['correos_proveedor']
             correos_internos = form.cleaned_data['correos_internos']
             internacional_nacional = form.cleaned_data['internacional_nacional']
@@ -720,7 +757,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
 
     def get_form_kwargs(self):
         kwargs = super(RequerimientoMaterialProveedorEnviarCorreoView, self).get_form_kwargs()
-        kwargs['proveedor'] = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['slug']).proveedor
+        kwargs['proveedor'] = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id']).proveedor
         return kwargs
 
     def get_context_data(self, **kwargs):

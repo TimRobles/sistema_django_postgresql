@@ -5,7 +5,15 @@
 {% endblock titulo %}
 
 {% block contenido %}
+    {% if titulo %}
+    <h4>{{ titulo }}</h4>
+    {% else %}
     <h4>No tienes permiso para ver esta página</h4>
+    {% endif %}
+
+    {% if texto %}
+    <p>{{ texto }}</p>
+    {% endif %}
     <button onclick="history.back()" class="btn btn-danger">Regresar</button>
     
 {% endblock contenido %}
