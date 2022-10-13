@@ -704,12 +704,10 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
             correos_proveedor = form.cleaned_data['correos_proveedor']
             correos_internos = form.cleaned_data['correos_internos']
             internacional_nacional = form.cleaned_data['internacional_nacional']
-            moneda = form.cleaned_data['moneda']
 
             oferta = OfertaProveedor.objects.create(
                 internacional_nacional=internacional_nacional,
                 requerimiento_material=requerimiento,
-                moneda=moneda,
                 slug = slug_aleatorio(OfertaProveedor),
             )
 
@@ -722,17 +720,12 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                     proveedor = requerimiento.proveedor,
                     estado_alta_baja = 1,
                 )
-                if internacional_nacional=='1':
-                    igv = 8
-                else:
-                    igv = 1
-
+                
                 oferta_detalle = OfertaProveedorDetalle.objects.create(
                     item=detalle.item,
                     proveedor_material=proveedor_material,
                     cantidad=detalle.cantidad,
                     oferta_proveedor=oferta,
-                    tipo_igv = igv,
                     )
             self.request.session['primero'] = False
 

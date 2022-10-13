@@ -19,6 +19,18 @@ class OfertaProveedorForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class OfertaProveedorMonedaForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedor
+        fields=(
+            'moneda',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMonedaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
     name = forms.CharField(max_length=50)
     brand = forms.CharField(max_length=50)

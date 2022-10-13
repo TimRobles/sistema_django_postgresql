@@ -11,6 +11,7 @@ urlpatterns = [
     path('oferta-proveedor/rechazar/<pk>/', views.OfertaProveedorRechazarView.as_view(), name='oferta_proveedor_rechazar'),
     path('oferta-proveedor/detalle/<slug>/', views.OfertaProveedorDetailView.as_view(), name='oferta_proveedor_detalle'),
     path('oferta-proveedor/detalle-tabla/<slug>/', views.OfertaProveedorDetailTabla, name='oferta_proveedor_detalle_tabla'),
+    path('oferta-proveedor/actualizar-moneda/<slug>/', views.OfertaProveedorMonedaView.as_view(), name='oferta_proveedor_actualizar_moneda'),
     path('oferta-proveedor/actualizar-material/<pk>/', views.OfertaProveedorDetalleUpdateView.as_view(), name='oferta_proveedor_actualizar_material'),
     path('oferta-proveedor/proveedor-material/<int:detalle_id>/', views.OfertaProveedorDetalleProveedorMaterialUpdateView.as_view(), name='oferta_proveedor_proveedor_material'),
     path('oferta-proveedor/eliminar-material/<pk>/', views.OfertaProveedorDetalleDeleteView.as_view(), name='oferta_proveedor_eliminar_material'),

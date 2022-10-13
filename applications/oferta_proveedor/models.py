@@ -21,7 +21,7 @@ class OfertaProveedor(models.Model):
     incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     numero_oferta = models.CharField('Número de Oferta', max_length=50, blank=True, null=True)
     requerimiento_material = models.OneToOneField(RequerimientoMaterialProveedor, on_delete=models.CASCADE, related_name='OfertaProveedor_requerimiento_material')
-    moneda = models.ForeignKey(Moneda, null=True,  on_delete=models.PROTECT)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
     total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=0)
     total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=0)

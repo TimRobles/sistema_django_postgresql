@@ -23,29 +23,34 @@
         {% endif %}
         <a href="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
-    <h3>
-    {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 %}
-        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_nuevo_requerimiento' contexto_oferta_proveedor.slug %}"
-            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_inicio' %}"
-            class="delete badge bg-primary">
-            Generar Nuevo Requerimiento
-        </button>
+    
+    {% if contexto_oferta_proveedor.estado == 1 %}
+    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_moneda' contexto_oferta_proveedor.slug %}"
+        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+        class="create btn btn-primary">
+        Actualizar Moneda
+    </button>
     {% endif %}
 
     {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 and not contexto_oferta_proveedor.OrdenCompra_oferta_proveedor %}
         <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_generar_orden_compra' contexto_oferta_proveedor.slug %}"
-            class="delete badge bg-primary">
+            class="delete btn btn-primary">
             Generar Orden de Compra
         </button>
     {% endif %}
 
-    <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle' contexto_oferta_proveedor.requerimiento_material.id %}"><span class="badge bg-primary">Requerimiento</span></a>
+    <a href="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle' contexto_oferta_proveedor.requerimiento_material.id %}"
+        class="btn btn-primary">
+        Requerimiento
+    </a>
     
     {% if contexto_oferta_proveedor.OrdenCompra_oferta_proveedor %}
-        <a href="{% url 'orden_compra_app:orden_compra_detalle' contexto_oferta_proveedor.OrdenCompra_oferta_proveedor.slug %}"><span class="badge bg-primary">Orden de Compra</span></a>
+        <a href="{% url 'orden_compra_app:orden_compra_detalle' contexto_oferta_proveedor.OrdenCompra_oferta_proveedor.slug %}"
+            class="btn btn-primary">
+            Orden de Compra
+        </a>
     {% endif %}
         
-    </h3>
     <br>
     <div class="table-responsive">
         <table class="table">
