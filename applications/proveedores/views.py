@@ -40,7 +40,7 @@ def ProveedorTabla(request):
 class ProveedorCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('proveedores.add_proveedor')
     model = Proveedor
-    template_name = "includes/formulario generico.html"
+    template_name = "proveedores/proveedor/form.html"
     form_class = ProveedorForm
     success_url = reverse_lazy('proveedores_app:proveedor_inicio')
 
