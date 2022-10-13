@@ -82,7 +82,7 @@ class OfertaProveedorDetalle(models.Model):
             ]
 
     def __str__(self):
-        return str(self.oferta_proveedor)
+        return str(self.proveedor_material)
 
 class ArchivoOfertaProveedor(models.Model):
 

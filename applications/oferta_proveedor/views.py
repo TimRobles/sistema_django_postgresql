@@ -233,8 +233,8 @@ class OfertaProveedorDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteVie
     def get_context_data(self, **kwargs):
         context = super(OfertaProveedorDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
-        context['titulo'] = "Material."
-        context['item'] = self.get_object().item
+        context['titulo'] = "Material"
+        context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
 
