@@ -37,6 +37,16 @@ class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        context = {}
+        error_moneda = False
+        context['titulo'] = 'Error de guardar'
+        if not self.get_object().moneda:
+            error_moneda = True
+        
+        if error_moneda:
+            context['texto'] = 'Actualizar la moneda'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
