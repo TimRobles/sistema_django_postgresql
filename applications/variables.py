@@ -295,7 +295,7 @@ MENSAJE_CONCLUIR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue conclu
 MENSAJE_ELIMINAR_DEUDA = 'Operación exitosa: Deuda eliminada.'
 MENSAJE_ERROR_ELIMINAR_DEUDA = 'No se pudo eliminar la deuda, contactar con el administrador.'
 
-COLOR_DEFAULT = '#8B32A8'
+COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
 
 EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'

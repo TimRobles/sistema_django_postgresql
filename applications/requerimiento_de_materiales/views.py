@@ -587,16 +587,18 @@ class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
 class RequerimientoMaterialProveedorPdfView(View):
     def get(self, request, *args, **kwargs):
         color = COLOR_DEFAULT
-        titulo = 'Requerimiento'
         vertical = True
         logo = None
         pie_pagina = PIE_DE_PAGINA_DEFAULT
 
         obj = RequerimientoMaterialProveedor.objects.get(slug=self.kwargs['slug'])
+        titulo = 'Requerimiento - %s - %s' % (obj.titulo, obj.proveedor.nombre)
 
-        fecha=datetime.strftime(obj.fecha,'%d - %m - %Y')
-
-        Texto = obj.titulo + '\n' +str(obj.proveedor) + '\n' + str(fecha) + '\n' + obj.comentario
+        fecha=datetime.strftime(obj.fecha,'%d/%m/%Y')
+        titulo_requerimiento = obj.titulo
+        proveedor = obj.proveedor
+        interlocutor = obj.interlocutor_proveedor
+        comentario = obj.comentario
 
         TablaEncabezado = ['Item','Name', 'Brand', 'Description', 'Unidad', 'Cantidad']
 
@@ -622,7 +624,7 @@ class RequerimientoMaterialProveedorPdfView(View):
 
             TablaDatos.append(fila)
 
-        buf = generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+        buf = generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, titulo_requerimiento, proveedor, interlocutor, fecha, comentario, TablaEncabezado, TablaDatos, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo

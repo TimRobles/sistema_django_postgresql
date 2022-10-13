@@ -1,5 +1,43 @@
 from applications.pdf import *
 
+def dataProveedor(proveedor, interlocutor, titulo_requerimiento, fecha, comentario, fuenteBase):
+    data = []
+    fila = []
+    fila.append(parrafoIzquierda('Fecha:', fuenteBase, tipo='Bold'))
+    fila.append(parrafoIzquierda('%s' % (fecha), fuenteBase))
+    data.append(fila)
+    fila = []
+    fila.append(parrafoIzquierda('Sres:', fuenteBase, tipo='Bold'))
+    fila.append(parrafoIzquierda('%s' % (proveedor.nombre), fuenteBase))
+    data.append(fila)
+    fila = []
+    fila.append(parrafoIzquierda('Interlocutor:', fuenteBase, tipo='Bold'))
+    fila.append(parrafoIzquierda('%s' % (interlocutor.nombres), fuenteBase))
+    data.append(fila)
+    fila = []
+    fila.append(parrafoIzquierda('Asunto:', fuenteBase, tipo='Bold'))
+    fila.append(parrafoIzquierda('%s' % (titulo_requerimiento), fuenteBase))
+    data.append(fila)
+    if comentario:
+        fila = []
+        fila.append(parrafoIzquierda('Comentario:', fuenteBase, tipo='Bold'))
+        fila.append(parrafoIzquierda('%s' % (comentario), fuenteBase))
+        data.append(fila)
+
+    
+    t=Table(
+        data,
+        style=[
+            # ('GRID',(0,0),(-1,-1),1,colors.black),
+            ('VALIGN',(0,0),(-1,-1),'TOP'),
+            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+            ('LEFTPADDING', (0,0),(0,-1), 0),
+            ]
+        )
+    t._argW[0]=cmToPx(3)
+
+    return t
+
 def dataRequerimientoMaterialProveedor(TablaEncabezado, TablaDatos, fuenteBase, color):
     encabezado = []
     for encab in TablaEncabezado:
@@ -35,15 +73,17 @@ def dataRequerimientoMaterialProveedor(TablaEncabezado, TablaDatos, fuenteBase, 
 
     return t
 
-def generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color):
+def generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, titulo_requerimiento, proveedor, interlocutor, fecha, comentario, TablaEncabezado, TablaDatos, color):
     fuenteBase = "ComicNeue"
 
+    data_proveedor_tabla = dataProveedor(proveedor, interlocutor, titulo_requerimiento, fecha, comentario, fuenteBase)
     data_tabla = dataRequerimientoMaterialProveedor(TablaEncabezado, TablaDatos, fuenteBase, color)
     
     elementos = []
-    elementos.append(parrafoIzquierda(Texto, fuenteBase, 10))
+    elementos.append(parrafoCentro('SOLICITUD DE COTIZACIÓN', fuenteBase, 15, 'Bold'))
     elementos.append(vacio())
-    
+    elementos.append(data_proveedor_tabla)
+    elementos.append(vacio())
     elementos.append(data_tabla)
 
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
