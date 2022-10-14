@@ -12,7 +12,7 @@
                 <th>Description</th>
                 <th>Unidad</th>
                 <th class="text-end">Cantidad</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -25,7 +25,7 @@
                     <td>{{ material.proveedor_material.brand }}</td>
                     <td>{{ material.proveedor_material.description }}</td>
                     <td>{{ material.material.unidad_base }}</td>
-                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-center text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td>
                         <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_actualizar_material' material.id %}"
                             data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle_tabla' requerimiento.id  %}"

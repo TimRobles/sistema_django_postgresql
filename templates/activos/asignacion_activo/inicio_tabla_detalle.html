@@ -116,7 +116,7 @@
                 <td> {{ asignacion_archivo.archivo }} </td>
                 <td> {{ asignacion_archivo.comentario }} </td>
                 <td> {{ asignacion_archivo.created_at|date:'d/m/Y' }} </td>
-                <td class="text-center"> 
+                <td class="text-center text-nowrap"> 
                     <a href="{{ MEDIA_URL }}{{ asignacion_archivo.archivo }} " target="_blank"
                         class="btn btn-info btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">

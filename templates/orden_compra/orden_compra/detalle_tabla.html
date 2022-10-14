@@ -1,3 +1,4 @@
+{% load funciones_propias %}
 {% load humanize %}
 
 <div class="table-responsive">
@@ -18,7 +19,7 @@
                 <th>Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
-                <th>Acciones</th>
+                <th class="text-center text-nowrap">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -30,16 +31,14 @@
                 <td> {{ detalle.proveedor_material.description  }}</td>
                 <td> {{ detalle.material.unidad_base }}</td>
                 <td> {{ detalle.get_tipo_igv_display }} </td>
-                <td class="text-end">{{ detalle.cantidad|intcomma }}</td>
-                <td class="text-end">{{ detalle.precio_unitario_sin_igv|intcomma }}</td>
-                <td class="text-end">{{ detalle.precio_unitario_con_igv|intcomma }}</td>
-                <td class="text-end">{{ detalle.precio_final_con_igv|intcomma }}</td>
-                <td class="text-end">{{ detalle.descuento|intcomma }}</td>
-                <td class="text-end">{{ detalle.sub_total|intcomma }}</td>
-                <td class="text-end">{{ detalle.igv|intcomma }}</td>
-                <td class="text-end">{{ detalle.total|intcomma }}</td>
-
-
+                <td class="text-end text-nowrap">{{ detalle.cantidad|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.precio_unitario_sin_igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.precio_unitario_con_igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.precio_final_con_igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.descuento|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.sub_total|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.total|redondear|intcomma }}</td>
                 <td class="text-center text-nowrap">
                     {% if contexto_orden_compra.estado == 1 %}
                     <button data-form-url="{% url 'orden_compra_app:orden_compra_actualizar_material' detalle.id %}"
@@ -59,47 +58,47 @@
         <tfoot>
             <tr>
                 <td colspan="11" class="text-end">Descuento Global:</td>
-                <td class="text-end">{{ totales.descuento_global|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.descuento_global|intcomma }}</td>
             </tr>            
             <tr>
                 <td colspan="11" class="text-end">Descuento Total:</td>
-                <td class="text-end">{{ totales.total_descuento|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_descuento|intcomma }}</td>
             </tr>           
              <tr>
                 <td colspan="11" class="text-end">Anticipo:</td>
-                <td class="text-end">{{ totales.total_anticipo|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">Exonerada:</td>
-                <td class="text-end">{{ totales.total_exonerada|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_exonerada|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">Inafecta:</td>
-                <td class="text-end">{{ totales.total_inafecta|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">Gravada:</td>
-                <td class="text-end">{{ totales.total_gravada|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">IGV:</td>
-                <td class="text-end">{{ totales.total_igv|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">Gratuita:</td>
-                <td class="text-end">{{ totales.total_gratuita|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">Otros Cargos:</td>
-                <td class="text-end">{{ totales.total_otros_cargos|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">ICBPER:</td>
-                <td class="text-end">{{ totales.total_icbper|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
             </tr>
             <tr>
                 <td colspan="11" class="text-end">Total:</td>
-                <td class="text-end">{{ totales.total|intcomma }}</td>
+                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total|intcomma }}</td>
             </tr>
         </tfoot>
 
