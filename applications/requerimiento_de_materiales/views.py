@@ -610,12 +610,12 @@ class RequerimientoMaterialProveedorPdfView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        color = COLOR_DEFAULT
-        vertical = True
-        logo = [Sociedad.objects.get(abreviatura='MP').logo.url, Sociedad.objects.get(abreviatura='MC').logo.url]
-        pie_pagina = PIE_DE_PAGINA_DEFAULT
-
         obj = RequerimientoMaterialProveedor.objects.get(slug=self.kwargs['slug'])
+        color = obj.sociedad.color
+        vertical = True
+        logo = [obj.sociedad.logo.url]
+        pie_pagina = obj.sociedad.pie_pagina
+
         titulo = 'Requerimiento - %s - %s' % (obj.titulo, obj.proveedor.nombre)
 
         fecha=datetime.strftime(obj.fecha,'%d/%m/%Y')
@@ -623,6 +623,7 @@ class RequerimientoMaterialProveedorPdfView(View):
         proveedor = obj.proveedor
         interlocutor = obj.interlocutor_proveedor
         comentario = obj.comentario
+        sociedad = obj.sociedad
 
         TablaEncabezado = ['Item','Nombre', 'Marca', 'Descripción', 'Unidad', 'Cantidad']
 
@@ -648,7 +649,7 @@ class RequerimientoMaterialProveedorPdfView(View):
 
             TablaDatos.append(fila)
 
-        buf = generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, titulo_requerimiento, proveedor, interlocutor, fecha, comentario, TablaEncabezado, TablaDatos, color)
+        buf = generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, titulo_requerimiento, proveedor, interlocutor, fecha, comentario, TablaEncabezado, TablaDatos, color,sociedad)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo

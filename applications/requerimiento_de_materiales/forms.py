@@ -89,6 +89,7 @@ class RequerimientoMaterialProveedorForm(BSModalModelForm):
             'proveedor',
             'interlocutor_proveedor',
             'comentario',
+            'sociedad',
             )
 
     def __init__(self, *args, **kwargs):

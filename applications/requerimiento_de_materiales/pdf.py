@@ -1,14 +1,18 @@
 from applications.pdf import *
 
-def dataProveedor(proveedor, interlocutor, titulo_requerimiento, fecha, comentario, fuenteBase):
+def dataProveedor(proveedor, interlocutor, titulo_requerimiento, fecha, comentario, fuenteBase, sociedad):
     data = []
     fila = []
     fila.append(parrafoIzquierda('Fecha:', fuenteBase, tipo='Bold'))
     fila.append(parrafoIzquierda('%s' % (fecha), fuenteBase))
+    fila.append(parrafoIzquierda('Razón Social:', fuenteBase, tipo='Bold'))
+    fila.append(parrafoIzquierda('%s' % (sociedad.razon_social), fuenteBase))
     data.append(fila)
     fila = []
     fila.append(parrafoIzquierda('Sres:', fuenteBase, tipo='Bold'))
     fila.append(parrafoIzquierda('%s' % (proveedor.nombre), fuenteBase))
+    fila.append(parrafoIzquierda('RUC :', fuenteBase, tipo='Bold'))
+    fila.append(parrafoIzquierda('%s' % (sociedad.ruc), fuenteBase))
     data.append(fila)
     fila = []
     fila.append(parrafoIzquierda('Interlocutor:', fuenteBase, tipo='Bold'))
@@ -75,10 +79,11 @@ def dataRequerimientoMaterialProveedor(TablaEncabezado, TablaDatos, fuenteBase, 
 
     return t
 
-def generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, titulo_requerimiento, proveedor, interlocutor, fecha, comentario, TablaEncabezado, TablaDatos, color):
+
+def generarRequerimientoMaterialProveedor(titulo, vertical, logo, pie_pagina, titulo_requerimiento, proveedor, interlocutor, fecha, comentario, TablaEncabezado, TablaDatos, color, sociedad):
     fuenteBase = "ComicNeue"
 
-    data_proveedor_tabla = dataProveedor(proveedor, interlocutor, titulo_requerimiento, fecha, comentario, fuenteBase)
+    data_proveedor_tabla = dataProveedor(proveedor, interlocutor, titulo_requerimiento, fecha, comentario, fuenteBase,sociedad)
     data_tabla = dataRequerimientoMaterialProveedor(TablaEncabezado, TablaDatos, fuenteBase, color)
     
     elementos = []

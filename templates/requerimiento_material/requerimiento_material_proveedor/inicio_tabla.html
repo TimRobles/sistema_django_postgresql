@@ -1,6 +1,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Sociedad</th>
             <th>Fecha</th>
             <th>Titulo</th>
             <th>Proveedor</th>
@@ -14,6 +15,7 @@
     <tbody>
         {% for requerimiento_material_proveedor in contexto_requerimiento_material_proveedor %}
         <tr> 
+            <td>{{requerimiento_material_proveedor.sociedad.abreviatura}}</td>
             <td>{{ requerimiento_material_proveedor.fecha|date:'d/m/Y' }}</td>
             <td>
                 {% if requerimiento_material_proveedor.titulo != None %}
