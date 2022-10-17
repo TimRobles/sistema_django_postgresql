@@ -36,6 +36,7 @@ urlpatterns = [
     path('comprobante-despacho/', include('applications.comprobante_despacho.urls')),
     path('sorteo-webinar/', include('applications.sorteo_webinar.urls')),
     path('envio-clientes/', include('applications.envio_clientes.urls')),
+    path('calidad/', include('applications.calidad.urls')),
 ]
 
 urlpatterns += [url(r'^media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT})]

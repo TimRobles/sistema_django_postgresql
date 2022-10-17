@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Fallas por Sub Familia
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'calidad/falla_material/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+

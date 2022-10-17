@@ -3,6 +3,7 @@ from django.db import models
 from applications.importaciones import registro_guardar_user
 from applications.proveedores.models import Proveedor, InterlocutorProveedor,ProveedorInterlocutor
 from django.contrib.contenttypes.models import ContentType
+from applications.sociedad.models import Sociedad
 
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
@@ -71,6 +72,7 @@ class RequerimientoMaterialProveedor(models.Model):
     version = models.IntegerField(default=0)
     slug = models.SlugField(blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_REQUERIMIENTO, default=1)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RequerimientoMaterialProveedor_created_by', editable=False)

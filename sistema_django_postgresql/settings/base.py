@@ -65,6 +65,7 @@ LOCAL_APPS = (
     'applications.envio_clientes',
     'applications.comprobante_despacho',
     'applications.sorteo_webinar',
+    'applications.calidad',
 
 )
 

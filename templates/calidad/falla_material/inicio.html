@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Fallas por Sub Familia
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Fallas por Sub Familia</h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'calidad/falla_material/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}
