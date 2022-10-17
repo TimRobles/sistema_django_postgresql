@@ -18,6 +18,13 @@
                 Concluir Nota de Salida
             </button> 
         {% endif %}
+        {% if contexto_nota_salida_detalle.estado == 2 %}
+            <button data-form-url="{% url 'logistica_app:nota_salida_generar_despacho' contexto_nota_salida_detalle.id %}"
+                data-table-url="{% url 'logistica_app:nota_salida_inicio' %}"
+                class="delete badge bg-primary">
+                Generar Despacho
+            </button>
+        {% endif %}
         <a href="{% url 'logistica_app:nota_salida_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
     <div id="tabla">

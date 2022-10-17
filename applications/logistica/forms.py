@@ -1,5 +1,5 @@
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.logistica.models import DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from django import forms
 
 from applications.material.models import Material
@@ -129,6 +129,16 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm): #.....XxRonnyxX
             'cantidad_salida', #.....XxRonnyxX
             ) #.....XxRonnyxX
  #.....XxRonnyxX    
+    def clean(self): #.....XxRonnyxX
+        cleaned_data = super().clean() #.....XxRonnyxX
+        cantidad_salida = cleaned_data.get('cantidad_salida') #.....XxRonnyxX
+        cantidad_prestamo = cleaned_data.get('cantidad_prestamo') #.....XxRonnyxX
+        suma = self.suma #.....XxRonnyxX
+        valor_max = cantidad_prestamo - suma #.....XxRonnyxX
+ #.....XxRonnyxX
+        if cantidad_salida > valor_max: #.....XxRonnyxX
+            self.add_error('cantidad_salida', 'Se ha sobrepasado la cantidad de prestamo') #.....XxRonnyxX
+
     def clean_sede(self): #.....XxRonnyxX
         sede = self.cleaned_data.get('sede') #.....XxRonnyxX
         almacen = self.fields['almacen'] #.....XxRonnyxX
@@ -136,9 +146,10 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm): #.....XxRonnyxX
         return sede #.....XxRonnyxX
  #.....XxRonnyxX   
     def __init__(self, *args, **kwargs): #.....XxRonnyxX
-        solicitud = kwargs.pop('solicitud') #.....XxRonnyxX
+        self.solicitud = kwargs.pop('solicitud') #.....XxRonnyxX
+        self.suma = kwargs.pop('suma') #.....XxRonnyxX
         super(NotaSalidaDetalleUpdateForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
-        self.fields['cantidad_prestamo'].initial = solicitud.cantidad_prestamo #.....XxRonnyxX
+        self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_prestamo #.....XxRonnyxX
         self.fields['almacen'].queryset = Almacen.objects.none() #.....XxRonnyxX
         self.fields['sede'].required = True #.....XxRonnyxX
         self.fields['almacen'].required = True #.....XxRonnyxX
@@ -164,5 +175,39 @@ class NotaSalidaAnularForm(BSModalModelForm): #.....XxRonnyxX
 
     def __init__(self, *args, **kwargs): #.....XxRonnyxX
         super(NotaSalidaAnularForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
+        for visible in self.visible_fields(): #.....XxRonnyxX
+            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
+
+class DespachoForm(BSModalModelForm): #.....XxRonnyxX
+    class Meta: #.....XxRonnyxX
+        model = Despacho #.....XxRonnyxX
+        fields = ( #.....XxRonnyxX
+            'fecha_despacho', #.....XxRonnyxX
+            'observacion', #.....XxRonnyxX
+            ) #.....XxRonnyxX
+ #.....XxRonnyxX
+        widgets = { #.....XxRonnyxX
+            'fecha_despacho' : forms.DateInput( #.....XxRonnyxX
+                attrs ={ #.....XxRonnyxX
+                    'type':'date', #.....XxRonnyxX
+                    }, #.....XxRonnyxX
+                format = '%Y-%m-%d', #.....XxRonnyxX
+                ), #.....XxRonnyxX
+            } #.....XxRonnyxX
+ #.....XxRonnyxX
+    def __init__(self, *args, **kwargs): #.....XxRonnyxX
+        super(DespachoForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
+        for visible in self.visible_fields(): #.....XxRonnyxX
+            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
+ #.....XxRonnyxX      
+class DespachoAnularForm(BSModalModelForm): #.....XxRonnyxX
+    class Meta: #.....XxRonnyxX
+        model = Despacho #.....XxRonnyxX
+        fields=( #.....XxRonnyxX
+            'motivo_anulacion', #.....XxRonnyxX
+            ) #.....XxRonnyxX
+ #.....XxRonnyxX
+    def __init__(self, *args, **kwargs): #.....XxRonnyxX
+        super(DespachoAnularForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
         for visible in self.visible_fields(): #.....XxRonnyxX
             visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX

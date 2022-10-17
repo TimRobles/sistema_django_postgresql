@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.sociedad.models import Sociedad
 from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaDetalle
-from applications.variables import ESTADOS, ESTADOS_DESPACHO
+from applications.variables import ESTADOS
 from applications.almacenes.models import Almacen
 from applications.sede.models import Sede
 
@@ -140,6 +140,13 @@ class NotaSalidaDetalle(models.Model):
         return str(self.item)
 
 class Despacho(models.Model):
+    ESTADOS_DESPACHO = (
+    (1, 'EN PROCESO'),
+    (2, 'DESPACHADO'),
+    (3, 'ANULADO'),
+    (4, 'CONCLUIDO SIN GUIA'),
+    (5, 'CONCLUIDO CON GUIA'),
+)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
     nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE,blank=True, null=True)
     numero_despacho = models.CharField('Número Despacho', max_length=50, blank=True, null=True)
@@ -180,10 +187,14 @@ class DespachoDetalle(models.Model):
         verbose_name = 'Despacho Detalle'
         verbose_name_plural = 'Despachos Detalle'
         ordering = ['item',]
-
+    
     @property
     def producto(self):
-        return self.content_type.get_object_for_this_type(id = self.id_registro)
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def unidad(self):
+        return self.producto.unidad_base
 
     def __str__(self):
-        return str(self.item)
+        return str(self.producto)

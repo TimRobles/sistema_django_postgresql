@@ -290,7 +290,9 @@ MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solici
 MENSAJE_ANULAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue anulada.'
 MENSAJE_GENERAR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue generada.'
 MENSAJE_CONCLUIR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue concluida.'
-
+MENSAJE_GENERAR_DESPACHO = 'Operación exitosa: El despacho fue generada.'
+MENSAJE_CONCLUIR_DESPACHO = 'Operación exitosa: El despacho fue concluido.'
+MENSAJE_FINALIZAR_SIN_GUIA_DESPACHO = 'Operación exitosa: El despacho fue finalizado sin guia.'
 
 MENSAJE_ELIMINAR_DEUDA = 'Operación exitosa: Deuda eliminada.'
 MENSAJE_ERROR_ELIMINAR_DEUDA = 'No se pudo eliminar la deuda, contactar con el administrador.'
@@ -321,10 +323,3 @@ DICCIONARIO_TOTALES={
     'total':'Total',
 }
 
-ESTADOS_DESPACHO = (
-    (1, 'EN PROCESO'),
-    (2, 'DESPACHADO'),
-    (3, 'ANULADO'),
-    (4, 'CONCLUIDO SIN GUIA'),
-    (5, 'CONCLUIDO CON GUIA'),
-)
