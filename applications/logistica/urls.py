@@ -14,9 +14,22 @@ urlNotaSalida = [
     path('nota-salida-detalle/registrar/<int:nota_salida_id>/', views.NotaSalidaDetalleCreateView.as_view(), name='nota_salida_detalle_registrar'), #.....XxRonnyxX
     path('nota-salida-detalle/actualizar/<pk>/', views.NotaSalidaDetalleUpdateView.as_view(), name='nota_salida_detalle_actualizar'), #.....XxRonnyxX
     path('nota-salida-detalle/eliminar/<pk>/', views.NotaSalidaDetalleDeleteView.as_view(), name='nota_salida_detalle_eliminar'), #.....XxRonnyxX
+    path('nota-salida-detalle/generar-despacho/<pk>/', views.NotaSalidaGenerarDespachoView.as_view(), name='nota_salida_generar_despacho'),#.....XxRonnyxX
     path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'), #.....XxRonnyxX
 ]
 
+urlDespacho = [ #.....XxRonnyxX
+    path('despacho/',views.DespachoListView.as_view(),name='despacho_inicio'), #.....XxRonnyxX
+    path('despacho-tabla/',views.DespachoTabla,name='despacho_tabla'), #.....XxRonnyxX
+    path('despacho/actualizar/<pk>', views.DespachoUpdateView.as_view(), name='despacho_actualizar'), #.....XxRonnyxX
+    path('despacho/concluir/<pk>/', views.DespachoConcluirView.as_view(), name='despacho_concluir'), #.....XxRonnyxX
+    path('despacho/finalizar-sin-guia/<pk>/', views.DespachoFinalizarSinGuiaView.as_view(), name='despacho_finalizar_sin_guia'), #.....XxRonnyxX
+    path('despacho/anular/<pk>/', views.DespachoAnularView.as_view(), name='despacho_anular'), #.....XxRonnyxX
+    path('despacho/detalle/<pk>/',views.DespachoDetailView.as_view(),name='despacho_detalle'), #.....XxRonnyxX
+    path('despacho/detalle-tabla/<pk>/',views.DespachoDetailTabla,name='despacho_detalle_tabla'), #.....XxRonnyxX
+    path('despacho-detalle/generar-guia/<pk>/', views.DespachoGenerarGuiaView.as_view(), name='despacho_generar_guia'), #.....XxRonnyxX
+] #.....XxRonnyxX
+#.....XxRonnyxX
 urlpatterns = [
     path('solicitud-prestamo-materiales/', views.SolicitudPrestamoMaterialesListView.as_view(), name='solicitud_prestamo_materiales_inicio'),
     path('solicitud-prestamo-materiales-tabla/', views.SolicitudPrestamoMaterialesTabla, name='solicitud_prestamo_materiales_tabla'),
@@ -33,13 +46,6 @@ urlpatterns = [
     path('solicitud-prestamo-materiales-detalle/eliminar/<pk>/', views.SolicitudPrestamoMaterialesDetalleDeleteView.as_view(), name='solicitud_prestamo_materiales_detalle_eliminar'),
     path('solicitud-prestamo-materiales-detalle/archivo/agregar/<int:solicitud_prestamo_materiales_id>/', views.DocumentoSolicitudPrestamoMaterialesCreateView.as_view(), name='solicitud_prestamo_materiales_documento_agregar'),
     path('solicitud-prestamo-materiales-detalle/archivo/eliminar/<pk>/', views.DocumentoSolicitudPrestamoMaterialesDeleteView.as_view(), name='solicitud_prestamo_materiales_documento_eliminar'),
-    
-    path('despacho/',views.DespachoListView.as_view(),name='despacho_inicio'),
-    path('despacho-tabla/',views.DespachoTabla,name='despacho_tabla'),
-
-    path('despacho/detalle/<int:id_despacho>/',views.DespachoDetalleView.as_view(),name='despacho_detalle'),
-    path('despacho/detalle/tabla/<int:id_despacho>/',views.DespachoDetalleVerTabla,name='despacho_detalle_tabla'),
-
     path('solicitud-prestamo-materiales-detalle/generar-nota-salida/<pk>/', views.SolicitudPrestamoMaterialesGenerarNotaSalidaView.as_view(), name='solicitud_prestamo__materiales_generar_nota_salida'),
     path('cliente-interlocutor/<str:id_interlocutor_cliente>/', views.ClienteView, name='cliente_interlocutor'),
-] + urlNotaSalida
+] + urlNotaSalida + urlDespacho

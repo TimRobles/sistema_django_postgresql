@@ -3,6 +3,9 @@
         <tr>
             <th>Nro. Despacho</th>
             <th>Cliente</th>
+            <th>Fecha de Despacho</th>
+            <th>Observación</th>
+            <th>Motivo Anulación</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
 
@@ -12,10 +15,38 @@
     <tbody>
         {% for despacho in contexto_despacho %}
         <tr>
-            <td> {{despacho.numero_despacho}} </td>
-            <td> {{despacho.cliente}} </td>
-            <td> {{despacho.get_estado_display}} </td>
+            <td> {{ despacho.numero_despacho }} </td>
+            <td> {{ despacho.cliente  }} </td>
+            <td> {{ despacho.fecha_despacho|date:'d/m/Y' }} </td>
+            <td>
+                {% if despacho.observacion %}  
+                    {{ despacho.observacion }}    
+                {% endif %}  
+            </td>
+            <td>
+                {% if despacho.motivo_anulacion %}  
+                    {{ despacho.motivo_anulacion }}    
+                {% endif %}  
+            </td>
+            <td> {{ despacho.get_estado_display }} </td>
             <td class="text-center">
+                {% if despacho.estado == 1 %}
+                    <button data-form-url="{% url 'logistica_app:despacho_actualizar' despacho.id %}"
+                        data-table-url="{% url 'logistica_app:despacho_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                {% endif %}
+                {% if despacho.estado == 2 %}
+                    <button data-form-url="{% url 'logistica_app:despacho_anular' despacho.id %}"
+                        data-table-url="{% url 'logistica_app:despacho_tabla' %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Anular Nota de Salida">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                {% endif %}
                 <a href="{% url 'logistica_app:despacho_detalle' despacho.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">

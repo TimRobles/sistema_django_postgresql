@@ -1,34 +1,19 @@
 {% load humanize %}
 {% load funciones_propias %}
 
-<h3>Detalle Despacho</h3>
-
-<div class="row mt-3">
-    <div class="col-auto">
-        <a href="{% url 'logistica_app:despacho_inicio' %}" class="btn btn-primary">Regresar</a>
-    </div>
-
-    <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_despacho_app:guia_crear' despacho.id %}"
-            class="delete btn btn-primary">
-            GUIA
-        </button>
-    </div>
-</div>
-
 <div class="row mt-3">
     <div class="col-lg-6 table-responsive mb-3">
         <table>
             <tbody>
                 <tr>
                     <th class="pe-2">Razón Social:</th>
-                    <td>{{ despacho.cliente.razon_social }}</td>
+                    <td>{{ contexto_despacho_detalle.cliente.razon_social }}</td>
                 </tr>
                 <tr>
-                    <th class="pe-2">{{ despacho.cliente.documento }}:</th>
+                    <th class="pe-2">{{ contexto_despacho_detalle.cliente.documento }}:</th>
                     <td>
-                        {% if despacho.cliente.numero_documento %}
-                        {{ despacho.cliente.numero_documento }}
+                        {% if contexto_despacho_detalle.cliente.numero_documento %}
+                            {{ contexto_despacho_detalle.cliente.numero_documento }}
                         {% endif %}
                     </td>
                 </tr>
@@ -43,14 +28,14 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th class="fondo-personalizado" style="--color-fondo: {{ despacho.sociedad.color }};">OBSERVACIONES {{ despacho.sociedad.razon_social }}</th>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ contexto_despacho_detalle.sociedad.color }};">OBSERVACIONES {{ contexto_despacho_detalle.sociedad.razon_social }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>
-                        {% if despacho.observacion %}
-                        {{ despacho.observacion|linebreaks }}
+                        {% if contexto_despacho_detalle.observacion %}
+                            {{ contexto_despacho_detalle.observacion|linebreaks }}
                         {% endif %}
                     </td>
                 </tr>
@@ -59,3 +44,31 @@
     </div>
 </div>
 
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th class="text-end">Cantidad Despachada</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.producto }}</td>
+                    <td>{{ material.unidad }}</td>
+                    <td class="text-end">{{ material.cantidad_despachada|redondear|intcomma }}</td>
+                    <td>
+                        {% if material.estado %}
+                            {{ material.get_estado_display}}
+                        {% endif %}
+                    </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

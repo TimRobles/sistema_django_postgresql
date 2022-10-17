@@ -6,6 +6,29 @@
 {% endblock titulo %}
 
 {% block contenido %}
+    <h3>Detalle Despacho
+        {% if contexto_despacho_detalle.estado == 1 %}
+            <button data-form-url="{% url 'logistica_app:despacho_concluir' contexto_despacho_detalle.id %}"
+                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
+                class="delete badge bg-primary">
+                Concluir Despacho
+            </button> 
+        {% endif %}
+        {% if contexto_despacho_detalle.estado == 2 %}
+            <button data-form-url="{% url 'logistica_app:despacho_finalizar_sin_guia' contexto_despacho_detalle.id %}"
+                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
+                class="delete badge bg-primary">
+                Finalizar sin Guia
+            </button> 
+            <button data-form-url="{% url 'logistica_app:despacho_generar_guia' contexto_despacho_detalle.id %}"
+                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
+                class="delete badge bg-primary">
+                Generar Guia
+            </button>
+        {% endif %}
+        
+        <a href="{% url 'logistica_app:despacho_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
     <div id="tabla">
         {% include 'logistica/despacho/detalle_tabla.html' %}
     </div>
