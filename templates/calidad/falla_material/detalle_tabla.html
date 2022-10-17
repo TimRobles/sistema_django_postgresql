@@ -3,7 +3,13 @@
 
 <h3>Detalle Fallas por Sub Familia
     <a href="{% url 'calidad_app:falla_material' %}"><span class="badge bg-primary">Regresar</span></a>
-
+    
+    <button class="create badge bg-primary"
+        data-form-url="{% url 'calidad_app:falla_material_registrar' contexto_subfamilia.id%}"
+        data-table-url="{% url 'calidad_app:falla_material_detalle' contexto_subfamilia.id %}">
+        Registrar Falla
+    </button>
+    
 </h3>
 
 <div class="table-responsive">
@@ -23,12 +29,22 @@
                     <td>{{ falla.titulo }}</td>
                     <td>{{ falla.comentario }}</td>
                     <td>{{ falla.visible }}</td>
-                    <td>
-                        
-                    </td>
+                    <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'calidad_app:falla_material_actualizar' falla.id %}"
+                            data-table-url="{% url 'calidad_app:falla_material_detalle' falla.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'calidad_app:falla_material_eliminar' falla.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>                   
                 </tr>
             {% endfor %}
-                
         </tbody>
     </table>
 </div>

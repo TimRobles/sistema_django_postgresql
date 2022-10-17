@@ -13,6 +13,8 @@ class FallaMaterialForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
+        # sub_familia = kwargs.pop('sub_familia')
         super(FallaMaterialForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['visible'].widget.attrs['class'] = 'form-check-input'
