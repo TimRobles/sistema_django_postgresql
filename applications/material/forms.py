@@ -216,6 +216,7 @@ class MaterialForm(BSModalModelForm):
         self.fields['control_lote'].widget.attrs['class'] = 'form-check-input'
         self.fields['control_calidad'].widget.attrs['class'] = 'form-check-input'
         self.fields['mostrar'].widget.attrs['class'] = 'form-check-input'
+        self.fields['peso_unidad_base'].widget.attrs['min'] = 0
 
         
 class RelacionMaterialComponenteForm(BSModalModelForm):
