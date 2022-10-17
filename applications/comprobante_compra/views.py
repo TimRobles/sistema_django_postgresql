@@ -323,7 +323,8 @@ class ComprobanteCompraCIRegistrarView(PermissionRequiredMixin, BSModalFormView)
         return context
 
 
-class ComprobanteCompraCIDetailView(DetailView):
+class ComprobanteCompraCIDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('comprobante_compra.view_comprobantecompraci')
     model = ComprobanteCompraCI
     template_name = "comprobante_compra/comprobante_compra_ci/detalle.html"
     context_object_name = 'contexto_comprobante_compra_ci'
@@ -354,7 +355,7 @@ def ComprobanteCompraCIDetailTabla(request, slug):
 
 
 class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('oferta_proveedor.change_ofertaproveedordetalle')
+    permission_required = ('oferta_proveedor.change_comprobantecompraci')
 
     model = ComprobanteCompraCIDetalle
     template_name = "oferta_proveedor/oferta_proveedor/actualizar.html"
@@ -381,7 +382,8 @@ class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdat
         return context
 
 
-class ComprobanteCompraCIFinalizarView(BSModalDeleteView):
+class ComprobanteCompraCIFinalizarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('oferta_proveedor.change_comprobantecompraci')
     model = ComprobanteCompraCI
     template_name = "includes/eliminar generico.html"
     context_object_name = 'contexto_comprobante_compra_ci'
