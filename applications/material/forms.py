@@ -139,6 +139,17 @@ class MarcaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['modelos'].widget.attrs['class'] = 'nobull'
 
+class MaterialBuscarForm(forms.Form): #...Ronny
+    buscar = forms.CharField(max_length=150, required=False) #...Ronny
+
+ #...Ronny
+    def __init__(self, *args, **kwargs): #...Ronny
+        filtro = kwargs.pop('filtro') #...Ronny
+        super(MaterialBuscarForm, self).__init__(*args, **kwargs) #...Ronny
+        self.fields['buscar'].initial = filtro #...Ronny
+        for visible in self.visible_fields(): #...Ronny
+            visible.field.widget.attrs['class'] = 'form-control' #...Ronny
+ #...Ronny
 class MaterialForm(BSModalModelForm):
     familia = forms.ModelChoiceField(label = 'Familia', queryset = Familia.objects.all(), required=False)
     

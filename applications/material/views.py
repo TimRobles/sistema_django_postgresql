@@ -10,7 +10,7 @@ from ..orden_compra.models import OrdenCompraDetalle
 from ..comprobante_compra.models import ComprobanteCompraCI, ComprobanteCompraPIDetalle, ComprobanteCompraPI
 
 from .forms import (
-    ModeloForm, MarcaForm,MaterialForm,
+    MaterialBuscarForm, ModeloForm, MarcaForm,MaterialForm,
     RelacionMaterialComponenteForm,EspecificacionForm,
     DatasheetForm,DatosImportacionForm,ProductoSunatForm,
     ImagenMaterialForm,VideoMaterialForm,ProveedorMaterialForm,EquivalenciaUnidadForm,IdiomaMaterialForm,
@@ -174,18 +174,47 @@ class MarcaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().form_valid(form)
 
 
-class MaterialListView(PermissionRequiredMixin,ListView):
+class MaterialListView(PermissionRequiredMixin,FormView):
     permission_required = ('material.view_material')
-    model = Material
     template_name = "material/material/inicio.html"
-    context_object_name = 'contexto_material'
+    form_class = MaterialBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(MaterialListView, self).get_form_kwargs()
+        kwargs['filtro'] = self.request.GET.get('buscar')
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super(MaterialListView,self).get_context_data(**kwargs)
+        materiales = Material.objects.all().order_by('descripcion_venta','descripcion_corta','marca','modelo')
+        filtro = self.request.GET.get('buscar')
+
+        if filtro:
+            condicion = Q(descripcion_venta__unaccent__icontains = filtro.split(" ")[0]) | Q(descripcion_corta__unaccent__icontains = filtro.split(" ")[0]) | Q(marca__nombre__unaccent__icontains = filtro.split(" ")[0]) | Q(modelo__nombre__unaccent__icontains = filtro.split(" ")[0])
+            for palabra in filtro.split(" ")[1:]:
+                condicion &= Q(descripcion_venta__unaccent__icontains = palabra) | Q(descripcion_corta__unaccent__icontains = palabra) | Q(marca__nombre__unaccent__icontains = palabra) | Q(modelo__nombre__unaccent__icontains = palabra)
+            materiales = materiales.filter(condicion)
+            context['contexto_filtro'] = "?buscar=" + filtro   
+        
+        context['contexto_material'] = materiales
+        return context
 
 def MaterialTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'material/material/inicio_tabla.html'
         context = {}
-        context['contexto_material'] = Material.objects.all()
+        materiales = Material.objects.all()
+        filtro = request.GET.get('buscar')
+
+        if filtro:
+            condicion = Q(descripcion_venta__unaccent__icontains = filtro.split(" ")[0]) | Q(descripcion_corta__unaccent__icontains = filtro.split(" ")[0]) | Q(marca__nombre__unaccent__icontains = filtro.split(" ")[0]) | Q(modelo__nombre__unaccent__icontains = filtro.split(" ")[0])
+            for palabra in filtro.split(" ")[1:]:
+                condicion &= Q(descripcion_venta__unaccent__icontains = palabra) | Q(descripcion_corta__unaccent__icontains = palabra) | Q(marca__nombre_unaccent__icontains = palabra) | Q(modelo__nombre__unaccent__icontains = palabra)
+            materiales = materiales.filter(condicion)
+
+        context['contexto_material'] = materiales
 
         data['table'] = render_to_string(
             template,
