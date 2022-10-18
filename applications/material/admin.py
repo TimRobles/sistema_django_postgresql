@@ -124,6 +124,7 @@ class ModeloAdmin(admin.ModelAdmin):
 
 class MarcaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         )
     
