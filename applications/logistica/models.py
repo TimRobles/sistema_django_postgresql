@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.clientes.models import Cliente, InterlocutorCliente
+from applications.funciones import numeroXn
 from applications.sociedad.models import Sociedad
 from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaDetalle
 from applications.variables import ESTADOS
@@ -37,7 +38,7 @@ class SolicitudPrestamoMateriales(models.Model):
         ordering = ['numero_prestamo',]
 
     def __str__(self):
-        return "%s - %s" % (self.numero_prestamo, self.cliente)
+        return "%s - %s" % (numeroXn(self.numero_prestamo, 6), self.cliente)
 
 class SolicitudPrestamoMaterialesDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
@@ -67,7 +68,7 @@ class SolicitudPrestamoMaterialesDetalle(models.Model):
         return self.producto.unidad_base
 
     def __str__(self):
-        return str(self.producto)
+        return "%s - %s" % (self.item, self.producto)
 
 class DocumentoPrestamoMateriales(models.Model):
     comentario = models.TextField(blank=True, null=True)
@@ -107,13 +108,26 @@ class NotaSalida(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_updated_by', editable=False)
 
     class Meta:
-
         verbose_name = 'Nota de Salida'
         verbose_name_plural = 'Notas de Salida'
         ordering = ['numero_salida',]
 
+    @property
+    def sociedad(self):
+        try:
+            return self.confirmacion_venta.sociedad
+        except:
+            return self.solicitud_prestamo_materiales.sociedad
+
+    @property
+    def cliente(self):
+        try:
+            return self.confirmacion_venta.cliente
+        except:
+            return self.solicitud_prestamo_materiales.cliente
+
     def __str__(self):
-        return str(self.numero_salida)
+        return "%s - %s" % (numeroXn(self.numero_salida, 6), self.cliente)
 
 class NotaSalidaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
@@ -131,13 +145,19 @@ class NotaSalidaDetalle(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_updated_by', editable=False)
 
     class Meta:
-
         verbose_name = 'Nota de Salida Detalle'
         verbose_name_plural = 'Notas de Salida Detalle'
         ordering = ['item',]
 
+    @property
+    def producto(self):
+        try:
+            return self.confirmacion_venta_detalle.producto
+        except:
+            return self.solicitud_prestamo_materiales_detalle.producto
+
     def __str__(self):
-        return str(self.item)
+        return "%s - %s" % (self.item, self.producto)
 
 class Despacho(models.Model):
     ESTADOS_DESPACHO = (

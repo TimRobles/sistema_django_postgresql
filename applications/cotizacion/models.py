@@ -238,6 +238,10 @@ class ConfirmacionVentaDetalle(models.Model):
             ]
 
     @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
     def cantidad(self):
         return self.cantidad_confirmada
 

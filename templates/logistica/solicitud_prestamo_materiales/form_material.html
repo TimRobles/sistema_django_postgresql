@@ -1,18 +1,20 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
+{% block abajo %}
+<span id="id_sociedad" hidden>{{ id_sociedad }}</span>    
+{% endblock abajo %}
+    
+
 {% block js %}
     <script>
         $(function () {
-
             $("#id_material").select2({
                 width: '100%',
                 dropdownParent: $(".modal-body"),
                 matcher: buscar_select2
             });
-
-            
         });
     </script>
- 
+    <script src="{% static 'js/logistica/solicitud_prestamo_materiales/form_material.js' %}?{{ cache_bust }}"></script>
 {% endblock js %}

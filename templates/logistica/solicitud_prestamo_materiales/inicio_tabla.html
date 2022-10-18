@@ -1,3 +1,5 @@
+{% load funciones_propias %}
+
 <table class="table">
     <thead>
         <tr>
@@ -18,7 +20,7 @@
             <tr>
                 <td> 
                     {% if  solicitud.numero_prestamo %}
-                        {{ solicitud.numero_prestamo }} 
+                        {{ solicitud.numero_prestamo|numeroXn:6 }} 
                     {% endif %}
                 </td>
                 <td>{{ solicitud.sociedad }}</td>

@@ -1,6 +1,8 @@
+from applications.material.funciones import stock
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 
 from applications.material.models import Material
 from applications.almacenes.models import Almacen
@@ -32,34 +34,59 @@ class SolicitudPrestamoMaterialesForm(BSModalModelForm):
 
 class SolicitudPrestamoMaterialesDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
+    stock = forms.IntegerField(required=False, initial=0, disabled=True)
     cantidad_prestamo = forms.DecimalField(label = 'Cantidad Prestamo', max_digits=22, decimal_places=10)
     observacion = forms.CharField(widget=forms.Textarea, required=False)
     class Meta:
         fields = (
             'material',
+            'stock',
             'cantidad_prestamo',
             'observacion',
             )
 
+    def clean_cantidad_prestamo(self):
+        cantidad_prestamo = self.cleaned_data.get('cantidad_prestamo')
+        material = self.cleaned_data.get('material')
+        stock_valor = stock(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
+        if stock_valor < cantidad_prestamo:
+            self.add_error('cantidad_prestamo', 'La cantidad prestada no puede ser mayor al stock disponible.')
+    
+        return cantidad_prestamo
+
     def __init__(self, *args, **kwargs):
+        self.id_sociedad = kwargs.pop('id_sociedad')
         super(SolicitudPrestamoMaterialesDetalleForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad_prestamo'].widget.attrs['min']=0
 
 class SolicitudPrestamoMaterialesDetalleUpdateForm(BSModalModelForm):
     material = forms.CharField(required=False)
+    stock = forms.IntegerField(required=False, initial=0, disabled=True)
     class Meta:
         model = SolicitudPrestamoMaterialesDetalle
         fields=(
             'material',
+            'stock',
             'cantidad_prestamo',
             'observacion',
             )
+
+    def clean_cantidad_prestamo(self):
+        cantidad_prestamo = self.cleaned_data.get('cantidad_prestamo')
+        busqueda_material = self.instance.content_type.get_object_for_this_type(id = self.instance.id_registro)
+        
+        if busqueda_material.stock < cantidad_prestamo:
+            self.add_error('cantidad_prestamo', 'La cantidad prestada no puede ser mayor al stock disponible.')
+    
+        return cantidad_prestamo
 
     def __init__(self, *args, **kwargs):
         super(SolicitudPrestamoMaterialesDetalleUpdateForm, self).__init__(*args, **kwargs)
         busqueda_material = self.instance.content_type.get_object_for_this_type(id = self.instance.id_registro)
         self.fields['material'].initial = busqueda_material.descripcion_venta
+        self.fields['stock'].initial = busqueda_material.stock
         self.fields['material'].disabled = True
 
         for visible in self.visible_fields():
@@ -101,113 +128,119 @@ class NotaSalidaForm(BSModalModelForm):
         super(NotaSalidaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
- #.....XxRonnyxX
-class NotaSalidaDetalleForm(BSModalModelForm):  #.....XxRonnyxX
-    material = forms.ModelChoiceField(queryset=None) #.....XxRonnyxX
- #.....XxRonnyxX
-    class Meta: #.....XxRonnyxX
-        model = NotaSalidaDetalle #.....XxRonnyxX
-        fields=( #.....XxRonnyxX
-            'material', #.....XxRonnyxX
-            ) #.....XxRonnyxX
- #.....XxRonnyxX
-    def __init__(self, *args, **kwargs): #.....XxRonnyxX
-        lista_materiales = kwargs.pop('materiales') #.....XxRonnyxX
-        super(NotaSalidaDetalleForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
-        self.fields['material'].queryset = lista_materiales #.....XxRonnyxX
-        for visible in self.visible_fields(): #.....XxRonnyxX
-            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
- #.....XxRonnyxX
-class NotaSalidaDetalleUpdateForm(BSModalModelForm): #.....XxRonnyxX
-    cantidad_prestamo = forms.DecimalField(label = 'Cantidad Prestamo', max_digits=22, decimal_places=10) #.....XxRonnyxX
-    class Meta: #.....XxRonnyxX
-        model = NotaSalidaDetalle #.....XxRonnyxX
-        fields = ( #.....XxRonnyxX
-            'sede', #.....XxRonnyxX
-            'almacen', #.....XxRonnyxX
-            'cantidad_prestamo', #.....XxRonnyxX
-            'cantidad_salida', #.....XxRonnyxX
-            ) #.....XxRonnyxX
- #.....XxRonnyxX    
-    def clean(self): #.....XxRonnyxX
-        cleaned_data = super().clean() #.....XxRonnyxX
-        cantidad_salida = cleaned_data.get('cantidad_salida') #.....XxRonnyxX
-        cantidad_prestamo = cleaned_data.get('cantidad_prestamo') #.....XxRonnyxX
-        suma = self.suma #.....XxRonnyxX
-        valor_max = cantidad_prestamo - suma #.....XxRonnyxX
- #.....XxRonnyxX
-        if cantidad_salida > valor_max: #.....XxRonnyxX
-            self.add_error('cantidad_salida', 'Se ha sobrepasado la cantidad de prestamo') #.....XxRonnyxX
 
-    def clean_sede(self): #.....XxRonnyxX
-        sede = self.cleaned_data.get('sede') #.....XxRonnyxX
-        almacen = self.fields['almacen'] #.....XxRonnyxX
-        almacen.queryset = Almacen.objects.filter(sede = sede) #.....XxRonnyxX    
-        return sede #.....XxRonnyxX
- #.....XxRonnyxX   
-    def __init__(self, *args, **kwargs): #.....XxRonnyxX
-        self.solicitud = kwargs.pop('solicitud') #.....XxRonnyxX
-        self.suma = kwargs.pop('suma') #.....XxRonnyxX
-        super(NotaSalidaDetalleUpdateForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
-        self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_prestamo #.....XxRonnyxX
-        self.fields['almacen'].queryset = Almacen.objects.none() #.....XxRonnyxX
-        self.fields['sede'].required = True #.....XxRonnyxX
-        self.fields['almacen'].required = True #.....XxRonnyxX
-        self.fields['cantidad_salida'].required = True #.....XxRonnyxX
-        self.fields['cantidad_prestamo'].disabled = True #.....XxRonnyxX
-        try: #.....XxRonnyxX
-            almacen = self.instance.almacen #.....XxRonnyxX
-            sede = almacen.sede #.....XxRonnyxX
- #.....XxRonnyxX            
-            self.fields['sede'].initial = sede #.....XxRonnyxX
-            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede) #.....XxRonnyxX
-        except: #.....XxRonnyxX
-            pass #.....XxRonnyxX
-        for visible in self.visible_fields(): #.....XxRonnyxX
-            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
- #.....XxRonnyxX
-class NotaSalidaAnularForm(BSModalModelForm): #.....XxRonnyxX
-    class Meta: #.....XxRonnyxX
-        model = NotaSalida #.....XxRonnyxX
-        fields=( #.....XxRonnyxX
-            'motivo_anulacion', #.....XxRonnyxX
-            ) #.....XxRonnyxX
+class NotaSalidaDetalleForm(BSModalModelForm): 
+    material = forms.ModelChoiceField(queryset=None)
 
-    def __init__(self, *args, **kwargs): #.....XxRonnyxX
-        super(NotaSalidaAnularForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
-        for visible in self.visible_fields(): #.....XxRonnyxX
-            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
+    class Meta:
+        model = NotaSalidaDetalle
+        fields=(
+            'material',
+            )
 
-class DespachoForm(BSModalModelForm): #.....XxRonnyxX
-    class Meta: #.....XxRonnyxX
-        model = Despacho #.....XxRonnyxX
-        fields = ( #.....XxRonnyxX
-            'fecha_despacho', #.....XxRonnyxX
-            'observacion', #.....XxRonnyxX
-            ) #.....XxRonnyxX
- #.....XxRonnyxX
-        widgets = { #.....XxRonnyxX
-            'fecha_despacho' : forms.DateInput( #.....XxRonnyxX
-                attrs ={ #.....XxRonnyxX
-                    'type':'date', #.....XxRonnyxX
-                    }, #.....XxRonnyxX
-                format = '%Y-%m-%d', #.....XxRonnyxX
-                ), #.....XxRonnyxX
-            } #.....XxRonnyxX
- #.....XxRonnyxX
-    def __init__(self, *args, **kwargs): #.....XxRonnyxX
-        super(DespachoForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
-        for visible in self.visible_fields(): #.....XxRonnyxX
-            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
- #.....XxRonnyxX      
-class DespachoAnularForm(BSModalModelForm): #.....XxRonnyxX
-    class Meta: #.....XxRonnyxX
-        model = Despacho #.....XxRonnyxX
-        fields=( #.....XxRonnyxX
-            'motivo_anulacion', #.....XxRonnyxX
-            ) #.....XxRonnyxX
- #.....XxRonnyxX
-    def __init__(self, *args, **kwargs): #.....XxRonnyxX
-        super(DespachoAnularForm, self).__init__(*args, **kwargs) #.....XxRonnyxX
-        for visible in self.visible_fields(): #.....XxRonnyxX
-            visible.field.widget.attrs['class'] = 'form-control' #.....XxRonnyxX
+    def __init__(self, *args, **kwargs):
+        lista_materiales = kwargs.pop('materiales')
+        super(NotaSalidaDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['material'].queryset = lista_materiales
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class NotaSalidaDetalleUpdateForm(BSModalModelForm):
+    cantidad_prestamo = forms.DecimalField(label='Cantidad Prestamo', max_digits=22, decimal_places=10)
+    stock = forms.IntegerField(required=False, initial=0, disabled=True)
+    class Meta:
+        model = NotaSalidaDetalle
+        fields = (
+            'sede',
+            'almacen',
+            'stock',
+            'cantidad_prestamo',
+            'cantidad_salida',
+            )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        cantidad_salida = cleaned_data.get('cantidad_salida')
+        cantidad_prestamo = cleaned_data.get('cantidad_prestamo')
+        suma = self.suma
+        valor_max = cantidad_prestamo - suma
+
+        if cantidad_salida > valor_max:
+            self.add_error('cantidad_salida', 'Se ha sobrepasado la cantidad de prestamo')
+
+    def clean_sede(self):
+        sede = self.cleaned_data.get('sede')
+        almacen = self.fields['almacen']
+        almacen.queryset = Almacen.objects.filter(sede = sede)    
+        return sede
+   
+    def __init__(self, *args, **kwargs):
+        self.solicitud = kwargs.pop('solicitud')
+        self.suma = kwargs.pop('suma')
+        self.id_sociedad = kwargs.pop('id_sociedad')
+        super(NotaSalidaDetalleUpdateForm, self).__init__(*args, **kwargs)
+        material = self.instance.solicitud_prestamo_materiales_detalle.producto
+        self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_prestamo
+        self.fields['almacen'].queryset = Almacen.objects.none()
+        self.fields['sede'].required = True
+        self.fields['almacen'].required = True
+        self.fields['stock'].initial = stock(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
+        self.fields['cantidad_salida'].required = True
+        self.fields['cantidad_salida'].widget.attrs['min'] = 0
+        self.fields['cantidad_prestamo'].disabled = True
+        try:
+            almacen = self.instance.almacen
+            sede = almacen.sede
+            
+            self.fields['sede'].initial = sede
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
+        except:
+            pass
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class NotaSalidaAnularForm(BSModalModelForm):
+    class Meta:
+        model = NotaSalida
+        fields=(
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaSalidaAnularForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class DespachoForm(BSModalModelForm):
+    class Meta:
+        model = Despacho
+        fields = (
+            'fecha_despacho',
+            'observacion',
+            )
+
+        widgets = {
+            'fecha_despacho' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(DespachoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+      
+class DespachoAnularForm(BSModalModelForm):
+    class Meta:
+        model = Despacho
+        fields=(
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(DespachoAnularForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

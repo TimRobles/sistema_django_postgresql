@@ -8,7 +8,7 @@ from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPr
 from applications.logistica.forms import DespachoAnularForm, DespachoForm, DocumentoPrestamoMaterialesForm, NotaSalidaAnularForm, NotaSalidaDetalleForm, NotaSalidaDetalleUpdateForm, SolicitudPrestamoMaterialesDetalleForm, SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, SolicitudPrestamoMaterialesAnularForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.logistica.pdf import generarSolicitudPrestamoMateriales
-from applications.funciones import fecha_en_letras
+from applications.funciones import fecha_en_letras, numeroXn
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
 
@@ -76,7 +76,7 @@ class SolicitudPrestamoMaterialesFinalizarView(PermissionRequiredMixin, BSModalD
     template_name = "logistica/solicitud_prestamo_materiales/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_inicio')
+        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -91,7 +91,7 @@ class SolicitudPrestamoMaterialesFinalizarView(PermissionRequiredMixin, BSModalD
         context['accion'] = "Finalizar"
         context['titulo'] = "Solicitud Prestamo Materiales"
         context['dar_baja'] = "true"
-        context['item'] = self.object.numero_prestamo
+        context['item'] = self.object
         return context
 
 class SolicitudPrestamoMaterialesConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
@@ -100,7 +100,7 @@ class SolicitudPrestamoMaterialesConfirmarView(PermissionRequiredMixin, BSModalD
     template_name = "logistica/solicitud_prestamo_materiales/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_inicio')
+        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -115,7 +115,7 @@ class SolicitudPrestamoMaterialesConfirmarView(PermissionRequiredMixin, BSModalD
         context['accion'] = "Confirmar"
         context['titulo'] = "Solicitud Prestamo Materiales"
         context['dar_baja'] = "true"
-        context['item'] = self.object.numero_prestamo
+        context['item'] = self.object
         return context
 
 class SolicitudPrestamoMaterialesAnularView(PermissionRequiredMixin, BSModalUpdateView):
@@ -225,35 +225,47 @@ class SolicitudPrestamoMaterialesDetalleCreateView(PermissionRequiredMixin, BSMo
                 obj.cantidad_prestamo = cantidad_prestamo
                 obj.observacion = observacion
             else:
+                if material.stock < obj.cantidad_prestamo + cantidad_prestamo:
+                    form.add_error('cantidad_prestamo', 'La cantidad prestada no puede ser mayor al stock disponible.')
+                    return super().form_invalid(form)
                 obj.cantidad_prestamo = obj.cantidad_prestamo + cantidad_prestamo
-                obj.observacion = obj.observacion + ' | ' + observacion
+                if observacion:
+                    obj.observacion = obj.observacion + ' | ' + observacion
 
             registro_guardar(obj, self.request)
             obj.save()
             self.request.session['primero'] = False
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        registro = SolicitudPrestamoMateriales.objects.get(id = self.kwargs['solicitud_prestamo_materiales_id'])
+        kwargs['id_sociedad'] = registro.sociedad.id
+        return kwargs
+
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
+        registro = SolicitudPrestamoMateriales.objects.get(id = self.kwargs['solicitud_prestamo_materiales_id'])
         context = super(SolicitudPrestamoMaterialesDetalleCreateView, self).get_context_data(**kwargs)
         context['titulo'] = 'Material'
         context['accion'] = 'Agregar'
+        context['id_sociedad'] = registro.sociedad.id
         return context
 
 class SolicitudPrestamoMaterialesDetalleImprimirView(View):
     def get(self, request, *args, **kwargs):
-        color = COLOR_DEFAULT
+        obj = SolicitudPrestamoMateriales.objects.get(id=self.kwargs['pk'])
+        
+        color = obj.sociedad.color
         titulo = 'SOLICITUD DE PRÉSTAMO DE EQUIPOS'
         vertical = False
-        logo = None
+        logo = [obj.sociedad.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
 
-        obj = SolicitudPrestamoMateriales.objects.get(id=self.kwargs['pk'])
-
-        titulo = str(titulo)
+        titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_prestamo, 6), obj.cliente)
 
         Cabecera = {}
-        Cabecera['numero_prestamo'] = str(obj.numero_prestamo)
+        Cabecera['numero_prestamo'] = numeroXn(obj.numero_prestamo, 6)
         Cabecera['fecha_prestamo'] = fecha_en_letras(obj.fecha_prestamo)
         Cabecera['razon_social'] = str(obj.cliente)
         Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
@@ -342,7 +354,7 @@ class SolicitudPrestamoMaterialesDetalleDeleteView(PermissionRequiredMixin, BSMo
         context = super(SolicitudPrestamoMaterialesDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Material"
-        context['item'] = self.get_object().item
+        context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
 
@@ -412,10 +424,10 @@ class SolicitudPrestamoMaterialesGenerarNotaSalidaView(PermissionRequiredMixin, 
             )
 
             self.request.session['primero'] = False
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
-        return HttpResponseRedirect(self.get_success_url())
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
+            return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':nota_salida.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -486,245 +498,248 @@ class NotaSalidaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView): #.....XxRonnyxX
-    permission_required = ('logistica.delete_notasalida') #.....XxRonnyxX
-    model = NotaSalida #.....XxRonnyxX
-    template_name = "logistica/nota_salida/boton.html" #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:nota_salida_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def delete(self, request, *args, **kwargs): #.....XxRonnyxX
-        self.object = self.get_object() #.....XxRonnyxX
-        self.object.estado = 2 #.....XxRonnyxX
-        registro_guardar(self.object, self.request) #.....XxRonnyxX
-        self.object.save() #.....XxRonnyxX
-        messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA) #.....XxRonnyxX
-        return HttpResponseRedirect(self.get_success_url()) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(NotaSalidaConcluirView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion'] = "Concluir" #.....XxRonnyxX
-        context['titulo'] = "Nota de Salida" #.....XxRonnyxX
-        context['dar_baja'] = "true" #.....XxRonnyxX
-        context['item'] = self.object.numero_salida #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView): #.....XxRonnyxX
-    permission_required = ('logistica.delete_notasalida') #.....XxRonnyxX
-    model = NotaSalida #.....XxRonnyxX
-    template_name = "includes/formulario generico.html" #.....XxRonnyxX
-    form_class = NotaSalidaAnularForm #.....XxRonnyxX
- #.....XxRonnyxX
-    def dispatch(self, request, *args, **kwargs): #.....XxRonnyxX
-        if not self.has_permission(): #.....XxRonnyxX
-            return render(request, 'includes/modal sin permiso.html') #.....XxRonnyxX
-        return super().dispatch(request, *args, **kwargs) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:nota_salida_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def form_valid(self, form): #.....XxRonnyxX
-        form.instance.estado = 3 #.....XxRonnyxX
-        registro_guardar(form.instance, self.request) #.....XxRonnyxX
-        return super().form_valid(form) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(NotaSalidaAnularView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion']="Anular" #.....XxRonnyxX
-        context['titulo']="Nota de Salida" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class NotaSalidaDetailView(PermissionRequiredMixin, DetailView): #.....XxRonnyxX
-    permission_required = ('logistica.view_notasalida') #.....XxRonnyxX
- #.....XxRonnyxX
-    model = NotaSalida #.....XxRonnyxX
-    template_name = "logistica/nota_salida/detalle.html" #.....XxRonnyxX
-    context_object_name = 'contexto_nota_salida_detalle' #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(NotaSalidaDetailView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['materiales'] = self.object.NotaSalidaDetalle_nota_salida.all() #.....XxRonnyxX
- #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-def NotaSalidaDetailTabla(request, pk): #.....XxRonnyxX
-    data = dict() #.....XxRonnyxX
-    if request.method == 'GET': #.....XxRonnyxX
-        template = 'logistica/nota_salida/detalle_tabla.html' #.....XxRonnyxX
-        context = {} #.....XxRonnyxX
-        nota_salida = NotaSalida.objects.get(id = pk) #.....XxRonnyxX
-        context['contexto_nota_salida_detalle'] = nota_salida #.....XxRonnyxX
-        context['materiales'] = NotaSalidaDetalle.objects.filter(nota_salida = nota_salida) #.....XxRonnyxX
- #.....XxRonnyxX
-        data['table'] = render_to_string( #.....XxRonnyxX
-            template, #.....XxRonnyxX
-            context, #.....XxRonnyxX
-            request=request #.....XxRonnyxX
-        ) #.....XxRonnyxX
-        return JsonResponse(data) #.....XxRonnyxX
- #.....XxRonnyxX        
-class NotaSalidaDetalleCreateView(PermissionRequiredMixin,BSModalFormView): #.....XxRonnyxX
-    permission_required = ('logistica.add_notasalidadetalle') #.....XxRonnyxX
-    template_name = "includes/formulario generico.html" #.....XxRonnyxX
-    form_class = NotaSalidaDetalleForm #.....XxRonnyxX
- #.....XxRonnyxX
-    def dispatch(self, request, *args, **kwargs): #.....XxRonnyxX
-        if not self.has_permission(): #.....XxRonnyxX
-            return render(request, 'includes/modal sin permiso.html') #.....XxRonnyxX
-        return super().dispatch(request, *args, **kwargs) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.kwargs['nota_salida_id']}) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_form_kwargs(self): #.....XxRonnyxX
-        registro = NotaSalida.objects.get(id = self.kwargs['nota_salida_id']) #.....XxRonnyxX
-        solicitud = registro.solicitud_prestamo_materiales.id #.....XxRonnyxX
-        materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales__id = solicitud) #.....XxRonnyxX
-        lista_materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales__id = solicitud) #.....XxRonnyxX
-        for material in materiales: #.....XxRonnyxX
-            salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.aggregate(Sum('cantidad_salida'))['cantidad_salida__sum'] #.....XxRonnyxX
-            if salida: #.....XxRonnyxX
-                if salida == material.cantidad_prestamo: #.....XxRonnyxX
-                    lista_materiales = lista_materiales.exclude(id=material.id) #.....XxRonnyxX
- #.....XxRonnyxX
-        kwargs = super().get_form_kwargs() #.....XxRonnyxX
-        kwargs['materiales'] = lista_materiales #.....XxRonnyxX
-        return kwargs #.....XxRonnyxX
- #.....XxRonnyxX
-    def form_valid(self, form): #.....XxRonnyxX
-        if self.request.session['primero']: #.....XxRonnyxX
-            registro = NotaSalida.objects.get(id = self.kwargs['nota_salida_id']) #.....XxRonnyxX
-            item = len(registro.NotaSalidaDetalle_nota_salida.all()) #.....XxRonnyxX
-            material = form.cleaned_data.get('material') #.....XxRonnyxX
- #.....XxRonnyxX
-            nota_salida_detalle = NotaSalidaDetalle.objects.create( #.....XxRonnyxX
-                solicitud_prestamo_materiales_detalle = material, #.....XxRonnyxX
-                nota_salida = registro, #.....XxRonnyxX
-                item = item + 1, #.....XxRonnyxX
-                created_by = self.request.user, #.....XxRonnyxX
-                updated_by = self.request.user, #.....XxRonnyxX
-            ) #.....XxRonnyxX
- #.....XxRonnyxX
-            self.request.session['primero'] = False #.....XxRonnyxX
-        return super().form_valid(form) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        self.request.session['primero'] = True #.....XxRonnyxX
-        context = super(NotaSalidaDetalleCreateView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion']="Registrar" #.....XxRonnyxX
-        context['titulo']="Material" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class NotaSalidaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView): #.....XxRonnyxX
-    permission_required = ('logistica.change_notasalidadetalle') #.....XxRonnyxX
-    model = NotaSalidaDetalle #.....XxRonnyxX
-    template_name = "logistica/nota_salida/form_almacen.html" #.....XxRonnyxX
-    form_class = NotaSalidaDetalleUpdateForm #.....XxRonnyxX
- #.....XxRonnyxX
-    def dispatch(self, request, *args, **kwargs): #.....XxRonnyxX
-        if not self.has_permission(): #.....XxRonnyxX
-            return render(request, 'includes/modal sin permiso.html') #.....XxRonnyxX
-        return super().dispatch(request, *args, **kwargs) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.object.nota_salida.id}) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_form_kwargs(self, *args, **kwargs): #.....XxRonnyxX
-        material = self.object.solicitud_prestamo_materiales_detalle #.....XxRonnyxX
-        suma = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.aggregate(Sum('cantidad_salida'))['cantidad_salida__sum'] #.....XxRonnyxX
-        cantidad_salida = self.object.cantidad_salida #.....XxRonnyxX
-        kwargs = super(NotaSalidaDetalleUpdateView, self).get_form_kwargs(*args, **kwargs) #.....XxRonnyxX
-        kwargs['solicitud'] = material #.....XxRonnyxX
-        kwargs['suma'] = suma - cantidad_salida #.....XxRonnyxX
-        return kwargs #.....XxRonnyxX
- #.....XxRonnyxX
-    def form_valid(self, form): #.....XxRonnyxX
-        registro_guardar(form.instance, self.request) #.....XxRonnyxX
-        return super().form_valid(form) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(NotaSalidaDetalleUpdateView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion']="Actualizar" #.....XxRonnyxX
-        context['titulo']="Material" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class NotaSalidaDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView): #.....XxRonnyxX
-    permission_required = ('logistica.delete_notasalidadetalle') #.....XxRonnyxX
-    model = NotaSalidaDetalle #.....XxRonnyxX
-    template_name = "includes/eliminar generico.html" #.....XxRonnyxX
- #.....XxRonnyxX
-    def dispatch(self, request, *args, **kwargs): #.....XxRonnyxX
-        if not self.has_permission(): #.....XxRonnyxX
-            return render(request, 'includes/modal sin permiso.html') #.....XxRonnyxX
-        return super().dispatch(request, *args, **kwargs) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.get_object().nota_salida.id}) #.....XxRonnyxX
- #.....XxRonnyxX
-    def delete(self, request, *args, **kwargs): #.....XxRonnyxX
-        materiales = NotaSalidaDetalle.objects.filter(nota_salida=self.get_object().nota_salida) #.....XxRonnyxX
-        contador = 1 #.....XxRonnyxX
-        for material in materiales: #.....XxRonnyxX
-            if material == self.get_object():continue #.....XxRonnyxX
-            material.item = contador #.....XxRonnyxX
-            material.save() #.....XxRonnyxX
-            contador += 1 #.....XxRonnyxX
-        return super().delete(request, *args, **kwargs) #.....XxRonnyxX 
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(NotaSalidaDetalleDeleteView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion'] = "Eliminar" #.....XxRonnyxX
-        context['titulo'] = "Material" #.....XxRonnyxX
-        context['item'] = self.get_object().solicitud_prestamo_materiales_detalle #.....XxRonnyxX
-        context['dar_baja'] = "true" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class AlmacenForm(forms.Form): #.....XxRonnyxX
-    almacen = forms.ModelChoiceField(queryset = Almacen.objects.all(), required=False) #.....XxRonnyxX
- #.....XxRonnyxX
-def AlmacenView(request, id_sede): #.....XxRonnyxX
-    form = AlmacenForm() #.....XxRonnyxX
-    form.fields['almacen'].queryset = Almacen.objects.filter(sede = id_sede) #.....XxRonnyxX
- #.....XxRonnyxX
-    data = dict() #.....XxRonnyxX
-    if request.method == 'GET': #.....XxRonnyxX
-        template = 'includes/form.html' #.....XxRonnyxX
-        context = {'form':form} #.....XxRonnyxX
- #.....XxRonnyxX
-        data['info'] = render_to_string( #.....XxRonnyxX
-            template, #.....XxRonnyxX
-            context, #.....XxRonnyxX
-            request=request #.....XxRonnyxX
-        ).replace('selected', 'selected=""') #.....XxRonnyxX
-        return JsonResponse(data) #.....XxRonnyxX
- #.....XxRonnyxX
-class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView): #.....XxRonnyxX
-    permission_required = ('logistica.change_notasalidadetalle') #.....XxRonnyxX
- #.....XxRonnyxX
-    model = NotaSalida #.....XxRonnyxX
-    template_name = "logistica/nota_salida/boton.html" #.....XxRonnyxX
-    success_url = reverse_lazy('logistica_app:despacho_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def dispatch(self, request, *args, **kwargs): #.....XxRonnyxX
-        if not self.has_permission(): #.....XxRonnyxX
-            return render(request, 'includes/modal sin permiso.html') #.....XxRonnyxX
-        return super().dispatch(request, *args, **kwargs) #.....XxRonnyxX
- #.....XxRonnyxX
-    def delete(self, request, *args, **kwargs): #.....XxRonnyxX
-        if self.request.session['primero']: #.....XxRonnyxX
-            self.object = self.get_object() #.....XxRonnyxX
-            nota_salida = self.get_object() #.....XxRonnyxX
-            item = len(Despacho.objects.all()) #.....XxRonnyxX
-            despacho = Despacho.objects.create( #.....XxRonnyxX
-                sociedad = nota_salida.solicitud_prestamo_materiales.sociedad, #.....XxRonnyxX
-                nota_salida = nota_salida, #.....XxRonnyxX
-                numero_despacho = item + 1, #.....XxRonnyxX
-                cliente = nota_salida.solicitud_prestamo_materiales.cliente, #.....XxRonnyxX
-                created_by = self.request.user, #.....XxRonnyxX
-                updated_by = self.request.user, #.....XxRonnyxX
-            ) #.....XxRonnyxX
- #.....XxRonnyxX
+class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_notasalida')
+    model = NotaSalida
+    template_name = "logistica/nota_salida/boton.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:nota_salida_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaSalidaConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Nota de Salida"
+        context['dar_baja'] = "true"
+        context['item'] = self.object
+        return context
+
+class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.delete_notasalida')
+    model = NotaSalida
+    template_name = "includes/formulario generico.html"
+    form_class = NotaSalidaAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:nota_salida_inicio')
+
+    def form_valid(self, form):
+        form.instance.estado = 3
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaSalidaAnularView, self).get_context_data(**kwargs)
+        context['accion']="Anular"
+        context['titulo']="Nota de Salida"
+        return context
+
+class NotaSalidaDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('logistica.view_notasalida')
+
+    model = NotaSalida
+    template_name = "logistica/nota_salida/detalle.html"
+    context_object_name = 'contexto_nota_salida_detalle'
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaSalidaDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = self.object.NotaSalidaDetalle_nota_salida.all()
+
+        return context
+
+def NotaSalidaDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/nota_salida/detalle_tabla.html'
+        context = {}
+        nota_salida = NotaSalida.objects.get(id = pk)
+        context['contexto_nota_salida_detalle'] = nota_salida
+        context['materiales'] = NotaSalidaDetalle.objects.filter(nota_salida = nota_salida)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+        
+class NotaSalidaDetalleCreateView(PermissionRequiredMixin,BSModalFormView):
+    permission_required = ('logistica.add_notasalidadetalle')
+    template_name = "includes/formulario generico.html"
+    form_class = NotaSalidaDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.kwargs['nota_salida_id']})
+
+    def get_form_kwargs(self):
+        registro = NotaSalida.objects.get(id = self.kwargs['nota_salida_id'])
+        solicitud = registro.solicitud_prestamo_materiales.id
+        materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales__id = solicitud)
+        lista_materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales__id = solicitud)
+        for material in materiales:
+            salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
+            if salida:
+                if salida == material.cantidad_prestamo:
+                    lista_materiales = lista_materiales.exclude(id=material.id)
+
+        kwargs = super().get_form_kwargs()
+        kwargs['materiales'] = lista_materiales
+        return kwargs
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro = NotaSalida.objects.get(id = self.kwargs['nota_salida_id'])
+            item = len(registro.NotaSalidaDetalle_nota_salida.all())
+            material = form.cleaned_data.get('material')
+
+            nota_salida_detalle = NotaSalidaDetalle.objects.create(
+                solicitud_prestamo_materiales_detalle = material,
+                nota_salida = registro,
+                item = item + 1,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaSalidaDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Material"
+        return context
+
+class NotaSalidaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_notasalidadetalle')
+    model = NotaSalidaDetalle
+    template_name = "logistica/nota_salida/form_almacen.html"
+    form_class = NotaSalidaDetalleUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.object.nota_salida.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        material = self.object.solicitud_prestamo_materiales_detalle
+        suma = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
+        cantidad_salida = self.object.cantidad_salida
+        kwargs = super(NotaSalidaDetalleUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['solicitud'] = material
+        kwargs['suma'] = suma - cantidad_salida
+        kwargs['id_sociedad'] = self.object.nota_salida.sociedad.id
+        return kwargs
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaSalidaDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Material"
+        context['id_sociedad'] = self.object.nota_salida.sociedad.id
+        context['id_material'] = self.object.producto.id
+        return context
+
+class NotaSalidaDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_notasalidadetalle')
+    model = NotaSalidaDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.get_object().nota_salida.id})
+
+    def delete(self, request, *args, **kwargs):
+        materiales = NotaSalidaDetalle.objects.filter(nota_salida=self.get_object().nota_salida)
+        contador = 1
+        for material in materiales:
+            if material == self.get_object():continue
+            material.item = contador
+            material.save()
+            contador += 1
+        return super().delete(request, *args, **kwargs) 
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaSalidaDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+
+class AlmacenForm(forms.Form):
+    almacen = forms.ModelChoiceField(queryset = Almacen.objects.all(), required=False)
+
+def AlmacenView(request, id_sede):
+    form = AlmacenForm()
+    form.fields['almacen'].queryset = Almacen.objects.filter(sede = id_sede)
+
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
+
+class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_notasalidadetalle')
+
+    model = NotaSalida
+    template_name = "logistica/nota_salida/boton.html"
+    success_url = reverse_lazy('logistica_app:despacho_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.session['primero']:
+            self.object = self.get_object()
+            nota_salida = self.get_object()
+            item = len(Despacho.objects.all())
+            despacho = Despacho.objects.create(
+                sociedad = nota_salida.solicitud_prestamo_materiales.sociedad,
+                nota_salida = nota_salida,
+                numero_despacho = item + 1,
+                cliente = nota_salida.solicitud_prestamo_materiales.cliente,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+
             nota_salida_detalle = nota_salida.NotaSalidaDetalle_nota_salida.all()
             lista = []
             lista_id_registro = []
@@ -746,212 +761,211 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                     updated_by = self.request.user,
                     )
                 item += 1
-            self.request.session['primero'] = False #.....XxRonnyxX
-        registro_guardar(self.object, self.request) #.....XxRonnyxX
-        self.object.save() #.....XxRonnyxX
-        messages.success(request, MENSAJE_GENERAR_DESPACHO) #.....XxRonnyxX
-        return HttpResponseRedirect(self.get_success_url()) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        self.request.session['primero'] = True #.....XxRonnyxX
-        context = super(NotaSalidaGenerarDespachoView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion'] = "Generar" #.....XxRonnyxX
-        context['titulo'] = "Despacho" #.....XxRonnyxX
-        context['dar_baja'] = "true" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class DespachoListView(PermissionRequiredMixin, ListView): #.....XxRonnyxX
-    permission_required = ('logistica.view_despacho') #.....XxRonnyxX
-    model = Despacho #.....XxRonnyxX
-    template_name = 'logistica/despacho/inicio.html' #.....XxRonnyxX
-    context_object_name = 'contexto_despacho' #.....XxRonnyxX
- #.....XxRonnyxX
-def DespachoTabla(request): #.....XxRonnyxX
-    data = dict() #.....XxRonnyxX
-    if request.method == 'GET': #.....XxRonnyxX
-        template = 'logistica/despacho/inicio_tabla.html' #.....XxRonnyxX
-        context = {} #.....XxRonnyxX
-        context['contexto_despacho'] = Despacho.objects.all() #.....XxRonnyxX
- #.....XxRonnyxX
-        data['table'] = render_to_string( #.....XxRonnyxX
-            template, #.....XxRonnyxX
-            context, #.....XxRonnyxX
-            request=request #.....XxRonnyxX
-        ) #.....XxRonnyxX
-        return JsonResponse(data) #.....XxRonnyxX
- #.....XxRonnyxX
-class DespachoUpdateView(PermissionRequiredMixin, BSModalUpdateView): #.....XxRonnyxX
-    permission_required = ('logistica.change_despacho') #.....XxRonnyxX
- #.....XxRonnyxX
-    model = Despacho #.....XxRonnyxX
-    template_name = "includes/formulario generico.html" #.....XxRonnyxX
-    form_class = DespachoForm #.....XxRonnyxX
-    success_url = reverse_lazy('logistica_app:despacho_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(DespachoUpdateView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion'] = "Actualizar" #.....XxRonnyxX
-        context['titulo'] = "Despacho" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-    def form_valid(self, form): #.....XxRonnyxX
-        registro_guardar(form.instance, self.request) #.....XxRonnyxX
-        return super().form_valid(form) #.....XxRonnyxX
- #.....XxRonnyxX
-class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView): #.....XxRonnyxX
-    permission_required = ('logistica.delete_despacho') #.....XxRonnyxX
-    model = Despacho #.....XxRonnyxX
-    template_name = "logistica/despacho/boton.html" #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:despacho_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def delete(self, request, *args, **kwargs): #.....XxRonnyxX
-        self.object = self.get_object() #.....XxRonnyxX
-        self.object.estado = 2 #.....XxRonnyxX
-        registro_guardar(self.object, self.request) #.....XxRonnyxX
-        self.object.save() #.....XxRonnyxX
-        messages.success(request, MENSAJE_CONCLUIR_DESPACHO) #.....XxRonnyxX
-        return HttpResponseRedirect(self.get_success_url()) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(DespachoConcluirView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion'] = "Concluir" #.....XxRonnyxX
-        context['titulo'] = "Despacho" #.....XxRonnyxX
-        context['dar_baja'] = "true" #.....XxRonnyxX
-        context['item'] = self.object.numero_despacho #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView): #.....XxRonnyxX
-    permission_required = ('logistica.delete_despacho') #.....XxRonnyxX
-    model = Despacho #.....XxRonnyxX
-    template_name = "logistica/despacho/boton.html" #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:despacho_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def delete(self, request, *args, **kwargs): #.....XxRonnyxX
-        self.object = self.get_object() #.....XxRonnyxX
-        self.object.estado = 4 #.....XxRonnyxX
-        registro_guardar(self.object, self.request) #.....XxRonnyxX
-        self.object.save() #.....XxRonnyxX
-        messages.success(request, MENSAJE_FINALIZAR_SIN_GUIA_DESPACHO) #.....XxRonnyxX
-        return HttpResponseRedirect(self.get_success_url()) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(DespachoFinalizarSinGuiaView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion'] = "Finalizar" #.....XxRonnyxX
-        context['titulo'] = "Despacho sin Guia" #.....XxRonnyxX
-        context['dar_baja'] = "true" #.....XxRonnyxX
-        context['item'] = self.object.numero_despacho #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class DespachoAnularView(PermissionRequiredMixin, BSModalUpdateView): #.....XxRonnyxX
-    permission_required = ('logistica.delete_despacho') #.....XxRonnyxX
-    model = Despacho #.....XxRonnyxX
-    template_name = "includes/formulario generico.html" #.....XxRonnyxX
-    form_class = DespachoAnularForm #.....XxRonnyxX
- #.....XxRonnyxX
-    def dispatch(self, request, *args, **kwargs): #.....XxRonnyxX
-        if not self.has_permission(): #.....XxRonnyxX
-            return render(request, 'includes/modal sin permiso.html') #.....XxRonnyxX
-        return super().dispatch(request, *args, **kwargs) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_success_url(self, **kwargs): #.....XxRonnyxX
-        return reverse_lazy('logistica_app:despacho_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def form_valid(self, form): #.....XxRonnyxX
-        form.instance.estado = 3 #.....XxRonnyxX
-        registro_guardar(form.instance, self.request) #.....XxRonnyxX
-        return super().form_valid(form) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        context = super(DespachoAnularView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion']="Anular" #.....XxRonnyxX
-        context['titulo']="Despacho" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-class DespachoDetailView(PermissionRequiredMixin, DetailView): #.....XxRonnyxX
-    permission_required = ('logistica.view_despacho') #.....XxRonnyxX
-    model = Despacho #.....XxRonnyxX
-    template_name = "logistica/despacho/detalle.html" #.....XxRonnyxX
-    context_object_name = 'contexto_despacho_detalle' #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        # despacho = Despacho.objects.get(id = self.kwargs['pk']) #.....XxRonnyxX
-        context = super(DespachoDetailView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['materiales'] = self.object.DespachoDetalle_despacho.all() #.....XxRonnyxX
- #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
-def DespachoDetailTabla(request, pk): #.....XxRonnyxX
-    data = dict() #.....XxRonnyxX
-    if request.method == 'GET': #.....XxRonnyxX
-        template = 'logistica/despacho/detalle_tabla.html' #.....XxRonnyxX
-        context = {} #.....XxRonnyxX
-        despacho = Despacho.objects.get(id = pk) #.....XxRonnyxX
-        context['contexto_despacho_detalle'] = despacho #.....XxRonnyxX
-        context['materiales'] = DespachoDetalle.objects.filter(despacho = despacho) #.....XxRonnyxX
- #.....XxRonnyxX
-        data['table'] = render_to_string( #.....XxRonnyxX
-            template, #.....XxRonnyxX
-            context, #.....XxRonnyxX
-            request=request #.....XxRonnyxX
-        ) #.....XxRonnyxX
-        return JsonResponse(data) #.....XxRonnyxX
- #.....XxRonnyxX
-class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView): #.....XxRonnyxX
-    permission_required = ('logistica.change_despachodetalle') #.....XxRonnyxX
- #.....XxRonnyxX
-    model = Despacho #.....XxRonnyxX
-    template_name = "logistica/despacho/boton.html" #.....XxRonnyxX
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio') #.....XxRonnyxX
- #.....XxRonnyxX
-    def dispatch(self, request, *args, **kwargs): #.....XxRonnyxX
-        if not self.has_permission(): #.....XxRonnyxX
-            return render(request, 'includes/modal sin permiso.html') #.....XxRonnyxX
-        return super().dispatch(request, *args, **kwargs) #.....XxRonnyxX
- #.....XxRonnyxX
-    def delete(self, request, *args, **kwargs): #.....XxRonnyxX
-        self.object = self.get_object() #.....XxRonnyxX
-        item = len(Guia.objects.all()) #.....XxRonnyxX
-        detalles = self.object.DespachoDetalle_despacho.all() #.....XxRonnyxX
-        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia)) #.....XxRonnyxX
+            self.request.session['primero'] = False
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_GENERAR_DESPACHO)
+        return HttpResponseRedirect(self.get_success_url())
 
-        guia = Guia.objects.create( #.....XxRonnyxX
-            numero_guia = item + 1, #.....XxRonnyxX
-            sociedad = self.object.sociedad, #.....XxRonnyxX
-            serie_comprobante = serie_comprobante, #.....XxRonnyxX
-            cliente = self.object.cliente, #.....XxRonnyxX
-            created_by = self.request.user, #.....XxRonnyxX
-            updated_by = self.request.user, #.....XxRonnyxX
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaSalidaGenerarDespachoView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Despacho"
+        context['dar_baja'] = "true"
+        return context
+
+class DespachoListView(PermissionRequiredMixin, ListView):
+    permission_required = ('logistica.view_despacho')
+    model = Despacho
+    template_name = 'logistica/despacho/inicio.html'
+    context_object_name = 'contexto_despacho'
+
+def DespachoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/despacho/inicio_tabla.html'
+        context = {}
+        context['contexto_despacho'] = Despacho.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
         )
- #.....XxRonnyxX
-        for detalle in detalles: #.....XxRonnyxX
-            guia_detalle = GuiaDetalle.objects.create( #.....XxRonnyxX
-                item = detalle.item, #.....XxRonnyxX
-                content_type = detalle.content_type, #.....XxRonnyxX
-                id_registro = detalle.id_registro, #.....XxRonnyxX
-                guia=guia, #.....XxRonnyxX
-                cantidad=detalle.cantidad_despachada, #.....XxRonnyxX
-                unidad=detalle.producto.unidad_base, #.....XxRonnyxX
-                descripcion_documento=detalle.producto.descripcion_venta, #.....XxRonnyxX
-                peso=detalle.producto.peso_unidad_base, #.....XxRonnyxX
-                created_by=self.request.user, #.....XxRonnyxX
-                updated_by=self.request.user, #.....XxRonnyxX              
-            ) #.....XxRonnyxX
-            self.request.session['primero'] = False #.....XxRonnyxX
-        registro_guardar(self.object, self.request) #.....XxRonnyxX
+        return JsonResponse(data)
+
+class DespachoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_despacho')
+
+    model = Despacho
+    template_name = "includes/formulario generico.html"
+    form_class = DespachoForm
+    success_url = reverse_lazy('logistica_app:despacho_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(DespachoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Despacho"
+        return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_despacho')
+    model = Despacho
+    template_name = "logistica/despacho/boton.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:despacho_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_CONCLUIR_DESPACHO)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(DespachoConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Despacho"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.numero_despacho
+        return context
+
+class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_despacho')
+    model = Despacho
+    template_name = "logistica/despacho/boton.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:despacho_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 4
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_FINALIZAR_SIN_GUIA_DESPACHO)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(DespachoFinalizarSinGuiaView, self).get_context_data(**kwargs)
+        context['accion'] = "Finalizar"
+        context['titulo'] = "Despacho sin Guia"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.numero_despacho
+        return context
+
+class DespachoAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.delete_despacho')
+    model = Despacho
+    template_name = "includes/formulario generico.html"
+    form_class = DespachoAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:despacho_inicio')
+
+    def form_valid(self, form):
+        form.instance.estado = 3
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(DespachoAnularView, self).get_context_data(**kwargs)
+        context['accion']="Anular"
+        context['titulo']="Despacho"
+        return context
+
+class DespachoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('logistica.view_despacho')
+    model = Despacho
+    template_name = "logistica/despacho/detalle.html"
+    context_object_name = 'contexto_despacho_detalle'
+
+    def get_context_data(self, **kwargs):
+        # despacho = Despacho.objects.get(id = self.kwargs['pk'])
+        context = super(DespachoDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = self.object.DespachoDetalle_despacho.all()
+
+        return context
+
+def DespachoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/despacho/detalle_tabla.html'
+        context = {}
+        despacho = Despacho.objects.get(id = pk)
+        context['contexto_despacho_detalle'] = despacho
+        context['materiales'] = DespachoDetalle.objects.filter(despacho = despacho)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_despachodetalle')
+
+    model = Despacho
+    template_name = "logistica/despacho/boton.html"
+    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        item = len(Guia.objects.all())
+        detalles = self.object.DespachoDetalle_despacho.all()
+        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
+
+        guia = Guia.objects.create(
+            numero_guia = item + 1,
+            sociedad = self.object.sociedad,
+            serie_comprobante = serie_comprobante,
+            cliente = self.object.cliente,
+            created_by = self.request.user,
+            updated_by = self.request.user,
+        )
+
+        for detalle in detalles:
+            guia_detalle = GuiaDetalle.objects.create(
+                item = detalle.item,
+                content_type = detalle.content_type,
+                id_registro = detalle.id_registro,
+                guia=guia,
+                cantidad=detalle.cantidad_despachada,
+                unidad=detalle.producto.unidad_base,
+                descripcion_documento=detalle.producto.descripcion_venta,
+                peso=detalle.producto.peso_unidad_base,
+                created_by=self.request.user,
+                updated_by=self.request.user,              
+            )
+            self.request.session['primero'] = False
+        registro_guardar(self.object, self.request)
         self.object.estado = 5
-        self.object.save() #.....XxRonnyxX
-        messages.success(request, MENSAJE_GENERAR_GUIA) #.....XxRonnyxX
-        return HttpResponseRedirect(self.get_success_url()) #.....XxRonnyxX
- #.....XxRonnyxX
-    def get_context_data(self, **kwargs): #.....XxRonnyxX
-        self.request.session['primero'] = True #.....XxRonnyxX
-        context = super(DespachoGenerarGuiaView, self).get_context_data(**kwargs) #.....XxRonnyxX
-        context['accion'] = "Generar" #.....XxRonnyxX
-        context['titulo'] = "Guía" #.....XxRonnyxX
-        context['dar_baja'] = "true" #.....XxRonnyxX
-        return context #.....XxRonnyxX
- #.....XxRonnyxX
+        self.object.save()
+        messages.success(request, MENSAJE_GENERAR_GUIA)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(DespachoGenerarGuiaView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Guía"
+        context['dar_baja'] = "true"
+        return context

@@ -1,6 +1,11 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
+{% block abajo %}
+<span id="id_sociedad" hidden>{{ id_sociedad }}</span>    
+<span id="id_material" hidden>{{ id_material }}</span>    
+{% endblock abajo %}
+
 {% block js %}
     <script src="{% static 'js/logistica/nota_salida/form_almacen.js' %}?{{ cache_bust }}"></script>
 

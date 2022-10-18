@@ -63,6 +63,7 @@ class FacturaVentaDetalleView(TemplateView):
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
         context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
 
         return context
 
@@ -93,6 +94,7 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
         context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
 
         data['table'] = render_to_string(
             template,
@@ -669,6 +671,7 @@ class BoletaVentaDetalleView(TemplateView):
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
         context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
       
         return context
 
@@ -700,6 +703,7 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
         context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
 
         data['table'] = render_to_string(
             template,
