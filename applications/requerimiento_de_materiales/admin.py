@@ -55,6 +55,7 @@ class RequerimientoMaterialProveedorAdmin(admin.ModelAdmin):
         'interlocutor_proveedor',
         'slug',
         'estado',
+        'sociedad',
         'created_at',
         'created_by',
         'updated_at',
