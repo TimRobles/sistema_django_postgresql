@@ -1,6 +1,39 @@
 {% load funciones_propias %}
 {% load humanize %}
 
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Número de Salida</th>
+                    <td>{{ contexto_nota_salida_detalle.numero_salida|numeroXn:6 }}</td>
+                    <th class="px-2">Cliente</th>
+                    <td>{{ contexto_nota_salida_detalle.cliente }}</td>
+                    <th class="px-2">Fecha Salida</th>
+                    <td>{{ contexto_nota_salida_detalle.fecha|date:'d/m/Y' }}</td>
+                    <th class="px-2">Motivo Anulación</th>
+                    <td>
+                        {% if contexto_nota_salida_detalle.motivo_anulacion %}
+                        {{ contexto_nota_salida_detalle.motivo_anulacion }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Sociedad</th>
+                    <td>{{ contexto_nota_salida_detalle.sociedad }}</td>
+                    <th class="px-2">Interlocutor</th>
+                    <td>{{ contexto_nota_salida_detalle.interlocutor_cliente }}</td>
+                    <th class="px-2">Observación Adicional</th>
+                    <td>{{ contexto_nota_salida_detalle.observacion_adicional }}</td>
+                    <th class="px-2">Estado</th>
+                    <td>{{ contexto_nota_salida_detalle.get_estado_display }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <div class="table-responsive">
     <table class="table">
         <thead>

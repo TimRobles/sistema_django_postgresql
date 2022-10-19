@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 import requests, json
 from applications.datos_globales.models import NubefactRespuesta
 
-from applications.funciones import igv, numero_espacio
+from applications.funciones import igv, numero_cero, numero_espacio, numero_guion
 from applications.importaciones import registro_guardar_user
 
 def subir_nubefact(obj, data, ruta, token, user):
@@ -190,7 +190,7 @@ def guia_nubefact(obj, user):
         fecha_de_emision = obj.fecha_emision.strftime("%d-%m-%Y")
         observaciones = obj.observaciones
         motivo_de_traslado = obj.motivo_traslado
-        peso_bruto_total = numero_espacio(obj.peso_total)
+        peso_bruto_total = numero_cero(obj.peso_total)
         numero_de_bultos = numero_espacio(obj.numero_bultos)
         if obj.transportista:
             tipo_de_transporte = '01' #TRANSPORTE PÚBLICO
@@ -204,9 +204,9 @@ def guia_nubefact(obj, user):
             transportista_denominacion = ""
         fecha_de_inicio_de_traslado = obj.fecha_traslado.strftime("%d-%m-%Y")
         transportista_placa_numero = numero_espacio(obj.placa_numero)
-        conductor_documento_tipo = numero_espacio(obj.conductor_tipo_documento)
-        conductor_documento_numero = numero_espacio(obj.conductor_numero_documento)
-        conductor_denominacion = numero_espacio(obj.conductor_denominacion)
+        conductor_documento_tipo = numero_guion(obj.conductor_tipo_documento)
+        conductor_documento_numero = numero_guion(obj.conductor_numero_documento)
+        conductor_denominacion = numero_guion(obj.conductor_denominacion)
         punto_de_partida_ubigeo = obj.ubigeo_partida.codigo
         punto_de_partida_direccion = obj.direccion_partida
         punto_de_llegada_ubigeo = obj.ubigeo_destino.codigo

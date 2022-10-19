@@ -504,7 +504,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "logistica/nota_salida/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:nota_salida_inicio')
+        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -765,7 +765,7 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
         registro_guardar(self.object, self.request)
         self.object.save()
         messages.success(request, MENSAJE_GENERAR_DESPACHO)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':despacho.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -819,7 +819,7 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "logistica/despacho/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:despacho_inicio')
+        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -834,7 +834,7 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion'] = "Concluir"
         context['titulo'] = "Despacho"
         context['dar_baja'] = "true"
-        context['item'] = self.object.numero_despacho
+        context['item'] = self.object
         return context
 
 class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
@@ -843,7 +843,7 @@ class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "logistica/despacho/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:despacho_inicio')
+        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -929,12 +929,10 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-        item = len(Guia.objects.all())
         detalles = self.object.DespachoDetalle_despacho.all()
         serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
 
         guia = Guia.objects.create(
-            numero_guia = item + 1,
             sociedad = self.object.sociedad,
             serie_comprobante = serie_comprobante,
             cliente = self.object.cliente,
@@ -960,7 +958,7 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         self.object.estado = 5
         self.object.save()
         messages.success(request, MENSAJE_GENERAR_GUIA)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':guia.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True

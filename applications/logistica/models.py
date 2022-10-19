@@ -113,6 +113,10 @@ class NotaSalida(models.Model):
         ordering = ['numero_salida',]
 
     @property
+    def fecha(self):
+        return self.created_at
+
+    @property
     def sociedad(self):
         try:
             return self.confirmacion_venta.sociedad
@@ -125,6 +129,13 @@ class NotaSalida(models.Model):
             return self.confirmacion_venta.cliente
         except:
             return self.solicitud_prestamo_materiales.cliente
+
+    @property
+    def interlocutor_cliente(self):
+        try:
+            return self.confirmacion_venta.interlocutor_cliente
+        except:
+            return self.solicitud_prestamo_materiales.interlocutor_cliente
 
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_salida, 6), self.cliente)
@@ -186,8 +197,15 @@ class Despacho(models.Model):
         verbose_name_plural = 'Despachos'
         ordering = ['numero_despacho',]
 
+    @property
+    def cliente(self):
+        try:
+            return self.nota_salida.cliente
+        except:
+            return "?"
+
     def __str__(self):
-        return str(self.numero_despacho)
+        return "%s - %s" % (numeroXn(self.numero_despacho, 6), self.cliente)
 
 class DespachoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
