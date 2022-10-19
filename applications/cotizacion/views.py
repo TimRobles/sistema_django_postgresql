@@ -1331,6 +1331,7 @@ class CotizacionVentaSociedadPdfView(View):
         Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
         Cabecera['interlocutor'] = str(obj.cliente_interlocutor)
         Cabecera['fecha_validez'] = obj.fecha_validez.strftime('%d/%m/%Y')
+        Cabecera['vendedor'] = str(obj.created_by.get_full_name())
 
         TablaEncabezado = [ 'Item',
                             'Descripción',
