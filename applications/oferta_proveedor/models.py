@@ -66,7 +66,9 @@ class OfertaProveedorDetalle(models.Model):
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, default=8)
     oferta_proveedor = models.ForeignKey(OfertaProveedor, on_delete=models.CASCADE, related_name='OfertaProveedorDetalle_oferta_proveedor')
-
+    imagen = models.ImageField('Imagen', upload_to='img/oferta_proveedor/detalle/imagen/', height_field=None, width_field=None, max_length=None, blank=True, null=True)
+    especificaciones_tecnicas = models.FileField('Especificaciones Técnicas', upload_to = 'file/oferta_proveedor/detalle/especificaciones_tecnicas/', max_length=100, blank=True, null=True)
+    
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OfertaProveedorDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -89,7 +91,7 @@ class OfertaProveedorDetalle(models.Model):
 
 class ArchivoOfertaProveedor(models.Model):
 
-    archivo = models.FileField('Archivo', blank=True, null=True)
+    archivo = models.FileField('Archivo', upload_to = 'file/oferta_proveedor/detalle/archivo/', max_length=100, blank=True, null=True)
     oferta_proveedor = models.ForeignKey(OfertaProveedor, on_delete=models.PROTECT)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

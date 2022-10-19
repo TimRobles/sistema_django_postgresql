@@ -50,6 +50,8 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
             'sub_total',
             'igv',
             'total',
+            'imagen',
+            'especificaciones_tecnicas',
             )
 
     def __init__(self, *args, **kwargs):
