@@ -19,6 +19,8 @@
                 <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
+                <th>Imagen</th>
+                <th>Especificaciones Técnicas</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -40,11 +42,21 @@
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.sub_total|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.total|redondear|intcomma }}</td>
- 
+                    <td class="text-center">
+                        {% if material.imagen %}
+                            <a href="{{ MEDIA_URL }}{{ material.imagen}}" target="_blank">Ver Imagen</a> 
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if material.especificaciones_tecnicas %}
+                            <a href="{{ MEDIA_URL }}{{ material.especificaciones_tecnicas }}" target="_blank">Ver Archivo</a>
+                        {% endif %}
+                    </td>
                     <td class="text-center text-nowrap">
                         {% if contexto_oferta_proveedor.estado == 1 %}
                             <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_material' material.id %}"
                                 data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                                data-modal="modal-xl"
                                 data-keep-open="true"
                                 class="update btn btn-warning btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">

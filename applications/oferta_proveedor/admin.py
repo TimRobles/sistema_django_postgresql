@@ -5,9 +5,9 @@ class OfertaProveedorAdmin(admin.ModelAdmin):
     '''Admin View for OfertaProveedor'''
 
     list_display = (
-        'fecha',
-        'internacional_nacional',
         'requerimiento_material',
+        'internacional_nacional',
+        'fecha',
         'moneda',
         'descuento_global',
         'total_descuento',
@@ -51,6 +51,8 @@ class OfertaProveedorDetalleAdmin(admin.ModelAdmin):
         'total',
         'tipo_igv',
         'oferta_proveedor',
+        'imagen',
+        'especificaciones_tecnicas',
         'created_at',
         'created_by',
         'updated_at',
