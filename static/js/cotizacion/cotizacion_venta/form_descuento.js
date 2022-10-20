@@ -63,6 +63,7 @@ for (let index = 1; index < inputs.length; index++) {
     if (contador == 1) {
         contador--;
         element.addEventListener('input', calcular_sin_igv);
+        element.addEventListener('change', calcular_con_igv);
     }else {
         contador++;
         element.addEventListener('input', calcular_con_igv);
