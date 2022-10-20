@@ -573,14 +573,17 @@ class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
         orden_detalle = OrdenCompraDetalle.objects.filter(
             content_type = content_type,
             id_registro = id_registro,
-        ).exclude(orden_compra__estado=4)
+        )
 
         for detalle in orden_detalle:
-            detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
-            detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+            try:
+                detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
+                detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
 
-            comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
-
+                comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+            except:
+                continue
+            
             detalle.logistico = comprobante_compra.logistico
             
             try:

@@ -1427,13 +1427,16 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
         orden_detalle = OrdenCompraDetalle.objects.filter(
             content_type = content_type,
             id_registro = id_registro,
-        ).exclude(orden_compra__estado=4)
+        )
         
         for detalle in orden_detalle:
-            detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
-            detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
-            
-            comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+            try:
+                detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
+                detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+                
+                comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+            except:
+                continue
             
             detalle.logistico = comprobante_compra.logistico
             
@@ -1472,19 +1475,22 @@ def ComprobanteView(request, id_comprobante, comprobante_content_type, id_materi
     orden_detalle = OrdenCompraDetalle.objects.filter(
         content_type = material_content_type,
         id_registro = id_material,
-    ).exclude(orden_compra__estado=4)
+    )
 
     precio = Decimal('0.00')
     moneda = None
     logistico = Decimal('0.00')
     
     for detalle in orden_detalle:
-        comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
-        if comprobante_compra.id == id_comprobante and ContentType.objects.get_for_model(comprobante_compra) == comprobante_content_type:
-            if detalle.id_registro == id_material and detalle.content_type == material_content_type:
-                precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
-                moneda = comprobante_compra.moneda
-                logistico = comprobante_compra.logistico
+        try:
+            comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+            if comprobante_compra.id == id_comprobante and ContentType.objects.get_for_model(comprobante_compra) == comprobante_content_type:
+                if detalle.id_registro == id_material and detalle.content_type == material_content_type:
+                    precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+                    moneda = comprobante_compra.moneda
+                    logistico = comprobante_compra.logistico
+        except:
+            continue
 
     
     return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
