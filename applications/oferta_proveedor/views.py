@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from applications.importaciones import *
 from applications.oferta_proveedor.models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
-from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorDetalleProveedorMaterialUpdateForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm, OfertaProveedorMonedaForm, OrdenCompraSociedadForm
+from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorComentarioForm, OfertaProveedorDetalleProveedorMaterialUpdateForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm, OfertaProveedorMonedaForm, OrdenCompraSociedadForm
 from applications.funciones import igv, numeroXn, obtener_totales
 from applications.funciones import slug_aleatorio
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
@@ -27,6 +27,26 @@ def OfertaProveedorTabla(request):
             request=request
         )
         return JsonResponse(data)
+
+class OfertaProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('oferta_proveedor.change_ofertaproveedor')
+
+    model = OfertaProveedor
+    template_name = "includes/formulario generico.html"
+    form_class = OfertaProveedorComentarioForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['slug']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(OfertaProveedorUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Condiciones"
+        return context
 
 class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('oferta_proveedor.change_ofertaproveedor')

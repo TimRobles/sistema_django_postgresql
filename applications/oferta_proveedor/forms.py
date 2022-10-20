@@ -19,6 +19,18 @@ class OfertaProveedorForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class OfertaProveedorComentarioForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedor
+        fields=(
+            'condiciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorComentarioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class OfertaProveedorMonedaForm(BSModalModelForm):
     class Meta:
         model = OfertaProveedor
@@ -56,9 +68,14 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(OfertaProveedorDetalleUpdateForm, self).__init__(*args, **kwargs)
+        internacional_nacional = self.instance.oferta_proveedor.internacional_nacional
         self.fields['name'].initial = self.instance.proveedor_material.name
         self.fields['brand'].initial = self.instance.proveedor_material.brand
         self.fields['description'].initial = self.instance.proveedor_material.description
+        if internacional_nacional == 1:
+            self.fields['precio_unitario_sin_igv'].widget = forms.HiddenInput()
+            self.fields['sub_total'].widget = forms.HiddenInput()
+            self.fields['igv'].widget = forms.HiddenInput()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         

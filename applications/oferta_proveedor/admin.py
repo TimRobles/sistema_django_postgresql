@@ -5,6 +5,7 @@ class OfertaProveedorAdmin(admin.ModelAdmin):
     '''Admin View for OfertaProveedor'''
 
     list_display = (
+        'id',
         'requerimiento_material',
         'internacional_nacional',
         'fecha',

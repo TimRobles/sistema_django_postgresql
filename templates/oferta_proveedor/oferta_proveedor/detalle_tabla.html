@@ -5,6 +5,49 @@
     <table class="table">
         <thead>
             <tr>
+                <th>Condiciones</th>
+                <th class="text-end">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if contexto_oferta_proveedor.condiciones %}
+                        {{ contexto_oferta_proveedor.condiciones|linebreaks }}
+                    {% endif %}
+                </td>
+                <td class="text-end text-nowrap">
+                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar' contexto_oferta_proveedor.slug %}"
+                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>Materiales
+    {% if contexto_oferta_proveedor.estado == 1 %}
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_material' contexto_oferta_proveedor.slug %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+            class="create badge bg-primary">
+            Agregar Material
+        </button>
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_crear_material' contexto_oferta_proveedor.slug %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+            class="create badge bg-primary">
+            Crear Material
+        </button>
+    {% endif %}
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
                 <th>Item</th>
                 <th>Name</th>
                 <th>Brand</th>
@@ -83,48 +126,70 @@
         </tbody>
         <tfoot>
             <tr>
+                {% if totales.descuento_global %}
                 <td colspan="11" class="text-end">Descuento Global:</td>
                 <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.descuento_global|intcomma }}</td>
+                {% endif %}     
             </tr>            
             <tr>
+                {% if totales.total_descuento %}
                 <td colspan="11" class="text-end">Descuento Total:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_descuento|intcomma }}</td>
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_descuento|intcomma }}</td>   
+                {% endif %}
             </tr>           
              <tr>
-                <td colspan="11" class="text-end">Anticipo:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>
+                {% if totales.total_anticipo %}
+                    <td colspan="11" class="text-end">Anticipo:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>
+                {% endif %}
             </tr>
             <tr>
+                {% if totales.total_exonerada %}
                 <td colspan="11" class="text-end">Exonerada:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_exonerada|intcomma }}</td>
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_exonerada|intcomma }}</td>   
+                {% endif %}
             </tr>
             <tr>
-                <td colspan="11" class="text-end">Inafecta:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
+                {% if totales.total_inafecta %}
+                    <td colspan="11" class="text-end">Inafecta:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
+                {% endif %}
             </tr>
             <tr>
-                <td colspan="11" class="text-end">Gravada:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
+                {% if totales.total_gravada %}
+                    <td colspan="11" class="text-end">Gravada:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
+                {% endif %}
             </tr>
             <tr>
-                <td colspan="11" class="text-end">IGV:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
+                {% if totales.total_igv %}
+                    <td colspan="11" class="text-end">IGV:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
+                {% endif %}
             </tr>
             <tr>
-                <td colspan="11" class="text-end">Gratuita:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
+                {% if totales.total_gratuita %}
+                    <td colspan="11" class="text-end">Gratuita:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
+                {% endif %}
             </tr>
             <tr>
-                <td colspan="11" class="text-end">Otros Cargos:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
+                {% if totales.total_otros_cargos %}
+                    <td colspan="11" class="text-end">Otros Cargos:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
+                {% endif %}
             </tr>
             <tr>
-                <td colspan="11" class="text-end">ICBPER:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
+                {% if totales.total_icbper %}
+                    <td colspan="11" class="text-end">ICBPER:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
+                {% endif %}
             </tr>
             <tr>
-                <td colspan="11" class="text-end">Total:</td>
-                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total|intcomma }}</td>
+                {% if totales.total %}
+                    <td colspan="11" class="text-end">Total:</td>
+                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total|intcomma }}</td>
+                {% endif %}
             </tr>
         </tfoot>
     </table>

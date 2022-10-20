@@ -25,11 +25,11 @@
     </h3>
     
     {% if contexto_oferta_proveedor.estado == 1 %}
-    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_moneda' contexto_oferta_proveedor.slug %}"
-        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
-        class="create btn btn-primary">
-        Actualizar Moneda
-    </button>
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_moneda' contexto_oferta_proveedor.slug %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+            class="update btn btn-primary">
+            Actualizar Moneda
+        </button>
     {% endif %}
 
     {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 and not contexto_oferta_proveedor.OrdenCompra_oferta_proveedor %}
@@ -59,7 +59,6 @@
                     <th>Fecha</th>
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
-                    <th>Comentario</th>
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -68,28 +67,12 @@
                     <td>{{ contexto_oferta_proveedor.requerimiento_material.fecha|date:'d/m/Y' }}</td>
                     <td>{{ contexto_oferta_proveedor.requerimiento_material.proveedor }}</td>
                     <td>{{ contexto_oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
-                    <td>{{ contexto_oferta_proveedor.requerimiento_material.comentario }}</td>
                     <td>{{ contexto_oferta_proveedor.get_estado_display }}</td>
-
                 </tr>
             </tbody>
         </table>
     </div>
     <br>
-    <h3>Materiales
-        {% if contexto_oferta_proveedor.estado == 1 %}
-            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_material' contexto_oferta_proveedor.slug %}"
-                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
-                class="create badge bg-primary">
-                Agregar Material
-            </button>
-            <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_crear_material' contexto_oferta_proveedor.slug %}"
-                data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
-                class="create badge bg-primary">
-                Crear Material
-            </button>
-        {% endif %}
-    </h3>
     <div id="tabla">
         {% include 'oferta_proveedor/oferta_proveedor/detalle_tabla.html' %}
     </div>
