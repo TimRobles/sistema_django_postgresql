@@ -1,3 +1,4 @@
+{% load funciones_propias %}
 <table class="table">
     <thead>
         <tr>
@@ -15,7 +16,7 @@
     <tbody>
         {% for despacho in contexto_despacho %}
         <tr>
-            <td> {{ despacho.numero_despacho }} </td>
+            <td> {{ despacho.numero_despacho|numeroXn:6 }} </td>
             <td> {{ despacho.cliente  }} </td>
             <td> {{ despacho.fecha_despacho|date:'d/m/Y' }} </td>
             <td>

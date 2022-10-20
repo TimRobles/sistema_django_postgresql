@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 
@@ -6,7 +7,7 @@ class TipoCambioManager(models.Manager):
         try:
             return self.filter(fecha=fecha).latest('created_at').venta
         except:
-            return None
+            return Decimal('1.00')
 
 
 class SeriesComprobanteManager(models.Manager):

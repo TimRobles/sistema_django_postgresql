@@ -7,7 +7,7 @@ def retornar_fecha(movimiento):
 
 class MovimientoAlmacenManager(models.Manager):
     def ver_movimientos(self, content_type, id_registro):
-        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19]
+        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19, 22]
         consulta = self.filter(
             content_type_producto = content_type,
             id_registro_producto = id_registro,

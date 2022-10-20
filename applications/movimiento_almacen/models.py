@@ -74,7 +74,10 @@ class MovimientosAlmacen(models.Model):
 
     @property
     def documento_proceso(self):
-        return self.content_type_documento_proceso.model_class().objects.get(id=self.id_registro_documento_proceso)
+        try:
+            return self.content_type_documento_proceso.model_class().objects.get(id=self.id_registro_documento_proceso)
+        except:
+            return "Error"
 
     def valor(self):
         return self.cantidad * self.signo_factor_multiplicador

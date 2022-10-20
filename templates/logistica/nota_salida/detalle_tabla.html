@@ -44,6 +44,8 @@
                 <th>Sede</th>
                 <th>Almacén</th>
                 <th class="text-end">Cantidad de Salida</th>
+                <th class="text-end">Cantidad Despachada</th>
+                <th class="text-end">Pendiente</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -64,6 +66,8 @@
                         {% endif %}
                     </td>
                     <td class="text-end">{{ material.cantidad_salida|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.despachado|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_nota_salida_detalle.estado == 1 %}
                             <button data-form-url="{% url 'logistica_app:nota_salida_detalle_actualizar' material.id %}"
