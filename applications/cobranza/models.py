@@ -19,7 +19,7 @@ class LineaCredito(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='LineaCredito_cliente', blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
-    condiciones_pago = models.CharField('Condiciones de pago', max_length=250)
+    condiciones_pago = models.CharField('Condiciones de pago', max_length=250, help_text='Factura a 30 días')
     estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -53,7 +53,7 @@ class SolicitudCredito(models.Model):
     cotizacion_venta = models.OneToOneField(CotizacionVenta, on_delete=models.CASCADE, related_name='SolicitudCredito_cotizacion_venta')
     total_cotizado = models.DecimalField('Total Cotizado', max_digits=14, decimal_places=2, default=0)
     total_credito = models.DecimalField('Total Crédito', max_digits=14, decimal_places=2, default=0)
-    condiciones_pago = models.CharField('Condiciones de pago', max_length=250, blank=True, null=True)
+    condiciones_pago = models.CharField('Condiciones de pago', max_length=250, blank=True, null=True, help_text='Factura a 30 días')
     interlocutor_solicita = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, blank=True, null=True)
     estado = models.IntegerField(choices=ESTADO_SOLICITUD, default=1)
     aprobado_por = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Aprobado por', on_delete=models.RESTRICT, blank=True, null=True)
