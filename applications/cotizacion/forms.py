@@ -335,8 +335,8 @@ class CosteadorForm (BSModalModelForm):
             'precio_compra',
             'logistico',
             'margen_venta',
-            'precio_final',
             'precio_sin_igv',
+            'precio_final',
         )
     
     def __init__(self, *args, **kwargs):
