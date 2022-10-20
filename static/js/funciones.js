@@ -229,8 +229,15 @@ $(function () {
     };
 
     function checkbox_div() {
-        $(".form-check-input").wrap("<div class='input-group-text'></div>");
+        checks = $(".form-check-input");
+        for (let index = 0; index < checks.length; index++) {
+            const element = checks[index];
+            if (element.parentElement.className != "input-group-text") {
+                element.outerHTML = "<div class='input-group-text'>" + element.outerHTML + "</div>";
+            }
+        }
     };
+    checkbox_div();
 
     function reemplazarTexto(e) {
         for (let index = 0; index < document.getElementsByTagName('a').length; index++) {

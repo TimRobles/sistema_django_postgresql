@@ -383,7 +383,9 @@
                         </button>
 
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_costeador' material.id %}"
-                            class="read btn btn-success btn-sm"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"    
+                            data-modal="modal-xl"
+                            class="update btn btn-success btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Costeador">
                             <i class="bi bi-calculator"></i>
                         </button>

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
+from applications.datos_globales.models import Moneda
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.cotizacion.models import ConfirmacionOrdenCompra, ConfirmacionVenta, ConfirmacionVentaCuota, CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
@@ -297,3 +298,29 @@ class ConfirmacionOrdenCompraForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
             
+class CosteadorForm (BSModalModelForm):
+    comprobante = forms.ChoiceField(choices=[(0,0)], required=False)
+    moneda = forms.ModelChoiceField(queryset=Moneda.objects.filter(estado=1))
+    precio_compra = forms.DecimalField()
+    logistico = forms.DecimalField()
+    margen_venta = forms.DecimalField()
+    precio_final = forms.DecimalField()
+    precio_sin_igv = forms.DecimalField()
+    class Meta:
+        model = CotizacionVentaDetalle
+        fields = (
+            'comprobante',
+            'moneda',
+            'precio_compra',
+            'logistico',
+            'margen_venta',
+            'precio_final',
+            'precio_sin_igv',
+        )
+    
+    def __init__(self, *args, **kwargs):
+        precios = kwargs.pop('precios')
+        super(CosteadorForm, self).__init__(*args, **kwargs)
+        self.fields['comprobante'].choices = precios
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

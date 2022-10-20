@@ -1395,7 +1395,7 @@ class IdiomaMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class PrecioListaMaterialCreateView(BSModalCreateView):
     model = PrecioListaMaterial
-    template_name = "material/material/form-precio.html"
+    template_name = "material/material/form_precio.html"
     form_class = PrecioListaMaterialForm
 
     def get_success_url(self, **kwargs):

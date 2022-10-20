@@ -293,6 +293,7 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
         Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
         Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
         Cabecera['interlocutor'] = str(obj.interlocutor_cliente)
+        Cabecera['comentario'] = str(obj.comentario)
 
         TablaEncabezado = [ 'Item',
                             'Descripción',

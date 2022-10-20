@@ -94,3 +94,22 @@ $('#id_precio_lista').on('input', function (e) {
 });
 
 seleccionar_comprobante($('#id_comprobante')[0].value);
+
+function select_form() {
+    combos = document.getElementsByClassName('select2');
+    for (let index = 0; index < combos.length; index++) {
+        const element = combos[index];
+        element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control');
+        element.className = element.className.replace('select2-container--default', 'form-control');
+    }
+}
+
+$('.btn-primary').unbind().on('click', function () {
+    setTimeout(() => {
+        select_form();
+    }, 500);
+})
+
+setTimeout(() => {
+    select_form();
+}, 500);
