@@ -104,6 +104,7 @@ class CotizacionVentaMaterialDetalleForm(BSModalForm):
         super(CotizacionVentaMaterialDetalleForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
 
 
 class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
@@ -120,6 +121,7 @@ class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
         super(CotizacionVentaMaterialDetalleUpdateForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
         
 
         
@@ -157,6 +159,11 @@ class PrecioListaMaterialForm (BSModalModelForm):
         self.fields['comprobante'].choices = precios
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['precio_compra'].widget.attrs['min'] = 0
+        self.fields['logistico'].widget.attrs['min'] = 0
+        self.fields['margen_venta'].widget.attrs['min'] = 0
+        self.fields['precio_lista'].widget.attrs['min'] = 0
+        self.fields['precio_sin_igv'].widget.attrs['min'] = 0
 
 class CotizacionVentaPdfsForm(BSModalForm):
     pass
@@ -218,6 +225,15 @@ class SolicitudCreditoForm(BSModalModelForm):
             'interlocutor_solicita',
             )
 
+    def clean_total_credito(self):
+        total_credito = self.cleaned_data.get('total_credito')
+        if total_credito == 0:
+            self.add_error('total_credito', 'Ingrese un monto.')
+        if total_credito > self.instance.total_cotizado:
+            self.add_error('total_credito', 'El monto solicitado no puede ser mayor al monto cotizado.')
+    
+        return total_credito
+
     def __init__(self, *args, **kwargs):
         super(SolicitudCreditoForm, self).__init__(*args, **kwargs)
         lista_interlocutor = []
@@ -227,6 +243,7 @@ class SolicitudCreditoForm(BSModalModelForm):
         self.fields['interlocutor_solicita'].queryset = interlocutores
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
 
 
 class SolicitudCreditoCuotaForm(BSModalModelForm):
@@ -250,6 +267,8 @@ class SolicitudCreditoCuotaForm(BSModalModelForm):
         super(SolicitudCreditoCuotaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['monto'].widget.attrs['min'] = 0
+        self.fields['dias_pago'].widget.attrs['min'] = 0
 
 
 class ConfirmacionVentaCuotaForm(BSModalModelForm):
@@ -273,6 +292,8 @@ class ConfirmacionVentaCuotaForm(BSModalModelForm):
         super(ConfirmacionVentaCuotaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['monto'].widget.attrs['min'] = 0
+        self.fields['dias_pago'].widget.attrs['min'] = 0
 
 
 class ConfirmacionOrdenCompraForm(BSModalModelForm):

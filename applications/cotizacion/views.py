@@ -1920,6 +1920,18 @@ class SolicitudCreditoFinalizarView(DeleteView):
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cuotas = False
+        context['titulo'] = 'Error de guardar'
+        if self.get_object().total_cuotas == 0 or self.get_object().total_cuotas != self.get_object().total_credito:
+            error_cuotas = True
+
+        if error_cuotas:
+            context['texto'] = 'El total de las cuotas no coincide con el monto solicitado.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(SolicitudCreditoFinalizarView, self).dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
