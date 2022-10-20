@@ -246,8 +246,7 @@
                     <td>{{ cotizacion.moneda.simbolo }} {{ cotizacion.SolicitudCredito_cotizacion_venta.total_credito|intcomma }}</td>
                     {% endif %}
                     <td rowspan="2" class="ps-2">
-                        
-                        {% if 4 > cotizacion.estado > 1 %}
+                        {% if cotizacion.estado > 1 %}
                         <a href="{% url 'cotizacion_app:solicitud_credito' cotizacion.id %}"
                         class="update btn btn-warning">
                             Solicitud de Crédito
