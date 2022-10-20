@@ -21,6 +21,7 @@ from .forms import (
     ConfirmacionOrdenCompraForm,
     ConfirmacionVentaCuotaForm,
     ConfirmacionVentaFormaPagoForm,
+    CosteadorForm,
     CotizacionVentaClienteForm,
     CotizacionVentaDescuentoGlobalForm,
     CotizacionVentaDetalleForm,
@@ -544,11 +545,27 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaCosteadorDetalleView(BSModalReadView):
+class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
     model = CotizacionVentaDetalle
-    template_name = "cotizacion/cotizacion_venta/form-precio.html"
+    template_name = "cotizacion/cotizacion_venta/form_precio.html"
+    form_class = CosteadorForm
+    success_url = '.'
 
-    def get_context_data(self, **kwargs):
+    def form_valid(self, form):
+        if form.cleaned_data.get('precio_final') > form.instance.precio_unitario_con_igv:
+            form.add_error('precio_final', 'El precio no puede ser mayor al precio de lista')
+            return super().form_invalid(form)
+        respuesta = calculos_linea(form.instance.cantidad, form.instance.precio_unitario_con_igv, form.cleaned_data.get('precio_final'), igv(), form.instance.tipo_igv)
+        form.instance.precio_final_con_igv = form.cleaned_data.get('precio_final')
+        form.instance.sub_total = respuesta['subtotal']
+        form.instance.descuento = respuesta['descuento']
+        form.instance.igv = respuesta['igv']
+        form.instance.total = respuesta['total']
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
         precios = []
         content_type = self.object.content_type
         id_registro = self.object.id_registro
@@ -564,23 +581,30 @@ class CotizacionVentaCosteadorDetalleView(BSModalReadView):
             comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
 
             detalle.logistico = comprobante_compra.logistico
+            
+            try:
+                recepcion = RecepcionCompra.objects.get(
+                    content_type = ContentType.objects.get_for_model(comprobante_compra),
+                    id_registro = comprobante_compra.id,
+                    estado = 1,
+                )
 
-            recepcion = RecepcionCompra.objects.get(
-                content_type = ContentType.objects.get_for_model(comprobante_compra),
-                id_registro = comprobante_compra.id,
-                estado = 1,
-            )
+                detalle.fecha_recepcion = recepcion.fecha_recepcion
+                detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
+                valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.object.id_registro, self.object.content_type.id)
+                precios.append((valor, recepcion.numero_comprobante_compra))
+            except:
+                pass
+        
+        self.kwargs['precios'] = orden_detalle
+        kwargs['precios'] = precios
+        return kwargs
 
-            detalle.fecha_recepcion = recepcion.fecha_recepcion
-            detalle.numero_comprobante_compra = recepcion.numero_comprobante_compra
-            valor = "%s|%s|%s|%s" % (comprobante_compra.id, ContentType.objects.get_for_model(comprobante_compra).id, self.object.id_registro, self.object.content_type)
-            precios.append((valor, recepcion.numero_comprobante_compra))
-
-
+    def get_context_data(self, **kwargs):
         context = super(CotizacionVentaCosteadorDetalleView, self).get_context_data(**kwargs)
         context['accion']="Costeador"
         context['titulo']="Precio"
-        context['precios'] = orden_detalle
+        context['precios'] = self.kwargs['precios']
         return context
 
 class CotizacionVentaDetalleDeleteView(BSModalDeleteView):
