@@ -1427,7 +1427,7 @@ class PrecioListaMaterialCreateView(BSModalCreateView):
         orden_detalle = OrdenCompraDetalle.objects.filter(
             content_type = content_type,
             id_registro = id_registro,
-        )
+        ).exclude(orden_compra__estado=4)
         
         for detalle in orden_detalle:
             detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
@@ -1472,7 +1472,7 @@ def ComprobanteView(request, id_comprobante, comprobante_content_type, id_materi
     orden_detalle = OrdenCompraDetalle.objects.filter(
         content_type = material_content_type,
         id_registro = id_material,
-    )
+    ).exclude(orden_compra__estado=4)
 
     precio = Decimal('0.00')
     moneda = None

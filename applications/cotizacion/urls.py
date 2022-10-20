@@ -12,6 +12,7 @@ urlpatterns = [
     path('cotizacion-venta/ver/tabla/<int:id_cotizacion>/', views.CotizacionVentaVerTabla, name='cotizacion_venta_ver_tabla'),
     path('cotizacion-venta/ver/agregar-material/<int:cotizacion_id>/', views.CotizacionVentaMaterialDetalleView.as_view(), name='cotizacion_venta_agregar_material'),
     path('cotizacion-venta/ver/cliente/<pk>/', views.CotizacionVentaClienteView.as_view(), name='cotizacion_venta_cliente'),
+    path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDeleteView.as_view(), name='cotizacion_venta_eliminar'),
     path('cotizacion-venta/anular/<pk>/', views.CotizacionVentaAnularView.as_view(), name='cotizacion_venta_anular'),
     path('cotizacion-venta/clonar/<pk>/', views.CotizacionVentaClonarView.as_view(), name='cotizacion_venta_clonar'),
     

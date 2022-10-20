@@ -573,7 +573,7 @@ class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
         orden_detalle = OrdenCompraDetalle.objects.filter(
             content_type = content_type,
             id_registro = id_registro,
-        )
+        ).exclude(orden_compra__estado=4)
 
         for detalle in orden_detalle:
             detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
@@ -679,6 +679,19 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         context['material'] = self.object.content_type.get_object_for_this_type(id = self.object.id_registro)
         return context
 
+
+class CotizacionVentaDeleteView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+    
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Cotización"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+    
 
 class CotizacionVentaAnularView(DeleteView):
     model = CotizacionVenta
