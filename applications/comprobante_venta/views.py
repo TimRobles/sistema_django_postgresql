@@ -111,7 +111,7 @@ class FacturaVentaCrearView(DeleteView):
         context = {}
         error_codigo_sunat = False
         context['titulo'] = 'Error de guardar'
-        detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
+        detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
         for detalle in detalles:
             producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
             if not producto.producto_sunat:
@@ -735,7 +735,7 @@ class BoletaVentaCrearView(DeleteView):
         context = {}
         error_codigo_sunat = False
         context['titulo'] = 'Error de guardar'
-        detalles = self.object.ConfirmacionVentaDetalle_confirmacion_venta.all()
+        detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
         for detalle in detalles:
             producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
             if not producto.producto_sunat:

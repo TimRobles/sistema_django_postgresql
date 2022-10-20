@@ -93,11 +93,14 @@ $('#id_precio_final').on('input', function (e) {
     calcular_precio_sin_igv();
 });
 
-seleccionar_comprobante($('#id_comprobante')[0].value);
+setTimeout(() => {
+    seleccionar_comprobante($('#id_comprobante')[0].value);
+}, 100);
+
 setTimeout(() => {
     calcular_margen_venta();
     calcular_precio_sin_igv();
-}, 100);
+}, 200);
 
 
 function select_form() {
