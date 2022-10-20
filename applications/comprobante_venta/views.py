@@ -107,6 +107,21 @@ class FacturaVentaCrearView(DeleteView):
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_codigo_sunat = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
+        for detalle in detalles:
+            producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            if not producto.producto_sunat:
+                error_codigo_sunat = True
+
+        if error_codigo_sunat:
+            context['texto'] = 'Hay productos sin Código de Sunat.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(FacturaVentaCrearView, self).dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.object.id})
 
@@ -715,6 +730,21 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
 class BoletaVentaCrearView(DeleteView):
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_codigo_sunat = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
+        for detalle in detalles:
+            producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            if not producto.producto_sunat:
+                error_codigo_sunat = True
+
+        if error_codigo_sunat:
+            context['texto'] = 'Hay productos sin Código de Sunat.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(BoletaVentaCrearView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.object.id})

@@ -1,7 +1,7 @@
 function seleccionar_proveedor(id_proveedor) {
     $interlocutor = $('#id_interlocutor_proveedor')[0];
     
-    url = '/requerimiento_material/proveedor-interlocutor/' + id_proveedor + '/';
+    url = '/requerimiento-material/proveedor-interlocutor/' + id_proveedor + '/';
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);

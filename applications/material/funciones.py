@@ -24,7 +24,7 @@ def disponible(content_type, id_registro, id_sociedad, id_almacen=None):
     return total
 
 def vendible(content_type, id_registro, id_sociedad, id_almacen=None):
-    return disponible(content_type, id_registro, id_sociedad, id_almacen) - reservado(content_type, id_registro, id_sociedad) - confirmado(content_type, id_registro, id_sociedad)
+    return disponible(content_type, id_registro, id_sociedad, id_almacen) - reservado(content_type, id_registro, id_sociedad) - confirmado(content_type, id_registro, id_sociedad) - prestado(content_type, id_registro, id_sociedad)
 
 def reservado(content_type, id_registro, id_sociedad): #No tiene almacén
     reservado = TipoStock.objects.get(codigo=16)
@@ -46,6 +46,24 @@ def reservado(content_type, id_registro, id_sociedad): #No tiene almacén
 
 def confirmado(content_type, id_registro, id_sociedad): #No tiene almacén
     confirmado = TipoStock.objects.get(codigo=17)
+    total = Decimal('0.00')
+    try:
+        movimientos = MovimientosAlmacen.objects.filter(
+                        content_type_producto = content_type,
+                        id_registro_producto = id_registro,
+                        sociedad__id = id_sociedad,
+                    ).filter(
+                        tipo_stock = confirmado,
+                    )
+        for movimiento in movimientos:
+            total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+    except:
+        pass
+
+    return total
+
+def prestado(content_type, id_registro, id_sociedad): #No tiene almacén
+    confirmado = TipoStock.objects.get(codigo=22)
     total = Decimal('0.00')
     try:
         movimientos = MovimientosAlmacen.objects.filter(

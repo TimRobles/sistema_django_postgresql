@@ -10,7 +10,7 @@
             <th>Fecha Validez</th>
             <th class="text-end">Total</th>
             <th>Estado</th>
-            <th>Usuario</th>
+            <th>Vendedor</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -34,6 +34,14 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                         <i class="bi bi-eye-fill"></i>
                     </a>
+                    
+                    {% if cotizacion.estado == 1 %}
+                    <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_eliminar' cotizacion.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %} 

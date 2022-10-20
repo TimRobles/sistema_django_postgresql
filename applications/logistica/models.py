@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -36,6 +37,10 @@ class SolicitudPrestamoMateriales(models.Model):
         verbose_name = 'Solicitud Prestamo Materiales'
         verbose_name_plural = 'Solicitudes Prestamo Materiales'
         ordering = ['numero_prestamo',]
+
+    @property
+    def fecha(self):
+        return self.fecha_prestamo
 
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_prestamo, 6), self.cliente)
@@ -113,6 +118,20 @@ class NotaSalida(models.Model):
         ordering = ['numero_salida',]
 
     @property
+    def pendiente(self):
+        total = Decimal('0.00')
+        try:
+            for detalle in self.NotaSalidaDetalle_nota_salida.all():
+                total += detalle.pendiente
+        except:
+            pass
+        return total
+
+    @property
+    def fecha(self):
+        return self.created_at
+
+    @property
     def sociedad(self):
         try:
             return self.confirmacion_venta.sociedad
@@ -125,6 +144,13 @@ class NotaSalida(models.Model):
             return self.confirmacion_venta.cliente
         except:
             return self.solicitud_prestamo_materiales.cliente
+
+    @property
+    def interlocutor_cliente(self):
+        try:
+            return self.confirmacion_venta.interlocutor_cliente
+        except:
+            return self.solicitud_prestamo_materiales.interlocutor_cliente
 
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_salida, 6), self.cliente)
@@ -156,6 +182,22 @@ class NotaSalidaDetalle(models.Model):
         except:
             return self.solicitud_prestamo_materiales_detalle.producto
 
+    @property
+    def despachado(self):
+        total = Decimal('0.00')
+        try:
+            for despacho in self.nota_salida.Despacho_nota_salida.all():
+                for detalle in despacho.DespachoDetalle_despacho.all():
+                    if detalle.producto == self.producto:
+                        total += detalle.cantidad_despachada
+        except:
+            pass
+        return total
+
+    @property
+    def pendiente(self):
+        return self.cantidad_salida - self.despachado
+
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
 
@@ -168,7 +210,7 @@ class Despacho(models.Model):
     (5, 'CONCLUIDO CON GUIA'),
 )
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
-    nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE,blank=True, null=True)
+    nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE,blank=True, null=True, related_name='Despacho_nota_salida')
     numero_despacho = models.CharField('Número Despacho', max_length=50, blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE,blank=True, null=True)
     fecha_despacho = models.DateField('Fecha Despacho', auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -187,7 +229,7 @@ class Despacho(models.Model):
         ordering = ['numero_despacho',]
 
     def __str__(self):
-        return str(self.numero_despacho)
+        return "%s - %s" % (numeroXn(self.numero_despacho, 6), self.cliente)
 
 class DespachoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)

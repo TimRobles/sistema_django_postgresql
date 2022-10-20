@@ -31,38 +31,38 @@ function seleccionar_comprobante(valores) {
     }
 }
 
-function calcular_precio_lista() {
+function calcular_precio_final() {
     $margen_venta =$('#id_margen_venta')[0].value;
     $precio_compra = $('#id_precio_compra')[0].value;
     $logistico = $('#id_logistico')[0].value;
 
-    $precio_lista = $('#id_precio_lista')[0];
+    $precio_final = $('#id_precio_final')[0];
     
-    $precio_lista.value = Math.round(10000000000*$precio_compra*$logistico*$margen_venta)/10000000000;
+    $precio_final.value = Math.round(10000000000*$precio_compra*$logistico*$margen_venta)/10000000000;
     
-    console.log($precio_lista.value);
+    console.log($precio_final.value);
     
 }
 
 function calcular_margen_venta() {
     $precio_compra = $('#id_precio_compra')[0].value;
     $logistico = $('#id_logistico')[0].value;
-    $precio_lista = $('#id_precio_lista')[0].value;
+    $precio_final = $('#id_precio_final')[0].value;
     
     $margen_venta = $('#id_margen_venta')[0];
 
-    $margen_venta.value = Math.round(10000000000*$precio_lista/($precio_compra*$logistico))/10000000000;
+    $margen_venta.value = Math.round(10000000000*$precio_final/($precio_compra*$logistico))/10000000000;
 
     console.log($margen_venta);
     
 }
 
 function calcular_precio_sin_igv() {
-    $precio_lista = $('#id_precio_lista')[0].value;
+    $precio_final = $('#id_precio_final')[0].value;
     $valor_igv = 0.18
     $precio_sin_igv = $('#id_precio_sin_igv')[0];
 
-    $precio_sin_igv.value = Math.round(($precio_lista/(1 + $valor_igv))*10000000000)/10000000000;
+    $precio_sin_igv.value = Math.round(($precio_final/(1 + $valor_igv))*10000000000)/10000000000;
     console.log($precio_sin_igv);
 }
 
@@ -70,27 +70,54 @@ function calcular_precio_sin_igv() {
 $('#id_comprobante').on('change', function (e) {
     seleccionar_comprobante(e.target.value);
     setTimeout(() => {
-        calcular_precio_lista();
+        calcular_precio_final();
         calcular_precio_sin_igv();
     }, 100);
 });
 
 $('#id_logistico').on('input', function (e) {
     console.log(e.target.value);
-    calcular_precio_lista();
+    calcular_precio_final();
     calcular_precio_sin_igv();
 });
 
 $('#id_margen_venta').on('input', function (e) {
     console.log(e.target.value);
-    calcular_precio_lista();
+    calcular_precio_final();
     calcular_precio_sin_igv();
 });
 
-$('#id_precio_lista').on('input', function (e) {
+$('#id_precio_final').on('input', function (e) {
     console.log(e.target.value);
     calcular_margen_venta();
     calcular_precio_sin_igv();
 });
 
-seleccionar_comprobante($('#id_comprobante')[0].value);
+setTimeout(() => {
+    seleccionar_comprobante($('#id_comprobante')[0].value);
+}, 100);
+
+setTimeout(() => {
+    calcular_margen_venta();
+    calcular_precio_sin_igv();
+}, 200);
+
+
+function select_form() {
+    combos = document.getElementsByClassName('select2');
+    for (let index = 0; index < combos.length; index++) {
+        const element = combos[index];
+        element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control');
+        element.className = element.className.replace('select2-container--default', 'form-control');
+    }
+}
+
+$('.btn-primary').unbind().on('click', function () {
+    setTimeout(() => {
+        select_form();
+    }, 500);
+})
+
+setTimeout(() => {
+    select_form();
+}, 500);

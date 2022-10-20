@@ -2,12 +2,22 @@
 {% load funciones_propias %}
 
 <div class="row mt-3">
-    <div class="col-lg-6 table-responsive mb-3">
+    <div class=" table-responsive mb-3">
         <table>
             <tbody>
                 <tr>
                     <th class="pe-2">Razón Social:</th>
                     <td>{{ contexto_despacho_detalle.cliente.razon_social }}</td>
+                    <th class="px-2">Nota de Salida:</th>
+                    <td>{{ contexto_despacho_detalle.nota_salida }}</td>
+                    <th class="px-2">Fecha:</th>
+                    <td>{{ contexto_despacho_detalle.fecha_despacho|date:'d/m/Y' }}</td>
+                    <th class="px-2">Motivo de Anulación:</th>
+                    <td>
+                        {% if contexto_despacho_detalle.motivo_anulacion %}    
+                        {{ contexto_despacho_detalle.motivo_anulacion }}
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">{{ contexto_despacho_detalle.cliente.documento }}:</th>
@@ -16,6 +26,10 @@
                             {{ contexto_despacho_detalle.cliente.numero_documento }}
                         {% endif %}
                     </td>
+                    <th class="px-2">Número de Despacho:</th>
+                    <td>{{ contexto_despacho_detalle.numero_despacho|numeroXn:6 }}</td>
+                    <th class="px-2">Estado:</th>
+                    <td>{{ contexto_despacho_detalle.get_estado_display }}</td>
                 </tr>
             </tbody>
         </table>

@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.almacenes.models import Almacen
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
+from applications.funciones import numeroXn
 from applications.nota_ingreso.managers import NotaIngresoManager
 
 from applications.recepcion_compra.models import RecepcionCompra
@@ -35,7 +36,7 @@ class NotaIngreso(models.Model):
         return self.fecha_ingreso
 
     def __str__(self):
-        return self.nro_nota_ingreso
+        return "%s" % (numeroXn(self.nro_nota_ingreso, 6))
 
 
 class NotaIngresoDetalle(models.Model):

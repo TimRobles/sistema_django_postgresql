@@ -22,7 +22,7 @@
             <tr>
                 <td>{{ movimiento.id }}</td>
                 <td>{{ movimiento.documento_proceso.fecha|date:'d/m/Y' }}</td>
-                <td>{{ movimiento.content_type_documento_proceso.name }} - {{ movimiento.documento_proceso }}</td>
+                <td style="min-width: 250px;">{{ movimiento.content_type_documento_proceso.name }} - {{ movimiento.documento_proceso }}</td>
                 <td class="text-end">{{ movimiento.valor|redondear|intcomma }}</td>
                 <td class="text-nowrap">{{ movimiento.tipo_movimiento }}</td>
                 <td class="text-nowrap">{{ movimiento.tipo_stock }}</td>

@@ -11,6 +11,7 @@ from applications.logistica.pdf import generarSolicitudPrestamoMateriales
 from applications.funciones import fecha_en_letras, numeroXn
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 
 class SolicitudPrestamoMaterialesListView(PermissionRequiredMixin, ListView):
     permission_required = ('logistica.view_solicitudprestamomateriales')
@@ -108,6 +109,26 @@ class SolicitudPrestamoMaterialesConfirmarView(PermissionRequiredMixin, BSModalD
         registro_guardar(self.object, self.request)
         self.object.save()
         messages.success(request, MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES)
+
+        materiales = self.object.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales.all()
+        movimiento_final = TipoMovimiento.objects.get(codigo=131) # Confirmación por préstamo
+        for material in materiales:
+            movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = material.content_type,
+                    id_registro_producto = material.id_registro,
+                    cantidad = material.cantidad_prestamo,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = None,
+                    sociedad = self.object.sociedad,
+                    movimiento_anterior = None,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -272,6 +293,7 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
         Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
         Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
         Cabecera['interlocutor'] = str(obj.interlocutor_cliente)
+        Cabecera['comentario'] = str(obj.comentario)
 
         TablaEncabezado = [ 'Item',
                             'Descripción',
@@ -504,7 +526,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "logistica/nota_salida/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:nota_salida_inicio')
+        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -732,10 +754,10 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
             nota_salida = self.get_object()
             item = len(Despacho.objects.all())
             despacho = Despacho.objects.create(
-                sociedad = nota_salida.solicitud_prestamo_materiales.sociedad,
+                sociedad = nota_salida.sociedad,
                 nota_salida = nota_salida,
                 numero_despacho = item + 1,
-                cliente = nota_salida.solicitud_prestamo_materiales.cliente,
+                cliente = nota_salida.cliente,
                 created_by = self.request.user,
                 updated_by = self.request.user,
             )
@@ -765,7 +787,7 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
         registro_guardar(self.object, self.request)
         self.object.save()
         messages.success(request, MENSAJE_GENERAR_DESPACHO)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':despacho.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -780,6 +802,17 @@ class DespachoListView(PermissionRequiredMixin, ListView):
     model = Despacho
     template_name = 'logistica/despacho/inicio.html'
     context_object_name = 'contexto_despacho'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        print("*******************************")
+        print(queryset)
+        if 'id_nota_salida' in self.kwargs:
+            print(self.kwargs['id_nota_salida'])
+            queryset = queryset.filter(nota_salida__id=self.kwargs['id_nota_salida'])
+            print(queryset)
+        print("*******************************")
+        return queryset
 
 def DespachoTabla(request):
     data = dict()
@@ -818,8 +851,20 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     model = Despacho
     template_name = "logistica/despacho/boton.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_fecha = False
+        context['titulo'] = 'Error de guardar'
+        if not self.get_object().fecha_despacho:
+            error_fecha = True
+
+        if error_fecha:
+            context['texto'] = 'Ingrese una fecha de despacho.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(DespachoConcluirView, self).dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:despacho_inicio')
+        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -834,7 +879,7 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion'] = "Concluir"
         context['titulo'] = "Despacho"
         context['dar_baja'] = "true"
-        context['item'] = self.object.numero_despacho
+        context['item'] = self.object
         return context
 
 class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
@@ -843,7 +888,7 @@ class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "logistica/despacho/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:despacho_inicio')
+        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.get_object().id})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -929,12 +974,10 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-        item = len(Guia.objects.all())
         detalles = self.object.DespachoDetalle_despacho.all()
         serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
 
         guia = Guia.objects.create(
-            numero_guia = item + 1,
             sociedad = self.object.sociedad,
             serie_comprobante = serie_comprobante,
             cliente = self.object.cliente,
@@ -960,7 +1003,7 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         self.object.estado = 5
         self.object.save()
         messages.success(request, MENSAJE_GENERAR_GUIA)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':guia.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True

@@ -195,7 +195,7 @@ class OrdenCompraDetailView(DetailView):
         orden_detalle = OrdenCompraDetalle.objects.ver_detalle(orden_compra)
         context['orden_compra_detalle'] = orden_detalle 
         context['totales'] = obtener_totales(OrdenCompra.objects.get(slug=self.kwargs['slug']))
-
+        context['ver_oferta'] = reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':orden_compra.oferta_proveedor.slug}) if orden_compra.oferta_proveedor else None
         return context
 
 def OrdenCompraDetailTabla(request, slug):
@@ -207,6 +207,7 @@ def OrdenCompraDetailTabla(request, slug):
         context['contexto_orden_compra'] = orden_compra
         context['orden_compra_detalle'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
         context['totales'] = obtener_totales(OrdenCompra.objects.get(slug=slug))
+        context['ver_oferta'] = reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':orden_compra.oferta_proveedor.slug}) if orden_compra.oferta_proveedor else None
 
         data['table'] = render_to_string(
             template,

@@ -447,8 +447,8 @@ class PrecioListaMaterialForm (BSModalModelForm):
             'precio_compra',
             'logistico',
             'margen_venta',
-            'precio_lista',
             'precio_sin_igv',
+            'precio_lista',
         )
 
     def __init__(self, *args, **kwargs):

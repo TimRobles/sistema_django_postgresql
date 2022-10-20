@@ -12,6 +12,7 @@ urlpatterns = [
     path('cotizacion-venta/ver/tabla/<int:id_cotizacion>/', views.CotizacionVentaVerTabla, name='cotizacion_venta_ver_tabla'),
     path('cotizacion-venta/ver/agregar-material/<int:cotizacion_id>/', views.CotizacionVentaMaterialDetalleView.as_view(), name='cotizacion_venta_agregar_material'),
     path('cotizacion-venta/ver/cliente/<pk>/', views.CotizacionVentaClienteView.as_view(), name='cotizacion_venta_cliente'),
+    path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDeleteView.as_view(), name='cotizacion_venta_eliminar'),
     path('cotizacion-venta/anular/<pk>/', views.CotizacionVentaAnularView.as_view(), name='cotizacion_venta_anular'),
     path('cotizacion-venta/clonar/<pk>/', views.CotizacionVentaClonarView.as_view(), name='cotizacion_venta_clonar'),
     
@@ -42,9 +43,9 @@ urlpatterns = [
     path('cotizacion-venta/confirmar-anticipo/<pk>/', views.CotizacionVentaConfirmarAnticipoView.as_view(), name='cotizacion_venta_confirmar_anticipo'),
     path('cotizacion-venta/anular-confirmar-anticipo/<pk>/', views.CotizacionVentaConfirmarAnticipoAnularView.as_view(), name='cotizacion_venta_anular_confirmar_anticipo'),
 
-    path('cotizacion-venta/costeador/<pk>/', views.CotizacionVentaCosteadorDetalleView.as_view(), name='cotizacion_venta_costeador'),
-    path('cotizacion-venta/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_eliminar'),
-    path('cotizacion-venta/actualizar/<pk>/', views.CotizacionVentaMaterialDetalleUpdateView.as_view(), name='cotizacion_venta_actualizar'),
+    path('cotizacion-venta/detalle/costeador/<pk>/', views.CotizacionVentaCosteadorDetalleView.as_view(), name='cotizacion_venta_detalle_costeador'),
+    path('cotizacion-venta/detalle/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_detalle_eliminar'),
+    path('cotizacion-venta/detalle/actualizar/<pk>/', views.CotizacionVentaMaterialDetalleUpdateView.as_view(), name='cotizacion_venta_detalle_actualizar'),
 
     path('cotizacion-venta/pdfs/<pk>/', views.CotizacionVentaPdfsView.as_view(), name='cotizacion_venta_pdfs'),
     path('cotizacion-venta/pdf/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadPdfView.as_view(), name='cotizacion_venta_pdf'),
