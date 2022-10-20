@@ -75,6 +75,7 @@ def CotizacionVentaTabla(request):
 def CotizacionVentaCreateView(request):
     obj = CotizacionVenta.objects.create(
         slug = slug_aleatorio(CotizacionVenta),
+        moneda=Moneda.objects.get(principal=True),
         created_by=request.user,
         updated_by=request.user,
     )
