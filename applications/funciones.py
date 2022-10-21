@@ -374,3 +374,17 @@ def numero_espacio(texto):
         return str(texto)
     else:
         return ""
+
+
+def numero_cero(texto):
+    if texto:
+        return str(texto)
+    else:
+        return "0.00"
+
+
+def numero_guion(texto):
+    if texto:
+        return str(texto)
+    else:
+        return "-"

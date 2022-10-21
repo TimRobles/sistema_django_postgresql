@@ -63,7 +63,7 @@ class ComprobanteCompraPI(models.Model):
         return self.ComprobanteCompraPIDetalle_comprobante_compra.all()
         
     def __str__(self):
-        return "ComprobanteCompraPI - %s" % (self.numero_comprobante_compra)
+        return "%s" % (self.numero_comprobante_compra)
 
 
 class ComprobanteCompraPIDetalle(models.Model):

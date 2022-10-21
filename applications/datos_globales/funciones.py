@@ -1,7 +1,7 @@
 import json
 import io
 
-from applications.funciones import numero_espacio
+from applications.funciones import numero_espacio, numero_guion
 
 def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, fecha_de_vencimiento, moneda, tipo_de_cambio, porcentaje_de_igv, descuento_global, total_descuento, total_anticipo, total_gravada, total_inafecta, total_exonerada, total_igv, total_gratuita, total_otros_cargos, total, percepcion_tipo, percepcion_base_imponible, total_percepcion, total_incluido_percepcion, total_impuestos_bolsas, detraccion, observaciones, documento_que_se_modifica_tipo, documento_que_se_modifica_serie, documento_que_se_modifica_numero, tipo_de_nota_de_credito, tipo_de_nota_de_debito, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, condiciones_de_pago, medio_de_pago, placa_vehiculo, orden_compra_servicio, formato_de_pdf, generado_por_contingencia, productos, guias, cuotas):
     try:
@@ -183,7 +183,7 @@ def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, c
         for producto in productos:
             item={}
             item['unidad_de_medida'] = producto.unidad.unidad_sunat
-            item["codigo"] = numero_espacio(producto.codigo_interno)
+            item["codigo"] = numero_guion(producto.codigo_interno)
             # item["codigo"] = numero_espacio(producto.id_registro)
             item["descripcion"] = producto.descripcion_documento
             item["cantidad"] = numero_espacio(producto.cantidad)

@@ -349,13 +349,43 @@ class GuiaGuardarView(DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
-        error_punto_partida = False
+        error_direccion_partida = False
+        error_direccion_destino = False
+        error_ubigeo_partida = False
+        error_ubigeo_destino = False
+        error_numero_bultos = False
+        error_cliente_interlocutor = False
         context['titulo'] = 'Error de guardar'
         if not self.get_object().direccion_partida:
-            error_punto_partida = True
+            error_direccion_partida = True
+        if not self.get_object().direccion_destino:
+            error_direccion_destino = True
+        if not self.get_object().ubigeo_partida:
+            error_ubigeo_partida = True
+        if not self.get_object().ubigeo_destino:
+            error_ubigeo_destino = True
+        if not self.get_object().numero_bultos:
+            error_numero_bultos = True
+        if not self.get_object().cliente_interlocutor:
+            error_cliente_interlocutor = True
 
-        if error_punto_partida:
-            context['texto'] = 'Ingrese un Punto de partida'
+        if error_direccion_partida:
+            context['texto'] = 'Ingrese una Dirección de partida'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_direccion_destino:
+            context['texto'] = 'Ingrese una Dirección de destino'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_ubigeo_partida:
+            context['texto'] = 'Ingrese un Ubigeo de partida'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_ubigeo_destino:
+            context['texto'] = 'Ingrese un Ubigeo de destino'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_numero_bultos:
+            context['texto'] = 'Ingrese un Número de bultos'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_cliente_interlocutor:
+            context['texto'] = 'Ingrese un Interlocutor'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(GuiaGuardarView, self).dispatch(request, *args, **kwargs)
 

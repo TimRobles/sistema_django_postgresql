@@ -4,7 +4,7 @@ from functools import total_ordering
 import keyword
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from applications.funciones import obtener_totales
+from applications.funciones import numeroXn, obtener_totales
 from applications.rutas import ORDEN_COMPRA_CONFIRMACION
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
@@ -88,7 +88,7 @@ class CotizacionVenta(models.Model):
         return "%s" % (self.numero_cotizacion)
 
     def __str__(self):
-        return str(self.id)
+        return "%s - %s" % (numeroXn(self.numero_cotizacion, 6), self.cliente)
 
 
 class CotizacionVentaDetalle(models.Model):

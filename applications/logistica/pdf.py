@@ -33,6 +33,9 @@ def dataCabeceraSolicitudPrestamoMateriales(Cabecera, fuenteBase):
     fila.append(parrafoIzquierda('Contacto', fuenteBase, 10, 'Bold'))
     fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
     fila.append(parrafoIzquierda(Cabecera['interlocutor'], fuenteBase, 10))
+    fila.append(parrafoIzquierda('Comentario', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['comentario'], fuenteBase, 10))
     data.append(fila)
 
     t=Table(
@@ -50,9 +53,9 @@ def dataCabeceraSolicitudPrestamoMateriales(Cabecera, fuenteBase):
         )
     t._argW[0]=cmToPx(3)
     t._argW[1]=cmToPx(0.5)
-    t._argW[3]=cmToPx(3.8)
+    t._argW[3]=cmToPx(2.5)
     t._argW[4]=cmToPx(0.5)
-    t._argW[5]=cmToPx(5)
+    
 
     return t
 

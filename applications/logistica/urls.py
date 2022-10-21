@@ -20,6 +20,7 @@ urlNotaSalida = [
 
 urlDespacho = [ #.....XxRonnyxX
     path('despacho/',views.DespachoListView.as_view(),name='despacho_inicio'), #.....XxRonnyxX
+    path('despacho/<int:id_nota_salida>/',views.DespachoListView.as_view(),name='despacho_inicio'), #.....XxRonnyxX
     path('despacho-tabla/',views.DespachoTabla,name='despacho_tabla'), #.....XxRonnyxX
     path('despacho/actualizar/<pk>', views.DespachoUpdateView.as_view(), name='despacho_actualizar'), #.....XxRonnyxX
     path('despacho/concluir/<pk>/', views.DespachoConcluirView.as_view(), name='despacho_concluir'), #.....XxRonnyxX

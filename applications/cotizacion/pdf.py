@@ -40,6 +40,12 @@ def dataCabeceraCotizacionVenta(Cabecera, fuenteBase):
     fila.append(parrafoIzquierda(Cabecera['fecha_validez'], fuenteBase, 10))
     data.append(fila)
 
+    fila=[]
+    fila.append(parrafoIzquierda('Vendedor', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoIzquierda(Cabecera['vendedor'], fuenteBase, 10))
+    data.append(fila)
+
     t=Table(
         data,
         style=[

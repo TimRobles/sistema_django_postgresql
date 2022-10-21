@@ -13,6 +13,11 @@
                 class="delete badge bg-primary">
                 Concluir Despacho
             </button> 
+            <button data-form-url="{% url 'logistica_app:despacho_actualizar' contexto_despacho_detalle.id %}"
+                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
+                class="delete badge bg-primary">
+                Fecha de Despacho
+            </button> 
         {% endif %}
         {% if contexto_despacho_detalle.estado == 2 %}
             <button data-form-url="{% url 'logistica_app:despacho_finalizar_sin_guia' contexto_despacho_detalle.id %}"
