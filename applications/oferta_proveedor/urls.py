@@ -8,6 +8,7 @@ urlpatterns = [
     path('oferta-proveedor/', views.OfertaProveedorListView.as_view(), name='oferta_proveedor_inicio'),
     path('oferta-proveedor-tabla/', views.OfertaProveedorTabla, name='oferta_proveedor_tabla'),
     path('oferta-proveedor/actualizar/<slug>/', views.OfertaProveedorUpdateView.as_view(), name='oferta_proveedor_actualizar'),
+    path('oferta-proveedor/actualizar-comentario/<slug>/', views.OfertaProveedorComentarioView.as_view(), name='oferta_proveedor_actualizar_comentario'),
     path('oferta-proveedor/finalizar/<pk>/', views.OfertaProveedorFinalizarView.as_view(), name='oferta_proveedor_finalizar'),
     path('oferta-proveedor/rechazar/<pk>/', views.OfertaProveedorRechazarView.as_view(), name='oferta_proveedor_rechazar'),
     path('oferta-proveedor/detalle/<slug>/', views.OfertaProveedorDetailView.as_view(), name='oferta_proveedor_detalle'),

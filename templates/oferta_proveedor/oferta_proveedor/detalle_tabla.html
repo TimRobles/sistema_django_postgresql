@@ -5,6 +5,47 @@
     <table class="table">
         <thead>
             <tr>
+                <th>Puerto de Origen</th>
+                <th>Forma de Pago</th>
+                <th>Tiempo estimado de Entrega</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if contexto_oferta_proveedor.puerto_origen %}
+                        {{contexto_oferta_proveedor.puerto_origen}}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if contexto_oferta_proveedor.forma_pago %}
+                        {{contexto_oferta_proveedor.forma_pago}}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if contexto_oferta_proveedor.tiempo_estimado_entrega %}
+                        {{contexto_oferta_proveedor.tiempo_estimado_entrega}}
+                    {% endif %}
+                </td>
+                <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar' contexto_oferta_proveedor.slug %}"
+                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
                 <th>Condiciones</th>
                 <th class="text-end">Acciones</th>
             </tr>
@@ -17,7 +58,7 @@
                     {% endif %}
                 </td>
                 <td class="text-end text-nowrap">
-                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar' contexto_oferta_proveedor.slug %}"
+                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar_comentario' contexto_oferta_proveedor.slug %}"
                             data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
