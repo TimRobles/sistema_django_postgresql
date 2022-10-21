@@ -74,7 +74,7 @@ def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, clie
             item["descripcion"] = producto.descripcion_documento
             item["cantidad"] = numero_espacio(producto.cantidad)
             item["valor_unitario"] = numero_espacio(producto.precio_unitario_sin_igv)
-            item["precio_unitario"] = numero_espacio(producto.precio_final_con_igv)
+            item["precio_unitario"] = numero_espacio(producto.precio_unitario_con_igv)
             item["descuento"] = numero_espacio(producto.descuento)
             item["subtotal"] = numero_espacio(producto.sub_total)
             item["tipo_de_igv"] = numero_espacio(producto.tipo_igv)
