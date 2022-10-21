@@ -34,6 +34,9 @@ class OfertaProveedor(models.Model):
     total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
     slug = models.SlugField(blank=True, null=True, editable=False)
+    puerto_origen = models.TextField('Puerto de origen', null=True, blank=True)
+    tiempo_estimado_entrega = models.IntegerField('Tiempo estimado de entrega (dias)', blank=True, null=True)
+    forma_pago = models.TextField('Forma de pago', null=True, blank=True)
     condiciones = models.TextField('Condiciones', null=True, blank=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_OFERTA_PROVEEDOR, default=1)
 
