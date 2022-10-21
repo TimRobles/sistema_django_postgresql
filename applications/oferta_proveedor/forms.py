@@ -19,6 +19,20 @@ class OfertaProveedorForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class OfertaProveedorUpdateForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedor
+        fields=(
+            'puerto_origen',
+            'forma_pago',
+            'tiempo_estimado_entrega',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class OfertaProveedorComentarioForm(BSModalModelForm):
     class Meta:
         model = OfertaProveedor
