@@ -602,6 +602,7 @@ class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
         
         self.kwargs['precios'] = orden_detalle
         kwargs['precios'] = precios
+        kwargs['precio_final'] = self.object.precio_final_con_igv
         return kwargs
 
     def get_context_data(self, **kwargs):

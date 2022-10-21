@@ -341,7 +341,9 @@ class CosteadorForm (BSModalModelForm):
     
     def __init__(self, *args, **kwargs):
         precios = kwargs.pop('precios')
+        precio_final = kwargs.pop('precio_final')
         super(CosteadorForm, self).__init__(*args, **kwargs)
         self.fields['comprobante'].choices = precios
+        self.fields['precio_final'].initial = precio_final
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

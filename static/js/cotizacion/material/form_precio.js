@@ -14,13 +14,11 @@ function seleccionar_comprobante(valores) {
         
         
         url = '/material/precio-material/' + $id_comprobante + '/' + $comprobante_content_type + '/' + $id_material + '/' + $material_content_type + '/';
-        console.log(url);
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
         xhr.onload = function(){
             if (this.status === 200) {
                 valores3 = xhr.responseText.split('|');
-                console.log($moneda)
                 
                 $precio_compra.value = valores3[0]
                 setSelectedValueText($moneda,valores3[1]);
@@ -40,7 +38,6 @@ function calcular_precio_final() {
     
     $precio_final.value = Math.round(10000000000*$precio_compra*$logistico*$margen_venta)/10000000000;
     
-    console.log($precio_final.value);
     
 }
 
@@ -53,7 +50,6 @@ function calcular_margen_venta() {
 
     $margen_venta.value = Math.round(10000000000*$precio_final/($precio_compra*$logistico))/10000000000;
 
-    console.log($margen_venta);
     
 }
 
@@ -63,7 +59,6 @@ function calcular_precio_sin_igv() {
     $precio_sin_igv = $('#id_precio_sin_igv')[0];
 
     $precio_sin_igv.value = Math.round(($precio_final/(1 + $valor_igv))*10000000000)/10000000000;
-    console.log($precio_sin_igv);
 }
 
 
@@ -76,19 +71,16 @@ $('#id_comprobante').on('change', function (e) {
 });
 
 $('#id_logistico').on('input', function (e) {
-    console.log(e.target.value);
     calcular_precio_final();
     calcular_precio_sin_igv();
 });
 
 $('#id_margen_venta').on('input', function (e) {
-    console.log(e.target.value);
     calcular_precio_final();
     calcular_precio_sin_igv();
 });
 
 $('#id_precio_final').on('input', function (e) {
-    console.log(e.target.value);
     calcular_margen_venta();
     calcular_precio_sin_igv();
 });
