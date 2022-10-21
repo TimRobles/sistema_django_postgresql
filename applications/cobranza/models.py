@@ -67,6 +67,14 @@ class SolicitudCredito(models.Model):
         verbose_name = 'Solicitud de Credito'
         verbose_name_plural = 'Solicitudes de Credito'
 
+    @property
+    def total_cuotas(self):
+        total = Decimal('0.00')
+        if hasattr(self, 'SolicitudCreditoCuota_solicitud_credito'):
+            for cuota in self.SolicitudCreditoCuota_solicitud_credito.all():
+                total += cuota.monto
+        return total
+
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta.cliente.razon_social, self.total_credito, self.get_estado_display())
 

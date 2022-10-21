@@ -49,7 +49,7 @@ class NubefactRespuestaManager(models.Manager):
             filtro = self.filter(
                 content_type = ContentType.objects.get_for_model(obj),
                 id_registro = obj.id
-            ).filter(aceptado=True).latest('updated_at')
+            ).exclude(error=True).latest('updated_at')
             return filtro
         except:
             pass

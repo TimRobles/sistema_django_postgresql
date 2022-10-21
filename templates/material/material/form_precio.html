@@ -19,6 +19,8 @@
             <tbody>
                 
                 {% for precio in precios %}  
+                
+                {% if precio.fecha_recepcion %}
                 <tr>
                     <td>{{ precio.fecha_recepcion|date:'d/m/Y' }}</td>
                     <td>{{ precio.numero_comprobante_compra }}</td>
@@ -27,6 +29,8 @@
                     <td>{{ precio.logistico }}</td>
                     <td></td>
                 </tr>
+                {% endif %}
+                
                 {% endfor %}
 
             </tbody>

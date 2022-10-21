@@ -44,6 +44,7 @@ from .models import (
 
 class MonedaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         'abreviatura',
         'simbolo',

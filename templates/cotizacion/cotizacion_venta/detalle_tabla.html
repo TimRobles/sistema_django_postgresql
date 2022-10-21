@@ -246,10 +246,12 @@
                     <td>{{ cotizacion.moneda.simbolo }} {{ cotizacion.SolicitudCredito_cotizacion_venta.total_credito|intcomma }}</td>
                     {% endif %}
                     <td rowspan="2" class="ps-2">
+                        {% if cotizacion.estado > 1 and cotizacion.estado < 4 %}
                         <a href="{% url 'cotizacion_app:solicitud_credito' cotizacion.id %}"
                         class="update btn btn-warning">
                             Solicitud de Crédito
                         </a>
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
@@ -382,7 +384,8 @@
                             <i class="bi bi-box-seam"></i>
                         </button>
 
-                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_costeador' material.id %}"
+                        {% if cotizacion.estado < 3 %}
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_detalle_costeador' material.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"    
                             data-modal="modal-xl"
                             class="update btn btn-success btn-sm"
@@ -390,8 +393,7 @@
                             <i class="bi bi-calculator"></i>
                         </button>
                         
-                        {% if cotizacion.estado < 3 %}
-                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_actualizar' material.id %}"
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_detalle_actualizar' material.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
@@ -399,7 +401,7 @@
                             <i class="bi bi-pencil-fill"></i>
                         </button>
 
-                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_eliminar' material.id %}"
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_detalle_eliminar' material.id %}"
                             class="delete btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                             <i class="bi-x-lg"></i>

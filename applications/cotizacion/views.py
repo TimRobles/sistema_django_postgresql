@@ -75,6 +75,7 @@ def CotizacionVentaTabla(request):
 def CotizacionVentaCreateView(request):
     obj = CotizacionVenta.objects.create(
         slug = slug_aleatorio(CotizacionVenta),
+        moneda=Moneda.objects.get(principal=True),
         created_by=request.user,
         updated_by=request.user,
     )
@@ -575,11 +576,14 @@ class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
         )
 
         for detalle in orden_detalle:
-            detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
-            detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
+            try:
+                detalle.cantidad = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.cantidad
+                detalle.precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
 
-            comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
-
+                comprobante_compra = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.comprobante_compra
+            except:
+                continue
+            
             detalle.logistico = comprobante_compra.logistico
             
             try:
@@ -678,6 +682,19 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         context['material'] = self.object.content_type.get_object_for_this_type(id = self.object.id_registro)
         return context
 
+
+class CotizacionVentaDeleteView(DeleteView):
+    model = CotizacionVenta
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+    
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Cotización"
+        context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+    
 
 class CotizacionVentaAnularView(DeleteView):
     model = CotizacionVenta
@@ -1919,6 +1936,18 @@ class SolicitudCreditoCuotaDeleteView(BSModalDeleteView):
 class SolicitudCreditoFinalizarView(DeleteView):
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cuotas = False
+        context['titulo'] = 'Error de guardar'
+        if self.get_object().total_cuotas == 0 or self.get_object().total_cuotas != self.get_object().total_credito:
+            error_cuotas = True
+
+        if error_cuotas:
+            context['texto'] = 'El total de las cuotas no coincide con el monto solicitado.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(SolicitudCreditoFinalizarView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
