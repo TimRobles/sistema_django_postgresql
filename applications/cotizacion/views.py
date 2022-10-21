@@ -1911,6 +1911,8 @@ class SolicitudCreditoCuotaUpdateView(BSModalUpdateView):
         obj = self.object.solicitud_credito
         solicitado = obj.total_credito
         suma = obj.SolicitudCreditoCuota_solicitud_credito.exclude(id=self.object.id).aggregate(Sum('monto'))['monto__sum']
+        if not suma:
+            suma = Decimal('0.00')
         context = super(SolicitudCreditoCuotaUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Cuota"

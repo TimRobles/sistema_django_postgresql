@@ -69,6 +69,21 @@ class SolicitudPrestamoMaterialesDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     @property
+    def cantidad_salida(self):
+        total = Decimal('0.00')
+        try:
+            for detalle in self.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.all():
+                if detalle.producto == self.producto:
+                    total += detalle.cantidad_salida
+        except:
+            pass
+        return total
+
+    @property
+    def pendiente(self):
+        return self.cantidad_prestamo - self.cantidad_salida
+
+    @property
     def unidad(self):
         return self.producto.unidad_base
 

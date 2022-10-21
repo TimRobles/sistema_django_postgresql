@@ -42,6 +42,8 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th class="text-end">Cantidad</th>
+                <th class="text-end">Cantidad Salida</th>
+                <th class="text-end">Pendiente</th>
                 <th>Observacion</th>
                 <th>Acciones</th>
             </tr>
@@ -53,6 +55,8 @@
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad_prestamo|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.cantidad_salida|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
                     <td>
                         {% if material.observacion != None %}
                             {{ material.observacion}}
