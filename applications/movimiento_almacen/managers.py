@@ -24,7 +24,7 @@ class MovimientoAlmacenManager(models.Manager):
         return lista, total
 
     def ver_stock(self, content_type, id_registro, tipo_stock):
-        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19]
+        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19, 22]
         lista_estados = list(tipo_stock)
         stocks = {}
         totales = {}

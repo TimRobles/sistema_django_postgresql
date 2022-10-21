@@ -73,6 +73,7 @@ def dataSolicitudPrestamoMateriales(TablaEncabezado, TablaDatos, fuenteBase, col
         fila.append(parrafoIzquierda(dato[1], fuenteBase))
         fila.append(parrafoCentro(dato[2], fuenteBase))
         fila.append(parrafoDerecha(dato[3], fuenteBase))
+        fila.append(parrafoDerecha(dato[4], fuenteBase))
 
         data.append(fila)  
 
@@ -89,6 +90,7 @@ def dataSolicitudPrestamoMateriales(TablaEncabezado, TablaDatos, fuenteBase, col
     t._argW[0]=cmToPx(1)
     t._argW[2]=cmToPx(2)
     t._argW[3]=cmToPx(2)
+    t._argW[4]=cmToPx(6)
 
     return t
 

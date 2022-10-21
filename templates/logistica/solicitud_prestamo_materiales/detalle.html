@@ -13,16 +13,20 @@
                 Agregar Material
             </button>
             <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_finalizar' contexto_solicitud_prestamo_materiales_detalle.id %}"
-                data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"
                 class="delete badge bg-primary">
                 Finalizar Solicitud
             </button>
         {% endif %}
         {% if contexto_solicitud_prestamo_materiales_detalle.estado == 2 %}
             <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_confirmar' contexto_solicitud_prestamo_materiales_detalle.id %}"
-                data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"
                 class="delete badge bg-primary">
                 Confirmar Solicitud
+            </button>
+        {% endif %}
+        {% if contexto_solicitud_prestamo_materiales_detalle.estado == 3 %}
+            <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_anular' contexto_solicitud_prestamo_materiales_detalle.id %}"
+                class="delete btn btn-danger">
+                Anular Solicitud
             </button>
         {% endif %}
         {% if contexto_solicitud_prestamo_materiales_detalle.estado == 3 %}

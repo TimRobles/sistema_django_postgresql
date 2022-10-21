@@ -121,7 +121,7 @@ class NotaSalida(models.Model):
     def pendiente(self):
         total = Decimal('0.00')
         try:
-            for detalle in self.NotaSalidaDetalle_nota_salida.all():
+            for detalle in self.detalles:
                 total += detalle.pendiente
         except:
             pass
@@ -151,6 +151,10 @@ class NotaSalida(models.Model):
             return self.confirmacion_venta.interlocutor_cliente
         except:
             return self.solicitud_prestamo_materiales.interlocutor_cliente
+
+    @property
+    def detalles(self):
+        return self.NotaSalidaDetalle_nota_salida.all()
 
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_salida, 6), self.cliente)
@@ -197,6 +201,14 @@ class NotaSalidaDetalle(models.Model):
     @property
     def pendiente(self):
         return self.cantidad_salida - self.despachado
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self.producto)
+
+    @property
+    def id_registro(self):
+        return self.producto.id
 
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)

@@ -151,10 +151,22 @@ class SolicitudPrestamoMaterialesAnularView(PermissionRequiredMixin, BSModalUpda
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_inicio')
+        return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk':self.object.id})
 
     def form_valid(self, form):
         form.instance.estado = 4
+        movimiento_final = TipoMovimiento.objects.get(codigo=131) # Confirmación por préstamo
+        movimientos = MovimientosAlmacen.objects.filter(
+                tipo_movimiento = movimiento_final,
+                tipo_stock = movimiento_final.tipo_stock_final,
+                signo_factor_multiplicador = +1,
+                content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                id_registro_documento_proceso = form.instance.id,
+                almacen = None,
+                sociedad = form.instance.sociedad,
+            )
+        for movimiento in movimientos:
+            movimiento.delete()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -299,6 +311,7 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
                             'Descripción',
                             'Unidad',
                             'Cantidad',
+                            'Observación',
                             ]
 
         detalle = obj.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales
@@ -308,12 +321,12 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
         count = 1
         for solicitud in solicitud_prestamo_materiales:
             fila = []
-            # confirmacion_detalle = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
             solicitud.material = solicitud.content_type.get_object_for_this_type(id = solicitud.id_registro)
             fila.append(solicitud.item)
             fila.append(intcomma(solicitud.material))
             fila.append(intcomma(solicitud.material.unidad_base))
             fila.append(intcomma(solicitud.cantidad_prestamo.quantize(Decimal('0.01'))))
+            fila.append(solicitud.observacion)
 
             TablaDatos.append(fila)
             count += 1
@@ -530,9 +543,64 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
+        
+        detalles = self.object.detalles
+        if self.object.solicitud_prestamo_materiales:
+            movimiento_inicial = TipoMovimiento.objects.get(codigo=131) # Confirmación por préstamo
+            movimiento_final = TipoMovimiento.objects.get(codigo=132) # Salida por préstamo
+            documento_anterior = self.object.solicitud_prestamo_materiales
+        
+        for detalle in detalles:
+            movimiento_anterior = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.content_type,
+                    id_registro_producto = detalle.id_registro,
+                    tipo_movimiento = movimiento_inicial,
+                    tipo_stock = movimiento_inicial.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(documento_anterior),
+                    id_registro_documento_proceso = documento_anterior.id,
+                    sociedad = documento_anterior.sociedad,
+                    movimiento_reversion = False,
+                )
+
+            movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.content_type,
+                    id_registro_producto = detalle.id_registro,
+                    cantidad = detalle.cantidad_salida,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_inicial,
+                    signo_factor_multiplicador = -1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = None,
+                    sociedad = self.object.sociedad,
+                    movimiento_anterior = movimiento_anterior,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+            movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.content_type,
+                    id_registro_producto = detalle.id_registro,
+                    cantidad = detalle.cantidad_salida,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = None,
+                    sociedad = self.object.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
         self.object.estado = 2
         registro_guardar(self.object, self.request)
         self.object.save()
+
         messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
         return HttpResponseRedirect(self.get_success_url())
 

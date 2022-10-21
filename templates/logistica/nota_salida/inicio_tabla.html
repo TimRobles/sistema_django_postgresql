@@ -1,3 +1,5 @@
+{% load funciones_propias %}
+
 <table class="table">
     <thead>
         <tr>
@@ -15,8 +17,8 @@
         {% for nota_salida in contexto_nota_salida %}
             <tr>
                 <td> 
-                    {% if  nota_salida.numero_salida %}
-                        {{ nota_salida.numero_salida }} 
+                    {% if nota_salida.numero_salida %}
+                        {{ nota_salida.numero_salida|numeroXn:6 }} 
                     {% endif %}
                 </td>
                 <td>
@@ -31,7 +33,7 @@
                 </td>
                 <td>{{ nota_salida.observacion_adicional }}</td>
                 <td>{{ nota_salida.motivo_anulacion }}</td>
-                <td class="text-center">{{ nota_salida.get_estado_display }}</td>
+                <td>{{ nota_salida.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
                     {% if nota_salida.estado == 1 %}
                         <button data-form-url="{% url 'logistica_app:nota_salida_actualizar' nota_salida.id %}"

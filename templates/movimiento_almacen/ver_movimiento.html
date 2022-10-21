@@ -15,6 +15,7 @@
                 <th>Tipo Stock</th>
                 <th>Sociedad</th>
                 <th>Almacén</th>
+                <th>Movimiento Anterior</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +31,11 @@
                 <td>
                     {% if movimiento.almacen %}
                     {{ movimiento.almacen }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if movimiento.movimiento_anterior %}
+                    {{ movimiento.movimiento_anterior }}
                     {% endif %}
                 </td>
             </tr>
