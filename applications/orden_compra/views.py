@@ -117,7 +117,7 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
             oferta_proveedor = obj.oferta_proveedor
 
             form.instance.oferta_proveedor = None
-            form.instance.estado = 3
+            form.instance.estado = 4
             registro_guardar(form.instance, self.request)
             
             obj.oferta_proveedor = None
@@ -180,7 +180,6 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
         context['accion'] = 'Nueva Version'
         context['titulo'] = 'Orden de Compra'
         return context
-
 
 class OrdenCompraDetailView(DetailView):
     model = OrdenCompra
@@ -284,12 +283,32 @@ class OrdenCompraPdfView(View):
 
         return respuesta
 
-class OrdenCompraEnviarCorreoView(BSModalFormView):
+class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('orden_compra.change_ordencompra')
     template_name = "includes/formulario generico.html"
     form_class = OrdenCompraEnviarCorreoForm
 
     def get_success_url(self):
         return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.kwargs['slug']})
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        context = {}
+        error_correo_proveedor = False
+        context['titulo'] = 'Error de Envío'
+        proveedor = OrdenCompra.objects.get(slug=self.kwargs['slug']).oferta_proveedor.requerimiento_material.proveedor
+        CORREOS_PROVEEDOR = []
+        for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
+            for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
+                CORREOS_PROVEEDOR.append((correo_interlocutor.correo, '%s %s (%s)' % (interlocutor_proveedor.interlocutor.nombres, interlocutor_proveedor.interlocutor.apellidos, correo_interlocutor.correo)))
+        if CORREOS_PROVEEDOR == []:
+            error_correo_proveedor = True
+
+        if error_correo_proveedor:
+            context['texto'] = 'Registrar correos del proveedor'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if self.request.session['primero']:
@@ -386,11 +405,9 @@ class OfertaProveedorlDetalleCreateView(BSModalFormView):
         context['accion'] = 'Guardar'
         return context
 
-
-
 class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
     model = OrdenCompra
-    template_name = "includes/eliminar generico.html"
+    template_name = "includes/form generico.html"
     success_url = reverse_lazy('comprobante_compra_app:comprobante_compra_pi_lista')
     context_object_name = 'contexto_orden_compra' 
 
@@ -454,6 +471,6 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
         context = super(OrdenCompraGenerarComprobanteTotalView, self).get_context_data(**kwargs)
         context['accion'] = 'Generar'
         context['titulo'] = 'Comprobante Total'
-        context['item'] = self.get_object()
+        context['texto'] = '¿Seguro que desea generar Comprobante Total?'
 
         return context

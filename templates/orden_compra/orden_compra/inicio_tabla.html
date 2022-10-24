@@ -40,7 +40,7 @@
                 </a>
                 
                 
-                {% if orden_compra.estado != 3 %}
+                {% if orden_compra.estado != 4 %}
                 <button data-form-url="{% url 'orden_compra_app:orden_compra_anular' orden_compra.id %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Anular">
