@@ -142,8 +142,14 @@
 <button data-form-url="{% url 'cotizacion_app:solicitud_credito_cuota_agregar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
     data-table-url="{% url 'cotizacion_app:solicitud_credito_tabla' cotizacion.id  %}"
     data-keep-open="True"
-    class="create btn btn-primary" title="Agregar Cuota">
+    class="create btn btn-primary">
     Agregar Cuota
+</button>
+<button data-form-url="{% url 'cotizacion_app:solicitud_credito_cuota_generar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
+    data-table-url="{% url 'cotizacion_app:solicitud_credito_tabla' cotizacion.id  %}"
+    data-keep-open="True"
+    class="create btn btn-primary">
+    Generar Cuotas
 </button>
 {% endif %}
 

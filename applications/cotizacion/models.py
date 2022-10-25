@@ -87,6 +87,10 @@ class CotizacionVenta(models.Model):
     def documento(self):
         return "%s" % (self.numero_cotizacion)
 
+    @property
+    def monto_solicitado(self):
+        return self.SolicitudCredito_cotizacion_venta.SolicitudCreditoCuota_solicitud_credito.all().aggregate(models.Sum('monto'))['monto__sum']
+
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_cotizacion, 6), self.cliente)
 
@@ -214,6 +218,10 @@ class ConfirmacionVenta(models.Model):
     def fecha_confirmacion(self):
         return self.created_at
 
+    @property
+    def monto_solicitado(self):
+        return self.cotizacion_venta.monto_solicitado
+
     def __str__(self):
         return str(self.id)
 
@@ -308,7 +316,7 @@ class ConfirmacionVentaCuota(models.Model):
     def dias_mostrar(self):
         return (self.fecha_mostrar - date.today()).days
 
-    def save(self):
+    def save(self, **kwargs):
         if self.dias_pago:
             self.dias_calculo = self.dias_pago
         else:
@@ -317,7 +325,7 @@ class ConfirmacionVentaCuota(models.Model):
             else:
                 self.dias_calculo = 0
         
-        return super().save()
+        return super().save(**kwargs)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (self.confirmacion_venta, self.monto, self.dias_pago, self.fecha_pago)

@@ -271,6 +271,27 @@ class SolicitudCreditoCuotaForm(BSModalModelForm):
         self.fields['dias_pago'].widget.attrs['min'] = 0
 
 
+class ConfirmacionVentaGenerarCuotasForm(BSModalForm):
+    monto_total = forms.DecimalField(required=True)
+    numero_cuotas = forms.IntegerField(required=True)
+    intervalo_cuotas = forms.IntegerField(required=True)
+    
+    class Meta:
+        fields = (
+            'monto_total',
+            'numero_cuotas',
+            'intervalo_cuotas',
+            )
+        
+    def __init__(self, *args, **kwargs):
+        super(ConfirmacionVentaGenerarCuotasForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['monto_total'].widget.attrs['min'] = 0
+        self.fields['numero_cuotas'].widget.attrs['min'] = 0
+        self.fields['intervalo_cuotas'].widget.attrs['min'] = 0
+
+
 class ConfirmacionVentaCuotaForm(BSModalModelForm):
     class Meta:
         model = ConfirmacionVentaCuota

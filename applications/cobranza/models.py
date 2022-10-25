@@ -107,7 +107,7 @@ class SolicitudCreditoCuota(models.Model):
         except:
             return self.solicitud_credito.cotizacion_venta.fecha_cotizacion
 
-    def save(self):
+    def save(self, **kwargs):
         if self.fecha_pago:
             self.fecha_calculo = self.fecha_pago
         else:
@@ -121,7 +121,7 @@ class SolicitudCreditoCuota(models.Model):
             else:
                 self.dias_calculo = 0
         
-        return super().save()
+        return super().save(**kwargs)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (self.solicitud_credito, self.monto, self.dias_pago, self.fecha_pago)

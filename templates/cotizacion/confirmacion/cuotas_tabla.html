@@ -43,7 +43,7 @@
                 </tr>
                 <tr>
                     <th class="pe-2">Solicitud de Crédito:</th>
-                    <td>{{ confirmacion.moneda.simbolo }} {{ confirmacion.total|intcomma }}</td>
+                    <td>{{ confirmacion.moneda.simbolo }} {{ confirmacion.monto_solicitado|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Condición de Pago:</th>
@@ -64,6 +64,12 @@
     data-keep-open="True"
     class="create btn btn-primary" title="Agregar Cuota">
     Agregar Cuota
+</button>
+<button data-form-url="{% url 'cotizacion_app:confirmacion_cuota_generar' confirmacion.id %}"
+    data-table-url="{% url 'cotizacion_app:confirmacion_cuotas_tabla' confirmacion.id  %}"
+    data-keep-open="True"
+    class="create btn btn-primary" title="Agregar Cuota">
+    Generar Cuotas
 </button>
 {% endif %}
 

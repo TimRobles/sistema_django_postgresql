@@ -110,15 +110,22 @@ class FacturaVentaCrearView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_codigo_sunat = False
+        error_cuotas = False
         context['titulo'] = 'Error de guardar'
         detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
         for detalle in detalles:
             producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
             if not producto.producto_sunat:
                 error_codigo_sunat = True
+        
+        if self.get_object().tipo_venta == 2 and not self.get_object().ConfirmacionVentaCuota_confirmacion_venta.all():
+            error_cuotas = True
 
         if error_codigo_sunat:
             context['texto'] = 'Hay productos sin Código de Sunat.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_cuotas:
+            context['texto'] = 'Falta ingresar las cuotas.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(FacturaVentaCrearView, self).dispatch(request, *args, **kwargs)
 
@@ -734,15 +741,22 @@ class BoletaVentaCrearView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_codigo_sunat = False
+        error_cuotas = False
         context['titulo'] = 'Error de guardar'
         detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
         for detalle in detalles:
             producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
             if not producto.producto_sunat:
                 error_codigo_sunat = True
+        
+        if self.get_object().tipo_venta == 2 and not self.get_object().ConfirmacionVentaCuota_confirmacion_venta.all():
+            error_cuotas = True
 
         if error_codigo_sunat:
             context['texto'] = 'Hay productos sin Código de Sunat.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_cuotas:
+            context['texto'] = 'Falta ingresar las cuotas.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(BoletaVentaCrearView, self).dispatch(request, *args, **kwargs)
 
