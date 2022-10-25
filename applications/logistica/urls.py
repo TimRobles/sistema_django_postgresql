@@ -1,36 +1,36 @@
 from django.urls import path
 from . import views
 
-app_name='logistica_app'
+app_name = 'logistica_app'
 
 urlNotaSalida = [
-    path('nota-salida/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'), #.....XxRonnyxX
-    path('nota-salida-tabla/', views.NotaSalidaTabla, name='nota_salida_tabla'), #.....XxRonnyxX
-    path('nota-salida/actualizar/<pk>', views.NotaSalidaUpdateView.as_view(), name='nota_salida_actualizar'), #.....XxRonnyxX
-    path('nota-salida/concluir/<pk>/', views.NotaSalidaConcluirView.as_view(), name='nota_salida_concluir'), #.....XxRonnyxX
-    path('nota-salida/anular/<pk>/', views.NotaSalidaAnularView.as_view(), name='nota_salida_anular'), #.....XxRonnyxX
-    path('nota-salida/detalle/<pk>/', views.NotaSalidaDetailView.as_view(), name='nota_salida_detalle'), #.....XxRonnyxX
-    path('nota-salida/detalle-tabla/<pk>/', views.NotaSalidaDetailTabla, name='nota_salida_detalle_tabla'), #.....XxRonnyxX
-    path('nota-salida-detalle/registrar/<int:nota_salida_id>/', views.NotaSalidaDetalleCreateView.as_view(), name='nota_salida_detalle_registrar'), #.....XxRonnyxX
-    path('nota-salida-detalle/actualizar/<pk>/', views.NotaSalidaDetalleUpdateView.as_view(), name='nota_salida_detalle_actualizar'), #.....XxRonnyxX
-    path('nota-salida-detalle/eliminar/<pk>/', views.NotaSalidaDetalleDeleteView.as_view(), name='nota_salida_detalle_eliminar'), #.....XxRonnyxX
-    path('nota-salida-detalle/generar-despacho/<pk>/', views.NotaSalidaGenerarDespachoView.as_view(), name='nota_salida_generar_despacho'),#.....XxRonnyxX
-    path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'), #.....XxRonnyxX
+    path('nota-salida/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'),
+    path('nota-salida/<int:id_solicitud_prestamo>/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'),
+    path('nota-salida-tabla/', views.NotaSalidaTabla, name='nota_salida_tabla'),
+    path('nota-salida/actualizar/<pk>', views.NotaSalidaUpdateView.as_view(), name='nota_salida_actualizar'),
+    path('nota-salida/concluir/<pk>/', views.NotaSalidaConcluirView.as_view(), name='nota_salida_concluir'),
+    path('nota-salida/anular/<pk>/', views.NotaSalidaAnularView.as_view(), name='nota_salida_anular'),
+    path('nota-salida/detalle/<pk>/', views.NotaSalidaDetailView.as_view(), name='nota_salida_detalle'),
+    path('nota-salida/detalle-tabla/<pk>/', views.NotaSalidaDetailTabla, name='nota_salida_detalle_tabla'),
+    path('nota-salida-detalle/registrar/<int:nota_salida_id>/', views.NotaSalidaDetalleCreateView.as_view(), name='nota_salida_detalle_registrar'),
+    path('nota-salida-detalle/actualizar/<pk>/', views.NotaSalidaDetalleUpdateView.as_view(), name='nota_salida_detalle_actualizar'),
+    path('nota-salida-detalle/eliminar/<pk>/', views.NotaSalidaDetalleDeleteView.as_view(), name='nota_salida_detalle_eliminar'),
+    path('nota-salida-detalle/generar-despacho/<pk>/', views.NotaSalidaGenerarDespachoView.as_view(), name='nota_salida_generar_despacho'),
+    path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'),
 ]
 
-urlDespacho = [ #.....XxRonnyxX
-    path('despacho/',views.DespachoListView.as_view(),name='despacho_inicio'), #.....XxRonnyxX
-    path('despacho/<int:id_nota_salida>/',views.DespachoListView.as_view(),name='despacho_inicio'), #.....XxRonnyxX
-    path('despacho-tabla/',views.DespachoTabla,name='despacho_tabla'), #.....XxRonnyxX
-    path('despacho/actualizar/<pk>', views.DespachoUpdateView.as_view(), name='despacho_actualizar'), #.....XxRonnyxX
-    path('despacho/concluir/<pk>/', views.DespachoConcluirView.as_view(), name='despacho_concluir'), #.....XxRonnyxX
-    path('despacho/finalizar-sin-guia/<pk>/', views.DespachoFinalizarSinGuiaView.as_view(), name='despacho_finalizar_sin_guia'), #.....XxRonnyxX
-    path('despacho/anular/<pk>/', views.DespachoAnularView.as_view(), name='despacho_anular'), #.....XxRonnyxX
-    path('despacho/detalle/<pk>/',views.DespachoDetailView.as_view(),name='despacho_detalle'), #.....XxRonnyxX
-    path('despacho/detalle-tabla/<pk>/',views.DespachoDetailTabla,name='despacho_detalle_tabla'), #.....XxRonnyxX
-    path('despacho-detalle/generar-guia/<pk>/', views.DespachoGenerarGuiaView.as_view(), name='despacho_generar_guia'), #.....XxRonnyxX
-] #.....XxRonnyxX
-#.....XxRonnyxX
+urlDespacho = [
+    path('despacho/', views.DespachoListView.as_view(), name='despacho_inicio'),
+    path('despacho/<int:id_nota_salida>/', views.DespachoListView.as_view(), name='despacho_inicio'),
+    path('despacho-tabla/', views.DespachoTabla, name='despacho_tabla'),
+    path('despacho/actualizar/<pk>', views.DespachoUpdateView.as_view(), name='despacho_actualizar'),
+    path('despacho/concluir/<pk>/', views.DespachoConcluirView.as_view(), name='despacho_concluir'),
+    path('despacho/finalizar-sin-guia/<pk>/', views.DespachoFinalizarSinGuiaView.as_view(), name='despacho_finalizar_sin_guia'),
+    path('despacho/anular/<pk>/', views.DespachoAnularView.as_view(), name='despacho_anular'),
+    path('despacho/detalle/<pk>/', views.DespachoDetailView.as_view(), name='despacho_detalle'),
+    path('despacho/detalle-tabla/<pk>/', views.DespachoDetailTabla, name='despacho_detalle_tabla'),
+    path('despacho-detalle/generar-guia/<pk>/', views.DespachoGenerarGuiaView.as_view(), name='despacho_generar_guia'),
+]
 urlpatterns = [
     path('solicitud-prestamo-materiales/', views.SolicitudPrestamoMaterialesListView.as_view(), name='solicitud_prestamo_materiales_inicio'),
     path('solicitud-prestamo-materiales-tabla/', views.SolicitudPrestamoMaterialesTabla, name='solicitud_prestamo_materiales_tabla'),

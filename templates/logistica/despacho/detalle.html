@@ -9,24 +9,24 @@
     <h3>Detalle Despacho
         {% if contexto_despacho_detalle.estado == 1 %}
             <button data-form-url="{% url 'logistica_app:despacho_concluir' contexto_despacho_detalle.id %}"
-                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
+                data-table-url="{% url 'logistica_app:despacho_detalle_tabla' contexto_despacho_detalle.id %}"
                 class="delete badge bg-primary">
                 Concluir Despacho
             </button> 
             <button data-form-url="{% url 'logistica_app:despacho_actualizar' contexto_despacho_detalle.id %}"
-                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
-                class="delete badge bg-primary">
+                data-table-url="{% url 'logistica_app:despacho_detalle_tabla' contexto_despacho_detalle.id %}"
+                class="create badge bg-primary">
                 Fecha de Despacho
             </button> 
         {% endif %}
         {% if contexto_despacho_detalle.estado == 2 %}
             <button data-form-url="{% url 'logistica_app:despacho_finalizar_sin_guia' contexto_despacho_detalle.id %}"
-                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
+                data-table-url="{% url 'logistica_app:despacho_detalle_tabla' contexto_despacho_detalle.id %}"
                 class="delete badge bg-primary">
                 Finalizar sin Guia
             </button> 
             <button data-form-url="{% url 'logistica_app:despacho_generar_guia' contexto_despacho_detalle.id %}"
-                data-table-url="{% url 'logistica_app:despacho_inicio' %}"
+                data-table-url="{% url 'logistica_app:despacho_detalle_tabla' contexto_despacho_detalle.id %}"
                 class="delete badge bg-primary">
                 Generar Guia
             </button>

@@ -1,6 +1,10 @@
 from decimal import Decimal
 from django.db import models
 
+def retornar_signo(movimiento):
+    signo_factor_multiplicador = movimiento.id
+    return signo_factor_multiplicador
+
 def retornar_fecha(movimiento):
     fecha = movimiento.content_type_documento_proceso.model_class().objects.get(id=movimiento.id_registro_documento_proceso).fecha
     return fecha
@@ -19,6 +23,7 @@ class MovimientoAlmacenManager(models.Manager):
             if not dato.tipo_stock.codigo in movimientos_fuera:
                 total += dato.cantidad * dato.signo_factor_multiplicador
 
+        lista.sort(key=retornar_signo)
         lista.sort(key=retornar_fecha)
         
         return lista, total

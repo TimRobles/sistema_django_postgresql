@@ -1,8 +1,12 @@
+{% load funciones_propias %}
+
 <table class="table">
     <thead>
         <tr>
             <th>Nro. Guía</th>
+            <th>Fecha</th>
             <th>Cliente</th>
+            <th>Sociedad</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
 
@@ -12,9 +16,11 @@
     <tbody>
         {% for guia in contexto_guia %}
         <tr>
-            <td> {{guia.numero_guia}} </td>
-            <td> {{guia.cliente}} </td>
-            <td> {{guia.get_estado_display}} </td>
+            <td>{{ guia.serie_comprobante }}-{{ guia.numero_guia|numeroXn:6 }}</td>
+            <td>{{ guia.fecha_emision|date:'d/m/Y' }}</td>
+            <td>{{ guia.cliente }}</td>
+            <td>{{ guia.sociedad }}</td>
+            <td>{{ guia.get_estado_display }}</td>
             <td class="text-center">
                 <a href="{% url 'comprobante_despacho_app:guia_detalle' guia.id %}"
                     class="btn btn-info btn-sm"

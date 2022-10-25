@@ -72,7 +72,7 @@ class SolicitudPrestamoMaterialesDetalle(models.Model):
     def cantidad_salida(self):
         total = Decimal('0.00')
         try:
-            for detalle in self.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.all():
+            for detalle in self.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3):
                 if detalle.producto == self.producto:
                     total += detalle.cantidad_salida
         except:
@@ -107,6 +107,8 @@ class DocumentoPrestamoMateriales(models.Model):
 
     def __str__(self):
         return str(self.documento)
+
+
 
 class NotaSalida(models.Model):
     ESTADOS_NOTA_SALIDA = (
@@ -144,7 +146,7 @@ class NotaSalida(models.Model):
 
     @property
     def fecha(self):
-        return self.created_at
+        return self.created_at.date()
 
     @property
     def sociedad(self):
@@ -205,7 +207,7 @@ class NotaSalidaDetalle(models.Model):
     def despachado(self):
         total = Decimal('0.00')
         try:
-            for despacho in self.nota_salida.Despacho_nota_salida.all():
+            for despacho in self.nota_salida.Despacho_nota_salida.exclude(estado=3):
                 for detalle in despacho.DespachoDetalle_despacho.all():
                     if detalle.producto == self.producto:
                         total += detalle.cantidad_despachada
@@ -254,6 +256,14 @@ class Despacho(models.Model):
         verbose_name = 'Despacho'
         verbose_name_plural = 'Despachos'
         ordering = ['numero_despacho',]
+
+    @property
+    def detalles(self):
+        return self.DespachoDetalle_despacho.all()
+
+    @property
+    def fecha(self):
+        return self.fecha_despacho
 
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_despacho, 6), self.cliente)

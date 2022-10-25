@@ -90,6 +90,15 @@ class CotizacionVenta(models.Model):
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_cotizacion, 6), self.cliente)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.fecha_validez:
+            if self.estado == 2:
+                if self.fecha_validez < date.today():
+                    self.estado = 8
+                    self.save()
+        
+
 
 class CotizacionVentaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)

@@ -27,7 +27,7 @@
                 Generar Despacho
             </button>
             {% endif %}
-            <a href="{% url 'logistica_app:nota_salida_inicio' %}"><span class="badge bg-primary">Ver Despachos</span></a>
+            <a href="{% url 'logistica_app:despacho_inicio' contexto_nota_salida_detalle.id %}"><span class="badge bg-primary">Ver Despachos</span></a>
         {% endif %}
         <a href="{% url 'logistica_app:nota_salida_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>

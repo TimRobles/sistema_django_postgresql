@@ -9,17 +9,17 @@
         {% if contexto_solicitud_prestamo_materiales_detalle.estado == 1 %}
             <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_registrar' contexto_solicitud_prestamo_materiales_detalle.id %}"
                 data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_tabla' contexto_solicitud_prestamo_materiales_detalle.id %}"
-                class="create badge bg-primary">
+                class="create btn btn-primary">
                 Agregar Material
             </button>
             <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_finalizar' contexto_solicitud_prestamo_materiales_detalle.id %}"
-                class="delete badge bg-primary">
+                class="delete btn btn-primary">
                 Finalizar Solicitud
             </button>
         {% endif %}
         {% if contexto_solicitud_prestamo_materiales_detalle.estado == 2 %}
             <button data-form-url="{% url 'logistica_app:solicitud_prestamo_materiales_confirmar' contexto_solicitud_prestamo_materiales_detalle.id %}"
-                class="delete badge bg-primary">
+                class="delete btn btn-primary">
                 Confirmar Solicitud
             </button>
         {% endif %}
@@ -32,15 +32,24 @@
         {% if contexto_solicitud_prestamo_materiales_detalle.estado == 3 %}
             <button data-form-url="{% url 'logistica_app:solicitud_prestamo__materiales_generar_nota_salida' contexto_solicitud_prestamo_materiales_detalle.id %}"
                 data-table-url="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"
-                class="delete badge bg-primary">
+                class="delete btn btn-primary">
                 Generar Nota de Salida
             </button>
+            <a href="{% url 'logistica_app:nota_salida_inicio' contexto_solicitud_prestamo_materiales_detalle.id %}"
+                class="btn btn-primary">
+                Ver Notas
+            </a>
         {% endif %}
         {% if contexto_solicitud_prestamo_materiales_detalle.estado != 1 %}
-            <a href="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_imprimir' contexto_solicitud_prestamo_materiales_detalle.id %}" target="_blank">
-            <span class="badge bg-primary">Imprimir</span></a>
+            <a href="{% url 'logistica_app:solicitud_prestamo_materiales_detalle_imprimir' contexto_solicitud_prestamo_materiales_detalle.id %}" target="_blank"
+            class="btn btn-primary">
+                Imprimir
+            </a>
         {% endif %}
-        <a href="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+        <a href="{% url 'logistica_app:solicitud_prestamo_materiales_inicio' %}"
+        class="btn btn-primary">
+            Regresar
+        </a>
     </h3>
     <div id="tabla">
         {% include 'logistica/solicitud_prestamo_materiales/detalle_tabla.html' %}
