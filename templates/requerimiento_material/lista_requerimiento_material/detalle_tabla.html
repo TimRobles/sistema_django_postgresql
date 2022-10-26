@@ -41,6 +41,9 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th class="text-end">Cantidad</th>
+                <th>Código Sunat</th>
+                <th>Control por Serie</th>
+                <th>Control de Calidad</th>
                 <th>Comentario</th>
                 <th>Acciones</th>
             </tr>
@@ -52,6 +55,27 @@
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td>
+                        {% if material.material.producto_sunat %}
+                        Sí
+                        {% else %}
+                        No
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if material.material.control_serie %}
+                        Sí
+                        {% else %}
+                        No
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if material.material.control_calidad %}
+                        Sí
+                        {% else %}
+                        No
+                        {% endif %}
+                    </td>
                     <td>
                         {% if material.comentario  != None %}
                             {{ material.comentario }}

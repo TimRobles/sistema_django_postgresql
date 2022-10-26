@@ -79,6 +79,14 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
             'imagen',
             'especificaciones_tecnicas',
             )
+    
+    def clean_precio_final_con_igv(self):
+        precio_final_con_igv = self.cleaned_data.get('precio_final_con_igv')
+        precio_unitario_con_igv = self.cleaned_data.get('precio_unitario_con_igv')
+        if precio_final_con_igv > precio_unitario_con_igv:
+            self.add_error('precio_final_con_igv', 'El precio final no puede ser mayor al precio unitario.')
+    
+        return precio_final_con_igv
 
     def __init__(self, *args, **kwargs):
         super(OfertaProveedorDetalleUpdateForm, self).__init__(*args, **kwargs)
@@ -87,11 +95,18 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         self.fields['brand'].initial = self.instance.proveedor_material.brand
         self.fields['description'].initial = self.instance.proveedor_material.description
         if internacional_nacional == 1:
+            self.fields['tipo_igv'].widget = forms.HiddenInput()
             self.fields['precio_unitario_sin_igv'].widget = forms.HiddenInput()
             self.fields['sub_total'].widget = forms.HiddenInput()
             self.fields['igv'].widget = forms.HiddenInput()
+            self.fields['precio_unitario_con_igv'].label = "Precio Unitario"
+            self.fields['precio_final_con_igv'].label = "Precio Final"
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 1
+        self.fields['precio_unitario_con_igv'].widget.attrs['min'] = 0
+        self.fields['precio_final_con_igv'].widget.attrs['min'] = 0
         
 class OfertaProveedorDetalleProveedorMaterialUpdateForm(BSModalForm):
     content_type = forms.ModelChoiceField(queryset=ContentType.objects.all())

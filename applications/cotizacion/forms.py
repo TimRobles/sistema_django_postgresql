@@ -105,6 +105,7 @@ class CotizacionVentaMaterialDetalleForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 1
 
 
 class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
@@ -122,6 +123,7 @@ class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 1
         
 
         

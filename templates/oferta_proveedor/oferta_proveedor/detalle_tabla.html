@@ -29,13 +29,13 @@
                     {% endif %}
                 </td>
                 <td class="text-center text-nowrap">
-                        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar' contexto_oferta_proveedor.slug %}"
-                            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
-                            data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
+                    <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_actualizar' contexto_oferta_proveedor.slug %}"
+                        data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
                 </td>
             </tr>
         </tbody>
@@ -94,15 +94,24 @@
                 <th>Brand</th>
                 <th>Description</th>
                 <th>Unidad</th>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
                 <th>Tipo IGV</th>
-                <th class="text-end">Cantidad</th>
-                <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
-                <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
-                <th class="text-nowrap">Prec. Final<br>con IGV</th>
+                {% endif %}
+                <th class="text-nowrap text-end">Cantidad</th>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <th class="text-nowrap text-end">Prec. Unit.<br>sin IGV</th>
+                <th class="text-nowrap text-end">Prec. Unit.<br>con IGV</th>
+                <th class="text-nowrap text-end">Prec. Final<br>con IGV</th>
+                {% else %}
+                <th class="text-nowrap text-end">Prec. Unit.</th>
+                <th class="text-nowrap text-end">Prec. Final</th>
+                {% endif %}
                 <th>Descuento</th>
-                <th class="text-nowrap">Sub Total</th>
-                <th>IGV</th>
-                <th>Total</th>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <th class="text-nowrap text-end">Sub Total</th>
+                <th class="text-nowrap text-end">IGV</th>
+                {% endif %}
+                <th class="text-nowrap text-end">Total</th>
                 <th>Imagen</th>
                 <th>Especificaciones Técnicas</th>
                 <th class="text-center">Acciones</th>
@@ -117,14 +126,20 @@
                     <td>{{ material.proveedor_material.brand }}</td>
                     <td>{{ material.proveedor_material.description }}</td>
                     <td>{{ material.material.unidad_base }}</td>
+                    {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
                     <td>{{ material.get_tipo_igv_display }}</td>
-                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    {% endif %}
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
+                    {% endif %}
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.precio_final_con_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.descuento|redondear|intcomma }}</td>
+                    {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.sub_total|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.igv|redondear|intcomma }}</td>
+                    {% endif %}
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ material.total|redondear|intcomma }}</td>
                     <td class="text-center">
                         {% if material.imagen %}
@@ -168,68 +183,123 @@
         <tfoot>
             <tr>
                 {% if totales.descuento_global %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
                 <td colspan="11" class="text-end">Descuento Global:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Descuento Global:</td>
+                {% endif %}
                 <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.descuento_global|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}     
             </tr>            
             <tr>
                 {% if totales.total_descuento %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
                 <td colspan="11" class="text-end">Descuento Total:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Descuento Total:</td>
+                {% endif %}
                 <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_descuento|intcomma }}</td>   
+                <td colspan="5"></td>
                 {% endif %}
             </tr>           
              <tr>
                 {% if totales.total_anticipo %}
-                    <td colspan="11" class="text-end">Anticipo:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Anticipo:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Anticipo:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_exonerada %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
                 <td colspan="11" class="text-end">Exonerada:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Exonerada:</td>
+                {% endif %}
                 <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_exonerada|intcomma }}</td>   
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_inafecta %}
-                    <td colspan="11" class="text-end">Inafecta:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Inafecta:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Inafecta:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_gravada %}
-                    <td colspan="11" class="text-end">Gravada:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Gravada:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Gravada:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_igv %}
-                    <td colspan="11" class="text-end">IGV:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">IGV:</td>
+                {% else %}
+                <td colspan="9" class="text-end">IGV:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_gratuita %}
-                    <td colspan="11" class="text-end">Gratuita:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Gratuita:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Gratuita:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_otros_cargos %}
-                    <td colspan="11" class="text-end">Otros Cargos:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Otros Cargos:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Otros Cargos:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_icbper %}
-                    <td colspan="11" class="text-end">ICBPER:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">ICBPER:</td>
+                {% else %}
+                <td colspan="9" class="text-end">ICBPER:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total %}
-                    <td colspan="11" class="text-end">Total:</td>
-                    <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total|intcomma }}</td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Total:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Total:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total|intcomma }}</td>
+                <td colspan="5"></td>
                 {% endif %}
             </tr>
         </tfoot>

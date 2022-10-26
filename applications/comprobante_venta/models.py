@@ -94,6 +94,7 @@ class FacturaVenta(models.Model):
         else:
             return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente, self.moneda.simbolo, self.total)
 
+
 class FacturaVentaDetalle(models.Model):
     item = models.IntegerField()
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
