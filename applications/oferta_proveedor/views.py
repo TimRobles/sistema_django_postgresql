@@ -496,10 +496,10 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
     template_name = "includes/formulario generico.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
 
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
+    # def dispatch(self, request, *args, **kwargs):
+    #     if not self.has_permission():
+    #         return render(request, 'includes/modal sin permiso.html')
+    #     return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if self.request.session['primero']:
