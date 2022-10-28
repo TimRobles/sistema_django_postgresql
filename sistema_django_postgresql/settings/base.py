@@ -160,4 +160,4 @@ EMAIL_HOST_USER = "no-responder@multiplay.com.pe"
 EMAIL_HOST_PASSWORD = "MPqap4ca8SBjFuN"
 EMAIL_PORT = 587
 
-FTP_ROOT = BASE_DIR.ancestor(1).child('ftp')
+FTP_ROOT = BASE_DIR.ancestor(1).child('sistema').child('ftp')
