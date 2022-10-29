@@ -7,6 +7,7 @@ from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.cotizacion.models import ConfirmacionOrdenCompra, ConfirmacionVenta, ConfirmacionVentaCuota, CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.material.models import Material
+from applications.usuario.models import DatosUsuario
 
 class CotizacionVentaForm (BSModalForm):
     class Meta:
@@ -21,6 +22,41 @@ class CotizacionVentaForm (BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class CotizacionVentaBuscarForm(forms.Form):
+    cliente = forms.CharField(max_length=150, required=False)
+    fecha_cotizacion = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_validez = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    vendedor = forms.ModelChoiceField(queryset=get_user_model().objects)
+
+    def __init__(self, *args, **kwargs):
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        filtro_fecha_cotizacion = kwargs.pop('filtro_fecha_cotizacion')
+        filtro_fecha_validez = kwargs.pop('filtro_fecha_validez')
+        filtro_vendedor = kwargs.pop('filtro_vendedor')
+        super(CotizacionVentaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['cliente'].initial = filtro_cliente
+        self.fields['fecha_cotizacion'].initial = filtro_fecha_cotizacion
+        self.fields['fecha_validez'].initial = filtro_fecha_validez
+        self.fields['vendedor'].initial = filtro_vendedor
+        self.fields['vendedor'].required = False
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 class CotizacionVentaClienteForm(BSModalModelForm):
     class Meta:
@@ -52,7 +88,6 @@ class CotizacionVentaClienteForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-
 class CotizacionVentaDescuentoGlobalForm(BSModalModelForm):
     class Meta:
         model = CotizacionDescuentoGlobal
@@ -62,7 +97,6 @@ class CotizacionVentaDescuentoGlobalForm(BSModalModelForm):
         super(CotizacionVentaDescuentoGlobalForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
 
 class CotizacionVentaObservacionForm(BSModalModelForm):
     class Meta:
@@ -74,7 +108,6 @@ class CotizacionVentaObservacionForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-
 class CotizacionVentaOtrosCargosForm(BSModalModelForm):
     class Meta:
         model = CotizacionOtrosCargos
@@ -85,11 +118,10 @@ class CotizacionVentaOtrosCargosForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-
 class CotizacionVentaMaterialDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
-    precio_lista = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)
+    precio_lista = forms.DecimalField(max_digits=22, decimal_places=10, required=False)
     stock = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)
     class Meta:
         model = CotizacionVentaDetalle
@@ -100,12 +132,19 @@ class CotizacionVentaMaterialDetalleForm(BSModalForm):
             'stock',
             )
 
+    def clean_precio_lista(self):
+        precio_lista = self.cleaned_data.get('precio_lista')
+        if precio_lista == None:
+            self.add_error('precio_lista', 'Registrar precio de lista del material.')
+    
+        return precio_lista
+        
     def __init__(self, *args, **kwargs):
         super(CotizacionVentaMaterialDetalleForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
-
+        self.fields['cantidad'].widget.attrs['step'] = 1
 
 class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
     class Meta:
@@ -123,8 +162,6 @@ class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
         
-
-        
 class CotizacionVentaDetalleForm(BSModalModelForm):
     cantidad = forms.DecimalField(required=False, disabled=True)
     class Meta:
@@ -137,7 +174,6 @@ class CotizacionVentaDetalleForm(BSModalModelForm):
         super(CotizacionVentaDetalleForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control text-end'
-
 
 class PrecioListaMaterialForm (BSModalModelForm):
     comprobante = forms.ChoiceField(choices=[(0,0)], required=False)
@@ -170,7 +206,6 @@ class CotizacionVentaPdfsForm(BSModalForm):
 
     # TODO: Define form fields here
 
-
 class ConfirmacionVentaFormaPagoForm(BSModalModelForm):
     class Meta:
         model = ConfirmacionVenta
@@ -183,7 +218,6 @@ class ConfirmacionVentaFormaPagoForm(BSModalModelForm):
         super(ConfirmacionVentaFormaPagoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
 
 class ConfirmacionClienteForm(BSModalModelForm):
     class Meta:
@@ -215,7 +249,6 @@ class ConfirmacionClienteForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-
 class SolicitudCreditoForm(BSModalModelForm):
     class Meta:
         model = SolicitudCredito
@@ -245,7 +278,6 @@ class SolicitudCreditoForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
 
-
 class SolicitudCreditoCuotaForm(BSModalModelForm):
     class Meta:
         model = SolicitudCreditoCuota
@@ -269,7 +301,6 @@ class SolicitudCreditoCuotaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['monto'].widget.attrs['min'] = 0
         self.fields['dias_pago'].widget.attrs['min'] = 0
-
 
 class ConfirmacionVentaCuotaForm(BSModalModelForm):
     class Meta:
@@ -295,7 +326,6 @@ class ConfirmacionVentaCuotaForm(BSModalModelForm):
         self.fields['monto'].widget.attrs['min'] = 0
         self.fields['dias_pago'].widget.attrs['min'] = 0
 
-
 class ConfirmacionOrdenCompraForm(BSModalModelForm):
     class Meta:
         model = ConfirmacionOrdenCompra
@@ -317,8 +347,7 @@ class ConfirmacionOrdenCompraForm(BSModalModelForm):
         super(ConfirmacionOrdenCompraForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
-            
+     
 class CosteadorForm (BSModalModelForm):
     comprobante = forms.ChoiceField(choices=[(0,0)], required=False)
     moneda = forms.ModelChoiceField(queryset=Moneda.objects.filter(estado=1))

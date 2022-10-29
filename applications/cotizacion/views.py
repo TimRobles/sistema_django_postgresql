@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from datetime import timedelta
 from decimal import Decimal
 from django.shortcuts import render
@@ -22,6 +23,7 @@ from .forms import (
     ConfirmacionVentaCuotaForm,
     ConfirmacionVentaFormaPagoForm,
     CosteadorForm,
+    CotizacionVentaBuscarForm,
     CotizacionVentaClienteForm,
     CotizacionVentaDescuentoGlobalForm,
     CotizacionVentaDetalleForm,
@@ -52,17 +54,229 @@ from .models import (
 )
 
 
-class CotizacionVentaListView(ListView):
-    model = CotizacionVenta
+class CotizacionVentaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('cotizacion.view_cotizacionventa')
+    # model = CotizacionVenta
     template_name = 'cotizacion/cotizacion_venta/inicio.html'
-    context_object_name = 'contexto_cotizacion_venta'
+    form_class = CotizacionVentaBuscarForm
+    # context_object_name = 'contexto_cotizacion_venta'
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(CotizacionVentaListView, self).get_form_kwargs()
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        kwargs['filtro_vendedor'] = self.request.GET.get('vendedor')
+        kwargs['filtro_fecha_cotizacion'] = self.request.GET.get('fecha_cotizacion')
+        kwargs['filtro_fecha_validez'] = self.request.GET.get('fecha_validez')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaListView,self).get_context_data(**kwargs)
+        cotizacion_ventas = CotizacionVenta.objects.all()
+
+        filtro_cliente = self.request.GET.get('cliente')
+        filtro_vendedor = self.request.GET.get('vendedor')
+        filtro_fecha_cotizacion = self.request.GET.get('fecha_cotizacion')
+        filtro_fecha_validez = self.request.GET.get('fecha_validez')
+
+        if filtro_cliente and filtro_fecha_cotizacion and filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_cotizacion=" + filtro_fecha_cotizacion + "&fecha_validez=" + filtro_fecha_validez + "&vendedor=" + filtro_vendedor 
+
+        elif filtro_cliente and filtro_fecha_cotizacion and filtro_fecha_validez:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_cotizacion=" + filtro_fecha_cotizacion + "&fecha_validez=" + filtro_fecha_validez  
+
+        elif filtro_fecha_cotizacion and filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?fecha_cotizacion=" + filtro_fecha_cotizacion + "&fecha_validez=" + filtro_fecha_validez + "&vendedor=" + filtro_vendedor
+
+        elif filtro_cliente and filtro_fecha_cotizacion and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_cotizacion=" + filtro_fecha_cotizacion + "&vendedor=" + filtro_vendedor 
+
+        elif filtro_cliente and filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_validez=" + filtro_fecha_validez + "&vendedor=" + filtro_vendedor 
+
+        elif filtro_cliente and filtro_fecha_cotizacion:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_cotizacion=" + filtro_fecha_cotizacion
+
+        elif filtro_cliente and filtro_fecha_validez:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_validez=" + filtro_fecha_validez
+
+        elif filtro_cliente and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&vendedor=" + filtro_vendedor 
+
+        elif filtro_fecha_cotizacion and filtro_fecha_validez:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?fecha_cotizacion=" + filtro_fecha_cotizacion + "&fecha_validez=" + filtro_fecha_validez
+
+        elif filtro_fecha_cotizacion and filtro_vendedor:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?fecha_cotizacion=" + filtro_fecha_cotizacion + "&vendedor=" + filtro_vendedor
+        
+        elif filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?fecha_validez=" + filtro_fecha_validez + "&vendedor=" + filtro_vendedor 
+
+        elif filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+
+        elif filtro_fecha_cotizacion:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?fecha_cotizacion=" + filtro_fecha_cotizacion
+
+        elif filtro_fecha_validez:
+            condicion = Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?fecha_validez=" + filtro_fecha_validez
+
+        elif filtro_vendedor:
+            condicion = Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+            context['contexto_filtro'] = "?vendedor=" + filtro_vendedor
+
+        objectsxpage =  15 # Show 10 objects per page.
+
+        if len(cotizacion_ventas) > objectsxpage:
+            paginator = Paginator(cotizacion_ventas, objectsxpage)
+            page_number = self.request.GET.get('page')
+            cotizacion_ventas = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = cotizacion_ventas
+
+        return context
+
 
 def CotizacionVentaTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'cotizacion/cotizacion_venta/inicio_tabla.html'
         context = {}
-        context['contexto_cotizacion_venta'] = CotizacionVenta.objects.all()
+        cotizacion_ventas = CotizacionVenta.objects.all()
+        filtro_cliente = request.GET.get('cliente')
+        filtro_vendedor = request.GET.get('vendedor')
+        filtro_fecha_cotizacion = request.GET.get('fecha_cotizacion')
+        filtro_fecha_validez = request.GET.get('fecha_validez')
+
+        if filtro_cliente and filtro_fecha_cotizacion and filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_cliente and filtro_fecha_cotizacion and filtro_fecha_validez:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_fecha_cotizacion and filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_cliente and filtro_fecha_cotizacion and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_cliente and filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_cliente and filtro_fecha_cotizacion:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_cliente and filtro_fecha_validez:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_cliente and filtro_vendedor:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(created_by__id = filtro_vendedor)
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_fecha_cotizacion and filtro_fecha_validez:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_fecha_cotizacion and filtro_vendedor:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+        
+        elif filtro_fecha_validez and filtro_vendedor:
+            condicion = Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date()) & Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_fecha_cotizacion:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_fecha_validez:
+            condicion = Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        elif filtro_vendedor:
+            condicion = Q(created_by__id = filtro_vendedor)
+            cotizacion_ventas = cotizacion_ventas.filter(condicion)
+
+        objectsxpage =  15 # Show 10 objects per page.
+
+        if len(cotizacion_ventas) > objectsxpage:
+            paginator = Paginator(cotizacion_ventas, objectsxpage)
+            page_number = request.GET.get('page')
+            cotizacion_ventas = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = cotizacion_ventas
 
         data['table'] = render_to_string(
             template,
@@ -336,8 +550,8 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(CotizacionVentaMaterialDetalleView, self).get_context_data(**kwargs)
-        context['titulo'] = 'Agregar'
-        context['accion'] = 'Material'
+        context['titulo'] = 'Material'
+        context['accion'] = 'Agregar'
         return context
 
 

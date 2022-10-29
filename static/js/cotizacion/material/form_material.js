@@ -38,3 +38,11 @@ function seleccionar_material(id_material) {
 $(document).unbind().on('change', '#id_material', function (e) {
     seleccionar_material(e.target.value);
 })
+
+$('#id_precio_lista')[0].disabled = true;
+
+$('.btn-primary').unbind().on('click', function () {
+    $precio_lista = $('#id_precio_lista')[0];
+    console.log($precio_lista);
+    $precio_lista.disabled = false;
+})

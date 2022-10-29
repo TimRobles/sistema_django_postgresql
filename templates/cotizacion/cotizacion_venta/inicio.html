@@ -8,13 +8,61 @@ Cotizaciones
 {% block contenido %}
     <h3> Cotizaciones
         <a href="{% url 'cotizacion_app:cotizacion_venta_registrar' %}"
-        class="badge btn btn-primary" title="Nueva Cotización">
-        Nueva Cotización
+            class="badge btn btn-primary" title="Nueva Cotización">
+            Nueva Cotización
         </a>
-        
     </h3>
+    <br>
+    <form action="" method="get">
+        <div class="row">
+            {% for field in form %}
+                <div class="col-lg-4">
+                    <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                    {% if field.help_text %}
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                    {% endif %}
+                    >
+                    <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    </div>
+                    {% for error in field.errors %}
+                        <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+            {% endfor %}
+            <div class="col-lg-4 my-auto">
+                <button type="submit" class="btn btn-success" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a class="btn btn-success" href="{% url 'cotizacion_app:cotizacion_venta_inicio' %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+    <br>
+
+    {% include 'includes/paginador.html' %}
 
     <div class="table-responsive" id="tabla">
         {% include 'cotizacion/cotizacion_venta/inicio_tabla.html' %}
+    </div>
+    <div>
+        <ul class="pagination pagination-sm justify-content-end">
+            {% if contexto_pagina.has_previous %}
+                <li>
+                    <span><a href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.previous_page_number }}{% else %}?page={{ contexto_pagina.previous_page_number }}{% endif %}">Anterior</a></span>
+                    <span>...</span>
+                </li>
+            {% endif %}
+            <li class="">
+                <span>Página {% if contexto_pagina.number %}{{ contexto_pagina.number }}{% else %} 1 {% endif %} de {% if contexto_pagina.paginator.num_pages %}{{ contexto_pagina.paginator.num_pages }}{% else %} 1.{% endif %}</span>
+            </li>
+            {% if contexto_pagina.has_next %}
+                <li>
+                    <span>...</span>
+                    <span><a href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.next_page_number }}{% else %}?page={{ contexto_pagina.next_page_number }}{% endif %}">Siguiente</a></span>
+                </li>
+            {% endif %}
+        </ul>
     </div>
 {% endblock contenido %}
