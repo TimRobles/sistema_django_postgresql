@@ -51,7 +51,7 @@ class ClienteListView(PermissionRequiredMixin, FormView):
             clientes = clientes.filter(condicion)
             context['contexto_filtro'] = "?razon_social=" + filtro_razon_social
 
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  15 # Show 10 objects per page.
 
         if len(clientes) > objectsxpage:
             paginator = Paginator(clientes, objectsxpage)
@@ -74,7 +74,7 @@ def ClienteTabla(request):
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes = clientes.filter(condicion)
 
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  15 # Show 10 objects per page.
 
         if len(clientes) > objectsxpage:
             paginator = Paginator(clientes, objectsxpage)

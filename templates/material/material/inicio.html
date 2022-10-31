@@ -32,14 +32,15 @@
             </div>
             {% endfor %}
             <div class="col-lg-2 my-auto">
-                <button type="submit" class="btn btn-outline-success" title="Buscar">
+                <button type="submit" class="btn btn-success" title="Buscar">
                     <i class="bi bi-search"></i>
                 </button>
-                <a class="btn btn-outline-success" href="{% url 'material_app:material_inicio' %}">Limpiar</a>
+                <a class="btn btn-success" href="{% url 'material_app:material_inicio' %}">Limpiar</a>
             </div>            
         </div>
     </form>
     <br>
+
     <div class="table-responsive" id="tabla">
         {% include 'material/material/inicio_tabla.html' %}
     </div>
