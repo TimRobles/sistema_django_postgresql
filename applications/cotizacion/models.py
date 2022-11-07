@@ -418,7 +418,7 @@ class CotizacionObservacion(models.Model):
 class ConfirmacionOrdenCompra(models.Model):
     numero_orden = models.CharField('Número de Orden', max_length=100)
     fecha_orden = models.DateField('Fecha Orden', auto_now=False, auto_now_add=False)
-    documento = models.FileField('Documento', upload_to=ORDEN_COMPRA_CONFIRMACION, max_length=100)
+    documento = models.FileField('Documento', upload_to=ORDEN_COMPRA_CONFIRMACION, max_length=100, blank=True, null=True)
     confirmacion_venta = models.OneToOneField(ConfirmacionVenta, on_delete=models.PROTECT, related_name='ConfirmacionOrdenCompra_confirmacion_venta')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

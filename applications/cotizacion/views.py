@@ -69,6 +69,7 @@ class CotizacionVentaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_vendedor'] = self.request.GET.get('vendedor')
         kwargs['filtro_fecha_cotizacion'] = self.request.GET.get('fecha_cotizacion')
         kwargs['filtro_fecha_validez'] = self.request.GET.get('fecha_validez')
+        kwargs['vendedores'] = get_user_model().objects.filter(id__in = [cotizacion.created_by.id for cotizacion in CotizacionVenta.objects.all()])
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -2079,6 +2080,20 @@ class ConfirmacionVentaOrdenCompraActualizarView(BSModalUpdateView):
         context['titulo'] = "Orden de Compra"
         return context
 
+
+class ConfirmacionOrdenCompraDeleteView(BSModalDeleteView):
+    model = ConfirmacionOrdenCompra
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.kwargs['id_confirmacion']})
+
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionOrdenCompraDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Orden de Compra"
+        context['item'] = self.get_object()
+        return context
 
 class SolicitudCreditoView(TemplateView):
     template_name = "cotizacion/cotizacion_venta/form_solicitud_credito.html"
