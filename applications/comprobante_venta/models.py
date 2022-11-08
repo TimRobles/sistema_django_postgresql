@@ -133,6 +133,22 @@ class FacturaVentaDetalle(models.Model):
             ]
 
     @property
+    def moneda(self):
+        return self.factura_venta.moneda
+    
+    @property
+    def documento(self):
+        return f'FACTURA {self.factura_venta.documento}'
+    
+    @property
+    def fecha(self):
+        return self.factura_venta.fecha_emision
+
+    @property
+    def cliente(self):
+        return self.factura_venta.cliente
+
+    @property
     def producto(self):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
@@ -276,6 +292,22 @@ class BoletaVentaDetalle(models.Model):
             'boleta_venta',
             'item',
             ]
+
+    @property
+    def moneda(self):
+        return self.boleta_venta.moneda
+
+    @property
+    def documento(self):
+        return f'BOLETA {self.boleta_venta.documento}'
+    
+    @property
+    def fecha(self):
+        return self.boleta_venta.fecha_emision
+
+    @property
+    def cliente(self):
+        return self.boleta_venta.cliente
 
     @property
     def producto(self):

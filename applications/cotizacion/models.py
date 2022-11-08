@@ -1,10 +1,12 @@
 from datetime import date, timedelta
+from decimal import Decimal
 from email.policy import default
 from functools import total_ordering
-import keyword
+from reportlab.lib import colors
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from applications.funciones import numeroXn, obtener_totales
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
+import applications
 from applications.rutas import ORDEN_COMPRA_CONFIRMACION
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
@@ -68,6 +70,15 @@ class CotizacionVenta(models.Model):
         ]
 
     @property
+    def sociedades(self):
+        sociedades = []
+        for detalle in self.CotizacionVentaDetalle_cotizacion_venta.all():
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                if cotizacion_sociedad.cantidad > 0:
+                    if not cotizacion_sociedad.sociedad in sociedades: sociedades.append(cotizacion_sociedad.sociedad)
+        return sociedades
+
+    @property
     def internacional_nacional(self):
         return 2
     
@@ -103,7 +114,6 @@ class CotizacionVenta(models.Model):
                     self.save()
         
 
-
 class CotizacionVentaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
@@ -128,7 +138,10 @@ class CotizacionVentaDetalle(models.Model):
     class Meta:
         verbose_name = 'Cotizacion Venta Detalle'
         verbose_name_plural = 'Cotizaciones Venta Detalle'
-        ordering = ['item',]
+        ordering = [
+            'cotizacion_venta',
+            'item',
+            ]
 
 
     def __str__(self):
@@ -347,9 +360,40 @@ class CotizacionSociedad(models.Model):
         ordering = [
             'sociedad',
         ]
+    
+    @property
+    def stock(self):
+        return applications.material.funciones.stock(self.cotizacion_venta_detalle.content_type, self.cotizacion_venta_detalle.id_registro, self.sociedad.id)
+
+    @property
+    def color(self):
+        if self.stock < self.cantidad:
+            return "#" + colors.red.hexval()[2:]
+        else:
+            return "#" + colors.black.hexval()[2:]
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta_detalle, self.sociedad, self.cantidad)
+
+def cotizacion_sociedad_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    suma = Decimal('0.00')
+    for detalle in obj.cotizacion_venta_detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+        suma += detalle.cantidad
+    obj.cotizacion_venta_detalle.cantidad = suma
+    precio_unitario_con_igv = obj.cotizacion_venta_detalle.precio_unitario_con_igv
+    precio_final_con_igv = obj.cotizacion_venta_detalle.precio_final_con_igv
+    respuesta = calculos_linea(obj.cotizacion_venta_detalle.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), obj.cotizacion_venta_detalle.tipo_igv)
+    obj.cotizacion_venta_detalle.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+    obj.cotizacion_venta_detalle.precio_unitario_con_igv = precio_unitario_con_igv
+    obj.cotizacion_venta_detalle.precio_final_con_igv = precio_final_con_igv
+    obj.cotizacion_venta_detalle.sub_total = respuesta['subtotal']
+    obj.cotizacion_venta_detalle.descuento = respuesta['descuento']
+    obj.cotizacion_venta_detalle.igv = respuesta['igv']
+    obj.cotizacion_venta_detalle.total = respuesta['total']
+    obj.cotizacion_venta_detalle.save()
+
+post_save.connect(cotizacion_sociedad_post_save, sender=CotizacionSociedad)
 
 
 class CotizacionDescuentoGlobal(models.Model):
