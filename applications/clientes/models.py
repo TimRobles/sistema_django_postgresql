@@ -1,6 +1,8 @@
 from decimal import Decimal
 from django.db import models
 from django.conf import settings
+from applications.datos_globales.models import Distrito
+from applications.funciones import consulta_ruc
 from phonenumber_field.modelfields import PhoneNumberField
 from applications import datos_globales
 from applications.variables import CONDICION_SUNAT, DICCIONARIO_TIPO_DOCUMENTO_SUNAT, ESTADOS, ESTADO_SUNAT, TIPO_DOCUMENTO_SUNAT, TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
@@ -36,10 +38,36 @@ class Cliente(models.Model):
             except:
                 self.distrito = None
         self.razon_social = self.razon_social.upper()
-        self.nombre_comercial = self.nombre_comercial.upper()
+        if self.nombre_comercial:
+            self.nombre_comercial = self.nombre_comercial.upper()
         self.direccion_fiscal = self.direccion_fiscal.upper()
         super().save(*args, **kwargs)
 
+    @property
+    def direccion_anterior(self):
+        try:
+            return f'{self.direccion_fiscal} - {self.ubigeo_total}'
+        except:
+            return ""
+
+    @property
+    def direccion_nueva(self):
+        consulta = consulta_ruc(self.numero_documento)
+        return f'{consulta["direccion"]} - {consulta["distrito"]} - {consulta["provincia"]} - {consulta["departamento"]}'
+
+    @property
+    def consulta_direccion(self):
+        return consulta_ruc(self.numero_documento)
+
+    @property
+    def ubigeo_total(self):
+        try:
+            distrito = Distrito.objects.get(codigo = self.ubigeo)
+            return f"{distrito.nombre} - {distrito.provincia}"
+        except:
+            return ""
+
+    @property
     def documento(self):
         return DICCIONARIO_TIPO_DOCUMENTO_SUNAT[self.tipo_documento]
 
