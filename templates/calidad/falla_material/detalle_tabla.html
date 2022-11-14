@@ -5,8 +5,8 @@
     <a href="{% url 'calidad_app:falla_material' %}"><span class="badge bg-primary">Regresar</span></a>
     
     <button class="create badge bg-primary"
-        data-form-url="{% url 'calidad_app:falla_material_registrar' contexto_subfamilia.id%}"
-        data-table-url="{% url 'calidad_app:falla_material_detalle' contexto_subfamilia.id %}">
+        data-form-url="{% url 'calidad_app:falla_material_detalle_registrar' contexto_subfamilia.id %}"
+        data-table-url="{% url 'calidad_app:falla_material_detalle_tabla' contexto_subfamilia.id %}">
         Registrar Falla
     </button>
     
@@ -18,7 +18,7 @@
             <tr>
                 <th>Título</th>
                 <th>Comentario</th>
-                <th>Visible</th>
+                <th class="text-center">Visible</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -28,16 +28,22 @@
                 <tr>
                     <td>{{ falla.titulo }}</td>
                     <td>{{ falla.comentario }}</td>
-                    <td>{{ falla.visible }}</td>
+                    <td class="text-center">
+                        {% if  falla.visible %}
+                            Si 
+                        {% else %}
+                            No 
+                        {% endif %}
+                    </td>
                     <td class="text-center text-nowrap">
-                        <button data-form-url="{% url 'calidad_app:falla_material_actualizar' falla.id %}"
-                            data-table-url="{% url 'calidad_app:falla_material_detalle' falla.id %}"
+                        <button data-form-url="{% url 'calidad_app:falla_material_detalle_actualizar' falla.id %}"
+                            data-table-url="{% url 'calidad_app:falla_material_detalle_tabla' contexto_subfamilia.id %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        <button data-form-url="{% url 'calidad_app:falla_material_eliminar' falla.id %}"
+                        <button data-form-url="{% url 'calidad_app:falla_material_detalle_eliminar' falla.id %}"
                             class="delete btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                             <i class="bi bi-x-lg"></i>

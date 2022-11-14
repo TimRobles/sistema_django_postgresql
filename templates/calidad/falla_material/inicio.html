@@ -7,9 +7,31 @@
 
 {% block contenido %}
     <h3>Fallas por Sub Familia</h3>
-
+    <br>
     <div class="table-responsive" id="tabla">
-        {% include 'calidad/falla_material/inicio_tabla.html' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sub Familia</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>    
+                {% for subfamilia in contexto_subfamilias %}
+                    <tr>
+                        <td>{{ subfamilia.nombre }}</td>
+                        <td class="text-center text-nowrap">
+                            <a href="{% url 'calidad_app:falla_material_detalle' subfamilia.id %}"
+                                class="btn btn-info btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     
 {% endblock contenido %}
