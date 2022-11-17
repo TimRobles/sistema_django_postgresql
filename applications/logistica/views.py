@@ -711,7 +711,17 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                 transaction.savepoint_rollback(sid)
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                messages.warning(self.request, f"{fname} # {exc_tb.tb_lineno} {exc_type} {ex}")
+                mensaje = f"{fname} # {exc_tb.tb_lineno} {exc_type} {ex}"
+                Excepcion.objects.create(
+                    texto=mensaje,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                messages.warning(self.request, mensaje)
+                print(os.path)
+                print(exc_type)
+                print(exc_obj)
+                print(exc_tb)
                 return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':form.instance.id}))
             self.request.session['primero'] = False
         return super().form_valid(form)

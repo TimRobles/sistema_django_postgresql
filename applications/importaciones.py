@@ -50,6 +50,8 @@ from django.shortcuts import render
 
 import simplejson
 
+from applications.soporte_sistema.models import Excepcion
+
 def registro_guardar(obj, request):
     if obj.created_by == None:
         obj.created_by = request.user
