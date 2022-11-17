@@ -1,0 +1,82 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Envio Traslado Producto        
+    <a href="{% url 'traslado_producto_app:envio_registrar' %}"
+        class="badge btn btn-primary" title="Nuevo Envio">
+        Nuevo Envio
+    </a>
+</h3>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>N° Envio </th>
+            <th>Sede Origen</th>
+            <th>Sociedad</th>
+            <th>Dirección</th>  
+            <th>Responsable</th>  
+            <th>Motivo Traslado</th>  
+            <th>Observaciones</th>  
+            <th>Estado</th>  
+            <th class="text-center">Acciones</th>      
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for envio_traslado_producto in contexto_envio_traslado_producto %}
+        <tr> 
+            <td>{{envio_traslado_producto.fecha_traslado|date:'d/m/Y' }}</td>
+            <td>
+                {% if envio_traslado_producto.numero_envio_traslado %}
+                {{envio_traslado_producto.numero_envio_traslado|numeroXn:6 }}
+                {% endif %}
+            </td>
+            <td>
+                {% if envio_traslado_producto.sede_origen %}
+                {{envio_traslado_producto.sede_origen}}  
+                {% endif %}
+            </td>
+            <td>
+                {% if envio_traslado_producto.sociedad.abreviatura %}
+                {{envio_traslado_producto.sociedad.abreviatura}}    
+                {% endif %}
+            </td>
+            <td>
+                {% if envio_traslado_producto.direccion_destino %}
+                {{envio_traslado_producto.direccion_destino}}    
+                {% endif %}
+            </td>
+            <td>
+                {% if envio_traslado_producto.responsable %}
+                {{envio_traslado_producto.responsable}}
+                {% endif %}
+            </td>
+            <td>
+                {% if envio_traslado_producto.motivo_traslado %}
+                {{envio_traslado_producto.motivo_traslado}}
+                {% endif %}
+
+            </td>
+            <td>
+                {% if envio_traslado_producto.observaciones %}
+                {{envio_traslado_producto.observaciones}}
+                {% endif %}
+            </td>
+            <td>{{envio_traslado_producto.get_estado_display}}</td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'traslado_producto_app:envio_ver' envio_traslado_producto.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
