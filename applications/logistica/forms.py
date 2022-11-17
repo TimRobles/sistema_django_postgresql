@@ -1,6 +1,7 @@
 from applications.material.funciones import stock
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.sede.models import Sede
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 
@@ -192,6 +193,7 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
             almacen = self.instance.almacen
             sede = almacen.sede
             
+            self.fields['sede'].queryset = Sede.objects.filter(estado=1)
             self.fields['sede'].initial = sede
             self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
         except:
