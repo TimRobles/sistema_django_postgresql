@@ -5,6 +5,7 @@ from .models import (
 
 class SedeAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         'usuario_responsable',
         'direccion',

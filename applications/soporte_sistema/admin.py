@@ -5,6 +5,7 @@ from applications.soporte_sistema.models import Excepcion
 @admin.register(Excepcion)
 class ExcepcionAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'texto',
         'created_by',
         'created_at',
