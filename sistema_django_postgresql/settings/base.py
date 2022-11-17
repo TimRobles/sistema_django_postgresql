@@ -67,6 +67,7 @@ LOCAL_APPS = (
     'applications.sorteo_webinar',
     'applications.calidad',
     'applications.soporte_sistema',
+    'applications.traslado_producto',
 
 )
 

@@ -258,6 +258,14 @@ TIPO_RETENCION = (
 )
 
 
+ESTADOS_TRASLADO = (
+    (1, 'EN PROCESO'),
+    (2, 'TRASLADO ENVIADO'),
+    (3, 'TRASLADO RECEPCIONADO'),
+    (4, 'ANULADO'),
+    )
+
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
@@ -296,6 +304,8 @@ MENSAJE_FINALIZAR_SIN_GUIA_DESPACHO = 'Operación exitosa: El despacho fue final
 
 MENSAJE_ELIMINAR_DEUDA = 'Operación exitosa: Deuda eliminada.'
 MENSAJE_ERROR_ELIMINAR_DEUDA = 'No se pudo eliminar la deuda, contactar con el administrador.'
+
+MENSAJE_GUARDAR_ENVIO = 'Operación exitosa: El envio fue guardado con éxito.'
 
 COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
