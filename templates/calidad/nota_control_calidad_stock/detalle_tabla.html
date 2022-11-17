@@ -1,0 +1,54 @@
+<h3>Detalle Nota Control Calidad Stock
+    {% if contexto_nota_control_calidad_stock_detalle.estado == 1 %}
+        <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_registrar' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-table-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar Material
+        </button> 
+    {% endif %}
+    <a href="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Descripción</th>
+                <th>Fecha de Ingreso</th>
+                <th>Nro. Comprobante Compra</th>
+                <th>Razón Social Proveedor</th>
+                <th>Cantidad</th>
+                <th>Estado de Inspección</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in nota_control_calidad_detalle %}
+            <tr>
+                <td>{{ material.item }}</td>
+                <td>{{ material.nota_ingreso_detalle }}</td>
+                <td>{{ material.nota_ingreso_detalle.nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+                <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.comprobante_compra.numero_comprobante_compra }}</td>
+                <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.orden_compra.oferta_proveedor.requerimiento_material.proveedor}}</td>
+                <td>{{ material.cantidad_calidad }}</td>
+                <td>{{ material.get_inspeccion_display}}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_actualizar' material.id %}"
+                        data-table-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_eliminar' material.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

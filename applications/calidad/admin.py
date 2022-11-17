@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import(
     EstadoSerie,
+    NotaControlCalidadStock,
+    NotaControlCalidadStockDetalle,
     Serie,
     FallaMaterial,
     HistorialEstadoSerie,
@@ -73,6 +75,48 @@ class HistorialEstadoSerieAdmin(admin.ModelAdmin):
         'estado_serie',
         'falla_material',
         'observacion',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(NotaControlCalidadStock)
+class NotaControlCalidadStockAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'nro_nota_calidad',
+        'nota_ingreso',
+        'motivo_anulacion',
+        'comentario',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(NotaControlCalidadStockDetalle)
+class NotaControlCalidadStockDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'nota_ingreso_detalle',
+        'cantidad_calidad',
+        'inspeccion',
+        'nota_control_calidad_stock',
         'created_at',
         'created_by',
         'updated_at',

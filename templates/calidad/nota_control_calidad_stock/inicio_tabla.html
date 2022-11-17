@@ -1,0 +1,51 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. de Nota Calidad</th>    
+            <th>Nota de Ingreso</th>
+            <th>Comentario</th>    
+            <th>Motivo de Anulación</th>    
+            <th>Estado</th>    
+            <th class="text-center">Acciones</th>    
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for nota in contexto_nota_control_calidad_stock %}
+            <tr>
+                <td> 
+                    {% if  nota.nro_nota_calidad %}
+                        {{ nota.nro_nota_calidad}} 
+                    {% endif %}
+                </td>
+                <td> {{ nota.nota_ingreso }}</td>
+                <td> 
+                    {% if nota.comentario %}
+                        {{ nota.comentario }}
+                    {% endif %}  
+                </td>
+                <td>
+                    {% if nota.motivo_anulacion %}
+                        {{ nota.motivo_anulacion }}
+                    {% endif %}  
+                </td>
+                <td>{{ nota.get_estado_display }}</td>
+                <td class="text-center text-nowrap">
+                    <a href="{% url 'calidad_app:nota_control_calidad_stock_detalle' nota.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                    {% if nota.estado != 3 %}
+                        <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_anular' nota.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Anular">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+                       
+    </tbody>
+</table>

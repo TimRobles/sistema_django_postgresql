@@ -28,7 +28,6 @@ class FamiliaActivo(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class SubFamiliaActivo(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
     familia = models.ForeignKey(FamiliaActivo, on_delete=models.PROTECT)
@@ -45,7 +44,6 @@ class SubFamiliaActivo(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class ModeloActivo(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -60,7 +58,6 @@ class ModeloActivo(models.Model):
 
     def __str__(self):
         return self.nombre
-
 
 class MarcaActivo(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -77,7 +74,6 @@ class MarcaActivo(models.Model):
 
     def __str__(self):
         return self.nombre
-
 
 class ActivoBase(models.Model):
     descripcion_venta = models.CharField('Descripción de Venta', max_length=150, null=True, blank=True)
@@ -110,7 +106,6 @@ class ActivoBase(models.Model):
     def __str__(self):
         return self.descripcion_corta.upper()
 
-
 class AsignacionActivo(models.Model):
     ESTADOS_ASIGNACION = [
         (1, 'ALTA'),
@@ -138,7 +133,6 @@ class AsignacionActivo(models.Model):
 
     def __str__(self):
         return self.titulo
-
 
 class AsignacionDetalleActivo(models.Model):
     ESTADOS_ASIGNACION_DETALLE = [
@@ -180,7 +174,6 @@ class Activo(models.Model):
     declarable = models.BooleanField('Declarable', default=False)
     estado = models.ForeignKey('EstadoActivo', on_delete=models.CASCADE, default=1)
 
-
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Activo_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -220,9 +213,6 @@ class Activo(models.Model):
     def __str__(self):
         return str(self.descripcion)
 
-
-from django.db.models.signals import post_save
-
 def actualizar_estado_activo_asignacion(*args, **kwargs):
     obj = kwargs['instance']
     activo = Activo.objects.get(id=obj.activo.id)
@@ -231,6 +221,46 @@ def actualizar_estado_activo_asignacion(*args, **kwargs):
 
 post_save.connect(actualizar_estado_activo_asignacion, sender=AsignacionDetalleActivo)
 
+class ActivoSociedad(models.Model):
+
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True, related_name='ActivoSociedad_activo')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoSociedad_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoSociedad_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Activo Sociedad'
+        verbose_name_plural = 'Activos Sociedad'
+        ordering = ['activo',]
+
+    def __str__(self):
+        return str(self.sociedad)
+
+class ActivoUbicacion(models.Model):
+
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    piso = models.IntegerField( blank=True, null=True)
+    fecha_ubicacion = models.DateField('Fecha Ubicación', auto_now=False, auto_now_add=False)
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True, related_name ='ActivoUbicacion_activo')
+    comentario = models.TextField( blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoUbicacion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoUbicacion_updated_by', editable=False)
+    
+    class Meta:
+
+        verbose_name = 'Activo Ubicacion'
+        verbose_name_plural = 'Activos Ubicacion'
+        ordering = ['-fecha_ubicacion',]
+
+    def __str__(self):
+        return str(self.sede)
 
 class ArchivoAsignacionActivo(models.Model):
     archivo = models.FileField('Archivo', blank=True, null=True)
@@ -247,7 +277,6 @@ class ArchivoAsignacionActivo(models.Model):
 
     def __str__(self):
         return str(self.asignacion)
-
 
 class DevolucionActivo(models.Model):
     ESTADOS_Devolucion = [
@@ -276,7 +305,6 @@ class DevolucionActivo(models.Model):
     def __str__(self):
         return self.titulo
 
-
 class DevolucionDetalleActivo(models.Model):
     asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT, related_name='DevolucionDetalleActivo_asignacion')
     activo = models.ForeignKey('Activo', on_delete=models.PROTECT, related_name='DevolucionDetalleActivo_activo')
@@ -302,7 +330,6 @@ def actualizar_estado_activo_devolucion(*args, **kwargs):
 
 post_save.connect(actualizar_estado_activo_devolucion, sender=DevolucionDetalleActivo)
 
-
 class ArchivoDevolucionActivo(models.Model):
     archivo = models.FileField('Archivo', blank=True, null=True)
     devolucion = models.ForeignKey(DevolucionActivo, on_delete=models.PROTECT)
@@ -319,7 +346,6 @@ class ArchivoDevolucionActivo(models.Model):
     def __str__(self):
         return str(self.devolucion)
 
-
 class EstadoActivo(models.Model):
     nro_estado = models.IntegerField('Estado del Activo')
     descripcion = models.CharField('Descripción del estado', max_length=50)
@@ -334,7 +360,6 @@ class EstadoActivo(models.Model):
 
     def __str__(self):
         return str(self.descripcion)
-
 
 class HistorialEstadoActivo(models.Model):
     activo = models.ForeignKey(Activo, on_delete=models.PROTECT)
@@ -354,7 +379,6 @@ class HistorialEstadoActivo(models.Model):
     def __str__(self):
         return str(self.estado)
 
-
 def guardar_fila_historial_estado(obj, fila, estado_activo):
     try:
         ultimo_estado_activo = HistorialEstadoActivo.objects.filter(activo=fila.activo.id).order_by('-id').latest('id')
@@ -371,7 +395,6 @@ def guardar_fila_historial_estado(obj, fila, estado_activo):
         )
     historial_estado.save()
 
-
 def actualizar_historial_activo_asignacion(*args, **kwargs):
     obj = kwargs['instance']
     list_detalle_asignacion = AsignacionDetalleActivo.objects.filter(asignacion=obj.id)
@@ -381,7 +404,6 @@ def actualizar_historial_activo_asignacion(*args, **kwargs):
             guardar_fila_historial_estado(obj, fila, estado_activo)
 
 post_save.connect(actualizar_historial_activo_asignacion, sender=AsignacionActivo)
-
 
 def actualizar_historial_activo_devolucion(*args, **kwargs):
     obj = kwargs['instance']
@@ -393,50 +415,6 @@ def actualizar_historial_activo_devolucion(*args, **kwargs):
             guardar_fila_historial_estado(obj, fila, estado_activo)
 
 post_save.connect(actualizar_historial_activo_devolucion, sender=DevolucionActivo)
-
-
-class ActivoSociedad(models.Model):
-
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True, related_name='ActivoSociedad_activo')
-
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoSociedad_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoSociedad_updated_by', editable=False)
-    
-    class Meta:
-
-        verbose_name = 'Activo Sociedad'
-        verbose_name_plural = 'Activos Sociedad'
-        ordering = ['activo',]
-
-    def __str__(self):
-        return str(self.sociedad)
-
-
-class ActivoUbicacion(models.Model):
-
-    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
-    piso = models.IntegerField( blank=True, null=True)
-    fecha_ubicacion = models.DateField('Fecha Ubicación', auto_now=False, auto_now_add=False)
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True, related_name ='ActivoUbicacion_activo')
-    comentario = models.TextField( blank=True, null=True)
-
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoUbicacion_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ActivoUbicacion_updated_by', editable=False)
-    
-    class Meta:
-
-        verbose_name = 'Activo Ubicacion'
-        verbose_name_plural = 'Activos Ubicacion'
-        ordering = ['-fecha_ubicacion',]
-
-    def __str__(self):
-        return str(self.sede)
-
 
 class ComprobanteCompraActivo(models.Model):
 
@@ -478,7 +456,6 @@ class ComprobanteCompraActivo(models.Model):
 
     def __str__(self):
         return self.numero_comprobante
-
 
 class ComprobanteCompraActivoDetalle(models.Model):
 
@@ -532,7 +509,6 @@ def ComprobanteCompraActivoDetalle_post_delete(sender, instance, *args, **kwargs
 
 post_delete.connect(ComprobanteCompraActivoDetalle_post_delete, sender=ComprobanteCompraActivoDetalle)
 
-
 class ArchivoComprobanteCompraActivo(models.Model):
 
     archivo = models.FileField('Archivo', blank=True, null=True)
@@ -549,7 +525,6 @@ class ArchivoComprobanteCompraActivo(models.Model):
 
     def __str__(self):
         return str(self.comprobante_compra_activo)
-
 
 class InventarioActivo(models.Model):
 
