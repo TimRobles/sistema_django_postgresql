@@ -48,12 +48,12 @@ from django.shortcuts import render
 
 import simplejson
 
-def registro_guardar(form, request):
-    if form.created_by == None:
-        form.created_by = request.user
-    form.updated_by = request.user
+def registro_guardar(obj, request):
+    if obj.created_by == None:
+        obj.created_by = request.user
+    obj.updated_by = request.user
 
-def registro_guardar_user(form, usuario):
-    if form.created_by == None:
-        form.created_by = usuario
-    form.updated_by = usuario
+def registro_guardar_user(obj, usuario):
+    if obj.created_by == None:
+        obj.created_by = usuario
+    obj.updated_by = usuario

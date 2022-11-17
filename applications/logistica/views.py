@@ -680,19 +680,6 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                 movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
 
             for detalle in detalles:
-                movimiento_uno = MovimientosAlmacen.objects.get(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_salida,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador=-1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
-                    id_registro_documento_proceso=form.instance.id,
-                    almacen=None,
-                    sociedad=form.instance.sociedad,
-                )
-
                 movimiento_dos = MovimientosAlmacen.objects.get(
                     content_type_producto=detalle.content_type,
                     id_registro_producto=detalle.id_registro,
@@ -705,6 +692,8 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                     almacen=detalle.almacen,
                     sociedad=form.instance.sociedad,
                 )
+                movimiento_uno = movimiento_dos.movimiento_anterior
+
                 movimiento_dos.delete()
                 movimiento_uno.delete()
             
@@ -729,6 +718,11 @@ class NotaSalidaDetailView(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(NotaSalidaDetailView, self).get_context_data(**kwargs)
         context['materiales'] = self.object.NotaSalidaDetalle_nota_salida.all()
+        anular_nota = True
+        for despacho in self.object.Despacho_nota_salida.all():
+            if despacho.estado != 3:
+                anular_nota = False
+        context['anular_nota'] = anular_nota
 
         return context
 
@@ -740,7 +734,12 @@ def NotaSalidaDetailTabla(request, pk):
         context = {}
         nota_salida = NotaSalida.objects.get(id=pk)
         context['contexto_nota_salida_detalle'] = nota_salida
-        context['materiales'] = NotaSalidaDetalle.objects.filter(nota_salida=nota_salida)
+        context['materiales'] = nota_salida.NotaSalidaDetalle_nota_salida.all()
+        anular_nota = True
+        for despacho in nota_salida.Despacho_nota_salida.all():
+            if despacho.estado != 3:
+                anular_nota = False
+        context['anular_nota'] = anular_nota
 
         data['table'] = render_to_string(
             template,

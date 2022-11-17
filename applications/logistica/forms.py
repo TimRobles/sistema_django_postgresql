@@ -147,7 +147,7 @@ class NotaSalidaDetalleForm(BSModalModelForm):
 
 class NotaSalidaDetalleUpdateForm(BSModalModelForm):
     cantidad_prestamo = forms.DecimalField(label='Cantidad Prestamo', max_digits=22, decimal_places=10)
-    stock = forms.IntegerField(required=False, initial=0, disabled=True)
+    stock = forms.DecimalField(required=False, initial=0, max_digits=22, decimal_places=4, disabled=True)
     class Meta:
         model = NotaSalidaDetalle
         fields = (

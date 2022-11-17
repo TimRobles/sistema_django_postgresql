@@ -12,5 +12,6 @@ urlpatterns = [
     path('nota-ingreso/actualizar-material/<int:id_nota_ingreso_detalle>/', views.NotaIngresoActualizarMaterialView.as_view(), name='nota_ingreso_actualizar_material'),
     path('nota-ingreso/eliminar-material/<pk>/', views.NotaIngresoDetalleEliminarView.as_view(), name='nota_ingreso_eliminar_material'),
     path('nota-ingreso/finalizar-conteo/<pk>/', views.NotaIngresoFinalizarConteoView.as_view(), name='nota_ingreso_finalizar_conteo'),
+    path('nota-ingreso/anular-conteo/<pk>/', views.NotaIngresoAnularConteoView.as_view(), name='nota_ingreso_anular_conteo'),
 
 ]
