@@ -60,4 +60,29 @@ class MovimientoAlmacenManager(models.Manager):
             if not dato.tipo_stock.codigo in movimientos_fuera:
                 stocks[dato.sociedad][1][-1] = stocks[dato.sociedad][1][-1] + cantidad
 
+        columnas = {}
+        for sociedad, stocks_sociedad in stocks.items():
+            stocks_almacen = stocks_sociedad[0]
+            totales = stocks_sociedad[1]
+            for columna in range(len(totales)-2, 0, -1):
+                if not totales[columna]:
+                    if not columna in columnas: columnas[columna]=0
+                    columnas[columna] = columnas[columna] + 1
+
+        columnas = dict(sorted(columnas.items(), reverse=True))
+
+        for sociedad, stocks_sociedad in stocks.items():
+            stocks_almacen = stocks_sociedad[0]
+            totales = stocks_sociedad[1]
+            for columna, v in columnas.items():
+                if v == len(stocks.items()):
+                    totales.pop(columna)
+                    estado = lista_estados[columna-1]
+                    for almacen, stock in stocks_almacen.items():
+                        stock.pop(columna)
+                    if list(stocks.items())[-1][0] == sociedad:
+                        tipo_stock = tipo_stock.exclude(id=lista_estados[columna-1].id)
+                        lista_estados.pop(columna-1)
+
+
         return stocks, tipo_stock

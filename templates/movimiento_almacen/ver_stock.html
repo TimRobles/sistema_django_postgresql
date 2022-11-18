@@ -16,11 +16,11 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Almacén/Estado</th>
+                    <th style="min-width: 200px;">Almacén/Estado</th>
                     {% for estado in estados %}
-                    <th>{{ estado.descripcion }}</th>
+                    <th class="text-center">{{ estado.descripcion }}</th>
                     {% endfor %}
-                    <th>Total</th>
+                    <th class="text-center">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,9 +37,9 @@
                         {% endif %}
                     </th>
                     {% elif forloop.last %}
-                    <th class="text-end">{{ columna|redondear|intcomma }}</th>
+                    <th class="text-center">{{ columna|redondear|intcomma }}</th>
                     {% else %}
-                    <td class="text-end">{{ columna|redondear|intcomma }}</td>
+                    <td class="text-center">{{ columna|redondear|intcomma }}</td>
                     {% endif %}
                         
                     {% endfor %}
@@ -53,7 +53,7 @@
                     {% if forloop.first %}
                     <th>{{ columna }}</th>
                     {% else %}
-                    <th class="text-end">{{ columna|redondear|intcomma }}</th>
+                    <th class="text-center">{{ columna|redondear|intcomma }}</th>
                     {% endif %}
                         
                     {% endfor %}
