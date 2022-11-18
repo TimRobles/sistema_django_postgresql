@@ -184,6 +184,7 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
         self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_prestamo
         self.fields['almacen'].queryset = Almacen.objects.none()
         self.fields['sede'].required = True
+        self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         self.fields['almacen'].required = True
         self.fields['stock'].initial = stock(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
         self.fields['cantidad_salida'].required = True
@@ -192,8 +193,6 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
         try:
             almacen = self.instance.almacen
             sede = almacen.sede
-            
-            self.fields['sede'].queryset = Sede.objects.filter(estado=1)
             self.fields['sede'].initial = sede
             self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
         except:
