@@ -24,7 +24,8 @@ class Cliente(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cliente_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cliente_updated_by', editable=False)
-    
+    cliente_id_erp = models.IntegerField(null=True, blank=True)
+
     class Meta:
 
         verbose_name = 'Cliente'

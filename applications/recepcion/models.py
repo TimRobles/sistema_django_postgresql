@@ -17,6 +17,7 @@ class Visita(models.Model):
     hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True)
     hora_salida = models.TimeField('Hora de Salida', auto_now=False, auto_now_add=False, blank=True, null=True)
     empresa_cliente = models.ForeignKey(Cliente, verbose_name='Empresa Cliente', on_delete=models.PROTECT, blank=True, null=True)
+    cliente = models.CharField(max_length=100, null=True, blank=True)
     fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Visita_created_by', editable=False)
