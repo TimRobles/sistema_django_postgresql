@@ -66,6 +66,7 @@ urlpatterns = [
     path('confirmacion/forma-pago/<pk>/',views.ConfirmacionVentaFormaPagoView.as_view(),name='confirmacion_forma_pago'),
     path('confirmacion/orden-compra/<int:id_confirmacion>/',views.ConfirmacionVentaOrdenCompraCrearView.as_view(),name='confirmacion_orden_compra'),
     path('confirmacion/orden-compra/<int:id_confirmacion>/<pk>/',views.ConfirmacionVentaOrdenCompraActualizarView.as_view(),name='confirmacion_orden_compra'),
+    path('confirmacion/orden-compra/eliminar/<int:id_confirmacion>/<pk>/',views.ConfirmacionOrdenCompraDeleteView.as_view(),name='confirmacion_orden_compra_eliminar'),
 
     path('solicitud-credito/<int:id_cotizacion>/',views.SolicitudCreditoView.as_view(),name='solicitud_credito'),
     path('solicitud-credito/tabla/<int:id_cotizacion>/',views.SolicitudCreditoTabla,name='solicitud_credito_tabla'),

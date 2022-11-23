@@ -10,11 +10,10 @@ from applications.logistica.forms import DespachoAnularForm, DespachoForm, Docum
     SolicitudPrestamoMaterialesAnularForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.logistica.pdf import generarSolicitudPrestamoMateriales
-from applications.funciones import fecha_en_letras, numeroXn
+from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcion
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
-
 
 class SolicitudPrestamoMaterialesListView(PermissionRequiredMixin, ListView):
     permission_required = ('logistica.view_solicitudprestamomateriales')
@@ -162,22 +161,30 @@ class SolicitudPrestamoMaterialesAnularView(PermissionRequiredMixin, BSModalUpda
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk': self.object.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        form.instance.estado = 4
-        movimiento_final = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
-        movimientos = MovimientosAlmacen.objects.filter(
-            tipo_movimiento=movimiento_final,
-            tipo_stock=movimiento_final.tipo_stock_final,
-            signo_factor_multiplicador=+1,
-            content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
-            id_registro_documento_proceso=form.instance.id,
-            almacen=None,
-            sociedad=form.instance.sociedad,
-        )
-        for movimiento in movimientos:
-            movimiento.delete()
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            form.instance.estado = 4
+            movimiento_final = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
+            movimientos = MovimientosAlmacen.objects.filter(
+                tipo_movimiento=movimiento_final,
+                tipo_stock=movimiento_final.tipo_stock_final,
+                signo_factor_multiplicador=+1,
+                content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
+                id_registro_documento_proceso=form.instance.id,
+                almacen=None,
+                sociedad=form.instance.sociedad,
+            )
+            for movimiento in movimientos:
+                movimiento.delete()
+            registro_guardar(form.instance, self.request)
+            messages.success(self.request, MENSAJE_ANULAR_SOLICITUD_PRESTAMO_MATERIALES)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+            return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(SolicitudPrestamoMaterialesAnularView, self).get_context_data(**kwargs)
@@ -581,68 +588,75 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.get_object().id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
         if self.request.session['primero']:
-            self.object = self.get_object()
+            sid = transaction.savepoint()
+            try:
+                self.object = self.get_object()
 
-            detalles = self.object.detalles
-            if self.object.solicitud_prestamo_materiales:
-                movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
-                movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
-                documento_anterior = self.object.solicitud_prestamo_materiales
+                detalles = self.object.detalles
+                if self.object.solicitud_prestamo_materiales:
+                    movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
+                    movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
+                    documento_anterior = self.object.solicitud_prestamo_materiales
+            
+                for detalle in detalles:
+                    movimiento_anterior = MovimientosAlmacen.objects.get(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        tipo_movimiento=movimiento_inicial,
+                        tipo_stock=movimiento_inicial.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
+                        id_registro_documento_proceso=documento_anterior.id,
+                        sociedad=documento_anterior.sociedad,
+                        movimiento_reversion=False,
+                    )
 
-            for detalle in detalles:
-                movimiento_anterior = MovimientosAlmacen.objects.get(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    tipo_movimiento=movimiento_inicial,
-                    tipo_stock=movimiento_inicial.tipo_stock_final,
-                    signo_factor_multiplicador=+1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
-                    id_registro_documento_proceso=documento_anterior.id,
-                    sociedad=documento_anterior.sociedad,
-                    movimiento_reversion=False,
-                )
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_salida,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador=-1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        almacen=None,
+                        sociedad=self.object.sociedad,
+                        movimiento_anterior=movimiento_anterior,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
 
-                movimiento_uno = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_salida,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador=-1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                    id_registro_documento_proceso=self.object.id,
-                    almacen=None,
-                    sociedad=self.object.sociedad,
-                    movimiento_anterior=movimiento_anterior,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_salida,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        almacen=detalle.almacen,
+                        sociedad=self.object.sociedad,
+                        movimiento_anterior=movimiento_uno,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                
 
-                movimiento_dos = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_salida,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador=+1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                    id_registro_documento_proceso=self.object.id,
-                    almacen=detalle.almacen,
-                    sociedad=self.object.sociedad,
-                    movimiento_anterior=movimiento_uno,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
+                self.object.estado = 2
+                registro_guardar(self.object, self.request)
+                self.object.save()
 
-            self.object.estado = 2
-            registro_guardar(self.object, self.request)
-            self.object.save()
-
-            messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
+                messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
+            except Exception as ex:
+                transaction.savepoint_rollback(sid)
+                registrar_excepcion(self, ex, __file__)
             self.request.session['primero'] = False
         return HttpResponseRedirect(self.get_success_url())
 
@@ -670,44 +684,40 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:nota_salida_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
         if self.request.session['primero']:
-            form.instance.estado = 3
-            registro_guardar(form.instance, self.request)
+            sid = transaction.savepoint()
+            try:
+                form.instance.estado = 3
+                registro_guardar(form.instance, self.request)
 
-            detalles = form.instance.detalles
-            if form.instance.solicitud_prestamo_materiales:
-                movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
+                detalles = form.instance.detalles
+                if form.instance.solicitud_prestamo_materiales:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
 
-            for detalle in detalles:
-                movimiento_uno = MovimientosAlmacen.objects.get(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_salida,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador=-1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
-                    id_registro_documento_proceso=form.instance.id,
-                    almacen=None,
-                    sociedad=form.instance.sociedad,
-                )
+                for detalle in detalles:
+                    movimiento_dos = MovimientosAlmacen.objects.get(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_salida,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
+                        id_registro_documento_proceso=form.instance.id,
+                        almacen=detalle.almacen,
+                        sociedad=form.instance.sociedad,
+                    )
+                    movimiento_uno = movimiento_dos.movimiento_anterior
 
-                movimiento_dos = MovimientosAlmacen.objects.get(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_salida,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador=+1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
-                    id_registro_documento_proceso=form.instance.id,
-                    almacen=detalle.almacen,
-                    sociedad=form.instance.sociedad,
-                )
-                movimiento_dos.delete()
-                movimiento_uno.delete()
-            
+                    movimiento_dos.delete()
+                    movimiento_uno.delete()
+                messages.success(self.request, MENSAJE_ANULAR_NOTA_SALIDA)
+            except Exception as ex:
+                transaction.savepoint_rollback(sid)
+                registrar_excepcion(self, ex, __file__)
+                return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':form.instance.id}))
             self.request.session['primero'] = False
         return super().form_valid(form)
 
@@ -729,6 +739,11 @@ class NotaSalidaDetailView(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(NotaSalidaDetailView, self).get_context_data(**kwargs)
         context['materiales'] = self.object.NotaSalidaDetalle_nota_salida.all()
+        anular_nota = True
+        for despacho in self.object.Despacho_nota_salida.all():
+            if despacho.estado != 3:
+                anular_nota = False
+        context['anular_nota'] = anular_nota
 
         return context
 
@@ -740,7 +755,12 @@ def NotaSalidaDetailTabla(request, pk):
         context = {}
         nota_salida = NotaSalida.objects.get(id=pk)
         context['contexto_nota_salida_detalle'] = nota_salida
-        context['materiales'] = NotaSalidaDetalle.objects.filter(nota_salida=nota_salida)
+        context['materiales'] = nota_salida.NotaSalidaDetalle_nota_salida.all()
+        anular_nota = True
+        for despacho in nota_salida.Despacho_nota_salida.all():
+            if despacho.estado != 3:
+                anular_nota = False
+        context['anular_nota'] = anular_nota
 
         data['table'] = render_to_string(
             template,

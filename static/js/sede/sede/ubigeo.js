@@ -1,7 +1,7 @@
 function ConsultarDepartamento(id_departamento) {
     $provincia = $('#id_provincia_buscar')[0];
     
-    url = '/datos_globales/provincia/' + id_departamento + '/';
+    url = '/datos-globales/provincia/' + id_departamento + '/';
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
@@ -22,7 +22,7 @@ function ConsultarDepartamento(id_departamento) {
 function ConsultarProvincia(id_provincia) {
     $distrito = $('#id_distrito_buscar')[0];
     
-    url = '/datos_globales/distrito/' + id_provincia + '/';
+    url = '/datos-globales/distrito/' + id_provincia + '/';
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);

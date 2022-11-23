@@ -1,6 +1,7 @@
 from applications.material.funciones import stock
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.sede.models import Sede
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 
@@ -147,7 +148,7 @@ class NotaSalidaDetalleForm(BSModalModelForm):
 
 class NotaSalidaDetalleUpdateForm(BSModalModelForm):
     cantidad_prestamo = forms.DecimalField(label='Cantidad Prestamo', max_digits=22, decimal_places=10)
-    stock = forms.IntegerField(required=False, initial=0, disabled=True)
+    stock = forms.DecimalField(required=False, initial=0, max_digits=22, decimal_places=10, disabled=True)
     class Meta:
         model = NotaSalidaDetalle
         fields = (
@@ -183,6 +184,7 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
         self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_prestamo
         self.fields['almacen'].queryset = Almacen.objects.none()
         self.fields['sede'].required = True
+        self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         self.fields['almacen'].required = True
         self.fields['stock'].initial = stock(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
         self.fields['cantidad_salida'].required = True
@@ -191,7 +193,6 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
         try:
             almacen = self.instance.almacen
             sede = almacen.sede
-            
             self.fields['sede'].initial = sede
             self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
         except:

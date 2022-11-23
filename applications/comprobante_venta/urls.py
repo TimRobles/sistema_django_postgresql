@@ -16,6 +16,7 @@ urlpatterns = [
     path('factura-venta/anticipo/crear/<pk>/', views.FacturaVentaAnticipoCrearView.as_view(), name='factura_venta_anticipo_crear'),
     path('factura-venta/anticipo/regularizar/crear/<pk>/', views.FacturaVentaAnticipoRegularizarCrearView.as_view(), name='factura_venta_anticipo_regularizar_crear'),
     path('factura-venta/serie/<pk>/', views.FacturaVentaSerieUpdateView.as_view(), name='factura_venta_serie'),
+    path('factura-venta/direccion/<int:id_factura>/<pk>/', views.FacturaVentaDireccionView.as_view(), name='factura_venta_direccion'),
     path('factura-venta/guardar/<pk>/', views.FacturaVentaGuardarView.as_view(), name='factura_venta_guardar'),
     path('factura-venta/anular/<pk>/', views.FacturaVentaAnularView.as_view(), name='factura_venta_anular'),
     path('factura-venta/eliminar/<pk>/', views.FacturaVentaEliminarView.as_view(), name='factura_venta_eliminar'),

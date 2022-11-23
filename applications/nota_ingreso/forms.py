@@ -49,3 +49,16 @@ class NotaIngresoFinalizarConteoForm(BSModalModelForm):
         super(NotaIngresoFinalizarConteoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class NotaIngresoAnularConteoForm(BSModalModelForm):    
+    class Meta:
+        model = NotaIngreso
+        fields = (
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaIngresoAnularConteoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

@@ -15,7 +15,7 @@ class VisitaAdmin(admin.ModelAdmin):
         'motivo_visita',
         'hora_ingreso',
         'hora_salida',
-        'empresa_cliente',
+        'cliente',
         'fecha_registro',
         )
     exclude = (

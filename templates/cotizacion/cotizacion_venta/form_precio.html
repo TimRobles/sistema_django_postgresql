@@ -24,10 +24,9 @@
                 <tr>
                     <td>{{ precio.fecha_recepcion|date:'d/m/Y' }}</td>
                     <td>{{ precio.numero_comprobante_compra }}</td>
-                    <td class="cantidad" data-cantidad="{{ precio.numero_comprobante_compra }}">{{ precio.cantidad|redondear|intcomma }}</td>
-                    <td>{{ precio.precio|redondear|intcomma }}</td>
-                    <td>{{ precio.logistico }}</td>
-                    <td></td>
+                    <td class="cantidad text-end" data-cantidad="{{ precio.numero_comprobante_compra }}">{{ precio.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ precio.orden_compra.moneda.simbolo }} {{ precio.precio|redondear|intcomma }}</td>
+                    <td class="text-end">{{ precio.logistico }}</td>
                 </tr>
                 {% endif %}
                 
@@ -42,6 +41,59 @@
         
 
 {% block abajo %}
+    </div>
+</div>
+<hr>
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive">
+        <h4>Cotizaciones</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cotización</th>
+                    <th>Cliente</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cotizacion in cotizaciones %}
+                <tr>
+                    <td>{{ cotizacion.cotizacion_venta.fecha|date:'d/m/Y' }}</td>
+                    <td>{{ cotizacion.cotizacion_venta.numero_cotizacion|numeroXn:6 }}</td>
+                    <td>{{ cotizacion.cotizacion_venta.cliente }}</td>
+                    <td class="text-end text-nowrap">{{ cotizacion.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ cotizacion.cotizacion_venta.moneda.simbolo }} {{ cotizacion.precio_final_con_igv|redondear|intcomma }}</td>
+                </tr>
+                {% endfor %} 
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-6 table-responsive">
+        <h4>Documentos de Venta</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Documento</th>
+                    <th>Cliente</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for documento in documentos %}
+                <tr>
+                    <td>{{ documento.fecha|date:'d/m/Y' }}</td>
+                    <td>{{ documento.documento }}</td>
+                    <td>{{ documento.cliente }}</td>
+                    <td class="text-end text-nowrap">{{ documento.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ documento.moneda.simbolo }} {{ documento.precio_final_con_igv|redondear|intcomma }}</td>
+                </tr>
+                {% endfor %} 
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock abajo %}

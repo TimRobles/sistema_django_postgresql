@@ -237,6 +237,7 @@ class Despacho(models.Model):
     (3, 'ANULADO'),
     (4, 'CONCLUIDO SIN GUIA'),
     (5, 'CONCLUIDO CON GUIA'),
+    (6, 'GUIA ANULADA'),
 )
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
     nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE,blank=True, null=True, related_name='Despacho_nota_salida')

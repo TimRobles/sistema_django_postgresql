@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.shortcuts import render
 from django import forms
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
+from applications.comprobante_venta.models import FacturaVentaDetalle
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
@@ -69,6 +70,7 @@ class CotizacionVentaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_vendedor'] = self.request.GET.get('vendedor')
         kwargs['filtro_fecha_cotizacion'] = self.request.GET.get('fecha_cotizacion')
         kwargs['filtro_fecha_validez'] = self.request.GET.get('fecha_validez')
+        kwargs['vendedores'] = get_user_model().objects.filter(id__in = [cotizacion.created_by.id for cotizacion in CotizacionVenta.objects.all()])
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -615,11 +617,9 @@ class CotizacionDescuentoGlobalUpdateView(BSModalUpdateView):
         for sociedad in self.object.CotizacionDescuentoGlobal_cotizacion_venta.all():
             texto.append(str(sociedad.descuento_global))
 
-        sociedades = Sociedad.objects.all()
-        
         context['titulo'] = "Actualizar Descuento Global"
         context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_descuento_global', kwargs={'monto':1,'id_cotizacion':1,'abreviatura':"a",})[:-6]
-        context['sociedades'] = sociedades
+        context['sociedades'] = self.object.sociedades
         context['descuentos'] = "|".join(texto)
         context['id_cotizacion'] = self.object.id
         context['igv'] = igv()
@@ -655,13 +655,10 @@ class CotizacionObservacionUpdateView(BSModalUpdateView):
                 texto.append(str(sociedad.observacion))
             else:
                 texto.append("")
-
-
-        sociedades = Sociedad.objects.all()
         
         context['titulo'] = "Actualizar Observaciones"
         context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_observacion', kwargs={'texto':1,'id_cotizacion':1,'abreviatura':"a",})[:-6]
-        context['sociedades'] = sociedades
+        context['sociedades'] = self.object.sociedades
         context['observaciones'] = "|".join(texto)
         context['id_cotizacion'] = self.object.id
         context['igv'] = igv()
@@ -698,11 +695,9 @@ class CotizacionOtrosCargosUpdateView(BSModalUpdateView):
         for sociedad in self.object.CotizacionOtrosCargos_cotizacion_venta.all():
             texto.append(str(sociedad.otros_cargos))
 
-        sociedades = Sociedad.objects.all()
-        
         context['titulo'] = "Actualizar Otros Cargos"
         context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_otros_cargos', kwargs={'monto':1,'id_cotizacion':1,'abreviatura':"a",})[:-6]
-        context['sociedades'] = sociedades
+        context['sociedades'] = self.object.sociedades
         context['otros_cargos'] = "|".join(texto)
         context['id_cotizacion'] = self.object.id
         context['igv'] = igv()
@@ -829,6 +824,14 @@ class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
         context['accion']="Costeador"
         context['titulo']="Precio"
         context['precios'] = self.kwargs['precios']
+        context['cotizaciones'] = CotizacionVentaDetalle.objects.filter(
+            content_type=self.object.content_type,
+            id_registro=self.object.id_registro,
+        )
+        context['documentos'] = FacturaVentaDetalle.objects.filter(
+            content_type=self.object.content_type,
+            id_registro=self.object.id_registro,
+        )
         return context
 
 class CotizacionVentaDetalleDeleteView(BSModalDeleteView):
@@ -1163,7 +1166,7 @@ class CotizacionVentaConfirmarView(DeleteView):
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
 
-        if error_cantidad_stock:
+        if error_cantidad_stock and self.get_object().estado != 3:
             context['texto'] = 'No hay stock suficiente en un producto.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
@@ -1555,15 +1558,10 @@ class CotizacionVentaPdfsView(BSModalFormView):
 
     def get_context_data(self, **kwargs):
         obj = CotizacionVenta.objects.get(id=self.kwargs['pk'])
-        sociedades = []
-        for detalle in obj.CotizacionVentaDetalle_cotizacion_venta.all():
-            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
-                if cotizacion_sociedad.cantidad > 0:
-                    if not cotizacion_sociedad.sociedad in sociedades: sociedades.append(cotizacion_sociedad.sociedad)
         context = super(CotizacionVentaPdfsView, self).get_context_data(**kwargs)
         context['titulo'] = 'Ver PDFs'
         context['cotizacion'] = obj
-        context['sociedades'] = sociedades
+        context['sociedades'] = obj.sociedades
         return context
     
 
@@ -2079,6 +2077,20 @@ class ConfirmacionVentaOrdenCompraActualizarView(BSModalUpdateView):
         context['titulo'] = "Orden de Compra"
         return context
 
+
+class ConfirmacionOrdenCompraDeleteView(BSModalDeleteView):
+    model = ConfirmacionOrdenCompra
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.kwargs['id_confirmacion']})
+
+    def get_context_data(self, **kwargs):
+        context = super(ConfirmacionOrdenCompraDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Orden de Compra"
+        context['item'] = self.get_object()
+        return context
 
 class SolicitudCreditoView(TemplateView):
     template_name = "cotizacion/cotizacion_venta/form_solicitud_credito.html"

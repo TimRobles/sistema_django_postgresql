@@ -193,8 +193,10 @@ $(function () {
     }
 
     // Hide message
-    $(".alert").fadeTo(2000, 500).slideUp(500, function () {
-        $(".alert").slideUp(500);
+    $(".alert").fadeTo(2000, 500, function () {
+        if(!this.className.includes("alert-error")){
+            $(".alert").slideUp(500);
+        }
     });
 
     $(document).on("click", "#consulta_ruc", function (e) {

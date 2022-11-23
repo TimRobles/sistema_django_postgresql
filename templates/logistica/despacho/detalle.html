@@ -31,6 +31,12 @@
                 Generar Guia
             </button>
         {% endif %}
+        {% if contexto_despacho_detalle.estado == 2 or contexto_despacho_detalle.estado == 4 or contexto_despacho_detalle.estado == 6 %}
+            <button data-form-url="{% url 'logistica_app:despacho_anular' contexto_despacho_detalle.id %}"
+                class="delete badge bg-danger">
+                Anular Despacho
+            </button>
+        {% endif %}
         
         <a href="{% url 'logistica_app:despacho_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>

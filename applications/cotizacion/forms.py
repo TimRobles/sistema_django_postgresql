@@ -1,3 +1,4 @@
+from datetime import date
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -49,12 +50,14 @@ class CotizacionVentaBuscarForm(forms.Form):
         filtro_fecha_cotizacion = kwargs.pop('filtro_fecha_cotizacion')
         filtro_fecha_validez = kwargs.pop('filtro_fecha_validez')
         filtro_vendedor = kwargs.pop('filtro_vendedor')
+        vendedores = kwargs.pop('vendedores')
         super(CotizacionVentaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['cliente'].initial = filtro_cliente
         self.fields['fecha_cotizacion'].initial = filtro_fecha_cotizacion
         self.fields['fecha_validez'].initial = filtro_fecha_validez
         self.fields['vendedor'].initial = filtro_vendedor
         self.fields['vendedor'].required = False
+        self.fields['vendedor'].queryset = vendedores
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -366,6 +369,13 @@ class ConfirmacionOrdenCompraForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 ),
         }
+    
+    def clean_fecha_orden(self):
+        fecha_orden = self.cleaned_data.get('fecha_orden')
+        if fecha_orden > date.today():
+            self.add_error('fecha_orden', 'La fecha no puede ser mayor que la fecha de hoy.')
+    
+        return fecha_orden
 
     def __init__(self, *args, **kwargs):
         super(ConfirmacionOrdenCompraForm, self).__init__(*args, **kwargs)

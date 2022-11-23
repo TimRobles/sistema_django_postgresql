@@ -10,7 +10,7 @@
 {% endif %}
 
 {% if contexto_nota_ingreso.estado == 2 %}
-<button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_finalizar_conteo' contexto_nota_ingreso.id %}"
+<button data-form-url="{% url 'nota_ingreso_app:nota_ingreso_anular_conteo' contexto_nota_ingreso.id %}"
     class="delete btn btn-danger">
     Anular
 </button>
@@ -33,7 +33,7 @@
             <tr>
                 <td>{{ contexto_nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
                 <td>{{ contexto_nota_ingreso.recepcion_compra }}</td>
-                <td>{{ contexto_nota_ingreso.nro_nota_ingreso }}</td>
+                <td>{{ contexto_nota_ingreso.nro_nota_ingreso|numeroXn:6 }}</td>
                 <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
                 <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
                 <td>{{ contexto_nota_ingreso.sociedad }}</td>

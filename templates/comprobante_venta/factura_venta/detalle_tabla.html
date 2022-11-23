@@ -96,6 +96,22 @@
                     </td>
                 </tr>
                 <tr>
+                    <th class="pe-2">Dirección:</th>
+                    <td>
+                        {% if factura.cliente.direccion_fiscal %}
+                        {{ factura.cliente.direccion_fiscal }}   
+                        {% endif %}
+                    </td>
+                    <td class="ps-2" rowspan="2">
+                        {% if factura.estado == 1 and factura.cliente.direccion_anterior != factura.cliente.direccion_nueva %}
+                        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_direccion' factura.id factura.cliente.id %}"
+                            class="delete btn btn-primary text-nowrap">
+                            Actualizar Dirección
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <th class="pe-2">Interlocutor:</th>
                     <td>
                         {% if factura.cliente_interlocutor %}
