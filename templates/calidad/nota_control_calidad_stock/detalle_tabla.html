@@ -46,6 +46,11 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi bi-x-lg"></i>
                     </button>
+                    <a href="{% url 'calidad_app:series_detalle' material.id %}"
+                        class="btn btn-dark btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Series">
+                        <i class="bi bi-upc-scan"></i>
+                    </a>
                 </td>
             </tr>
             {% endfor %}

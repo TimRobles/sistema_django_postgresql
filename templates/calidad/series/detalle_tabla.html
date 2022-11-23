@@ -1,0 +1,88 @@
+<h3>Series
+    {% if contexto_nota_control_calidad_stock_detalle.inspeccion == 1 %}
+        <button class="update badge bg-primary"
+            data-form-url="{% url 'calidad_app:series_detalle_bueno_registrar' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-table-url="{% url 'calidad_app:series_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-keep-open="True">
+            Registrar Series
+        </button>
+    {% else %}    
+        <button class="update badge bg-primary"
+            data-form-url="{% url 'calidad_app:series_detalle_malo_registrar' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-table-url="{% url 'calidad_app:series_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-keep-open="True">
+            Registrar Series
+        </button>
+    {% endif %}
+    <a href="{% url 'calidad_app:nota_control_calidad_stock_detalle' contexto_nota_control_calidad_stock_detalle.nota_control_calidad_stock.id %}"><span class="badge bg-primary">Regresar</span></a>   
+</h3>
+<br>
+<h4>
+    {{ contexto_nota_control_calidad_stock_detalle.nota_ingreso_detalle }}
+</h4>
+<br>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nro. de Serie</th>    
+                <th>Sociedad</th>
+                {% if contexto_nota_control_calidad_stock_detalle.inspeccion != 1 %} 
+                    <th>Falla</th>       
+                {% endif %}      
+                <th>Observación</th>       
+                <th>Estado</th>    
+                <th class="text-center">Acciones</th>    
+            </tr>
+        </thead>
+        <tbody>
+            {% for serie in contexto_series %}
+                <tr>
+                    <td> 
+                        {% if  serie.serie_base %}
+                            {{ serie.serie_base}} 
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if serie.sociedad %}
+                            {{ serie.sociedad }}
+                        {% endif %}  
+                    </td>
+                    {% if contexto_nota_control_calidad_stock_detalle.inspeccion != 1 %} 
+                        <td>{{ serie.falla}}</td>
+                    {% endif %}  
+                    <td>{{ serie.observacion }}</td>
+                    <td>{{ serie.estado}}</td>
+                    <td class="text-center text-nowrap">
+                        
+                        {% if contexto_nota_control_calidad_stock_detalle.inspeccion == 1 %}
+                            <button data-form-url="{% url 'calidad_app:series_detalle_bueno_actualizar' serie.id %}"
+                                data-table-url="{% url 'calidad_app:series_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        {% else %}
+                            <button data-form-url="{% url 'calidad_app:series_detalle_malo_actualizar' serie.id %}"
+                                data-table-url="{% url 'calidad_app:series_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        {% endif %}
+                            
+                        <button data-form-url="{% url 'calidad_app:series_detalle_eliminar' serie.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+                           
+        </tbody>
+    </table>
+</div>

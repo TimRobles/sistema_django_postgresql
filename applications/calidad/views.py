@@ -8,6 +8,11 @@ from applications.calidad.forms import(
     NotaControlCalidadStockDetalleAgregarForm, 
     NotaControlCalidadStockDetalleUpdateForm, 
     NotaControlCalidadStockForm,
+    SerieActualizarBuenoForm,
+    SerieActualizarMaloForm,
+    # SerieActualizarBuenoForm,
+    SerieAgregarBuenoForm,
+    SerieAgregarMaloForm,
 )
 from applications.nota_ingreso.models import NotaIngresoDetalle
 from .models import(
@@ -296,4 +301,208 @@ class NotaControlCalidadStockDetalleDeleteView(PermissionRequiredMixin, BSModalD
         context = super(NotaControlCalidadStockDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion']="Eliminar"
         context['titulo']="Registro"
+        return context
+
+class SeriesDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('calidad.view_serie')
+    model = NotaControlCalidadStockDetalle
+    template_name = "calidad/series/detalle.html"
+    context_object_name = 'contexto_series'
+
+    def get_context_data(self, **kwargs):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['pk'])
+        # material = nota_control_calidad_stock_detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        # content_type = material.content_type
+        # id_registro = material.id_registro
+        context = super(SeriesDetailView, self).get_context_data(**kwargs)
+        context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock_detalle
+        context['contexto_series'] = Serie.objects.filter(nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle)
+        # context['contexto_series'] = Serie.objects.filter(content_type = content_type, id_registro = id_registro)
+
+        return context
+
+def SeriesDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/series/detalle_tabla.html'
+        context = {}
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = pk)
+        # material = nota_control_calidad_stock_detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        # content_type = material.content_type
+        # id_registro = material.id_registro
+        context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock_detalle
+        context['contexto_series'] = Serie.objects.filter(nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle)
+        # context['contexto_series'] = Serie.objects.filter(content_type = content_type, id_registro = id_registro)
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.add_series')
+    template_name = "includes/formulario generico.html"
+    form_class = SerieAgregarBuenoForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+            material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+            content_type = material.content_type
+            id_registro = material.id_registro
+            serie_base = form.cleaned_data.get('serie_base')
+            observacion = form.cleaned_data.get('observacion')
+            sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
+            estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
+
+            serie = Serie.objects.create(
+                serie_base = serie_base,
+                content_type = content_type,
+                id_registro = id_registro,
+                sociedad = sociedad_id,
+                nota_control_calidad_stock_detalle = registro,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+            historia_estado_serie = HistorialEstadoSerie.objects.create(
+                serie = serie,
+                estado_serie = estado_serie_id,
+                falla_material = None,
+                observacion = observacion,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(SeriesDetalleBuenoCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Serie'
+        return context
+
+class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.add_series')
+    template_name = "includes/formulario generico.html"
+    form_class = SerieAgregarMaloForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+            material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+            content_type = material.content_type
+            id_registro = material.id_registro
+            serie_base = form.cleaned_data.get('serie_base')
+            falla_material = form.cleaned_data.get('falla_material')
+            observacion = form.cleaned_data.get('observacion')
+            sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
+            estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
+
+            serie = Serie.objects.create(
+                serie_base = serie_base,
+                content_type = content_type,
+                id_registro = id_registro,
+                sociedad = sociedad_id,
+                nota_control_calidad_stock_detalle = registro,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+            historia_estado_serie = HistorialEstadoSerie.objects.create(
+                serie = serie,
+                estado_serie = estado_serie_id,
+                falla_material = falla_material,
+                observacion = observacion,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(SeriesDetalleMaloCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Serie'
+        return context
+
+class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_serie')
+    model = Serie
+    template_name = "includes/formulario generico.html"
+    form_class = SerieActualizarBuenoForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.object.nota_control_calidad_stock_detalle.id})
+
+    def form_valid(self, form):
+        historial_estado_serie = HistorialEstadoSerie.objects.get(
+                serie = form.instance,
+                estado_serie = 1,
+            )
+
+        historial_estado_serie.observacion = form.cleaned_data['observacion']
+        historial_estado_serie.save()
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SeriesDetalleBuenoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Serie"
+        return context
+
+class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_serie')
+    model = Serie
+    template_name = "includes/formulario generico.html"
+    form_class = SerieActualizarMaloForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.object.nota_control_calidad_stock_detalle.id})
+
+    def form_valid(self, form):
+        historial_estado_serie = HistorialEstadoSerie.objects.get(
+                serie = form.instance,
+                estado_serie = 1,
+            )
+
+        historial_estado_serie.falla_material = form.cleaned_data['falla_material']
+        historial_estado_serie.observacion = form.cleaned_data['observacion']
+        historial_estado_serie.save()
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SeriesDetalleMaloUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Serie"
+        return context
+
+class SeriesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_serie')
+    model = Serie
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_detalle.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SeriesDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Serie"
         return context

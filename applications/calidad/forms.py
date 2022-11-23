@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import FallaMaterial, NotaControlCalidadStock, NotaControlCalidadStockDetalle
+from .models import FallaMaterial, HistorialEstadoSerie, NotaControlCalidadStock, NotaControlCalidadStockDetalle, Serie
 
 
 class FallaMaterialForm(BSModalModelForm):
@@ -79,3 +79,64 @@ class NotaControlCalidadStockDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['material'].disabled = True
+
+class SerieAgregarBuenoForm(BSModalModelForm):
+    serie_base = forms.CharField(required=True)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields=(
+            'serie_base',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SerieAgregarBuenoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class SerieAgregarMaloForm(BSModalModelForm):
+    serie_base = forms.CharField(required=True)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields=(
+            'serie_base',
+            'falla_material',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SerieAgregarMaloForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class SerieActualizarBuenoForm(BSModalModelForm):
+    serie_base = forms.CharField(required=True)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields=(
+            'serie_base',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SerieActualizarBuenoForm, self).__init__(*args, **kwargs)
+        self.fields['observacion'].initial = self.instance.observacion
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class SerieActualizarMaloForm(BSModalModelForm):
+    serie_base = forms.CharField(required=True)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields=(
+            'serie_base',
+            'falla_material',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SerieActualizarMaloForm, self).__init__(*args, **kwargs)
+        self.fields['falla_material'].initial = self.instance.falla
+        self.fields['observacion'].initial = self.instance.observacion
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

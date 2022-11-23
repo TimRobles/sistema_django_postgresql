@@ -3,6 +3,17 @@ from .import views
 
 app_name = 'calidad_app'
 
+urlSeries = [
+
+    path('series/detalle/<pk>/', views.SeriesDetailView.as_view(), name='series_detalle'),
+    path('series/detalle-tabla/<pk>/', views.SeriesDetailTabla, name='series_detalle_tabla'),
+    path('series/detalle/bueno/registrar/<int:nota_control_calidad_stock_detalle_id>/', views.SeriesDetalleBuenoCreateView.as_view(), name='series_detalle_bueno_registrar'),
+    path('series/detalle/malo/registrar/<int:nota_control_calidad_stock_detalle_id>/', views.SeriesDetalleMaloCreateView.as_view(), name='series_detalle_malo_registrar'),
+    path('series/detalle/bueno/actualizar/<pk>/', views.SeriesDetalleBuenoUpdateView.as_view(), name='series_detalle_bueno_actualizar'),
+    path('series/detalle/malo/actualizar/<pk>/', views.SeriesDetalleMaloUpdateView.as_view(), name='series_detalle_malo_actualizar'),
+    path('series/detalle/eliminar/<pk>/', views.SeriesDetalleDeleteView.as_view(), name='series_detalle_eliminar'),
+]
+
 urlNotaControlCalidadStock = [
 
     path('nota-control-calidad-stock/', views.NotaControlCalidadStockListView.as_view(), name='nota_control_calidad_stock_inicio'),
@@ -24,4 +35,4 @@ urlpatterns = [
     path('falla-material/detalle/registrar/<int:subfamilia_id>/', views.FallaMaterialCreateView.as_view(), name='falla_material_detalle_registrar'),
     path('falla-material/detalle/actualizar/<pk>/', views.FallaMaterialUpdateView.as_view(), name='falla_material_detalle_actualizar'),
     path('falla-material/detalle/eliminar/<pk>/', views.FallaMaterialDeleteView.as_view(), name='falla_material_detalle_eliminar'),
-] + urlNotaControlCalidadStock
+] + urlNotaControlCalidadStock + urlSeries

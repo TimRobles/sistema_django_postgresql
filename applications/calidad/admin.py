@@ -33,7 +33,6 @@ class Admin(admin.ModelAdmin):
         'serie_base',
         'content_type',
         'id_registro',
-        'estado_serie',
         'sociedad',
         'created_at',
         'created_by',
