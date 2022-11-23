@@ -19,7 +19,7 @@ class VisitaForm(BSModalModelForm):
             'sede',
             'usuario_atendio',
             'motivo_visita',
-            'empresa_cliente',
+            'cliente',
             )
         widgets = {
             'fecha_registro' : forms.DateInput(
