@@ -8,6 +8,9 @@ import applications
 import math
 import random
 import string
+from applications.soporte_sistema.models import Excepcion
+from django.contrib import messages
+import sys
 
 def consulta_ruc(ruc):
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
@@ -388,3 +391,14 @@ def numero_guion(texto):
         return str(texto)
     else:
         return "-"
+
+
+def registrar_excepcion(self, ex, fname):
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    mensaje = f"{fname} # {exc_tb.tb_lineno} {exc_type} {ex}"
+    Excepcion.objects.create(
+        texto=mensaje,
+        created_by=self.request.user,
+        updated_by=self.request.user,
+    )
+    messages.error(self.request, mensaje)

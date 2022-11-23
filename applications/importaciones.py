@@ -1,4 +1,3 @@
-import sys, os
 from django.core.mail import send_mail
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -49,8 +48,6 @@ from datetime import date, datetime
 from django.shortcuts import render
 
 import simplejson
-
-from applications.soporte_sistema.models import Excepcion
 
 def registro_guardar(obj, request):
     if obj.created_by == None:

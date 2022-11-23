@@ -10,11 +10,10 @@ from applications.logistica.forms import DespachoAnularForm, DespachoForm, Docum
     SolicitudPrestamoMaterialesAnularForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.logistica.pdf import generarSolicitudPrestamoMateriales
-from applications.funciones import fecha_en_letras, numeroXn
+from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcion
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
-
 
 class SolicitudPrestamoMaterialesListView(PermissionRequiredMixin, ListView):
     permission_required = ('logistica.view_solicitudprestamomateriales')
@@ -162,22 +161,30 @@ class SolicitudPrestamoMaterialesAnularView(PermissionRequiredMixin, BSModalUpda
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk': self.object.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        form.instance.estado = 4
-        movimiento_final = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
-        movimientos = MovimientosAlmacen.objects.filter(
-            tipo_movimiento=movimiento_final,
-            tipo_stock=movimiento_final.tipo_stock_final,
-            signo_factor_multiplicador=+1,
-            content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
-            id_registro_documento_proceso=form.instance.id,
-            almacen=None,
-            sociedad=form.instance.sociedad,
-        )
-        for movimiento in movimientos:
-            movimiento.delete()
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            form.instance.estado = 4
+            movimiento_final = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
+            movimientos = MovimientosAlmacen.objects.filter(
+                tipo_movimiento=movimiento_final,
+                tipo_stock=movimiento_final.tipo_stock_final,
+                signo_factor_multiplicador=+1,
+                content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
+                id_registro_documento_proceso=form.instance.id,
+                almacen=None,
+                sociedad=form.instance.sociedad,
+            )
+            for movimiento in movimientos:
+                movimiento.delete()
+            registro_guardar(form.instance, self.request)
+            messages.success(self.request, MENSAJE_ANULAR_SOLICITUD_PRESTAMO_MATERIALES)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+            return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(SolicitudPrestamoMaterialesAnularView, self).get_context_data(**kwargs)
@@ -648,8 +655,8 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
 
                 messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
             except Exception as ex:
-                messages.warning(request, ex)
                 transaction.savepoint_rollback(sid)
+                registrar_excepcion(self, ex, __file__)
             self.request.session['primero'] = False
         return HttpResponseRedirect(self.get_success_url())
 
@@ -706,22 +713,10 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
 
                     movimiento_dos.delete()
                     movimiento_uno.delete()
-                a = int('Hola')
+                messages.success(self.request, MENSAJE_ANULAR_NOTA_SALIDA)
             except Exception as ex:
                 transaction.savepoint_rollback(sid)
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                mensaje = f"{fname} # {exc_tb.tb_lineno} {exc_type} {ex}"
-                Excepcion.objects.create(
-                    texto=mensaje,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
-                messages.warning(self.request, mensaje)
-                print(os.path)
-                print(exc_type)
-                print(exc_obj)
-                print(exc_tb)
+                registrar_excepcion(self, ex, __file__)
                 return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':form.instance.id}))
             self.request.session['primero'] = False
         return super().form_valid(form)
