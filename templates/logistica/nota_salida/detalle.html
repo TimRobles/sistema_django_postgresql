@@ -33,7 +33,7 @@
         {% if anular_nota and contexto_nota_salida_detalle.estado == 2 %}
             <button data-form-url="{% url 'logistica_app:nota_salida_anular' contexto_nota_salida_detalle.id %}"
                 class="delete badge bg-danger">
-                Anular Despacho
+                Anular Nota de Salida
             </button>
         {% endif %}
         <a href="{% url 'logistica_app:nota_salida_inicio' %}"><span class="badge bg-primary">Regresar</span></a>

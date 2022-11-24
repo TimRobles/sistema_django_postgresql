@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import ArchivoRecepcionCompra, FotoRecepcionCompra
+from .models import ArchivoRecepcionCompra, FotoRecepcionCompra, RecepcionCompra
 
 class ArchivoRecepcionCompraForm(BSModalModelForm):
     class Meta:
@@ -45,5 +45,18 @@ class RecepcionCompraGenerarNotaIngresoForm(BSModalForm):
 
     def __init__(self, *args, **kwargs):
         super(RecepcionCompraGenerarNotaIngresoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RecepcionCompraAnularForm(BSModalModelForm):
+    class Meta:
+        model = RecepcionCompra
+        fields=(
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(RecepcionCompraAnularForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

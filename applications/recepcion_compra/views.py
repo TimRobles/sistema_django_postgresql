@@ -1,9 +1,10 @@
-from applications.funciones import numeroXn
+from applications.funciones import numeroXn, registrar_excepcion
 from applications.links import link_detalle
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
+from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
-from applications.recepcion_compra.forms import ArchivoRecepcionCompraForm, FotoRecepcionCompraForm, RecepcionCompraGenerarNotaIngresoForm
+from applications.recepcion_compra.forms import ArchivoRecepcionCompraForm, FotoRecepcionCompraForm, RecepcionCompraAnularForm, RecepcionCompraGenerarNotaIngresoForm
 from .models import FotoRecepcionCompra, RecepcionCompra, ArchivoRecepcionCompra
 
 # Create your views here.
@@ -39,6 +40,57 @@ def RecepcionCompraDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
+
+class RecepcionCompraAnularView(BSModalUpdateView):
+    model = RecepcionCompra
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionCompraAnularForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('recepcion_compra_app:recepcion_compra_detalle', kwargs={'pk':self.object.id})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            documento = form.instance.documento
+            detalles = documento.detalle
+            for detalle in detalles:
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                    id_registro_documento_proceso = form.instance.id,
+                    almacen = None,
+                    sociedad = documento.sociedad,
+                    movimiento_reversion = False,
+                )
+
+                movimiento_uno = movimiento_dos.movimiento_anterior
+
+                movimiento_dos.delete()
+                movimiento_uno.delete()
+
+            form.instance.estado = 2
+            registro_guardar(form.instance, self.request)
+            documento.estado=1
+            registro_guardar(documento, self.request)
+            documento.save()
+            messages.success(self.request, MENSAJE_ANULAR_CONTEO)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+            return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionCompraAnularView, self).get_context_data(**kwargs)
+        context['accion'] = "Anular"
+        context['titulo'] = "Conteo"
+        return context
 
 
 class ArchivoRecepcionCompraCreateView(BSModalCreateView):

@@ -1,6 +1,6 @@
 from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, RecepcionComprobanteCompraPIForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import igv, obtener_totales
+from applications.funciones import igv, obtener_totales, registrar_excepcion
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -32,6 +32,7 @@ class ComprobanteCompraPIDetailView(PermissionRequiredMixin, DetailView):
             context['contexto_recepcion_compra'] = RecepcionCompra.objects.get(
                                                         content_type=ContentType.objects.get_for_model(self.get_object()),
                                                         id_registro=self.get_object().id,
+                                                        estado=1,
                                                     )
         except:
             context['contexto_recepcion_compra'] = None
@@ -82,52 +83,59 @@ class ComprobanteCompraPIAnularView(PermissionRequiredMixin, BSModalDeleteView):
     success_url = reverse_lazy('comprobante_compra_app:comprobante_compra_pi_lista')
     context_object_name = 'contexto_comprobante_compra' 
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        comprobante = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            comprobante = self.get_object()
 
-        materiales = comprobante.ComprobanteCompraPIDetalle_comprobante_compra.all()
-        movimiento_final = TipoMovimiento.objects.get(codigo=100) # Tránsito
-        for material in materiales:
-            movimiento_dos = MovimientosAlmacen.objects.get(
-                    content_type_producto = material.orden_compra_detalle.content_type,
-                    id_registro_producto = material.orden_compra_detalle.id_registro,
-                    cantidad = material.cantidad,
-                    tipo_movimiento = movimiento_final,
-                    tipo_stock = movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador = +1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
-                    id_registro_documento_proceso = comprobante.id,
-                    almacen = None,
-                    sociedad = comprobante.sociedad,
-                    movimiento_anterior = None,
-                    movimiento_reversion = False,
-                )
-            if len(movimiento_dos.MovimientosAlmacen_movimiento_anterior.all()) > 0:
-                messages.warning(request, MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI)
-                return HttpResponseRedirect(reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':comprobante.slug}))
+            materiales = comprobante.ComprobanteCompraPIDetalle_comprobante_compra.all()
+            movimiento_final = TipoMovimiento.objects.get(codigo=100) # Tránsito
+            for material in materiales:
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                        content_type_producto = material.orden_compra_detalle.content_type,
+                        id_registro_producto = material.orden_compra_detalle.id_registro,
+                        cantidad = material.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
+                        id_registro_documento_proceso = comprobante.id,
+                        almacen = None,
+                        sociedad = comprobante.sociedad,
+                        movimiento_anterior = None,
+                        movimiento_reversion = False,
+                    )
+                if len(movimiento_dos.MovimientosAlmacen_movimiento_anterior.all()) > 0:
+                    messages.warning(request, MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI)
+                    return HttpResponseRedirect(reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':comprobante.slug}))
 
-        for material in materiales:
-            movimiento_dos = MovimientosAlmacen.objects.get(
-                    content_type_producto = material.orden_compra_detalle.content_type,
-                    id_registro_producto = material.orden_compra_detalle.id_registro,
-                    cantidad = material.cantidad,
-                    tipo_movimiento = movimiento_final,
-                    tipo_stock = movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador = +1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
-                    id_registro_documento_proceso = comprobante.id,
-                    almacen = None,
-                    sociedad = comprobante.sociedad,
-                    movimiento_anterior = None,
-                    movimiento_reversion = False,
-                )
-            movimiento_dos.delete()
+            for material in materiales:
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                        content_type_producto = material.orden_compra_detalle.content_type,
+                        id_registro_producto = material.orden_compra_detalle.id_registro,
+                        cantidad = material.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
+                        id_registro_documento_proceso = comprobante.id,
+                        almacen = None,
+                        sociedad = comprobante.sociedad,
+                        movimiento_anterior = None,
+                        movimiento_reversion = False,
+                    )
+                movimiento_dos.delete()
 
-        comprobante.delete()
+            comprobante.delete()
 
-        messages.success(request, MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI)
-        return HttpResponseRedirect(self.get_success_url())
+            messages.success(request, MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI)
+            return HttpResponseRedirect(self.get_success_url())
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+            return HttpResponseRedirect(self.get_success_url())
     
     def get_context_data(self, **kwargs):
         context = super(ComprobanteCompraPIAnularView, self).get_context_data(**kwargs)

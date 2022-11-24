@@ -298,6 +298,7 @@ MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solici
 MENSAJE_ANULAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue anulada.'
 MENSAJE_GENERAR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue generada.'
 MENSAJE_CONCLUIR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue concluida.'
+MENSAJE_ANULAR_CONTEO = 'Operación exitosa: El conteo fue anulado.'
 MENSAJE_ANULAR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue anulada.'
 MENSAJE_GENERAR_DESPACHO = 'Operación exitosa: El despacho fue generada.'
 MENSAJE_CONCLUIR_DESPACHO = 'Operación exitosa: El despacho fue concluido.'

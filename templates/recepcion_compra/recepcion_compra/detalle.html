@@ -11,6 +11,13 @@
         class="delete btn btn-primary">
         Generar Nota de Ingreso
     </button>
+    
+    {% if contexto_recepcion_compra.estado == 1 %}
+    <button data-form-url="{% url 'recepcion_compra_app:recepcion_compra_anular' contexto_recepcion_compra.id %}"
+        class="delete btn btn-danger">
+        Anular Recepción
+    </button>
+    {% endif %}
     <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
     <br>
     <div id="tabla">

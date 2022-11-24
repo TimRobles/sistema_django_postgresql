@@ -4,6 +4,7 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovim
 from applications.nota_ingreso.forms import NotaIngresoAgregarMaterialForm, NotaIngresoFinalizarConteoForm, NotaIngresoAnularConteoForm
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.recepcion_compra.models import RecepcionCompra
+from applications.funciones import registrar_excepcion
 
 # Create your views here.
 
@@ -310,40 +311,47 @@ class NotaIngresoAnularConteoView(BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.object.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        detalles = form.instance.NotaIngresoDetalle_nota_ingreso.all()
+        sid = transaction.savepoint()
+        try:
+            detalles = form.instance.NotaIngresoDetalle_nota_ingreso.all()
 
-        for detalle in detalles:
-            if detalle.comprobante_compra_detalle.producto.control_calidad:
-                movimiento_final = TipoMovimiento.objects.get(codigo=104)
-            elif detalle.comprobante_compra_detalle.producto.control_serie:
-                movimiento_final = TipoMovimiento.objects.get(codigo=103)
-            else:
-                movimiento_final = TipoMovimiento.objects.get(codigo=102)
+            for detalle in detalles:
+                # if detalle.comprobante_compra_detalle.producto.control_calidad:
+                #     movimiento_final = TipoMovimiento.objects.get(codigo=104)
+                # elif detalle.comprobante_compra_detalle.producto.control_serie:
+                #     movimiento_final = TipoMovimiento.objects.get(codigo=103)
+                # else:
+                #     movimiento_final = TipoMovimiento.objects.get(codigo=102)
 
-            movimiento_dos = MovimientosAlmacen.objects.get(
-                content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
-                id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
-                cantidad = detalle.cantidad_conteo,
-                tipo_movimiento = movimiento_final,
-                tipo_stock = movimiento_final.tipo_stock_final,
-                signo_factor_multiplicador = +1,
-                content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
-                id_registro_documento_proceso = form.instance.id,
-                almacen = detalle.almacen,
-                sociedad = form.instance.recepcion_compra.documento.sociedad,
-                movimiento_reversion = False,
-            )
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad_conteo,
+                    # tipo_movimiento = movimiento_final,
+                    # tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                    id_registro_documento_proceso = form.instance.id,
+                    almacen = detalle.almacen,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_reversion = False,
+                )
 
-            movimiento_uno = movimiento_dos.movimiento_anterior
+                movimiento_uno = movimiento_dos.movimiento_anterior
 
-            movimiento_dos.delete()
-            movimiento_uno.delete()
+                movimiento_dos.delete()
+                movimiento_uno.delete()
 
-        form.instance.estado = 3
-        registro_guardar(form.instance, self.request)
-            
-        return super().form_valid(form)
+            form.instance.estado = 3
+            registro_guardar(form.instance, self.request)
+            messages.success(self.request, MENSAJE_ANULAR_CONTEO)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+            return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(NotaIngresoAnularConteoView, self).get_context_data(**kwargs)
