@@ -41,7 +41,7 @@ class EstadoSerie(models.Model):
         return str(self.descripcion)
 
 class Serie(models.Model):
-    serie_base = models.CharField('Serie Base', max_length=200)
+    serie_base = models.CharField('Nro. Serie', max_length=200)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True)
     id_registro = models.IntegerField(blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
