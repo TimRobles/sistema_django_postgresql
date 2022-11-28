@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Nota Control Calidad Stock
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'calidad/series/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

@@ -1,10 +1,18 @@
-<h3>Detalle Nota Control Calidad Stock
+<h3>Nota Control Calidad Stock Detalle
     {% if contexto_nota_control_calidad_stock_detalle.estado == 1 %}
         <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_registrar' contexto_nota_control_calidad_stock_detalle.id %}"
             data-table-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
             class="create badge bg-primary">
             Agregar Material
         </button> 
+    {% endif %}
+    
+    {% if contexto_nota_control_calidad_stock_detalle.estado != 2 %}
+        <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_concluir' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-table-url="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"
+            class="delete badge bg-primary">
+            Concluir Nota
+        </button>
     {% endif %}
     <a href="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
@@ -27,7 +35,7 @@
             {% for material in nota_control_calidad_detalle %}
             <tr>
                 <td>{{ material.item }}</td>
-                <td>{{ material.nota_ingreso_detalle }}</td>
+                <td>{{ material.material }}</td>
                 <td>{{ material.nota_ingreso_detalle.nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
                 <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.comprobante_compra.numero_comprobante_compra }}</td>
                 <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.orden_compra.oferta_proveedor.requerimiento_material.proveedor}}</td>
@@ -46,6 +54,26 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi bi-x-lg"></i>
                     </button>
+                    
+                    {% if material.control_serie and material.inspeccion == 1 %}
+                        <a href="{% url 'calidad_app:series_detalle' material.id %}"
+                            class="btn btn-dark btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                            <i class="bi bi-upc-scan"></i>
+                        </a>
+                    {% elif material.control_serie and material.inspeccion == 2 %}
+                        <a href="{% url 'calidad_app:series_detalle' material.id %}"
+                            class="btn btn-dark btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series y Fallas">
+                            <i class="bi bi-upc-scan"></i>
+                        </a>
+                    {% elif material.control_serie == False and material.inspeccion == 2 %}
+                        <a href="{% url 'calidad_app:series_detalle' material.id %}"
+                            class="btn btn-dark btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Fallas">
+                            <i class="bi bi-upc-scan"></i>
+                        </a>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
