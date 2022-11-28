@@ -185,12 +185,18 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -379,37 +385,44 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-            material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-            content_type = material.content_type
-            id_registro = material.id_registro
-            serie_base = form.cleaned_data.get('serie_base')
-            observacion = form.cleaned_data.get('observacion')
-            sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
-            estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+                material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+                content_type = material.content_type
+                id_registro = material.id_registro
+                serie_base = form.cleaned_data.get('serie_base')
+                observacion = form.cleaned_data.get('observacion')
+                sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
+                estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
 
-            serie = Serie.objects.create(
-                serie_base = serie_base,
-                content_type = content_type,
-                id_registro = id_registro,
-                sociedad = sociedad_id,
-                nota_control_calidad_stock_detalle = registro,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-            historia_estado_serie = HistorialEstadoSerie.objects.create(
-                serie = serie,
-                estado_serie = estado_serie_id,
-                falla_material = None,
-                observacion = observacion,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
+                serie = Serie.objects.create(
+                    serie_base = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                    sociedad = sociedad_id,
+                    nota_control_calidad_stock_detalle = registro,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                historia_estado_serie = HistorialEstadoSerie.objects.create(
+                    serie = serie,
+                    estado_serie = estado_serie_id,
+                    falla_material = None,
+                    observacion = observacion,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
 
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
@@ -437,38 +450,45 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-            material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-            content_type = material.content_type
-            id_registro = material.id_registro
-            serie_base = form.cleaned_data.get('serie_base')
-            falla_material = form.cleaned_data.get('falla_material')
-            observacion = form.cleaned_data.get('observacion')
-            sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
-            estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+                material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+                content_type = material.content_type
+                id_registro = material.id_registro
+                serie_base = form.cleaned_data.get('serie_base')
+                falla_material = form.cleaned_data.get('falla_material')
+                observacion = form.cleaned_data.get('observacion')
+                sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
+                estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
 
-            serie = Serie.objects.create(
-                serie_base = serie_base,
-                content_type = content_type,
-                id_registro = id_registro,
-                sociedad = sociedad_id,
-                nota_control_calidad_stock_detalle = registro,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-            historia_estado_serie = HistorialEstadoSerie.objects.create(
-                serie = serie,
-                estado_serie = estado_serie_id,
-                falla_material = falla_material,
-                observacion = observacion,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
+                serie = Serie.objects.create(
+                    serie_base = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                    sociedad = sociedad_id,
+                    nota_control_calidad_stock_detalle = registro,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                historia_estado_serie = HistorialEstadoSerie.objects.create(
+                    serie = serie,
+                    estado_serie = estado_serie_id,
+                    falla_material = falla_material,
+                    observacion = observacion,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
 
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
@@ -503,16 +523,23 @@ class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.object.nota_control_calidad_stock_detalle.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        historial_estado_serie = HistorialEstadoSerie.objects.get(
-                serie = form.instance,
-                estado_serie = 1,
-            )
+        sid = transaction.savepoint()
+        try:
+            historial_estado_serie = HistorialEstadoSerie.objects.get(
+                    serie = form.instance,
+                    estado_serie = 1,
+                )
 
-        historial_estado_serie.observacion = form.cleaned_data['observacion']
-        historial_estado_serie.save()
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+            historial_estado_serie.observacion = form.cleaned_data['observacion']
+            historial_estado_serie.save()
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         registro = NotaControlCalidadStockDetalle.objects.get(id = self.object.nota_control_calidad_stock_detalle.id)
@@ -540,17 +567,24 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.object.nota_control_calidad_stock_detalle.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        historial_estado_serie = HistorialEstadoSerie.objects.get(
-                serie = form.instance,
-                estado_serie = 1,
-            )
+        sid = transaction.savepoint()
+        try:
+            historial_estado_serie = HistorialEstadoSerie.objects.get(
+                    serie = form.instance,
+                    estado_serie = 1,
+                )
 
-        historial_estado_serie.falla_material = form.cleaned_data['falla_material']
-        historial_estado_serie.observacion = form.cleaned_data['observacion']
-        historial_estado_serie.save()
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+            historial_estado_serie.falla_material = form.cleaned_data['falla_material']
+            historial_estado_serie.observacion = form.cleaned_data['observacion']
+            historial_estado_serie.save()
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         registro = NotaControlCalidadStockDetalle.objects.get(id = self.object.nota_control_calidad_stock_detalle.id)
