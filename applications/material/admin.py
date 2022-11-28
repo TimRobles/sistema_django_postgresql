@@ -144,6 +144,9 @@ class MaterialAdmin(admin.ModelAdmin):
         'descripcion_corta',
         'unidad_base',
         'marca',
+        'control_serie',
+        'control_lote',
+        'control_calidad',
         'estado_alta_baja',
         )
 

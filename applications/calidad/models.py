@@ -120,6 +120,7 @@ class NotaControlCalidadStock(models.Model):
     class Meta:
         verbose_name = 'Nota Control Calidad Stock'
         verbose_name_plural = 'Notas Control Calidad Stock'
+        ordering = ['nro_nota_calidad',]
 
     def __str__(self):
         return str(self.id)
@@ -143,6 +144,26 @@ class NotaControlCalidadStockDetalle(models.Model):
     class Meta:
         verbose_name = 'Nota Control Calidad Stock Detalle'
         verbose_name_plural = 'Notas Control Calidad Stock Detalle'
+        ordering = ['item',]
+
+    @property
+    def material(self):
+        raiz_material = self.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        material = raiz_material.content_type.get_object_for_this_type(id = raiz_material.id_registro)        
+        if raiz_material:
+            return material
+        else:
+            return ""
+
+    @property
+    def control_serie(self):
+        raiz_material = self.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        material = raiz_material.content_type.get_object_for_this_type(id = raiz_material.id_registro)        
+        control_serie = material.control_serie      
+        if material:
+            return control_serie
+        else:
+            return ""
 
     def __str__(self):
         return str(self.id)

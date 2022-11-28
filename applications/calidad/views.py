@@ -177,6 +177,30 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
         context['titulo'] = 'Nota Control Calidad Stock'
         return context
 
+class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_notacontrolcalidadstock')
+    model = NotaControlCalidadStock
+    template_name = "calidad/nota_control_calidad_stock/boton.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.estado = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaControlCalidadStockConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Nota Control Calidad Stock"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.nro_nota_calidad
+        return context
+
 class NotaControlCalidadStockDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('calidad.view_notacontrolcalidadstockdetalle')
 
@@ -225,6 +249,7 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
             obj, created = NotaControlCalidadStockDetalle.objects.get_or_create(
                 nota_ingreso_detalle = material,
                 nota_control_calidad_stock = registro,
+                inspeccion = inspeccion
             )
             if created:
                 obj.item = item + 1
@@ -311,13 +336,9 @@ class SeriesDetailView(PermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['pk'])
-        # material = nota_control_calidad_stock_detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        # content_type = material.content_type
-        # id_registro = material.id_registro
         context = super(SeriesDetailView, self).get_context_data(**kwargs)
         context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock_detalle
         context['contexto_series'] = Serie.objects.filter(nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle)
-        # context['contexto_series'] = Serie.objects.filter(content_type = content_type, id_registro = id_registro)
 
         return context
 
@@ -327,12 +348,8 @@ def SeriesDetailTabla(request, pk):
         template = 'calidad/series/detalle_tabla.html'
         context = {}
         nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = pk)
-        # material = nota_control_calidad_stock_detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        # content_type = material.content_type
-        # id_registro = material.id_registro
         context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock_detalle
         context['contexto_series'] = Serie.objects.filter(nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle)
-        # context['contexto_series'] = Serie.objects.filter(content_type = content_type, id_registro = id_registro)
         
         data['table'] = render_to_string(
             template,
@@ -380,6 +397,17 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
 
             self.request.session['primero'] = False
         return super().form_valid(form)
+    
+    def get_form_kwargs(self):
+        registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        content_type = raiz_material.content_type
+        id_registro = raiz_material.id_registro
+
+        kwargs = super().get_form_kwargs()
+        kwargs['content_type'] = content_type
+        kwargs['id_registro'] = id_registro 
+        return kwargs
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -429,6 +457,23 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
             self.request.session['primero'] = False
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        material = registro.material
+
+        content_type = raiz_material.content_type
+        id_registro = raiz_material.id_registro
+
+        subfamilia = material.subfamilia
+        fallas = FallaMaterial.objects.filter(sub_familia = subfamilia, visible = True)
+
+        kwargs = super().get_form_kwargs()
+        kwargs['content_type'] = content_type
+        kwargs['id_registro'] = id_registro 
+        kwargs['fallas'] = fallas
+        return kwargs
+
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(SeriesDetalleMaloCreateView, self).get_context_data(**kwargs)
@@ -456,6 +501,17 @@ class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        registro = NotaControlCalidadStockDetalle.objects.get(id = self.object.nota_control_calidad_stock_detalle.id)
+        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        content_type = raiz_material.content_type
+        id_registro = raiz_material.id_registro
+
+        kwargs = super().get_form_kwargs()
+        kwargs['content_type'] = content_type
+        kwargs['id_registro'] = id_registro 
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super(SeriesDetalleBuenoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
@@ -482,6 +538,23 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         historial_estado_serie.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        registro = NotaControlCalidadStockDetalle.objects.get(id = self.object.nota_control_calidad_stock_detalle.id)
+        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+        material = registro.material
+
+        content_type = raiz_material.content_type
+        id_registro = raiz_material.id_registro
+
+        subfamilia = material.subfamilia
+        fallas = FallaMaterial.objects.filter(sub_familia = subfamilia, visible = True)
+
+        kwargs = super().get_form_kwargs()
+        kwargs['content_type'] = content_type
+        kwargs['id_registro'] = id_registro 
+        kwargs['fallas'] = fallas
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(SeriesDetalleMaloUpdateView, self).get_context_data(**kwargs)
