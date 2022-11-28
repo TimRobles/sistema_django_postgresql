@@ -356,7 +356,7 @@ class ActivoBaseDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('activos_app:activo_base_inicio')
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, *envio_args, **kwargs):
         self.object = self.get_object()
         self.object.estado = 2
         registro_guardar(self.object, self.request)

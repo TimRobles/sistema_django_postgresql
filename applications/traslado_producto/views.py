@@ -9,7 +9,7 @@ from .models import (
 
 from .forms import (
     EnvioTrasladoProductoForm,
-    EnvioTrasladoProductoDetalleForm,
+    EnvioTrasladoProductoMaterialDetalleForm,
     EnvioTrasladoProductoObservacionesForm,
 )
 
@@ -50,7 +50,7 @@ class EnvioTrasladoProductoVerView(TemplateView):
 
         materiales = None
         try:
-            materiales = obj.EnvioTrasladoProductoDetalle_envio_traslado_almacen.all()
+            materiales = obj.EnvioTrasladoProductoDetalle_envio_traslado_producto.all()
 
             for material in materiales:
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
@@ -73,7 +73,7 @@ def EnvioTrasladoProductoVerTabla(request, id_envio_traslado_producto):
 
         materiales = None
         try:
-            materiales = obj.EnvioTrasladoProductoDetalle_envio_traslado_almacen.all()
+            materiales = obj.EnvioTrasladoProductoDetalle_.all()
 
             for material in materiales:
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
@@ -95,13 +95,30 @@ def EnvioTrasladoProductoVerTabla(request, id_envio_traslado_producto):
         return JsonResponse(data)
 
 
+class  EnvioTrasladoProductoObservacionesView(BSModalUpdateView):
+    model = EnvioTrasladoProducto
+    template_name = "includes/formulario generico.html"
+    form_class = EnvioTrasladoProductoObservacionesForm
 
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EnvioTrasladoProductoObservacionesView, self).get_context_data(**kwargs)
+        context['accion'] = "Observaciones"
+        return context
 
 class  EnvioTrasladoProductoActualizarView(BSModalUpdateView):
     model = EnvioTrasladoProducto
     template_name = "includes/formulario generico.html"
     form_class = EnvioTrasladoProductoForm
-    success_url = reverse_lazy('traslado_producto_app:envio_inicio')
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -112,7 +129,6 @@ class  EnvioTrasladoProductoActualizarView(BSModalUpdateView):
         context['accion'] = "Envio"
         context['titulo'] = "Traslado Producto"
         return context
-
 
 class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
     model = EnvioTrasladoProducto
@@ -141,16 +157,18 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
         return context
 
 
-
 class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
     template_name = "traslado_producto/envio/from_material.html"
-    form_class = EnvioTrasladoProductoDetalleForm
-    success_url = reverse_lazy('traslado_producto_app:envio_inicio')
+    form_class = EnvioTrasladoProductoMaterialDetalleForm
+    # success_url = reverse_lazy('traslado_producto_app:envio_inicio')
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.get_object().envio_traslado_producto.id})   
 
     def form_valid(self, form):
         if self.request.session['primero']:
             envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
-            item = len(EnvioTrasladoProductoDetalle.objects.filter(envio_traslado_almacen = envio_traslado_producto))
+            item = len(EnvioTrasladoProductoDetalle.objects.filter(envio_traslado_producto = envio_traslado_producto))
 
             material = form.cleaned_data.get('material')
             cantidad_envio = form.cleaned_data.get('cantidad_envio')
@@ -158,7 +176,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
             obj, created = EnvioTrasladoProductoDetalle.objects.get_or_create(
                 content_type = ContentType.objects.get_for_model(material),
                 id_registro = material.id,
-                envio_traslado_almacen = envio_traslado_producto,
+                envio_traslado_producto = envio_traslado_producto,
             )
             if created:
                 obj.item = item + 1
@@ -184,18 +202,67 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
         context['accion'] = 'Material'
         return context
 
-class  EnvioTrasladoProductoActualizarDetalleView(BSModalUpdateView):
+class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalFormView):
     model = EnvioTrasladoProductoDetalle
     template_name = "includes/formulario generico.html"
-    form_class = EnvioTrasladoProductoDetalleForm
-    success_url = reverse_lazy('traslado_producto_app:envio_inicio')
+    form_class = EnvioTrasladoProductoMaterialDetalleForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.get_object().envio_traslado_producto.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        print(self.kwargs)
+        # envio_traslado_producto =EnvioTrasladoProducto.objects.get(id=self.kwargs['id_envio_traslado_producto'])
+        detalle =EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        envio_traslado_producto = detalle.envio_traslado_producto
+        sociedad = envio_traslado_producto.sociedad
+        sede_origen = envio_traslado_producto.sede_origen
+        print('********************')
+        print(envio_traslado_producto)
+        print(sociedad)
+        print(sede_origen)
+        print('********************')
+        kwargs = super().get_form_kwargs()
+        return kwargs
+    
+    # def dispatch(self, request, *args, **kwargs):
+    #     context = {}
+    #     error_sede = False
+    #     context['titulo'] = 'Error Sede'
+    #     if not self.get_object().sede_origen:
+    #         error_sede = True
+
+    #     if error_sede:
+    #         context['texto'] = 'Ingrese sede origen.'
+    #         return render(request, 'includes/modal sin permiso.html', context)
+    #     return super().dispatch(request, *args, **kwargs)
+
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(EnvioTrasladoProductoActualizarDetalleView, self).get_context_data(**kwargs)
+        context = super(EnvioTrasladoProductoActualizarMaterialDetalleView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Item"
         return context
+
+class EnvioTrasladoProductoMaterialDeleteView(BSModalDeleteView):
+    model = EnvioTrasladoProductoDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.get_object().envio_traslado_producto.id})
+
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(EnvioTrasladoProductoMaterialDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
+
+        return context
+

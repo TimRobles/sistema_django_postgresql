@@ -53,7 +53,7 @@ class EnvioTrasladoProductoAdmin(admin.ModelAdmin):
 class EnvioTrasladoProductoDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        'envio_traslado_almacen',
+        'envio_traslado_producto',
         'content_type',
         'id_registro',
         'almacen_origen',

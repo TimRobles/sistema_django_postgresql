@@ -3,6 +3,14 @@
 
 <h3> Detalle Envio Traslado Producto 
     <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
+    {% if envio_traslado_producto.estado == 1 %}
+    <button data-form-url="{% url 'traslado_producto_app:envio_observaciones' envio_traslado_producto.id %}"
+        data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id %}"
+        data-keep-open="true"
+        class="delete btn btn-primary" title="Observaciones">
+        Observaciones
+    </button>
+    {% endif %}
 </h3>
 
 
@@ -12,11 +20,16 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Sociedad:</th>
-                    <td>{{ envio_traslado_producto.sociedad }}</td>    
+                    <td>
+                        {% if envio_traslado_producto.sociedad %}
+                        {{ envio_traslado_producto.sociedad }}  
+                        {% endif %}
+                    </td>
                     <td class="ps-2" rowspan="4">
                         {% if envio_traslado_producto.estado == 1 %}
                         <button data-form-url="{% url 'traslado_producto_app:envio_actualizar' envio_traslado_producto.id %}"
                             data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id %}"
+                            data-keep-open="true"
                             class="delete btn btn-primary" title="Actualizar Envio">
                             Actualizar Envio
                         </button>
@@ -25,19 +38,35 @@
                 </tr>
                 <tr>
                     <th class="pe-2">Sede Origen:</th>
-                    <td>{{ envio_traslado_producto.sede_origen }}</td>
+                    <td>
+                        {% if envio_traslado_producto.sede_origen %}
+                        {{ envio_traslado_producto.sede_origen }} 
+                        {% endif %}
+                    </td>  
                 </tr>
                 <tr>
                     <th class="pe-2">Dirección Destino</th>
-                    <td>{{ envio_traslado_producto.direccion_destino }}</td>
+                    <td>
+                        {% if envio_traslado_producto.direccion_destino  %}
+                        {{ envio_traslado_producto.direccion_destino }}
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">Motivo:</th>
-                    <td>{{ envio_traslado_producto.motivo_traslado }}</td>
+                    <td>
+                        {% if envio_traslado_producto.motivo_traslado %}
+                        {{ envio_traslado_producto.motivo_traslado }}
+                        {% endif %}
+                        </td>
                 </tr>
                 <tr>
                     <th class="pe-2">Responsable:</th>
-                    <td>{{ envio_traslado_producto.responsable }}</td>
+                    <td>
+                        {% if envio_traslado_producto.responsable %}
+                        {{ envio_traslado_producto.responsable }}
+                        {% endif %}
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -76,13 +105,36 @@
     </div>
 </div>
 
+<div class="row mt-3">
+    <div class="col table-responsive mb-3" style="overflow-y: scroll; max-height: 100px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ envio_traslado_producto.sociedad.color }};">OBSERVACIONES {{ envio_traslado_producto.sociedad.razon_social }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if envio_traslado_producto.observaciones %}
+                        {{ envio_traslado_producto.observaciones|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
+
+{% if envio_traslado_producto.sociedad %}    
 <button data-form-url="{% url 'traslado_producto_app:envio_agregar_material' envio_traslado_producto.id %}"
-    data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id  %}"
-    data-keep-open="True"
-    class="update btn btn-primary" title="Agregar Material">
-    Agregar Material
+data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id  %}"
+data-keep-open="True"
+class="update btn btn-primary" title="Agregar Material">
+Agregar Material
 </button>
+{% endif %}
 
 <div class="table-responsive">
     <table class="table">
@@ -115,6 +167,12 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
+                    <button data-form-url="{% url 'traslado_producto_app:envio_eliminar_material' material.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi-x-lg"></i>
+                    </button>
+
                 </td>
             </tr>                
             {% endfor %}
