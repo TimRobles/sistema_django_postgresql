@@ -1,3 +1,4 @@
+from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 
 from .forms import (
@@ -64,12 +65,18 @@ class SociedadDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_sunat = 7
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_sunat = 7
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -87,12 +94,18 @@ class SociedadDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_sunat = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_sunat = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

@@ -131,11 +131,10 @@ class ComprobanteCompraPIAnularView(PermissionRequiredMixin, BSModalDeleteView):
             comprobante.delete()
 
             messages.success(request, MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI)
-            return HttpResponseRedirect(self.get_success_url())
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
-            return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(self.get_success_url())
     
     def get_context_data(self, **kwargs):
         context = super(ComprobanteCompraPIAnularView, self).get_context_data(**kwargs)
@@ -188,80 +187,87 @@ class RecepcionComprobanteCompraPIView(PermissionRequiredMixin, BSModalFormView)
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':self.kwargs['slug']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            fecha_recepcion = form.cleaned_data['fecha_recepcion']
-            usuario_recepcion = form.cleaned_data['usuario_recepcion']
-            nro_bultos = form.cleaned_data['nro_bultos']
-            observaciones = form.cleaned_data['observaciones']
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                fecha_recepcion = form.cleaned_data['fecha_recepcion']
+                usuario_recepcion = form.cleaned_data['usuario_recepcion']
+                nro_bultos = form.cleaned_data['nro_bultos']
+                observaciones = form.cleaned_data['observaciones']
 
-            comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
-            detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
-            movimiento_inicial = TipoMovimiento.objects.get(codigo=100) #Tránsito
-            movimiento_final = TipoMovimiento.objects.get(codigo=101) #Disponible
+                comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
+                detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=100) #Tránsito
+                movimiento_final = TipoMovimiento.objects.get(codigo=101) #Disponible
 
-            recepcion = RecepcionCompra.objects.create(
-                numero_comprobante_compra = comprobante_pi.numero_comprobante_compra,
-                content_type = ContentType.objects.get_for_model(comprobante_pi),
-                id_registro = comprobante_pi.id,
-                fecha_recepcion = fecha_recepcion,
-                usuario_recepcion = usuario_recepcion,
-                nro_bultos = nro_bultos,
-                observaciones = observaciones,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-            for detalle in detalles:
-                movimiento_anterior = MovimientosAlmacen.objects.get(
-                    content_type_producto = detalle.orden_compra_detalle.content_type,
-                    id_registro_producto = detalle.orden_compra_detalle.id_registro,
-                    tipo_movimiento = movimiento_inicial,
-                    tipo_stock = movimiento_inicial.tipo_stock_final,
-                    signo_factor_multiplicador = +1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
-                    id_registro_documento_proceso = comprobante_pi.id,
-                    sociedad = comprobante_pi.sociedad,
-                    movimiento_reversion = False,
-                )
-
-                movimiento_uno = MovimientosAlmacen.objects.create(
-                    content_type_producto = detalle.orden_compra_detalle.content_type,
-                    id_registro_producto = detalle.orden_compra_detalle.id_registro,
-                    cantidad = detalle.cantidad,
-                    tipo_movimiento = movimiento_final,
-                    tipo_stock = movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador = -1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(recepcion),
-                    id_registro_documento_proceso = recepcion.id,
-                    almacen = None,
-                    sociedad = comprobante_pi.sociedad,
-                    movimiento_anterior = movimiento_anterior,
-                    movimiento_reversion = False,
+                recepcion = RecepcionCompra.objects.create(
+                    numero_comprobante_compra = comprobante_pi.numero_comprobante_compra,
+                    content_type = ContentType.objects.get_for_model(comprobante_pi),
+                    id_registro = comprobante_pi.id,
+                    fecha_recepcion = fecha_recepcion,
+                    usuario_recepcion = usuario_recepcion,
+                    nro_bultos = nro_bultos,
+                    observaciones = observaciones,
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
-                movimiento_dos = MovimientosAlmacen.objects.create(
-                    content_type_producto = detalle.orden_compra_detalle.content_type,
-                    id_registro_producto = detalle.orden_compra_detalle.id_registro,
-                    cantidad = detalle.cantidad,
-                    tipo_movimiento = movimiento_final,
-                    tipo_stock = movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador = +1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(recepcion),
-                    id_registro_documento_proceso = recepcion.id,
-                    almacen = None,
-                    sociedad = comprobante_pi.sociedad,
-                    movimiento_anterior = movimiento_uno,
-                    movimiento_reversion = False,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
-                )
-            comprobante_pi.estado = 2
-            comprobante_pi.total = obtener_totales(comprobante_pi)['total']
-            registro_guardar(comprobante_pi, self.request)
-            comprobante_pi.save()
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                for detalle in detalles:
+                    movimiento_anterior = MovimientosAlmacen.objects.get(
+                        content_type_producto = detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.orden_compra_detalle.id_registro,
+                        tipo_movimiento = movimiento_inicial,
+                        tipo_stock = movimiento_inicial.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(comprobante_pi),
+                        id_registro_documento_proceso = comprobante_pi.id,
+                        sociedad = comprobante_pi.sociedad,
+                        movimiento_reversion = False,
+                    )
+
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.orden_compra_detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador = -1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(recepcion),
+                        id_registro_documento_proceso = recepcion.id,
+                        almacen = None,
+                        sociedad = comprobante_pi.sociedad,
+                        movimiento_anterior = movimiento_anterior,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.orden_compra_detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(recepcion),
+                        id_registro_documento_proceso = recepcion.id,
+                        almacen = None,
+                        sociedad = comprobante_pi.sociedad,
+                        movimiento_anterior = movimiento_uno,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                comprobante_pi.estado = 2
+                comprobante_pi.total = obtener_totales(comprobante_pi)['total']
+                registro_guardar(comprobante_pi, self.request)
+                comprobante_pi.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -279,49 +285,56 @@ class ComprobanteCompraCIRegistrarView(PermissionRequiredMixin, BSModalFormView)
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_compra_app:comprobante_compra_ci_detalle', kwargs={'slug':self.kwargs['slug']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            numero_comprobante_compra = form.cleaned_data['numero_comprobante_compra']
-            fecha_comprobante = form.cleaned_data['fecha_comprobante']
-            archivo = form.cleaned_data['archivo']
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                numero_comprobante_compra = form.cleaned_data['numero_comprobante_compra']
+                fecha_comprobante = form.cleaned_data['fecha_comprobante']
+                archivo = form.cleaned_data['archivo']
 
-            comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
-            comprobante_ci = ComprobanteCompraCI.objects.create(
-                internacional_nacional = comprobante_pi.internacional_nacional,
-                incoterms = comprobante_pi.incoterms,
-                numero_comprobante_compra = numero_comprobante_compra,
-                comprobante_compra_PI = comprobante_pi,
-                sociedad = comprobante_pi.sociedad,
-                fecha_comprobante = fecha_comprobante,
-                moneda = comprobante_pi.moneda,
-                slug = comprobante_pi.slug,
-                archivo = archivo,
-                condiciones = comprobante_pi.condiciones,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-                )
-            detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
-            
-            for detalle in detalles:
-                ComprobanteCompraCIDetalle.objects.create(
-                    item = detalle.item,
-                    content_type = detalle.orden_compra_detalle.content_type,
-                    id_registro = detalle.orden_compra_detalle.id_registro,
-                    cantidad = detalle.cantidad,
-                    precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
-                    precio_unitario_con_igv = detalle.precio_unitario_con_igv,
-                    precio_final_con_igv = detalle.precio_final_con_igv,
-                    descuento = detalle.descuento,
-                    sub_total = detalle.sub_total,
-                    igv = detalle.igv,
-                    total = detalle.total,
-                    tipo_igv = detalle.tipo_igv,
-                    comprobante_compra = comprobante_ci,
+                comprobante_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
+                comprobante_ci = ComprobanteCompraCI.objects.create(
+                    internacional_nacional = comprobante_pi.internacional_nacional,
+                    incoterms = comprobante_pi.incoterms,
+                    numero_comprobante_compra = numero_comprobante_compra,
+                    comprobante_compra_PI = comprobante_pi,
+                    sociedad = comprobante_pi.sociedad,
+                    fecha_comprobante = fecha_comprobante,
+                    moneda = comprobante_pi.moneda,
+                    slug = comprobante_pi.slug,
+                    archivo = archivo,
+                    condiciones = comprobante_pi.condiciones,
                     created_by = self.request.user,
                     updated_by = self.request.user,
-                )
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                    )
+                detalles = comprobante_pi.ComprobanteCompraPIDetalle_comprobante_compra.all()
+                
+                for detalle in detalles:
+                    ComprobanteCompraCIDetalle.objects.create(
+                        item = detalle.item,
+                        content_type = detalle.orden_compra_detalle.content_type,
+                        id_registro = detalle.orden_compra_detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
+                        precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                        precio_final_con_igv = detalle.precio_final_con_igv,
+                        descuento = detalle.descuento,
+                        sub_total = detalle.sub_total,
+                        igv = detalle.igv,
+                        total = detalle.total,
+                        tipo_igv = detalle.tipo_igv,
+                        comprobante_compra = comprobante_ci,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -404,12 +417,18 @@ class ComprobanteCompraCIFinalizarView(PermissionRequiredMixin, BSModalDeleteVie
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_compra_app:comprobante_compra_ci_detalle', kwargs={'slug':self.get_object().slug})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_COMPROBANTE_COMPRA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_COMPROBANTE_COMPRA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

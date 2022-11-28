@@ -2,7 +2,7 @@ from datetime import datetime, time
 from django.shortcuts import render
 
 from django.conf import settings
-from applications.funciones import consulta_distancia
+from applications.funciones import consulta_distancia, registrar_excepcion
 from applications.importaciones import *
 from applications.colaborador.models import DatosContratoHonorarios, DatosContratoPlanilla
 
@@ -123,13 +123,19 @@ class VisitaRegistrarSalidaView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)    
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        hour = datetime.now()
-        self.object.hora_salida = hour.strftime("%H:%M")
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_REGISTRAR_SALIDA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            hour = datetime.now()
+            self.object.hora_salida = hour.strftime("%H:%M")
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_REGISTRAR_SALIDA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

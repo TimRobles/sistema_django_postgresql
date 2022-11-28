@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.core.mail import EmailMultiAlternatives
-from applications.funciones import slug_aleatorio
+from applications.funciones import registrar_excepcion, slug_aleatorio
 from applications.material.models import ProveedorMaterial
 from applications.requerimiento_de_materiales.pdf import generarRequerimientoMaterialProveedor
 from applications.importaciones import *
@@ -58,15 +58,22 @@ class ListaRequerimientoMaterialCreateView(PermissionRequiredMixin, FormView):
     form_class = ListaRequerimientoMaterialForm
     success_url = reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
-        obj = ListaRequerimientoMaterial.objects.get(
-            titulo = None,
-            created_by = self.request.user,
-        )
-        obj.titulo = form.cleaned_data['titulo']
-        registro_guardar(obj, self.request)
-        obj.save()
-        return HttpResponseRedirect(reverse_lazy('requerimiento_material_app:lista_requerimiento_material_actualizar', kwargs={'pk':obj.id}))
+        sid = transaction.savepoint()
+        try:
+            obj = ListaRequerimientoMaterial.objects.get(
+                titulo = None,
+                created_by = self.request.user,
+            )
+            obj.titulo = form.cleaned_data['titulo']
+            registro_guardar(obj, self.request)
+            obj.save()
+            return HttpResponseRedirect(reverse_lazy('requerimiento_material_app:lista_requerimiento_material_actualizar', kwargs={'pk':obj.id}))
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(ListaRequerimientoMaterialCreateView, self).get_form_kwargs(*args, **kwargs)
@@ -109,10 +116,6 @@ class ListaRequerimientoMaterialDeleteView(PermissionRequiredMixin, BSModalDelet
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
-    def delete(self, request, *args, **kwargs):
-
-        return super().delete(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super(ListaRequerimientoMaterialDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
@@ -129,15 +132,20 @@ class ListaRequerimientoMaterialUpdateView(PermissionRequiredMixin, FormView):
     def get_success_url(self):
         return reverse_lazy('requerimiento_material_app:lista_requerimiento_material_actualizar', kwargs={'pk':self.kwargs['pk']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        obj = ListaRequerimientoMaterial.objects.get(id=self.kwargs['pk'])
-        titulo = form.cleaned_data['titulo']
-        obj.titulo = titulo
+        sid = transaction.savepoint()
+        try:
+            obj = ListaRequerimientoMaterial.objects.get(id=self.kwargs['pk'])
+            titulo = form.cleaned_data['titulo']
+            obj.titulo = titulo
 
-        registro_guardar(obj, self.request)
-        obj.save()
-
-        return HttpResponseRedirect(reverse_lazy('requerimiento_material_app:lista_requerimiento_material_actualizar', kwargs={'pk':obj.id}))
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self, *args, **kwargs):
         requerimiento = ListaRequerimientoMaterial.objects.get(id=self.kwargs['pk'])
@@ -204,31 +212,37 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro = ListaRequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
-            item = len(ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material = registro))
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = ListaRequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
+                item = len(ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material = registro))
 
-            material = form.cleaned_data.get('material')
-            cantidad = form.cleaned_data.get('cantidad')
-            comentario = form.cleaned_data.get('comentario')
+                material = form.cleaned_data.get('material')
+                cantidad = form.cleaned_data.get('cantidad')
+                comentario = form.cleaned_data.get('comentario')
 
-            obj, created = ListaRequerimientoMaterialDetalle.objects.get_or_create(
-                content_type = ContentType.objects.get_for_model(material),
-                id_registro = material.id,
-                lista_requerimiento_material = registro,
-            )
-            if created:
-                obj.item = item + 1
-                obj.cantidad = cantidad
-                obj.comentario = comentario
-            else:
-                obj.cantidad = obj.cantidad + cantidad
-                obj.comentario = obj.comentario + ' | ' + comentario
+                obj, created = ListaRequerimientoMaterialDetalle.objects.get_or_create(
+                    content_type = ContentType.objects.get_for_model(material),
+                    id_registro = material.id,
+                    lista_requerimiento_material = registro,
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+                    obj.comentario = comentario
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+                    obj.comentario = obj.comentario + ' | ' + comentario
 
-            registro_guardar(obj, self.request)
-            obj.save()
-            self.request.session['primero'] = False
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
@@ -274,10 +288,6 @@ class ListaRequerimientoMaterialDetalleDeleteView(PermissionRequiredMixin, BSMod
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('requerimiento_material_app:lista_requerimiento_material_actualizar', kwargs={'pk':self.get_object().lista_requerimiento_material.id})
-
-    def delete(self, request, *args, **kwargs):
-
-        return super().delete(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ListaRequerimientoMaterialDetalleDeleteView, self).get_context_data(**kwargs)
@@ -374,9 +384,6 @@ class RequerimientoMaterialProveedorDeleteView(PermissionRequiredMixin, BSModalD
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorDeleteView, self).get_context_data(**kwargs)
@@ -481,19 +488,26 @@ class RequerimientoMaterialProveedorDetalleUpdateView(PermissionRequiredMixin, B
     def get_success_url(self, **kwargs):
         return reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_detalle', kwargs={'pk':self.get_object().requerimiento_material.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        proveedor_material = ProveedorMaterial.objects.get(
-                content_type = form.instance.id_requerimiento_material_detalle.content_type,
-                id_registro = form.instance.id_requerimiento_material_detalle.id_registro,
-                proveedor = form.instance.requerimiento_material.proveedor,
-                estado_alta_baja = 1,
-            )
-        proveedor_material.name = form.cleaned_data['name']
-        proveedor_material.brand = form.cleaned_data['brand']
-        proveedor_material.description = form.cleaned_data['description']
-        proveedor_material.save()
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            proveedor_material = ProveedorMaterial.objects.get(
+                    content_type = form.instance.id_requerimiento_material_detalle.content_type,
+                    id_registro = form.instance.id_requerimiento_material_detalle.id_registro,
+                    proveedor = form.instance.requerimiento_material.proveedor,
+                    estado_alta_baja = 1,
+                )
+            proveedor_material.name = form.cleaned_data['name']
+            proveedor_material.brand = form.cleaned_data['brand']
+            proveedor_material.description = form.cleaned_data['description']
+            proveedor_material.save()
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorDetalleUpdateView, self).get_context_data(**kwargs)
@@ -514,16 +528,23 @@ class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, B
     def get_success_url(self, **kwargs):
         return reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_detalle', kwargs={'pk':self.get_object().requerimiento_material.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        materiales = RequerimientoMaterialProveedorDetalle.objects.filter(requerimiento_material=self.get_object().requerimiento_material)
-        contador = 1
-        for material in materiales:
-            if material == self.get_object():continue
-            material.item = contador
-            material.save()
-            contador += 1
+        sid = transaction.savepoint()
+        try:
+            materiales = RequerimientoMaterialProveedorDetalle.objects.filter(requerimiento_material=self.get_object().requerimiento_material)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object():continue
+                material.item = contador
+                material.save()
+                contador += 1
 
-        return super().delete(request, *args, **kwargs)
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorDetalleDeleteView, self).get_context_data(**kwargs)
@@ -538,39 +559,45 @@ class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
     form_class = RequerimientoMaterialProveedorDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
-            item = len(registro.RequerimientoMaterialProveedorDetalle_requerimiento_material.all())
-            material = form.cleaned_data.get('material')
-            cantidad = form.cleaned_data.get('cantidad')
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
+                item = len(registro.RequerimientoMaterialProveedorDetalle_requerimiento_material.all())
+                material = form.cleaned_data.get('material')
+                cantidad = form.cleaned_data.get('cantidad')
 
-            requerimiento_material_detalle = ListaRequerimientoMaterialDetalle.objects.get(
-                content_type = ContentType.objects.get_for_model(material),
-                id_registro = material.id ,
-                lista_requerimiento_material = registro.lista_requerimiento,
-            )
+                requerimiento_material_detalle = ListaRequerimientoMaterialDetalle.objects.get(
+                    content_type = ContentType.objects.get_for_model(material),
+                    id_registro = material.id ,
+                    lista_requerimiento_material = registro.lista_requerimiento,
+                )
 
-            obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
-                id_requerimiento_material_detalle = requerimiento_material_detalle,
-                requerimiento_material = registro
-            )
+                obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
+                    id_requerimiento_material_detalle = requerimiento_material_detalle,
+                    requerimiento_material = registro
+                )
 
-            if created:
-                obj.item = item + 1
-                obj.cantidad = cantidad
-                # obj.comentario = comentario
-            else:
-                obj.cantidad = obj.cantidad + cantidad
-                # if obj.comentario[-len(' | ' + comentario):] != ' | ' + comentario:
-                #     obj.comentario = obj.comentario + ' | ' + comentario
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+                    # obj.comentario = comentario
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+                    # if obj.comentario[-len(' | ' + comentario):] != ' | ' + comentario:
+                    #     obj.comentario = obj.comentario + ' | ' + comentario
 
 
-            registro_guardar(obj, self.request)
-            obj.save()
-            self.request.session['primero'] = False
-        return super().form_valid(form)
-
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
@@ -701,55 +728,62 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
             return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
-            correos_proveedor = form.cleaned_data['correos_proveedor']
-            correos_internos = form.cleaned_data['correos_internos']
-            internacional_nacional = form.cleaned_data['internacional_nacional']
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                requerimiento = RequerimientoMaterialProveedor.objects.get(id=self.kwargs['requerimiento_id'])
+                correos_proveedor = form.cleaned_data['correos_proveedor']
+                correos_internos = form.cleaned_data['correos_internos']
+                internacional_nacional = form.cleaned_data['internacional_nacional']
 
-            oferta = OfertaProveedor.objects.create(
-                internacional_nacional=internacional_nacional,
-                requerimiento_material=requerimiento,
-                slug = slug_aleatorio(OfertaProveedor),
-            )
-
-            requerimiento_detalle = requerimiento.RequerimientoMaterialProveedorDetalle_requerimiento_material.all()
-            for detalle in requerimiento_detalle:
-
-                proveedor_material, created = ProveedorMaterial.objects.get_or_create(
-                    content_type = detalle.id_requerimiento_material_detalle.content_type,
-                    id_registro = detalle.id_requerimiento_material_detalle.id_registro,
-                    proveedor = requerimiento.proveedor,
-                    estado_alta_baja = 1,
+                oferta = OfertaProveedor.objects.create(
+                    internacional_nacional=internacional_nacional,
+                    requerimiento_material=requerimiento,
+                    slug = slug_aleatorio(OfertaProveedor),
                 )
-                
-                oferta_detalle = OfertaProveedorDetalle.objects.create(
-                    item=detalle.item,
-                    proveedor_material=proveedor_material,
-                    cantidad=detalle.cantidad,
-                    oferta_proveedor=oferta,
+
+                requerimiento_detalle = requerimiento.RequerimientoMaterialProveedorDetalle_requerimiento_material.all()
+                for detalle in requerimiento_detalle:
+
+                    proveedor_material, created = ProveedorMaterial.objects.get_or_create(
+                        content_type = detalle.id_requerimiento_material_detalle.content_type,
+                        id_registro = detalle.id_requerimiento_material_detalle.id_registro,
+                        proveedor = requerimiento.proveedor,
+                        estado_alta_baja = 1,
                     )
-            self.request.session['primero'] = False
-
-            asunto = "Requerimiento - %s" % (requerimiento.titulo)
-            mensaje = '<p>Estimado,</p><p>Se le invita a cotizar el siguiente requerimiento: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_pdf', kwargs={'slug':requerimiento.slug}), 'Requerimiento')
-            email_remitente = EMAIL_REMITENTE
-
-            correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
-            correo.attach_alternative(mensaje, "text/html")
-            try:
-                correo.send()
-                requerimiento.estado = 3
-                requerimiento.save()
-
-                messages.success(self.request, 'Correo enviado.')
+                    
+                    oferta_detalle = OfertaProveedorDetalle.objects.create(
+                        item=detalle.item,
+                        proveedor_material=proveedor_material,
+                        cantidad=detalle.cantidad,
+                        oferta_proveedor=oferta,
+                        )
                 self.request.session['primero'] = False
-            except:
-                messages.warning(self.request, 'Hubo un error al enviar el correo.')
 
-        # registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+                asunto = "Requerimiento - %s" % (requerimiento.titulo)
+                mensaje = '<p>Estimado,</p><p>Se le invita a cotizar el siguiente requerimiento: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_pdf', kwargs={'slug':requerimiento.slug}), 'Requerimiento')
+                email_remitente = EMAIL_REMITENTE
+
+                correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
+                correo.attach_alternative(mensaje, "text/html")
+                try:
+                    correo.send()
+                    requerimiento.estado = 3
+                    requerimiento.save()
+
+                    messages.success(self.request, 'Correo enviado.')
+                    self.request.session['primero'] = False
+                except:
+                    messages.warning(self.request, 'Hubo un error al enviar el correo.')
+
+            # registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super(RequerimientoMaterialProveedorEnviarCorreoView, self).get_form_kwargs()

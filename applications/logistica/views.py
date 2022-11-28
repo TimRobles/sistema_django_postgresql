@@ -85,12 +85,18 @@ class SolicitudPrestamoMaterialesFinalizarView(PermissionRequiredMixin, BSModalD
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk': self.get_object().id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -110,32 +116,38 @@ class SolicitudPrestamoMaterialesConfirmarView(PermissionRequiredMixin, BSModalD
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle', kwargs={'pk': self.get_object().id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 3
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES)
 
-        materiales = self.object.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales.all()
-        movimiento_final = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
-        for material in materiales:
-            movimiento_dos = MovimientosAlmacen.objects.create(
-                content_type_producto=material.content_type,
-                id_registro_producto=material.id_registro,
-                cantidad=material.cantidad_prestamo,
-                tipo_movimiento=movimiento_final,
-                tipo_stock=movimiento_final.tipo_stock_final,
-                signo_factor_multiplicador=+1,
-                content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                id_registro_documento_proceso=self.object.id,
-                almacen=None,
-                sociedad=self.object.sociedad,
-                movimiento_anterior=None,
-                movimiento_reversion=False,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
+            materiales = self.object.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales.all()
+            movimiento_final = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
+            for material in materiales:
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto=material.content_type,
+                    id_registro_producto=material.id_registro,
+                    cantidad=material.cantidad_prestamo,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=None,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -259,36 +271,43 @@ class SolicitudPrestamoMaterialesDetalleCreateView(PermissionRequiredMixin, BSMo
         return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle',
                             kwargs={'pk': self.kwargs['solicitud_prestamo_materiales_id']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro = SolicitudPrestamoMateriales.objects.get(id=self.kwargs['solicitud_prestamo_materiales_id'])
-            item = len(SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales=registro))
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = SolicitudPrestamoMateriales.objects.get(id=self.kwargs['solicitud_prestamo_materiales_id'])
+                item = len(SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales=registro))
 
-            material = form.cleaned_data.get('material')
-            cantidad_prestamo = form.cleaned_data.get('cantidad_prestamo')
-            observacion = form.cleaned_data.get('observacion')
+                material = form.cleaned_data.get('material')
+                cantidad_prestamo = form.cleaned_data.get('cantidad_prestamo')
+                observacion = form.cleaned_data.get('observacion')
 
-            obj, created = SolicitudPrestamoMaterialesDetalle.objects.get_or_create(
-                content_type=ContentType.objects.get_for_model(material),
-                id_registro=material.id,
-                solicitud_prestamo_materiales=registro,
-            )
-            if created:
-                obj.item = item + 1
-                obj.cantidad_prestamo = cantidad_prestamo
-                obj.observacion = observacion
-            else:
-                if material.stock < obj.cantidad_prestamo + cantidad_prestamo:
-                    form.add_error('cantidad_prestamo', 'La cantidad prestada no puede ser mayor al stock disponible.')
-                    return super().form_invalid(form)
-                obj.cantidad_prestamo = obj.cantidad_prestamo + cantidad_prestamo
-                if observacion:
-                    obj.observacion = obj.observacion + ' | ' + observacion
+                obj, created = SolicitudPrestamoMaterialesDetalle.objects.get_or_create(
+                    content_type=ContentType.objects.get_for_model(material),
+                    id_registro=material.id,
+                    solicitud_prestamo_materiales=registro,
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad_prestamo = cantidad_prestamo
+                    obj.observacion = observacion
+                else:
+                    if material.stock < obj.cantidad_prestamo + cantidad_prestamo:
+                        form.add_error('cantidad_prestamo', 'La cantidad prestada no puede ser mayor al stock disponible.')
+                        return super().form_invalid(form)
+                    obj.cantidad_prestamo = obj.cantidad_prestamo + cantidad_prestamo
+                    if observacion:
+                        obj.observacion = obj.observacion + ' | ' + observacion
 
-            registro_guardar(obj, self.request)
-            obj.save()
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -400,16 +419,23 @@ class SolicitudPrestamoMaterialesDetalleDeleteView(PermissionRequiredMixin, BSMo
         return reverse_lazy('logistica_app:solicitud_prestamo_materiales_detalle',
                             kwargs={'pk': self.get_object().solicitud_prestamo_materiales.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(
-            solicitud_prestamo_materiales=self.get_object().solicitud_prestamo_materiales)
-        contador = 1
-        for material in materiales:
-            if material == self.get_object(): continue
-            material.item = contador
-            material.save()
-            contador += 1
-        return super().delete(request, *args, **kwargs)
+        sid = transaction.savepoint()
+        try:
+            materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(
+                solicitud_prestamo_materiales=self.get_object().solicitud_prestamo_materiales)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object(): continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(SolicitudPrestamoMaterialesDetalleDeleteView, self).get_context_data(**kwargs)
@@ -476,26 +502,31 @@ class SolicitudPrestamoMaterialesGenerarNotaSalidaView(PermissionRequiredMixin, 
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        if self.request.session['primero']:
-            self.object = self.get_object()
-            prestamo = self.get_object()
-            item = len(NotaSalida.objects.all())
-            nota_salida = NotaSalida.objects.create(
-                numero_salida=item + 1,
-                solicitud_prestamo_materiales=prestamo,
-                observacion_adicional="",
-                motivo_anulacion="",
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                self.object = self.get_object()
+                prestamo = self.get_object()
+                item = len(NotaSalida.objects.all())
+                nota_salida = NotaSalida.objects.create(
+                    numero_salida=item + 1,
+                    solicitud_prestamo_materiales=prestamo,
+                    observacion_adicional="",
+                    motivo_anulacion="",
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
 
-            self.request.session['primero'] = False
-            registro_guardar(self.object, self.request)
-            self.object.save()
-            messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
-            return HttpResponseRedirect(
-                reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': nota_salida.id}))
+                self.request.session['primero'] = False
+                registro_guardar(self.object, self.request)
+                self.object.save()
+                messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': nota_salida.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -589,75 +620,81 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.get_object().id})
 
     @transaction.atomic
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        if self.request.session['primero']:
-            sid = transaction.savepoint()
-            try:
-                self.object = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                sid = transaction.savepoint()
+                try:
+                    self.object = self.get_object()
 
-                detalles = self.object.detalles
-                if self.object.solicitud_prestamo_materiales:
-                    movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
-                    movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
-                    documento_anterior = self.object.solicitud_prestamo_materiales
-            
-                for detalle in detalles:
-                    movimiento_anterior = MovimientosAlmacen.objects.get(
-                        content_type_producto=detalle.content_type,
-                        id_registro_producto=detalle.id_registro,
-                        tipo_movimiento=movimiento_inicial,
-                        tipo_stock=movimiento_inicial.tipo_stock_final,
-                        signo_factor_multiplicador=+1,
-                        content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
-                        id_registro_documento_proceso=documento_anterior.id,
-                        sociedad=documento_anterior.sociedad,
-                        movimiento_reversion=False,
-                    )
-
-                    movimiento_uno = MovimientosAlmacen.objects.create(
-                        content_type_producto=detalle.content_type,
-                        id_registro_producto=detalle.id_registro,
-                        cantidad=detalle.cantidad_salida,
-                        tipo_movimiento=movimiento_final,
-                        tipo_stock=movimiento_final.tipo_stock_inicial,
-                        signo_factor_multiplicador=-1,
-                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                        id_registro_documento_proceso=self.object.id,
-                        almacen=None,
-                        sociedad=self.object.sociedad,
-                        movimiento_anterior=movimiento_anterior,
-                        movimiento_reversion=False,
-                        created_by=self.request.user,
-                        updated_by=self.request.user,
-                    )
-
-                    movimiento_dos = MovimientosAlmacen.objects.create(
-                        content_type_producto=detalle.content_type,
-                        id_registro_producto=detalle.id_registro,
-                        cantidad=detalle.cantidad_salida,
-                        tipo_movimiento=movimiento_final,
-                        tipo_stock=movimiento_final.tipo_stock_final,
-                        signo_factor_multiplicador=+1,
-                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                        id_registro_documento_proceso=self.object.id,
-                        almacen=detalle.almacen,
-                        sociedad=self.object.sociedad,
-                        movimiento_anterior=movimiento_uno,
-                        movimiento_reversion=False,
-                        created_by=self.request.user,
-                        updated_by=self.request.user,
-                    )
+                    detalles = self.object.detalles
+                    if self.object.solicitud_prestamo_materiales:
+                        movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
+                        movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
+                        documento_anterior = self.object.solicitud_prestamo_materiales
                 
+                    for detalle in detalles:
+                        movimiento_anterior = MovimientosAlmacen.objects.get(
+                            content_type_producto=detalle.content_type,
+                            id_registro_producto=detalle.id_registro,
+                            tipo_movimiento=movimiento_inicial,
+                            tipo_stock=movimiento_inicial.tipo_stock_final,
+                            signo_factor_multiplicador=+1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
+                            id_registro_documento_proceso=documento_anterior.id,
+                            sociedad=documento_anterior.sociedad,
+                            movimiento_reversion=False,
+                        )
 
-                self.object.estado = 2
-                registro_guardar(self.object, self.request)
-                self.object.save()
+                        movimiento_uno = MovimientosAlmacen.objects.create(
+                            content_type_producto=detalle.content_type,
+                            id_registro_producto=detalle.id_registro,
+                            cantidad=detalle.cantidad_salida,
+                            tipo_movimiento=movimiento_final,
+                            tipo_stock=movimiento_final.tipo_stock_inicial,
+                            signo_factor_multiplicador=-1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso=self.object.id,
+                            almacen=None,
+                            sociedad=self.object.sociedad,
+                            movimiento_anterior=movimiento_anterior,
+                            movimiento_reversion=False,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
 
-                messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
-            except Exception as ex:
-                transaction.savepoint_rollback(sid)
-                registrar_excepcion(self, ex, __file__)
-            self.request.session['primero'] = False
+                        movimiento_dos = MovimientosAlmacen.objects.create(
+                            content_type_producto=detalle.content_type,
+                            id_registro_producto=detalle.id_registro,
+                            cantidad=detalle.cantidad_salida,
+                            tipo_movimiento=movimiento_final,
+                            tipo_stock=movimiento_final.tipo_stock_final,
+                            signo_factor_multiplicador=+1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso=self.object.id,
+                            almacen=detalle.almacen,
+                            sociedad=self.object.sociedad,
+                            movimiento_anterior=movimiento_uno,
+                            movimiento_reversion=False,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                    
+
+                    self.object.estado = 2
+                    registro_guardar(self.object, self.request)
+                    self.object.save()
+
+                    messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
+                except Exception as ex:
+                    transaction.savepoint_rollback(sid)
+                    registrar_excepcion(self, ex, __file__)
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -800,22 +837,29 @@ class NotaSalidaDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
         kwargs['materiales'] = lista_materiales
         return kwargs
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro = NotaSalida.objects.get(id=self.kwargs['nota_salida_id'])
-            item = len(registro.NotaSalidaDetalle_nota_salida.all())
-            material = form.cleaned_data.get('material')
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = NotaSalida.objects.get(id=self.kwargs['nota_salida_id'])
+                item = len(registro.NotaSalidaDetalle_nota_salida.all())
+                material = form.cleaned_data.get('material')
 
-            nota_salida_detalle = NotaSalidaDetalle.objects.create(
-                solicitud_prestamo_materiales_detalle=material,
-                nota_salida=registro,
-                item=item + 1,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
+                nota_salida_detalle = NotaSalidaDetalle.objects.create(
+                    solicitud_prestamo_materiales_detalle=material,
+                    nota_salida=registro,
+                    item=item + 1,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
 
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -876,15 +920,22 @@ class NotaSalidaDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.get_object().nota_salida.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        materiales = NotaSalidaDetalle.objects.filter(nota_salida=self.get_object().nota_salida)
-        contador = 1
-        for material in materiales:
-            if material == self.get_object(): continue
-            material.item = contador
-            material.save()
-            contador += 1
-        return super().delete(request, *args, **kwargs)
+        sid = transaction.savepoint()
+        try:
+            materiales = NotaSalidaDetalle.objects.filter(nota_salida=self.get_object().nota_salida)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object(): continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(NotaSalidaDetalleDeleteView, self).get_context_data(**kwargs)
@@ -928,48 +979,54 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        if self.request.session['primero']:
-            self.object = self.get_object()
-            nota_salida = self.get_object()
-            item = len(Despacho.objects.all())
-            despacho = Despacho.objects.create(
-                sociedad=nota_salida.sociedad,
-                nota_salida=nota_salida,
-                numero_despacho=item + 1,
-                cliente=nota_salida.cliente,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
-
-            nota_salida_detalle = nota_salida.NotaSalidaDetalle_nota_salida.all()
-            lista = []
-            lista_id_registro = []
-            for detalle in nota_salida_detalle:
-                id_registro = detalle.solicitud_prestamo_materiales_detalle.id_registro
-                if id_registro not in lista_id_registro:
-                    lista_id_registro.append(id_registro)
-                    lista.append(detalle)
-            item = 0
-            for dato in lista:
-                material = dato.solicitud_prestamo_materiales_detalle
-                despacho_detalle = DespachoDetalle.objects.create(
-                    item=item + 1,
-                    content_type=dato.solicitud_prestamo_materiales_detalle.content_type,
-                    id_registro=dato.solicitud_prestamo_materiales_detalle.id_registro,
-                    cantidad_despachada=
-                    material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
-                        'cantidad_salida__sum'],
-                    despacho=despacho,
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                self.object = self.get_object()
+                nota_salida = self.get_object()
+                item = len(Despacho.objects.all())
+                despacho = Despacho.objects.create(
+                    sociedad=nota_salida.sociedad,
+                    nota_salida=nota_salida,
+                    numero_despacho=item + 1,
+                    cliente=nota_salida.cliente,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-                item += 1
-            self.request.session['primero'] = False
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_GENERAR_DESPACHO)
-        return HttpResponseRedirect(reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk': despacho.id}))
+
+                nota_salida_detalle = nota_salida.NotaSalidaDetalle_nota_salida.all()
+                lista = []
+                lista_id_registro = []
+                for detalle in nota_salida_detalle:
+                    id_registro = detalle.solicitud_prestamo_materiales_detalle.id_registro
+                    if id_registro not in lista_id_registro:
+                        lista_id_registro.append(id_registro)
+                        lista.append(detalle)
+                item = 0
+                for dato in lista:
+                    material = dato.solicitud_prestamo_materiales_detalle
+                    despacho_detalle = DespachoDetalle.objects.create(
+                        item=item + 1,
+                        content_type=dato.solicitud_prestamo_materiales_detalle.content_type,
+                        id_registro=dato.solicitud_prestamo_materiales_detalle.id_registro,
+                        cantidad_despachada=
+                        material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
+                            'cantidad_salida__sum'],
+                        despacho=despacho,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                    item += 1
+                self.request.session['primero'] = False
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_GENERAR_DESPACHO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -1050,54 +1107,60 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk': self.get_object().id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        if self.request.session['primero']:
-            self.object = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                self.object = self.get_object()
 
-            detalles = self.object.detalles
-            movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
-            movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                detalles = self.object.detalles
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
+                movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
 
-            for detalle in detalles:
-                movimiento_uno = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_despachada,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador=-1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                    id_registro_documento_proceso=self.object.id,
-                    almacen=None,
-                    sociedad=self.object.sociedad,
-                    movimiento_anterior=None,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
+                for detalle in detalles:
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_despachada,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador=-1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        almacen=None,
+                        sociedad=self.object.sociedad,
+                        movimiento_anterior=None,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
 
-                movimiento_dos = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_despachada,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador=+1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                    id_registro_documento_proceso=self.object.id,
-                    almacen=None,
-                    sociedad=self.object.sociedad,
-                    movimiento_anterior=movimiento_uno,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_despachada,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        almacen=None,
+                        sociedad=self.object.sociedad,
+                        movimiento_anterior=movimiento_uno,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
 
-            self.object.estado = 2
-            registro_guardar(self.object, self.request)
-            self.object.save()
-            messages.success(request, MENSAJE_CONCLUIR_DESPACHO)
-            self.request.session['primero'] = False
+                self.object.estado = 2
+                registro_guardar(self.object, self.request)
+                self.object.save()
+                messages.success(request, MENSAJE_CONCLUIR_DESPACHO)
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1118,12 +1181,18 @@ class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk': self.get_object().id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 4
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_FINALIZAR_SIN_GUIA_DESPACHO)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_FINALIZAR_SIN_GUIA_DESPACHO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1149,44 +1218,51 @@ class DespachoAnularView(PermissionRequiredMixin, BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:despacho_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            form.instance.estado = 3
-            registro_guardar(form.instance, self.request)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                form.instance.estado = 3
+                registro_guardar(form.instance, self.request)
 
-            detalles = form.instance.detalles
-            movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                detalles = form.instance.detalles
+                movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
 
-            for detalle in detalles:
-                movimiento_uno = MovimientosAlmacen.objects.get(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_despachada,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador=-1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
-                    id_registro_documento_proceso=form.instance.id,
-                    almacen=None,
-                    sociedad=form.instance.sociedad,
-                )
+                for detalle in detalles:
+                    movimiento_uno = MovimientosAlmacen.objects.get(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_despachada,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador=-1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
+                        id_registro_documento_proceso=form.instance.id,
+                        almacen=None,
+                        sociedad=form.instance.sociedad,
+                    )
 
-                movimiento_dos = MovimientosAlmacen.objects.get(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_despachada,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador=+1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
-                    id_registro_documento_proceso=form.instance.id,
-                    almacen=None,
-                    sociedad=form.instance.sociedad,
-                )
-                movimiento_dos.delete()
-                movimiento_uno.delete()
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                    movimiento_dos = MovimientosAlmacen.objects.get(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_despachada,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
+                        id_registro_documento_proceso=form.instance.id,
+                        almacen=None,
+                        sociedad=form.instance.sociedad,
+                    )
+                    movimiento_dos.delete()
+                    movimiento_uno.delete()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -1239,38 +1315,44 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        detalles = self.object.DespachoDetalle_despacho.all()
-        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            detalles = self.object.DespachoDetalle_despacho.all()
+            serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
 
-        guia = Guia.objects.create(
-            sociedad=self.object.sociedad,
-            serie_comprobante=serie_comprobante,
-            cliente=self.object.cliente,
-            created_by=self.request.user,
-            updated_by=self.request.user,
-        )
-
-        for detalle in detalles:
-            guia_detalle = GuiaDetalle.objects.create(
-                item=detalle.item,
-                content_type=detalle.content_type,
-                id_registro=detalle.id_registro,
-                guia=guia,
-                cantidad=detalle.cantidad_despachada,
-                unidad=detalle.producto.unidad_base,
-                descripcion_documento=detalle.producto.descripcion_venta,
-                peso=detalle.producto.peso_unidad_base,
+            guia = Guia.objects.create(
+                sociedad=self.object.sociedad,
+                serie_comprobante=serie_comprobante,
+                cliente=self.object.cliente,
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
-            self.request.session['primero'] = False
-        registro_guardar(self.object, self.request)
-        self.object.estado = 5
-        self.object.save()
-        messages.success(request, MENSAJE_GENERAR_GUIA)
-        return HttpResponseRedirect(reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia': guia.id}))
+
+            for detalle in detalles:
+                guia_detalle = GuiaDetalle.objects.create(
+                    item=detalle.item,
+                    content_type=detalle.content_type,
+                    id_registro=detalle.id_registro,
+                    guia=guia,
+                    cantidad=detalle.cantidad_despachada,
+                    unidad=detalle.producto.unidad_base,
+                    descripcion_documento=detalle.producto.descripcion_venta,
+                    peso=detalle.producto.peso_unidad_base,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                self.request.session['primero'] = False
+            registro_guardar(self.object, self.request)
+            self.object.estado = 5
+            self.object.save()
+            messages.success(request, MENSAJE_GENERAR_GUIA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True

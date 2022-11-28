@@ -18,7 +18,7 @@ from .models import(
     FallaMaterial,
     HistorialEstadoSerie,
 )
-from applications.funciones import numeroXn
+from applications.funciones import numeroXn, registrar_excepcion
 
 class FallaMaterialTemplateView(TemplateView):
     template_name = "calidad/falla_material/inicio.html"
@@ -209,30 +209,37 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_id']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
-            item = len(registro.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
-            material = form.cleaned_data.get('material')
-            cantidad_calidad = form.cleaned_data.get('cantidad_calidad')
-            inspeccion = form.cleaned_data.get('inspeccion')
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
+                item = len(registro.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
+                material = form.cleaned_data.get('material')
+                cantidad_calidad = form.cleaned_data.get('cantidad_calidad')
+                inspeccion = form.cleaned_data.get('inspeccion')
 
-            obj, created = NotaControlCalidadStockDetalle.objects.get_or_create(
-                nota_ingreso_detalle = material,
-                nota_control_calidad_stock = registro,
-            )
-            if created:
-                obj.item = item + 1
-                obj.cantidad_calidad = cantidad_calidad
-                obj.inspeccion = inspeccion
+                obj, created = NotaControlCalidadStockDetalle.objects.get_or_create(
+                    nota_ingreso_detalle = material,
+                    nota_control_calidad_stock = registro,
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad_calidad = cantidad_calidad
+                    obj.inspeccion = inspeccion
 
-            else:
-                obj.cantidad_calidad = obj.cantidad_calidad + cantidad_calidad
+                else:
+                    obj.cantidad_calidad = obj.cantidad_calidad + cantidad_calidad
 
-            registro_guardar(obj, self.request)
-            obj.save()
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         registro = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
@@ -277,16 +284,23 @@ class NotaControlCalidadStockDetalleDeleteView(PermissionRequiredMixin, BSModalD
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        materiales = NotaControlCalidadStockDetalle.objects.filter(nota_control_calidad_stock=self.get_object().nota_control_calidad_stock)
-        contador = 1
-        for material in materiales:
-            if material == self.get_object():continue
-            material.item = contador
-            material.save()
-            contador += 1
+        sid = transaction.savepoint()
+        try:
+            materiales = NotaControlCalidadStockDetalle.objects.filter(nota_control_calidad_stock=self.get_object().nota_control_calidad_stock)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object():continue
+                material.item = contador
+                material.save()
+                contador += 1
 
-        return super().delete(request, *args, **kwargs)
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)

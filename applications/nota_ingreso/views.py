@@ -77,47 +77,54 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
         kwargs['almacenes'] = almacenes
         return kwargs
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            nota_ingreso = NotaIngreso.objects.get(id=self.kwargs['id_nota_ingreso'])
-            nuevo_item = len(NotaIngresoDetalle.objects.filter(nota_ingreso = nota_ingreso)) + 1
-            cantidad = form.cleaned_data['cantidad']
-            producto = form.cleaned_data['producto'].split("|")
-            almacen = form.cleaned_data['almacen']
-            content_type = ContentType.objects.get(id = int(producto[0]))
-            id_registro = int(producto[1])
-            comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                nota_ingreso = NotaIngreso.objects.get(id=self.kwargs['id_nota_ingreso'])
+                nuevo_item = len(NotaIngresoDetalle.objects.filter(nota_ingreso = nota_ingreso)) + 1
+                cantidad = form.cleaned_data['cantidad']
+                producto = form.cleaned_data['producto'].split("|")
+                almacen = form.cleaned_data['almacen']
+                content_type = ContentType.objects.get(id = int(producto[0]))
+                id_registro = int(producto[1])
+                comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
 
-            buscar = NotaIngresoDetalle.objects.filter(
-                comprobante_compra_detalle = comprobante_compra_detalle,
-            )
+                buscar = NotaIngresoDetalle.objects.filter(
+                    comprobante_compra_detalle = comprobante_compra_detalle,
+                )
 
-            if buscar:
-                contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
-            else:
-                contar = 0
+                if buscar:
+                    contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+                else:
+                    contar = 0
 
-            if comprobante_compra_detalle.cantidad < contar + cantidad:
-                form.add_error('cantidad', 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
-                return super().form_invalid(form)
-            
-            nota_ingreso_detalle, created = NotaIngresoDetalle.objects.get_or_create(
-                comprobante_compra_detalle = comprobante_compra_detalle,
-                almacen = almacen,
-                nota_ingreso = nota_ingreso,
-            )
-            if created:
-                nota_ingreso_detalle.item = nuevo_item
-                nota_ingreso_detalle.cantidad_conteo = cantidad
-                nota_ingreso_detalle.created_by = self.request.user
-                nota_ingreso_detalle.updated_by = self.request.user
-            else:
-                nota_ingreso_detalle.cantidad_conteo = nota_ingreso_detalle.cantidad_conteo + cantidad
-                nota_ingreso_detalle.updated_by = self.request.user
-            nota_ingreso_detalle.save()
+                if comprobante_compra_detalle.cantidad < contar + cantidad:
+                    form.add_error('cantidad', 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
+                    return super().form_invalid(form)
+                
+                nota_ingreso_detalle, created = NotaIngresoDetalle.objects.get_or_create(
+                    comprobante_compra_detalle = comprobante_compra_detalle,
+                    almacen = almacen,
+                    nota_ingreso = nota_ingreso,
+                )
+                if created:
+                    nota_ingreso_detalle.item = nuevo_item
+                    nota_ingreso_detalle.cantidad_conteo = cantidad
+                    nota_ingreso_detalle.created_by = self.request.user
+                    nota_ingreso_detalle.updated_by = self.request.user
+                else:
+                    nota_ingreso_detalle.cantidad_conteo = nota_ingreso_detalle.cantidad_conteo + cantidad
+                    nota_ingreso_detalle.updated_by = self.request.user
+                nota_ingreso_detalle.save()
 
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -150,47 +157,54 @@ class NotaIngresoActualizarMaterialView(BSModalFormView):
         kwargs['nota_ingreso_detalle'] = nota_ingreso_detalle
         return kwargs
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            nota_ingreso_detalle = NotaIngresoDetalle.objects.get(id=self.kwargs['id_nota_ingreso_detalle'])
-            cantidad = form.cleaned_data['cantidad']
-            producto = form.cleaned_data['producto'].split("|")
-            almacen = form.cleaned_data['almacen']
-            content_type = ContentType.objects.get(id = int(producto[0]))
-            id_registro = int(producto[1])
-            comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                nota_ingreso_detalle = NotaIngresoDetalle.objects.get(id=self.kwargs['id_nota_ingreso_detalle'])
+                cantidad = form.cleaned_data['cantidad']
+                producto = form.cleaned_data['producto'].split("|")
+                almacen = form.cleaned_data['almacen']
+                content_type = ContentType.objects.get(id = int(producto[0]))
+                id_registro = int(producto[1])
+                comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
 
-            buscar = NotaIngresoDetalle.objects.filter(
-                comprobante_compra_detalle = comprobante_compra_detalle,
-                almacen = almacen,
-                nota_ingreso = nota_ingreso_detalle.nota_ingreso,
-            ).exclude(id=nota_ingreso_detalle.id)
+                buscar = NotaIngresoDetalle.objects.filter(
+                    comprobante_compra_detalle = comprobante_compra_detalle,
+                    almacen = almacen,
+                    nota_ingreso = nota_ingreso_detalle.nota_ingreso,
+                ).exclude(id=nota_ingreso_detalle.id)
 
-            if len(buscar)>0:
-                form.add_error('almacen', 'Ya existe ese producto en ese almacén')
-                return super().form_invalid(form)
+                if len(buscar)>0:
+                    form.add_error('almacen', 'Ya existe ese producto en ese almacén')
+                    return super().form_invalid(form)
 
-            buscar = NotaIngresoDetalle.objects.filter(
-                comprobante_compra_detalle = comprobante_compra_detalle,
-            ).exclude(id=nota_ingreso_detalle.id)
+                buscar = NotaIngresoDetalle.objects.filter(
+                    comprobante_compra_detalle = comprobante_compra_detalle,
+                ).exclude(id=nota_ingreso_detalle.id)
 
-            if buscar:
-                contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
-            else:
-                contar = 0
+                if buscar:
+                    contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+                else:
+                    contar = 0
 
-            if comprobante_compra_detalle.cantidad < contar + cantidad:
-                form.add_error('cantidad', 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
-                return super().form_invalid(form)
-            
-            nota_ingreso_detalle.comprobante_compra_detalle = comprobante_compra_detalle
-            nota_ingreso_detalle.cantidad_conteo = cantidad
-            nota_ingreso_detalle.almacen = almacen
-            nota_ingreso_detalle.updated_by = self.request.user
-            nota_ingreso_detalle.save()
-            
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                if comprobante_compra_detalle.cantidad < contar + cantidad:
+                    form.add_error('cantidad', 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
+                    return super().form_invalid(form)
+                
+                nota_ingreso_detalle.comprobante_compra_detalle = comprobante_compra_detalle
+                nota_ingreso_detalle.cantidad_conteo = cantidad
+                nota_ingreso_detalle.almacen = almacen
+                nota_ingreso_detalle.updated_by = self.request.user
+                nota_ingreso_detalle.save()
+                
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -208,15 +222,22 @@ class NotaIngresoDetalleEliminarView(BSModalDeleteView):
         nota_ingreso = self.object.nota_ingreso
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':nota_ingreso.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        materiales = NotaIngresoDetalle.objects.filter(nota_ingreso=self.get_object().nota_ingreso)
-        contador = 1
-        for material in materiales:
-            if material == self.get_object():continue
-            material.item = contador
-            material.save()
-            contador += 1
-        return super().delete(request, *args, **kwargs)
+        sid = transaction.savepoint()
+        try:
+            materiales = NotaIngresoDetalle.objects.filter(nota_ingreso=self.get_object().nota_ingreso)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object():continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(NotaIngresoDetalleEliminarView, self).get_context_data(**kwargs)
@@ -234,67 +255,74 @@ class NotaIngresoFinalizarConteoView(BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.object.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        detalles = form.instance.NotaIngresoDetalle_nota_ingreso.all()
-        movimiento_inicial = TipoMovimiento.objects.get(codigo=101)
+        sid = transaction.savepoint()
+        try:
+            detalles = form.instance.NotaIngresoDetalle_nota_ingreso.all()
+            movimiento_inicial = TipoMovimiento.objects.get(codigo=101)
 
-        for detalle in detalles:
-            if detalle.comprobante_compra_detalle.producto.control_calidad:
-                movimiento_final = TipoMovimiento.objects.get(codigo=104)
-            elif detalle.comprobante_compra_detalle.producto.control_serie:
-                movimiento_final = TipoMovimiento.objects.get(codigo=103)
-            else:
-                movimiento_final = TipoMovimiento.objects.get(codigo=102)
+            for detalle in detalles:
+                if detalle.comprobante_compra_detalle.producto.control_calidad:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=104)
+                elif detalle.comprobante_compra_detalle.producto.control_serie:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=103)
+                else:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=102)
 
-            movimiento_anterior = MovimientosAlmacen.objects.get(
-                content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
-                id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
-                tipo_movimiento = movimiento_inicial,
-                tipo_stock = movimiento_inicial.tipo_stock_final,
-                signo_factor_multiplicador = +1,
-                content_type_documento_proceso = ContentType.objects.get_for_model(form.instance.recepcion_compra),
-                id_registro_documento_proceso = form.instance.recepcion_compra.id,
-                sociedad = form.instance.recepcion_compra.documento.sociedad,
-                movimiento_reversion = False,
-            )
+                movimiento_anterior = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                    tipo_movimiento = movimiento_inicial,
+                    tipo_stock = movimiento_inicial.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance.recepcion_compra),
+                    id_registro_documento_proceso = form.instance.recepcion_compra.id,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_reversion = False,
+                )
 
-            movimiento_uno = MovimientosAlmacen.objects.create(
-                content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
-                id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
-                cantidad = detalle.cantidad_conteo,
-                tipo_movimiento = movimiento_final,
-                tipo_stock = movimiento_final.tipo_stock_inicial,
-                signo_factor_multiplicador = -1,
-                content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
-                id_registro_documento_proceso = form.instance.id,
-                almacen = None,
-                sociedad = form.instance.recepcion_compra.documento.sociedad,
-                movimiento_anterior = movimiento_anterior,
-                movimiento_reversion = False,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-            movimiento_dos = MovimientosAlmacen.objects.create(
-                content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
-                id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
-                cantidad = detalle.cantidad_conteo,
-                tipo_movimiento = movimiento_final,
-                tipo_stock = movimiento_final.tipo_stock_final,
-                signo_factor_multiplicador = +1,
-                content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
-                id_registro_documento_proceso = form.instance.id,
-                almacen = detalle.almacen,
-                sociedad = form.instance.recepcion_compra.documento.sociedad,
-                movimiento_anterior = movimiento_uno,
-                movimiento_reversion = False,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad_conteo,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_inicial,
+                    signo_factor_multiplicador = -1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                    id_registro_documento_proceso = form.instance.id,
+                    almacen = None,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_anterior = movimiento_anterior,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad_conteo,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                    id_registro_documento_proceso = form.instance.id,
+                    almacen = detalle.almacen,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
 
-        form.instance.estado = 2
-        registro_guardar(form.instance, self.request)
-            
-        return super().form_valid(form)
+            form.instance.estado = 2
+            registro_guardar(form.instance, self.request)
+                
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(NotaIngresoFinalizarConteoView, self).get_context_data(**kwargs)

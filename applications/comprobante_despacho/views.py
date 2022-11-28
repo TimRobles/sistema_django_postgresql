@@ -1,6 +1,7 @@
 import requests
 from django import forms
 from applications.comprobante_venta.funciones import anular_nubefact, guia_nubefact
+from applications.funciones import registrar_excepcion
 from applications.importaciones import*
 from applications.logistica.models import Despacho
 from applications.envio_clientes.models import Transportista
@@ -103,40 +104,46 @@ class GuiaCrearView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.object.id})
    
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
 
-        detalles = self.object.DespachoDetalle_despacho.all()
+            detalles = self.object.DespachoDetalle_despacho.all()
 
-        serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
+            serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
 
-        guia = Guia.objects.create(
-            sociedad = self.object.sociedad,
-            serie_comprobante = serie_comprobante,
-            cliente = self.object.cliente,
-            created_by = self.request.user,
-            updated_by = self.request.user,
-        )
-
-        for detalle in detalles:
-            guia_detalle = GuiaDetalle.objects.create(
-                item = detalle.item,
-                content_type = detalle.content_type,
-                id_registro = detalle.id_registro,
-                guia=guia,
-                cantidad=detalle.cantidad_despachada,
-                unidad=detalle.producto.unidad_base,
-                descripcion_documento=detalle.producto.descripcion_venta,
-                peso=detalle.producto.peso_unidad_base,
-                created_by=self.request.user,
-                updated_by=self.request.user,                
+            guia = Guia.objects.create(
+                sociedad = self.object.sociedad,
+                serie_comprobante = serie_comprobante,
+                cliente = self.object.cliente,
+                created_by = self.request.user,
+                updated_by = self.request.user,
             )
 
-        registro_guardar(self.object, self.request)
-        self.object.save()
+            for detalle in detalles:
+                guia_detalle = GuiaDetalle.objects.create(
+                    item = detalle.item,
+                    content_type = detalle.content_type,
+                    id_registro = detalle.id_registro,
+                    guia=guia,
+                    cantidad=detalle.cantidad_despachada,
+                    unidad=detalle.producto.unidad_base,
+                    descripcion_documento=detalle.producto.descripcion_venta,
+                    peso=detalle.producto.peso_unidad_base,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,                
+                )
 
-        messages.success(request, MENSAJE_GENERAR_GUIA)
-        return HttpResponseRedirect(reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':guia.id}))
+            registro_guardar(self.object, self.request)
+            self.object.save()
+
+            messages.success(request, MENSAJE_GENERAR_GUIA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(GuiaCrearView, self).get_context_data(**kwargs)
@@ -392,15 +399,21 @@ class GuiaGuardarView(DeleteView):
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        obj.fecha_emision = date.today()
-        if not obj.fecha_traslado:
-            obj.fecha_traslado = date.today()
-        obj.estado = 2
-        obj.numero_guia = Guia.objects.nuevo_numero(obj)
-        registro_guardar(obj, self.request)
-        obj.save()
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            obj.fecha_emision = date.today()
+            if not obj.fecha_traslado:
+                obj.fecha_traslado = date.today()
+            obj.estado = 2
+            obj.numero_guia = Guia.objects.nuevo_numero(obj)
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -431,17 +444,23 @@ class GuiaNubeFactEnviarView(DeleteView):
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        respuesta = guia_nubefact(obj, self.request.user)
-        if respuesta.error:
-            obj.estado = 6
-        elif respuesta.aceptado:
-            obj.estado = 4
-        else:
-            obj.estado = 5
-        registro_guardar(obj, self.request)
-        obj.save()
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            respuesta = guia_nubefact(obj, self.request.user)
+            if respuesta.error:
+                obj.estado = 6
+            elif respuesta.aceptado:
+                obj.estado = 4
+            else:
+                obj.estado = 5
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -460,14 +479,21 @@ class GuiaAnularView(BSModalDeleteView):
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        obj.estado = 3
-        if obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj)) == 'MANUAL':
-            obj.save()
-            return HttpResponseRedirect(self.get_success_url())
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            obj.estado = 3
+            if obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj)) == 'MANUAL':
+                obj.save()
+                return HttpResponseRedirect(self.get_success_url())
 
-        return super().delete(request, *args, **kwargs)
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(GuiaAnularView, self).get_context_data(**kwargs)

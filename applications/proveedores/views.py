@@ -1,3 +1,4 @@
+from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from .forms import (
     CorreoInterlocutorDarBajaForm,
@@ -85,12 +86,18 @@ class ProveedorDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('proveedores_app:proveedor_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -107,12 +114,18 @@ class ProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('proveedores_app:proveedor_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -161,31 +174,38 @@ class InterlocutorProveedorCreateView(PermissionRequiredMixin, BSModalFormView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.kwargs['proveedor_id']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        nombres = form.cleaned_data['nombres']
-        apellidos = form.cleaned_data['apellidos']
-        proveedor = Proveedor.objects.get(id = self.kwargs['proveedor_id'])
+        sid = transaction.savepoint()
+        try:
+            nombres = form.cleaned_data['nombres']
+            apellidos = form.cleaned_data['apellidos']
+            proveedor = Proveedor.objects.get(id = self.kwargs['proveedor_id'])
 
-        interlocutor, existe = InterlocutorProveedor.objects.get_or_create(
-            nombres = nombres.upper(),
-            apellidos = apellidos.upper(),
-        )
-        if not existe:
-            interlocutor.created_by = self.request.user
-            interlocutor.updated_by = self.request.user
-            interlocutor.save()
+            interlocutor, existe = InterlocutorProveedor.objects.get_or_create(
+                nombres = nombres.upper(),
+                apellidos = apellidos.upper(),
+            )
+            if not existe:
+                interlocutor.created_by = self.request.user
+                interlocutor.updated_by = self.request.user
+                interlocutor.save()
 
-        relacion, existe = ProveedorInterlocutor.objects.get_or_create(
-            interlocutor = interlocutor,
-            proveedor = proveedor,
-        )
+            relacion, existe = ProveedorInterlocutor.objects.get_or_create(
+                interlocutor = interlocutor,
+                proveedor = proveedor,
+            )
 
-        if not existe:
-            relacion.created_by = self.request.user
-            relacion.updated_by = self.request.user
-            relacion.save()
+            if not existe:
+                relacion.created_by = self.request.user
+                relacion.updated_by = self.request.user
+                relacion.save()
 
-        return super().form_valid(form) 
+            return super().form_valid(form) 
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(InterlocutorProveedorCreateView, self).get_context_data(**kwargs)
@@ -224,12 +244,18 @@ class InterlocutorProveedorDarBajaView(PermissionRequiredMixin, BSModalDeleteVie
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.object.proveedor.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -250,12 +276,18 @@ class InterlocutorProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteVie
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.object.proveedor.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -438,12 +470,18 @@ class CorreoInterlocutorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.get_object().interlocutor.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        obj.fech_baja = None
-        obj.estado = 1
-        registro_guardar(obj, self.request)
-        obj.save()
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            obj.fech_baja = None
+            obj.estado = 1
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.shortcuts import render
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion
 from applications.funciones import slug_aleatorio
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -109,70 +109,77 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
     context_object_name = 'contexto_orden_compra' 
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
-            numero_orden_compra = obj.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = obj.sociedad ))+1, 6)
-            orden_compra_anterior = obj
-            oferta_proveedor = obj.oferta_proveedor
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                obj = OrdenCompra.objects.get(id = self.kwargs['pk'])
+                numero_orden_compra = obj.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = obj.sociedad ))+1, 6)
+                orden_compra_anterior = obj
+                oferta_proveedor = obj.oferta_proveedor
 
-            form.instance.oferta_proveedor = None
-            form.instance.estado = 4
-            registro_guardar(form.instance, self.request)
-            
-            obj.oferta_proveedor = None
+                form.instance.oferta_proveedor = None
+                form.instance.estado = 4
+                registro_guardar(form.instance, self.request)
+                
+                obj.oferta_proveedor = None
 
-            registro_guardar(obj, self.request)
-            obj.save()
+                registro_guardar(obj, self.request)
+                obj.save()
 
-            orden = OrdenCompra.objects.create(
-                internacional_nacional = obj.internacional_nacional,
-                incoterms = obj.incoterms,
-                numero_orden_compra= numero_orden_compra,
-                oferta_proveedor= oferta_proveedor,
-                orden_compra_anterior= orden_compra_anterior,
-                sociedad= obj.sociedad,
-                fecha_orden= obj.fecha_orden,
-                moneda= obj.moneda,
-                descuento_global = obj.descuento_global ,
-                total_descuento = obj.total_descuento,
-                total_anticipo = obj.total_anticipo,
-                total_gravada = obj.total_gravada,
-                total_inafacta = obj.total_inafacta,
-                total_exonerada = obj.total_exonerada,
-                total_igv = obj.total_igv,
-                total_gratuita = obj.total_gratuita,
-                total_otros_cargos = obj.total_otros_cargos,
-                total_isc = obj.total_isc,
-                total = obj.total,
-                slug = slug_aleatorio(OrdenCompra),
-                condiciones = obj.condiciones,
-                estado=0,
-            )
+                orden = OrdenCompra.objects.create(
+                    internacional_nacional = obj.internacional_nacional,
+                    incoterms = obj.incoterms,
+                    numero_orden_compra= numero_orden_compra,
+                    oferta_proveedor= oferta_proveedor,
+                    orden_compra_anterior= orden_compra_anterior,
+                    sociedad= obj.sociedad,
+                    fecha_orden= obj.fecha_orden,
+                    moneda= obj.moneda,
+                    descuento_global = obj.descuento_global ,
+                    total_descuento = obj.total_descuento,
+                    total_anticipo = obj.total_anticipo,
+                    total_gravada = obj.total_gravada,
+                    total_inafacta = obj.total_inafacta,
+                    total_exonerada = obj.total_exonerada,
+                    total_igv = obj.total_igv,
+                    total_gratuita = obj.total_gratuita,
+                    total_otros_cargos = obj.total_otros_cargos,
+                    total_isc = obj.total_isc,
+                    total = obj.total,
+                    slug = slug_aleatorio(OrdenCompra),
+                    condiciones = obj.condiciones,
+                    estado=0,
+                )
 
-            orden_detalle = obj.OrdenCompraDetalle_orden_compra.all()
-            for detalle in orden_detalle:
-                detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+                orden_detalle = obj.OrdenCompraDetalle_orden_compra.all()
+                for detalle in orden_detalle:
+                    detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
 
-                orden_detalle = OrdenCompraDetalle.objects.create(
-                    item=detalle.item,
-                    content_type=detalle.content_type,
-                    id_registro=detalle.id_registro,
-                    cantidad=detalle.cantidad,
-                    precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
-                    precio_unitario_con_igv = detalle.precio_unitario_con_igv,
-                    precio_final_con_igv = detalle.precio_final_con_igv,
-                    descuento = detalle.descuento,
-                    sub_total = detalle.sub_total,
-                    igv = detalle.igv,
-                    total = detalle.total,
-                    tipo_igv = detalle.tipo_igv,
-                    orden_compra=orden,
-                     
-                    )
-            messages.success(self.request, MENSAJE_ANULAR_ORDEN_COMPRA)
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+                    orden_detalle = OrdenCompraDetalle.objects.create(
+                        item=detalle.item,
+                        content_type=detalle.content_type,
+                        id_registro=detalle.id_registro,
+                        cantidad=detalle.cantidad,
+                        precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
+                        precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                        precio_final_con_igv = detalle.precio_final_con_igv,
+                        descuento = detalle.descuento,
+                        sub_total = detalle.sub_total,
+                        igv = detalle.igv,
+                        total = detalle.total,
+                        tipo_igv = detalle.tipo_igv,
+                        orden_compra=orden,
+                        
+                        )
+                messages.success(self.request, MENSAJE_ANULAR_ORDEN_COMPRA)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -310,30 +317,37 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
             return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            orden = OrdenCompra.objects.get(slug=self.kwargs['slug'])            
-            correos_proveedor = form.cleaned_data['correos_proveedor']
-            correos_internos = form.cleaned_data['correos_internos']
-            self.request.session['primero'] = False
-
-            asunto = "Orden de Compra - %s" % (orden.id)
-            mensaje = '<p>Estimado,</p><p>Se le envia la Orden de Compra: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('orden_compra_app:orden_compra_pdf', kwargs={'slug':orden.slug}), 'Orden')
-            email_remitente = EMAIL_REMITENTE
-
-            correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
-            correo.attach_alternative(mensaje, "text/html")
-            try:
-                correo.send()
-                orden.estado = 2
-                orden.save()
-                
-                messages.success(self.request, 'Correo enviado.')
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                orden = OrdenCompra.objects.get(slug=self.kwargs['slug'])            
+                correos_proveedor = form.cleaned_data['correos_proveedor']
+                correos_internos = form.cleaned_data['correos_internos']
                 self.request.session['primero'] = False
-            except:
-                messages.warning(self.request, 'Hubo un error al enviar el correo.')
-        
-        return super().form_valid(form)
+
+                asunto = "Orden de Compra - %s" % (orden.id)
+                mensaje = '<p>Estimado,</p><p>Se le envia la Orden de Compra: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('orden_compra_app:orden_compra_pdf', kwargs={'slug':orden.slug}), 'Orden')
+                email_remitente = EMAIL_REMITENTE
+
+                correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
+                correo.attach_alternative(mensaje, "text/html")
+                try:
+                    correo.send()
+                    orden.estado = 2
+                    orden.save()
+                    
+                    messages.success(self.request, 'Correo enviado.')
+                    self.request.session['primero'] = False
+                except:
+                    messages.warning(self.request, 'Hubo un error al enviar el correo.')
+            
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super(OrdenCompraEnviarCorreoView, self).get_form_kwargs()
@@ -374,28 +388,34 @@ class OfertaProveedorlDetalleCreateView(BSModalFormView):
 
     success_url = reverse_lazy('orden_compra_app:orden_compra_detalle')
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            orden_compra = OrdenCompra.objects.get(id = self.kwargs['pk'])
-            item = len(OrdenCompraDetalle.objects.filter(orden_compra = orden_compra))
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                orden_compra = OrdenCompra.objects.get(id = self.kwargs['pk'])
+                item = len(OrdenCompraDetalle.objects.filter(orden_compra = orden_compra))
 
-            material = form.cleaned_data.get('material')
-            cantidad = form.cleaned_data.get('cantidad')
+                material = form.cleaned_data.get('material')
+                cantidad = form.cleaned_data.get('cantidad')
 
-            obj, created = OrdenCompraDetalle.objects.get_or_create(
-                content_type = ContentType.objects.get_for_model(material),
-                id_registro = material.id,
-                orden_compra = orden_compra,
-            )
-            if created:
-                obj.item = item + 1
-                obj.cantidad = cantidad
-            # else:
-                # obj.cantidad = obj.cantidad +cantidad 
+                obj, created = OrdenCompraDetalle.objects.get_or_create(
+                    content_type = ContentType.objects.get_for_model(material),
+                    id_registro = material.id,
+                    orden_compra = orden_compra,
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+                # else:
+                    # obj.cantidad = obj.cantidad +cantidad 
 
-            registro_guardar(obj, self.request)
-            obj.save()
-            self.request.session['primero'] = False
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
@@ -411,60 +431,66 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
     success_url = reverse_lazy('comprobante_compra_app:comprobante_compra_pi_lista')
     context_object_name = 'contexto_orden_compra' 
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        orden = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            orden = self.get_object()
 
-        comprobante = ComprobanteCompraPI.objects.create(
-            internacional_nacional = orden.internacional_nacional,
-            incoterms = orden.incoterms,
-            orden_compra = orden,
-            sociedad = orden.sociedad,
-            moneda = orden.moneda,
-            slug = slug_aleatorio(ComprobanteCompraPI),
-            created_by = self.request.user,
-            updated_by = self.request.user,
-        )
-
-        materiales = orden.OrdenCompraDetalle_orden_compra.all()
-        movimiento_final = TipoMovimiento.objects.get(codigo=100)
-        for material in materiales:
-            orden_detalle = ComprobanteCompraPIDetalle.objects.create(
-                item=material.item,
-                orden_compra_detalle = material,
-                cantidad = material.cantidad,
-                precio_unitario_sin_igv = material.precio_unitario_sin_igv,
-                precio_unitario_con_igv = material.precio_unitario_con_igv,
-                precio_final_con_igv = material.precio_final_con_igv,
-                descuento = material.descuento,
-                sub_total = material.sub_total,
-                igv = material.igv,
-                total = material.total,
-                tipo_igv = material.tipo_igv,
-                comprobante_compra = comprobante,
+            comprobante = ComprobanteCompraPI.objects.create(
+                internacional_nacional = orden.internacional_nacional,
+                incoterms = orden.incoterms,
+                orden_compra = orden,
+                sociedad = orden.sociedad,
+                moneda = orden.moneda,
+                slug = slug_aleatorio(ComprobanteCompraPI),
                 created_by = self.request.user,
                 updated_by = self.request.user,
-                )
-            
-            movimiento_dos = MovimientosAlmacen.objects.create(
-                    content_type_producto = material.content_type,
-                    id_registro_producto = material.id_registro,
+            )
+
+            materiales = orden.OrdenCompraDetalle_orden_compra.all()
+            movimiento_final = TipoMovimiento.objects.get(codigo=100)
+            for material in materiales:
+                orden_detalle = ComprobanteCompraPIDetalle.objects.create(
+                    item=material.item,
+                    orden_compra_detalle = material,
                     cantidad = material.cantidad,
-                    tipo_movimiento = movimiento_final,
-                    tipo_stock = movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador = +1,
-                    content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
-                    id_registro_documento_proceso = comprobante.id,
-                    almacen = None,
-                    sociedad = comprobante.sociedad,
-                    movimiento_anterior = None,
-                    movimiento_reversion = False,
+                    precio_unitario_sin_igv = material.precio_unitario_sin_igv,
+                    precio_unitario_con_igv = material.precio_unitario_con_igv,
+                    precio_final_con_igv = material.precio_final_con_igv,
+                    descuento = material.descuento,
+                    sub_total = material.sub_total,
+                    igv = material.igv,
+                    total = material.total,
+                    tipo_igv = material.tipo_igv,
+                    comprobante_compra = comprobante,
                     created_by = self.request.user,
                     updated_by = self.request.user,
-                )
+                    )
+                
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto = material.content_type,
+                        id_registro_producto = material.id_registro,
+                        cantidad = material.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(comprobante),
+                        id_registro_documento_proceso = comprobante.id,
+                        almacen = None,
+                        sociedad = comprobante.sociedad,
+                        movimiento_anterior = None,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
 
 
-        messages.success(request, MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI)
+            messages.success(request, MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

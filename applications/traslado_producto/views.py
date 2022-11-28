@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.sociedad.models import Sociedad 
 
@@ -121,16 +122,22 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        numero_envio_traslado = EnvioTrasladoProducto.objects.all().aggregate(Count('numero_envio_traslado'))['numero_envio_traslado__count'] + 1
-        self.object.numero_envio_traslado = numero_envio_traslado
-        self.object.fecha_traslado = datetime. now()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            numero_envio_traslado = EnvioTrasladoProducto.objects.all().aggregate(Count('numero_envio_traslado'))['numero_envio_traslado__count'] + 1
+            self.object.numero_envio_traslado = numero_envio_traslado
+            self.object.fecha_traslado = datetime. now()
 
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_GUARDAR_ENVIO)
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_GUARDAR_ENVIO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -147,35 +154,42 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
     form_class = EnvioTrasladoProductoDetalleForm
     success_url = reverse_lazy('traslado_producto_app:envio_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
-            item = len(EnvioTrasladoProductoDetalle.objects.filter(envio_traslado_almacen = envio_traslado_producto))
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
+                item = len(EnvioTrasladoProductoDetalle.objects.filter(envio_traslado_almacen = envio_traslado_producto))
 
-            material = form.cleaned_data.get('material')
-            cantidad_envio = form.cleaned_data.get('cantidad_envio')
+                material = form.cleaned_data.get('material')
+                cantidad_envio = form.cleaned_data.get('cantidad_envio')
 
-            obj, created = EnvioTrasladoProductoDetalle.objects.get_or_create(
-                content_type = ContentType.objects.get_for_model(material),
-                id_registro = material.id,
-                envio_traslado_almacen = envio_traslado_producto,
-            )
-            if created:
-                obj.item = item + 1
-                obj.cantidad_envio = cantidad_envio
+                obj, created = EnvioTrasladoProductoDetalle.objects.get_or_create(
+                    content_type = ContentType.objects.get_for_model(material),
+                    id_registro = material.id,
+                    envio_traslado_almacen = envio_traslado_producto,
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad_envio = cantidad_envio
 
-            else:
-                obj.cantidad_envio = obj.cantidad_envio + cantidad_envio
+                else:
+                    obj.cantidad_envio = obj.cantidad_envio + cantidad_envio
 
 
-            registro_guardar(obj, self.request)
-            obj.save()
+                registro_guardar(obj, self.request)
+                obj.save()
 
-            cantidad_total = obj.cantidad_envio
-            cantidades = {}
-            sociedades = Sociedad.objects.all()
-  
-        return HttpResponseRedirect(self.success_url)
+                cantidad_total = obj.cantidad_envio
+                cantidades = {}
+                sociedades = Sociedad.objects.all()
+    
+            return HttpResponseRedirect(self.success_url)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True

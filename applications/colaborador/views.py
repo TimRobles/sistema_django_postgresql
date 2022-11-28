@@ -189,8 +189,8 @@ class DatosContratoHonorariosCreateView(PermissionRequiredMixin, BSModalCreateVi
             return super().form_invalid(form)
         
         usuario_planilla = DatosContratoHonorarios.objects.filter(
-        usuario = form.instance.usuario,
-        estado_alta_baja = 1)
+            usuario = form.instance.usuario,
+            estado_alta_baja = 1)
         if usuario_planilla:
             form.add_error('usuario', 'El usuario tiene un contrato activo por recibo por honorarios.')
             return super().form_invalid(form)

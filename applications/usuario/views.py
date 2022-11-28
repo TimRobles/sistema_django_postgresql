@@ -1,3 +1,4 @@
+from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from django.shortcuts import render
 
@@ -30,40 +31,54 @@ class DatosUsuarioView(LoginRequiredMixin, FormView):
         kwargs['usuario'] = self.request.user
         return kwargs
 
+    @transaction.atomic
     def form_valid(self, form):
-        User = get_user_model()
-        usuario_buscar=User.objects.get(id=self.request.user.id)
-        form.instance.usuario = self.request.user
-        if form.instance.created_by == None:
-            form.instance.created_by = self.request.user
-        form.instance.updated_by = self.request.user
+        sid = transaction.savepoint()
+        try:
+            User = get_user_model()
+            usuario_buscar=User.objects.get(id=self.request.user.id)
+            form.instance.usuario = self.request.user
+            if form.instance.created_by == None:
+                form.instance.created_by = self.request.user
+            form.instance.updated_by = self.request.user
 
-        usuario_buscar.first_name = self.request.POST['nombres']
-        usuario_buscar.last_name = self.request.POST['apellidos']
-        usuario_buscar.email = self.request.POST['correo']
-        
-        usuario_buscar.save()
-        form.save()
-        messages.success(self.request, 'Datos actualizados correctamente')
+            usuario_buscar.first_name = self.request.POST['nombres']
+            usuario_buscar.last_name = self.request.POST['apellidos']
+            usuario_buscar.email = self.request.POST['correo']
+            
+            usuario_buscar.save()
+            form.save()
+            messages.success(self.request, 'Datos actualizados correctamente')
 
-        return super(DatosUsuarioView, self).form_valid(form)
+            return super(DatosUsuarioView, self).form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
         
 class UserPasswordView(FormView):
     template_name = "usuario/datos_usuario/cambio contraseña.html"
     form_class = UserPasswordForm
     success_url = reverse_lazy('home_app:home')
 
+    @transaction.atomic
     def form_valid(self, form):
-        usuario = self.request.user
-        nuevo_password = form.cleaned_data['password2']
-        usuario.set_password(nuevo_password)
-        usuario.save()
-        user = authenticate(
-            username = usuario.username,
-            password = nuevo_password,
-        )
-        login(self.request, user)
-        return super(UserPasswordView, self).form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            usuario = self.request.user
+            nuevo_password = form.cleaned_data['password2']
+            usuario.set_password(nuevo_password)
+            usuario.save()
+            user = authenticate(
+                username = usuario.username,
+                password = nuevo_password,
+            )
+            login(self.request, user)
+            return super(UserPasswordView, self).form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super(UserPasswordView, self).get_form_kwargs()
@@ -108,13 +123,20 @@ class HistoricoUserDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)    
 
+    @transaction.atomic
     def form_valid(self, form):
-        form.instance.estado = 2
-        form.instance.usuario.is_active = False
-        form.instance.usuario.save()
-        registro_guardar(form.instance, self.request)
-        
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            form.instance.estado = 2
+            form.instance.usuario.is_active = False
+            form.instance.usuario.save()
+            registro_guardar(form.instance, self.request)
+            
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
     
     def get_context_data(self, **kwargs):
         context = super(HistoricoUserDarBajaView, self).get_context_data(**kwargs)
@@ -133,27 +155,33 @@ class HistoricoUserDarAltaView(PermissionRequiredMixin, BSModalCreateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs) 
 
+    @transaction.atomic
     def form_valid(self, form):
-        usuario = get_user_model()
-        
-        buscar_usuario = usuario.objects.get(id = self.kwargs['usuario'])
-        form.instance.usuario = buscar_usuario
-        historico = HistoricoUser.objects.filter(
-            usuario = buscar_usuario,
-            estado = 2,
-        )
-        if historico:
-            historico = historico.latest('id')
-            historico.estado = 3
-            buscar_usuario.is_active = True
-            buscar_usuario.save()
-            registro_guardar(historico, self.request)
-            historico.save()
+        sid = transaction.savepoint()
+        try:
+            usuario = get_user_model()
+            
+            buscar_usuario = usuario.objects.get(id = self.kwargs['usuario'])
+            form.instance.usuario = buscar_usuario
+            historico = HistoricoUser.objects.filter(
+                usuario = buscar_usuario,
+                estado = 2,
+            )
+            if historico:
+                historico = historico.latest('id')
+                historico.estado = 3
+                buscar_usuario.is_active = True
+                buscar_usuario.save()
+                registro_guardar(historico, self.request)
+                historico.save()
 
-        registro_guardar(form.instance, self.request)
-        
-        return super().form_valid(form)
-        
+            registro_guardar(form.instance, self.request)
+            
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())        
 
     def get_form_kwargs(self):
         usuario = get_user_model()

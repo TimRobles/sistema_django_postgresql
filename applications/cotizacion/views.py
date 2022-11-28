@@ -11,7 +11,7 @@ from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, T
 from applications.material.funciones import calidad, en_camino, observacion, reservado, stock, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
-from applications.funciones import calculos_linea, fecha_en_letras, igv, numeroXn, obtener_totales, obtener_totales_soles, slug_aleatorio, tipo_de_cambio
+from applications.funciones import calculos_linea, fecha_en_letras, igv, numeroXn, obtener_totales, obtener_totales_soles, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
 from applications.sociedad.models import Sociedad
 
@@ -482,76 +482,81 @@ class CotizacionVentaMaterialDetalleView(BSModalFormView):
     form_class = CotizacionVentaMaterialDetalleForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                cotizacion = CotizacionVenta.objects.get(id = self.kwargs['cotizacion_id'])
+                item = len(CotizacionVentaDetalle.objects.filter(cotizacion_venta = cotizacion))
 
-        if self.request.session['primero']:
-            cotizacion = CotizacionVenta.objects.get(id = self.kwargs['cotizacion_id'])
-            item = len(CotizacionVentaDetalle.objects.filter(cotizacion_venta = cotizacion))
+                material = form.cleaned_data.get('material')
+                cantidad = form.cleaned_data.get('cantidad')
 
-            material = form.cleaned_data.get('material')
-            cantidad = form.cleaned_data.get('cantidad')
-
-            obj, created = CotizacionVentaDetalle.objects.get_or_create(
-                content_type = ContentType.objects.get_for_model(material),
-                id_registro = material.id,
-                cotizacion_venta = cotizacion,
-            )
-            if created:
-                obj.item = item + 1
-                obj.cantidad = cantidad
-                try:
-                    precio_unitario_con_igv = material.precio_lista.precio_lista
-                    precio_final_con_igv = material.precio_lista.precio_lista
-                except:
-                    precio_unitario_con_igv = 0
-                    precio_final_con_igv = 0
-
-                respuesta = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), 1)
-                obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
-                obj.precio_unitario_con_igv = precio_unitario_con_igv
-                obj.precio_final_con_igv = precio_final_con_igv
-                obj.sub_total = respuesta['subtotal']
-                obj.descuento = respuesta['descuento']
-                obj.igv = respuesta['igv']
-                obj.total = respuesta['total']
-            else:
-                precio_unitario_con_igv = obj.precio_unitario_con_igv
-                precio_final_con_igv = obj.precio_final_con_igv
-                obj.cantidad = obj.cantidad + cantidad
-                respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), obj.tipo_igv)
-                obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
-                obj.precio_unitario_con_igv = precio_unitario_con_igv
-                obj.precio_final_con_igv = precio_final_con_igv
-                obj.sub_total = respuesta['subtotal']
-                obj.descuento = respuesta['descuento']
-                obj.igv = respuesta['igv']
-                obj.total = respuesta['total']
-
-            registro_guardar(obj, self.request)
-            obj.save()
-
-            cantidad_total = obj.cantidad
-            cantidades = {}
-            sociedades = Sociedad.objects.all()
-            for sociedad in sociedades:
-                cantidades[sociedad.abreviatura] = stock(obj.content_type, obj.id_registro, sociedad.id)
-
-            cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
-
-            for sociedad in sociedades:
-                obj2, created = CotizacionSociedad.objects.get_or_create(
-                    cotizacion_venta_detalle = obj,
-                    sociedad = sociedad,
+                obj, created = CotizacionVentaDetalle.objects.get_or_create(
+                    content_type = ContentType.objects.get_for_model(material),
+                    id_registro = material.id,
+                    cotizacion_venta = cotizacion,
                 )
-                if cantidades[sociedad.abreviatura] >= cantidad_total:
-                    obj2.cantidad = cantidad_total
-                    cantidad_total -= cantidad_total
-                else:
-                    obj2.cantidad = cantidades[sociedad.abreviatura]
-                    cantidad_total -= cantidades[sociedad.abreviatura]
-                obj2.save()
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+                    try:
+                        precio_unitario_con_igv = material.precio_lista.precio_lista
+                        precio_final_con_igv = material.precio_lista.precio_lista
+                    except:
+                        precio_unitario_con_igv = 0
+                        precio_final_con_igv = 0
 
-            self.request.session['primero'] = False
+                    respuesta = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), 1)
+                    obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+                    obj.precio_unitario_con_igv = precio_unitario_con_igv
+                    obj.precio_final_con_igv = precio_final_con_igv
+                    obj.sub_total = respuesta['subtotal']
+                    obj.descuento = respuesta['descuento']
+                    obj.igv = respuesta['igv']
+                    obj.total = respuesta['total']
+                else:
+                    precio_unitario_con_igv = obj.precio_unitario_con_igv
+                    precio_final_con_igv = obj.precio_final_con_igv
+                    obj.cantidad = obj.cantidad + cantidad
+                    respuesta = calculos_linea(obj.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), obj.tipo_igv)
+                    obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+                    obj.precio_unitario_con_igv = precio_unitario_con_igv
+                    obj.precio_final_con_igv = precio_final_con_igv
+                    obj.sub_total = respuesta['subtotal']
+                    obj.descuento = respuesta['descuento']
+                    obj.igv = respuesta['igv']
+                    obj.total = respuesta['total']
+
+                registro_guardar(obj, self.request)
+                obj.save()
+
+                cantidad_total = obj.cantidad
+                cantidades = {}
+                sociedades = Sociedad.objects.all()
+                for sociedad in sociedades:
+                    cantidades[sociedad.abreviatura] = stock(obj.content_type, obj.id_registro, sociedad.id)
+
+                cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
+
+                for sociedad in sociedades:
+                    obj2, created = CotizacionSociedad.objects.get_or_create(
+                        cotizacion_venta_detalle = obj,
+                        sociedad = sociedad,
+                    )
+                    if cantidades[sociedad.abreviatura] >= cantidad_total:
+                        obj2.cantidad = cantidad_total
+                        cantidad_total -= cantidad_total
+                    else:
+                        obj2.cantidad = cantidades[sociedad.abreviatura]
+                        cantidad_total -= cantidades[sociedad.abreviatura]
+                    obj2.save()
+
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
@@ -738,17 +743,23 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        numero_cotizacion = CotizacionVenta.objects.all().aggregate(Count('numero_cotizacion'))['numero_cotizacion__count'] + 1
-        self.object.numero_cotizacion = numero_cotizacion
-        self.object.fecha_cotizacion = datetime. now()
-        self.object.fecha_validez = self.object.fecha_cotizacion + timedelta(7)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            numero_cotizacion = CotizacionVenta.objects.all().aggregate(Count('numero_cotizacion'))['numero_cotizacion__count'] + 1
+            self.object.numero_cotizacion = numero_cotizacion
+            self.object.fecha_cotizacion = datetime. now()
+            self.object.fecha_validez = self.object.fecha_cotizacion + timedelta(7)
 
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_GUARDAR_COTIZACION)
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_GUARDAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -841,9 +852,6 @@ class CotizacionVentaDetalleDeleteView(BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super(CotizacionVentaDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
@@ -861,42 +869,49 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        precio_unitario_con_igv = form.instance.precio_unitario_con_igv
-        precio_final_con_igv = form.instance.precio_final_con_igv
-        form.instance.cantidad = form.instance.cantidad
-        respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), form.instance.tipo_igv)
-        form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
-        form.instance.precio_unitario_con_igv = precio_unitario_con_igv
-        form.instance.precio_final_con_igv = precio_final_con_igv
-        form.instance.sub_total = respuesta['subtotal']
-        form.instance.descuento = respuesta['descuento']
-        form.instance.igv = respuesta['igv']
-        form.instance.total = respuesta['total']
+        sid = transaction.savepoint()
+        try:
+            precio_unitario_con_igv = form.instance.precio_unitario_con_igv
+            precio_final_con_igv = form.instance.precio_final_con_igv
+            form.instance.cantidad = form.instance.cantidad
+            respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), form.instance.tipo_igv)
+            form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+            form.instance.precio_unitario_con_igv = precio_unitario_con_igv
+            form.instance.precio_final_con_igv = precio_final_con_igv
+            form.instance.sub_total = respuesta['subtotal']
+            form.instance.descuento = respuesta['descuento']
+            form.instance.igv = respuesta['igv']
+            form.instance.total = respuesta['total']
 
-        registro_guardar(form.instance, self.request)
+            registro_guardar(form.instance, self.request)
 
-        cantidad_total = form.instance.cantidad
-        cantidades = {}
-        sociedades = Sociedad.objects.all()
-        for sociedad in sociedades:
-            cantidades[sociedad.abreviatura] = stock(form.instance.content_type, form.instance.id_registro, sociedad.id)
+            cantidad_total = form.instance.cantidad
+            cantidades = {}
+            sociedades = Sociedad.objects.all()
+            for sociedad in sociedades:
+                cantidades[sociedad.abreviatura] = stock(form.instance.content_type, form.instance.id_registro, sociedad.id)
 
-        cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
+            cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
 
-        for sociedad in sociedades:
-            obj, created = CotizacionSociedad.objects.get_or_create(
-                cotizacion_venta_detalle = form.instance,
-                sociedad = sociedad,
-            )
-            if cantidades[sociedad.abreviatura] >= cantidad_total:
-                obj.cantidad = cantidad_total
-                cantidad_total -= cantidad_total
-            else:
-                obj.cantidad = cantidades[sociedad.abreviatura]
-                cantidad_total -= cantidades[sociedad.abreviatura]
-            obj.save()
-        return super().form_valid(form)
+            for sociedad in sociedades:
+                obj, created = CotizacionSociedad.objects.get_or_create(
+                    cotizacion_venta_detalle = form.instance,
+                    sociedad = sociedad,
+                )
+                if cantidades[sociedad.abreviatura] >= cantidad_total:
+                    obj.cantidad = cantidad_total
+                    cantidad_total -= cantidad_total
+                else:
+                    obj.cantidad = cantidades[sociedad.abreviatura]
+                    cantidad_total -= cantidades[sociedad.abreviatura]
+                obj.save()
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(CotizacionVentaMaterialDetalleUpdateView, self).get_context_data(**kwargs)
@@ -926,13 +941,19 @@ class CotizacionVentaAnularView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 9
-        registro_guardar(self.object, self.request)
-        self.object.save()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 9
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        messages.success(request, MENSAJE_ANULAR_COTIZACION)
+            messages.success(request, MENSAJE_ANULAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -951,79 +972,85 @@ class CotizacionVentaClonarView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
-        descuento_globales = self.object.CotizacionDescuentoGlobal_cotizacion_venta.all()
-        otros_cargos = self.object.CotizacionOtrosCargos_cotizacion_venta.all()
-        observaciones = self.object.CotizacionObservacion_cotizacion_venta.all()
-        nueva_cotizacion = CotizacionVenta.objects.create(
-            cliente=self.object.cliente,
-            cliente_interlocutor=self.object.cliente_interlocutor,
-            moneda=self.object.moneda,
-            total=self.object.total,
-            slug = slug_aleatorio(CotizacionVenta),
-            created_by=self.request.user,
-            updated_by=self.request.user,
-        )
-        
-        for descuento_global in descuento_globales:
-            CotizacionDescuentoGlobal.objects.create(
-                cotizacion_venta=nueva_cotizacion,
-                sociedad=descuento_global.sociedad,
-                descuento_global=descuento_global.descuento_global,
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
+            descuento_globales = self.object.CotizacionDescuentoGlobal_cotizacion_venta.all()
+            otros_cargos = self.object.CotizacionOtrosCargos_cotizacion_venta.all()
+            observaciones = self.object.CotizacionObservacion_cotizacion_venta.all()
+            nueva_cotizacion = CotizacionVenta.objects.create(
+                cliente=self.object.cliente,
+                cliente_interlocutor=self.object.cliente_interlocutor,
+                moneda=self.object.moneda,
+                total=self.object.total,
+                slug = slug_aleatorio(CotizacionVenta),
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
-        
-        for otro_cargo in otros_cargos:
-            CotizacionOtrosCargos.objects.create(
-                cotizacion_venta=nueva_cotizacion,
-                sociedad=otro_cargo.sociedad,
-                otros_cargos=otro_cargo.otros_cargos,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
-        
-        for observacion in observaciones:
-            CotizacionObservacion.objects.create(
-                cotizacion_venta=nueva_cotizacion,
-                sociedad=observacion.sociedad,
-                observacion=observacion.observacion,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
-
-        for detalle in detalles:
-            cotizacion_venta_detalle = CotizacionVentaDetalle.objects.create(
-                item=detalle.item,
-                content_type=detalle.content_type,
-                id_registro=detalle.id_registro,
-                cantidad=detalle.cantidad,
-                precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
-                precio_unitario_con_igv=detalle.precio_unitario_con_igv,
-                precio_final_con_igv=detalle.precio_final_con_igv,
-                descuento=detalle.descuento,
-                sub_total=detalle.sub_total,
-                igv=detalle.igv,
-                total=detalle.total,
-                tipo_igv=detalle.tipo_igv,
-                cotizacion_venta=nueva_cotizacion,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
-            cotizacion_sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
-            for cotizacion_sociedad in cotizacion_sociedades:
-                CotizacionSociedad.objects.create(
-                    cotizacion_venta_detalle=cotizacion_venta_detalle,
-                    sociedad=cotizacion_sociedad.sociedad,
-                    cantidad=cotizacion_sociedad.cantidad,
+            
+            for descuento_global in descuento_globales:
+                CotizacionDescuentoGlobal.objects.create(
+                    cotizacion_venta=nueva_cotizacion,
+                    sociedad=descuento_global.sociedad,
+                    descuento_global=descuento_global.descuento_global,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+            
+            for otro_cargo in otros_cargos:
+                CotizacionOtrosCargos.objects.create(
+                    cotizacion_venta=nueva_cotizacion,
+                    sociedad=otro_cargo.sociedad,
+                    otros_cargos=otro_cargo.otros_cargos,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+            
+            for observacion in observaciones:
+                CotizacionObservacion.objects.create(
+                    cotizacion_venta=nueva_cotizacion,
+                    sociedad=observacion.sociedad,
+                    observacion=observacion.observacion,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
 
-        messages.success(request, MENSAJE_CLONAR_COTIZACION)
-        return HttpResponseRedirect(reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':nueva_cotizacion.id}))
+            for detalle in detalles:
+                cotizacion_venta_detalle = CotizacionVentaDetalle.objects.create(
+                    item=detalle.item,
+                    content_type=detalle.content_type,
+                    id_registro=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
+                    precio_unitario_con_igv=detalle.precio_unitario_con_igv,
+                    precio_final_con_igv=detalle.precio_final_con_igv,
+                    descuento=detalle.descuento,
+                    sub_total=detalle.sub_total,
+                    igv=detalle.igv,
+                    total=detalle.total,
+                    tipo_igv=detalle.tipo_igv,
+                    cotizacion_venta=nueva_cotizacion,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                cotizacion_sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                for cotizacion_sociedad in cotizacion_sociedades:
+                    CotizacionSociedad.objects.create(
+                        cotizacion_venta_detalle=cotizacion_venta_detalle,
+                        sociedad=cotizacion_sociedad.sociedad,
+                        cantidad=cotizacion_sociedad.cantidad,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+
+            messages.success(request, MENSAJE_CLONAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(CotizacionVentaClonarView, self).get_context_data(**kwargs)
@@ -1056,37 +1083,43 @@ class CotizacionVentaReservaView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
 
-        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
-        reserva = TipoMovimiento.objects.get(codigo=118)
-        for detalle in detalles:
-            sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
-            for cotizacion_sociedad in sociedades:
-                if cotizacion_sociedad.cantidad > 0:
-                    movimiento_dos = MovimientosAlmacen.objects.create(
-                            content_type_producto = detalle.content_type,
-                            id_registro_producto = detalle.id_registro,
-                            cantidad = cotizacion_sociedad.cantidad,
-                            tipo_movimiento = reserva,
-                            tipo_stock = reserva.tipo_stock_final,
-                            signo_factor_multiplicador = +1,
-                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                            id_registro_documento_proceso = self.object.id,
-                            almacen = None,
-                            sociedad = cotizacion_sociedad.sociedad,
-                            movimiento_anterior = None,
-                            movimiento_reversion = False,
-                            created_by = self.request.user,
-                            updated_by = self.request.user,
-                        )
+            detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
+            reserva = TipoMovimiento.objects.get(codigo=118)
+            for detalle in detalles:
+                sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                for cotizacion_sociedad in sociedades:
+                    if cotizacion_sociedad.cantidad > 0:
+                        movimiento_dos = MovimientosAlmacen.objects.create(
+                                content_type_producto = detalle.content_type,
+                                id_registro_producto = detalle.id_registro,
+                                cantidad = cotizacion_sociedad.cantidad,
+                                tipo_movimiento = reserva,
+                                tipo_stock = reserva.tipo_stock_final,
+                                signo_factor_multiplicador = +1,
+                                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                                id_registro_documento_proceso = self.object.id,
+                                almacen = None,
+                                sociedad = cotizacion_sociedad.sociedad,
+                                movimiento_anterior = None,
+                                movimiento_reversion = False,
+                                created_by = self.request.user,
+                                updated_by = self.request.user,
+                            )
 
-        self.object.estado = 3
-        registro_guardar(self.object, self.request)
-        self.object.save()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+            messages.success(request, MENSAJE_RESERVAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1105,26 +1138,32 @@ class CotizacionVentaReservaAnularView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
 
-        reserva = TipoMovimiento.objects.get(codigo=118)
-        movimientos = MovimientosAlmacen.objects.filter(
-                tipo_movimiento = reserva,
-                tipo_stock = reserva.tipo_stock_final,
-                signo_factor_multiplicador = +1,
-                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                id_registro_documento_proceso = self.object.id,
-                almacen = None,
-            )
-        for movimiento in movimientos:
-            movimiento.delete()
+            reserva = TipoMovimiento.objects.get(codigo=118)
+            movimientos = MovimientosAlmacen.objects.filter(
+                    tipo_movimiento = reserva,
+                    tipo_stock = reserva.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = None,
+                )
+            for movimiento in movimientos:
+                movimiento.delete()
 
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        messages.success(request, MENSAJE_ANULAR_RESERVAR_COTIZACION)
+            messages.success(request, MENSAJE_ANULAR_RESERVAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1174,140 +1213,146 @@ class CotizacionVentaConfirmarView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        sociedades_confirmar = []
-        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
-        
-        if self.object.estado == 3: #Si está reservado
-            movimiento_inicial = TipoMovimiento.objects.get(codigo=118) #Reservar
-            movimiento_final = TipoMovimiento.objects.get(codigo=119) #Confirmación de reserva
-            for detalle in detalles:
-                sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
-                for cotizacion_sociedad in sociedades:
-                    if cotizacion_sociedad.cantidad > 0:
-                        if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
-                        movimiento_anterior = MovimientosAlmacen.objects.get(
-                            content_type_producto = detalle.content_type,
-                            id_registro_producto = detalle.id_registro,
-                            tipo_movimiento = movimiento_inicial,
-                            tipo_stock = movimiento_inicial.tipo_stock_final,
-                            signo_factor_multiplicador = +1,
-                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                            id_registro_documento_proceso = self.object.id,
-                            sociedad = cotizacion_sociedad.sociedad,
-                            movimiento_reversion = False,
-                        )
-                        movimiento_uno = MovimientosAlmacen.objects.create(
-                            content_type_producto = detalle.content_type,
-                            id_registro_producto = detalle.id_registro,
-                            cantidad = cotizacion_sociedad.cantidad,
-                            tipo_movimiento = movimiento_final,
-                            tipo_stock = movimiento_final.tipo_stock_inicial,
-                            signo_factor_multiplicador = -1,
-                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                            id_registro_documento_proceso = self.object.id,
-                            almacen = None,
-                            sociedad = cotizacion_sociedad.sociedad,
-                            movimiento_anterior = movimiento_anterior,
-                            movimiento_reversion = False,
-                            created_by = self.request.user,
-                            updated_by = self.request.user,
-                        )
-                        movimiento_dos = MovimientosAlmacen.objects.create(
-                            content_type_producto = detalle.content_type,
-                            id_registro_producto = detalle.id_registro,
-                            cantidad = cotizacion_sociedad.cantidad,
-                            tipo_movimiento = movimiento_final,
-                            tipo_stock = movimiento_final.tipo_stock_final,
-                            signo_factor_multiplicador = +1,
-                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                            id_registro_documento_proceso = self.object.id,
-                            almacen = None,
-                            sociedad = cotizacion_sociedad.sociedad,
-                            movimiento_anterior = movimiento_uno,
-                            movimiento_reversion = False,
-                            created_by = self.request.user,
-                            updated_by = self.request.user,
-                        )
-            self.object.estado = 4
-        else: #Si no está reservado
-            movimiento_final = TipoMovimiento.objects.get(codigo=120) #Confirmación de venta
-            for detalle in detalles:
-                sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
-                for cotizacion_sociedad in sociedades:
-                    if cotizacion_sociedad.cantidad > 0:
-                        if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
-                        movimiento_dos = MovimientosAlmacen.objects.create(
-                            content_type_producto = detalle.content_type,
-                            id_registro_producto = detalle.id_registro,
-                            cantidad = cotizacion_sociedad.cantidad,
-                            tipo_movimiento = movimiento_final,
-                            tipo_stock = movimiento_final.tipo_stock_final,
-                            signo_factor_multiplicador = +1,
-                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                            id_registro_documento_proceso = self.object.id,
-                            almacen = None,
-                            sociedad = cotizacion_sociedad.sociedad,
-                            movimiento_anterior = None,
-                            movimiento_reversion = False,
-                            created_by = self.request.user,
-                            updated_by = self.request.user,
-                        )
-            self.object.estado = 5
-        
-        for sociedad in sociedades_confirmar:
-            cotizacion_observacion = observacion(self.object, sociedad)
-            condiciones_pago = None
-            tipo_venta = 1
-
-            if hasattr(self.object, 'SolicitudCredito_cotizacion_venta'):
-                if self.object.SolicitudCredito_cotizacion_venta.estado == 3:
-                    condiciones_pago = self.object.SolicitudCredito_cotizacion_venta.condiciones_pago
-                    tipo_venta = 2
-            confirmacion_venta = ConfirmacionVenta.objects.create(
-                cotizacion_venta = self.object,
-                cliente = self.object.cliente,
-                cliente_interlocutor = self.object.cliente_interlocutor,
-                sociedad = sociedad,
-                tipo_cambio = TipoCambio.objects.filter(fecha=datetime.today()).latest('created_at'),
-                moneda = self.object.moneda,
-                observacion = cotizacion_observacion,
-                condiciones_pago = condiciones_pago,
-                tipo_venta = tipo_venta,
-                descuento_global = self.object.descuento_global,
-                otros_cargos = self.object.otros_cargos,
-                total = self.object.total,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-            for detalle in detalles:
-                cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
-                if cotizacion_sociedad.cantidad > 0:
-                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
-                    ConfirmacionVentaDetalle.objects.create(
-                        item = detalle.item,
-                        content_type = detalle.content_type,
-                        id_registro = detalle.id_registro,
-                        cantidad_confirmada = cotizacion_sociedad.cantidad,
-                        precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv'],
-                        precio_unitario_con_igv = detalle.precio_unitario_con_igv,
-                        precio_final_con_igv = detalle.precio_final_con_igv,
-                        descuento = respuesta['descuento'],
-                        sub_total = respuesta['subtotal'],
-                        igv = respuesta['igv'],
-                        total = respuesta['total'],
-                        tipo_igv = detalle.tipo_igv,
-                        confirmacion_venta = confirmacion_venta,
-                        created_by = self.request.user,
-                        updated_by = self.request.user,
-                    )
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            sociedades_confirmar = []
+            detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
             
+            if self.object.estado == 3: #Si está reservado
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=118) #Reservar
+                movimiento_final = TipoMovimiento.objects.get(codigo=119) #Confirmación de reserva
+                for detalle in detalles:
+                    sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                    for cotizacion_sociedad in sociedades:
+                        if cotizacion_sociedad.cantidad > 0:
+                            if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
+                            movimiento_anterior = MovimientosAlmacen.objects.get(
+                                content_type_producto = detalle.content_type,
+                                id_registro_producto = detalle.id_registro,
+                                tipo_movimiento = movimiento_inicial,
+                                tipo_stock = movimiento_inicial.tipo_stock_final,
+                                signo_factor_multiplicador = +1,
+                                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                                id_registro_documento_proceso = self.object.id,
+                                sociedad = cotizacion_sociedad.sociedad,
+                                movimiento_reversion = False,
+                            )
+                            movimiento_uno = MovimientosAlmacen.objects.create(
+                                content_type_producto = detalle.content_type,
+                                id_registro_producto = detalle.id_registro,
+                                cantidad = cotizacion_sociedad.cantidad,
+                                tipo_movimiento = movimiento_final,
+                                tipo_stock = movimiento_final.tipo_stock_inicial,
+                                signo_factor_multiplicador = -1,
+                                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                                id_registro_documento_proceso = self.object.id,
+                                almacen = None,
+                                sociedad = cotizacion_sociedad.sociedad,
+                                movimiento_anterior = movimiento_anterior,
+                                movimiento_reversion = False,
+                                created_by = self.request.user,
+                                updated_by = self.request.user,
+                            )
+                            movimiento_dos = MovimientosAlmacen.objects.create(
+                                content_type_producto = detalle.content_type,
+                                id_registro_producto = detalle.id_registro,
+                                cantidad = cotizacion_sociedad.cantidad,
+                                tipo_movimiento = movimiento_final,
+                                tipo_stock = movimiento_final.tipo_stock_final,
+                                signo_factor_multiplicador = +1,
+                                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                                id_registro_documento_proceso = self.object.id,
+                                almacen = None,
+                                sociedad = cotizacion_sociedad.sociedad,
+                                movimiento_anterior = movimiento_uno,
+                                movimiento_reversion = False,
+                                created_by = self.request.user,
+                                updated_by = self.request.user,
+                            )
+                self.object.estado = 4
+            else: #Si no está reservado
+                movimiento_final = TipoMovimiento.objects.get(codigo=120) #Confirmación de venta
+                for detalle in detalles:
+                    sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                    for cotizacion_sociedad in sociedades:
+                        if cotizacion_sociedad.cantidad > 0:
+                            if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
+                            movimiento_dos = MovimientosAlmacen.objects.create(
+                                content_type_producto = detalle.content_type,
+                                id_registro_producto = detalle.id_registro,
+                                cantidad = cotizacion_sociedad.cantidad,
+                                tipo_movimiento = movimiento_final,
+                                tipo_stock = movimiento_final.tipo_stock_final,
+                                signo_factor_multiplicador = +1,
+                                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                                id_registro_documento_proceso = self.object.id,
+                                almacen = None,
+                                sociedad = cotizacion_sociedad.sociedad,
+                                movimiento_anterior = None,
+                                movimiento_reversion = False,
+                                created_by = self.request.user,
+                                updated_by = self.request.user,
+                            )
+                self.object.estado = 5
+            
+            for sociedad in sociedades_confirmar:
+                cotizacion_observacion = observacion(self.object, sociedad)
+                condiciones_pago = None
+                tipo_venta = 1
 
-        registro_guardar(self.object, self.request)
-        self.object.save()
+                if hasattr(self.object, 'SolicitudCredito_cotizacion_venta'):
+                    if self.object.SolicitudCredito_cotizacion_venta.estado == 3:
+                        condiciones_pago = self.object.SolicitudCredito_cotizacion_venta.condiciones_pago
+                        tipo_venta = 2
+                confirmacion_venta = ConfirmacionVenta.objects.create(
+                    cotizacion_venta = self.object,
+                    cliente = self.object.cliente,
+                    cliente_interlocutor = self.object.cliente_interlocutor,
+                    sociedad = sociedad,
+                    tipo_cambio = TipoCambio.objects.filter(fecha=datetime.today()).latest('created_at'),
+                    moneda = self.object.moneda,
+                    observacion = cotizacion_observacion,
+                    condiciones_pago = condiciones_pago,
+                    tipo_venta = tipo_venta,
+                    descuento_global = self.object.descuento_global,
+                    otros_cargos = self.object.otros_cargos,
+                    total = self.object.total,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                for detalle in detalles:
+                    cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
+                    if cotizacion_sociedad.cantidad > 0:
+                        respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
+                        ConfirmacionVentaDetalle.objects.create(
+                            item = detalle.item,
+                            content_type = detalle.content_type,
+                            id_registro = detalle.id_registro,
+                            cantidad_confirmada = cotizacion_sociedad.cantidad,
+                            precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv'],
+                            precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                            precio_final_con_igv = detalle.precio_final_con_igv,
+                            descuento = respuesta['descuento'],
+                            sub_total = respuesta['subtotal'],
+                            igv = respuesta['igv'],
+                            total = respuesta['total'],
+                            tipo_igv = detalle.tipo_igv,
+                            confirmacion_venta = confirmacion_venta,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
+                
 
-        messages.success(request, MENSAJE_CONFIRMAR_COTIZACION)
+            registro_guardar(self.object, self.request)
+            self.object.save()
+
+            messages.success(request, MENSAJE_CONFIRMAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1326,41 +1371,47 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
 
-        if self.object.estado == 4: #Si partió de reservado
-            confirmar = TipoMovimiento.objects.get(codigo=119)
-            self.object.estado = 3
-        else: #Si no partió de reservado
-            confirmar = TipoMovimiento.objects.get(codigo=120)
-            self.object.estado = 2
+            if self.object.estado == 4: #Si partió de reservado
+                confirmar = TipoMovimiento.objects.get(codigo=119)
+                self.object.estado = 3
+            else: #Si no partió de reservado
+                confirmar = TipoMovimiento.objects.get(codigo=120)
+                self.object.estado = 2
 
-        movimientos = MovimientosAlmacen.objects.filter(
-                tipo_movimiento = confirmar,
-                tipo_stock = confirmar.tipo_stock_final,
-                signo_factor_multiplicador = +1,
-                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                id_registro_documento_proceso = self.object.id,
-                almacen = None,
+            movimientos = MovimientosAlmacen.objects.filter(
+                    tipo_movimiento = confirmar,
+                    tipo_stock = confirmar.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = None,
+                )
+            for movimiento in movimientos:
+                movimiento_uno = movimiento.movimiento_anterior
+                movimiento.delete()
+                if movimiento_uno:
+                    movimiento_uno.delete()
+
+            confirmaciones_venta = ConfirmacionVenta.objects.filter(
+                cotizacion_venta = self.object,
             )
-        for movimiento in movimientos:
-            movimiento_uno = movimiento.movimiento_anterior
-            movimiento.delete()
-            if movimiento_uno:
-                movimiento_uno.delete()
+            for confirmacion_venta in confirmaciones_venta:
+                confirmacion_venta.estado = 3
+                confirmacion_venta.save()
 
-        confirmaciones_venta = ConfirmacionVenta.objects.filter(
-            cotizacion_venta = self.object,
-        )
-        for confirmacion_venta in confirmaciones_venta:
-            confirmacion_venta.estado = 3
-            confirmacion_venta.save()
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        registro_guardar(self.object, self.request)
-        self.object.save()
-
-        messages.success(request, MENSAJE_ANULAR_CONFIRMAR_COTIZACION)
+            messages.success(request, MENSAJE_ANULAR_CONFIRMAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1404,76 +1455,82 @@ class CotizacionVentaConfirmarAnticipoView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        sociedades_confirmar = []
-        detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
-        
-        movimiento_final = TipoMovimiento.objects.get(codigo=129) #Confirmación Anticipada de venta
-        for detalle in detalles:
-            sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
-            for cotizacion_sociedad in sociedades:
-                if cotizacion_sociedad.cantidad > 0:
-                    if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
-                    movimiento_dos = MovimientosAlmacen.objects.create(
-                        content_type_producto = detalle.content_type,
-                        id_registro_producto = detalle.id_registro,
-                        cantidad = cotizacion_sociedad.cantidad,
-                        tipo_movimiento = movimiento_final,
-                        tipo_stock = movimiento_final.tipo_stock_final,
-                        signo_factor_multiplicador = +1,
-                        content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                        id_registro_documento_proceso = self.object.id,
-                        almacen = None,
-                        sociedad = cotizacion_sociedad.sociedad,
-                        movimiento_anterior = None,
-                        movimiento_reversion = False,
-                        created_by = self.request.user,
-                        updated_by = self.request.user,
-                    )
-        self.object.estado = 6
-        
-        for sociedad in sociedades_confirmar:
-            cotizacion_observacion = observacion(self.object, sociedad)
-            confirmacion_venta = ConfirmacionVenta.objects.create(
-                cotizacion_venta = self.object,
-                cliente = self.object.cliente,
-                cliente_interlocutor = self.object.cliente_interlocutor,
-                sociedad = sociedad,
-                tipo_cambio = TipoCambio.objects.filter(fecha=self.object.fecha).latest('created_at'),
-                moneda = self.object.moneda,
-                observacion = cotizacion_observacion,
-                total = self.object.total,
-                sunat_transaction = 4,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            sociedades_confirmar = []
+            detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
+            
+            movimiento_final = TipoMovimiento.objects.get(codigo=129) #Confirmación Anticipada de venta
             for detalle in detalles:
-                cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
-                if cotizacion_sociedad.cantidad > 0:
-                    respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
-                    ConfirmacionVentaDetalle.objects.create(
-                        item = detalle.item,
-                        content_type = detalle.content_type,
-                        id_registro = detalle.id_registro,
-                        cantidad_confirmada = cotizacion_sociedad.cantidad,
-                        precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv'],
-                        precio_unitario_con_igv = detalle.precio_unitario_con_igv,
-                        precio_final_con_igv = detalle.precio_final_con_igv,
-                        descuento = respuesta['descuento'],
-                        sub_total = respuesta['subtotal'],
-                        igv = respuesta['igv'],
-                        total = respuesta['total'],
-                        tipo_igv = detalle.tipo_igv,
-                        confirmacion_venta = confirmacion_venta,
-                        created_by = self.request.user,
-                        updated_by = self.request.user,
-                    )
+                sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                for cotizacion_sociedad in sociedades:
+                    if cotizacion_sociedad.cantidad > 0:
+                        if not cotizacion_sociedad.sociedad in sociedades_confirmar: sociedades_confirmar.append(cotizacion_sociedad.sociedad)
+                        movimiento_dos = MovimientosAlmacen.objects.create(
+                            content_type_producto = detalle.content_type,
+                            id_registro_producto = detalle.id_registro,
+                            cantidad = cotizacion_sociedad.cantidad,
+                            tipo_movimiento = movimiento_final,
+                            tipo_stock = movimiento_final.tipo_stock_final,
+                            signo_factor_multiplicador = +1,
+                            content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso = self.object.id,
+                            almacen = None,
+                            sociedad = cotizacion_sociedad.sociedad,
+                            movimiento_anterior = None,
+                            movimiento_reversion = False,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
+            self.object.estado = 6
+            
+            for sociedad in sociedades_confirmar:
+                cotizacion_observacion = observacion(self.object, sociedad)
+                confirmacion_venta = ConfirmacionVenta.objects.create(
+                    cotizacion_venta = self.object,
+                    cliente = self.object.cliente,
+                    cliente_interlocutor = self.object.cliente_interlocutor,
+                    sociedad = sociedad,
+                    tipo_cambio = TipoCambio.objects.filter(fecha=self.object.fecha).latest('created_at'),
+                    moneda = self.object.moneda,
+                    observacion = cotizacion_observacion,
+                    total = self.object.total,
+                    sunat_transaction = 4,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                for detalle in detalles:
+                    cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
+                    if cotizacion_sociedad.cantidad > 0:
+                        respuesta = calculos_linea(cotizacion_sociedad.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
+                        ConfirmacionVentaDetalle.objects.create(
+                            item = detalle.item,
+                            content_type = detalle.content_type,
+                            id_registro = detalle.id_registro,
+                            cantidad_confirmada = cotizacion_sociedad.cantidad,
+                            precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv'],
+                            precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                            precio_final_con_igv = detalle.precio_final_con_igv,
+                            descuento = respuesta['descuento'],
+                            sub_total = respuesta['subtotal'],
+                            igv = respuesta['igv'],
+                            total = respuesta['total'],
+                            tipo_igv = detalle.tipo_igv,
+                            confirmacion_venta = confirmacion_venta,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
 
-        registro_guardar(self.object, self.request)
-        self.object.save()
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        messages.success(request, MENSAJE_CONFIRMAR_COTIZACION)
+            messages.success(request, MENSAJE_CONFIRMAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1492,36 +1549,42 @@ class CotizacionVentaConfirmarAnticipoAnularView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
 
-        confirmar = TipoMovimiento.objects.get(codigo=129)
-        self.object.estado = 2
+            confirmar = TipoMovimiento.objects.get(codigo=129)
+            self.object.estado = 2
 
-        movimientos = MovimientosAlmacen.objects.filter(
-                tipo_movimiento = confirmar,
-                tipo_stock = confirmar.tipo_stock_final,
-                signo_factor_multiplicador = +1,
-                content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
-                id_registro_documento_proceso = self.object.id,
-                almacen = None,
+            movimientos = MovimientosAlmacen.objects.filter(
+                    tipo_movimiento = confirmar,
+                    tipo_stock = confirmar.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = None,
+                )
+            for movimiento in movimientos:
+                movimiento_uno = movimiento.movimiento_anterior
+                movimiento.delete()
+                if movimiento_uno:
+                    movimiento_uno.delete()
+
+            confirmaciones_venta = ConfirmacionVenta.objects.filter(
+                cotizacion_venta = self.object,
             )
-        for movimiento in movimientos:
-            movimiento_uno = movimiento.movimiento_anterior
-            movimiento.delete()
-            if movimiento_uno:
-                movimiento_uno.delete()
+            for confirmacion_venta in confirmaciones_venta:
+                confirmacion_venta.delete()
 
-        confirmaciones_venta = ConfirmacionVenta.objects.filter(
-            cotizacion_venta = self.object,
-        )
-        for confirmacion_venta in confirmaciones_venta:
-            confirmacion_venta.delete()
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        registro_guardar(self.object, self.request)
-        self.object.save()
-
-        messages.success(request, MENSAJE_ANULAR_CONFIRMAR_COTIZACION)
+            messages.success(request, MENSAJE_ANULAR_CONFIRMAR_COTIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1820,13 +1883,20 @@ class ConfirmacionVentaFormaPagoView(BSModalUpdateView):
     form_class = ConfirmacionVentaFormaPagoForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
-        if form.instance.tipo_venta == 1:
-            for cuota in form.instance.ConfirmacionVentaCuota_confirmacion_venta.all():
-                cuota.delete()
-        registro_guardar(form.instance, self.request)
+        sid = transaction.savepoint()
+        try:
+            if form.instance.tipo_venta == 1:
+                for cuota in form.instance.ConfirmacionVentaCuota_confirmacion_venta.all():
+                    cuota.delete()
+            registro_guardar(form.instance, self.request)
 
-        return super().form_valid(form)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(ConfirmacionVentaFormaPagoView, self).get_context_data(**kwargs)
@@ -1941,32 +2011,39 @@ class ConfirmacionVentaGenerarCuotasFormView(BSModalFormView):
     def get_success_url(self) -> str:
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion': self.kwargs['id_confirmacion']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            confirmacion_venta = ConfirmacionVenta.objects.get(id=self.kwargs['id_confirmacion'])
-            monto_total = form.cleaned_data['monto_total']
-            numero_cuotas = form.cleaned_data['numero_cuotas']
-            intervalo_cuotas = form.cleaned_data['intervalo_cuotas']
-            dias_pago = 0
-            suma = 0
-            for i in range(numero_cuotas):
-                if i+1 == numero_cuotas:
-                    monto = monto_total - suma
-                else:
-                    monto = (monto_total/numero_cuotas).quantize(Decimal('0.01'))
-                suma += monto
-                dias_pago += intervalo_cuotas
-                ConfirmacionVentaCuota.objects.create(
-                    confirmacion_venta = confirmacion_venta,
-                    monto = monto,
-                    dias_pago = dias_pago,
-                    fecha_pago = None,
-                    dias_calculo = None,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
-                )
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                confirmacion_venta = ConfirmacionVenta.objects.get(id=self.kwargs['id_confirmacion'])
+                monto_total = form.cleaned_data['monto_total']
+                numero_cuotas = form.cleaned_data['numero_cuotas']
+                intervalo_cuotas = form.cleaned_data['intervalo_cuotas']
+                dias_pago = 0
+                suma = 0
+                for i in range(numero_cuotas):
+                    if i+1 == numero_cuotas:
+                        monto = monto_total - suma
+                    else:
+                        monto = (monto_total/numero_cuotas).quantize(Decimal('0.01'))
+                    suma += monto
+                    dias_pago += intervalo_cuotas
+                    ConfirmacionVentaCuota.objects.create(
+                        confirmacion_venta = confirmacion_venta,
+                        monto = monto,
+                        dias_pago = dias_pago,
+                        fecha_pago = None,
+                        dias_calculo = None,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -2165,33 +2242,40 @@ class SolicitudCreditoGenerarCuotasFormView(BSModalFormView):
         solicitud = SolicitudCredito.objects.get(id=self.kwargs['id_solicitud'])
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion': solicitud.cotizacion_venta.id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            solicitud = SolicitudCredito.objects.get(id=self.kwargs['id_solicitud'])
-            monto_total = form.cleaned_data['monto_total']
-            numero_cuotas = form.cleaned_data['numero_cuotas']
-            intervalo_cuotas = form.cleaned_data['intervalo_cuotas']
-            dias_pago = 0
-            suma = 0
-            for i in range(numero_cuotas):
-                if i+1 == numero_cuotas:
-                    monto = monto_total - suma
-                else:
-                    monto = (monto_total/numero_cuotas).quantize(Decimal('0.01'))
-                suma += monto
-                dias_pago += intervalo_cuotas
-                SolicitudCreditoCuota.objects.create(
-                    solicitud_credito = solicitud,
-                    monto = monto,
-                    dias_pago = dias_pago,
-                    fecha_pago = None,
-                    dias_calculo = None,
-                    fecha_calculo = None,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
-                )
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                solicitud = SolicitudCredito.objects.get(id=self.kwargs['id_solicitud'])
+                monto_total = form.cleaned_data['monto_total']
+                numero_cuotas = form.cleaned_data['numero_cuotas']
+                intervalo_cuotas = form.cleaned_data['intervalo_cuotas']
+                dias_pago = 0
+                suma = 0
+                for i in range(numero_cuotas):
+                    if i+1 == numero_cuotas:
+                        monto = monto_total - suma
+                    else:
+                        monto = (monto_total/numero_cuotas).quantize(Decimal('0.01'))
+                    suma += monto
+                    dias_pago += intervalo_cuotas
+                    SolicitudCreditoCuota.objects.create(
+                        solicitud_credito = solicitud,
+                        monto = monto,
+                        dias_pago = dias_pago,
+                        fecha_pago = None,
+                        dias_calculo = None,
+                        fecha_calculo = None,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -2296,11 +2380,17 @@ class SolicitudCreditoFinalizarView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, request)
-        self.object.save()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, request)
+            self.object.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -2319,12 +2409,18 @@ class SolicitudCreditoAprobarView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 3
-        self.object.aprobado_por = request.user
-        registro_guardar(self.object, request)
-        self.object.save()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            self.object.aprobado_por = request.user
+            registro_guardar(self.object, request)
+            self.object.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -2343,11 +2439,17 @@ class SolicitudCreditoRechazarView(DeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 4
-        registro_guardar(self.object, request)
-        self.object.save()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, request)
+            self.object.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

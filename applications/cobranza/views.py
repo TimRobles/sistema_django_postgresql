@@ -3,7 +3,7 @@ from reportlab.lib import colors
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import movimientos_bancarios
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
-from applications.funciones import tipo_de_cambio
+from applications.funciones import registrar_excepcion, tipo_de_cambio
 from applications.importaciones import *
 from .models import(
     Deuda,
@@ -104,28 +104,35 @@ class DeudaPagarCreateView(BSModalFormView):
     def get_success_url(self):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
-            monto = form.cleaned_data.get('monto')
-            tipo_cambio = form.cleaned_data.get('tipo_cambio')
-            ingresos = form.cleaned_data.get('ingresos')
-            content_type = ContentType.objects.get_for_model(ingresos)
-            id_registro = ingresos.id
-            obj, created = Pago.objects.get_or_create(
-                deuda = deuda,
-                content_type = content_type,
-                id_registro = id_registro,
-            )
-            if created:
-                obj.monto = monto
-            else:
-                obj.monto = obj.monto + monto
-            obj.tipo_cambio = tipo_cambio
-            registro_guardar(obj, self.request)
-            obj.save()
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+                monto = form.cleaned_data.get('monto')
+                tipo_cambio = form.cleaned_data.get('tipo_cambio')
+                ingresos = form.cleaned_data.get('ingresos')
+                content_type = ContentType.objects.get_for_model(ingresos)
+                id_registro = ingresos.id
+                obj, created = Pago.objects.get_or_create(
+                    deuda = deuda,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                if created:
+                    obj.monto = monto
+                else:
+                    obj.monto = obj.monto + monto
+                obj.tipo_cambio = tipo_cambio
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -224,23 +231,29 @@ class DeudaCancelarView(BSModalDeleteView):
     def get_success_url(self):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        if self.request.session['primero']:
-            deuda = self.get_object()
-            fecha = date.today()
-            monto = deuda.saldo
-            moneda = deuda.moneda
-            tipo_cambio = deuda.tipo_cambio
-            Redondeo.objects.create(
-                deuda=deuda,
-                fecha=fecha,
-                monto=monto,
-                moneda=moneda,
-                tipo_cambio=tipo_cambio,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
-            self.request.session['primero'] = False
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                deuda = self.get_object()
+                fecha = date.today()
+                monto = deuda.saldo
+                moneda = deuda.moneda
+                tipo_cambio = deuda.tipo_cambio
+                Redondeo.objects.create(
+                    deuda=deuda,
+                    fecha=fecha,
+                    monto=monto,
+                    moneda=moneda,
+                    tipo_cambio=tipo_cambio,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -296,27 +309,34 @@ class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            deuda = form.cleaned_data.get('deuda')
-            monto = form.cleaned_data.get('monto')
-            tipo_cambio = form.cleaned_data.get('tipo_cambio')
-            content_type = ContentType.objects.get_for_model(Ingreso)
-            id_registro = self.kwargs['id_ingreso']
-            obj, created = Pago.objects.get_or_create(
-                deuda = deuda,
-                content_type = content_type,
-                id_registro = id_registro,
-            )
-            if created:
-                obj.monto = monto
-            else:
-                obj.monto = obj.monto + monto
-            obj.tipo_cambio = tipo_cambio
-            registro_guardar(obj, self.request)
-            obj.save()
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                deuda = form.cleaned_data.get('deuda')
+                monto = form.cleaned_data.get('monto')
+                tipo_cambio = form.cleaned_data.get('tipo_cambio')
+                content_type = ContentType.objects.get_for_model(Ingreso)
+                id_registro = self.kwargs['id_ingreso']
+                obj, created = Pago.objects.get_or_create(
+                    deuda = deuda,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                if created:
+                    obj.monto = monto
+                else:
+                    obj.monto = obj.monto + monto
+                obj.tipo_cambio = tipo_cambio
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -466,23 +486,29 @@ class CuentaBancariaIngresoCancelarView(BSModalDeleteView):
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        if self.request.session['primero']:
-            deuda = self.get_object()
-            fecha = date.today()
-            monto = deuda.saldo
-            moneda = deuda.moneda
-            tipo_cambio = deuda.tipo_cambio
-            Redondeo.objects.create(
-                deuda=deuda,
-                fecha=fecha,
-                monto=monto,
-                moneda=moneda,
-                tipo_cambio=tipo_cambio,
-                created_by=self.request.user,
-                updated_by=self.request.user,
-            )
-            self.request.session['primero'] = False
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                deuda = self.get_object()
+                fecha = date.today()
+                monto = deuda.saldo
+                moneda = deuda.moneda
+                tipo_cambio = deuda.tipo_cambio
+                Redondeo.objects.create(
+                    deuda=deuda,
+                    fecha=fecha,
+                    monto=monto,
+                    moneda=moneda,
+                    tipo_cambio=tipo_cambio,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

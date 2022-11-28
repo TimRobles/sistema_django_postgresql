@@ -25,7 +25,7 @@ from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseS
 from applications.importaciones import *
 from django import forms
 from bootstrap_modal_forms.generic import BSModalCreateView
-from applications.funciones import igv, obtener_totales
+from applications.funciones import igv, obtener_totales, registrar_excepcion
 
 from .forms import (
     ActivoBaseForm,
@@ -356,12 +356,18 @@ class ActivoBaseDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('activos_app:activo_base_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -379,12 +385,18 @@ class ActivoBaseDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/dar_alta_generico.html"
     success_url = reverse_lazy('activos_app:activo_base_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -677,25 +689,31 @@ class AsignacionActivoEntregarView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('activos_app:asignacion_activo_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        asignacion_activo_id = self.object.id
-        asignaciones_detalle = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
-        list_activos_id = []
-        list_asignacion_detalle_id = []
-        for asignacion_detalle in asignaciones_detalle:
-            list_activos_id.append(asignacion_detalle.activo.id)
-            list_asignacion_detalle_id.append(asignacion_detalle.id)
-        if list_activos_id != []:
-            Activo.objects.filter(id__in=list_activos_id).update(estado=3)
-        if list_asignacion_detalle_id != []:
-            AsignacionDetalleActivo.objects.filter(id__in=list_asignacion_detalle_id).update(estado=2)
+            asignacion_activo_id = self.object.id
+            asignaciones_detalle = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
+            list_activos_id = []
+            list_asignacion_detalle_id = []
+            for asignacion_detalle in asignaciones_detalle:
+                list_activos_id.append(asignacion_detalle.activo.id)
+                list_asignacion_detalle_id.append(asignacion_detalle.id)
+            if list_activos_id != []:
+                Activo.objects.filter(id__in=list_activos_id).update(estado=3)
+            if list_asignacion_detalle_id != []:
+                AsignacionDetalleActivo.objects.filter(id__in=list_asignacion_detalle_id).update(estado=2)
 
-        messages.success(request, MENSAJE_ACTUALIZACION)
+            messages.success(request, MENSAJE_ACTUALIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -712,19 +730,25 @@ class AsignacionActivoDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('activos_app:asignacion_activo_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 4
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        asignacion_activo_id = self.object.id
-        asignaciones = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
-        list_activos_id = []
-        for asignacion in asignaciones:
-            list_activos_id.append(asignacion.activo.id)
-        if list_activos_id != []:
-            Activo.objects.filter(id__in=list_activos_id).update(estado=1)
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            asignacion_activo_id = self.object.id
+            asignaciones = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
+            list_activos_id = []
+            for asignacion in asignaciones:
+                list_activos_id.append(asignacion.activo.id)
+            if list_activos_id != []:
+                Activo.objects.filter(id__in=list_activos_id).update(estado=1)
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -741,19 +765,25 @@ class AsignacionActivoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('activos_app:asignacion_activo_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 3
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        asignacion_activo_id = self.object.id
-        asignaciones = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
-        list_activos_id = []
-        for asignacion in asignaciones:
-            list_activos_id.append(asignacion.activo.id)
-        if list_activos_id != []:
-            Activo.objects.filter(id__in=list_activos_id).update(estado=1)
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            asignacion_activo_id = self.object.id
+            asignaciones = AsignacionDetalleActivo.objects.filter(asignacion=asignacion_activo_id)
+            list_activos_id = []
+            for asignacion in asignaciones:
+                list_activos_id.append(asignacion.activo.id)
+            if list_activos_id != []:
+                Activo.objects.filter(id__in=list_activos_id).update(estado=1)
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -836,8 +866,7 @@ class AsignacionDetalleActivoCreateView(PermissionRequiredMixin, BSModalCreateVi
         form.instance.asignacion = AsignacionActivo.objects.get(id = self.kwargs['asignacion_id'])
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
-        response = super().form_valid(form)
-        return response
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(AsignacionDetalleActivoCreateView, self).get_context_data(**kwargs)
@@ -1046,19 +1075,25 @@ class DevolucionActivoDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('activos_app:devolucion_activo_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 3
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        devolucion_activo_id = self.object.id
-        devoluciones = DevolucionDetalleActivo.objects.filter(devolucion=devolucion_activo_id)
-        list_activos_id = []
-        for devolucion in devoluciones:
-            list_activos_id.append(devolucion.activo.id)
-        if list_activos_id != []:
-            Activo.objects.filter(id__in=list_activos_id).update(estado=3)
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            devolucion_activo_id = self.object.id
+            devoluciones = DevolucionDetalleActivo.objects.filter(devolucion=devolucion_activo_id)
+            list_activos_id = []
+            for devolucion in devoluciones:
+                list_activos_id.append(devolucion.activo.id)
+            if list_activos_id != []:
+                Activo.objects.filter(id__in=list_activos_id).update(estado=3)
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1075,23 +1110,29 @@ class DevolucionActivoRecepcionarView(PermissionRequiredMixin, BSModalDeleteView
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('activos_app:devolucion_activo_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
 
-        devolucion_activo_id = self.object.id
-        devoluciones_detalle = DevolucionDetalleActivo.objects.filter(devolucion=devolucion_activo_id)
-        list_activos_id = []
-        for devolucion_detalle in devoluciones_detalle:
-            list_activos_id.append(devolucion_detalle.activo.id)
-            asignacion_detalle_id = devolucion_detalle.asignacion.AsignacionDetalleActivo_asignacion.filter(activo=devolucion_detalle.activo.id)
-            AsignacionDetalleActivo.objects.filter(id=asignacion_detalle_id[0].id).update(estado=3)
-        if list_activos_id != []:
-            Activo.objects.filter(id__in=list_activos_id).update(estado=1)
+            devolucion_activo_id = self.object.id
+            devoluciones_detalle = DevolucionDetalleActivo.objects.filter(devolucion=devolucion_activo_id)
+            list_activos_id = []
+            for devolucion_detalle in devoluciones_detalle:
+                list_activos_id.append(devolucion_detalle.activo.id)
+                asignacion_detalle_id = devolucion_detalle.asignacion.AsignacionDetalleActivo_asignacion.filter(activo=devolucion_detalle.activo.id)
+                AsignacionDetalleActivo.objects.filter(id=asignacion_detalle_id[0].id).update(estado=3)
+            if list_activos_id != []:
+                Activo.objects.filter(id__in=list_activos_id).update(estado=1)
 
-        messages.success(request, MENSAJE_ACTUALIZACION)
+            messages.success(request, MENSAJE_ACTUALIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1146,8 +1187,7 @@ class DevolucionDetalleActivoCreateView(PermissionRequiredMixin, BSModalCreateVi
         form.instance.devolucion = DevolucionActivo.objects.get(id = self.kwargs['devolucion_id'])
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
-        response = super().form_valid(form)
-        return response
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(DevolucionDetalleActivoCreateView, self).get_context_data(**kwargs)
@@ -1430,16 +1470,23 @@ class ComprobanteCompraActivoDetalleDeleteView(PermissionRequiredMixin, BSModalD
     def get_success_url(self, **kwargs):
         return reverse_lazy('activos_app:comprobante_compra_activo_detalle', kwargs={'pk':self.object.comprobante_compra_activo.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        activos = ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo=self.get_object().comprobante_compra_activo)
-        contador = 1
-        for activo in activos:
-            if activo == self.get_object():continue
-            activo.item = contador
-            activo.save()
-            contador += 1
+        sid = transaction.savepoint()
+        try:
+            activos = ComprobanteCompraActivoDetalle.objects.filter(comprobante_compra_activo=self.get_object().comprobante_compra_activo)
+            contador = 1
+            for activo in activos:
+                if activo == self.get_object():continue
+                activo.item = contador
+                activo.save()
+                contador += 1
 
-        return super().delete(request, *args, **kwargs)
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -1676,12 +1723,18 @@ class InventarioActivoFinalizarView(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('activos_app:inventario_activo_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_FINALIZAR_INVENTARIO_ACTIVO)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_FINALIZAR_INVENTARIO_ACTIVO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

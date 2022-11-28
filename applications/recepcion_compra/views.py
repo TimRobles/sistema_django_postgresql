@@ -166,21 +166,28 @@ class RecepcionCompraGenerarNotaIngresoView(BSModalFormView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['nota'].id})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            recepcion_compra = RecepcionCompra.objects.get(id=self.kwargs['pk'])
-            numero_nota = len(NotaIngreso.objects.all()) + 1
-            nota = NotaIngreso.objects.create(
-                nro_nota_ingreso = numeroXn(numero_nota, 6),
-                recepcion_compra = recepcion_compra,
-                sociedad = recepcion_compra.content_type.get_object_for_this_type(id=recepcion_compra.id_registro).sociedad,
-                fecha_ingreso = form.cleaned_data['fecha_ingreso'],
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-            self.kwargs['nota']=nota
-            self.request.session['primero'] = False
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                recepcion_compra = RecepcionCompra.objects.get(id=self.kwargs['pk'])
+                numero_nota = len(NotaIngreso.objects.all()) + 1
+                nota = NotaIngreso.objects.create(
+                    nro_nota_ingreso = numeroXn(numero_nota, 6),
+                    recepcion_compra = recepcion_compra,
+                    sociedad = recepcion_compra.content_type.get_object_for_this_type(id=recepcion_compra.id_registro).sociedad,
+                    fecha_ingreso = form.cleaned_data['fecha_ingreso'],
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                self.kwargs['nota']=nota
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True

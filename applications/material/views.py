@@ -1,4 +1,5 @@
 from decimal import Decimal
+from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from django import forms
@@ -282,12 +283,18 @@ class MaterialDarBajaView(PermissionRequiredMixin,BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -309,12 +316,18 @@ class MaterialDarAltaView(PermissionRequiredMixin,BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -892,12 +905,18 @@ class ImagenMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -921,12 +940,18 @@ class ImagenMaterialDarAlta(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1022,12 +1047,18 @@ class VideoMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1051,12 +1082,18 @@ class VideoMaterialDarAlta(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1158,12 +1195,18 @@ class ProveedorMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id_registro})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1187,12 +1230,18 @@ class ProveedorMaterialDarAlta(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id_registro})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1278,12 +1327,18 @@ class EquivalenciaUnidadDarBaja(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -1306,12 +1361,18 @@ class EquivalenciaUnidadDarAlta(PermissionRequiredMixin,BSModalDeleteView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.material.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_alta_baja = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_alta_baja = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

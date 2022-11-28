@@ -48,7 +48,10 @@ class ListaRequerimientoMaterialDetalle(models.Model):
     
     @property
     def descripcion_venta(self):
-        return self.content_type.get_object_for_this_type(id=self.id_registro).descripcion_venta
+        try:
+            return self.content_type.get_object_for_this_type(id=self.id_registro).descripcion_venta
+        except:
+            return "Sin Material"
 
     def __str__(self):
         return "%s. %s" % (self.item, self.descripcion_venta)

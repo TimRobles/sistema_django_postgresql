@@ -110,10 +110,8 @@ class TipoCambioCreateView(PermissionRequiredMixin, BSModalCreateView):
         return context
 
     def form_valid(self, form):
-
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
-
         return super().form_valid(form)
 
 class TipoCambioUpdateView(PermissionRequiredMixin, BSModalUpdateView):
@@ -131,10 +129,8 @@ class TipoCambioUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
     def form_valid(self, form):
-
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
-        
         return super().form_valid(form)
 
 class TipoCambioDeleteView(PermissionRequiredMixin, BSModalDeleteView):

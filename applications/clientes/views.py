@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.datos_globales.models import Distrito
+from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from .forms import (
     ClienteAnexoDarBajaForm,
@@ -138,12 +139,18 @@ class ClienteDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('clientes_app:cliente_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_sunat = 7
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_sunat = 7
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -160,12 +167,18 @@ class ClienteDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('clientes_app:cliente_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado_sunat = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado_sunat = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -220,35 +233,42 @@ class InterlocutorClienteCreateView(PermissionRequiredMixin, BSModalFormView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        tipo_documento = form.cleaned_data['tipo_documento']
-        numero_documento = form.cleaned_data['numero_documento']
-        nombre_completo = form.cleaned_data['nombre_completo']
-        tipo_interlocutor = form.cleaned_data['tipo_interlocutor']
-        cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
+        sid = transaction.savepoint()
+        try:
+            tipo_documento = form.cleaned_data['tipo_documento']
+            numero_documento = form.cleaned_data['numero_documento']
+            nombre_completo = form.cleaned_data['nombre_completo']
+            tipo_interlocutor = form.cleaned_data['tipo_interlocutor']
+            cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
 
-        interlocutor, existe = InterlocutorCliente.objects.get_or_create(
-            tipo_documento = tipo_documento,
-            numero_documento = numero_documento,
-            nombre_completo = nombre_completo.upper(),
-        )
-        if not existe:
-            interlocutor.created_by = self.request.user
-            interlocutor.updated_by = self.request.user
-            interlocutor.save()
+            interlocutor, existe = InterlocutorCliente.objects.get_or_create(
+                tipo_documento = tipo_documento,
+                numero_documento = numero_documento,
+                nombre_completo = nombre_completo.upper(),
+            )
+            if not existe:
+                interlocutor.created_by = self.request.user
+                interlocutor.updated_by = self.request.user
+                interlocutor.save()
 
-        relacion, existe = ClienteInterlocutor.objects.get_or_create(
-            tipo_interlocutor = tipo_interlocutor,
-            interlocutor = interlocutor,
-            cliente = cliente,
-        )
+            relacion, existe = ClienteInterlocutor.objects.get_or_create(
+                tipo_interlocutor = tipo_interlocutor,
+                interlocutor = interlocutor,
+                cliente = cliente,
+            )
 
-        if not existe:
-            relacion.created_by = self.request.user
-            relacion.updated_by = self.request.user
-            relacion.save()
+            if not existe:
+                relacion.created_by = self.request.user
+                relacion.updated_by = self.request.user
+                relacion.save()
 
-        return super().form_valid(form) 
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url()) 
 
     def get_context_data(self, **kwargs):
         context = super(InterlocutorClienteCreateView, self).get_context_data(**kwargs)
@@ -271,14 +291,21 @@ class InterlocutorClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['titulo']="Interlocutor"
         return context
     
+    @transaction.atomic
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
-        cliente_interlocutor = form.instance.ClienteInterlocutor_interlocutor.all()[0]
-        cliente_interlocutor.tipo_interlocutor = form.cleaned_data['tipo_interlocutor']
-        cliente_interlocutor.save()
-        registro_guardar(form.instance, self.request)
+        sid = transaction.savepoint()
+        try:
+            form.instance.usuario = self.request.user
+            cliente_interlocutor = form.instance.ClienteInterlocutor_interlocutor.all()[0]
+            cliente_interlocutor.tipo_interlocutor = form.cleaned_data['tipo_interlocutor']
+            cliente_interlocutor.save()
+            registro_guardar(form.instance, self.request)
 
-        return super().form_valid(form)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
 class InterlocutorClienteDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('clientes.change_clienteinterlocutor')
@@ -290,12 +317,18 @@ class InterlocutorClienteDarBajaView(PermissionRequiredMixin, BSModalDeleteView)
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 2
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_BAJA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -316,12 +349,18 @@ class InterlocutorClienteDarAltaView(PermissionRequiredMixin, BSModalDeleteView)
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.estado = 1
-        registro_guardar(self.object, self.request)
-        self.object.save()
-        messages.success(request, MENSAJE_DAR_ALTA)
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_ALTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -599,24 +638,31 @@ class RepresentanteLegalClienteCreateView(PermissionRequiredMixin, BSModalFormVi
         kwargs['interlocutores'] = InterlocutorCliente.objects.filter(id__in = lista_interlocutores)
         return kwargs
 
+    @transaction.atomic
     def form_valid(self, form):
-        interlocutor = form.cleaned_data['interlocutor']
-        tipo_representante_legal = form.cleaned_data['tipo_representante_legal']
-        fecha_inicio = form.cleaned_data['fecha_inicio']
-        cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
+        sid = transaction.savepoint()
+        try:
+            interlocutor = form.cleaned_data['interlocutor']
+            tipo_representante_legal = form.cleaned_data['tipo_representante_legal']
+            fecha_inicio = form.cleaned_data['fecha_inicio']
+            cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
 
-        representante, existe = RepresentanteLegalCliente.objects.get_or_create(
-            cliente = cliente,
-            interlocutor = interlocutor,
-            tipo_representante_legal = tipo_representante_legal,
-            fecha_inicio = fecha_inicio,
-        )
-        if not existe:
-            representante.created_by = self.request.user
-            representante.updated_by = self.request.user
-            representante.save()
+            representante, existe = RepresentanteLegalCliente.objects.get_or_create(
+                cliente = cliente,
+                interlocutor = interlocutor,
+                tipo_representante_legal = tipo_representante_legal,
+                fecha_inicio = fecha_inicio,
+            )
+            if not existe:
+                representante.created_by = self.request.user
+                representante.updated_by = self.request.user
+                representante.save()
 
-        return super().form_valid(form) 
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(RepresentanteLegalClienteCreateView, self).get_context_data(**kwargs)
@@ -655,23 +701,30 @@ class ClienteAnexoCreateView(PermissionRequiredMixin, BSModalFormView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
 
+    @transaction.atomic
     def form_valid(self, form):
-        if self.request.session['primero']:
-            direccion = form.cleaned_data['direccion']
-            ubigeo = form.cleaned_data['ubigeo']
-            cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
-            distrito = Distrito.objects.get(codigo=ubigeo.codigo)
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                direccion = form.cleaned_data['direccion']
+                ubigeo = form.cleaned_data['ubigeo']
+                cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
+                distrito = Distrito.objects.get(codigo=ubigeo.codigo)
 
-            anexo = ClienteAnexo.objects.create(
-                cliente = cliente,
-                direccion = direccion,
-                distrito = distrito,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-            self.request.session['primero'] = False
+                anexo = ClienteAnexo.objects.create(
+                    cliente = cliente,
+                    direccion = direccion,
+                    distrito = distrito,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                self.request.session['primero'] = False
 
-        return super().form_valid(form) 
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
