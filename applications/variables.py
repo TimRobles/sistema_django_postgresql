@@ -258,12 +258,20 @@ TIPO_RETENCION = (
 )
 
 
-ESTADOS_TRASLADO = (
+ESTADOS_TRASLADO_PRODUCTO = (
     (1, 'EN PROCESO'),
     (2, 'TRASLADO ENVIADO'),
     (3, 'TRASLADO RECEPCIONADO'),
     (4, 'ANULADO'),
     )
+
+ESTADOS_TRASLADO_PRODUCTO_DETALLE = (
+    (1, 'EN PROCESO'),
+    (2, 'ENVIADO'),
+    (3, 'RECEPCIONADO PARCIALMENTE'),
+    (4, 'RECEPCIONADO'),
+    )
+
 
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
