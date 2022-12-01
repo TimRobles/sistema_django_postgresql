@@ -1,5 +1,6 @@
 from decimal import Decimal
-from applications.funciones import registrar_excepcion
+import json
+from applications.funciones import obtener_atributos, registrar_excepcion
 from applications.importaciones import *
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from django import forms
@@ -1587,4 +1588,24 @@ def StockSociedadAlmacenView(request, id_material, id_sociedad, id_almacen):
         try:
             return HttpResponse(stock(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_almacen))
         except:
+            return HttpResponse("")
+
+
+def MaterialView(request, id_material):
+    if request.method == 'GET':
+        try:
+            material = Material.objects.get(id=id_material)
+            return HttpResponse(obtener_atributos(material))
+        except Exception as e:
+            return HttpResponse("")
+
+
+def ProveedorMaterialView(request, id_material):
+    if request.method == 'GET':
+        try:
+            material = ProveedorMaterial.objects.get(id=id_material)
+            atributos = json.loads(obtener_atributos(material))
+            atributos['producto-info'] = json.loads(obtener_atributos(material.producto))
+            return HttpResponse(json.dumps(atributos))
+        except Exception as e:
             return HttpResponse("")

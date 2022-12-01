@@ -30,6 +30,7 @@
         {% if form.brand.help_text %}
         <p class="mt-0">Pista:{{ form.brand.help_text }}</p>
         {% endif %}
+
         <div class="input-group flex-nowrap mt-3{% if form.description.errors %} invalid{% endif %}"
         {% if form.description.help_text %}
         data-bs-toggle="tooltip" data-bs-placement="top" title="{{ form.description.help_text }}"
@@ -40,6 +41,18 @@
         </div>
         {% if form.description.help_text %}
         <p class="mt-0">Pista:{{ form.description.help_text }}</p>
+        {% endif %}
+
+        <div class="input-group flex-nowrap mt-3{% if form.unidad.errors %} invalid{% endif %}"
+        {% if form.unidad.help_text %}
+        data-bs-toggle="tooltip" data-bs-placement="top" title="{{ form.unidad.help_text }}"
+        {% endif %}
+        >
+        <label class="input-group-text" for="{{ form.unidad.id_for_label }}">{{ form.unidad.label }}</label>
+        {{ form.unidad }}
+        </div>
+        {% if form.unidad.help_text %}
+        <p class="mt-0">Pista:{{ form.unidad.help_text }}</p>
         {% endif %}
 
         <div class="input-group flex-nowrap mt-3{% if form.cantidad.errors %} invalid{% endif %}"

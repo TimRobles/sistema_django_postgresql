@@ -1,3 +1,4 @@
+from tabnanny import verbose
 from webbrowser import get
 from django import forms
 from django.contrib.auth import get_user_model
@@ -47,12 +48,14 @@ class ListaRequerimientoMaterialForm (BSModalForm):
 class ListaRequerimientoMaterialDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+    unidad = forms.CharField(label='Unidad Base', required=False)
     comentario = forms.CharField(widget=forms.Textarea, required=False)
     class Meta:
         model = ListaRequerimientoMaterialDetalle
         fields=(
             'material',
             'cantidad',
+            'unidad',
             'comentario',
             )
 
@@ -62,14 +65,17 @@ class ListaRequerimientoMaterialDetalleForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 1
+        self.fields['unidad'].disabled = True
 
 class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
     material = forms.CharField(required=False)
+    unidad = forms.CharField(label='Unidad Base', required=False)
     class Meta:
         model = ListaRequerimientoMaterialDetalle
         fields=(
             'material',
             'cantidad',
+            'unidad',
             'comentario',
             )
 
@@ -78,6 +84,8 @@ class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
         busqueda_material = self.instance.content_type.get_object_for_this_type(id = self.instance.id_registro)
         self.fields['material'].initial = busqueda_material.descripcion_venta
         self.fields['material'].disabled = True
+        self.fields['unidad'].initial = busqueda_material.unidad_base
+        self.fields['unidad'].disabled = True
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -108,6 +116,7 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
     name = forms.CharField(required=False)
     brand = forms.CharField(required=False)
     description = forms.CharField(required=False)
+    unidad = forms.CharField(label='Unidad Base', required=False)
 
     class Meta:
         model = RequerimientoMaterialProveedorDetalle
@@ -116,6 +125,7 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
             'name',
             'brand',
             'description',
+            'unidad',
             'cantidad',
             )
 
@@ -130,10 +140,12 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
                 estado_alta_baja = 1,
             )
         self.fields['material'].initial = busqueda_material.descripcion_venta
+        self.fields['unidad'].initial = busqueda_material.unidad_base
         self.fields['name'].initial = proveedor_material.name
         self.fields['brand'].initial = proveedor_material.brand
         self.fields['description'].initial = proveedor_material.description
         self.fields['material'].disabled = True
+        self.fields['unidad'].disabled = True
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -143,10 +155,12 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
 class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=None)
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+    unidad = forms.CharField(label='Unidad Base', required=False)
     class Meta:
         model = RequerimientoMaterialProveedorDetalle
         fields=(
             'material',
+            'unidad',
             'cantidad',
             )
 
@@ -160,6 +174,7 @@ class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
         self.fields['material'].queryset = Material.objects.filter(id__in = lista_materiales)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['unidad'].disabled = True
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 1
 
@@ -179,22 +194,6 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
             'correos_internos',
             'internacional_nacional',
             )
-
-    def clean_correos_proveedor(self):
-        correos_proveedor = self.cleaned_data.get('correos_proveedor')
-
-        if correos_proveedor==[]:
-            self.add_error('correos_proveedor', 'Debe seleccionar al menos un correo.')
-
-        return correos_proveedor
-
-    def clean_correos_internos(self):
-        correos_internos = self.cleaned_data.get('correos_internos')
-
-        if correos_internos==[]:
-            self.add_error('correos_internos', 'Debe seleccionar al menos un correo.')
-
-        return correos_internos
 
     def clean_internacional_nacional(self):
         internacional_nacional = self.cleaned_data.get('internacional_nacional')

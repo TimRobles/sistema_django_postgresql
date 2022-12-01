@@ -1,4 +1,5 @@
 from datetime import date
+import json
 import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
@@ -402,3 +403,15 @@ def registrar_excepcion(self, ex, fname):
         updated_by=self.request.user,
     )
     messages.error(self.request, mensaje)
+
+
+def obtener_atributos(objeto):
+    diccionario = {}
+    for att in dir(objeto):
+        if att[0] != '_':
+            try:
+                diccionario[str(att)] = str(getattr(objeto, att))
+            except:
+                pass
+    return json.dumps(diccionario)
+    

@@ -1,6 +1,8 @@
+from decimal import Decimal
 from email.policy import default
 from django.db import models
 from django.conf import settings
+from applications.funciones import calculos_linea, igv, obtener_totales
 
 from applications.requerimiento_de_materiales.models import RequerimientoMaterialProveedor
 from applications.datos_globales.models import Moneda
@@ -8,6 +10,8 @@ from applications.material.models import ProveedorMaterial
 from applications.variables import INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
 
 from applications.oferta_proveedor.managers import OfertaProveedorDetalleManager
+
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 class OfertaProveedor(models.Model):
     ESTADOS_OFERTA_PROVEEDOR = (
@@ -22,20 +26,20 @@ class OfertaProveedor(models.Model):
     numero_oferta = models.CharField('Número de Oferta', max_length=50, blank=True, null=True)
     requerimiento_material = models.OneToOneField(RequerimientoMaterialProveedor, on_delete=models.CASCADE, related_name='OfertaProveedor_requerimiento_material')
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
-    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=0)
-    total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=0)
-    total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=0)
-    total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=0)
-    total_inafecta = models.DecimalField('Total Inafecta', max_digits=14, decimal_places=2, default=0)
-    total_exonerada = models.DecimalField('Total Exonerada', max_digits=14, decimal_places=2, default=0)
-    total_igv = models.DecimalField('Total IGV', max_digits=14, decimal_places=2, default=0)
-    total_gratuita = models.DecimalField('Total Gratuita', max_digits=14, decimal_places=2, default=0)
-    total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=0)
-    total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=0)
-    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_inafecta = models.DecimalField('Total Inafecta', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_exonerada = models.DecimalField('Total Exonerada', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_igv = models.DecimalField('Total IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_gratuita = models.DecimalField('Total Gratuita', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     slug = models.SlugField(blank=True, null=True, editable=False)
-    puerto_origen = models.TextField('Puerto de origen', null=True, blank=True)
     tiempo_estimado_entrega = models.IntegerField('Tiempo estimado de entrega (dias)', blank=True, null=True)
+    puerto_origen = models.CharField('Puerto de origen', max_length=100, null=True, blank=True)
     forma_pago = models.TextField('Forma de pago', null=True, blank=True)
     condiciones = models.TextField('Condiciones', null=True, blank=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_OFERTA_PROVEEDOR, default=1)
@@ -50,6 +54,7 @@ class OfertaProveedor(models.Model):
         verbose_name_plural = 'Ofertas Proveedor'
         ordering = [
             '-fecha',
+            '-created_at',
         ]
 
     def __str__(self):
@@ -59,14 +64,14 @@ class OfertaProveedorDetalle(models.Model):
 
     item = models.IntegerField(blank=True, null=True)
     proveedor_material = models.ForeignKey(ProveedorMaterial, on_delete=models.PROTECT)
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=0)
-    precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=22, decimal_places=10, default=0)
-    precio_unitario_con_igv = models.DecimalField('Precio Unitario con IGV', max_digits=22, decimal_places=10, default=0)
-    precio_final_con_igv = models.DecimalField('Precio Final con IGV', max_digits=22, decimal_places=10, default=0)
-    descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2, default=0)
-    sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=0)
-    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=0)
-    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=0)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_con_igv = models.DecimalField('Precio Unitario con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_final_con_igv = models.DecimalField('Precio Final con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, default=8)
     oferta_proveedor = models.ForeignKey(OfertaProveedor, on_delete=models.CASCADE, related_name='OfertaProveedorDetalle_oferta_proveedor')
     imagen = models.ImageField('Imagen', upload_to='img/oferta_proveedor/detalle/imagen/', height_field=None, width_field=None, max_length=None, blank=True, null=True)
@@ -85,12 +90,29 @@ class OfertaProveedorDetalle(models.Model):
             'oferta_proveedor',
             'item',
             ]
-
+    
     def __str__(self):
         try:
             return "%s. %s - %s - %s" % (self.item, self.proveedor_material.name, self.proveedor_material.brand, self.proveedor_material.description)
         except:
             return "%s. %s" % (self.item, self.proveedor_material.content_type.get_object_for_this_type(id = self.proveedor_material.id_registro))
+
+def oferta_proveedor_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.oferta_proveedor)
+    obj.oferta_proveedor.total_descuento = respuesta['total_descuento']
+    obj.oferta_proveedor.total_anticipo = respuesta['total_anticipo']
+    obj.oferta_proveedor.total_gravada = respuesta['total_gravada']
+    obj.oferta_proveedor.total_inafecta = respuesta['total_inafecta']
+    obj.oferta_proveedor.total_exonerada = respuesta['total_exonerada']
+    obj.oferta_proveedor.total_igv = respuesta['total_igv']
+    obj.oferta_proveedor.total_gratuita = respuesta['total_gratuita']
+    obj.oferta_proveedor.otros_cargos = respuesta['total_otros_cargos']
+    obj.oferta_proveedor.total = respuesta['total']
+    obj.oferta_proveedor.save()
+        
+
+post_save.connect(oferta_proveedor_detalle_post_save, sender=OfertaProveedorDetalle)
 
 class ArchivoOfertaProveedor(models.Model):
 

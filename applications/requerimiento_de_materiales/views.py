@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.core.mail import EmailMultiAlternatives
-from applications.funciones import registrar_excepcion, slug_aleatorio
+from applications.funciones import calculos_linea, igv, registrar_excepcion, slug_aleatorio
 from applications.material.models import ProveedorMaterial
 from applications.requerimiento_de_materiales.pdf import generarRequerimientoMaterialProveedor
 from applications.importaciones import *
@@ -250,6 +250,7 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
         context = super(ListaRequerimientoMaterialDetalleCreateView, self).get_context_data(**kwargs)
         context['titulo'] = 'Agregar Material '
         context['accion'] = 'Guardar'
+        context['url_material'] = reverse_lazy('material_app:material_info', kwargs={'id_material':None})[:-5]
         return context
 
 class ListaRequerimientoMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
@@ -555,7 +556,7 @@ class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, B
         return context
 
 class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
-    template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
+    template_name = "requerimiento_material/requerimiento_material_proveedor/form_material.html"
     form_class = RequerimientoMaterialProveedorDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
 
@@ -611,6 +612,7 @@ class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
         context = super(RequerimientoMaterialProveedorDetalleCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Material'
+        context['url_material'] = reverse_lazy('material_app:material_info', kwargs={'id_material':None})[:-5]
         return context
 
 class RequerimientoMaterialProveedorPdfView(View):
@@ -737,6 +739,10 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 correos_proveedor = form.cleaned_data['correos_proveedor']
                 correos_internos = form.cleaned_data['correos_internos']
                 internacional_nacional = form.cleaned_data['internacional_nacional']
+                
+                tipo_igv=1
+                if internacional_nacional=='1':
+                    tipo_igv=8
 
                 oferta = OfertaProveedor.objects.create(
                     internacional_nacional=internacional_nacional,
@@ -753,11 +759,29 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                         proveedor = requerimiento.proveedor,
                         estado_alta_baja = 1,
                     )
+
+                    oferta_detalle = OfertaProveedorDetalle.objects.filter(
+                        proveedor_material=proveedor_material,
+                        )
+                    
+                    precio_final = Decimal('0.00')
+                    if oferta_detalle:
+                        precio_final = oferta_detalle.aggregate(Min('precio_final_con_igv'))['precio_final_con_igv__min']
+                    
+                    respuesta = calculos_linea(detalle.cantidad, precio_final, precio_final, igv(), tipo_igv)
                     
                     oferta_detalle = OfertaProveedorDetalle.objects.create(
                         item=detalle.item,
                         proveedor_material=proveedor_material,
                         cantidad=detalle.cantidad,
+                        precio_unitario_con_igv=precio_final,
+                        precio_final_con_igv=precio_final,
+                        precio_unitario_sin_igv=respuesta['precio_unitario_sin_igv'],
+                        descuento=respuesta['descuento'],
+                        sub_total=respuesta['subtotal'],
+                        igv=respuesta['igv'],
+                        total=respuesta['total'],
+                        tipo_igv=tipo_igv,
                         oferta_proveedor=oferta,
                         )
                 self.request.session['primero'] = False
@@ -771,6 +795,7 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 try:
                     correo.send()
                     requerimiento.estado = 3
+                    registro_guardar(requerimiento, self.request)
                     requerimiento.save()
 
                     messages.success(self.request, 'Correo enviado.')
@@ -778,12 +803,11 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
                 except:
                     messages.warning(self.request, 'Hubo un error al enviar el correo.')
 
-            # registro_guardar(form.instance, self.request)
             return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio'))
 
     def get_form_kwargs(self):
         kwargs = super(RequerimientoMaterialProveedorEnviarCorreoView, self).get_form_kwargs()

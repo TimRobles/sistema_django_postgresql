@@ -2,7 +2,7 @@ from django.shortcuts import render
 from applications.importaciones import *
 from applications.oferta_proveedor.models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
 from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorComentarioForm, OfertaProveedorDetalleProveedorMaterialUpdateForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm, OfertaProveedorMonedaForm, OfertaProveedorUpdateForm, OrdenCompraSociedadForm
-from applications.funciones import igv, numeroXn, obtener_totales, registrar_excepcion
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion
 from applications.funciones import slug_aleatorio
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from applications.requerimiento_de_materiales.models import ListaRequerimientoMaterialDetalle, RequerimientoMaterialProveedor, RequerimientoMaterialProveedorDetalle
@@ -80,12 +80,30 @@ class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
 
         context = {}
         error_moneda = False
+        error_puerto_origen = False
+        error_forma_pago = False
+        error_tiempo_estimado_entrega = False
         context['titulo'] = 'Error de guardar'
         if not self.get_object().moneda:
             error_moneda = True
+        if not self.get_object().puerto_origen:
+            error_puerto_origen = True
+        if not self.get_object().forma_pago:
+            error_forma_pago = True
+        if not self.get_object().tiempo_estimado_entrega:
+            error_tiempo_estimado_entrega = True
         
         if error_moneda:
-            context['texto'] = 'Actualizar la moneda'
+            context['texto'] = 'Actualizar la Moneda'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_puerto_origen:
+            context['texto'] = 'Actualizar el Puerto de Origen'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_forma_pago:
+            context['texto'] = 'Actualizar la Forma de Pago'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_tiempo_estimado_entrega:
+            context['texto'] = 'Actualizar el Tiempo Estimado de Entrega'
             return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
@@ -343,6 +361,13 @@ class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormVie
 
                 else:
                     obj.cantidad = obj.cantidad + cantidad
+                    respuesta = calculos_linea(obj.cantidad, obj.precio_unitario_con_igv, obj.precio_final_con_igv, igv(), obj.tipo_igv)
+                    obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+                    obj.descuento = respuesta['descuento']
+                    obj.descuento_con_igv = respuesta['descuento_con_igv']
+                    obj.subtotal = respuesta['subtotal']
+                    obj.igv = respuesta['igv']
+                    obj.total = respuesta['total']
 
                 registro_guardar(obj, self.request)
                 obj.save()
@@ -366,7 +391,8 @@ class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormVie
         self.request.session['primero'] = True
         context = super(MaterialOfertaProveedorAgregarView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
-        context['titulo'] = 'Material '
+        context['titulo'] = 'Material'
+        context['url_material'] = reverse_lazy('material_app:proveedor_material_info', kwargs={'id_material':None})[:-5]
         return context
 
 class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView):
@@ -388,6 +414,7 @@ class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView)
                 name = form.cleaned_data.get('name')
                 brand = form.cleaned_data.get('brand')
                 description = form.cleaned_data.get('description')
+                unidad = form.cleaned_data.get('unidad')
 
                 proveedor_material, created = ProveedorMaterial.objects.get_or_create(
                     proveedor = proveedor,
@@ -396,6 +423,7 @@ class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView)
                     description = description.upper(),
                 )
                 if created:
+                    proveedor_material.unidad = unidad
                     proveedor_material.created_by = self.request.user
                     proveedor_material.updated_by = self.request.user
                     proveedor_material.save()
@@ -554,7 +582,7 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
         try:
             if self.request.session['primero']:
                 oferta = OfertaProveedor.objects.get(slug=self.kwargs['slug_oferta'])
-                numero_orden_compra = form.cleaned_data['sociedad'].abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = form.cleaned_data['sociedad']))+1, 5)
+                numero_orden_compra = form.cleaned_data['sociedad'].abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = form.cleaned_data['sociedad']))+1, 6)
 
                 orden_compra = OrdenCompra.objects.create(
                     internacional_nacional = oferta.internacional_nacional,

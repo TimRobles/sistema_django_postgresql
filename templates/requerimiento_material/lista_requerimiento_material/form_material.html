@@ -1,17 +1,21 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
+
+{% block abajo %}
+<span hidden id="url_material">{{ url_material }}</span>
+{% endblock abajo %}
+    
+
 {% block js %}
+    <script src="{% static 'js/requerimiento_material/lista_requerimiento_material/form_material.js' %}?{{ cache_bust }}"></script>
     <script>
         $(function () {
-
             $("#id_material").select2({
                 width: '100%',
                 dropdownParent: $(".modal-body"),
                 matcher: buscar_select2
             });
-
-            
         });
     </script>
  

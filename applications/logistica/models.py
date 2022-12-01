@@ -49,7 +49,7 @@ class SolicitudPrestamoMaterialesDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE)
     id_registro = models.IntegerField(blank=True, null=True)
-    cantidad_prestamo = models.DecimalField('Cantidad Prestamo', max_digits=22, decimal_places=10, default=0)
+    cantidad_prestamo = models.DecimalField('Cantidad Prestamo', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     observacion = models.TextField(blank=True, null=True)
     solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, blank=True, null=True, on_delete=models.CASCADE, related_name='SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales')
 
@@ -182,7 +182,7 @@ class NotaSalidaDetalle(models.Model):
     solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
-    cantidad_salida = models.DecimalField('Cantidad Salida', max_digits=22, decimal_places=10, default=0)
+    cantidad_salida = models.DecimalField('Cantidad Salida', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_nota_salida')
     estado = models.IntegerField(choices=ESTADOS, default=1)
 
@@ -273,7 +273,7 @@ class DespachoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
     id_registro = models.IntegerField(blank=True, null=True)
-    cantidad_despachada = models.DecimalField('Cantidad Despachada', max_digits=22, decimal_places=10, default=0)
+    cantidad_despachada = models.DecimalField('Cantidad Despachada', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     despacho = models.ForeignKey(Despacho, on_delete=models.CASCADE, related_name='DespachoDetalle_despacho')
     estado = models.IntegerField(choices=ESTADOS, default=1)
 

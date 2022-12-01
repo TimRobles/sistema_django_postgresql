@@ -441,6 +441,7 @@ class ProveedorMaterial(models.Model):
     name = models.CharField('Name', max_length=100)
     brand = models.CharField('Brand', max_length=100)
     description = models.CharField('Description', max_length=255)
+    unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, null=True)
     estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -453,10 +454,17 @@ class ProveedorMaterial(models.Model):
         verbose_name_plural = 'Proveedor Materiales'
         ordering = ['estado_alta_baja',]
 
-    def __str__(self):
+    @property
+    def producto(self):
         try:
-            return str(self.content_type.get_object_for_this_type(id = self.id_registro))
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
         except:
+            return None
+
+    def __str__(self):
+        if self.producto:
+            return str(self.producto)
+        else:
             return "%s - %s - %s" % (self.name, self.brand, self.description)
 
 class EquivalenciaUnidad(models.Model):

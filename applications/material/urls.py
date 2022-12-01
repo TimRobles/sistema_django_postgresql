@@ -22,6 +22,7 @@ urlpatterns = [
     path('material/alta/<pk>/', views.MaterialDarAltaView.as_view(), name='material_alta'),
     path('material/detalle/<pk>/', views.MaterialDetailView.as_view(), name='material_detalle'),
     path('material/detalle-tabla/<pk>/', views.MaterialDetailTabla, name='material_detalle_tabla'),
+    path('material/info/<id_material>/', views.MaterialView, name='material_info'),
 
     path('componente/registrar/<int:material_id>/', views.ComponenteCreateView.as_view(), name='componente_registrar'),
     path('componente/actualizar/<pk>/', views.ComponenteUpdateView.as_view(), name='componente_actualizar'),
@@ -67,6 +68,7 @@ urlpatterns = [
     path('proveedor-material/actualizar/<pk>/', views.ProveedorMaterialUpdateView.as_view(), name='proveedor_material_actualizar'),
     path('proveedor-material/baja/<pk>/', views.ProveedorMaterialDarBaja.as_view(), name='proveedor_material_baja'),
     path('proveedor-material/alta/<pk>/', views.ProveedorMaterialDarAlta.as_view(), name='proveedor_material_alta'),
+    path('proveedor-material/info/<id_material>/', views.ProveedorMaterialView, name='proveedor_material_info'),
 
     path('idioma-material/registrar/<int:material_id>/', views.IdiomaMaterialCreateView.as_view(), name='idioma_material_registrar'),
     path('idioma-material/actualizar/<pk>/', views.IdiomaMaterialUpdateView.as_view(), name='idioma_material_actualizar'),

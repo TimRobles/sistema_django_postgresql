@@ -31,7 +31,7 @@
 
     
     {% if requerimiento.OfertaProveedor_requerimiento_material %}
-    <a href="{% url 'oferta_proveedor_app:oferta_proveedor_detalle' requerimiento.OfertaProveedor_requerimiento_material.slug  %}"><span class="btn btn-primary">Oferta Proveedor</span></a>
+    <a href="{% url 'oferta_proveedor_app:oferta_proveedor_detalle' requerimiento.OfertaProveedor_requerimiento_material.slug  %}"><span class="btn btn-primary">Ver Oferta Proveedor</span></a>
     {% endif %}
     
     <div class="table-responsive">
@@ -39,6 +39,7 @@
             <thead>
                 <tr>
                     <th>Fecha</th>
+                    <th>Título</th>
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
                     <th>Comentario</th>
@@ -48,6 +49,7 @@
             <tbody>
                 <tr>
                     <td>{{ contexto_requerimiento_material_proveedor.fecha|date:'d/m/Y' }}</td>
+                    <td>{{ contexto_requerimiento_material_proveedor.titulo }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.proveedor }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.interlocutor_proveedor }}</td>
                     <td>{{ contexto_requerimiento_material_proveedor.comentario }}</td>

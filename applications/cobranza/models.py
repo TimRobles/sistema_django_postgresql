@@ -51,8 +51,8 @@ post_save.connect(linea_credito_post_save, sender=LineaCredito)
 
 class SolicitudCredito(models.Model):
     cotizacion_venta = models.OneToOneField(CotizacionVenta, on_delete=models.CASCADE, related_name='SolicitudCredito_cotizacion_venta')
-    total_cotizado = models.DecimalField('Total Cotizado', max_digits=14, decimal_places=2, default=0)
-    total_credito = models.DecimalField('Total Crédito', max_digits=14, decimal_places=2, default=0)
+    total_cotizado = models.DecimalField('Total Cotizado', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_credito = models.DecimalField('Total Crédito', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     condiciones_pago = models.CharField('Condiciones de pago', max_length=250, blank=True, null=True, help_text='Factura a 30 días')
     interlocutor_solicita = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, blank=True, null=True)
     estado = models.IntegerField(choices=ESTADO_SOLICITUD, default=1)
