@@ -33,6 +33,7 @@ class Guia(models.Model):
     ubigeo_partida = models.ForeignKey(Distrito, on_delete=models.PROTECT, related_name='Guia_ubigeo_partida',blank=True, null=True)
     ubigeo_destino = models.ForeignKey(Distrito, on_delete=models.PROTECT, related_name='Guia_ubigeo_destino',blank=True, null=True)
     motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
+    nubefact = models.URLField(max_length=400, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_DOCUMENTO, default=1)
    
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

@@ -50,6 +50,7 @@ class FacturaVenta(models.Model):
     estado = models.IntegerField(choices = ESTADOS_DOCUMENTO, default=1)
     motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
     confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, related_name='FacturaVenta_confirmacion', blank=True, null=True)
+    nubefact = models.URLField(max_length=400, blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -210,6 +211,7 @@ class BoletaVenta(models.Model):
     estado = models.IntegerField(choices = ESTADOS_DOCUMENTO, default=1)
     motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
     confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, related_name='BoletaVenta_confirmacion', blank=True, null=True)
+    nubefact = models.URLField(max_length=400, blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
