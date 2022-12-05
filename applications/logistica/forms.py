@@ -212,6 +212,20 @@ class NotaSalidaAnularForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class NotaSalidaDetalleSeriesForm(BSModalModelForm):
+    series = forms.CharField(widget=forms.Textarea, required=False)
+    class Meta:
+        model = NotaSalidaDetalle
+        fields=(
+            'cantidad_salida',
+            'series',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaSalidaDetalleSeriesForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class DespachoForm(BSModalModelForm):
     class Meta:
         model = Despacho
