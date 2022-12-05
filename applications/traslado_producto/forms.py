@@ -27,7 +27,6 @@ class EnvioTrasladoProductoForm(BSModalModelForm):
             'direccion_destino',
             'responsable',
             'motivo_traslado',
-            'observaciones',
             )
         widgets = {
             'fecha_traslado' : forms.DateInput(
@@ -75,5 +74,17 @@ class EnvioTrasladoProductoMaterialDetalleForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class EnvioTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
+    class Meta:
+        model = EnvioTrasladoProductoDetalle
+        fields=(
+            'cantidad_envio',
+            'almacen_origen',
+            'unidad',
+            )
 
+    def __init__(self, *args, **kwargs):
+        super(EnvioTrasladoProductoMaterialActualizarDetalleForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 

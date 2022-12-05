@@ -126,15 +126,12 @@
     </div>
 </div>
 
-
-{% if envio_traslado_producto.sociedad %}    
 <button data-form-url="{% url 'traslado_producto_app:envio_agregar_material' envio_traslado_producto.id %}"
 data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id  %}"
 data-keep-open="True"
 class="update btn btn-primary" title="Agregar Material">
 Agregar Material
 </button>
-{% endif %}
 
 <div class="table-responsive">
     <table class="table">
