@@ -1,3 +1,4 @@
+from decimal import Decimal
 import json
 from urllib import request
 from django.shortcuts import render
@@ -52,7 +53,10 @@ class FacturaVentaDetalleView(TemplateView):
             pass
         
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        if obj.confirmacion:
+            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        else:
+            tipo_cambio = Decimal('1.00')
         context = super(FacturaVentaDetalleView, self).get_context_data(**kwargs)
         context['factura'] = obj
         context['confirmacion'] = obj.confirmacion
@@ -75,7 +79,10 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         obj = FacturaVenta.objects.get(id=id_factura_venta)
 
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        if obj.confirmacion:
+            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        else:
+            tipo_cambio = Decimal('1.00')
         materiales = None
         try:
             materiales = obj.FacturaVentaDetalle_factura_venta.all()
@@ -776,7 +783,10 @@ class BoletaVentaDetalleView(TemplateView):
             pass
 
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        if obj.confirmacion:
+            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        else:
+            tipo_cambio = Decimal('1.00')
 
         context = super(BoletaVentaDetalleView, self).get_context_data(**kwargs)
         context['boleta'] = obj
@@ -799,7 +809,10 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         obj = BoletaVenta.objects.get(id=id_boleta_venta)
         
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
-        tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        if obj.confirmacion:
+            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+        else:
+            tipo_cambio = Decimal('1.00')
  
         materiales = None
         try:
