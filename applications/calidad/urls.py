@@ -9,8 +9,10 @@ urlSeries = [
     path('series/detalle-tabla/<pk>/', views.SeriesDetailTabla, name='series_detalle_tabla'),
     path('series/detalle/bueno/registrar/<int:nota_control_calidad_stock_detalle_id>/', views.SeriesDetalleBuenoCreateView.as_view(), name='series_detalle_bueno_registrar'),
     path('series/detalle/malo/registrar/<int:nota_control_calidad_stock_detalle_id>/', views.SeriesDetalleMaloCreateView.as_view(), name='series_detalle_malo_registrar'),
+    path('series/detalle/malo/sin-serie/registrar/<int:nota_control_calidad_stock_detalle_id>/', views.SeriesDetalleMaloSinSerieCreateView.as_view(), name='series_detalle_malo_sin_serie_registrar'),
     path('series/detalle/bueno/actualizar/<pk>/', views.SeriesDetalleBuenoUpdateView.as_view(), name='series_detalle_bueno_actualizar'),
     path('series/detalle/malo/actualizar/<pk>/', views.SeriesDetalleMaloUpdateView.as_view(), name='series_detalle_malo_actualizar'),
+    path('series/detalle/malo/sin-serie/actualizar/<pk>/', views.SeriesDetalleMaloSinSerieUpdateView.as_view(), name='series_detalle_malo_sin_serie_actualizar'),
     path('series/detalle/eliminar/<pk>/', views.SeriesDetalleDeleteView.as_view(), name='series_detalle_eliminar'),
 ]
 

@@ -53,8 +53,8 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td>{{ material.solicitud_prestamo_materiales_detalle.producto }}</td>
-                    <td>{{ material.solicitud_prestamo_materiales_detalle.producto.unidad_base }}</td>
+                    <td>{{ material.producto}}</td>
+                    <td>{{ material.producto.unidad_base }}</td>
                     <td>
                         {% if material.sede %}
                             {{ material.sede}}
@@ -87,6 +87,15 @@
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
                                 <i class="bi bi-box-seam"></i>
                             </button>
+                            {% if material.producto.control_serie %}
+                                <button data-form-url="{% url 'logistica_app:nota_salida_detalle_series' material.id %}"
+                                    data-table-url="{% url 'logistica_app:nota_salida_detalle_tabla' contexto_nota_salida_detalle.id  %}"
+                                    data-keep-open="true"
+                                    class="update btn btn-dark btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Dar Salida Series">
+                                    <i class="bi bi-upc-scan"></i>
+                                </button>
+                            {% endif %}
                         {% endif %}
                     </td>
             </tr>

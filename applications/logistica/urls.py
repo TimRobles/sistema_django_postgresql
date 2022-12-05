@@ -15,6 +15,7 @@ urlNotaSalida = [
     path('nota-salida-detalle/registrar/<int:nota_salida_id>/', views.NotaSalidaDetalleCreateView.as_view(), name='nota_salida_detalle_registrar'),
     path('nota-salida-detalle/actualizar/<pk>/', views.NotaSalidaDetalleUpdateView.as_view(), name='nota_salida_detalle_actualizar'),
     path('nota-salida-detalle/eliminar/<pk>/', views.NotaSalidaDetalleDeleteView.as_view(), name='nota_salida_detalle_eliminar'),
+    path('nota-salida-detalle/series/<pk>/', views.NotaSalidaDetalleSeriesView.as_view(), name='nota_salida_detalle_series'),
     path('nota-salida-detalle/generar-despacho/<pk>/', views.NotaSalidaGenerarDespachoView.as_view(), name='nota_salida_generar_despacho'),
     path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'),
 ]
