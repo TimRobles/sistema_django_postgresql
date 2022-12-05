@@ -56,7 +56,7 @@ class EnvioTrasladoProducto(models.Model):
 class EnvioTrasladoProductoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
-    id_registro = models.IntegerField(blank=True, null=True)
+    id_registro = models.IntegerField()
     almacen_origen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
     cantidad_envio = models.DecimalField('Cantidad de Envio', max_digits=5, decimal_places=2,blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT,blank=True, null=True)
