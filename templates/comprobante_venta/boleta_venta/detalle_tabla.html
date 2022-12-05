@@ -57,9 +57,11 @@
     </div>
     {% endif %}
     
+    {% if boleta.confirmacion %}
     <div class="col-auto ms-auto">
         <a href="{% url 'cotizacion_app:confirmacion_ver' boleta.confirmacion.id %}" class="btn btn-primary">Confirmación</a>
     </div>
+    {% endif %}
 
     {% if not boleta.serie_comprobante %}
     <div class="col-auto">
