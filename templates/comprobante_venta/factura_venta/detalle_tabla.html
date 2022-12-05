@@ -182,7 +182,7 @@
                     <th class="pe-2">Tipo de Venta:</th>
                     <td>{{ factura.get_tipo_venta_display }}</td>
                     <td class="ps-2" rowspan="2">
-                        {% if factura.tipo_venta == 2 %}
+                        {% if factura.tipo_venta == 2 and factura.confirmacion %}
                         <button data-form-url="{% url 'cotizacion_app:confirmacion_ver_cuotas' factura.confirmacion.id %}"
                             class="read btn btn-warning">
                             Ver Cuotas
@@ -198,7 +198,7 @@
                         {% endif %}
                     </td>
                 </tr>
-                {% if factura.tipo_venta == 2 %}
+                {% if factura.tipo_venta == 2 and factura.confirmacion %}
                 <tr>
                     <th class="pe-2">Cuotas:</th>
                     <td>
