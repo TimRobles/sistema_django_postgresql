@@ -14,7 +14,7 @@
     </thead>
 
     <tbody>
-        {% for factura_venta in contexto_factura_venta %}
+        {% for factura_venta in contexto_pagina %}
         <tr class="{% if factura_venta.estado == 3 %}text-danger text-decoration-line-through{% endif %}">
             <td class="text-nowrap">{{ factura_venta.serie_comprobante }}-{{ factura_venta.numero_factura|numeroXn:6 }}</td>
             <td>{{ factura_venta.cliente }}</td>
