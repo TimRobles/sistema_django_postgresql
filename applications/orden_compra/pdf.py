@@ -37,13 +37,13 @@ def dataOrdenCompra(TablaEncabezado, TablaDatos, fuenteBase, color):
     t._argW[0]=cmToPx(1)
     t._argW[2]=cmToPx(2)
     t._argW[3]=cmToPx(2)
-    t._argW[4]=cmToPx(2)
-    t._argW[5]=cmToPx(2)
-    t._argW[6]=cmToPx(2)
-    t._argW[7]=cmToPx(2)
-    t._argW[8]=cmToPx(2)
-    t._argW[9]=cmToPx(2)
-    t._argW[10]=cmToPx(2)
+    t._argW[4]=cmToPx(2.15)
+    t._argW[5]=cmToPx(2.15)
+    t._argW[6]=cmToPx(2.15)
+    t._argW[7]=cmToPx(2.15)
+    t._argW[8]=cmToPx(2.15)
+    t._argW[9]=cmToPx(2.15)
+    t._argW[10]=cmToPx(2.15)
 
     return t
 
@@ -109,7 +109,7 @@ def dataTotales(TablaTotales, simbolo, fuenteBase):
         )
     t._argW[0]=cmToPx(1)
     t._argW[2]=cmToPx(3.5)
-    t._argW[3]=cmToPx(2)
+    t._argW[3]=cmToPx(2.15)
 
     return t
 

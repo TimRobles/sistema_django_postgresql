@@ -7,7 +7,7 @@
             <tr>
                 <th>Puerto de Origen</th>
                 <th>Forma de Pago</th>
-                <th>Tiempo estimado de Entrega</th>
+                <th class="text-center">Tiempo estimado de Entrega (días)</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -23,7 +23,7 @@
                         {{contexto_oferta_proveedor.forma_pago}}
                     {% endif %}
                 </td>
-                <td>
+                <td class="text-center">
                     {% if contexto_oferta_proveedor.tiempo_estimado_entrega %}
                         {{contexto_oferta_proveedor.tiempo_estimado_entrega}}
                     {% endif %}

@@ -319,6 +319,7 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
 
     @transaction.atomic
     def form_valid(self, form):
+        print("Inicio")
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
@@ -333,6 +334,7 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
 
                 correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
                 correo.attach_alternative(mensaje, "text/html")
+                print("Enviar correo")
                 try:
                     correo.send()
                     orden.estado = 2
@@ -340,7 +342,8 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
                     
                     messages.success(self.request, 'Correo enviado.')
                     self.request.session['primero'] = False
-                except:
+                except Exception as e:
+                    print(e)
                     messages.warning(self.request, 'Hubo un error al enviar el correo.')
             
             return super().form_valid(form)

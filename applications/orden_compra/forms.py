@@ -69,23 +69,6 @@ class OrdenCompraEnviarCorreoForm(BSModalForm):
             'correos_internos',
             )
 
-    def clean_correos_proveedor(self):
-        correos_proveedor = self.cleaned_data.get('correos_proveedor')
-
-        if correos_proveedor==[]:
-            self.add_error('correos_proveedor', 'Debe seleccionar al menos un correo.')
-
-        return correos_proveedor
-
-    def clean_correos_internos(self):
-        correos_internos = self.cleaned_data.get('correos_internos')
-
-        if correos_internos==[]:
-            self.add_error('correos_internos', 'Debe seleccionar al menos un correo.')
-
-        return correos_internos
-
-
     def __init__(self, *args, **kwargs):
         proveedor = kwargs.pop('proveedor')
 
