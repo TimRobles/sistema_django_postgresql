@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from decimal import Decimal
 import json
 from urllib import request
@@ -21,14 +22,36 @@ from . models import(
 class FacturaVentaListView(ListView):
     model = FacturaVenta
     template_name = 'comprobante_venta/factura_venta/inicio.html'
-    context_object_name = 'contexto_factura_venta'
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaListView,self).get_context_data(**kwargs)
+        factura_venta = FacturaVenta.objects.all()
+
+        objectsxpage = 25 # Show 25 objects per page.
+
+        if len(factura_venta) > objectsxpage:
+            paginator = Paginator(factura_venta, objectsxpage)
+            page_number = self.request.GET.get('page')
+            factura_venta = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = factura_venta
+        return context
 
 def FacturaVentaTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'comprobante_venta/factura_venta/inicio_tabla.html'
         context = {}
-        context['contexto_factura_venta'] = FacturaVenta.objects.all()
+        factura_venta = FacturaVenta.objects.all()
+
+        objectsxpage = 25 # Show 25 objects per page.
+
+        if len(factura_venta) > objectsxpage:
+            paginator = Paginator(factura_venta, objectsxpage)
+            page_number = request.GET.get('page')
+            factura_venta = paginator.get_page(page_number)
+        
+        context['contexto_pagina'] = factura_venta 
 
         data['table'] = render_to_string(
             template,
