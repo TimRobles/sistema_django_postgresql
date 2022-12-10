@@ -453,7 +453,7 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
             )
 
             materiales = orden.OrdenCompraDetalle_orden_compra.all()
-            movimiento_final = TipoMovimiento.objects.get(codigo=100)
+            movimiento_final = TipoMovimiento.objects.get(codigo=100) #En tránsito
             for material in materiales:
                 orden_detalle = ComprobanteCompraPIDetalle.objects.create(
                     item=material.item,
