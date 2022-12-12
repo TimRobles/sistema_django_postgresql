@@ -773,22 +773,43 @@ class FacturaVentaDetalleUpdateView(BSModalUpdateView):
 class BoletaVentaListView(ListView):
     model = BoletaVenta
     template_name = 'comprobante_venta/boleta_venta/inicio.html'
-    context_object_name = 'contexto_boleta_venta'
 
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaListView,self).get_context_data(**kwargs)
+        boleta_venta = BoletaVenta.objects.all()
+
+        objectsxpage = 25 # Show 25 objects per page.
+
+        if len(boleta_venta) > objectsxpage:
+            paginator = Paginator(boleta_venta, objectsxpage)
+            page_number = self.request.GET.get('page')
+            boleta_venta = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = boleta_venta
+        return context
 
 def BoletaVentaTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'comprobante_venta/boleta_venta/inicio_tabla.html'
         context = {}
-        context['contexto_boleta_venta'] = BoletaVenta.objects.all()
+        boleta_venta = BoletaVenta.objects.all()
+
+        objectsxpage = 25 # Show 25 objects per page.
+
+        if len(boleta_venta) > objectsxpage:
+            paginator = Paginator(boleta_venta, objectsxpage)
+            page_number = request.GET.get('page')
+            boleta_venta = paginator.get_page(page_number)
+        
+        context['contexto_pagina'] = boleta_venta 
 
         data['table'] = render_to_string(
             template,
             context,
             request=request
         )
-    return JsonResponse(data)
+        return JsonResponse(data)
 
 class BoletaVentaDetalleView(TemplateView):
     template_name = "comprobante_venta/boleta_venta/detalle.html"

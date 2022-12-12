@@ -15,7 +15,7 @@
     </thead>
 
     <tbody>
-        {% for boleta_venta in contexto_boleta_venta %}
+        {% for boleta_venta in contexto_pagina %}
         <tr class="{% if boleta_venta.estado == 3 %}text-danger text-decoration-line-through{% endif %}">
             <td class="text-nowrap">{{ boleta_venta.serie_comprobante }}-{{ boleta_venta.numero_boleta|numeroXn:6 }}</td>
             <td>{{ boleta_venta.cliente }}</td>

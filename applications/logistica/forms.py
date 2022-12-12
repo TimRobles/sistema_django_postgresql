@@ -213,11 +213,13 @@ class NotaSalidaAnularForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class NotaSalidaDetalleSeriesForm(BSModalModelForm):
+    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10)
     series = forms.CharField(widget=forms.Textarea, required=False)
     class Meta:
         model = NotaSalidaDetalle
         fields=(
             'cantidad_salida',
+            'cantidad_ingresada',
             'series',
             )
 
@@ -225,6 +227,8 @@ class NotaSalidaDetalleSeriesForm(BSModalModelForm):
         super(NotaSalidaDetalleSeriesForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['cantidad_salida'].disabled = True
+            self.fields['cantidad_ingresada'].disabled = True
 
 class DespachoForm(BSModalModelForm):
     class Meta:
