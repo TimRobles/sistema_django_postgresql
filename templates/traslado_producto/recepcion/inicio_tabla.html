@@ -1,0 +1,63 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Recepción Traslado Producto        
+    <a href="{% url 'traslado_producto_app:recepcion_registrar' %}"
+        class="badge btn btn-primary" title="Nueva Recepción">
+        Nueva Recepción
+    </a>
+</h3>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha Recepción</th>
+            <th>N° Recepción </th>
+            <th>Sede Destino</th>
+            <th>Responsable</th>  
+            <th>Observaciones</th>  
+            <th>Estado</th>  
+            <th class="text-center">Acciones</th>      
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for recepcion_traslado_producto in contexto_recepcion_traslado_producto %}
+        <tr> 
+            <td>{{recepcion_traslado_producto.fecha_recepcion|date:'d/m/Y' }}</td>
+            <td>
+                {% if recepcion_traslado_producto.numero_recepcion_traslado %}
+                {{recepcion_traslado_producto.numero_recepcion_traslado|numeroXn:6 }}
+                {% endif %}
+            </td>
+            <td>
+                {% if recepcion_traslado_producto.sede_destino %}
+                {{recepcion_traslado_producto.sede_destino}}  
+                {% endif %}
+            </td>
+            <td>
+                {% if recepcion_traslado_producto.responsable %}
+                {{recepcion_traslado_producto.responsable}}
+                {% endif %}
+            </td>
+            <td>
+                {% if recepcion_traslado_producto.observaciones %}
+                {{recepcion_traslado_producto.observaciones}}
+                {% endif %}
+            </td>
+            <td>{{recepcion_traslado_producto.get_estado_display}}</td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'traslado_producto_app:recepcion_ver' recepcion_traslado_producto.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+

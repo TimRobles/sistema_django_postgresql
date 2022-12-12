@@ -6,6 +6,8 @@ from applications.sociedad.models import Sociedad
 from .models import (
     EnvioTrasladoProducto,
     EnvioTrasladoProductoDetalle,
+    RecepcionTrasladoProducto,
+    RecepcionTrasladoProductoDetalle,
 )
 
 from .forms import (
@@ -13,6 +15,10 @@ from .forms import (
     EnvioTrasladoProductoMaterialDetalleForm,
     EnvioTrasladoProductoObservacionesForm,
     EnvioTrasladoProductoMaterialActualizarDetalleForm,
+    RecepcionTrasladoProductoForm,
+    RecepcionTrasladoProductoObservacionesForm,
+    RecepcionTrasladoProductoMaterialDetalleForm,
+    RecepcionTrasladoProductoMaterialActualizarDetalleForm,
 )
 
 
@@ -310,4 +316,296 @@ class EnvioTrasladoProductoMaterialDeleteView(BSModalDeleteView):
         return context
 
 
+
+class RecepcionTrasladoProductoListView(ListView):
+    model = RecepcionTrasladoProducto
+    template_name = "traslado_producto/recepcion/inicio.html"
+    context_object_name = 'contexto_recepcion_traslado_producto'
+
+def RecepcionTrasladoProductoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'traslado_producto/recepcion/inicio_tabla.html'
+        context = {}
+        context['contexto_recepcion_traslado_producto'] = RecepcionTrasladoProducto.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+def RecepcionTrasladoProductoCrearView(request):
+    obj = RecepcionTrasladoProducto.objects.create(
+        created_by=request.user,
+        updated_by=request.user,
+    )
+    obj.save()
+    return HttpResponseRedirect(reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':obj.id}))
+
+class RecepcionTrasladoProductoVerView(TemplateView):
+    template_name = "traslado_producto/recepcion/detalle.html"
+
+    def get_context_data(self, **kwargs):
+        obj = RecepcionTrasladoProducto.objects.get(id = kwargs['id_recepcion_traslado_producto'])
+        sociedades = Sociedad.objects.filter(estado_sunat=1)
+
+        materiales = None
+        try:
+            materiales = obj.RecepcionTrasladoProductoDetalle_recepcion_traslado_producto.all()
+
+            for material in materiales:
+                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+        except:
+            pass
+
+        context = super(RecepcionTrasladoProductoVerView, self).get_context_data(**kwargs)
+        context['recepcion_traslado_producto'] = obj
+        context['sociedades'] = sociedades
+        context['materiales'] = materiales
+        context['accion'] = "Crear"
+        context['titulo'] = "Recepción Traslado"
+        return context
+
+def RecepcionTrasladoProductoVerTabla(request, id_recepcion_traslado_producto):
+    data = dict()
+    if request.method == 'GET':
+        template = 'traslado_producto/recepcion/detalle_tabla.html'
+        obj = RecepcionTrasladoProducto.objects.get(id = id_recepcion_traslado_producto)
+
+        materiales = None
+        try:
+            materiales = obj.RecepcionTrasladoProductoDetalle_recepcion_traslado_producto.all()
+            for material in materiales:
+                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
+        except Exception as e:
+            pass
+
+        sociedades = Sociedad.objects.filter(estado_sunat=1)
+
+        context = {}
+        context['recepcion_traslado_producto'] = obj
+        context['sociedades'] = sociedades
+        context['materiales'] = materiales
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class  RecepcionTrasladoProductoActualizarView(BSModalUpdateView):
+    model = RecepcionTrasladoProducto
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionTrasladoProductoForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoActualizarView, self).get_context_data(**kwargs)
+        context['accion'] = "Recepción"
+        context['titulo'] = "Traslado Producto"
+        return context
+
+class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
+    model = RecepcionTrasladoProducto
+    template_name = "traslado_producto/recepcion/form_guardar.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            numero_recepcion_traslado = RecepcionTrasladoProducto.objects.all().aggregate(Count('numero_recepcion_traslado'))['numero_recepcion_traslado__count'] + 1
+            self.object.numero_recepcion_traslado = numero_recepcion_traslado
+            self.object.fecha_recepcion = datetime. now()
+
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_GUARDAR_RECEPCION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoGuardarView, self).get_context_data(**kwargs)
+        context['accion'] = "Guardar"
+        context['titulo'] = "Recepcion"
+        context['guardar'] = "true"
+        return context
+
+class  RecepcionTrasladoProductoObservacionesView(BSModalUpdateView):
+    model = RecepcionTrasladoProducto
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionTrasladoProductoObservacionesForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoObservacionesView, self).get_context_data(**kwargs)
+        context['accion'] = "Observaciones"
+        return context
+
+
+class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionTrasladoProductoMaterialDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_sede = False
+        context['titulo'] = 'Error de guardar'
+        recepcion_traslado_producto = RecepcionTrasladoProducto.objects.get(id = self.kwargs['id_recepcion_traslado_producto'])
+        if not recepcion_traslado_producto.sede_destino:
+            error_sede = True
+
+        if error_sede:
+            context['texto'] = 'Ingrese una sede de destino.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(RecepcionTrasladoProductoMaterialDetalleView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.kwargs['id_recepcion_traslado_producto']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                recepcion_traslado_producto = RecepcionTrasladoProducto.objects.get(id = self.kwargs['id_recepcion_traslado_producto'])
+                item = len(RecepcionTrasladoProductoDetalle.objects.filter(recepcion_traslado_producto = recepcion_traslado_producto))
+
+                material = form.cleaned_data.get('material')
+                cantidad_recepcion = form.cleaned_data.get('cantidad_recepcion')
+
+                obj, created = RecepcionTrasladoProductoDetalle.objects.get_or_create(
+                    content_type = ContentType.objects.get_for_model(material),
+                    id_registro = material.id,
+                    recepcion_traslado_producto = recepcion_traslado_producto,
+                    almacen_destino = form.cleaned_data.get('almacen_destino'),
+                    unidad = form.cleaned_data.get('unidad')
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad_recepcion = cantidad_recepcion
+
+                else:
+                    obj.cantidad_recepcion = obj.cantidad_recepcion + cantidad_recepcion
+
+                registro_guardar(obj, self.request)
+                obj.save()
+
+                cantidad_total = obj.cantidad_recepcion
+                cantidades = {}
+                sociedades = Sociedad.objects.all()
+
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RecepcionTrasladoProductoMaterialDetalleView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Agregar'
+        context['accion'] = 'Material'
+        return context
+
+class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
+    model = RecepcionTrasladoProductoDetalle
+    template_name = "traslado_producto/recepcion/actualizar.html"
+    form_class = RecepcionTrasladoProductoMaterialActualizarDetalleForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.get_object().recepcion_traslado_producto.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        print(self.kwargs)
+        detalle = RecepcionTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        recepcion_traslado_producto = detalle.recepcion_traslado_producto
+        print('***********************************')
+        print(recepcion_traslado_producto.sede_destino)
+        print('***********************************')
+        # sociedad = recepcion_traslado_producto.sociedad
+        sede_destino = recepcion_traslado_producto.sede_destino
+        kwargs = super().get_form_kwargs()
+        return kwargs
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_sede = False
+        context['titulo'] = 'Error de guardar'
+        detalle = RecepcionTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        recepcion_traslado_producto = detalle.recepcion_traslado_producto
+        recepcion_traslado_producto = recepcion_traslado_producto
+        if not recepcion_traslado_producto.sede_destino:
+            error_sede = True
+
+        if error_sede:
+            context['texto'] = 'Ingrese una sede destino.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(RecepcionTrasladoProductoActualizarMaterialDetalleView, self).dispatch(request, *args, **kwargs)
+
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoActualizarMaterialDetalleView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Item"
+        context['material'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
+
+        return context
+
+class RecepcionTrasladoProductoMaterialDeleteView(BSModalDeleteView):
+    model = RecepcionTrasladoProductoDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.get_object().recepcion_traslado_producto.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            materiales = RecepcionTrasladoProductoDetalle.objects.filter(recepcion_traslado_producto=self.get_object().recepcion_traslado_producto)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object(): continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoMaterialDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
+
+        return context
 
