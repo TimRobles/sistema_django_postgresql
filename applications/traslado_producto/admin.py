@@ -3,6 +3,8 @@ from .models import (
     MotivoTraslado,
     EnvioTrasladoProducto,
     EnvioTrasladoProductoDetalle,
+    RecepcionTrasladoProducto,
+    RecepcionTrasladoProductoDetalle,
 )
 
 @admin.register(MotivoTraslado)
@@ -60,6 +62,53 @@ class EnvioTrasladoProductoDetalleAdmin(admin.ModelAdmin):
         'cantidad_envio',
         'unidad',
         'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(RecepcionTrasladoProducto)
+class RecepcionTrasladoProductoAdmin(admin.ModelAdmin):
+    list_display = (
+        'envio_traslado_producto',
+        'numero_recepcion_traslado',
+        'sede_destino',
+        'fecha_recepcion',
+        'responsable',
+        'observaciones',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(RecepcionTrasladoProductoDetalle)
+class RecepcionTrasladoProductoDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'item',
+        'content_type',
+        'id_registro',
+        'almacen_destino',
+        'cantidad_recepcion',
+        'unidad',
+        'estado',
+        'recepcion_traslado_producto',
         'created_at',
         'created_by',
         'updated_at',

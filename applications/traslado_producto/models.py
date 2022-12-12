@@ -78,15 +78,15 @@ class EnvioTrasladoProductoDetalle(models.Model):
 
 
 class RecepcionTrasladoProducto(models.Model):
-    envio_traslado_producto = models.ForeignKey(EnvioTrasladoProducto, on_delete=models.CASCADE, related_name='RecepcionTrasladoProducto_envio_traslado_producto')
-    numero_recepcion_traslado = models.IntegerField('Número de sdf Traslado', blank=True, null=True)
+    envio_traslado_producto = models.ForeignKey(EnvioTrasladoProducto, on_delete=models.CASCADE, related_name='RecepcionTrasladoProducto_envio_traslado_producto', blank=True, null=True)
+    numero_recepcion_traslado = models.IntegerField('Número de Recepción Traslado', blank=True, null=True)
     sede_destino = models.ForeignKey(Sede, on_delete=models.PROTECT, blank=True, null=True)
     fecha_recepcion = models.DateField('Fecha Recepción', auto_now=False, auto_now_add=False,blank=True, null=True)
     responsable = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Responsable', on_delete=models.PROTECT, blank=True, null=True, related_name='RecepcionTrasladoProducto_responsable')  
     observaciones = models.TextField(blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_TRASLADO_PRODUCTO, default=1,blank=True, null=True)
 
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False, blank=True, null=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RecepcionTrasladoProducto_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RecepcionTrasladoProducto_updated_by', editable=False)
@@ -107,7 +107,7 @@ class RecepcionTrasladoProductoDetalle(models.Model):
     cantidad_recepcion = models.DecimalField('Cantidad de Recepción', max_digits=5, decimal_places=2,blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT,blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_TRASLADO_PRODUCTO_DETALLE, default=1,blank=True, null=True)
-    recepcion_traslado_producto = models.ForeignKey(RecepcionTrasladoProducto, on_delete=models.CASCADE, related_name='RecepcionTrasladoProductoDetalle_envio_traslado_producto')
+    recepcion_traslado_producto = models.ForeignKey(RecepcionTrasladoProducto, on_delete=models.CASCADE, related_name='RecepcionTrasladoProductoDetalle_recepcion_traslado_producto')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RecepcionTrasladoProductoDetalle_created_by', editable=False)

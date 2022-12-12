@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Recepción Traslado Producto
+
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'traslado_producto/recepcion/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

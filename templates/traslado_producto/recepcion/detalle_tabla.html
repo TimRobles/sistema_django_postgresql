@@ -1,0 +1,153 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3> Detalle Recepción Traslado Producto 
+    <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
+    {% if recepcion_traslado_producto.estado == 1 %}
+    <button data-form-url="{% url 'traslado_producto_app:recepcion_observaciones' recepcion_traslado_producto.id %}"
+        data-table-url="{% url 'traslado_producto_app:recepcion_ver_tabla' recepcion_traslado_producto.id %}"
+        data-keep-open="true"
+        class="delete btn btn-primary" title="Observaciones">
+        Observaciones
+    </button>
+    {% endif %}
+</h3>
+
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="ps-2" rowspan="4">
+                        {% if recepcion_traslado_producto.estado == 1 %}
+                        <button data-form-url="{% url 'traslado_producto_app:recepcion_actualizar' recepcion_traslado_producto.id %}"
+                            data-table-url="{% url 'traslado_producto_app:recepcion_ver_tabla' recepcion_traslado_producto.id %}"
+                            data-keep-open="true"
+                            class="delete btn btn-primary" title="Actualizar Recepcion">
+                            Actualizar Recepcion
+                        </button>
+                        {% endif %}
+                    </td>                
+                </tr>
+                <tr>
+                    <th class="pe-2">Sede Destino:</th>
+                    <td>
+                        {% if recepcion_traslado_producto.sede_destino %}
+                        {{ recepcion_traslado_producto.sede_destino }} 
+                        {% endif %}
+                    </td>  
+                </tr>
+                <tr>
+                    <th class="pe-2">Responsable:</th>
+                    <td>
+                        {% if recepcion_traslado_producto.responsable %}
+                        {{ recepcion_traslado_producto.responsable }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Fecha Recepcion:</th>
+                    <td>{{ recepcion_traslado_producto.fecha_recepcion|date:'d/m/Y' }}</td>
+                    <td class="px-2" rowspan="2"> 
+                        {% if recepcion_traslado_producto.estado == 1 %}
+                        <button data-form-url="{% url 'traslado_producto_app:recepcion_guardar' recepcion_traslado_producto.id %}"
+                            data-table-url="{% url 'traslado_producto_app:recepcion_ver' recepcion_traslado_producto.id %}"
+                            class="delete btn btn-primary">
+                            Guardar Recepcion
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">N° Recepcion:</th>
+                    <td>
+                        {% if recepcion_traslado_producto.numero_recepcion_traslado %}
+                        {{ recepcion_traslado_producto.numero_recepcion_traslado|numeroXn:6 }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Estado:</th>
+                    <td>{{ recepcion_traslado_producto.get_estado_display }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col table-responsive mb-3" style="overflow-y: scroll; max-height: 100px;">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>
+                        {% if recepcion_traslado_producto.observaciones %}
+                        {{ recepcion_traslado_producto.observaciones|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<button data-form-url="{% url 'traslado_producto_app:recepcion_agregar_material' recepcion_traslado_producto.id %}"
+data-table-url="{% url 'traslado_producto_app:recepcion_ver_tabla' recepcion_traslado_producto.id  %}"
+data-keep-open="True"
+class="update btn btn-primary" title="Agregar Material">
+Agregar Material
+</button>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Producto</th>
+                <th>Almacén Destino</th>
+                <th>Cantidad Recepcion</th>
+                <th>Unidad</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for material in materiales  %}
+            <tr>
+                <td>{{ material.item }}</td>
+                <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
+                <td class="text-nowrap">{{ material.almacen_destino }}</td>
+                <td class="text-nowrap">{{ material.cantidad_recepcion }}</td>
+                <td class="text-nowrap">{{ material.unidad }}</td>
+                <td class="text-nowrap">{{ material.get_estado_display }}</td>
+                <td>
+                    <button data-form-url="{% url 'traslado_producto_app:recepcion_actualizar_material' material.id %}"
+                        data-table-url="{% url 'traslado_producto_app:recepcion_ver_tabla' recepcion_traslado_producto.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'traslado_producto_app:recepcion_eliminar_material' material.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi-x-lg"></i>
+                    </button>
+
+                </td>
+            </tr>                
+            {% endfor %}
+                
+        </tbody>
+    </table>
+</div>
+<br>
