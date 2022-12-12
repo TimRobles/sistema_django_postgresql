@@ -1,7 +1,8 @@
 from decimal import Decimal
 from django.shortcuts import render
+from applications.cobranza.models import DeudaProveedor
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, tipo_de_cambio
 from applications.funciones import slug_aleatorio
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -489,6 +490,18 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
                         updated_by = self.request.user,
                     )
 
+            # Generar deuda
+            DeudaProveedor.objects.create(
+                content_type=ContentType.objects.get_for_model(comprobante),
+                id_registro=comprobante.id,
+                monto=comprobante.total,
+                moneda=comprobante.moneda,
+                tipo_cambio=tipo_de_cambio(),
+                fecha_deuda=date.today(),
+                fecha_vencimiento=date.today(),
+                sociedad=orden.sociedad,
+                proveedor=orden.proveedor,
+            )
 
             messages.success(request, MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI)
         except Exception as ex:

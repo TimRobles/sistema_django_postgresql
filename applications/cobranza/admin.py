@@ -1,12 +1,15 @@
 from django.contrib import admin
 from .models import(
     Cuota,
+    CuotaProveedor,
     Deuda,
+    DeudaProveedor,
     Egreso,
     Ingreso,
     LineaCredito,
     Pago,
     Redondeo,
+    RedondeoProveedor,
     Retiro,
     SolicitudCredito,
     SolicitudCreditoCuota,
@@ -247,6 +250,74 @@ class RetiroAdmin(admin.ModelAdmin):
         'content_type',
         'id_registro',
         'monto',
+        'tipo_cambio',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(DeudaProveedor)
+class DeudaProveedorAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'content_type',
+        'id_registro',
+        'monto',
+        'moneda',
+        'tipo_cambio',
+        'fecha_deuda',
+        'fecha_vencimiento',
+        'sociedad',
+        'proveedor',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(CuotaProveedor)
+class CuotaProveedorAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'deuda',
+        'fecha',
+        'monto',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(RedondeoProveedor)
+class RedondeoProveedorAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'deuda',
+        'fecha',
+        'monto',
+        'moneda',
         'tipo_cambio',
         'created_at',
         'created_by',

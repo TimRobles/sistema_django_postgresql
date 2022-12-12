@@ -488,7 +488,7 @@ class DeudaProveedor(models.Model):
 
     @property
     def saldo(self):
-        return self.monto - self.pagos
+        return self.monto - self.retiros
 
     @property
     def color(self):
@@ -515,8 +515,8 @@ class DeudaProveedor(models.Model):
     @property
     def documento(self):
         if self.content_type:
-            documento_venta = self.content_type.get_object_for_this_type(id = self.id_registro)
-            return '%s %s - %s' % (documento_venta.get_tipo_comprobante_display(), documento_venta.documento, documento_venta.cliente)
+            documento_compra = self.content_type.get_object_for_this_type(id = self.id_registro)
+            return '%s %s - %s' % (documento_compra.get_tipo_comprobante_display(), documento_compra.documento, documento_compra.proveedor)
         return ""
 
     def __str__(self):

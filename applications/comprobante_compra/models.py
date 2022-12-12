@@ -60,8 +60,19 @@ class ComprobanteCompraPI(models.Model):
         return self.fecha_comprobante
 
     @property
+    def proveedor(self):
+        return self.orden_compra.proveedor
+
+    @property
     def detalle(self):
         return self.ComprobanteCompraPIDetalle_comprobante_compra.all()
+
+    def get_tipo_comprobante_display(self):
+        return 'PI'
+
+    @property
+    def documento(self):
+        return self.numero_comprobante_compra
         
     def __str__(self):
         return "%s" % (self.numero_comprobante_compra)
