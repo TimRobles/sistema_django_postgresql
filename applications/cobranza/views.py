@@ -18,6 +18,7 @@ from .forms import(
     CuentaBancariaIngresoPagarForm,
     DeudaPagarForm,
     LineaCreditoForm,
+    ClienteBuscarForm,
 )
 
 class LineaCreditoView(ListView):
@@ -59,13 +60,31 @@ class LineaCreditoCreateView(BSModalCreateView):
         return context
 
 
-class DeudoresView(TemplateView):
+class DeudoresView(FormView): 
     template_name = "cobranza/deudas/inicio.html"
+    form_class = ClienteBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(DeudoresView, self).get_form_kwargs()
+        kwargs['filtro_razon_social'] = self.request.GET.get('razon_social')
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(DeudoresView, self).get_context_data(**kwargs)
         context['contexto_cliente'] = Cliente.objects.all()
         context['moneda'] = Moneda.objects.get(principal=True)
+
+        clientes = Cliente.objects.all()
+        filtro_razon_social = self.request.GET.get('razon_social')
+
+        if filtro_razon_social:
+            condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
+            for palabra in filtro_razon_social.split(" ")[1:]:
+                condicion &= Q(razon_social__unaccent__icontains = palabra)
+            clientes = clientes.filter(condicion)
+            context['contexto_filtro'] = "?razon_social=" + filtro_razon_social
+
         return context
     
 

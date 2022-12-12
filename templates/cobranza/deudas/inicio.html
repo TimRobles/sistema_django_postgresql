@@ -1,13 +1,43 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load funciones_propias %}
+{% load humanize %}
 {% block titulo %}
 Deudores
 {% endblock titulo %}
 
 {% block contenido %}
     <h3>Deudores</h3>
+    <br>
+    <form action="" method="get">
+        <div class="row">
+            {% for field in form %}
+                <div class="col-lg-4">
+                    <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                    {% if field.help_text %}
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                    {% endif %}
+                    >
+                    <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    </div>
+                    {% for error in field.errors %}
+                        <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+            {% endfor %}
+            <div class="col-lg-4 my-auto">
+                <button type="submit" class="btn btn-success" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a class="btn btn-success" href="{% url 'cobranza_app:deudores_inicio' %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+    <br>
 
+    
     <div class="table-responsive" id="tabla">
         <table class="table">
             <thead>
@@ -24,7 +54,7 @@ Deudores
                 {% if cliente.deuda_monto > 0 %}
                 <tr>
                     <td>{{ cliente.razon_social }}</td>
-                    <td>{{ moneda.simbolo }} {{ cliente.deuda_monto }}</td>
+                    <td class="text-end text-nowrap">{{ moneda.simbolo }} {{  cliente.deuda_monto|redondear|intcomma }}</td>
                     <td class="text-center">
                         <a href="{% url 'cobranza_app:deudores_detalle' cliente.id %}"
                             class="btn btn-info btn-sm"
