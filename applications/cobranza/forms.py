@@ -30,6 +30,8 @@ class CuentaBancariaIngresoForm(BSModalModelForm):
             'cuenta_origen',
             'comentario',
             'comision',
+            'voucher',
+            'es_pago',
             'tipo_cambio',
             )
         widgets = {
@@ -47,6 +49,35 @@ class CuentaBancariaIngresoForm(BSModalModelForm):
             self.fields['tipo_cambio'].initial = tipo_de_cambio()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['es_pago'].widget.attrs['class'] = 'form-check-input'
+
+
+class CuentaBancariaEfectivoIngresoForm(BSModalModelForm):
+    class Meta:
+        model = Ingreso
+        fields=(
+            'fecha',
+            'monto',
+            'comentario',
+            'es_pago',
+            'tipo_cambio',
+            )
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CuentaBancariaEfectivoIngresoForm, self).__init__(*args, **kwargs)   
+        if not self.fields['tipo_cambio'].initial:
+            self.fields['tipo_cambio'].initial = tipo_de_cambio()
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['es_pago'].widget.attrs['class'] = 'form-check-input'
 
 
 class CuentaBancariaIngresoPagarForm(BSModalModelForm):

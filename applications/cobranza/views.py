@@ -14,6 +14,7 @@ from .models import(
 )
 
 from .forms import(
+    CuentaBancariaEfectivoIngresoForm,
     CuentaBancariaIngresoForm,
     CuentaBancariaIngresoPagarForm,
     DeudaPagarForm,
@@ -442,6 +443,30 @@ class CuentaBancariaIngresoView(BSModalCreateView):
         return context
     
 
+class CuentaBancariaEfectivoIngresoView(BSModalCreateView):
+    model = Ingreso
+    template_name = "includes/formulario generico.html"
+    form_class = CuentaBancariaEfectivoIngresoForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            cuenta_bancaria = CuentaBancariaSociedad.objects.get(id=self.kwargs['id_cuenta_bancaria'])
+            form.instance.cuenta_bancaria = cuenta_bancaria
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(CuentaBancariaEfectivoIngresoView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Ingreso'
+        return context
+    
+
 class CuentaBancariaIngresoUpdateView(BSModalUpdateView):
     model = Ingreso
     template_name = "includes/formulario generico.html"
@@ -464,6 +489,28 @@ class CuentaBancariaIngresoUpdateView(BSModalUpdateView):
         return context
     
 
+class CuentaBancariaEfectivoIngresoUpdateView(BSModalUpdateView):
+    model = Ingreso
+    template_name = "includes/formulario generico.html"
+    form_class = CuentaBancariaEfectivoIngresoForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(CuentaBancariaEfectivoIngresoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Ingreso'
+        return context
+    
+
 class CuentaBancariaIngresoDeleteView(BSModalDeleteView):
     model = Ingreso
     template_name = "includes/eliminar generico.html"
@@ -476,6 +523,17 @@ class CuentaBancariaIngresoDeleteView(BSModalDeleteView):
         context['accion'] = 'Eliminar'
         context['titulo'] = 'Ingreso'
         context['item'] = self.get_object()
+        return context
+
+
+class CuentaBancariaIngresoVerVoucherView(BSModalReadView):
+    model = Ingreso
+    template_name = "bancos/cuenta bancaria/ver voucher.html"
+    context_object_name = 'cuenta_bancaria'
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaIngresoVerVoucherView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Ver Voucher'
         return context
     
 

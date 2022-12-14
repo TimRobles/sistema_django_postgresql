@@ -490,19 +490,6 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
                         updated_by = self.request.user,
                     )
 
-            # Generar deuda
-            DeudaProveedor.objects.create(
-                content_type=ContentType.objects.get_for_model(comprobante),
-                id_registro=comprobante.id,
-                monto=comprobante.total,
-                moneda=comprobante.moneda,
-                tipo_cambio=tipo_de_cambio(),
-                fecha_deuda=date.today(),
-                fecha_vencimiento=date.today(),
-                sociedad=orden.sociedad,
-                proveedor=orden.proveedor,
-            )
-
             messages.success(request, MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI)
         except Exception as ex:
             transaction.savepoint_rollback(sid)

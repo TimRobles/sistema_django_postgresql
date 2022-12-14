@@ -1,11 +1,11 @@
 from email.policy import default
 from applications.datos_globales.managers import NubefactAccesoManager, NubefactRespuestaManager, SeriesComprobanteManager, TipoCambioManager
-from applications.rutas import NUBEFACT_ACCESO_ENVIO, NUBEFACT_ACCESO_RESPUESTA
 from applications.variables import ESTADOS
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.sociedad.models import Sociedad
 from django.db import models
+from colorfield.fields import ColorField
 
 from applications.funciones import validar_numero
 
@@ -20,6 +20,7 @@ class Moneda(models.Model):
     principal = models.BooleanField(default=False)
     secundario = models.BooleanField(default=False)
     moneda_pais = models.BooleanField('Moneda del país', default=False)
+    color = ColorField(default='#FF0000')
     nubefact = models.IntegerField()
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -362,12 +363,13 @@ class RangoDocumentoFisico(models.Model):
 
 
 class CuentaBancariaSociedad(models.Model):
-    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_numero])
-    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero])
-    banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_numero], blank=True, null=True)
+    numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero], blank=True, null=True)
+    banco = models.ForeignKey(Banco, on_delete=models.CASCADE, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
-    estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
+    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+    efectivo = models.BooleanField(default=False)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaSociedad_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -384,7 +386,10 @@ class CuentaBancariaSociedad(models.Model):
             ]
 
     def __str__(self):
-        return "%s %s : %s | %s - %s" % (self.banco.nombre_comercial, self.moneda, self.numero_cuenta, self.numero_cuenta_interbancaria, self.sociedad)
+        try:
+            return "%s %s : %s | %s - %s" % (self.banco.nombre_comercial, self.moneda, self.numero_cuenta, self.numero_cuenta_interbancaria, self.sociedad)
+        except:
+            return "EFECTIVO %s | %s" % (self.moneda, self.sociedad)
 
 
 class CuentaBancariaPersonal(models.Model):

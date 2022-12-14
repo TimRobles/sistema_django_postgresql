@@ -181,18 +181,41 @@
                 {% endif %}
             </td>
             <td class="text-center text-nowrap">
+                
+                {% if movimiento.es_pago %}
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' cuenta_bancaria.id movimiento.id %}"
                     data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
                     class="create btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
                     <i class="bi bi-wallet2"></i>
                 </button>
+                {% endif %}
+
+                
+                {% if cuenta_bancaria.efectivo %}
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_ingreso_efectivo' cuenta_bancaria.id movimiento.id %}"
+                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                    class="create btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>    
+                {% else %}
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_ingreso' cuenta_bancaria.id movimiento.id %}"
                     data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
                     class="create btn btn-warning btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+                {% endif %}
+                
+                {% if movimiento.voucher %}
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_ver_voucher_ingreso' movimiento.id %}"
+                    class="read btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Voucher">
+                    <i class="bi bi-eye-fill"></i>
+                </button>
+                {% endif %}
+
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_eliminar_ingreso' cuenta_bancaria.id movimiento.id %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">

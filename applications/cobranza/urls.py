@@ -28,7 +28,10 @@ urlpatterns = [
     path('cuenta-bancaria/detalle/<pk>/',views.CuentaBancariaDetalleView.as_view(),name='cuenta_bancaria_detalle'),
     path('cuenta-bancaria/detalle/tabla/<pk>/',views.CuentaBancariaDetalleTabla,name='cuenta_bancaria_detalle_tabla'),
     path('cuenta-bancaria/agregar/ingreso/<int:id_cuenta_bancaria>/',views.CuentaBancariaIngresoView.as_view(),name='cuenta_bancaria_agregar_ingreso'),
+    path('cuenta-bancaria/agregar/ingreso/efectivo/<int:id_cuenta_bancaria>/',views.CuentaBancariaEfectivoIngresoView.as_view(),name='cuenta_bancaria_agregar_ingreso_efectivo'),
     path('cuenta-bancaria/actualizar/ingreso/<int:id_cuenta_bancaria>/<pk>/',views.CuentaBancariaIngresoUpdateView.as_view(),name='cuenta_bancaria_actualizar_ingreso'),
+    path('cuenta-bancaria/actualizar/ingreso/efectivo/<int:id_cuenta_bancaria>/<pk>/',views.CuentaBancariaEfectivoIngresoUpdateView.as_view(),name='cuenta_bancaria_actualizar_ingreso_efectivo'),
+    path('cuenta-bancaria/ver-voucher/ingreso/<pk>/',views.CuentaBancariaIngresoVerVoucherView.as_view(),name='cuenta_bancaria_ver_voucher_ingreso'),
     path('cuenta-bancaria/eliminar/ingreso/<int:id_cuenta_bancaria>/<pk>/',views.CuentaBancariaIngresoDeleteView.as_view(),name='cuenta_bancaria_eliminar_ingreso'),
     
     path('cuenta-bancaria/pagar/deuda/<int:id_cuenta_bancaria>/<int:id_ingreso>/',views.CuentaBancariaIngresoPagarCreateView.as_view(),name='cuenta_bancaria_pagar_deuda'),

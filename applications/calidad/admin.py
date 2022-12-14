@@ -6,6 +6,7 @@ from .models import(
     Serie,
     FallaMaterial,
     HistorialEstadoSerie,
+    SerieConsulta,
 )
 
 @admin.register(EstadoSerie)
@@ -127,3 +128,25 @@ class NotaControlCalidadStockDetalleAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(SerieConsulta)
+class SerieConsultaAdmin(admin.ModelAdmin):
+    list_display = (
+        'serie_base',
+        'content_type',
+        'id_registro',
+        'sociedad',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+    

@@ -10,7 +10,7 @@ from .models import(
     Pago,
     Redondeo,
     RedondeoProveedor,
-    Retiro,
+    PagoProveedor,
     SolicitudCredito,
     SolicitudCreditoCuota,
 )
@@ -242,8 +242,8 @@ class PagoAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(Retiro)
-class RetiroAdmin(admin.ModelAdmin):
+@admin.register(PagoProveedor)
+class PagoProveedorAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'egreso',

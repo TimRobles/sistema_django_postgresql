@@ -9,6 +9,7 @@ from applications.cotizacion.models import CotizacionVenta
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda
 from applications.nota.models import NotaCredito
 from applications.proveedores.models import Proveedor
+from applications.rutas import INGRESO_VOUCHER
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADO_SOLICITUD, ESTADOS
 from django.conf import settings
@@ -158,7 +159,9 @@ class Ingreso(models.Model):
     numero_operacion = models.CharField('Número de operación', max_length=100)
     cuenta_origen = models.CharField('Cuenta de Origen', max_length=100, blank=True, null=True)
     comentario = models.CharField('Comentario', max_length=100, blank=True, null=True)
-    comision = models.DecimalField('Comisión', max_digits=5, decimal_places=2)
+    comision = models.DecimalField('Comisión', max_digits=5, decimal_places=2, default=Decimal('0.00'))
+    voucher = models.FileField(upload_to=INGRESO_VOUCHER, max_length=100, blank=True, null=True)
+    es_pago = models.BooleanField('Para pagar Deudas', default=False)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=3)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -208,6 +211,7 @@ class Egreso(models.Model):
     cuenta_destino = models.CharField('Cuenta de Origen', max_length=100, blank=True, null=True)
     comentario = models.CharField('Comentario', max_length=100, blank=True, null=True)
     comision = models.DecimalField('Comisión', max_digits=5, decimal_places=2)
+    es_pago = models.BooleanField('Para pagar Deudas', default=False)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=3)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -416,8 +420,8 @@ class Pago(models.Model):
         return "%s" % (self.monto)
 
 
-class Retiro(models.Model):
-    egreso = models.ForeignKey(Egreso, on_delete=models.CASCADE, related_name='Retiro_egreso')
+class PagoProveedor(models.Model):
+    egreso = models.ForeignKey(Egreso, on_delete=models.CASCADE, related_name='PagoProveedor_egreso')
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Deuda Proveedor / Notas
     id_registro = models.IntegerField(blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=14, decimal_places=2, blank=True, null=True)
@@ -425,13 +429,13 @@ class Retiro(models.Model):
     comentario = models.CharField('Comentario', max_length=100, blank=True, null=True)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Retiro_created_by', editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='PagoProveedor_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Retiro_updated_by', editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='PagoProveedor_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'Retiro'
-        verbose_name_plural = 'Retiros'
+        verbose_name = 'Pago Proveedor'
+        verbose_name_plural = 'Pagos a Proveedores'
 
     def __str__(self):
         return "%s" % (self.monto)
@@ -439,7 +443,7 @@ class Retiro(models.Model):
 
 DIAS_SEGUIMIENTO = 5
 class DeudaProveedor(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Comprobante de Compra PI
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Comprobante de Compra PI / Recibo de Partner
     id_registro = models.IntegerField(blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=14, decimal_places=2)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
@@ -459,16 +463,16 @@ class DeudaProveedor(models.Model):
         verbose_name_plural = 'Deudas Proeveedor'
 
     @property
-    def retiros(self): #Retiros
+    def pago_proveedores(self):
         try:
-            retiros = Retiro.objects.filter(
+            pago_proveedores = PagoProveedor.objects.filter(
                 content_type=ContentType.objects.get_for_model(self),
                 id_registro=self.id
             )
             total = Decimal('0.00')
-            for retiro in retiros:
-                egreso = retiro.egreso
-                total += (retiro.monto * convertir_moneda(retiro.tipo_cambio, egreso.moneda, self.moneda)).quantize(Decimal('0.00'))
+            for pago_proveedor in pago_proveedores:
+                egreso = pago_proveedor.egreso
+                total += (pago_proveedor.monto * convertir_moneda(pago_proveedor.tipo_cambio, egreso.moneda, self.moneda)).quantize(Decimal('0.00'))
             return total + self.redondeos
         except Exception as e:
             print(e)
@@ -488,7 +492,7 @@ class DeudaProveedor(models.Model):
 
     @property
     def saldo(self):
-        return self.monto - self.retiros
+        return self.monto - self.pago_proveedores
 
     @property
     def color(self):
@@ -524,7 +528,7 @@ class DeudaProveedor(models.Model):
 
 
 class CuotaProveedor(models.Model):
-    deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE, related_name='CuotaProveedor_deuda')
+    deuda = models.ForeignKey(DeudaProveedor, on_delete=models.CASCADE, related_name='CuotaProveedor_deuda')
     fecha = models.DateField(auto_now=False, auto_now_add=False)
     monto = models.DecimalField(max_digits=14, decimal_places=2)
 
@@ -579,7 +583,7 @@ class CuotaProveedor(models.Model):
 
 
 class RedondeoProveedor(models.Model):
-    deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE, related_name='RedondeoProveedor_deuda')
+    deuda = models.ForeignKey(DeudaProveedor, on_delete=models.CASCADE, related_name='RedondeoProveedor_deuda')
     fecha = models.DateField(auto_now=False, auto_now_add=False)
     monto = models.DecimalField(max_digits=14, decimal_places=2)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)

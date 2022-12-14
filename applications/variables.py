@@ -186,7 +186,7 @@ ESTADO_COMPROBANTE = (
     )
 
 ESTADO_COMPROBANTE_PI = (
-    (0, 'PARCIAL'),
+    (0, 'BORRADOR'),
     (1, 'PENDIENTE'),
     (2, 'RECIBIDO'),
     (3, 'ANULADO'),
@@ -348,3 +348,7 @@ DICCIONARIO_TOTALES={
     'total':'Total',
 }
 
+SERIE_CONSULTA = (
+        (1, 'PENDIENTE'),
+        (2, 'SUBIDO'),
+    )

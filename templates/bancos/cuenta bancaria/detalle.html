@@ -17,16 +17,24 @@ Detalle de Cuenta Bancaria
                     <td class="pe-3 fondo-personalizado" style="--color-fondo: {{ cuenta_bancaria.sociedad.color }};">{{ cuenta_bancaria.sociedad }}</td>
                     <th class="pe-2">Estado:</th>
                     <td class="pe-3">{{ cuenta_bancaria.get_estado_display }}</td>
+                    {% if not cuenta_bancaria.efectivo %}
                     <th class="pe-2">Número de Cuenta:</th>
                     <td>{{ cuenta_bancaria.numero_cuenta }}</td>
+                    {% endif %}
                 </tr>
                 <tr>
+                    {% if cuenta_bancaria.efectivo %}
+                    <td class="pe-3">EFECTIVO</td>
+                    {% else %}
                     <th class="pe-2">Banco:</th>
                     <td class="pe-3">{{ cuenta_bancaria.banco }}</td>
+                    {% endif %}
                     <th class="pe-2">Moneda:</th>
-                    <td class="pe-3">{{ cuenta_bancaria.moneda }}</td>
+                    <td class="pe-3 fondo-personalizado" style="--color-fondo: {{ cuenta_bancaria.moneda.color }};">{{ cuenta_bancaria.moneda }}</td>
+                    {% if not cuenta_bancaria.efectivo %}
                     <th class="pe-2">Número de Cuenta Interbancaria:</th>
                     <td>{{ cuenta_bancaria.numero_cuenta_interbancaria }}</td>
+                    {% endif %}
                 </tr>
             </tbody>
         </table>
@@ -35,10 +43,18 @@ Detalle de Cuenta Bancaria
     class="btn btn-primary">
         Regresar
     </a>
+    {% if cuenta_bancaria.efectivo %}
+    <button class="delete btn btn-primary"      
+        data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso_efectivo' cuenta_bancaria.id %}">
+        Agregar Ingreso
+    </button>
+    {% else %}
     <button class="delete btn btn-primary"      
         data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso' cuenta_bancaria.id %}">
         Agregar Ingreso
-    </button>    
+    </button>
+    {% endif %}
+        
 
     <div class="table-responsive" id="tabla">
         {% include 'bancos/cuenta bancaria/detalle tabla.html' %}

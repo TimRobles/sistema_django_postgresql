@@ -6,6 +6,7 @@ from applications.sociedad.models import Sociedad
 from applications.material.models import SubFamilia
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.movimiento_almacen.models import MovimientosAlmacen
+from applications.variables import SERIE_CONSULTA
 
 class FallaMaterial(models.Model):
     sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE)
@@ -43,7 +44,7 @@ class EstadoSerie(models.Model):
 
 class Serie(models.Model):
     serie_base = models.CharField('Nro. Serie', max_length=200)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE)
@@ -168,3 +169,23 @@ class NotaControlCalidadStockDetalle(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class SerieConsulta(models.Model):
+    serie_base = models.CharField('Nro. Serie', max_length=200)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Documento
+    id_registro = models.IntegerField(blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
+    estado = models.IntegerField(choices=SERIE_CONSULTA)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SerieConsulta_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SerieConsulta_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Serie Consulta'
+        verbose_name_plural = 'Series Consultas'
+
+    def __str__(self):
+        return str(self.serie_base)

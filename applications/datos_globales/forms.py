@@ -14,6 +14,7 @@ class MonedaForm(forms.ModelForm):
             'secundario',
             'moneda_pais',
             'nubefact',
+            'color',
             'estado',
             )
 
