@@ -15,7 +15,7 @@
     </thead>
 
     <tbody>
-        {% for movimiento in movimientos %}
+        {% for movimiento in contexto_pagina %}
         <tr>
             <td>{{ movimiento.fecha|date:'d/m/Y' }}</td>
             <td>
