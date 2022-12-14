@@ -122,3 +122,14 @@ class DeudaPagarForm(BSModalModelForm):
             self.fields['ingresos'].initial = ingreso
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ClienteBuscarForm(forms.Form):
+    razon_social = forms.CharField(label = 'Cliente', max_length=100, required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_razon_social = kwargs.pop('filtro_razon_social')
+        super(ClienteBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['razon_social'].initial = filtro_razon_social
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

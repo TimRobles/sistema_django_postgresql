@@ -4,6 +4,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Sociedad</th>
             <th>Nro. Boleta</th>
             <th>Cliente</th>
             <th>Fecha Emision</th>
@@ -17,6 +18,7 @@
     <tbody>
         {% for boleta_venta in contexto_pagina %}
         <tr class="{% if boleta_venta.estado == 3 %}text-danger text-decoration-line-through{% endif %}">
+            <td class="fondo-personalizado" style="--color-fondo: {{ boleta_venta.sociedad.color }};">{{ boleta_venta.sociedad.abreviatura }}</td>
             <td class="text-nowrap">{{ boleta_venta.serie_comprobante }}-{{ boleta_venta.numero_boleta|numeroXn:6 }}</td>
             <td>{{ boleta_venta.cliente }}</td>
             <td>{{ boleta_venta.fecha_emision|date:'d/m/Y' }}</td>
