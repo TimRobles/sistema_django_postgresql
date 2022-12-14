@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from datetime import timedelta
 from reportlab.lib import colors
 from applications.clientes.models import Cliente
@@ -281,9 +282,23 @@ class CuentaBancariaDetalleView(DetailView):
     template_name = "bancos/cuenta bancaria/detalle.html"
     context_object_name = 'cuenta_bancaria'
 
+    # def get_context_data(self, **kwargs):
+    #     context = super(CuentaBancariaDetalleView, self).get_context_data(**kwargs)
+    #     context['movimientos'] = movimientos_bancarios(self.object.id)
+    #     return context
+
     def get_context_data(self, **kwargs):
         context = super(CuentaBancariaDetalleView, self).get_context_data(**kwargs)
-        context['movimientos'] = movimientos_bancarios(self.object.id)
+        movimientos = movimientos_bancarios(self.object.id)
+        
+        objectsxpage = 25 # Show 25 objects per page.
+
+        if len(movimientos) > objectsxpage:
+            paginator = Paginator(movimientos, objectsxpage)
+            page_number = self.request.GET.get('page')
+            movimientos = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = movimientos
         return context
 
 
@@ -292,8 +307,27 @@ def CuentaBancariaDetalleTabla(request, pk):
     if request.method == 'GET':
         template = "bancos/cuenta bancaria/detalle tabla.html"
         context = {}
+        # context['cuenta_bancaria'] = CuentaBancariaSociedad.objects.get(id=pk)
+        # context['movimientos'] = movimientos_bancarios(pk)
+
+        # data['table'] = render_to_string(
+        #     template,
+        #     context,
+        #     request=request
+        # )
+        # return JsonResponse(data)
+
         context['cuenta_bancaria'] = CuentaBancariaSociedad.objects.get(id=pk)
-        context['movimientos'] = movimientos_bancarios(pk)
+        movimientos = movimientos_bancarios(pk)
+
+        objectsxpage = 25 # Show 25 objects per page.
+
+        if len(movimientos) > objectsxpage:
+            paginator = Paginator(movimientos, objectsxpage)
+            page_number = request.GET.get('page')
+            movimientos = paginator.get_page(page_number)
+            
+        context['contexto_pagina'] = movimientos
 
         data['table'] = render_to_string(
             template,
