@@ -2,8 +2,9 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from applications.clientes.models import Cliente
 from applications.sociedad.models import Sociedad
-from applications.material.models import SubFamilia
+from applications.material.models import Material, SubFamilia
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.variables import SERIE_CONSULTA
@@ -173,8 +174,10 @@ class NotaControlCalidadStockDetalle(models.Model):
 
 class SerieConsulta(models.Model):
     serie_base = models.CharField('Nro. Serie', max_length=200)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Documento
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Documento
     id_registro = models.IntegerField(blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     estado = models.IntegerField(choices=SERIE_CONSULTA)
 
