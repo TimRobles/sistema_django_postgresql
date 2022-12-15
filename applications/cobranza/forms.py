@@ -20,6 +20,35 @@ class LineaCreditoForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class CuentaBancariaIngresoCambiarForm(BSModalModelForm):
+    class Meta:
+        model = Ingreso
+        fields=(
+            'cuenta_bancaria',
+            'numero_operacion',
+            'cuenta_origen',
+            'comentario',
+            'comision',
+            'voucher',
+            'tipo_cambio',
+            )
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CuentaBancariaIngresoCambiarForm, self).__init__(*args, **kwargs)   
+        if not self.fields['tipo_cambio'].initial:
+            self.fields['tipo_cambio'].initial = tipo_de_cambio()
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class CuentaBancariaIngresoForm(BSModalModelForm):
     class Meta:
         model = Ingreso

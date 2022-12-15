@@ -190,7 +190,13 @@
                     <i class="bi bi-wallet2"></i>
                 </button>
                 {% endif %}
-
+                
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_cambiar_ingreso' cuenta_bancaria.id movimiento.id %}"
+                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                    class="create btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Cambiar cuenta">
+                    <i class="bi bi-arrow-down-up"></i>
+                </button>
                 
                 {% if cuenta_bancaria.efectivo %}
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_ingreso_efectivo' cuenta_bancaria.id movimiento.id %}"

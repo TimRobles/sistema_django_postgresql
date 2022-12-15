@@ -16,6 +16,7 @@ from .models import(
 
 from .forms import(
     CuentaBancariaEfectivoIngresoForm,
+    CuentaBancariaIngresoCambiarForm,
     CuentaBancariaIngresoForm,
     CuentaBancariaIngresoPagarForm,
     DeudaPagarForm,
@@ -516,6 +517,28 @@ class CuentaBancariaEfectivoIngresoView(BSModalCreateView):
         self.request.session['primero'] = True
         context = super(CuentaBancariaEfectivoIngresoView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
+        context['titulo'] = 'Ingreso'
+        return context
+    
+
+class CuentaBancariaIngresoCambiarUpdateView(BSModalUpdateView):
+    model = Ingreso
+    template_name = "includes/formulario generico.html"
+    form_class = CuentaBancariaIngresoCambiarForm
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(CuentaBancariaIngresoCambiarUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
         context['titulo'] = 'Ingreso'
         return context
     

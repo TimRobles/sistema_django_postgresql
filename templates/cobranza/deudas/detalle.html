@@ -8,7 +8,7 @@ Detalle Deuda
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Deuda - {{ deudas.0.cliente }}</h3>
+    <h3>Detalle Deuda - {{ contexto_deuda.0.cliente }}</h3>
 
     <div class="table-responsive" id="tabla">
         {% include 'cobranza/deudas/detalle tabla.html' %}
