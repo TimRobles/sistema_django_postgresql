@@ -9,11 +9,11 @@
     
     {% for sociedad in sociedades %}
     <div class="flex-nowrap mt-3">
-        <label class="input-group-text text-wrap fondo-personalizado" for="{{ id_cotizacion }}" style="--color-fondo: {{ sociedad.color }};">{{ sociedad }}</label>
+        <label class="input-group-text text-wrap fondo-personalizado" for="{{ id_cotizacion }}" style="--color-fondo: {{ sociedad.nombre_sociedad.color }};">{{ sociedad.nombre_sociedad }}</label>
         <div class="row">
             <div class="col-12 form-floating">
-                <input class="form-control text-end" type="float" name="{{ id_cotizacion }}" id="{{ sociedad.abreviatura }}" placeholder="0.00">
-                <label for="{{ sociedad.abreviatura }}">Con IGV</label>
+                <input class="form-control text-end" type="float" name="{{ id_cotizacion }}" id="{{ sociedad.nombre_sociedad.abreviatura }}" placeholder="0.00">
+                <label for="{{ sociedad.nombre_sociedad.abreviatura }}">Con IGV</label>
             </div>
         </div>
     </div>
