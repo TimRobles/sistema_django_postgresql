@@ -44,8 +44,10 @@ class NotaIngreso(models.Model):
 
 class NotaIngresoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    comprobante_compra_detalle = models.ForeignKey(ComprobanteCompraPIDetalle, on_delete=models.PROTECT, related_name='NotaIngresoDetalle_comprobante_compra_detalle')
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraPIDetalle / NotaStockInicialDetalle
+    id_registro = models.IntegerField()
     cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT)
     nota_ingreso = models.ForeignKey(NotaIngreso, on_delete=models.PROTECT, related_name='NotaIngresoDetalle_nota_ingreso')
 
@@ -60,6 +62,10 @@ class NotaIngresoDetalle(models.Model):
         ordering = [
             'item',
             ]
+
+    @property
+    def comprobante_compra_detalle(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
         return "%s" % (self.comprobante_compra_detalle)
@@ -96,7 +102,6 @@ class NotaStockInicialDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     cantidad_total = models.DecimalField('Cantidad total', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     nota_stock_inicial = models.ForeignKey(NotaStockInicial, on_delete=models.PROTECT, related_name='NotaStockInicialDetalle_nota_stock_inicial')
 

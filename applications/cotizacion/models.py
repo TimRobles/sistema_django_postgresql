@@ -7,6 +7,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
 import applications
+from applications import material
 from applications.rutas import ORDEN_COMPRA_CONFIRMACION
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
@@ -75,7 +76,13 @@ class CotizacionVenta(models.Model):
         for detalle in self.CotizacionVentaDetalle_cotizacion_venta.all():
             for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
                 if cotizacion_sociedad.cantidad > 0:
-                    if not cotizacion_sociedad.sociedad in sociedades: sociedades.append(cotizacion_sociedad.sociedad)
+                    if not cotizacion_sociedad.sociedad in sociedades:
+                        nombre_sociedad = cotizacion_sociedad.sociedad
+                        observaciones = material.funciones.observacion(self, nombre_sociedad)
+                        sociedades.append({
+                            'nombre_sociedad':nombre_sociedad,
+                            'observaciones':observaciones,
+                        })
         return sociedades
 
     @property

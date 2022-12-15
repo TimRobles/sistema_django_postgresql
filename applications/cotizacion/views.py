@@ -349,8 +349,6 @@ class CotizacionVentaVerView(TemplateView):
             pass
 
         sociedades = Sociedad.objects.filter(estado_sunat=1)
-        for sociedad in sociedades:
-            sociedad.observacion = observacion(obj, sociedad)
 
         context = super(CotizacionVentaVerView, self).get_context_data(**kwargs)
         context['cotizacion'] = obj

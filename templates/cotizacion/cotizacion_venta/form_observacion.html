@@ -9,8 +9,8 @@
     
     {% for sociedad in sociedades %}
     <div class="flex-nowrap mt-3">
-        <label class="input-group-text text-wrap fondo-personalizado" for="{{ id_cotizacion }}" style="--color-fondo: {{ sociedad.color }};">{{ sociedad }}</label>
-        <textarea class="form-control" name="{{ id_cotizacion }}" id="{{ sociedad.abreviatura }}"></textarea>
+        <label class="input-group-text text-wrap fondo-personalizado" for="{{ id_cotizacion }}" style="--color-fondo: {{ sociedad.nombre_sociedad.color }};">{{ sociedad.nombre_sociedad }}</label>
+        <textarea class="form-control" name="{{ id_cotizacion }}" id="{{ sociedad.nombre_sociedad.abreviatura }}"></textarea>
     </div>
     {% endfor %}
     

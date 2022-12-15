@@ -2,14 +2,17 @@ from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 
+from applications import material
+
 class ComprobanteCompraPIManager(models.Manager):
     def ver_detalle(self, comprobante_compra_pi):
         comprobante = self.get(id = comprobante_compra_pi)
         consulta = comprobante.ComprobanteCompraPIDetalle_comprobante_compra.all()
         for dato in consulta:
             dato.material = dato.orden_compra_detalle.content_type.get_object_for_this_type(id=dato.orden_compra_detalle.id_registro)
-            if dato.NotaIngresoDetalle_comprobante_compra_detalle.filter(nota_ingreso__estado=2).aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']:
-                dato.contado = dato.NotaIngresoDetalle_comprobante_compra_detalle.filter(nota_ingreso__estado=2).aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+            nota_ingreso_detalle = material.funciones.NotaIngresoDetalle_comprobante_compra_detalle(dato)
+            if nota_ingreso_detalle:
+                dato.contado = nota_ingreso_detalle
             else:
                 dato.contado = Decimal('0.00')
 

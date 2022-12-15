@@ -58,6 +58,24 @@ def ComprobanteCompraPIDetailTabla(request, slug):
         return JsonResponse(data)
 
 
+class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_compra.change_comprobantecomprapi')
+    model = ComprobanteCompraPI
+    template_name = "includes/formulario generico.html"
+    form_class = ComprobanteCompraPIForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraPIGuardarView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Comprobante"
+        return context
+
+
 class ComprobanteCompraPIUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('comprobante_compra.change_comprobantecomprapi')
     model = ComprobanteCompraPI

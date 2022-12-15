@@ -305,14 +305,14 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th class="fondo-personalizado" style="--color-fondo: {{ sociedad.color }};">OBSERVACIONES {{ sociedad.razon_social }}</th>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ sociedad.nombre_sociedad.color }};">OBSERVACIONES {{ sociedad.nombre_sociedad.razon_social }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>
-                        {% if sociedad.observacion %}
-                        {{ sociedad.observacion|linebreaks }}
+                        {% if sociedad.observaciones %}
+                        {{ sociedad.observaciones|linebreaks }}
                         {% endif %}
                     </td>
                 </tr>

@@ -32,7 +32,9 @@ class NotaIngresoDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'item',
-        'comprobante_compra_detalle',
+        'content_type',
+        'id_registro',
+        'proveedor',
         'cantidad_conteo',
         'almacen',
         'created_at',
@@ -77,7 +79,6 @@ class NotaStockInicialDetalleAdmin(admin.ModelAdmin):
         'id',
         'content_type',
         'id_registro',
-        'proveedor',
         'cantidad_total',
         'nota_stock_inicial',
         'created_at',
