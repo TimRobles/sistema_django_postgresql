@@ -1,6 +1,7 @@
 import os, io
 from django.conf import settings
 import urllib.parse
+from django.contrib.humanize.templatetags.humanize import intcomma
 
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors

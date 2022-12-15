@@ -78,17 +78,17 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
     
     for dato in TablaDatos:
         fila = []
-        fila.append(parrafoCentro(dato[0], fuenteBase))
+        fila.append(parrafoCentro(intcomma(dato[0]), fuenteBase))
         fila.append(parrafoIzquierda(dato[1], fuenteBase))
         fila.append(parrafoIzquierda(dato[2], fuenteBase))
-        fila.append(parrafoDerecha(dato[3], fuenteBase))
-        fila.append(parrafoDerecha("%s %s" % (simbolo, dato[4]), fuenteBase))
-        fila.append(parrafoDerecha("%s %s" % (simbolo, dato[5]), fuenteBase))
-        if dato[6] > Decimal('0.00'):
-            fila.append(parrafoDerecha("%s -%s" % (simbolo, dato[6]), fuenteBase, color='red'))        
+        fila.append(parrafoDerecha(intcomma(dato[3]), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (simbolo, intcomma(dato[4])), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (simbolo, intcomma(dato[5])), fuenteBase))
+        if Decimal(dato[6]) > Decimal('0.00'):
+            fila.append(parrafoDerecha("%s -%s" % (simbolo, intcomma(dato[6])), fuenteBase, color='red'))        
         else:
-            fila.append(parrafoDerecha("%s %s" % (simbolo, dato[6]), fuenteBase))        
-        fila.append(parrafoDerecha("%s %s" % (simbolo, dato[7]), fuenteBase))        
+            fila.append(parrafoDerecha("%s %s" % (simbolo, intcomma(dato[6])), fuenteBase))        
+        fila.append(parrafoDerecha("%s %s" % (simbolo, intcomma(dato[7])), fuenteBase))        
         fila.append(parrafoDerecha(dato[8], fuenteBase, tamaño=6))        
 
         data.append(fila)
