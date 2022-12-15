@@ -3,6 +3,7 @@ textareas = document.getElementsByTagName('textarea');
 function inicio() {
     if (document.getElementById('observaciones')) {
         observaciones = document.getElementById('observaciones').innerHTML;
+        console.log(observaciones);
         for (let index = 0; index < textareas.length; index++) {
             const element = textareas[index];
             element.value = observaciones.split('|')[index];
