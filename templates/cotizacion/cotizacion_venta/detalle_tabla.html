@@ -48,7 +48,7 @@
 
     {% if cotizacion.estado != 1 and cotizacion.estado < 7 %}
     <div class="col-auto">
-        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_pdfs' cotizacion.id %}"
+        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_pdfs' cotizacion.slug %}"
             data-small="true"
             class="read btn btn-primary">
             PDFs

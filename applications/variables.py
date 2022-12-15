@@ -285,6 +285,7 @@ MENSAJE_RECHAZAR_OFERTA_PROVEEDOR = 'Operación exitosa: La Oferta fue Rechazada
 MENSAJE_GENERAR_REQUERIMIENTO_PROVEEDOR = 'Operación exitosa: Requerimiento Proveedor generado.'
 MENSAJE_GENERAR_ORDEN_COMPRA = 'Operación exitosa: Orden de Compra generada.'
 MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Generar Comprobante de Compra PI.'
+MENSAJE_GUARDAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Comprobante de Compra PI Guardado.'
 MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Comprobante de Compra PI Anulado.'
 MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI= 'No se puede anular el Comprobante de Compra PI, verifique los procesos siguientes.'
 

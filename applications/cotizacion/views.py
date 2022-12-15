@@ -1600,7 +1600,7 @@ class CotizacionVentaPdfsView(BSModalFormView):
 
     def dispatch(self, request, *args, **kwargs):
         error_cantidad_sociedad = False
-        obj = CotizacionVenta.objects.get(id=self.kwargs['pk'])
+        obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
         context = {}
         context['titulo'] = 'Error de Confirmación'
         for detalle in obj.CotizacionVentaDetalle_cotizacion_venta.all():
@@ -1618,7 +1618,7 @@ class CotizacionVentaPdfsView(BSModalFormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        obj = CotizacionVenta.objects.get(id=self.kwargs['pk'])
+        obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
         context = super(CotizacionVentaPdfsView, self).get_context_data(**kwargs)
         context['titulo'] = 'Ver PDFs'
         context['cotizacion'] = obj

@@ -9,7 +9,8 @@
                 <th>Proveedor</th>
                 <th>Interlocutor</th>
                 <th>Sociedad</th>
-                <th class="text-center">Logístico</th>
+                <th>Estado</th>
+                <th class="text-center">Logístico</th>  
             </tr>
         </thead>
         <tbody>
@@ -19,6 +20,7 @@
                 <td>{{ contexto_comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
                 <td>{{ contexto_comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
                 <td>{{ contexto_comprobante_compra_pi.sociedad }}</td>
+                <td>{{ contexto_comprobante_compra_pi.get_estado_display }}</td>
                 <td class="text-center">{{ contexto_comprobante_compra_pi.logistico }}</td>
             </tr>
         </tbody>

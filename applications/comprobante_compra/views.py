@@ -61,18 +61,30 @@ def ComprobanteCompraPIDetailTabla(request, slug):
 class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('comprobante_compra.change_comprobantecomprapi')
     model = ComprobanteCompraPI
-    template_name = "includes/formulario generico.html"
-    form_class = ComprobanteCompraPIForm
-    success_url = '.'
+    template_name = "includes/eliminar generico.html"
 
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+    def get_success_url(self):
+        return reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':self.kwargs['slug']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 1
+            self.object.save()
+
+            messages.success(request, MENSAJE_GUARDAR_COMPROBANTE_COMPRA_PI)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
     
     def get_context_data(self, **kwargs):
         context = super(ComprobanteCompraPIGuardarView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Comprobante"
+        context['item'] = self.get_object()
         return context
 
 

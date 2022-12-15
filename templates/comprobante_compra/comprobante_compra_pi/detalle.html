@@ -13,6 +13,12 @@
         Actualizar
     </button>
     
+    {% if contexto_comprobante_compra_pi.estado == 0 %}
+        <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_guardar' contexto_comprobante_compra_pi.slug %}"
+            class="delete btn btn-primary">
+            Guardar
+        </button>
+    {% endif %}
     {% if contexto_comprobante_compra_pi.estado == 1 %}
         <button data-form-url="{% url 'comprobante_compra_app:recepcion_comprobante_compra_pi' contexto_comprobante_compra_pi.slug %}"
             class="delete btn btn-primary">

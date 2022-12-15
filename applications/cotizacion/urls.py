@@ -47,7 +47,7 @@ urlpatterns = [
     path('cotizacion-venta/detalle/eliminar/<pk>/', views.CotizacionVentaDetalleDeleteView.as_view(), name='cotizacion_venta_detalle_eliminar'),
     path('cotizacion-venta/detalle/actualizar/<pk>/', views.CotizacionVentaMaterialDetalleUpdateView.as_view(), name='cotizacion_venta_detalle_actualizar'),
 
-    path('cotizacion-venta/pdfs/<pk>/', views.CotizacionVentaPdfsView.as_view(), name='cotizacion_venta_pdfs'),
+    path('cotizacion-venta/pdfs/<slug>/', views.CotizacionVentaPdfsView.as_view(), name='cotizacion_venta_pdfs'),
     path('cotizacion-venta/pdf/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadPdfView.as_view(), name='cotizacion_venta_pdf'),
 
     path('confirmacion/ver/<int:id_confirmacion>/', views.ConfirmarVerView.as_view(), name='confirmacion_ver'),
