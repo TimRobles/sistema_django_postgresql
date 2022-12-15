@@ -95,7 +95,7 @@ class NotaStockInicial(models.Model):
         return self.fecha_ingreso
 
     def __str__(self):
-        return "%s" % (numeroXn(self.nro_nota_ingreso, 6))
+        return "%s" % (numeroXn(self.nro_nota_stock_inicial, 6))
 
 
 class NotaStockInicialDetalle(models.Model):
