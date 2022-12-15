@@ -84,7 +84,7 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
         fila.append(parrafoDerecha(dato[3], fuenteBase))
         fila.append(parrafoDerecha("%s %s" % (simbolo, dato[4]), fuenteBase))
         fila.append(parrafoDerecha("%s %s" % (simbolo, dato[5]), fuenteBase))
-        if Decimal(dato[6]) > Decimal('0.00'):
+        if dato[6] > Decimal('0.00'):
             fila.append(parrafoDerecha("%s -%s" % (simbolo, dato[6]), fuenteBase, color='red'))        
         else:
             fila.append(parrafoDerecha("%s %s" % (simbolo, dato[6]), fuenteBase))        

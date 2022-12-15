@@ -1,10 +1,13 @@
+from decimal import Decimal
+from email.policy import default
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.almacenes.models import Almacen
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
 from applications.funciones import numeroXn
-from applications.nota_ingreso.managers import NotaIngresoManager
+from applications.nota_ingreso.managers import NotaIngresoManager, NotaStockInicialManager
+from applications.proveedores.models import Proveedor
 
 from applications.recepcion_compra.models import RecepcionCompra
 from applications.sociedad.models import Sociedad
@@ -60,3 +63,58 @@ class NotaIngresoDetalle(models.Model):
 
     def __str__(self):
         return "%s" % (self.comprobante_compra_detalle)
+
+
+class NotaStockInicial(models.Model):
+    nro_nota_stock_inicial = models.IntegerField('Número de Nota de Stock Inicial', help_text='Correlativo', blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)
+    observaciones = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_NOTA_INGRESO, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaStockInicial_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaStockInicial_updated_by', editable=False)
+
+    objects = NotaStockInicialManager()
+
+    class Meta:
+        verbose_name = 'Nota de Stock Inicial'
+        verbose_name_plural = 'Notas de Stock Inicial'
+
+    @property
+    def fecha(self):
+        return self.fecha_ingreso
+
+    def __str__(self):
+        return "%s" % (numeroXn(self.nro_nota_ingreso, 6))
+
+
+class NotaStockInicialDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
+    id_registro = models.IntegerField()
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
+    cantidad_total = models.DecimalField('Cantidad total', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    nota_stock_inicial = models.ForeignKey(NotaStockInicial, on_delete=models.PROTECT, related_name='NotaStockInicialDetalle_nota_stock_inicial')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaStockInicialDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaStockInicialDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Nota de Stock Inicial Detalle'
+        verbose_name_plural = 'Notas de Stock Inicial Detalles'
+        ordering = [
+            'item',
+            ]
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    def __str__(self):
+        return "%s - %s" % (self.item, self.producto)
