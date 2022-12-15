@@ -77,6 +77,7 @@ class NotaStockInicialAdmin(admin.ModelAdmin):
 class NotaStockInicialDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'id',
+        'item',
         'content_type',
         'id_registro',
         'cantidad_total',

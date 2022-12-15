@@ -114,6 +114,7 @@ class NotaStockInicialDetalle(models.Model):
         verbose_name = 'Nota de Stock Inicial Detalle'
         verbose_name_plural = 'Notas de Stock Inicial Detalles'
         ordering = [
+            'nota_stock_inicial',
             'item',
             ]
 
