@@ -5,7 +5,7 @@ from urllib import request
 from django.shortcuts import render
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import eliminarDeuda, generarDeuda
-from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaSerieForm, FacturaVentaAnularForm, FacturaVentaDetalleForm, FacturaVentaSerieForm
+from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaBuscarForm, BoletaVentaSerieForm, FacturaVentaAnularForm, FacturaVentaBuscarForm, FacturaVentaDetalleForm, FacturaVentaSerieForm
 from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, factura_nubefact
 from applications.cotizacion.models import ConfirmacionVenta
 from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
@@ -19,13 +19,55 @@ from . models import(
     FacturaVentaDetalle,
 )
 
-class FacturaVentaListView(ListView):
-    model = FacturaVenta
+class FacturaVentaListView(FormView):
+    # model = FacturaVenta
     template_name = 'comprobante_venta/factura_venta/inicio.html'
+    form_class = FacturaVentaBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(FacturaVentaListView, self).get_form_kwargs()
+        # kwargs['filtro_nro_factura'] = self.request.GET.get('nro_factura')
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
+        # kwargs['filtro_estado'] = self.request.GET.get('estado')
+        # kwargs['estados'] = get_user_model().objects.filter(id__in = [cotizacion.created_by.id for cotizacion in CotizacionVenta.objects.all()])
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(FacturaVentaListView,self).get_context_data(**kwargs)
         factura_venta = FacturaVenta.objects.all()
+
+        # filtro_nro_factura = self.request.GET.get('nro_factura')
+        filtro_cliente = self.request.GET.get('cliente')
+        filtro_fecha_emision = self.request.GET.get('fecha_emision')
+        # filtro_estado = self.request.GET.get('estado')
+
+        if filtro_cliente and filtro_fecha_emision:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            factura_venta = factura_venta.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_emision="
+
+        elif filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            factura_venta = factura_venta.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+
+        elif filtro_fecha_emision:
+            condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            factura_venta = factura_venta.filter(condicion)
+            context['contexto_filtro'] = "?fecha_emision=" + filtro_fecha_emision
+
+        # elif filtro_nro_factura:
+        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_factura.split(" ")[0])|Q(numero_factura__icontains = filtro_nro_factura.split(" ")[0]))
+        #     for palabra in filtro_nro_factura.split(" ")[1:]:
+        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_factura__icontains = palabra))
+        #     factura_venta = factura_venta.filter(condicion)
+        #     context['contexto_filtro'] = "?nro_factura=" + filtro_nro_factura
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -43,7 +85,33 @@ def FacturaVentaTabla(request):
         template = 'comprobante_venta/factura_venta/inicio_tabla.html'
         context = {}
         factura_venta = FacturaVenta.objects.all()
+        # filtro_nro_factura = request.GET.get('nro_factura')
+        filtro_cliente = request.GET.get('cliente')
+        filtro_fecha_emision = request.GET.get('fecha_emision')
+        # filtro_estado = request.GET.get('estado')
 
+        if filtro_cliente and filtro_fecha_emision:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            factura_venta = factura_venta.filter(condicion)
+
+        elif filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            factura_venta = factura_venta.filter(condicion)
+
+        elif filtro_fecha_emision:
+            condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            factura_venta = factura_venta.filter(condicion)
+
+        # elif filtro_nro_factura:
+        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_factura.split(" ")[0])|Q(numero_factura__icontains = filtro_nro_factura.split(" ")[0]))
+        #     for palabra in filtro_nro_factura.split(" ")[1:]:
+        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_factura__icontains = palabra))
+        #     factura_venta = factura_venta.filter(condicion)
+            
         objectsxpage = 25 # Show 25 objects per page.
 
         if len(factura_venta) > objectsxpage:
@@ -770,13 +838,55 @@ class FacturaVentaDetalleUpdateView(BSModalUpdateView):
 
 ###########################################################################################
 
-class BoletaVentaListView(ListView):
-    model = BoletaVenta
+class BoletaVentaListView(FormView):
+    # model = BoletaVenta
     template_name = 'comprobante_venta/boleta_venta/inicio.html'
+    form_class = BoletaVentaBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(BoletaVentaListView, self).get_form_kwargs()
+        # kwargs['filtro_nro_boleta'] = self.request.GET.get('nro_boleta')
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
+        # kwargs['filtro_estado'] = self.request.GET.get('estado')
+        # kwargs['estados'] = get_user_model().objects.filter(id__in = [cotizacion.created_by.id for cotizacion in CotizacionVenta.objects.all()])
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(BoletaVentaListView,self).get_context_data(**kwargs)
         boleta_venta = BoletaVenta.objects.all()
+
+        # filtro_nro_boleta = self.request.GET.get('nro_boleta')
+        filtro_cliente = self.request.GET.get('cliente')
+        filtro_fecha_emision = self.request.GET.get('fecha_emision')
+        # filtro_estado = self.request.GET.get('estado')
+
+        if filtro_cliente and filtro_fecha_emision:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            boleta_venta = boleta_venta.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_emision="
+
+        elif filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            boleta_venta = boleta_venta.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+
+        elif filtro_fecha_emision:
+            condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            boleta_venta = boleta_venta.filter(condicion)
+            context['contexto_filtro'] = "?fecha_emision=" + filtro_fecha_emision
+
+        # elif filtro_nro_boleta:
+        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_boleta.split(" ")[0])|Q(numero_boleta__icontains = filtro_nro_boleta.split(" ")[0]))
+        #     for palabra in filtro_nro_boleta.split(" ")[1:]:
+        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_boleta__icontains = palabra))
+        #     boleta_venta = boleta_venta.filter(condicion)
+        #     context['contexto_filtro'] = "?nro_boleta=" + filtro_nro_boleta
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -788,12 +898,40 @@ class BoletaVentaListView(ListView):
         context['contexto_pagina'] = boleta_venta
         return context
 
+
 def BoletaVentaTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'comprobante_venta/boleta_venta/inicio_tabla.html'
         context = {}
         boleta_venta = BoletaVenta.objects.all()
+
+        # filtro_nro_boleta = request.GET.get('nro_boleta')
+        filtro_cliente = request.GET.get('cliente')
+        filtro_fecha_emision = request.GET.get('fecha_emision')
+        # filtro_estado = request.GET.get('estado')
+
+        if filtro_cliente and filtro_fecha_emision:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            boleta_venta = boleta_venta.filter(condicion)
+
+        elif filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            boleta_venta = boleta_venta.filter(condicion)
+
+        elif filtro_fecha_emision:
+            condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            boleta_venta = boleta_venta.filter(condicion)
+
+        # elif filtro_nro_boleta:
+        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_boleta.split(" ")[0])|Q(numero_boleta__icontains = filtro_nro_boleta.split(" ")[0]))
+        #     for palabra in filtro_nro_boleta.split(" ")[1:]:
+        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_boleta__icontains = palabra))
+        #     boleta_venta = boleta_venta.filter(condicion)
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -810,6 +948,7 @@ def BoletaVentaTabla(request):
             request=request
         )
         return JsonResponse(data)
+
 
 class BoletaVentaDetalleView(TemplateView):
     template_name = "comprobante_venta/boleta_venta/detalle.html"
