@@ -213,7 +213,7 @@ class NotaSalidaAnularForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class NotaSalidaDetalleSeriesForm(BSModalModelForm):
-    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10)
+    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10, required=False)
     series = forms.CharField(widget=forms.Textarea, required=False)
     class Meta:
         model = NotaSalidaDetalle
