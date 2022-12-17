@@ -959,17 +959,6 @@ class NotaSalidaDetalleSeriesView(PermissionRequiredMixin, BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.object.nota_salida.id})
 
-    # def get_form_kwargs(self, *args, **kwargs):
-    #     material = self.object.solicitud_prestamo_materiales_detalle
-    #     suma = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
-    #         'cantidad_salida__sum']
-    #     cantidad_salida = self.object.cantidad_salida
-    #     kwargs = super(NotaSalidaDetalleUpdateView, self).get_form_kwargs(*args, **kwargs)
-    #     kwargs['solicitud'] = material
-    #     kwargs['suma'] = suma - cantidad_salida
-    #     kwargs['id_sociedad'] = self.object.nota_salida.sociedad.id
-    #     return kwargs
-
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)

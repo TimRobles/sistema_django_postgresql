@@ -230,6 +230,30 @@ class NotaSalidaDetalle(models.Model):
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
 
+
+# class NotaSalidaDetalle(models.Model):
+#     item = models.IntegerField(blank=True, null=True)
+#     confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True)
+#     solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
+#     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+#     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+#     cantidad_salida = models.DecimalField('Cantidad Salida', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+#     nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_nota_salida')
+#     estado = models.IntegerField(choices=ESTADOS, default=1)
+
+#     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_created_by', editable=False)
+#     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+#     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_updated_by', editable=False)
+
+#     class Meta:
+#         verbose_name = 'Nota de Salida Detalle'
+#         verbose_name_plural = 'Notas de Salida Detalle'
+#         ordering = ['item',]
+
+#     def __str__(self):
+#         return "%s - %s" % (self.item, self.producto)
+        
 class Despacho(models.Model):
     ESTADOS_DESPACHO = (
     (1, 'EN PROCESO'),
