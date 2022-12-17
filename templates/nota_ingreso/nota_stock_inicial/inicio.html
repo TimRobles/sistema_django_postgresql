@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Notas de Stock Inicial
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Notas de Stock Inicial</h3>
+
+    <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+    <button data-form-url="{% url 'nota_ingreso_app:nota_stock_inicial_crear' %}"
+        class="delete btn btn-primary">
+        Generar Nota
+    </button>
+    <div class="table-responsive" id="tabla">
+        {% include 'nota_ingreso/nota_stock_inicial/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

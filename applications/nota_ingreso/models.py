@@ -17,7 +17,8 @@ from django.db.models.signals import pre_save, post_save, post_delete
 # Create your models here.
 class NotaIngreso(models.Model):
     nro_nota_ingreso = models.IntegerField('Número de Nota de Ingreso', help_text='Correlativo', blank=True, null=True)
-    recepcion_compra = models.ForeignKey(RecepcionCompra, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicialDetalle
+    id_registro = models.IntegerField()
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)
     observaciones = models.TextField(blank=True, null=True)
@@ -38,6 +39,10 @@ class NotaIngreso(models.Model):
     @property
     def fecha(self):
         return self.fecha_ingreso
+    
+    @property
+    def recepcion_compra(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
         return "%s - %s" % (numeroXn(self.nro_nota_ingreso, 6), self.recepcion_compra)
@@ -61,6 +66,7 @@ class NotaIngresoDetalle(models.Model):
         verbose_name = 'Nota de Ingreso Detalle'
         verbose_name_plural = 'Notas de Ingreso Detalles'
         ordering = [
+            'nota_ingreso',
             'item',
             ]
 
@@ -105,6 +111,14 @@ class NotaStockInicial(models.Model):
     @property
     def fecha(self):
         return self.fecha_ingreso
+    
+    @property
+    def documento(self):
+        return self
+    
+    @property
+    def detalle(self):
+        return self.NotaStockInicialDetalle_nota_stock_inicial.all()
 
     def __str__(self):
         return "%s" % (numeroXn(self.nro_nota_stock_inicial, 6))
@@ -133,6 +147,14 @@ class NotaStockInicialDetalle(models.Model):
     @property
     def producto(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def cantidad(self):
+        return self.cantidad_total
+    
+    @property
+    def orden_compra_detalle(self):
+        return self
 
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)

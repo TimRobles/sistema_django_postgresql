@@ -5,13 +5,13 @@
 {% block content %}
 
 {% for sociedad, stocks in stocks.items %}
-    <h3>
-        {% if sociedad %}
+    {% if sociedad %}
+    <h3 class="fondo-personalizado" style="--color-fondo: {{ sociedad.color }};">
         {{ sociedad }}    
-        {% else %}
-        SIN SOCIEDAD
-        {% endif %}
     </h3>
+    {% else %}
+    <h3>SIN SOCIEDAD</h3>
+    {% endif %}
     <div class="table-responsive mb-3">
         <table class="table">
             <thead>

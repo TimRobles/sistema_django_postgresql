@@ -37,6 +37,7 @@ class NotaIngresoDetalleAdmin(admin.ModelAdmin):
         'proveedor',
         'cantidad_conteo',
         'almacen',
+        'nota_ingreso',
         'created_at',
         'created_by',
         'updated_at',

@@ -37,7 +37,7 @@ class MovimientoAlmacenManager(models.Manager):
         consulta = self.filter(
             content_type_producto = content_type,
             id_registro_producto = id_registro,
-        )
+        ).order_by('sociedad')
 
         for dato in consulta:
             estado = dato.tipo_stock
