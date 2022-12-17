@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block titulo %}
-    Detalle Comprobante de Compra
+    Detalle Comprobante de Compra CI
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Comprobante de Compra</h3>
+    <h3>Detalle Comprobante de Compra CI</h3>
     {% if contexto_comprobante_compra_ci.estado == 1 %}
         <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_finalizar' contexto_comprobante_compra_ci.slug %}"
             class="delete btn btn-primary">

@@ -12,6 +12,7 @@ from applications.proveedores.models import Proveedor
 from applications.recepcion_compra.models import RecepcionCompra
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADO_NOTA_INGRESO
+from django.db.models.signals import pre_save, post_save, post_delete
 
 # Create your models here.
 class NotaIngreso(models.Model):
@@ -39,7 +40,7 @@ class NotaIngreso(models.Model):
         return self.fecha_ingreso
 
     def __str__(self):
-        return "%s" % (numeroXn(self.nro_nota_ingreso, 6))
+        return "%s - %s" % (numeroXn(self.nro_nota_ingreso, 6), self.recepcion_compra)
 
 
 class NotaIngresoDetalle(models.Model):
@@ -47,8 +48,8 @@ class NotaIngresoDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraPIDetalle / NotaStockInicialDetalle
     id_registro = models.IntegerField()
     cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
     nota_ingreso = models.ForeignKey(NotaIngreso, on_delete=models.PROTECT, related_name='NotaIngresoDetalle_nota_ingreso')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -69,6 +70,17 @@ class NotaIngresoDetalle(models.Model):
 
     def __str__(self):
         return "%s" % (self.comprobante_compra_detalle)
+
+def nota_ingreso_detalle_post_save(*args, **kwargs):
+    if kwargs['created']:
+        obj = kwargs['instance']
+        try:
+            obj.proveedor = obj.comprobante_compra_detalle.proveedor
+            obj.proveedor.save()
+        except Exception as e:
+            pass
+            
+post_save.connect(nota_ingreso_detalle_post_save, sender=NotaIngresoDetalle)
 
 
 class NotaStockInicial(models.Model):

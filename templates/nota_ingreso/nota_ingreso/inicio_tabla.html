@@ -1,3 +1,5 @@
+{% load funciones_propias %}
+
 <table class="table">
     <thead>
         <tr>
@@ -14,7 +16,7 @@
         {% for nota_ingreso in contexto_nota_ingreso %}
         <tr> 
             <td>{{ nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
-            <td>{{ nota_ingreso.nro_nota_ingreso }}</td>
+            <td>{{ nota_ingreso.nro_nota_ingreso|numeroXn:6 }}</td>
             <td>
                 {% if nota_ingreso.observaciones %}
                     {{ nota_ingreso.observaciones }}

@@ -92,8 +92,9 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
                 comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
 
                 buscar = NotaIngresoDetalle.objects.filter(
-                    comprobante_compra_detalle = comprobante_compra_detalle,
-                )
+                    content_type=content_type,
+                    id_registro=id_registro,
+                ).exclude(nota_ingreso__estado=3)
 
                 if buscar:
                     contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
@@ -105,7 +106,8 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
                     return super().form_invalid(form)
                 
                 nota_ingreso_detalle, created = NotaIngresoDetalle.objects.get_or_create(
-                    comprobante_compra_detalle = comprobante_compra_detalle,
+                    content_type=content_type,
+                    id_registro=id_registro,
                     almacen = almacen,
                     nota_ingreso = nota_ingreso,
                 )
@@ -118,9 +120,9 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
                     nota_ingreso_detalle.cantidad_conteo = nota_ingreso_detalle.cantidad_conteo + cantidad
                     nota_ingreso_detalle.updated_by = self.request.user
                 nota_ingreso_detalle.save()
-
+                
                 self.request.session['primero'] = False
-            return super().form_valid(form)
+                return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -171,18 +173,20 @@ class NotaIngresoActualizarMaterialView(BSModalFormView):
                 comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
 
                 buscar = NotaIngresoDetalle.objects.filter(
-                    comprobante_compra_detalle = comprobante_compra_detalle,
+                    content_type=content_type,
+                    id_registro=id_registro,
                     almacen = almacen,
                     nota_ingreso = nota_ingreso_detalle.nota_ingreso,
-                ).exclude(id=nota_ingreso_detalle.id)
+                ).exclude(id=nota_ingreso_detalle.id).exclude(nota_ingreso__estado=3)
 
                 if len(buscar)>0:
                     form.add_error('almacen', 'Ya existe ese producto en ese almacén')
                     return super().form_invalid(form)
 
                 buscar = NotaIngresoDetalle.objects.filter(
-                    comprobante_compra_detalle = comprobante_compra_detalle,
-                ).exclude(id=nota_ingreso_detalle.id)
+                    content_type=content_type,
+                    id_registro=id_registro,
+                ).exclude(id=nota_ingreso_detalle.id).exclude(nota_ingreso__estado=3)
 
                 if buscar:
                     contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
@@ -193,14 +197,15 @@ class NotaIngresoActualizarMaterialView(BSModalFormView):
                     form.add_error('cantidad', 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
                     return super().form_invalid(form)
                 
-                nota_ingreso_detalle.comprobante_compra_detalle = comprobante_compra_detalle
+                nota_ingreso_detalle.content_type=content_type
+                nota_ingreso_detalle.id_registro=id_registro
                 nota_ingreso_detalle.cantidad_conteo = cantidad
                 nota_ingreso_detalle.almacen = almacen
                 nota_ingreso_detalle.updated_by = self.request.user
                 nota_ingreso_detalle.save()
                 
                 self.request.session['primero'] = False
-            return super().form_valid(form)
+                return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)

@@ -76,13 +76,14 @@ class CotizacionVenta(models.Model):
         for detalle in self.CotizacionVentaDetalle_cotizacion_venta.all():
             for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
                 if cotizacion_sociedad.cantidad > 0:
-                    if not cotizacion_sociedad.sociedad in sociedades:
-                        nombre_sociedad = cotizacion_sociedad.sociedad
-                        observaciones = material.funciones.observacion(self, nombre_sociedad)
-                        sociedades.append({
+                    nombre_sociedad = cotizacion_sociedad.sociedad
+                    observaciones = material.funciones.observacion(self, nombre_sociedad)
+                    sociedad = {
                             'nombre_sociedad':nombre_sociedad,
                             'observaciones':observaciones,
-                        })
+                        }
+                    if not sociedad in sociedades:
+                        sociedades.append(sociedad)
         return sociedades
 
     @property

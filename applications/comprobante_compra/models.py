@@ -3,10 +3,12 @@ from django.db import models
 from applications.comprobante_compra.managers import ComprobanteCompraCIDetalleManager, ComprobanteCompraPIDetalleManager, ComprobanteCompraPIManager
 from applications.datos_globales.models import Moneda
 from django.conf import settings
+from applications.funciones import obtener_totales
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from django.contrib.contenttypes.models import ContentType
 from applications.rutas import ARCHIVO_COMPROBANTE_COMPRA_PI_ARCHIVO, COMPROBANTE_COMPRA_CI_ARCHIVO, COMPROBANTE_COMPRA_PI_ARCHIVO
 from applications.sociedad.models import Sociedad
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 from applications.variables import ESTADO_COMPROBANTE_PI, ESTADO_COMPROBANTE_CI, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
 
@@ -15,7 +17,7 @@ class ComprobanteCompraPI(models.Model):
     internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=1)
     incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50, blank=True, null=True)
-    orden_compra = models.OneToOneField(OrdenCompra, on_delete=models.PROTECT)
+    orden_compra = models.OneToOneField(OrdenCompra, on_delete=models.PROTECT, related_name='ComprobanteCompraPI_orden_compra')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     fecha_comprobante = models.DateField('Fecha del Comprobante', auto_now=False, auto_now_add=False, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
@@ -35,7 +37,7 @@ class ComprobanteCompraPI(models.Model):
     condiciones = models.TextField('Condiciones', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE_PI, default=0)
     motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)
-    logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=1)
+    logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=Decimal('1.00'))
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraPI_created_by', editable=False)
@@ -108,8 +110,20 @@ class ComprobanteCompraPIDetalle(models.Model):
             ]
 
     @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    @property
+    def id_registro(self):
+        return self.id
+
+    @property
     def producto(self):
         return self.orden_compra_detalle.producto
+    
+    @property
+    def proveedor(self):
+        return self.comprobante_compra.proveedor
 
     def __str__(self):
         return "%s" % (str(self.orden_compra_detalle))
@@ -202,3 +216,19 @@ class ComprobanteCompraCIDetalle(models.Model):
 
     def __str__(self):
         return str(self.item)
+
+def comprobante_compra_ci_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.comprobante_compra)
+    obj.comprobante_compra.total_descuento = respuesta['total_descuento']
+    obj.comprobante_compra.total_anticipo = respuesta['total_anticipo']
+    obj.comprobante_compra.total_gravada = respuesta['total_gravada']
+    obj.comprobante_compra.total_inafecta = respuesta['total_inafecta']
+    obj.comprobante_compra.total_exonerada = respuesta['total_exonerada']
+    obj.comprobante_compra.total_igv = respuesta['total_igv']
+    obj.comprobante_compra.total_gratuita = respuesta['total_gratuita']
+    obj.comprobante_compra.otros_cargos = respuesta['total_otros_cargos']
+    obj.comprobante_compra.total = respuesta['total']
+    obj.comprobante_compra.save()
+
+post_save.connect(comprobante_compra_ci_detalle_post_save, sender=ComprobanteCompraCIDetalle)

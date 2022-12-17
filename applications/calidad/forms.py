@@ -1,4 +1,5 @@
 from django import forms
+from applications.nota_ingreso.models import NotaIngreso
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import FallaMaterial, HistorialEstadoSerie, NotaControlCalidadStock, NotaControlCalidadStockDetalle, Serie
 
@@ -28,6 +29,7 @@ class NotaControlCalidadStockForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(NotaControlCalidadStockForm, self).__init__(*args, **kwargs)
+        self.fields['nota_ingreso'].queryset = NotaIngreso.objects.filter(estado=2)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

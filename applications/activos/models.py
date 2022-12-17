@@ -494,7 +494,7 @@ def ComprobanteCompraActivoDetalle_post_save(*args, **kwargs):
     obj = kwargs['instance']
     totales = obtener_totales(ComprobanteCompraActivo.objects.get(id=obj.comprobante_compra_activo.id))
     for key, value in totales.items():
-        setattr( obj.comprobante_compra_activo, key, value)
+        setattr(obj.comprobante_compra_activo, key, value)
     registro_guardar_user(obj.comprobante_compra_activo, obj.updated_by)
     obj.comprobante_compra_activo.save()
 

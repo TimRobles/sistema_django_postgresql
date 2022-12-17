@@ -1,6 +1,8 @@
+from decimal import Decimal
+from applications.cobranza.models import DeudaProveedor
 from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, RecepcionComprobanteCompraPIForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import igv, obtener_totales, registrar_excepcion
+from applications.funciones import igv, obtener_totales, registrar_excepcion, tipo_de_cambio
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
@@ -63,6 +65,39 @@ class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView)
     model = ComprobanteCompraPI
     template_name = "includes/eliminar generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
+        context = {}
+        context['titulo'] = 'Error de guardar'
+        
+        error_fecha = False
+        if not obj.fecha:
+            error_fecha = True
+
+        error_numero_comprobante_compra = False
+        if not obj.numero_comprobante_compra:
+            error_numero_comprobante_compra = True
+
+        error_logistico = False
+        if obj.logistico == Decimal('1.00'):
+            error_logistico = True
+
+        if error_fecha:
+            context['texto'] = 'No hay Fecha registrada.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
+        if error_numero_comprobante_compra:
+            context['texto'] = 'No hay Numero de Comprobante de Compra registrada.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
+        if error_logistico:
+            context['texto'] = 'No hay Logístico registrado.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super(ComprobanteCompraPIGuardarView, self).dispatch(request, *args, **kwargs)    
+
     def get_success_url(self):
         return reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':self.kwargs['slug']})
 
@@ -71,8 +106,30 @@ class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView)
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
+            totales = obtener_totales(self.object)
+            self.object.total_descuento = totales['total_descuento']
+            self.object.total_anticipo = totales['total_anticipo']
+            self.object.total_gravada = totales['total_gravada']
+            self.object.total_inafecta = totales['total_inafecta']
+            self.object.total_exonerada = totales['total_exonerada']
+            self.object.total_igv = totales['total_igv']
+            self.object.total_gratuita = totales['total_gratuita']
+            self.object.otros_cargos = totales['total_otros_cargos']
+            self.object.total = totales['total']
             self.object.estado = 1
             self.object.save()
+
+            DeudaProveedor.objects.create(
+                content_type=ContentType.objects.get_for_model(self.object),
+                id_registro=self.object.id,
+                monto=self.object.total,
+                moneda=self.object.moneda,
+                tipo_cambio=tipo_de_cambio(),
+                fecha_deuda=date.today(),
+                fecha_vencimiento=date.today(),
+                sociedad=self.object.orden_compra.sociedad,
+                proveedor=self.object.orden_compra.proveedor,
+            )
 
             messages.success(request, MENSAJE_GUARDAR_COMPROBANTE_COMPRA_PI)
         except Exception as ex:
@@ -82,8 +139,9 @@ class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView)
     
     def get_context_data(self, **kwargs):
         context = super(ComprobanteCompraPIGuardarView, self).get_context_data(**kwargs)
-        context['accion'] = "Actualizar"
+        context['accion'] = "Guardar"
         context['titulo'] = "Comprobante"
+        context['dar_baja'] = True
         context['item'] = self.get_object()
         return context
 
@@ -157,7 +215,13 @@ class ComprobanteCompraPIAnularView(PermissionRequiredMixin, BSModalDeleteView):
                         movimiento_reversion = False,
                     )
                 movimiento_dos.delete()
+            
+            deuda_proveedor = DeudaProveedor.objects.get(
+                content_type=ContentType.objects.get_for_model(comprobante),
+                id_registro=comprobante.id,
+            )
 
+            deuda_proveedor.delete()
             comprobante.delete()
 
             messages.success(request, MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI)
@@ -289,7 +353,6 @@ class RecepcionComprobanteCompraPIView(PermissionRequiredMixin, BSModalFormView)
                         updated_by = self.request.user,
                     )
                 comprobante_pi.estado = 2
-                comprobante_pi.total = obtener_totales(comprobante_pi)['total']
                 registro_guardar(comprobante_pi, self.request)
                 comprobante_pi.save()
                 self.request.session['primero'] = False

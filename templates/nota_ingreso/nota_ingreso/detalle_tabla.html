@@ -49,7 +49,11 @@
 </div>
 <br>
 <h4>Observaciones:</h4>
-<p>{{ contexto_nota_ingreso.observaciones }}</p>
+<p>
+    {% if contexto_nota_ingreso.observaciones %}
+    {{ contexto_nota_ingreso.observaciones }}
+    {% endif %}
+</p>
 <br>
 <h3>Materiales</h3>
 

@@ -489,6 +489,9 @@ class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
                         created_by = self.request.user,
                         updated_by = self.request.user,
                     )
+            
+            orden.estado = 3
+            orden.save()
 
             messages.success(request, MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI)
         except Exception as ex:
