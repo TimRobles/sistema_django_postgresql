@@ -120,6 +120,7 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
                 buscar = NotaIngresoDetalle.objects.filter(
                     content_type=content_type,
                     id_registro=id_registro,
+                    nota_ingreso=nota_ingreso,
                 ).exclude(nota_ingreso__estado=3)
 
                 if buscar:

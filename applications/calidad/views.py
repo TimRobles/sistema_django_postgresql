@@ -253,12 +253,30 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
             if self.request.session['primero']:
                 registro = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
                 item = len(registro.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
-                material = form.cleaned_data.get('material')
+                nota_ingreso_detalle = form.cleaned_data.get('material')
                 cantidad_calidad = form.cleaned_data.get('cantidad_calidad')
                 inspeccion = form.cleaned_data.get('inspeccion')
+                
+                buscar = NotaIngresoDetalle.objects.filter(
+                    content_type=nota_ingreso_detalle.content_type,
+                    id_registro=nota_ingreso_detalle.id_registro,
+                    nota_ingreso=nota_ingreso_detalle.nota_ingreso,
+                ).exclude(nota_ingreso__estado=3)
+
+                if buscar:
+                    contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+                else:
+                    contar = 0
+
+                print("CONTINUAR")
+                print(buscar, contar, cantidad_calidad, nota_ingreso_detalle.cantidad_conteo)
+
+                if nota_ingreso_detalle.cantidad_conteo < contar + cantidad_calidad:
+                    form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + cantidad_calidad))
+                    return super().form_invalid(form)
 
                 obj, created = NotaControlCalidadStockDetalle.objects.get_or_create(
-                    nota_ingreso_detalle = material,
+                    nota_ingreso_detalle = nota_ingreso_detalle,
                     nota_control_calidad_stock = registro,
                 )
                 if created:
@@ -304,6 +322,22 @@ class NotaControlCalidadStockDetalleUpdateView(PermissionRequiredMixin, BSModalU
         return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_id})
 
     def form_valid(self, form):
+        nota_ingreso_detalle = form.instance.nota_ingreso_detalle
+        buscar = NotaIngresoDetalle.objects.filter(
+            content_type=nota_ingreso_detalle.content_type,
+            id_registro=nota_ingreso_detalle.id_registro,
+            nota_ingreso=nota_ingreso_detalle.nota_ingreso,
+        ).exclude(id=nota_ingreso_detalle.id).exclude(nota_ingreso__estado=3)
+
+        if buscar:
+            contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+        else:
+            contar = 0
+
+        if nota_ingreso_detalle.cantidad_conteo < contar + form.instance.cantidad_calidad:
+            form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + form.instance.cantidad_calidad))
+            return super().form_invalid(form)
+            
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
