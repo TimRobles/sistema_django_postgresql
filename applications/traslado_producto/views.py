@@ -344,6 +344,7 @@ def RecepcionTrasladoProductoCrearView(request):
     obj.save()
     return HttpResponseRedirect(reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':obj.id}))
 
+
 class RecepcionTrasladoProductoVerView(TemplateView):
     template_name = "traslado_producto/recepcion/detalle.html"
 
@@ -427,7 +428,7 @@ class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
-            self.object.estado = 2
+            self.object.estado = 3
             numero_recepcion_traslado = RecepcionTrasladoProducto.objects.all().aggregate(Count('numero_recepcion_traslado'))['numero_recepcion_traslado__count'] + 1
             self.object.numero_recepcion_traslado = numero_recepcion_traslado
             self.object.fecha_recepcion = datetime. now()
