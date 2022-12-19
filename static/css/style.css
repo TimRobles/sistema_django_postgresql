@@ -67,3 +67,12 @@
 .texto-personalizado{
     color: var(--color-texto) !important;
 }
+
+.field-lineal{
+    min-width: 150px !important;
+    max-width: 150px !important;
+}
+
+.columna-auto{
+    width: auto !important;
+}

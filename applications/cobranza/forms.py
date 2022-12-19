@@ -1,4 +1,5 @@
 from django import forms
+from applications.datos_globales.models import CuentaBancariaSociedad, Moneda
 from applications.funciones import tipo_de_cambio
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.cobranza.models import Deuda, Ingreso, LineaCredito, Pago
@@ -165,11 +166,26 @@ class ClienteBuscarForm(forms.Form):
 
 
 class DepositosBuscarForm(forms.Form):
-    numero_operacion = forms.CharField(label = 'Razón Social', max_length=100, required=False)
+    fecha = forms.DateField(required=False, widget=forms.DateInput(attrs ={'type':'date',},format = '%Y-%m-%d',))
+    monto = forms.DecimalField(required=False)
+    moneda = forms.ModelChoiceField(queryset=Moneda.objects.all(), required=False)
+    cuenta_bancaria = forms.ModelChoiceField(queryset=CuentaBancariaSociedad.objects.all(), required=False)
+    numero_operacion = forms.CharField(label = 'Número de Operación', max_length=100, required=False)
+    comentario = forms.CharField(label = 'Comentario', max_length=100, required=False)
 
     def __init__(self, *args, **kwargs):
+        filtro_fecha = kwargs.pop('filtro_fecha')
+        filtro_monto = kwargs.pop('filtro_monto')
+        filtro_moneda = kwargs.pop('filtro_moneda')
+        filtro_cuenta_bancaria = kwargs.pop('filtro_cuenta_bancaria')
         filtro_numero_operacion = kwargs.pop('filtro_numero_operacion')
+        filtro_comentario = kwargs.pop('filtro_comentario')
         super(DepositosBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['fecha'].initial = filtro_fecha
+        self.fields['monto'].initial = filtro_monto
+        self.fields['moneda'].initial = filtro_moneda
+        self.fields['cuenta_bancaria'].initial = filtro_cuenta_bancaria
         self.fields['numero_operacion'].initial = filtro_numero_operacion
+        self.fields['comentario'].initial = filtro_comentario
         for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'

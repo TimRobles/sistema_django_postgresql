@@ -678,19 +678,51 @@ class DepositosView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(DepositosView, self).get_form_kwargs()
+        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        kwargs['filtro_monto'] = self.request.GET.get('monto')
+        kwargs['filtro_moneda'] = self.request.GET.get('moneda')
+        kwargs['filtro_cuenta_bancaria'] = self.request.GET.get('cuenta_bancaria')
         kwargs['filtro_numero_operacion'] = self.request.GET.get('numero_operacion')
+        kwargs['filtro_comentario'] = self.request.GET.get('comentario')
         return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(DepositosView, self).get_context_data(**kwargs)
         ingresos = Ingreso.objects.all()
+        filtro_fecha = self.request.GET.get('fecha')
+        filtro_monto = self.request.GET.get('monto')
+        filtro_moneda = self.request.GET.get('moneda')
+        filtro_cuenta_bancaria = self.request.GET.get('cuenta_bancaria')
         filtro_numero_operacion = self.request.GET.get('numero_operacion')
+        filtro_comentario = self.request.GET.get('comentario')
+        if filtro_fecha:
+            condicion = Q(fecha = filtro_fecha)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?fecha=" + filtro_fecha
+        if filtro_monto:
+            condicion = Q(monto = filtro_monto)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?monto=" + filtro_monto
+        if filtro_moneda:
+            condicion = Q(cuenta_bancaria__moneda = filtro_moneda)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?moneda=" + filtro_moneda
+        if filtro_cuenta_bancaria:
+            condicion = Q(cuenta_bancaria = filtro_cuenta_bancaria)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?cuenta_bancaria=" + filtro_cuenta_bancaria
         if filtro_numero_operacion:
             condicion = Q(numero_operacion__unaccent__icontains = filtro_numero_operacion.split(" ")[0])
             for palabra in filtro_numero_operacion.split(" ")[1:]:
                 condicion &= Q(numero_operacion__unaccent__icontains = palabra)
             ingresos = ingresos.filter(condicion)
             context['contexto_filtro'] = "?numero_operacion=" + filtro_numero_operacion
+        if filtro_comentario:
+            condicion = Q(comentario__unaccent__icontains = filtro_comentario.split(" ")[0])
+            for palabra in filtro_comentario.split(" ")[1:]:
+                condicion &= Q(comentario__unaccent__icontains = palabra)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?comentario=" + filtro_comentario
 
         objectsxpage =  10 # Show 10 objects per page.
 
