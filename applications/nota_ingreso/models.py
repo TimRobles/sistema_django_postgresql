@@ -17,7 +17,7 @@ from django.db.models.signals import pre_save, post_save, post_delete
 # Create your models here.
 class NotaIngreso(models.Model):
     nro_nota_ingreso = models.IntegerField('Número de Nota de Ingreso', help_text='Correlativo', blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicialDetalle
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicial
     id_registro = models.IntegerField()
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)

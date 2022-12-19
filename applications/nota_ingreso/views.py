@@ -298,10 +298,8 @@ class NotaIngresoFinalizarConteoView(BSModalUpdateView):
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=999)
 
             for detalle in detalles:
-                if detalle.comprobante_compra_detalle.producto.control_calidad:
+                if detalle.comprobante_compra_detalle.producto.control_calidad or detalle.comprobante_compra_detalle.producto.control_serie:
                     movimiento_final = TipoMovimiento.objects.get(codigo=104)
-                elif detalle.comprobante_compra_detalle.producto.control_serie:
-                    movimiento_final = TipoMovimiento.objects.get(codigo=103)
                 else:
                     movimiento_final = TipoMovimiento.objects.get(codigo=102)
 

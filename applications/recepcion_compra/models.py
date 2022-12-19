@@ -27,14 +27,17 @@ class RecepcionCompra(models.Model):
         verbose_name = 'Recepción de Compra'
         verbose_name_plural = 'Recepciones de Compras'
 
+    @property
     def proveedor(self):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return ver_proveedor(documento)[0]
 
+    @property
     def interlocutor_proveedor(self):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return ver_proveedor(documento)[1]
 
+    @property
     def sociedad(self):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return documento.sociedad

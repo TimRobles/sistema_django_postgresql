@@ -16,7 +16,8 @@ from applications.calidad.forms import(
     SerieAgregarMaloForm,
     SerieAgregarMaloSinSerieForm,
 )
-from applications.nota_ingreso.models import NotaIngresoDetalle
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from .models import(
     EstadoSerie,
     NotaControlCalidadStock,
@@ -192,6 +193,78 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
+
+            detalles = self.object.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
+            if ContentType.objects.get_for_model(self.object.nota_ingreso) == ContentType.objects.get_for_model(NotaIngreso):
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
+            else:
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=999) #Stock inicial
+
+            for detalle in detalles:
+                if detalle.inspeccion == 2:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
+                elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                else:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
+
+                print("************************************")
+                print('content_type_producto', detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,)
+                print('id_registro_producto', detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,)
+                print('tipo_movimiento', movimiento_inicial,)
+                print('tipo_stock', movimiento_inicial.tipo_stock_final,)
+                print('signo_factor_multiplicador', +1,)
+                print('content_type_documento_proceso', ContentType.objects.get_for_model(self.object.nota_ingreso),)
+                print('id_registro_documento_proceso', self.object.nota_ingreso.id,)
+                print('sociedad', self.object.nota_ingreso.recepcion_compra.sociedad,)
+                print('movimiento_reversion', False,)
+                print("************************************")
+
+                movimiento_anterior = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                    tipo_movimiento = movimiento_inicial,
+                    tipo_stock = movimiento_inicial.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object.nota_ingreso),
+                    id_registro_documento_proceso = self.object.nota_ingreso.id,
+                    sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                    movimiento_reversion = False,
+                )
+
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad_calidad,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_inicial,
+                    signo_factor_multiplicador = -1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = movimiento_anterior.almacen,
+                    sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                    movimiento_anterior = movimiento_anterior,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                    id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                    cantidad = detalle.cantidad_calidad,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso = self.object.id,
+                    almacen = movimiento_anterior.almacen,
+                    sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
             self.object.estado = 2
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -251,31 +324,22 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                print("*********************************")
                 nota_control_calidad = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
-                print(nota_control_calidad)
                 item = len(nota_control_calidad.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
-                print(item)
                 nota_ingreso_detalle = form.cleaned_data.get('material')
-                print(nota_ingreso_detalle)
-                print(type(nota_ingreso_detalle))
                 cantidad_calidad = form.cleaned_data.get('cantidad_calidad')
-                print(cantidad_calidad)
                 inspeccion = form.cleaned_data.get('inspeccion')
-                print(inspeccion)
                 
                 buscar = NotaControlCalidadStockDetalle.objects.filter(
                     nota_ingreso_detalle=nota_ingreso_detalle,
                     nota_control_calidad_stock=nota_control_calidad,
                 ).exclude(nota_control_calidad_stock__estado=3)
-                print(buscar)
-
+                
                 if buscar:
                     contar = buscar.aggregate(Sum('cantidad_calidad'))['cantidad_calidad__sum']
                 else:
                     contar = 0
 
-                print(contar)
                 
                 if nota_ingreso_detalle.cantidad_conteo < contar + cantidad_calidad:
                     form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + cantidad_calidad))
@@ -286,7 +350,6 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
                     nota_control_calidad_stock = nota_control_calidad,
                     inspeccion = inspeccion,
                 )
-                print(obj, created)
                 if created:
                     obj.item = item + 1
                     obj.cantidad_calidad = cantidad_calidad
@@ -298,7 +361,6 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
                 registro_guardar(obj, self.request)
                 obj.save()
                 self.request.session['primero'] = False
-                print("*********************************")
                 return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
@@ -309,6 +371,11 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
         nota_control_calidad = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
         nota_ingreso = nota_control_calidad.nota_ingreso
         materiales = NotaIngresoDetalle.objects.filter(nota_ingreso = nota_ingreso)
+        materiales_sin_calidad = []
+        for material in materiales:
+            if not material.comprobante_compra_detalle.producto.control_calidad:
+                materiales_sin_calidad.append(material.id)
+        materiales = materiales.exclude(id__in = materiales_sin_calidad)
 
         kwargs = super().get_form_kwargs()
         kwargs['materiales'] = materiales

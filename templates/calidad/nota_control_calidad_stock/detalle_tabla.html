@@ -38,13 +38,15 @@
             {% for material in nota_control_calidad_detalle %}
             <tr>
                 <td>{{ material.item }}</td>
-                <td>{{ material.material }}</td>
+                <td>{{ material.material }} | Control calidad: {{ material.material.control_calidad }} | Control serie: {{ material.control_serie }} </td>
                 <td>{{ material.nota_ingreso_detalle.nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
                 <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.comprobante_compra.numero_comprobante_compra }}</td>
                 <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.orden_compra.oferta_proveedor.requerimiento_material.proveedor}}</td>
                 <td class="text-end text-nowrap">{{ material.cantidad_calidad|redondear|intcomma }}</td>
                 <td>{{ material.get_inspeccion_display}}</td>
                 <td class="text-center text-nowrap">
+                    
+                    {% if contexto_nota_control_calidad_stock_detalle.estado == 1 %}
                     <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_actualizar' material.id %}"
                         data-table-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
                         data-keep-open="true"
@@ -57,6 +59,7 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi bi-x-lg"></i>
                     </button>
+                    {% endif %}
                     
                     {% if material.control_serie and material.inspeccion == 1 %}
                         <a href="{% url 'calidad_app:series_detalle' material.id %}"
