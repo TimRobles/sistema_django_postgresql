@@ -251,54 +251,63 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                registro = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
-                item = len(registro.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
+                print("*********************************")
+                nota_control_calidad = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
+                print(nota_control_calidad)
+                item = len(nota_control_calidad.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
+                print(item)
                 nota_ingreso_detalle = form.cleaned_data.get('material')
+                print(nota_ingreso_detalle)
+                print(type(nota_ingreso_detalle))
                 cantidad_calidad = form.cleaned_data.get('cantidad_calidad')
+                print(cantidad_calidad)
                 inspeccion = form.cleaned_data.get('inspeccion')
+                print(inspeccion)
                 
-                buscar = NotaIngresoDetalle.objects.filter(
-                    content_type=nota_ingreso_detalle.content_type,
-                    id_registro=nota_ingreso_detalle.id_registro,
-                    nota_ingreso=nota_ingreso_detalle.nota_ingreso,
-                ).exclude(nota_ingreso__estado=3)
+                buscar = NotaControlCalidadStockDetalle.objects.filter(
+                    nota_ingreso_detalle=nota_ingreso_detalle,
+                    nota_control_calidad_stock=nota_control_calidad,
+                ).exclude(nota_control_calidad_stock__estado=3)
+                print(buscar)
 
                 if buscar:
-                    contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+                    contar = buscar.aggregate(Sum('cantidad_calidad'))['cantidad_calidad__sum']
                 else:
                     contar = 0
 
-                print("CONTINUAR")
-                print(buscar, contar, cantidad_calidad, nota_ingreso_detalle.cantidad_conteo)
-
+                print(contar)
+                
                 if nota_ingreso_detalle.cantidad_conteo < contar + cantidad_calidad:
                     form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + cantidad_calidad))
                     return super().form_invalid(form)
 
                 obj, created = NotaControlCalidadStockDetalle.objects.get_or_create(
                     nota_ingreso_detalle = nota_ingreso_detalle,
-                    nota_control_calidad_stock = registro,
+                    nota_control_calidad_stock = nota_control_calidad,
+                    inspeccion = inspeccion,
                 )
+                print(obj, created)
                 if created:
                     obj.item = item + 1
                     obj.cantidad_calidad = cantidad_calidad
-                    obj.inspeccion = inspeccion
 
                 else:
                     obj.cantidad_calidad = obj.cantidad_calidad + cantidad_calidad
+                    obj.inspeccion = inspeccion
 
                 registro_guardar(obj, self.request)
                 obj.save()
                 self.request.session['primero'] = False
-            return super().form_valid(form)
+                print("*********************************")
+                return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
-        registro = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
-        nota_ingreso = registro.nota_ingreso.id
+        nota_control_calidad = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
+        nota_ingreso = nota_control_calidad.nota_ingreso
         materiales = NotaIngresoDetalle.objects.filter(nota_ingreso = nota_ingreso)
 
         kwargs = super().get_form_kwargs()

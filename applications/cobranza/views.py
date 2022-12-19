@@ -19,6 +19,7 @@ from .forms import(
     CuentaBancariaIngresoCambiarForm,
     CuentaBancariaIngresoForm,
     CuentaBancariaIngresoPagarForm,
+    DepositosBuscarForm,
     DeudaPagarForm,
     LineaCreditoForm,
     ClienteBuscarForm,
@@ -670,12 +671,36 @@ class RedondeoDeleteView(BSModalDeleteView):
         return context
 
 
-class DepositosView(TemplateView):
+class DepositosView(FormView):
     template_name = "bancos/cuenta bancaria/depositos.html"
+    form_class = DepositosBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(DepositosView, self).get_form_kwargs()
+        kwargs['filtro_numero_operacion'] = self.request.GET.get('numero_operacion')
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(DepositosView, self).get_context_data(**kwargs)
-        context['movimientos'] = Ingreso.objects.all()
+        ingresos = Ingreso.objects.all()
+        filtro_numero_operacion = self.request.GET.get('numero_operacion')
+        if filtro_numero_operacion:
+            condicion = Q(numero_operacion__unaccent__icontains = filtro_numero_operacion.split(" ")[0])
+            for palabra in filtro_numero_operacion.split(" ")[1:]:
+                condicion &= Q(numero_operacion__unaccent__icontains = palabra)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?numero_operacion=" + filtro_numero_operacion
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(ingresos) > objectsxpage:
+            paginator = Paginator(ingresos, objectsxpage)
+            page_number = self.request.GET.get('page')
+            ingresos = paginator.get_page(page_number)
+
+        context['movimientos'] = ingresos
+        context['contexto_pagina'] = ingresos
         return context
 
 

@@ -1,3 +1,6 @@
+{% load funciones_propias %}
+{% load humanize %}
+
 <h3>Nota Control Calidad Stock Detalle
     {% if contexto_nota_control_calidad_stock_detalle.estado == 1 %}
         <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_registrar' contexto_nota_control_calidad_stock_detalle.id %}"
@@ -26,7 +29,7 @@
                 <th>Fecha de Ingreso</th>
                 <th>Nro. Comprobante Compra</th>
                 <th>Razón Social Proveedor</th>
-                <th>Cantidad</th>
+                <th class="text-end">Cantidad</th>
                 <th>Estado de Inspección</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -39,7 +42,7 @@
                 <td>{{ material.nota_ingreso_detalle.nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
                 <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.comprobante_compra.numero_comprobante_compra }}</td>
                 <td>{{ material.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.orden_compra.oferta_proveedor.requerimiento_material.proveedor}}</td>
-                <td>{{ material.cantidad_calidad }}</td>
+                <td class="text-end text-nowrap">{{ material.cantidad_calidad|redondear|intcomma }}</td>
                 <td>{{ material.get_inspeccion_display}}</td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_actualizar' material.id %}"

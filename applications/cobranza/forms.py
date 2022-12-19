@@ -162,3 +162,14 @@ class ClienteBuscarForm(forms.Form):
         self.fields['razon_social'].initial = filtro_razon_social
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DepositosBuscarForm(forms.Form):
+    numero_operacion = forms.CharField(label = 'Razón Social', max_length=100, required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_numero_operacion = kwargs.pop('filtro_numero_operacion')
+        super(DepositosBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['numero_operacion'].initial = filtro_numero_operacion
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
