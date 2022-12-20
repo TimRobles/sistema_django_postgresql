@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Nota Salida Validar Series
+{% endblock titulo %}
+
+{% block contenido %}
+    <br>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+                <div class="col-lg-4">
+                    <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                    {% if field.help_text %}
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                    {% endif %}
+                    >
+                    <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    </div>
+                    {% for error in field.errors %}
+                        <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+            {% endfor %}
+            <div class="col-lg-4 my-auto">
+                <button type="submit" class="btn btn-success" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a class="btn btn-success" href="{% url 'logistica_app:validar_series_detalle' contexto_nota_salida_detalle.id %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+    <br>
+    <div id="tabla">
+        {% include 'logistica/validar_serie_nota_salida/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

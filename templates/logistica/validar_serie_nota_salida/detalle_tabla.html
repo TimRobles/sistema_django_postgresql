@@ -1,0 +1,54 @@
+<h3>
+    <a href="{% url 'logistica_app:nota_salida_detalle' contexto_nota_salida_detalle.nota_salida.id %}"><span class="badge bg-primary">Regresar</span></a>   
+</h3>
+<br>
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ contexto_nota_salida_detalle.nota_salida.sociedad}}</td>
+                    <th class="px-2">Cliente:</th>
+                    <td>{{ contexto_nota_salida_detalle.nota_salida.cliente }}</td>
+                    <th class="px-2">Producto:</th>
+                    <td>{{ contexto_nota_salida_detalle.producto}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nro. de Serie</th>         
+                <th>Estado</th>    
+                <th class="text-center">Acciones</th>    
+            </tr>
+        </thead>
+        <tbody>
+            {% for validacion in contexto_series %}
+                <tr>
+                    {% if validacion.serie %}
+                    <td> 
+                        {{ validacion.serie}} 
+                    </td>
+                    {% endif %}
+                    <td>{{ validacion.serie.estado }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_nota_salida_detalle.nota_salida.estado == 1 %}
+                            <button data-form-url="{% url 'logistica_app:validar_series_nota_salida_detalle_eliminar' validacion.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+                           
+        </tbody>
+    </table>
+</div>
