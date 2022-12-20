@@ -801,6 +801,21 @@ def UnidadView(request, id_subfamilia):
         ).replace('selected', 'selected=""')
         return JsonResponse(data)
 
+def UnidadMaterialView(request, id_material):
+    form = UnidadForm()
+    form.fields['unidad'].queryset = Material.objects.get(id = id_material).subfamilia.unidad.all()
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
+
 
 class ModeloForm(forms.Form):
     modelo = forms.ModelChoiceField(queryset = Modelo.objects.all(), required=False)

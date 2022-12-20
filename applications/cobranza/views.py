@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.core.paginator import Paginator
 from datetime import timedelta
 from reportlab.lib import colors
@@ -76,10 +77,16 @@ class DeudoresView(FormView):
     
     def get_context_data(self, **kwargs):
         context = super(DeudoresView, self).get_context_data(**kwargs)
-        context['contexto_cliente'] = Cliente.objects.all()
         context['moneda'] = Moneda.objects.get(principal=True)
 
         clientes = Cliente.objects.all()
+        clientes_con_deuda = []
+        for cliente in clientes:
+            if cliente.deuda_monto > Decimal('0.00'):
+                clientes_con_deuda.append(cliente.id)
+        
+        clientes = clientes.filter(id__in=clientes_con_deuda)
+
         filtro_razon_social = self.request.GET.get('razon_social')
 
         if filtro_razon_social:
@@ -88,6 +95,16 @@ class DeudoresView(FormView):
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes = clientes.filter(condicion)
             context['contexto_filtro'] = "?razon_social=" + filtro_razon_social
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(clientes) > objectsxpage:
+            paginator = Paginator(clientes, objectsxpage)
+            page_number = self.request.GET.get('page')
+            clientes = paginator.get_page(page_number)
+
+        context['contexto_cliente'] = clientes
+        context['contexto_pagina'] = clientes
 
         return context
     
@@ -741,7 +758,51 @@ def DepositosTabla(request):
     if request.method == 'GET':
         template = "bancos/cuenta bancaria/depositos tabla.html"
         context = {}
-        context['movimientos'] = Ingreso.objects.all()
+        ingresos = Ingreso.objects.all()
+        filtro_fecha = request.GET.get('fecha')
+        filtro_monto = request.GET.get('monto')
+        filtro_moneda = request.GET.get('moneda')
+        filtro_cuenta_bancaria = request.GET.get('cuenta_bancaria')
+        filtro_numero_operacion = request.GET.get('numero_operacion')
+        filtro_comentario = request.GET.get('comentario')
+        if filtro_fecha:
+            condicion = Q(fecha = filtro_fecha)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?fecha=" + filtro_fecha
+        if filtro_monto:
+            condicion = Q(monto = filtro_monto)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?monto=" + filtro_monto
+        if filtro_moneda:
+            condicion = Q(cuenta_bancaria__moneda = filtro_moneda)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?moneda=" + filtro_moneda
+        if filtro_cuenta_bancaria:
+            condicion = Q(cuenta_bancaria = filtro_cuenta_bancaria)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?cuenta_bancaria=" + filtro_cuenta_bancaria
+        if filtro_numero_operacion:
+            condicion = Q(numero_operacion__unaccent__icontains = filtro_numero_operacion.split(" ")[0])
+            for palabra in filtro_numero_operacion.split(" ")[1:]:
+                condicion &= Q(numero_operacion__unaccent__icontains = palabra)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?numero_operacion=" + filtro_numero_operacion
+        if filtro_comentario:
+            condicion = Q(comentario__unaccent__icontains = filtro_comentario.split(" ")[0])
+            for palabra in filtro_comentario.split(" ")[1:]:
+                condicion &= Q(comentario__unaccent__icontains = palabra)
+            ingresos = ingresos.filter(condicion)
+            context['contexto_filtro'] = "?comentario=" + filtro_comentario
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(ingresos) > objectsxpage:
+            paginator = Paginator(ingresos, objectsxpage)
+            page_number = request.GET.get('page')
+            ingresos = paginator.get_page(page_number)
+
+        context['movimientos'] = ingresos
+        context['contexto_pagina'] = ingresos
 
         data['table'] = render_to_string(
             template,

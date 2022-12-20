@@ -11,6 +11,8 @@ urlSociedad = [
     path('sociedad/alta/<pk>/', views.SociedadDarAltaView.as_view(), name='sociedad_alta'),
     path('sociedad/detalle/<pk>/', views.SociedadDetailView.as_view(), name='sociedad_detalle'),
     path('sociedad/detalle-tabla/<pk>/', views.SociedadDetailTabla, name='sociedad_detalle_tabla'),
+    path('sociedad/sede/', views.SedeNoneView, name='sociedad_sede_none'),
+    path('sociedad/sede/<int:id_sociedad>/', views.SedeView, name='sociedad_sede'),
 ]
 
 urlpatterns = [

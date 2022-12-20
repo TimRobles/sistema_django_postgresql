@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from applications.sede.models import Sede
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import EnvioTrasladoProducto, EnvioTrasladoProductoDetalle, MotivoTraslado, RecepcionTrasladoProducto, RecepcionTrasladoProductoDetalle 
 from applications.material.models import Material
@@ -36,9 +37,21 @@ class EnvioTrasladoProductoForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 ),
         }
+    
+    def clean_sociedad(self):
+        sociedad = self.cleaned_data.get('sociedad')
+        sede_origen = self.fields['sede_origen']
+        sede_origen.queryset = sociedad.Sede_sociedad.filter(estado=1)
+        
+        return sociedad
 
     def __init__(self, *args, **kwargs):
-        super(EnvioTrasladoProductoForm, self).__init__(*args, **kwargs)   
+        super(EnvioTrasladoProductoForm, self).__init__(*args, **kwargs)  
+        if kwargs['instance']:
+            self.fields['sede_origen'].queryset = kwargs['instance'].sociedad.Sede_sociedad.filter(estado=1)
+        else:
+            self.fields['sede_origen'].queryset = Sede.objects.none()
+        self.fields['motivo_traslado'].queryset = MotivoTraslado.objects.filter(visible=True)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -58,33 +71,43 @@ class EnvioTrasladoProductoObservacionesForm(BSModalModelForm):
 class EnvioTrasladoProductoMaterialDetalleForm(BSModalModelForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad_envio = forms.DecimalField(max_digits=22, decimal_places=10)
+    stock_disponible = forms.CharField(required=False)
 
     class Meta:
         model = EnvioTrasladoProductoDetalle
         fields=(
             'material',
-            'cantidad_envio',
             'almacen_origen',
+            'cantidad_envio',
+            'stock_disponible',
             'unidad',
             )
 
     def __init__(self, *args, **kwargs):
-        
+        envio_traslado_producto = kwargs.pop('envio_traslado_producto')
         super(EnvioTrasladoProductoMaterialDetalleForm, self).__init__(*args, **kwargs)   
+        self.fields['almacen_origen'].queryset = envio_traslado_producto.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['stock_disponible'].disabled = True
+        self.fields['unidad'].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class EnvioTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
+    stock_disponible = forms.CharField(required=False)
     class Meta:
         model = EnvioTrasladoProductoDetalle
         fields=(
-            'cantidad_envio',
             'almacen_origen',
+            'cantidad_envio',
+            'stock_disponible',
             'unidad',
             )
 
     def __init__(self, *args, **kwargs):
+        envio_traslado_producto = kwargs.pop('envio_traslado_producto')
         super(EnvioTrasladoProductoMaterialActualizarDetalleForm, self).__init__(*args, **kwargs)   
+        self.fields['almacen_origen'].queryset = envio_traslado_producto.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['stock_disponible'].disabled = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -160,3 +183,16 @@ class RecepcionTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class MotivoTrasladoForm(BSModalModelForm):
+    class Meta:
+        model = MotivoTraslado
+        fields = (
+            'motivo_traslado',
+            'visible',
+            )
+        
+    def __init__(self, *args, **kwargs):
+        super(MotivoTrasladoForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['visible'].widget.attrs['class'] = 'form-check-input'

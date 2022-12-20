@@ -9,7 +9,7 @@ from applications.variables import ESTADOS_TRASLADO_PRODUCTO, ESTADOS_TRASLADO_P
 
 
 class MotivoTraslado(models.Model):
-    motivo_traslado = models.TextField()
+    motivo_traslado = models.CharField(max_length=100)
     visible = models.BooleanField()
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -72,6 +72,10 @@ class EnvioTrasladoProductoDetalle(models.Model):
         verbose_name = 'Envio Traslado Producto Detalle '
         verbose_name_plural = 'Envios Traslado Productos Detalle'
         ordering = ['item',]
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     def __str__(self):
         return str(self.id)

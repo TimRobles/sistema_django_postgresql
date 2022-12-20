@@ -46,6 +46,7 @@ urlpatterns = [
 
     path('subfamilia/<str:id_familia>/', views.SubfamiliaView, name='subfamilia'),
     path('unidad/<str:id_subfamilia>/', views.UnidadView, name='unidad'),
+    path('unidad/material/<str:id_material>/', views.UnidadMaterialView, name='unidad_material'),
 
     path('modelo/<str:id_marca>/', views.ModeloView, name='modelo'),
 

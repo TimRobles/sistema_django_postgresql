@@ -35,4 +35,6 @@ urlpatterns = [
     path('recepcion/actualizar-material/<pk>/', views.RecepcionTrasladoProductoActualizarMaterialDetalleView.as_view(), name='recepcion_actualizar_material'),
     path('recepcion/eliminar-material/<pk>/', views.RecepcionTrasladoProductoMaterialDeleteView.as_view(), name='recepcion_eliminar_material'),
 
+    path('motivo-traslado/crear/', views.MotivoTrasladoCreateView.as_view(), name='motivo_traslado_crear'),
+
  ]

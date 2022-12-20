@@ -37,6 +37,7 @@ Deudores
     </form>
     <br>
 
+    {% include 'includes/paginador.html' %}
     
     <div class="table-responsive" id="tabla">
         <table class="table">
@@ -51,7 +52,6 @@ Deudores
             <tbody>
                 {% for cliente in contexto_cliente %}
         
-                {% if cliente.deuda_monto > 0 %}
                 <tr>
                     <td>{{ cliente.razon_social }}</td>
                     <td class="text-end text-nowrap">{{ moneda.simbolo }} {{  cliente.deuda_monto|redondear|intcomma }}</td>
@@ -63,11 +63,30 @@ Deudores
                         </a>
                     </td>
                 </tr>
-                {% endif %}
         
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <div>
+        <ul class="pagination pagination-sm justify-content-end">
+            {% if contexto_pagina.has_previous %}
+                <li>
+                    <span><a href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.previous_page_number }}{% else %}?page={{ contexto_pagina.previous_page_number }}{% endif %}">Anterior</a></span>
+                    <span>...</span>
+                </li>
+            {% endif %}
+            <li class="">
+                <span>Página {% if contexto_pagina.number %}{{ contexto_pagina.number }}{% else %} 1 {% endif %} de {% if contexto_pagina.paginator.num_pages %}{{ contexto_pagina.paginator.num_pages }}{% else %} 1.{% endif %}</span>
+            </li>
+            {% if contexto_pagina.has_next %}
+                <li>
+                    <span>...</span>
+                    <span><a href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.next_page_number }}{% else %}?page={{ contexto_pagina.next_page_number }}{% endif %}">Siguiente</a></span>
+                </li>
+            {% endif %}
+        </ul>
     </div>
 
 {% endblock contenido %}

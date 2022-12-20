@@ -25,12 +25,12 @@
                         {{ envio_traslado_producto.sociedad }}  
                         {% endif %}
                     </td>
-                    <td class="ps-2" rowspan="4">
+                    <td class="ps-2" rowspan="2">
                         {% if envio_traslado_producto.estado == 1 %}
                         <button data-form-url="{% url 'traslado_producto_app:envio_actualizar' envio_traslado_producto.id %}"
                             data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id %}"
                             data-keep-open="true"
-                            class="delete btn btn-primary" title="Actualizar Envio">
+                            class="delete btn btn-primary">
                             Actualizar Envio
                         </button>
                         {% endif %}
@@ -51,6 +51,15 @@
                         {{ envio_traslado_producto.direccion_destino }}
                         {% endif %}
                     </td>
+                    <td class="ps-2" rowspan="2">
+                        {% if envio_traslado_producto.estado == 1 %}
+                        <button data-form-url="{% url 'traslado_producto_app:motivo_traslado_crear' %}"
+                            data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id %}"
+                            class="create btn btn-primary">
+                            Agregar Motivo Traslado
+                        </button>
+                        {% endif %}
+                    </td>                
                 </tr>
                 <tr>
                     <th class="pe-2">Motivo:</th>

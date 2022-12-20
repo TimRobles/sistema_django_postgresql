@@ -1,5 +1,7 @@
+from django import forms
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
+from applications.sede.models import Sede
 
 from .forms import (
     SociedadForm,
@@ -146,6 +148,44 @@ def SociedadDetailTabla(request, pk):
             context,
             request=request
         )
+        return JsonResponse(data)
+
+
+class SedeForm(forms.Form):
+    sede = forms.ModelChoiceField(queryset=Sede.objects.all(), required=False)
+
+def SedeView(request, id_sociedad):
+    form = SedeForm()
+    sociedad = Sociedad.objects.get(id=id_sociedad)
+    form.fields['sede'].queryset = sociedad.Sede_sociedad.filter(estado=1)
+
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form': form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
+
+
+def SedeNoneView(request):
+    form = SedeForm()
+    form.fields['sede'].queryset = Sede.objects.none()
+
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form': form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
         return JsonResponse(data)
 
 

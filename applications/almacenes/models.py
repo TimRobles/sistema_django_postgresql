@@ -7,7 +7,7 @@ from applications.sede.models import Sede
 
 class Almacen(models.Model):
     nombre = models.CharField('Almacén', max_length=100)
-    sede = models.ForeignKey(Sede, on_delete=models.CASCADE)
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, related_name='Almacen_sede')
     estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

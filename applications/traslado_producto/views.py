@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
+from applications.material.funciones import stock
 from applications.sociedad.models import Sociedad
 
 from .models import (
     EnvioTrasladoProducto,
     EnvioTrasladoProductoDetalle,
+    MotivoTraslado,
     RecepcionTrasladoProducto,
     RecepcionTrasladoProductoDetalle,
 )
@@ -15,6 +17,7 @@ from .forms import (
     EnvioTrasladoProductoMaterialDetalleForm,
     EnvioTrasladoProductoObservacionesForm,
     EnvioTrasladoProductoMaterialActualizarDetalleForm,
+    MotivoTrasladoForm,
     RecepcionTrasladoProductoForm,
     RecepcionTrasladoProductoObservacionesForm,
     RecepcionTrasladoProductoMaterialDetalleForm,
@@ -104,13 +107,19 @@ def EnvioTrasladoProductoVerTabla(request, id_envio_traslado_producto):
 
 class  EnvioTrasladoProductoActualizarView(BSModalUpdateView):
     model = EnvioTrasladoProducto
-    template_name = "includes/formulario generico.html"
+    template_name = "traslado_producto/envio/form_actualizar.html"
     form_class = EnvioTrasladoProductoForm
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
 
     def form_valid(self, form):
+        envio_traslado_producto = EnvioTrasladoProducto.objects.get(id=form.instance.id)
+        if form.instance.sede_origen != envio_traslado_producto.sede_origen or form.instance.sociedad != envio_traslado_producto.sociedad:
+            for detalle in form.instance.EnvioTrasladoProductoDetalle_envio_traslado_producto.all():
+                detalle.almacen_origen = None
+                registro_guardar(detalle, self.request)
+                detalle.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -118,11 +127,12 @@ class  EnvioTrasladoProductoActualizarView(BSModalUpdateView):
         context = super(EnvioTrasladoProductoActualizarView, self).get_context_data(**kwargs)
         context['accion'] = "Envio"
         context['titulo'] = "Traslado Producto"
+        context['url_sede'] = reverse_lazy('sociedad_app:sociedad_sede', kwargs={'id_sociedad':1})[:-2]
         return context
 
 class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
     model = EnvioTrasladoProducto
-    template_name = "traslado_producto/envio/form_guardar.html"
+    template_name = "includes/eliminar generico.html"
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
@@ -149,7 +159,7 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
         context = super(EnvioTrasladoProductoGuardarView, self).get_context_data(**kwargs)
         context['accion'] = "Guardar"
         context['titulo'] = "Envio"
-        context['guardar'] = "true"
+        context['dar_baja'] = True
         return context
 
 class  EnvioTrasladoProductoObservacionesView(BSModalUpdateView):
@@ -171,9 +181,8 @@ class  EnvioTrasladoProductoObservacionesView(BSModalUpdateView):
 
 
 class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
-    template_name = "includes/formulario generico.html"
+    template_name = "traslado_producto/envio/form_material.html"
     form_class = EnvioTrasladoProductoMaterialDetalleForm
-    # success_url = reverse_lazy('traslado_producto_app:envio_inicio')
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
@@ -194,19 +203,36 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
     @transaction.atomic
     def form_valid(self, form):
         sid = transaction.savepoint()
+        envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
+        almacen_origen = form.cleaned_data.get('almacen_origen')
+        material = form.cleaned_data.get('material')
+        cantidad_envio = form.cleaned_data.get('cantidad_envio')
+        stock_disponible = stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id)
+        
+        buscar = EnvioTrasladoProductoDetalle.objects.filter(
+            content_type=ContentType.objects.get_for_model(material),
+            id_registro=material.id,
+            envio_traslado_producto=envio_traslado_producto,
+        ).exclude(envio_traslado_producto__estado=4)
+
+        if buscar:
+            contar = buscar.aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
+        else:
+            contar = 0
+        
+        if stock_disponible < contar + cantidad_envio:
+            form.add_error('cantidad_envio', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_envio))
+            return super().form_invalid(form)
+
         try:
             if self.request.session['primero']:
-                envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
                 item = len(EnvioTrasladoProductoDetalle.objects.filter(envio_traslado_producto = envio_traslado_producto))
-
-                material = form.cleaned_data.get('material')
-                cantidad_envio = form.cleaned_data.get('cantidad_envio')
 
                 obj, created = EnvioTrasladoProductoDetalle.objects.get_or_create(
                     content_type = ContentType.objects.get_for_model(material),
                     id_registro = material.id,
                     envio_traslado_producto = envio_traslado_producto,
-                    almacen_origen = form.cleaned_data.get('almacen_origen'),
+                    almacen_origen = almacen_origen,
                     unidad = form.cleaned_data.get('unidad')
                 )
                 if created:
@@ -218,21 +244,27 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
 
                 registro_guardar(obj, self.request)
                 obj.save()
-
-                cantidad_total = obj.cantidad_envio
-                cantidades = {}
-                sociedades = Sociedad.objects.all()
-
+                self.request.session['primero']=False
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
+        kwargs['envio_traslado_producto'] = envio_traslado_producto
+        return kwargs
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
+        envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
         context = super(EnvioTrasladoProductoMaterialDetalleView, self).get_context_data(**kwargs)
         context['titulo'] = 'Agregar'
         context['accion'] = 'Material'
+        context['sociedad'] = envio_traslado_producto.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
+        context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 
 class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
@@ -245,23 +277,18 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
 
     def get_form_kwargs(self, *args, **kwargs):
         print(self.kwargs)
-        detalle =EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
         envio_traslado_producto = detalle.envio_traslado_producto
-        print('***********************************')
-        print(envio_traslado_producto.sede_origen)
-        print('***********************************')
-        sociedad = envio_traslado_producto.sociedad
-        sede_origen = envio_traslado_producto.sede_origen
         kwargs = super().get_form_kwargs()
+        kwargs['envio_traslado_producto'] = envio_traslado_producto
         return kwargs
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_sede = False
         context['titulo'] = 'Error de guardar'
-        detalle =EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
         envio_traslado_producto = detalle.envio_traslado_producto
-        envio_traslado_producto = envio_traslado_producto
         if not envio_traslado_producto.sede_origen:
             error_sede = True
 
@@ -272,6 +299,31 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
 
 
     def form_valid(self, form):
+        detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        envio_traslado_producto = detalle.envio_traslado_producto
+        almacen_origen = form.cleaned_data.get('almacen_origen')
+        cantidad_envio = form.cleaned_data.get('cantidad_envio')
+        material = detalle.producto
+        stock_disponible = stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id)
+        
+        buscar = EnvioTrasladoProductoDetalle.objects.filter(
+            content_type=ContentType.objects.get_for_model(material),
+            id_registro=material.id,
+            envio_traslado_producto=envio_traslado_producto,
+        ).exclude(envio_traslado_producto__estado=4).exclude(id=detalle.id)
+
+        print(buscar)
+
+        if buscar:
+            contar = buscar.aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
+        else:
+            contar = 0
+        
+        print(contar)
+        if stock_disponible < contar + cantidad_envio:
+            form.add_error('cantidad_envio', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_envio))
+            return super().form_invalid(form)
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -609,3 +661,16 @@ class RecepcionTrasladoProductoMaterialDeleteView(BSModalDeleteView):
 
         return context
 
+
+class MotivoTrasladoCreateView(BSModalCreateView):
+    model = MotivoTraslado
+    template_name = "includes/formulario generico.html"
+    form_class = MotivoTrasladoForm
+    success_url = '.'
+
+    def get_context_data(self, **kwargs):
+        context = super(MotivoTrasladoCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Crear"
+        context['titulo'] = "Motivo de Traslado"
+        
+        return context
