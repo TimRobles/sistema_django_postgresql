@@ -47,14 +47,14 @@ def get_enlace_nubefact(respuesta):
     try:
         return respuesta.respuesta['enlace']
     except:
-        return ""
+        return respuesta
 
 @register.filter
 def get_enlace_pdf_nubefact(respuesta):
     try:
         return respuesta.respuesta['enlace_del_pdf']
     except:
-        return ""
+        return respuesta
 
 @register.filter
 def diccionario(respuesta):
