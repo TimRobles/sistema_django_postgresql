@@ -27,7 +27,7 @@ class FacturaVentaListView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(FacturaVentaListView, self).get_form_kwargs()
-        # kwargs['filtro_nro_factura'] = self.request.GET.get('nro_factura')
+        kwargs['filtro_numero_factura'] = self.request.GET.get('numero_factura')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
         # kwargs['filtro_estado'] = self.request.GET.get('estado')
@@ -38,7 +38,8 @@ class FacturaVentaListView(FormView):
         context = super(FacturaVentaListView,self).get_context_data(**kwargs)
         factura_venta = FacturaVenta.objects.all()
 
-        # filtro_nro_factura = self.request.GET.get('nro_factura')
+        filtro_numero_factura = self.request.GET.get('numero_factura')
+        #Agregar filtro Sociedad
         filtro_cliente = self.request.GET.get('cliente')
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
         # filtro_estado = self.request.GET.get('estado')
@@ -62,12 +63,10 @@ class FacturaVentaListView(FormView):
             factura_venta = factura_venta.filter(condicion)
             context['contexto_filtro'] = "?fecha_emision=" + filtro_fecha_emision
 
-        # elif filtro_nro_factura:
-        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_factura.split(" ")[0])|Q(numero_factura__icontains = filtro_nro_factura.split(" ")[0]))
-        #     for palabra in filtro_nro_factura.split(" ")[1:]:
-        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_factura__icontains = palabra))
-        #     factura_venta = factura_venta.filter(condicion)
-        #     context['contexto_filtro'] = "?nro_factura=" + filtro_nro_factura
+        elif filtro_numero_factura:
+            condicion = Q(numero_factura = filtro_numero_factura)
+            factura_venta = factura_venta.filter(condicion)
+            context['contexto_filtro'] = "?numero_factura=" + filtro_numero_factura
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -85,7 +84,7 @@ def FacturaVentaTabla(request):
         template = 'comprobante_venta/factura_venta/inicio_tabla.html'
         context = {}
         factura_venta = FacturaVenta.objects.all()
-        # filtro_nro_factura = request.GET.get('nro_factura')
+        filtro_numero_factura = request.GET.get('numero_factura')
         filtro_cliente = request.GET.get('cliente')
         filtro_fecha_emision = request.GET.get('fecha_emision')
         # filtro_estado = request.GET.get('estado')
@@ -106,11 +105,9 @@ def FacturaVentaTabla(request):
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             factura_venta = factura_venta.filter(condicion)
 
-        # elif filtro_nro_factura:
-        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_factura.split(" ")[0])|Q(numero_factura__icontains = filtro_nro_factura.split(" ")[0]))
-        #     for palabra in filtro_nro_factura.split(" ")[1:]:
-        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_factura__icontains = palabra))
-        #     factura_venta = factura_venta.filter(condicion)
+        elif filtro_numero_factura:
+            condicion = Q(numero_factura = filtro_numero_factura)
+            factura_venta = factura_venta.filter(condicion)
             
         objectsxpage = 25 # Show 25 objects per page.
 

@@ -67,7 +67,7 @@ class BoletaVentaAnularForm(BSModalModelForm):
 
 
 class FacturaVentaBuscarForm(forms.Form):
-    # nro_factura = forms.CharField(label='Nro. Factura',max_length=150, required=False)
+    numero_factura = forms.IntegerField(label='Nro. Factura', required=False)
     cliente = forms.CharField(max_length=150, required=False)
     fecha_emision = forms.DateField(
         required=False,
@@ -81,13 +81,13 @@ class FacturaVentaBuscarForm(forms.Form):
     # estado = forms.ModelChoiceField(queryset=get_user_model().objects)
 
     def __init__(self, *args, **kwargs):
-        # filtro_nro_factura = kwargs.pop('filtro_nro_factura')
+        filtro_numero_factura = kwargs.pop('filtro_numero_factura')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_fecha_emision = kwargs.pop('filtro_fecha_emision')
         # filtro_estado = kwargs.pop('filtro_estado')
         # estado = kwargs.pop('estados')
         super(FacturaVentaBuscarForm, self).__init__(*args, **kwargs)
-        # self.fields['nro_factura'].initial = filtro_nro_factura
+        self.fields['numero_factura'].initial = filtro_numero_factura
         self.fields['cliente'].initial = filtro_cliente
         self.fields['fecha_emision'].initial = filtro_fecha_emision
         # self.fields['estado'].initial = filtro_estado
