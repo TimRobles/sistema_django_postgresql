@@ -48,6 +48,7 @@ class FacturaVenta(models.Model):
     total_retencion = models.DecimalField('Total Retencion', max_digits=14, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True, max_length=1000)
     estado = models.IntegerField(choices = ESTADOS_DOCUMENTO, default=1)
+    numero_orden = models.CharField('Número de Orden', max_length=100, blank=True, null=True)
     motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
     confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, related_name='FacturaVenta_confirmacion', blank=True, null=True)
     nubefact = models.URLField(max_length=400, blank=True, null=True)

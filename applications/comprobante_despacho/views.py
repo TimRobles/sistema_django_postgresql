@@ -64,7 +64,10 @@ class GuiaDetalleView(TemplateView):
         context['materiales'] = materiales
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        if NubefactRespuesta.objects.respuesta(obj):
+            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        if obj.nubefact:
+            context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
 
         return context
@@ -86,7 +89,10 @@ def GuiaDetalleVerTabla(request, id_guia):
         context['materiales'] = materiales
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        if NubefactRespuesta.objects.respuesta(obj):
+            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        if obj.nubefact:
+            context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
 
         data['table'] = render_to_string(
