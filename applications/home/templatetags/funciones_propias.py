@@ -54,7 +54,7 @@ def get_enlace_pdf_nubefact(respuesta):
     try:
         return respuesta.respuesta['enlace_del_pdf']
     except:
-        return respuesta
+        return str(respuesta) + '.pdf'
 
 @register.filter
 def diccionario(respuesta):
