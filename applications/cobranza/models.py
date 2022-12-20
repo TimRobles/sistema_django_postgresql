@@ -251,6 +251,7 @@ class Deuda(models.Model):
     class Meta:
         verbose_name = 'Deuda'
         verbose_name_plural = 'Deudas'
+        ordering = ['-fecha_deuda']
 
     @property
     def pagos(self):

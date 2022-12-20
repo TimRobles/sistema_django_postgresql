@@ -115,7 +115,15 @@ class DeudaView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(DeudaView, self).get_context_data(**kwargs)
         deudas = Deuda.objects.filter(cliente__id=self.kwargs['id_cliente'])    
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(deudas) > objectsxpage:
+            paginator = Paginator(deudas, objectsxpage)
+            page_number = self.request.GET.get('page')
+            deudas = paginator.get_page(page_number)
+
         context['contexto_deuda'] = deudas
+        context['contexto_pagina'] = deudas
         context['id_cliente'] = self.kwargs['id_cliente']
         return context
 
@@ -126,7 +134,15 @@ def DeudaTabla(request, id_cliente):
         template = "cobranza/deudas/detalle tabla.html"
         context = {}
         deudas = Deuda.objects.filter(cliente__id=id_cliente)    
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(deudas) > objectsxpage:
+            paginator = Paginator(deudas, objectsxpage)
+            page_number = request.GET.get('page')
+            deudas = paginator.get_page(page_number)
+
         context['contexto_deuda'] = deudas
+        context['contexto_pagina'] = deudas
         context['id_cliente'] = id_cliente
 
         data['table'] = render_to_string(
