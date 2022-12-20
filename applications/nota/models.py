@@ -6,11 +6,11 @@ from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesCo
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 
-from applications.variables import ESTADOS_DOCUMENTO, TIPO_COMPROBANTE, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
+from applications.variables import ESTADOS_DOCUMENTO, TIPO_COMPROBANTE, TIPO_NOTA_CREDITO, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
 
 # Create your models here.
 class NotaCredito(models.Model):
-    tipo_comprobante = models.IntegerField('Tipo de Comprobante', choices=TIPO_COMPROBANTE, default=1)
+    tipo_comprobante = models.IntegerField('Tipo de Comprobante', choices=TIPO_COMPROBANTE, default=3)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
     numero_nota = models.IntegerField('Nro. Nota', blank=True, null=True)
@@ -42,6 +42,7 @@ class NotaCredito(models.Model):
     retencion_base_imponible = models.DecimalField('Retencion Base Imponible', max_digits=14, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     total_retencion = models.DecimalField('Total Retencion', max_digits=14, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True, max_length=1000)
+    tipo_nota_credito = models.IntegerField(choices=TIPO_NOTA_CREDITO, blank=True, null=True)
     estado = models.IntegerField(choices = ESTADOS_DOCUMENTO, default=1)
     motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
     content_type_documento = models.ForeignKey(DocumentoFisico, on_delete=models.PROTECT, related_name='NotaCredito_content_type_documento', blank=True, null=True) #Factura / Boleta
