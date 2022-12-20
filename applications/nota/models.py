@@ -1,12 +1,14 @@
 from django.db import models
 from decimal import Decimal
 from applications.clientes.models import Cliente, InterlocutorCliente
+from applications.funciones import obtener_totales
 from applications.sociedad.models import Sociedad
-from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesComprobante, TipoCambio
+from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesComprobante, TipoCambio, Unidad
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
-from applications.variables import ESTADOS_DOCUMENTO, TIPO_COMPROBANTE, TIPO_NOTA_CREDITO, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
+from applications.variables import ESTADOS_DOCUMENTO, TIPO_COMPROBANTE, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_NOTA_CREDITO, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
 
 # Create your models here.
 class NotaCredito(models.Model):
@@ -74,6 +76,84 @@ class NotaCredito(models.Model):
             return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_nota, self.cliente, self.moneda.simbolo, self.total)
         else:
             return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente, self.moneda.simbolo, self.total)
+
+
+class NotaCreditoDetalle(models.Model):
+    item = models.IntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
+    id_registro = models.IntegerField(blank=True, null=True)
+    unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
+    codigo_interno = models.CharField('Código Interno', max_length=250, blank=True, null=True)
+    descripcion_documento = models.CharField('Descripción', max_length=250)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
+    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    descuento = models.DecimalField('Descuento',max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    sub_total = models.DecimalField('Sub Total',max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    anticipo_regularizacion = models.BooleanField(default=False)
+    anticipo_documento_serie = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
+    anticipo_documento_numero = models.IntegerField(blank=True, null=True)
+    codigo_producto_sunat = models.CharField(max_length=8, blank=True)
+    tipo_de_isc = models.IntegerField(choices=TIPO_ISC_CHOICES, blank=True, null=True)
+    isc = models.DecimalField('ISC', max_digits=14, decimal_places=2, blank=True, null=True)
+    nota_credito = models.ForeignKey(NotaCredito, on_delete=models.CASCADE, related_name='NotaCreditoDetalle_nota_credito')
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NotaCreditoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NotaCreditoDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Nota de Crédito Detalle'
+        verbose_name_plural = 'Notas de Crédito Detalle'
+        ordering = [
+            'nota_credito',
+            'item',
+            ]
+
+    @property
+    def moneda(self):
+        return self.nota_credito.moneda
+    
+    @property
+    def documento(self):
+        return f'NOTA DE CRÉDITO {self.nota_credito.documento}'
+    
+    @property
+    def fecha(self):
+        return self.nota_credito.fecha_emision
+
+    @property
+    def cliente(self):
+        return self.nota_credito.cliente
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    def __str__(self):
+        return str(self.id)
+
+
+def nota_credito_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.nota_credito)
+    obj.nota_credito.total_descuento = respuesta['total_descuento']
+    obj.nota_credito.total_anticipo = respuesta['total_anticipo']
+    obj.nota_credito.total_gravada = respuesta['total_gravada']
+    obj.nota_credito.total_inafecta = respuesta['total_inafecta']
+    obj.nota_credito.total_exonerada = respuesta['total_exonerada']
+    obj.nota_credito.total_igv = respuesta['total_igv']
+    obj.nota_credito.total_gratuita = respuesta['total_gratuita']
+    obj.nota_credito.otros_cargos = respuesta['total_otros_cargos']
+    obj.nota_credito.total = respuesta['total']
+    obj.nota_credito.save()
+
+post_save.connect(nota_credito_detalle_post_save, sender=NotaCreditoDetalle)
 
 
 class NotaDebito(models.Model):
