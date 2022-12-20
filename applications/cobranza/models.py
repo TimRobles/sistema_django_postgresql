@@ -172,6 +172,10 @@ class Ingreso(models.Model):
     class Meta:
         verbose_name = 'Ingreso'
         verbose_name_plural = 'Ingresos'
+        ordering = [
+            '-fecha',
+            'cuenta_bancaria',
+            ]
 
     @property
     def tipo(self):
