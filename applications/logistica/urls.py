@@ -3,6 +3,13 @@ from . import views
 
 app_name = 'logistica_app'
 
+urlSeries = [
+
+    path('validar-series/detalle/<pk>/', views.ValidarSeriesNotaSalidaDetailView.as_view(), name='validar_series_detalle'),
+    path('validar-series/detalle-tabla/<pk>/', views.ValidarSeriesNotaSalidaDetailTabla, name='validar_series_detalle_tabla'),
+    path('validar-series-detalle/eliminar/<pk>/', views.ValidarSeriesNotaSalidaDetalleDeleteView.as_view(), name='validar_series_nota_salida_detalle_eliminar'),
+]
+
 urlNotaSalida = [
     path('nota-salida/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'),
     path('nota-salida/<int:id_solicitud_prestamo>/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'),
@@ -15,7 +22,6 @@ urlNotaSalida = [
     path('nota-salida-detalle/registrar/<int:nota_salida_id>/', views.NotaSalidaDetalleCreateView.as_view(), name='nota_salida_detalle_registrar'),
     path('nota-salida-detalle/actualizar/<pk>/', views.NotaSalidaDetalleUpdateView.as_view(), name='nota_salida_detalle_actualizar'),
     path('nota-salida-detalle/eliminar/<pk>/', views.NotaSalidaDetalleDeleteView.as_view(), name='nota_salida_detalle_eliminar'),
-    path('nota-salida-detalle/series/<pk>/', views.NotaSalidaDetalleSeriesView.as_view(), name='nota_salida_detalle_series'),
     path('nota-salida-detalle/generar-despacho/<pk>/', views.NotaSalidaGenerarDespachoView.as_view(), name='nota_salida_generar_despacho'),
     path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'),
 ]
@@ -50,4 +56,4 @@ urlpatterns = [
     path('solicitud-prestamo-materiales-detalle/archivo/eliminar/<pk>/', views.DocumentoSolicitudPrestamoMaterialesDeleteView.as_view(), name='solicitud_prestamo_materiales_documento_eliminar'),
     path('solicitud-prestamo-materiales-detalle/generar-nota-salida/<pk>/', views.SolicitudPrestamoMaterialesGenerarNotaSalidaView.as_view(), name='solicitud_prestamo__materiales_generar_nota_salida'),
     path('cliente-interlocutor/<str:id_interlocutor_cliente>/', views.ClienteView, name='cliente_interlocutor'),
-] + urlNotaSalida + urlDespacho
+] + urlSeries + urlNotaSalida + urlDespacho

@@ -214,17 +214,23 @@ class NotaSalidaAnularForm(BSModalModelForm):
 
 class NotaSalidaDetalleSeriesForm(BSModalModelForm):
     cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10, required=False)
-    series = forms.CharField(widget=forms.Textarea, required=False)
+    serie = forms.CharField(required=False)
     class Meta:
         model = NotaSalidaDetalle
         fields=(
+            'serie',
             'cantidad_salida',
             'cantidad_ingresada',
-            'series',
             )
 
     def __init__(self, *args, **kwargs):
+        cantidad_salida = kwargs.pop('cantidad_salida')
+        cantidad_ingresada = kwargs.pop('cantidad_ingresada')
         super(NotaSalidaDetalleSeriesForm, self).__init__(*args, **kwargs)
+        self.fields['cantidad_salida'].initial = cantidad_salida
+        self.fields['cantidad_ingresada'].initial = cantidad_ingresada
+        if cantidad_ingresada == cantidad_salida:
+            self.fields['serie'].disabled = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             self.fields['cantidad_salida'].disabled = True
@@ -263,3 +269,32 @@ class DespachoAnularForm(BSModalModelForm):
         super(DespachoAnularForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+        # if self.request.session['primero']:
+        #     series = form.cleaned_data['serie']
+        #     nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
+        #     serie_no_encontrada = []
+        #     for serie in series.splitlines():
+        #         buscar = Serie.objects.filter(
+        #             serie_base=serie,
+        #             content_type=ContentType.objects.get_for_model(nota_salida_detalle.producto),
+        #             id_registro=nota_salida_detalle.producto.id,
+        #         )
+            
+        #         if len(buscar) == 0:
+        #             serie_no_encontrada.append(serie)
+        #     if len(serie_no_encontrada) > 0:
+        #         form.add_error('serie', "Serie no encontrada: %s" % ", ".join(serie_no_encontrada))
+        #         return super().form_invalid(form)
+
+        #     nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
+        #     obj, created = ValidadSerieNotaSalidaDetalle.objects.get_or_create(
+        #         nota_salida_detalle=nota_salida_detalle,
+        #         serie=serie,
+        #     )
+        #     if created:
+        #         obj.estado = 1
+        #     self.request.session['primero'] = False
+        # return super().form_valid(form)

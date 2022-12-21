@@ -8,6 +8,7 @@ from applications.sociedad.models import Sociedad
 from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaDetalle
 from applications.variables import ESTADOS
 from applications.almacenes.models import Almacen
+from applications.calidad.models import Serie
 from applications.sede.models import Sede
 
 class SolicitudPrestamoMateriales(models.Model):
@@ -231,28 +232,21 @@ class NotaSalidaDetalle(models.Model):
         return "%s - %s" % (self.item, self.producto)
 
 
-# class NotaSalidaDetalle(models.Model):
-#     item = models.IntegerField(blank=True, null=True)
-#     confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True)
-#     solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
-#     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
-#     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
-#     cantidad_salida = models.DecimalField('Cantidad Salida', max_digits=22, decimal_places=10, default=Decimal('0.00'))
-#     nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_nota_salida')
-#     estado = models.IntegerField(choices=ESTADOS, default=1)
+class ValidarSerieNotaSalidaDetalle(models.Model):
+    nota_salida_detalle = models.ForeignKey(NotaSalidaDetalle, on_delete=models.PROTECT)
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
 
-#     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_created_by', editable=False)
-#     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-#     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_updated_by', editable=False)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieNotaSalidaDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieNotaSalidaDetalle_updated_by', editable=False)
 
-#     class Meta:
-#         verbose_name = 'Nota de Salida Detalle'
-#         verbose_name_plural = 'Notas de Salida Detalle'
-#         ordering = ['item',]
+    class Meta:
+        verbose_name = 'Validar Series Nota de Salida Detalle'
+        verbose_name_plural = 'Validar Series Notas de Salida Detalle'
 
-#     def __str__(self):
-#         return "%s - %s" % (self.item, self.producto)
+    def __str__(self):
+        return "%s - %s" % (self.nota_salida_detalle , str(self.serie))
         
 class Despacho(models.Model):
     ESTADOS_DESPACHO = (

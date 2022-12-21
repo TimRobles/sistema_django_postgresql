@@ -2,8 +2,9 @@ from django import forms
 from decimal import Decimal
 from applications.importaciones import *
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
+from applications.calidad.models import Serie
 from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, \
-    SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle
+    SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieNotaSalidaDetalle
 from applications.logistica.forms import DespachoAnularForm, DespachoForm, DocumentoPrestamoMaterialesForm, \
     NotaSalidaAnularForm, NotaSalidaDetalleForm, NotaSalidaDetalleSeriesForm, NotaSalidaDetalleUpdateForm, SolicitudPrestamoMaterialesDetalleForm, \
     SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, \
@@ -944,12 +945,83 @@ class NotaSalidaDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['dar_baja'] = "true"
         return context
 
-
-class NotaSalidaDetalleSeriesView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('logistica.change_notasalidadetalle')
-    model = NotaSalidaDetalle
-    template_name = "includes/formulario generico.html"
+class ValidarSeriesNotaSalidaDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('logistica.view_notasalidadetalle')
+    template_name = "logistica/validar_serie_nota_salida/detalle.html"
     form_class = NotaSalidaDetalleSeriesForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            serie = form.cleaned_data['serie']
+            nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
+            try:
+                buscar = Serie.objects.get(
+                    serie_base=serie,
+                    content_type=ContentType.objects.get_for_model(nota_salida_detalle.producto),
+                    id_registro=nota_salida_detalle.producto.id,
+                )
+                buscar2 = ValidarSerieNotaSalidaDetalle.objects.filter(serie = buscar)
+
+                if len(buscar2) != 0:
+                    form.add_error('serie', "Serie ya ha sido registrada")
+                    return super().form_invalid(form)
+
+                if buscar.estado != 'DISPONIBLE':
+                    form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                    return super().form_invalid(form)
+            except:
+                form.add_error('serie', "Serie no encontrada: %s" % serie)
+                return super().form_invalid(form)
+
+            nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
+            obj, created = ValidarSerieNotaSalidaDetalle.objects.get_or_create(
+                nota_salida_detalle=nota_salida_detalle,
+                serie=buscar,
+            )
+            if created:
+                obj.estado = 1
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
+        cantidad_salida = nota_salida_detalle.cantidad_salida
+        cantidad_ingresada = len(ValidarSerieNotaSalidaDetalle.objects.filter(nota_salida_detalle=nota_salida_detalle))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad_salida'] = cantidad_salida
+        kwargs['cantidad_ingresada'] = cantidad_ingresada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesNotaSalidaDetailView, self).get_context_data(**kwargs)
+        context['contexto_nota_salida_detalle'] = nota_salida_detalle
+        context['contexto_series'] = ValidarSerieNotaSalidaDetalle.objects.filter(nota_salida_detalle = nota_salida_detalle)
+        return context
+
+def ValidarSeriesNotaSalidaDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/validar_serie_nota_salida/detalle_tabla.html'
+        context = {}
+        nota_salida_detalle = NotaSalidaDetalle.objects.get(id = pk)
+        context['contexto_nota_salida_detalle'] = nota_salida_detalle
+        context['contexto_series'] = ValidarSerieNotaSalidaDetalle.objects.filter(nota_salida_detalle = nota_salida_detalle)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ValidarSeriesNotaSalidaDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_validarseriesnotasalidadetalle')
+    model = ValidarSerieNotaSalidaDetalle
+    template_name = "includes/eliminar generico.html"
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -957,16 +1029,14 @@ class NotaSalidaDetalleSeriesView(PermissionRequiredMixin, BSModalUpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.object.nota_salida.id})
-
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+        return reverse_lazy('logistica_app:validar_series_detalle', kwargs={'pk': self.get_object().nota_salida_detalle.id})
 
     def get_context_data(self, **kwargs):
-        context = super(NotaSalidaDetalleSeriesView, self).get_context_data(**kwargs)
-        context['accion'] = "Dar Salida"
-        context['titulo'] = "Series"
+        context = super(ValidarSeriesNotaSalidaDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
         return context
 
 
