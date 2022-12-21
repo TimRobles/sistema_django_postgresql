@@ -73,6 +73,8 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th>Cantidad</th>
+                <th>Cantidad Contada</th>
+                <th>Pendiente</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -83,6 +85,8 @@
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad_total|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.cantidad_contada|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_nota_stock_inicial.estado == 1 %}
                         <button data-form-url="{% url 'nota_ingreso_app:nota_stock_inicial_actualizar_material' material.id %}"

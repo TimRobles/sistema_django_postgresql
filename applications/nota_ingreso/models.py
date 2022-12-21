@@ -156,5 +156,19 @@ class NotaStockInicialDetalle(models.Model):
     def orden_compra_detalle(self):
         return self
 
+    @property
+    def cantidad_contada(self):
+        nota_ingreso_detalle = NotaIngresoDetalle.objects.filter(
+            content_type=ContentType.objects.get_for_model(self),
+            id_registro=self.id,
+        )
+        if nota_ingreso_detalle:
+            return nota_ingreso_detalle.aggregate(models.Sum('cantidad_conteo'))['cantidad_conteo__sum']
+        return Decimal('0.00')
+
+    @property
+    def pendiente(self):
+        return self.cantidad - self.cantidad_contada
+
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
