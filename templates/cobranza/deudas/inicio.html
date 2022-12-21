@@ -51,7 +51,7 @@ Deudores
         
             <tbody>
                 {% for cliente in contexto_cliente %}
-        
+                
                 <tr>
                     <td>{{ cliente.razon_social }}</td>
                     <td class="text-end text-nowrap">{{ moneda.simbolo }} {{  cliente.deuda_monto|redondear|intcomma }}</td>

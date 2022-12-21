@@ -80,13 +80,6 @@ class DeudoresView(FormView):
         context['moneda'] = Moneda.objects.get(principal=True)
 
         clientes = Cliente.objects.all()
-        clientes_con_deuda = []
-        for cliente in clientes:
-            if cliente.deuda_monto > Decimal('0.00'):
-                clientes_con_deuda.append(cliente.id)
-        
-        clientes = clientes.filter(id__in=clientes_con_deuda)
-
         filtro_razon_social = self.request.GET.get('razon_social')
 
         if filtro_razon_social:
