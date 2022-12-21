@@ -77,7 +77,7 @@ class Serie(models.Model):
     @property
     def estado(self):
         if self.HistorialEstadoSerie_serie.all():
-            return self.HistorialEstadoSerie_serie.all()[0].estado_serie.descripcion
+            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.descripcion
         else:
             return ""
 
@@ -98,7 +98,7 @@ class HistorialEstadoSerie(models.Model):
     class Meta:
         verbose_name = 'Historial Estado Serie'
         verbose_name_plural = 'Historial Estado Series'
-        ordering = ['-updated_at',]
+        ordering = ['-created_at',]
 
     def __str__(self):
         return str(self.serie)
