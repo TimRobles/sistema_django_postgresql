@@ -7,6 +7,7 @@
             <th>N° de Nota de Ingreso</th>
             <th>Observaciones</th>
             <th>Motivo de Anulación</th>
+            <th>Usuario</th>  
             <th>Estado</th>  
             <th class="text-center">Acciones</th>      
         </tr>
@@ -31,6 +32,7 @@
                     -
                 {% endif %}
             </td>
+            <td>{{ nota_ingreso.created_by}}</td>
             <td>{{ nota_ingreso.get_estado_display}}</td>
             <td class="text-nowrap text-center">
                 <a href="{% url 'nota_ingreso_app:nota_ingreso_detalle' nota_ingreso.id %}"

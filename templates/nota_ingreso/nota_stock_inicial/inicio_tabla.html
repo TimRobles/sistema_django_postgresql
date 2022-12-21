@@ -8,6 +8,7 @@
             <th>Observaciones</th>
             <th>Motivo de Anulación</th>
             <th>Sociedad</th>  
+            <th>Usuario</th>  
             <th>Estado</th>  
             <th class="text-center">Acciones</th>      
         </tr>
@@ -33,6 +34,7 @@
                 {% endif %}
             </td>
             <td>{{ nota_stock_inicial.sociedad }}</td>
+            <td>{{ nota_stock_inicial.created_by }}</td>
             <td>{{ nota_stock_inicial.get_estado_display}}</td>
             <td class="text-nowrap text-center">
                 <a href="{% url 'nota_ingreso_app:nota_stock_inicial_detalle' nota_stock_inicial.id %}"

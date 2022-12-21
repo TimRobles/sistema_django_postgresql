@@ -500,6 +500,7 @@ class  RecepcionTrasladoProductoActualizarView(BSModalUpdateView):
         context['titulo'] = "Traslado Producto"
         return context
 
+
 class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
     model = RecepcionTrasladoProducto
     template_name = "traslado_producto/recepcion/form_guardar.html"
@@ -549,11 +550,15 @@ class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
 
             numero_recepcion_traslado = RecepcionTrasladoProducto.objects.all().aggregate(Count('numero_recepcion_traslado'))['numero_recepcion_traslado__count'] + 1
             self.object.numero_recepcion_traslado = numero_recepcion_traslado
-            self.object.estado = 2
+            self.object.estado = 3
             self.object.fecha_recepcion = datetime. now()
-
             registro_guardar(self.object, self.request)
             self.object.save()
+            
+            self.object.envio_traslado_producto.estado = 3
+            registro_guardar(self.object.envio_traslado_producto, self.request)
+            self.object.envio_traslado_producto.save()
+
             messages.success(request, MENSAJE_GUARDAR_RECEPCION)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
@@ -566,6 +571,63 @@ class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
         context['titulo'] = "Recepcion"
         context['guardar'] = "true"
         return context
+
+
+class RecepcionTrasladoProductoAnularView(BSModalDeleteView):
+    model = RecepcionTrasladoProducto
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            movimiento_final = TipoMovimiento.objects.get(codigo=140)  # Recepción por traslado
+            for detalle in self.object.RecepcionTrasladoProductoDetalle_recepcion_traslado_producto.all():
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad_recepcion,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=movimiento_final.tipo_stock_inicial,
+                    signo_factor_multiplicador=-1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=detalle.almacen_destino,
+                    sociedad=self.object.sociedad,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+            
+            movimiento_uno = movimiento_dos.movimiento_anterior
+            
+            movimiento_dos.delete()
+            movimiento_uno.delete()
+
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+
+            self.object.envio_traslado_producto.estado = 2
+            registro_guardar(self.object.envio_traslado_producto, self.request)
+            self.object.envio_traslado_producto.save()
+            messages.success(request, MENSAJE_GUARDAR_RECEPCION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoAnularView, self).get_context_data(**kwargs)
+        context['accion'] = "Anular"
+        context['titulo'] = "Recepcion"
+        context['guardar'] = "true"
+        return context
+
 
 class  RecepcionTrasladoProductoObservacionesView(BSModalUpdateView):
     model = RecepcionTrasladoProducto

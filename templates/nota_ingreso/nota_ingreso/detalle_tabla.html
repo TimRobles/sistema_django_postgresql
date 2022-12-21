@@ -26,6 +26,7 @@
                 <th>Proveedor</th>
                 <th>Interlocutor</th>
                 <th>Sociedad</th>
+                <th>Usuario</th>
                 <th class="text-center">Estado</th>
             </tr>
         </thead>
@@ -37,6 +38,7 @@
                 <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
                 <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
                 <td>{{ contexto_nota_ingreso.sociedad }}</td>
+                <td>{{ contexto_nota_ingreso.created_by }}</td>
                 <td class="text-center">
                     {{ contexto_nota_ingreso.get_estado_display }}
                     {% if contexto_nota_ingreso.motivo_anulacion %}

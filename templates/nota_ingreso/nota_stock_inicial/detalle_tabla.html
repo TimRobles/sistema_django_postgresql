@@ -28,6 +28,7 @@
                 <th>Fecha</th>
                 <th>Número de Ingreso</th>
                 <th>Sociedad</th>
+                <th>Usuario</th>
                 <th class="text-center">Estado</th>
             </tr>
         </thead>
@@ -36,6 +37,7 @@
                 <td>{{ contexto_nota_stock_inicial.fecha_ingreso|date:'d/m/Y' }}</td>
                 <td>{{ contexto_nota_stock_inicial.nro_nota_stock_inicial|numeroXn:6 }}</td>
                 <td>{{ contexto_nota_stock_inicial.sociedad }}</td>
+                <td>{{ contexto_nota_stock_inicial.created_by }}</td>
                 <td class="text-center">
                     {{ contexto_nota_stock_inicial.get_estado_display }}
                     {% if contexto_nota_stock_inicial.motivo_anulacion %}
