@@ -1,8 +1,15 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
+{% block abajo %}
+<span hidden id="url_stock">{{ url_stock }}</span>    
+<span hidden id="url_unidad">{{ url_unidad }}</span>    
+<span hidden id="sociedad">{{ sociedad }}</span>    
+{% endblock abajo %}
+    
+
 {% block js %}
-    <script src="{% static 'js/traslado_producto/material/form_material.js' %}?{{ cache_bust }}"></script>
+    <script src="{% static 'js/traslado_producto/recepcion/form_material.js' %}?{{ cache_bust }}"></script>
  
     <script>
         $(function () {

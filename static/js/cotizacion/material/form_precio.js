@@ -104,12 +104,6 @@ function select_form() {
     }
 }
 
-$('.btn-primary').unbind().on('click', function () {
-    setTimeout(() => {
-        select_form();
-    }, 500);
-})
-
 setTimeout(() => {
     select_form();
 }, 500);

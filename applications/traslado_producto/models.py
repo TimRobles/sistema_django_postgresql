@@ -1,4 +1,5 @@
 from django.db import models
+from applications.funciones import numeroXn
 from applications.sede.models import Sede
 from applications.almacenes.models import Almacen
 from applications.sociedad.models import Sociedad
@@ -50,7 +51,7 @@ class EnvioTrasladoProducto(models.Model):
 
 
     def __str__(self):
-        return str(self.id)
+        return "%s - %s - %s - %s" % (self.fecha_traslado.strftime('%d/%m/%Y'), numeroXn(self.id, 6), self.sede_origen, self.responsable)
 
 
 class EnvioTrasladoProductoDetalle(models.Model):

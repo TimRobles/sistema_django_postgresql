@@ -85,7 +85,7 @@ def NotaIngresoDetailTabla(request, recepcion_id):
 
 
 class NotaIngresoAgregarMaterialView(BSModalFormView):
-    template_name = "includes/formulario generico.html"
+    template_name = "nota_ingreso/nota_ingreso/form.html"
     form_class = NotaIngresoAgregarMaterialForm
     
     def get_success_url(self, **kwargs):
@@ -97,10 +97,8 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
         for detalle in nota_ingreso.recepcion_compra.documento.detalle:
             valor = "%s|%s" % (ContentType.objects.get_for_model(detalle).id, detalle.id)
             productos.append((valor, detalle.producto))
-        almacenes = Almacen.objects.filter(sede__sociedad = nota_ingreso.sociedad)
         kwargs = super(NotaIngresoAgregarMaterialView, self).get_form_kwargs(*args, **kwargs)
         kwargs['productos'] = productos
-        kwargs['almacenes'] = almacenes
         return kwargs
 
     @transaction.atomic
@@ -120,7 +118,6 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
                 buscar = NotaIngresoDetalle.objects.filter(
                     content_type=content_type,
                     id_registro=id_registro,
-                    nota_ingreso=nota_ingreso,
                 ).exclude(nota_ingreso__estado=3)
 
                 if buscar:
@@ -160,11 +157,12 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
         context = super(NotaIngresoAgregarMaterialView, self).get_context_data(**kwargs)
         context['accion'] = "Contar"
         context['titulo'] = "Material"
+        context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
         return context
 
 
 class NotaIngresoActualizarMaterialView(BSModalFormView):
-    template_name = "includes/formulario generico.html"
+    template_name = "nota_ingreso/nota_ingreso/form.html"
     form_class = NotaIngresoAgregarMaterialForm
     
     def get_success_url(self, **kwargs):
@@ -179,10 +177,8 @@ class NotaIngresoActualizarMaterialView(BSModalFormView):
         for detalle in nota_ingreso.recepcion_compra.documento.detalle:
             valor = "%s|%s" % (ContentType.objects.get_for_model(detalle).id, detalle.id)
             productos.append((valor, detalle.producto))
-        almacenes = Almacen.objects.filter(sede__sociedad = nota_ingreso.sociedad)
         kwargs = super(NotaIngresoActualizarMaterialView, self).get_form_kwargs(*args, **kwargs)
         kwargs['productos'] = productos
-        kwargs['almacenes'] = almacenes
         kwargs['nota_ingreso_detalle'] = nota_ingreso_detalle
         return kwargs
 
@@ -243,6 +239,7 @@ class NotaIngresoActualizarMaterialView(BSModalFormView):
         context = super(NotaIngresoActualizarMaterialView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Material"
+        context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
         return context
 
 
@@ -657,9 +654,9 @@ class NotaStockInicialGuardarView(BSModalUpdateView):
         sid = transaction.savepoint()
         try:
             detalles = form.instance.NotaStockInicialDetalle_nota_stock_inicial.all()
+            movimiento_final = TipoMovimiento.objects.get(codigo=999)
             
             for detalle in detalles:
-                movimiento_final = TipoMovimiento.objects.get(codigo=999)
 
                 movimiento_dos = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.content_type,

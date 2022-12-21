@@ -2,6 +2,7 @@ from django.shortcuts import render
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.material.funciones import stock
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.sociedad.models import Sociedad
 
 from .models import (
@@ -18,6 +19,7 @@ from .forms import (
     EnvioTrasladoProductoObservacionesForm,
     EnvioTrasladoProductoMaterialActualizarDetalleForm,
     MotivoTrasladoForm,
+    RecepcionTrasladoProductoActualizarForm,
     RecepcionTrasladoProductoForm,
     RecepcionTrasladoProductoObservacionesForm,
     RecepcionTrasladoProductoMaterialDetalleForm,
@@ -142,10 +144,29 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
-            self.object.estado = 2
+            movimiento_final = TipoMovimiento.objects.get(codigo=139)  # Salida por traslado
+            for detalle in self.object.EnvioTrasladoProductoDetalle_envio_traslado_producto.all():
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad_envio,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=detalle.almacen_origen,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+
             numero_envio_traslado = EnvioTrasladoProducto.objects.all().aggregate(Count('numero_envio_traslado'))['numero_envio_traslado__count'] + 1
             self.object.numero_envio_traslado = numero_envio_traslado
-            self.object.fecha_traslado = datetime. now()
+            self.object.estado = 2
+            self.object.fecha_traslado = datetime.now()
 
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -269,7 +290,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
 
 class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
     model = EnvioTrasladoProductoDetalle
-    template_name = "traslado_producto/envio/actualizar.html"
+    template_name = "traslado_producto/envio/form_actualizar_material.html"
     form_class = EnvioTrasladoProductoMaterialActualizarDetalleForm
 
     def get_success_url(self, **kwargs):
@@ -328,11 +349,15 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        envio_traslado_producto = detalle.envio_traslado_producto
         context = super(EnvioTrasladoProductoActualizarMaterialDetalleView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Item"
         context['material'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
-
+        context['sociedad'] = envio_traslado_producto.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
+        context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 
 class EnvioTrasladoProductoMaterialDeleteView(BSModalDeleteView):
@@ -388,13 +413,24 @@ def RecepcionTrasladoProductoTabla(request):
         )
         return JsonResponse(data)
 
-def RecepcionTrasladoProductoCrearView(request):
-    obj = RecepcionTrasladoProducto.objects.create(
-        created_by=request.user,
-        updated_by=request.user,
-    )
-    obj.save()
-    return HttpResponseRedirect(reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':obj.id}))
+class RecepcionTrasladoProductoCrearView(BSModalCreateView):
+    model = RecepcionTrasladoProducto
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionTrasladoProductoForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.kwargs['recepcion'].id})
+
+    def form_valid(self, form):
+        self.kwargs['recepcion'] = form.instance
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoCrearView, self).get_context_data(**kwargs)
+        context['accion'] = "Recepción"
+        context['titulo'] = "Traslado Producto"
+        return context
 
 class RecepcionTrasladoProductoVerView(TemplateView):
     template_name = "traslado_producto/recepcion/detalle.html"
@@ -452,7 +488,7 @@ def RecepcionTrasladoProductoVerTabla(request, id_recepcion_traslado_producto):
 class  RecepcionTrasladoProductoActualizarView(BSModalUpdateView):
     model = RecepcionTrasladoProducto
     template_name = "includes/formulario generico.html"
-    form_class = RecepcionTrasladoProductoForm
+    form_class = RecepcionTrasladoProductoActualizarForm
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
@@ -518,7 +554,7 @@ class  RecepcionTrasladoProductoObservacionesView(BSModalUpdateView):
 
 
 class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
-    template_name = "includes/formulario generico.html"
+    template_name = "traslado_producto/recepcion/from_material.html"
     form_class = RecepcionTrasladoProductoMaterialDetalleForm
 
     def dispatch(self, request, *args, **kwargs):

@@ -2,7 +2,7 @@
 {% load humanize %}
 
 <h3> Detalle Envio Traslado Producto 
-    <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
+    <a href="{% url 'traslado_producto_app:envio_inicio' %}" class="create btn btn-primary">Regresar</a>
     {% if envio_traslado_producto.estado == 1 %}
     <button data-form-url="{% url 'traslado_producto_app:envio_observaciones' envio_traslado_producto.id %}"
         data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id %}"
@@ -135,12 +135,14 @@
     </div>
 </div>
 
+{% if envio_traslado_producto.estado == 1 %}
 <button data-form-url="{% url 'traslado_producto_app:envio_agregar_material' envio_traslado_producto.id %}"
 data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id  %}"
 data-keep-open="True"
 class="update btn btn-primary" title="Agregar Material">
 Agregar Material
 </button>
+{% endif %}
 
 <div class="table-responsive">
     <table class="table">
@@ -166,6 +168,7 @@ Agregar Material
                 <td class="text-nowrap">{{ material.unidad }}</td>
                 <td class="text-nowrap">{{ material.get_estado_display }}</td>
                 <td>
+                    {% if envio_traslado_producto.estado == 1 %}
                     <button data-form-url="{% url 'traslado_producto_app:envio_actualizar_material' material.id %}"
                         data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id %}"
                         data-keep-open="true"
@@ -178,7 +181,7 @@ Agregar Material
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi-x-lg"></i>
                     </button>
-
+                    {% endif %}
                 </td>
             </tr>                
             {% endfor %}

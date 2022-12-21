@@ -88,6 +88,8 @@ class EnvioTrasladoProductoMaterialDetalleForm(BSModalModelForm):
         super(EnvioTrasladoProductoMaterialDetalleForm, self).__init__(*args, **kwargs)   
         self.fields['almacen_origen'].queryset = envio_traslado_producto.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
         self.fields['stock_disponible'].disabled = True
+        self.fields['almacen_origen'].required = True
+        self.fields['cantidad_envio'].required = True
         self.fields['unidad'].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -107,17 +109,20 @@ class EnvioTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
         envio_traslado_producto = kwargs.pop('envio_traslado_producto')
         super(EnvioTrasladoProductoMaterialActualizarDetalleForm, self).__init__(*args, **kwargs)   
         self.fields['almacen_origen'].queryset = envio_traslado_producto.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['unidad'].queryset = kwargs['instance'].producto.subfamilia.unidad.all()
+        self.fields['almacen_origen'].required = True
+        self.fields['cantidad_envio'].required = True
+        self.fields['unidad'].required = True
         self.fields['stock_disponible'].disabled = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
 
 
 class RecepcionTrasladoProductoForm(BSModalModelForm):
     class Meta:
         model = RecepcionTrasladoProducto
         fields=(
-            'numero_recepcion_traslado',
+            'envio_traslado_producto',
             'sede_destino',
             'fecha_recepcion',
             'responsable',
@@ -133,6 +138,31 @@ class RecepcionTrasladoProductoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(RecepcionTrasladoProductoForm, self).__init__(*args, **kwargs)   
+        self.fields['envio_traslado_producto'].queryset = EnvioTrasladoProducto.objects.filter(estado=2)
+        self.fields['sede_destino'].queryset = Sede.objects.filter(estado=1)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RecepcionTrasladoProductoActualizarForm(BSModalModelForm):
+    class Meta:
+        model = RecepcionTrasladoProducto
+        fields=(
+            'sede_destino',
+            'fecha_recepcion',
+            'responsable',
+            )
+        widgets = {
+            'fecha_recepcion' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(RecepcionTrasladoProductoActualizarForm, self).__init__(*args, **kwargs)   
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

@@ -208,18 +208,6 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                 else:
                     movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
 
-                print("************************************")
-                print('content_type_producto', detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,)
-                print('id_registro_producto', detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,)
-                print('tipo_movimiento', movimiento_inicial,)
-                print('tipo_stock', movimiento_inicial.tipo_stock_final,)
-                print('signo_factor_multiplicador', +1,)
-                print('content_type_documento_proceso', ContentType.objects.get_for_model(self.object.nota_ingreso),)
-                print('id_registro_documento_proceso', self.object.nota_ingreso.id,)
-                print('sociedad', self.object.nota_ingreso.recepcion_compra.sociedad,)
-                print('movimiento_reversion', False,)
-                print("************************************")
-
                 movimiento_anterior = MovimientosAlmacen.objects.get(
                     content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
                     id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,

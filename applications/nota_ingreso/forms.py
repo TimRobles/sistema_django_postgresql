@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from applications.almacenes.models import Almacen
+from applications.sede.models import Sede
 from applications.nota_ingreso.models import NotaIngreso, NotaStockInicial
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from django.contrib.contenttypes.models import ContentType
@@ -8,29 +9,37 @@ from django.contrib.contenttypes.models import ContentType
 class NotaIngresoAgregarMaterialForm(BSModalForm):
     producto = forms.ChoiceField(choices=[('1', '1'), ('2', '2')])
     cantidad = forms.IntegerField()
+    sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
     almacen = forms.ModelChoiceField(queryset=Almacen.objects.none())
     class Meta:
         fields=(
             'producto',
             'cantidad',
+            'sede',
             'almacen',
             )
+    
+    def clean_sede(self):
+        sede = self.cleaned_data.get('sede')
+        almacen = self.fields['almacen']
+        almacen.queryset = Almacen.objects.filter(sede = sede)    
+        return sede
         
     def __init__(self, *args, **kwargs):
         productos = kwargs.pop('productos')
-        almacenes = kwargs.pop('almacenes')
         try:
             nota_ingreso_detalle = kwargs.pop('nota_ingreso_detalle')
         except:
             pass
         super(NotaIngresoAgregarMaterialForm, self).__init__(*args, **kwargs)
         self.fields['producto'].choices = productos
-        self.fields['almacen'].queryset = almacenes
         try:
             detalle = nota_ingreso_detalle.comprobante_compra_detalle
             valor = "%s|%s" % (ContentType.objects.get_for_model(detalle).id, detalle.id)
             self.fields['producto'].initial = valor
             self.fields['cantidad'].initial = nota_ingreso_detalle.cantidad_conteo
+            self.fields['sede'].initial = nota_ingreso_detalle.almacen.sede
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = nota_ingreso_detalle.almacen.sede)
             self.fields['almacen'].initial = nota_ingreso_detalle.almacen
         except:
             pass

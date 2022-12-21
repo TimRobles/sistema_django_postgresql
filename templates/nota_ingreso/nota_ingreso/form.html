@@ -1,0 +1,22 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block abajo %}
+<span hidden id="url_sede">{{ url_sede }}</span>
+{% endblock abajo %}
+    
+
+{% block js %}
+    <script src="{% static 'js/nota_ingreso/nota_ingreso/form.js' %}"></script>
+    <script>
+        $(function () {
+
+            $("#id_producto").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+                
+            });
+    </script>
+{% endblock js %}
