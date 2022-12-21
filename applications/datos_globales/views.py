@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.paginator import Paginator
 from applications.importaciones import *
 from django import forms
 from applications.datos_globales.models import (
@@ -75,19 +76,40 @@ def DistritoJsonView(request):
                 })
         return JsonResponse(data, safe=False)
 
-class TipoCambioListView(PermissionRequiredMixin, ListView):
+class TipoCambioListView(PermissionRequiredMixin, TemplateView):
     permission_required = ('datos_globales.view_tipocambio')
-
-    model = TipoCambio
     template_name = "datos_globales/tipo_cambio/inicio.html"
-    context_object_name = 'contexto_tipo_cambio'
+    
+    def get_context_data(self, **kwargs):
+        context = super(TipoCambioListView, self).get_context_data(**kwargs)
+        tipo_cambio = TipoCambio.objects.all()
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(tipo_cambio) > objectsxpage:
+            paginator = Paginator(tipo_cambio, objectsxpage)
+            page_number = self.request.GET.get('page')
+            tipo_cambio = paginator.get_page(page_number)
+
+        context['contexto_tipo_cambio'] = tipo_cambio
+        context['contexto_pagina'] = tipo_cambio
+        return context
+    
 
 def TipoCambioTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'datos_globales/tipo_cambio/inicio_tabla.html'
         context = {}
-        context['contexto_tipo_cambio'] = TipoCambio.objects.all()
+        tipo_cambio = TipoCambio.objects.all()
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(tipo_cambio) > objectsxpage:
+            paginator = Paginator(tipo_cambio, objectsxpage)
+            page_number = request.GET.get('page')
+            tipo_cambio = paginator.get_page(page_number)
+
+        context['contexto_tipo_cambio'] = tipo_cambio
+        context['contexto_pagina'] = tipo_cambio
 
         data['table'] = render_to_string(
             template,
