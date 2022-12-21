@@ -182,33 +182,51 @@ class RecepcionTrasladoProductoObservacionesForm(BSModalModelForm):
 class RecepcionTrasladoProductoMaterialDetalleForm(BSModalModelForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
     cantidad_recepcion = forms.DecimalField(max_digits=22, decimal_places=10)
+    stock_disponible = forms.CharField(required=False)
 
     class Meta:
         model = RecepcionTrasladoProductoDetalle
         fields=(
             'material',
-            'cantidad_recepcion',
             'almacen_destino',
+            'cantidad_recepcion',
+            'stock_disponible',
             'unidad',
             )
 
     def __init__(self, *args, **kwargs):
-        
-        super(RecepcionTrasladoProductoMaterialDetalleForm, self).__init__(*args, **kwargs)   
+        recepcion_traslado_producto = kwargs.pop('recepcion_traslado_producto')
+        lista_materiales = kwargs.pop('lista_materiales')
+        super(RecepcionTrasladoProductoMaterialDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['material'].queryset = Material.objects.filter(id__in=lista_materiales)
+        self.fields['almacen_destino'].queryset = recepcion_traslado_producto.sede_destino.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['stock_disponible'].disabled = True
+        self.fields['almacen_destino'].required = True
+        self.fields['cantidad_recepcion'].required = True
+        self.fields['unidad'].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class RecepcionTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
+    stock_disponible = forms.CharField(required=False)
     class Meta:
         model = RecepcionTrasladoProductoDetalle
         fields=(
-            'cantidad_recepcion',
             'almacen_destino',
+            'cantidad_recepcion',
+            'stock_disponible',
             'unidad',
             )
 
     def __init__(self, *args, **kwargs):
+        recepcion_traslado_producto = kwargs.pop('recepcion_traslado_producto')
         super(RecepcionTrasladoProductoMaterialActualizarDetalleForm, self).__init__(*args, **kwargs)   
+        self.fields['almacen_destino'].queryset = recepcion_traslado_producto.sede_destino.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['unidad'].queryset = kwargs['instance'].producto.subfamilia.unidad.all()
+        self.fields['almacen_destino'].required = True
+        self.fields['cantidad_recepcion'].required = True
+        self.fields['unidad'].required = True
+        self.fields['stock_disponible'].disabled = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

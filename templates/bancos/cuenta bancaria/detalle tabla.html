@@ -183,9 +183,9 @@
             <td class="text-center text-nowrap">
                 
                 {% if movimiento.es_pago %}
-                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' cuenta_bancaria.id movimiento.id %}"
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' cuenta_bancaria.id movimiento.id 2 %}"
                     data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
-                    class="create btn btn-success btn-sm"
+                    class="delete btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
                     <i class="bi bi-wallet2"></i>
                 </button>

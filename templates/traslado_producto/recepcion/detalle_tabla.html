@@ -2,7 +2,7 @@
 {% load humanize %}
 
 <h3> Detalle Recepción Traslado Producto 
-    <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
+    <a href="{% url 'traslado_producto_app:recepcion_inicio' %}" class="btn btn-primary">Regresar</a>
     {% if recepcion_traslado_producto.estado == 1 %}
     <button data-form-url="{% url 'traslado_producto_app:recepcion_observaciones' recepcion_traslado_producto.id %}"
         data-table-url="{% url 'traslado_producto_app:recepcion_ver_tabla' recepcion_traslado_producto.id %}"
@@ -11,6 +11,7 @@
         Observaciones
     </button>
     {% endif %}
+    <a href="{% url 'traslado_producto_app:envio_ver' recepcion_traslado_producto.envio_traslado_producto.id %}" class="btn btn-primary">Ver Envío</a>
 </h3>
 
 
@@ -111,7 +112,7 @@ Agregar Material
                 <th>Item</th>
                 <th>Producto</th>
                 <th>Almacén Destino</th>
-                <th>Cantidad Recepcion</th>
+                <th class="text-end">Cantidad Recepcion</th>
                 <th>Unidad</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -124,7 +125,7 @@ Agregar Material
                 <td>{{ material.item }}</td>
                 <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                 <td class="text-nowrap">{{ material.almacen_destino }}</td>
-                <td class="text-nowrap">{{ material.cantidad_recepcion }}</td>
+                <td class="text-end text-nowrap">{{ material.cantidad_recepcion }}</td>
                 <td class="text-nowrap">{{ material.unidad }}</td>
                 <td class="text-nowrap">{{ material.get_estado_display }}</td>
                 <td>

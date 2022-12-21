@@ -1,10 +1,10 @@
 function ver_stock() {
     material = $('#id_material')[0].value;
-    almacen_origen = $('#id_almacen_origen')[0].value;
+    almacen_destino = $('#id_almacen_destino')[0].value;
     stock_disponible = $('#id_stock_disponible')[0];
-    if (material && almacen_origen) {
+    if (material && almacen_destino) {
         sociedad = $('#sociedad')[0].innerHTML;
-        url_stock = $('#url_stock')[0].innerHTML + material + '/' + sociedad + '/' + almacen_origen + '/';
+        url_stock = $('#url_stock')[0].innerHTML + material + '/' + sociedad + '/' + almacen_destino + '/';
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url_stock);
         xhr.onload = function(){
@@ -41,7 +41,7 @@ $('#id_material').unbind().on('change', function (e) {
     cambiar_unidad(e.target.value);
 })
 
-$('#id_almacen_origen').unbind().on('change', function () {
+$('#id_almacen_destino').unbind().on('change', function () {
     ver_stock();
 })
 

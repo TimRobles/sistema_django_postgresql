@@ -59,7 +59,7 @@ class EnvioTrasladoProductoDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
     almacen_origen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
-    cantidad_envio = models.DecimalField('Cantidad de Envio', max_digits=5, decimal_places=2,blank=True, null=True)
+    cantidad_envio = models.DecimalField('Cantidad de Envio', max_digits=8, decimal_places=2,blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT,blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_TRASLADO_PRODUCTO_DETALLE, default=1,blank=True, null=True)
     envio_traslado_producto = models.ForeignKey(EnvioTrasladoProducto, on_delete=models.CASCADE, related_name='EnvioTrasladoProductoDetalle_envio_traslado_producto')
@@ -79,7 +79,7 @@ class EnvioTrasladoProductoDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     def __str__(self):
-        return str(self.id)
+        return "%s" % (self.producto)
 
 
 class RecepcionTrasladoProducto(models.Model):
@@ -100,16 +100,21 @@ class RecepcionTrasladoProducto(models.Model):
         verbose_name = 'Recepcion Traslado Producto'
         verbose_name_plural = 'Recepcion Traslado Productos'
 
+    @property
+    def sociedad(self):
+        return self.envio_traslado_producto.sociedad
+
     def __str__(self):
         return str(self.id)
 
 
 class RecepcionTrasladoProductoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
+    envio_traslado_producto_detalle = models.ForeignKey(EnvioTrasladoProductoDetalle, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
     id_registro = models.IntegerField(blank=True, null=True)
     almacen_destino = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
-    cantidad_recepcion = models.DecimalField('Cantidad de Recepción', max_digits=5, decimal_places=2,blank=True, null=True)
+    cantidad_recepcion = models.DecimalField('Cantidad de Recepción', max_digits=8, decimal_places=2,blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT,blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_TRASLADO_PRODUCTO_DETALLE, default=1,blank=True, null=True)
     recepcion_traslado_producto = models.ForeignKey(RecepcionTrasladoProducto, on_delete=models.CASCADE, related_name='RecepcionTrasladoProductoDetalle_recepcion_traslado_producto')
@@ -122,6 +127,10 @@ class RecepcionTrasladoProductoDetalle(models.Model):
     class Meta:
         verbose_name = 'Recepcion Traslado Producto Detalle'
         verbose_name_plural = 'Recepcion Traslado Productos Detalle'
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     def __str__(self):
         return str(self.id)

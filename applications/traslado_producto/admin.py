@@ -58,6 +58,7 @@ class EnvioTrasladoProductoDetalleAdmin(admin.ModelAdmin):
         'envio_traslado_producto',
         'content_type',
         'id_registro',
+        'producto',
         'almacen_origen',
         'cantidad_envio',
         'unidad',
@@ -102,8 +103,10 @@ class RecepcionTrasladoProductoAdmin(admin.ModelAdmin):
 class RecepcionTrasladoProductoDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'item',
+        'envio_traslado_producto_detalle',
         'content_type',
         'id_registro',
+        'producto',
         'almacen_destino',
         'cantidad_recepcion',
         'unidad',

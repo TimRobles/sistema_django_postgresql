@@ -174,9 +174,9 @@
                 {{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}
             </td>
             <td class="text-center text-nowrap">
-                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' movimiento.cuenta_bancaria.id movimiento.id %}"
+                <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' movimiento.cuenta_bancaria.id movimiento.id 1 %}"
                     data-table-url="{% url 'cobranza_app:cuenta_bancaria_depositos_tabla' %}"
-                    class="create btn btn-success btn-sm"
+                    class="delete btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
                     <i class="bi bi-wallet2"></i>
                 </button>

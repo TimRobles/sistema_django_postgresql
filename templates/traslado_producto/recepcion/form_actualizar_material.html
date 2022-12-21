@@ -8,7 +8,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
+        <span hidden id="url_stock">{{ url_stock }}</span>    
+        <span hidden id="url_unidad">{{ url_unidad }}</span>    
+        <span hidden id="sociedad">{{ sociedad }}</span>    
         {{ material }}
+        <input type="text" hidden id="id_material" class="form-control" value="{{ material.id }}">
         {% include 'includes/formulario.html' %}    
     </div>
     <div class="modal-footer">
@@ -19,6 +23,7 @@
 
 
 {% block js %}
+    <script src="{% static 'js/traslado_producto/recepcion/form_material.js' %}?{{ cache_bust }}"></script>
     <script>
         $(function () {
 

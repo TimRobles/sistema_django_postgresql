@@ -389,7 +389,10 @@ class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
     form_class = CuentaBancariaIngresoPagarForm
 
     def get_success_url(self):
-        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
+        if self.kwargs['opcion']==1:
+            return reverse_lazy('cobranza_app:cuenta_bancaria_depositos_tabla')
+        else:
+            return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
     @transaction.atomic
     def form_valid(self, form):
@@ -421,10 +424,12 @@ class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
+        #Modificar con Select2 con búsqueda de 4 caracteres
+        #********************************************
         kwargs = super().get_form_kwargs()
         ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
         lista_deudas = []
-        for deuda in Deuda.objects.all():
+        for deuda in Deuda.objects.filter(sociedad=ingreso.cuenta_bancaria.sociedad):
             if deuda.saldo > 0:
                 lista_deudas.append(deuda.id)
 
@@ -463,7 +468,7 @@ class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
         kwargs = super().get_form_kwargs()
         ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
         lista_deudas = []
-        for deuda in Deuda.objects.all():
+        for deuda in Deuda.objects.filter(sociedad=ingreso.cuenta_bancaria.sociedad):
             if deuda.saldo > 0:
                 lista_deudas.append(deuda.id)
         lista_deudas.append(self.object.deuda.id)

@@ -11,6 +11,11 @@
         Observaciones
     </button>
     {% endif %}
+    
+    {% if envio_traslado_producto.RecepcionTrasladoProducto_envio_traslado_producto.all %}
+    <a href="{% url 'traslado_producto_app:recepcion_inicio' %}" class="btn btn-primary">Ver Recepciones</a>
+    {% endif %}
+        
 </h3>
 
 

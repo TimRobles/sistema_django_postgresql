@@ -22,6 +22,7 @@ urlpatterns = [
 
 
     path('recepcion/',views.RecepcionTrasladoProductoListView.as_view(), name='recepcion_inicio'),
+    path('recepcion/<int:id_envio>/',views.RecepcionTrasladoProductoListView.as_view(), name='recepcion_inicio'),
     path('recepcion/tabla/',views.RecepcionTrasladoProductoTabla, name='recepcion_tabla'),
     path('recepcion/registrar/',views.RecepcionTrasladoProductoCrearView.as_view(), name='recepcion_registrar'),
  

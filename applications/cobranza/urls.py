@@ -35,7 +35,7 @@ urlpatterns = [
     path('cuenta-bancaria/ver-voucher/ingreso/<pk>/',views.CuentaBancariaIngresoVerVoucherView.as_view(),name='cuenta_bancaria_ver_voucher_ingreso'),
     path('cuenta-bancaria/eliminar/ingreso/<int:id_cuenta_bancaria>/<pk>/',views.CuentaBancariaIngresoDeleteView.as_view(),name='cuenta_bancaria_eliminar_ingreso'),
     
-    path('cuenta-bancaria/pagar/deuda/<int:id_cuenta_bancaria>/<int:id_ingreso>/',views.CuentaBancariaIngresoPagarCreateView.as_view(),name='cuenta_bancaria_pagar_deuda'),
+    path('cuenta-bancaria/pagar/deuda/<int:id_cuenta_bancaria>/<int:id_ingreso>/<int:opcion>/',views.CuentaBancariaIngresoPagarCreateView.as_view(),name='cuenta_bancaria_pagar_deuda'),
     path('cuenta-bancaria/cancelar/deuda/<int:id_cuenta_bancaria>/<pk>/',views.CuentaBancariaIngresoCancelarView.as_view(),name='cuenta_bancaria_cancelar_deuda'),
     
     path('cuenta-bancaria/eliminar/pago/<int:id_cuenta_bancaria>/<pk>/',views.CuentaBancariaIngresoPagarDeleteView.as_view(),name='cuenta_bancaria_eliminar_pago'),
