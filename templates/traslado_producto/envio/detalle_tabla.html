@@ -100,6 +100,15 @@
                             Guardar Envio
                         </button>
                         {% endif %}
+
+                        {% if envio_traslado_producto.estado != 1 %}
+                        <a href="{% url 'traslado_producto_app:recepcion_registrar' %}"
+                            class="badge btn btn-primary" title="Nueva Recepción">
+                            Recepción
+                        </a>
+                        
+                        {% endif %}
+                            
                     </td>
                 </tr>
                 <tr>

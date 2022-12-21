@@ -1,7 +1,7 @@
 {% load funciones_propias %}
 {% load humanize %}
 
-<h3> Detalle Recepción Traslado Producto 
+<h3> Detalle Recepción Traslado Producto
     <a href="{% url 'traslado_producto_app:recepcion_inicio' %}" class="btn btn-primary">Regresar</a>
     {% if recepcion_traslado_producto.estado == 1 %}
     <button data-form-url="{% url 'traslado_producto_app:recepcion_observaciones' recepcion_traslado_producto.id %}"
@@ -23,9 +23,9 @@
                     <th class="pe-2">Sede Destino:</th>
                     <td>
                         {% if recepcion_traslado_producto.sede_destino %}
-                        {{ recepcion_traslado_producto.sede_destino }} 
+                        {{ recepcion_traslado_producto.sede_destino }}
                         {% endif %}
-                    </td>  
+                    </td>
                     <td class="ps-2" rowspan="3">
                         {% if recepcion_traslado_producto.estado == 1 %}
                         <button data-form-url="{% url 'traslado_producto_app:recepcion_actualizar' recepcion_traslado_producto.id %}"
@@ -63,7 +63,7 @@
                         {{ recepcion_traslado_producto.numero_recepcion_traslado|numeroXn:6 }}
                         {% endif %}
                     </td>
-                    <td class="px-2" rowspan="2"> 
+                    <td class="px-2" rowspan="2">
                         {% if recepcion_traslado_producto.estado == 1 %}
                         <button data-form-url="{% url 'traslado_producto_app:recepcion_guardar' recepcion_traslado_producto.id %}"
                             data-table-url="{% url 'traslado_producto_app:recepcion_ver' recepcion_traslado_producto.id %}"
@@ -119,7 +119,7 @@ Agregar Material
             </tr>
         </thead>
         <tbody>
-            
+
             {% for material in materiales  %}
             <tr>
                 <td>{{ material.item }}</td>
@@ -143,9 +143,9 @@ Agregar Material
                     </button>
 
                 </td>
-            </tr>                
+            </tr>
             {% endfor %}
-                
+
         </tbody>
     </table>
 </div>

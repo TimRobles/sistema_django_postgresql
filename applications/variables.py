@@ -341,7 +341,7 @@ MENSAJE_ELIMINAR_DEUDA = 'Operación exitosa: Deuda eliminada.'
 MENSAJE_ERROR_ELIMINAR_DEUDA = 'No se pudo eliminar la deuda, contactar con el administrador.'
 
 MENSAJE_GUARDAR_ENVIO = 'Operación exitosa: El envio fue guardado con éxito.'
-MENSAJE_GUARDAR_RECEPCION = 'Operación exitosa: El envio fue guardado con éxito.'
+MENSAJE_GUARDAR_RECEPCION = 'Operación exitosa: La recepción fue guardado con éxito.'
 
 COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'

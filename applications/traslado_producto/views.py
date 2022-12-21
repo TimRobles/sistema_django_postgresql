@@ -229,7 +229,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
         material = form.cleaned_data.get('material')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
         stock_disponible = stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id)
-        
+
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
@@ -240,7 +240,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
             contar = buscar.aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
         else:
             contar = 0
-        
+
         if stock_disponible < contar + cantidad_envio:
             form.add_error('cantidad_envio', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_envio))
             return super().form_invalid(form)
@@ -270,7 +270,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
-    
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
@@ -326,7 +326,7 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
         material = detalle.producto
         stock_disponible = stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id)
-        
+
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
@@ -337,7 +337,7 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
             contar = buscar.aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
         else:
             contar = 0
-        
+
         if stock_disponible < contar + cantidad_envio:
             form.add_error('cantidad_envio', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_envio))
             return super().form_invalid(form)
@@ -428,6 +428,7 @@ class RecepcionTrasladoProductoCrearView(BSModalCreateView):
         context['accion'] = "Recepción"
         context['titulo'] = "Traslado Producto"
         return context
+
 
 class RecepcionTrasladoProductoVerView(TemplateView):
     template_name = "traslado_producto/recepcion/detalle.html"
@@ -554,7 +555,7 @@ class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
             self.object.fecha_recepcion = datetime. now()
             registro_guardar(self.object, self.request)
             self.object.save()
-            
+
             self.object.envio_traslado_producto.estado = 3
             registro_guardar(self.object.envio_traslado_producto, self.request)
             self.object.envio_traslado_producto.save()
@@ -602,9 +603,9 @@ class RecepcionTrasladoProductoAnularView(BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-            
+
             movimiento_uno = movimiento_dos.movimiento_anterior
-            
+
             movimiento_dos.delete()
             movimiento_uno.delete()
 
@@ -678,7 +679,7 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
         ).aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
-        
+
         buscar = RecepcionTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
@@ -689,7 +690,7 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
             contar = buscar.aggregate(Sum('cantidad_recepcion'))['cantidad_recepcion__sum']
         else:
             contar = 0
-        
+
         if cantidad_enviada < contar + cantidad_recepcion:
             form.add_error('cantidad_recepcion', 'Se superó la cantidad enviada. Máximo: %s. Contado: %s.' % (cantidad_enviada, contar + cantidad_recepcion))
             return super().form_invalid(form)
@@ -722,7 +723,7 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
-    
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         recepcion_traslado_producto = RecepcionTrasladoProducto.objects.get(id = self.kwargs['id_recepcion_traslado_producto'])
@@ -784,7 +785,7 @@ class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView)
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
         ).aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
-        
+
         buscar = RecepcionTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
@@ -795,7 +796,7 @@ class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView)
             contar = buscar.aggregate(Sum('cantidad_recepcion'))['cantidad_recepcion__sum']
         else:
             contar = 0
-        
+
         if cantidad_enviada < contar + cantidad_recepcion:
             form.add_error('cantidad_recepcion', 'Se superó la cantidad enviada. Máximo: %s. Contado: %s.' % (cantidad_enviada, contar + cantidad_recepcion))
             return super().form_invalid(form)
@@ -858,5 +859,5 @@ class MotivoTrasladoCreateView(BSModalCreateView):
         context = super(MotivoTrasladoCreateView, self).get_context_data(**kwargs)
         context['accion'] = "Crear"
         context['titulo'] = "Motivo de Traslado"
-        
+
         return context

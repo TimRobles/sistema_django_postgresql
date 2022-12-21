@@ -1,7 +1,7 @@
 {% load funciones_propias %}
 {% load humanize %}
 
-<h3>Recepción Traslado Producto        
+<h3>Recepción Traslado Producto
     <button data-form-url="{% url 'traslado_producto_app:recepcion_registrar' %}"
         class="delete btn btn-primary" title="Observaciones">
         Nueva Recepción
@@ -15,16 +15,16 @@
             <th>Fecha Recepción</th>
             <th>N° Recepción </th>
             <th>Sede Destino</th>
-            <th>Responsable</th>  
-            <th>Observaciones</th>  
-            <th>Estado</th>  
-            <th class="text-center">Acciones</th>      
+            <th>Responsable</th>
+            <th>Observaciones</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
         </tr>
     </thead>
-    
+
     <tbody>
         {% for recepcion_traslado_producto in contexto_recepcion_traslado_producto %}
-        <tr> 
+        <tr>
             <td>{{recepcion_traslado_producto.fecha_recepcion|date:'d/m/Y' }}</td>
             <td>
                 {% if recepcion_traslado_producto.numero_recepcion_traslado %}
@@ -33,7 +33,7 @@
             </td>
             <td>
                 {% if recepcion_traslado_producto.sede_destino %}
-                {{recepcion_traslado_producto.sede_destino}}  
+                {{recepcion_traslado_producto.sede_destino}}
                 {% endif %}
             </td>
             <td>
@@ -60,4 +60,3 @@
 
     </tbody>
 </table>
-
