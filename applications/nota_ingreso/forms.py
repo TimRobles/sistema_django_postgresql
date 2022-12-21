@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 
 class NotaIngresoAgregarMaterialForm(BSModalForm):
     producto = forms.ChoiceField(choices=[('1', '1'), ('2', '2')])
-    cantidad = forms.IntegerField()
+    cantidad = forms.DecimalField(max_digits=8, decimal_places=2)
     sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
     almacen = forms.ModelChoiceField(queryset=Almacen.objects.none())
     class Meta:

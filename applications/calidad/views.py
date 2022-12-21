@@ -168,7 +168,7 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
     success_url = reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
 
     def form_valid(self, form):
-        form.instance.estado = 3
+        form.instance.estado = 4
         registro_guardar(form.instance, self.request)
 
         messages.success(self.request, MENSAJE_ANULAR_NOTA_CONTROL_CALIDAD_STOCK)
@@ -301,7 +301,7 @@ def NotaControlCalidadStockDetailTabla(request, pk):
 
 class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_notacontrolcalidadstockdetalle')
-    template_name = "includes/formulario generico.html"
+    template_name = "calidad/nota_control_calidad_stock/form_material.html"
     form_class = NotaControlCalidadStockDetalleAgregarForm
 
     def get_success_url(self, **kwargs):
@@ -320,7 +320,6 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
                 
                 buscar = NotaControlCalidadStockDetalle.objects.filter(
                     nota_ingreso_detalle=nota_ingreso_detalle,
-                    nota_control_calidad_stock=nota_control_calidad,
                 ).exclude(nota_control_calidad_stock__estado=3)
                 
                 if buscar:
@@ -364,6 +363,7 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
             if not material.comprobante_compra_detalle.producto.control_calidad:
                 materiales_sin_calidad.append(material.id)
         materiales = materiales.exclude(id__in = materiales_sin_calidad)
+        # materiales = sorted(materiales, key=lambda t: t.comprobante_compra_detalle.orden_compra_detalle.producto.descripcion_venta, reverse=True)
 
         kwargs = super().get_form_kwargs()
         kwargs['materiales'] = materiales
@@ -390,7 +390,6 @@ class NotaControlCalidadStockDetalleUpdateView(PermissionRequiredMixin, BSModalU
         buscar = NotaIngresoDetalle.objects.filter(
             content_type=nota_ingreso_detalle.content_type,
             id_registro=nota_ingreso_detalle.id_registro,
-            nota_ingreso=nota_ingreso_detalle.nota_ingreso,
         ).exclude(id=nota_ingreso_detalle.id).exclude(nota_ingreso__estado=3)
 
         if buscar:
@@ -490,27 +489,27 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-                material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+                nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+                material = nota_control_calidad_stock_detalle.material
                 content_type = material.content_type
                 id_registro = material.id_registro
                 serie_base = form.cleaned_data.get('serie_base')
                 observacion = form.cleaned_data.get('observacion')
-                sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
-                estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
+                sociedad_id = nota_control_calidad_stock_detalle.nota_ingreso_detalle.nota_ingreso.sociedad
+                estado_serie = EstadoSerie.objects.get(numero_estado = 1)
 
                 serie = Serie.objects.create(
                     serie_base = serie_base,
                     content_type = content_type,
                     id_registro = id_registro,
                     sociedad = sociedad_id,
-                    nota_control_calidad_stock_detalle = registro,
+                    nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
                 historia_estado_serie = HistorialEstadoSerie.objects.create(
                     serie = serie,
-                    estado_serie = estado_serie_id,
+                    estado_serie = estado_serie,
                     falla_material = None,
                     observacion = observacion,
                     created_by = self.request.user,

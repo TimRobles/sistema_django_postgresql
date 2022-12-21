@@ -75,7 +75,7 @@ class NotaIngresoDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "%s" % (self.comprobante_compra_detalle)
+        return "%s - %s" % (self.comprobante_compra_detalle, self.almacen)
 
 def nota_ingreso_detalle_post_save(*args, **kwargs):
     if kwargs['created']:

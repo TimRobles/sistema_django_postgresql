@@ -87,7 +87,7 @@ class Serie(models.Model):
 class HistorialEstadoSerie(models.Model):
     serie = models.ForeignKey(Serie, on_delete=models.CASCADE, related_name='HistorialEstadoSerie_serie')
     estado_serie = models.ForeignKey(EstadoSerie, on_delete=models.CASCADE)
-    falla_material = models.ForeignKey(FallaMaterial, on_delete=models.CASCADE,blank=True, null=True)
+    falla_material = models.ForeignKey(FallaMaterial, on_delete=models.CASCADE, blank=True, null=True)
     observacion = models.TextField('Observación', blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
