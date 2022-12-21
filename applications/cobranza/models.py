@@ -316,6 +316,7 @@ class Deuda(models.Model):
         return ""
 
     def __str__(self):
+        return "%s %s %s" % (self.documento, self.moneda.simbolo, self.monto)
         return "%s %s %s (%s %s)" % (self.documento, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
 
 
