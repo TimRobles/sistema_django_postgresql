@@ -77,7 +77,7 @@ class NotaIngresoAnularConteoForm(BSModalModelForm):
 
 class NotaStockInicialAgregarMaterialForm(BSModalForm):
     producto = forms.ChoiceField(choices=[('1', '1'), ('2', '2')])
-    cantidad = forms.IntegerField()
+    cantidad = forms.DecimalField(max_digits=8, decimal_places=2)
     class Meta:
         fields=(
             'producto',
