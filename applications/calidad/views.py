@@ -275,7 +275,7 @@ class NotaControlCalidadStockDetailView(PermissionRequiredMixin, DetailView):
 
     model = NotaControlCalidadStock
     template_name = "calidad/nota_control_calidad_stock/detalle.html"
-    context_object_name = 'contexto_nota_control_calidad_stock_detalle'
+    context_object_name = 'contexto_nota_control_calidad_stock'
 
     def get_context_data(self, **kwargs):
         nota_control_calidad_stock = NotaControlCalidadStock.objects.get(id = self.kwargs['pk'])
@@ -289,7 +289,7 @@ def NotaControlCalidadStockDetailTabla(request, pk):
         template = 'calidad/nota_control_calidad_stock/detalle_tabla.html'
         context = {}
         nota_control_calidad_stock = NotaControlCalidadStock.objects.get(id = pk)
-        context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock
+        context['contexto_nota_control_calidad_stock'] = nota_control_calidad_stock
         context['nota_control_calidad_detalle'] = NotaControlCalidadStockDetalle.objects.filter(nota_control_calidad_stock = nota_control_calidad_stock)
 
         data['table'] = render_to_string(

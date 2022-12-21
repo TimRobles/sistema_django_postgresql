@@ -45,7 +45,7 @@ class NotaIngreso(models.Model):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "%s - %s" % (numeroXn(self.nro_nota_ingreso, 6), self.recepcion_compra)
+        return "NOTA DE INGRESO %s - %s" % (numeroXn(self.nro_nota_ingreso, 6), self.recepcion_compra)
 
 
 class NotaIngresoDetalle(models.Model):
@@ -121,7 +121,7 @@ class NotaStockInicial(models.Model):
         return self.NotaStockInicialDetalle_nota_stock_inicial.all()
 
     def __str__(self):
-        return "%s" % (numeroXn(self.nro_nota_stock_inicial, 6))
+        return "NOTA DE STOCK INICIAL %s" % (numeroXn(self.nro_nota_stock_inicial, 6))
 
 
 class NotaStockInicialDetalle(models.Model):

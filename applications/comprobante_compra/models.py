@@ -77,7 +77,7 @@ class ComprobanteCompraPI(models.Model):
         return self.numero_comprobante_compra
         
     def __str__(self):
-        return "%s" % (self.numero_comprobante_compra)
+        return "PROFORMA INVOICE %s" % (self.numero_comprobante_compra)
 
 
 class ComprobanteCompraPIDetalle(models.Model):

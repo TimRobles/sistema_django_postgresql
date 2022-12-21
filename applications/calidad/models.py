@@ -106,8 +106,9 @@ class HistorialEstadoSerie(models.Model):
 class NotaControlCalidadStock(models.Model):
     ESTADOS_NOTA_CALIDAD_STOCK = [
     (1, 'EN PROCESO'),
-    (2, 'CONCLUIDA'),
-    (3, 'ANULADA'),
+    (2, 'POR REGISTRAR SERIES'),
+    (3, 'CONCLUIDA'),
+    (4, 'ANULADA'),
     ]
     nro_nota_calidad = models.CharField('Nro. Nota Calidad', max_length=50, blank=True, null=True)
     nota_ingreso = models.ForeignKey(NotaIngreso, on_delete=models.CASCADE)
