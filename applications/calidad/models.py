@@ -1,4 +1,5 @@
 from decimal import Decimal
+from secrets import choice
 from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
@@ -10,7 +11,7 @@ from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.variables import SERIE_CONSULTA
 
 class FallaMaterial(models.Model):
-    sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE)
+    sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE, related_name='FallaMaterial_sub_familia')
     titulo = models.CharField('Titulo', max_length=50)
     comentario = models.TextField()
     visible = models.BooleanField()
@@ -26,6 +27,21 @@ class FallaMaterial(models.Model):
 
     def __str__(self):
         return str(self.titulo)
+
+
+class SolucionMaterial(models.Model):
+    falla_material = models.ForeignKey(FallaMaterial, on_delete=models.CASCADE, related_name='SolucionMaterial_falla_material')
+    titulo = models.CharField('Titulo', max_length=50)
+    comentario = models.TextField()
+    visible = models.BooleanField()
+
+    class Meta:
+        verbose_name = 'Solución Material'
+        verbose_name_plural = 'Soluciones Materiales'
+
+    def __str__(self):
+        return str(self.titulo)
+
 
 class EstadoSerie(models.Model):
     numero_estado = models.IntegerField()
@@ -49,7 +65,7 @@ class Serie(models.Model):
     id_registro = models.IntegerField(blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE)
-    serie_movimiento_almacen = models.ManyToManyField(MovimientosAlmacen)
+    serie_movimiento_almacen = models.ManyToManyField(MovimientosAlmacen, blank=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Serie_created_by', editable=False)
@@ -84,10 +100,38 @@ class Serie(models.Model):
     def __str__(self):
         return str(self.serie_base)
 
+
+class SerieCalidad(models.Model):
+    ESTADOS_SERIE_CALIDAD = (
+        (1, 'DISPONIBLE'),
+        (2, 'DUPLICADO'),
+    )
+    serie = models.CharField('Nro. Serie', max_length=200)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Material
+    id_registro = models.IntegerField(blank=True, null=True)
+    observacion = models.TextField('Observación', blank=True, null=True)
+    falla_material = models.ForeignKey(FallaMaterial, on_delete=models.CASCADE, blank=True, null=True)
+    nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE, related_name='SerieCalidad_nota_control_calidad_stock_detalle')
+    estado = models.IntegerField(choices=ESTADOS_SERIE_CALIDAD, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SerieCalidad_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SerieCalidad_updated_by', editable=False)
+    class Meta:
+        verbose_name = 'Serie Calidad'
+        verbose_name_plural = 'Series Calidad'
+
+    def __str__(self):
+        return "%s - %s" % (self.serie, self.nota_control_calidad_detalle)
+
+
+
 class HistorialEstadoSerie(models.Model):
     serie = models.ForeignKey(Serie, on_delete=models.CASCADE, related_name='HistorialEstadoSerie_serie')
     estado_serie = models.ForeignKey(EstadoSerie, on_delete=models.CASCADE)
     falla_material = models.ForeignKey(FallaMaterial, on_delete=models.CASCADE, blank=True, null=True)
+    solucion = models.ForeignKey(SolucionMaterial, on_delete=models.CASCADE, blank=True, null=True)
     observacion = models.TextField('Observación', blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -168,6 +212,10 @@ class NotaControlCalidadStockDetalle(models.Model):
             return control_serie
         else:
             return ""
+
+    @property
+    def series_calidad(self):
+        return Decimal(len(self.SerieCalidad_nota_control_calidad_stock_detalle.all())).quantize(Decimal('0.01'))
 
     def __str__(self):
         return str(self.id)

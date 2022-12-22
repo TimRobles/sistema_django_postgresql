@@ -25,6 +25,7 @@ from .models import(
     Serie,
     FallaMaterial,
     HistorialEstadoSerie,
+    SerieCalidad,
 )
 from applications.funciones import numeroXn, registrar_excepcion
 
@@ -65,6 +66,19 @@ def FallaMaterialDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
+class FallaMaterialModalDetailView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('calidad.view_fallamaterial')
+    model = SubFamilia
+    template_name = "calidad/falla_material/detalle_modal.html"
+    context_object_name = 'contexto_subfamilia'
+
+    def get_context_data(self, **kwargs):
+        sub_familia = SubFamilia.objects.get(id=self.kwargs['pk'])
+        context = super(FallaMaterialModalDetailView, self).get_context_data(**kwargs)
+        context['fallas'] = FallaMaterial.objects.filter(sub_familia = sub_familia)
+        context['titulo'] = 'Fallas Material'
+        return context
 
 class FallaMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('calidad.add_fallamaterial')
@@ -167,18 +181,187 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
     template_name = "includes/formulario generico.html"
     success_url = reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
 
+    @transaction.atomic
     def form_valid(self, form):
-        form.instance.estado = 4
-        registro_guardar(form.instance, self.request)
+        sid = transaction.savepoint()
+        try:
+            if form.instance.estado == 1:
+                pass
+            elif form.instance.estado == 2:
+                detalles = form.instance.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
+                for detalle in detalles:
+                    if detalle.inspeccion == 2:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
+                    elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
 
-        messages.success(self.request, MENSAJE_ANULAR_NOTA_CONTROL_CALIDAD_STOCK)
-        return super().form_valid(form)
+                    movimiento_dos = MovimientosAlmacen.objects.get(
+                        content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                        cantidad = detalle.cantidad_calidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                        id_registro_documento_proceso = form.instance.id,
+                        almacen = detalle.nota_ingreso_detalle.almacen,
+                        sociedad = form.instance.nota_ingreso.recepcion_compra.sociedad,
+                    )
+                    movimiento_uno = movimiento_dos.movimiento_anterior
+                    
+                    movimiento_dos.delete()
+                    movimiento_uno.delete()
+            elif form.instance.estado == 3:
+                pass
+            
+            form.instance.estado = 4
+            registro_guardar(form.instance, self.request)
+
+            messages.success(self.request, MENSAJE_ANULAR_NOTA_CONTROL_CALIDAD_STOCK)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(NotaControlCalidadStockDeleteView, self).get_context_data(**kwargs)
         context['accion'] = 'Anular'
         context['titulo'] = 'Nota Control Calidad Stock'
         return context
+
+class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_notacontrolcalidadstock')
+    model = NotaControlCalidadStock
+    template_name = "calidad/nota_control_calidad_stock/boton.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cantidad_series = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
+        for detalle in detalles:
+            if detalle.control_serie and detalle.series_calidad != detalle.cantidad_calidad:
+                error_cantidad_series = True
+        
+        if error_cantidad_series:
+            context['texto'] = 'Hay Series sin registrar.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super(NotaControlCalidadStockRegistrarSeriesView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+
+            detalles = self.object.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
+            for detalle in detalles:
+                if detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
+                    if detalle.inspeccion == 1:
+                        movimiento_inicial = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                        movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
+                    else:
+                        movimiento_inicial = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
+                        movimiento_final = TipoMovimiento.objects.get(codigo=141) #Registro de Serie, material dañado
+
+                    movimiento_anterior = MovimientosAlmacen.objects.get(
+                        content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                        tipo_movimiento = movimiento_inicial,
+                        tipo_stock = movimiento_inicial.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso = self.object.id,
+                        almacen = detalle.nota_ingreso_detalle.almacen,
+                        sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                        movimiento_reversion = False,
+                    )
+
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                        cantidad = detalle.cantidad_calidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador = -1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso = self.object.id,
+                        almacen = movimiento_anterior.almacen,
+                        sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                        movimiento_anterior = movimiento_anterior,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                        cantidad = detalle.cantidad_calidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso = self.object.id,
+                        almacen = movimiento_anterior.almacen,
+                        sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                        movimiento_anterior = movimiento_uno,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+
+                    for serie_calidad in detalle.SerieCalidad_nota_control_calidad_stock_detalle.all():
+                        serie = Serie.objects.create(
+                            serie_base = serie_calidad.serie,
+                            content_type = serie_calidad.content_type,
+                            id_registro = serie_calidad.id_registro,
+                            sociedad = serie_calidad.nota_control_calidad_stock_detalle.nota_ingreso_detalle.comprobante_compra_detalle.sociedad,
+                            nota_control_calidad_stock_detalle = serie_calidad.nota_control_calidad_stock_detalle,
+                            created_by = self.request.user,
+                            updated_by = self.request.user,
+                        )
+                        if serie_calidad.falla_material:
+                            #Dañado
+                            estado_serie = EstadoSerie.objects.get(numero_estado=2)
+                        else:
+                            #Bueno
+                            estado_serie = EstadoSerie.objects.get(numero_estado=1)
+
+                        HistorialEstadoSerie.objects.create(
+                            serie=serie,
+                            estado_serie=estado_serie,
+                            falla_material=serie_calidad.falla_material,
+                            observacion=serie_calidad.observacion,
+                        )
+                        serie.serie_movimiento_almacen.add(movimiento_anterior)
+                        serie.serie_movimiento_almacen.add(movimiento_uno)
+                        serie.serie_movimiento_almacen.add(movimiento_dos)
+
+                        serie_calidad.delete()
+
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaControlCalidadStockRegistrarSeriesView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Nota Control Calidad Stock"
+        context['dar_baja'] = "true"
+        context['item'] = self.object.nro_nota_calidad
+        return context
+
 
 class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.delete_notacontrolcalidadstock')
@@ -199,12 +382,15 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
             else:
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=999) #Stock inicial
-
+            
+            finalizar = True
             for detalle in detalles:
                 if detalle.inspeccion == 2:
                     movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
+                    finalizar &= False
                 elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
                     movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                    finalizar &= False
                 else:
                     movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
 
@@ -253,7 +439,11 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                     updated_by = self.request.user,
                 )
 
-            self.object.estado = 2
+            if finalizar:
+                self.object.estado = 3
+            else:
+                self.object.estado = 2
+            
             registro_guardar(self.object, self.request)
             self.object.save()
             messages.success(request, MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK)
@@ -264,11 +454,12 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
 
     def get_context_data(self, **kwargs):
         context = super(NotaControlCalidadStockConcluirView, self).get_context_data(**kwargs)
-        context['accion'] = "Concluir"
+        context['accion'] = "Registrar Series"
         context['titulo'] = "Nota Control Calidad Stock"
         context['dar_baja'] = "true"
         context['item'] = self.object.nro_nota_calidad
         return context
+
 
 class NotaControlCalidadStockDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('calidad.view_notacontrolcalidadstockdetalle')
@@ -312,15 +503,15 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                nota_control_calidad = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
-                item = len(nota_control_calidad.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
+                nota_control_calidad_stock = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
+                item = len(nota_control_calidad_stock.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all())
                 nota_ingreso_detalle = form.cleaned_data.get('material')
                 cantidad_calidad = form.cleaned_data.get('cantidad_calidad')
                 inspeccion = form.cleaned_data.get('inspeccion')
                 
                 buscar = NotaControlCalidadStockDetalle.objects.filter(
                     nota_ingreso_detalle=nota_ingreso_detalle,
-                ).exclude(nota_control_calidad_stock__estado=3)
+                ).exclude(nota_control_calidad_stock__estado=4)
                 
                 if buscar:
                     contar = buscar.aggregate(Sum('cantidad_calidad'))['cantidad_calidad__sum']
@@ -334,7 +525,7 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
 
                 obj, created = NotaControlCalidadStockDetalle.objects.get_or_create(
                     nota_ingreso_detalle = nota_ingreso_detalle,
-                    nota_control_calidad_stock = nota_control_calidad,
+                    nota_control_calidad_stock = nota_control_calidad_stock,
                     inspeccion = inspeccion,
                 )
                 if created:
@@ -363,7 +554,6 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
             if not material.comprobante_compra_detalle.producto.control_calidad:
                 materiales_sin_calidad.append(material.id)
         materiales = materiales.exclude(id__in = materiales_sin_calidad)
-        # materiales = sorted(materiales, key=lambda t: t.comprobante_compra_detalle.orden_compra_detalle.producto.descripcion_venta, reverse=True)
 
         kwargs = super().get_form_kwargs()
         kwargs['materiales'] = materiales
@@ -387,13 +577,23 @@ class NotaControlCalidadStockDetalleUpdateView(PermissionRequiredMixin, BSModalU
 
     def form_valid(self, form):
         nota_ingreso_detalle = form.instance.nota_ingreso_detalle
-        buscar = NotaIngresoDetalle.objects.filter(
-            content_type=nota_ingreso_detalle.content_type,
-            id_registro=nota_ingreso_detalle.id_registro,
-        ).exclude(id=nota_ingreso_detalle.id).exclude(nota_ingreso__estado=3)
+
+        buscar = NotaControlCalidadStockDetalle.objects.filter(
+            nota_ingreso_detalle=nota_ingreso_detalle,
+            inspeccion=form.instance.inspeccion,
+            nota_control_calidad_stock=form.instance.nota_control_calidad_stock,
+        ).exclude(id=form.instance.id)
+
+        if len(buscar) > 0:
+            form.add_error('inspeccion', f'Ya existe un producto como {form.instance.get_inspeccion_display()}')
+            return super().form_invalid(form)
+
+        buscar = NotaControlCalidadStockDetalle.objects.filter(
+            nota_ingreso_detalle=nota_ingreso_detalle,
+        ).exclude(id=form.instance.id).exclude(nota_control_calidad_stock__estado=4)
 
         if buscar:
-            contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+            contar = buscar.aggregate(Sum('cantidad_calidad'))['cantidad_calidad__sum']
         else:
             contar = 0
 
@@ -456,7 +656,10 @@ class SeriesDetailView(PermissionRequiredMixin, DetailView):
         nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['pk'])
         context = super(SeriesDetailView, self).get_context_data(**kwargs)
         context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock_detalle
-        context['contexto_series'] = Serie.objects.filter(nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle)
+        context_series = nota_control_calidad_stock_detalle.SerieCalidad_nota_control_calidad_stock_detalle.all()
+        context['contexto_series'] = context_series
+        context['cantidad_inspeccionada'] = nota_control_calidad_stock_detalle.cantidad_calidad
+        context['cantidad_registrada'] = len(context_series)
 
         return context
 
@@ -467,7 +670,10 @@ def SeriesDetailTabla(request, pk):
         context = {}
         nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = pk)
         context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock_detalle
-        context['contexto_series'] = Serie.objects.filter(nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle)
+        context_series = nota_control_calidad_stock_detalle.SerieCalidad_nota_control_calidad_stock_detalle.all()
+        context['contexto_series'] = context_series
+        context['cantidad_inspeccionada'] = nota_control_calidad_stock_detalle.cantidad_calidad
+        context['cantidad_registrada'] = len(context_series)
 
         data['table'] = render_to_string(
             template,
@@ -486,53 +692,51 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
 
     @transaction.atomic
     def form_valid(self, form):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
                 material = nota_control_calidad_stock_detalle.material
                 content_type = material.content_type
-                id_registro = material.id_registro
+                id_registro = material.id
                 serie_base = form.cleaned_data.get('serie_base')
                 observacion = form.cleaned_data.get('observacion')
-                sociedad_id = nota_control_calidad_stock_detalle.nota_ingreso_detalle.nota_ingreso.sociedad
-                estado_serie = EstadoSerie.objects.get(numero_estado = 1)
 
-                serie = Serie.objects.create(
+                buscar = SerieCalidad.objects.filter(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                estado = 1
+                if len(buscar) > 0:
+                    estado = 2
+
+                buscar2 = Serie.objects.filter(
                     serie_base = serie_base,
                     content_type = content_type,
                     id_registro = id_registro,
-                    sociedad = sociedad_id,
+                )
+
+                if len(buscar2) > 0:
+                    estado = 2
+
+                serie = SerieCalidad.objects.create(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                    observacion = observacion,
+                    estado = estado,
                     nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
-                historia_estado_serie = HistorialEstadoSerie.objects.create(
-                    serie = serie,
-                    estado_serie = estado_serie,
-                    falla_material = None,
-                    observacion = observacion,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
-                )
-
+                
                 self.request.session['primero'] = False
             return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
-
-    def get_form_kwargs(self):
-        registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        content_type = raiz_material.content_type
-        id_registro = raiz_material.id_registro
-
-        kwargs = super().get_form_kwargs()
-        kwargs['content_type'] = content_type
-        kwargs['id_registro'] = id_registro
-        return kwargs
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -551,33 +755,43 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
 
     @transaction.atomic
     def form_valid(self, form):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-                material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+                material = nota_control_calidad_stock_detalle.material
                 content_type = material.content_type
-                id_registro = material.id_registro
+                id_registro = material.id
                 serie_base = form.cleaned_data.get('serie_base')
                 falla_material = form.cleaned_data.get('falla_material')
                 observacion = form.cleaned_data.get('observacion')
-                sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
-                estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
 
-                serie = Serie.objects.create(
+                buscar = SerieCalidad.objects.filter(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                estado = 1
+                if len(buscar) > 0:
+                    estado = 2
+
+                buscar2 = Serie.objects.filter(
                     serie_base = serie_base,
                     content_type = content_type,
                     id_registro = id_registro,
-                    sociedad = sociedad_id,
-                    nota_control_calidad_stock_detalle = registro,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
                 )
-                historia_estado_serie = HistorialEstadoSerie.objects.create(
-                    serie = serie,
-                    estado_serie = estado_serie_id,
-                    falla_material = falla_material,
+
+                if len(buscar2) > 0:
+                    estado = 2
+                
+                serie = SerieCalidad.objects.create(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
                     observacion = observacion,
+                    falla_material = falla_material,
+                    estado = estado,
+                    nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
@@ -590,20 +804,11 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
-        registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        material = registro.material
-
-        content_type = raiz_material.content_type
-        id_registro = raiz_material.id_registro
-
-        subfamilia = material.subfamilia
-        fallas = FallaMaterial.objects.filter(sub_familia = subfamilia, visible = True)
-
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        material = nota_control_calidad_stock_detalle.material
+        
         kwargs = super().get_form_kwargs()
-        kwargs['content_type'] = content_type
-        kwargs['id_registro'] = id_registro
-        kwargs['fallas'] = fallas
+        kwargs['falla_material'] = material.subfamilia.FallaMaterial_sub_familia.filter(visible=True)
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -623,33 +828,43 @@ class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormVi
 
     @transaction.atomic
     def form_valid(self, form):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-                material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
+                material = nota_control_calidad_stock_detalle.material
                 content_type = material.content_type
-                id_registro = material.id_registro
+                id_registro = material.id
                 serie_base = form.cleaned_data.get('serie_base')
                 falla_material = form.cleaned_data.get('falla_material')
                 observacion = form.cleaned_data.get('observacion')
-                sociedad_id = registro.nota_ingreso_detalle.nota_ingreso.sociedad
-                estado_serie_id = EstadoSerie.objects.get(numero_estado = 1)
 
-                serie = Serie.objects.create(
+                buscar = SerieCalidad.objects.filter(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                estado = 1
+                if len(buscar) > 0:
+                    estado = 2
+
+                buscar2 = Serie.objects.filter(
                     serie_base = serie_base,
                     content_type = content_type,
                     id_registro = id_registro,
-                    sociedad = sociedad_id,
-                    nota_control_calidad_stock_detalle = registro,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
                 )
-                historia_estado_serie = HistorialEstadoSerie.objects.create(
-                    serie = serie,
-                    estado_serie = estado_serie_id,
-                    falla_material = falla_material,
+
+                if len(buscar2) > 0:
+                    estado = 2
+                
+                serie = SerieCalidad.objects.create(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
                     observacion = observacion,
+                    falla_material = falla_material,
+                    estado = estado,
+                    nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
@@ -662,23 +877,11 @@ class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormVi
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
-        registro = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        material = registro.material
-        content_type = raiz_material.content_type
-        id_registro = raiz_material.id_registro
-
-        subfamilia = material.subfamilia
-        fallas = FallaMaterial.objects.filter(sub_familia = subfamilia, visible = True)
-
-        now = datetime.now()
-        nro_serie = now.strftime('%Y%m%d-%H%M%S%f')
-
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        material = nota_control_calidad_stock_detalle.material
+        
         kwargs = super().get_form_kwargs()
-        kwargs['content_type'] = content_type
-        kwargs['id_registro'] = id_registro
-        kwargs['fallas'] = fallas
-        kwargs['nro_serie'] = nro_serie
+        kwargs['falla_material'] = material.subfamilia.FallaMaterial_sub_familia.filter(visible=True)
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -690,7 +893,7 @@ class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormVi
 
 class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_serie')
-    model = Serie
+    model = SerieCalidad
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarBuenoForm
 
@@ -701,30 +904,31 @@ class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def form_valid(self, form):
         sid = transaction.savepoint()
         try:
-            historial_estado_serie = HistorialEstadoSerie.objects.get(
-                    serie = form.instance,
-                    estado_serie = 1,
-                )
+            buscar = SerieCalidad.objects.filter(
+                serie = form.instance.serie,
+                content_type = form.instance.content_type,
+                id_registro = form.instance.id_registro,
+            ).exclude(id=form.instance.id)
+            estado = 1
+            if len(buscar) > 0:
+                estado = 2
 
-            historial_estado_serie.observacion = form.cleaned_data['observacion']
-            historial_estado_serie.save()
+            buscar2 = Serie.objects.filter(
+                serie_base = form.instance.serie,
+                content_type = form.instance.content_type,
+                id_registro = form.instance.id_registro,
+            ).exclude(id=form.instance.id)
+
+            if len(buscar2) > 0:
+                estado = 2
+            
+            form.instance.estado = estado
             registro_guardar(form.instance, self.request)
             return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
-
-    def get_form_kwargs(self):
-        registro = NotaControlCalidadStockDetalle.objects.get(id = self.object.nota_control_calidad_stock_detalle.id)
-        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        content_type = raiz_material.content_type
-        id_registro = raiz_material.id_registro
-
-        kwargs = super().get_form_kwargs()
-        kwargs['content_type'] = content_type
-        kwargs['id_registro'] = id_registro
-        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(SeriesDetalleBuenoUpdateView, self).get_context_data(**kwargs)
@@ -734,7 +938,7 @@ class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_serie')
-    model = Serie
+    model = SerieCalidad
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarMaloForm
 
@@ -745,37 +949,31 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def form_valid(self, form):
         sid = transaction.savepoint()
         try:
-            historial_estado_serie = HistorialEstadoSerie.objects.get(
-                    serie = form.instance,
-                    estado_serie = 1,
-                )
+            buscar = SerieCalidad.objects.filter(
+                serie = form.instance.serie,
+                content_type = form.instance.content_type,
+                id_registro = form.instance.id_registro,
+            ).exclude(id=form.instance.id)
+            estado = 1
+            if len(buscar) > 0:
+                estado = 2
 
-            historial_estado_serie.falla_material = form.cleaned_data['falla_material']
-            historial_estado_serie.observacion = form.cleaned_data['observacion']
-            historial_estado_serie.save()
+            buscar2 = Serie.objects.filter(
+                serie_base = form.instance.serie,
+                content_type = form.instance.content_type,
+                id_registro = form.instance.id_registro,
+            ).exclude(id=form.instance.id)
+
+            if len(buscar2) > 0:
+                estado = 2
+            
+            form.instance.estado = estado
             registro_guardar(form.instance, self.request)
             return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
-
-    def get_form_kwargs(self):
-        registro = NotaControlCalidadStockDetalle.objects.get(id = self.object.nota_control_calidad_stock_detalle.id)
-        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        material = registro.material
-
-        content_type = raiz_material.content_type
-        id_registro = raiz_material.id_registro
-
-        subfamilia = material.subfamilia
-        fallas = FallaMaterial.objects.filter(sub_familia = subfamilia, visible = True)
-
-        kwargs = super().get_form_kwargs()
-        kwargs['content_type'] = content_type
-        kwargs['id_registro'] = id_registro
-        kwargs['fallas'] = fallas
-        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(SeriesDetalleMaloUpdateView, self).get_context_data(**kwargs)
@@ -796,14 +994,25 @@ class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdate
     def form_valid(self, form):
         sid = transaction.savepoint()
         try:
-            historial_estado_serie = HistorialEstadoSerie.objects.get(
-                    serie = form.instance,
-                    estado_serie = 1,
-                )
+            buscar = SerieCalidad.objects.filter(
+                serie = form.instance.serie,
+                content_type = form.instance.content_type,
+                id_registro = form.instance.id_registro,
+            ).exclude(id=form.instance.id)
+            estado = 1
+            if len(buscar) > 0:
+                estado = 2
 
-            historial_estado_serie.falla_material = form.cleaned_data['falla_material']
-            historial_estado_serie.observacion = form.cleaned_data['observacion']
-            historial_estado_serie.save()
+            buscar2 = Serie.objects.filter(
+                serie_base = form.instance.serie,
+                content_type = form.instance.content_type,
+                id_registro = form.instance.id_registro,
+            ).exclude(id=form.instance.id)
+
+            if len(buscar2) > 0:
+                estado = 2
+            
+            form.instance.estado = estado
             registro_guardar(form.instance, self.request)
             return super().form_valid(form)
         except Exception as ex:
@@ -836,15 +1045,11 @@ class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdate
 
 class SeriesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.delete_serie')
-    model = Serie
+    model = SerieCalidad
     template_name = "includes/eliminar generico.html"
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_detalle.id})
-
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(SeriesDetalleDeleteView, self).get_context_data(**kwargs)

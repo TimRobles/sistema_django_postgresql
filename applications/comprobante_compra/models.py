@@ -125,6 +125,10 @@ class ComprobanteCompraPIDetalle(models.Model):
     def proveedor(self):
         return self.comprobante_compra.proveedor
 
+    @property
+    def sociedad(self):
+        return self.comprobante_compra.sociedad
+
     def __str__(self):
         return "%s" % (str(self.orden_compra_detalle))
 

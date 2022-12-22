@@ -1,7 +1,7 @@
 from django import forms
 from applications.nota_ingreso.models import NotaIngreso
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import FallaMaterial, HistorialEstadoSerie, NotaControlCalidadStock, NotaControlCalidadStockDetalle, Serie
+from .models import FallaMaterial, HistorialEstadoSerie, NotaControlCalidadStock, NotaControlCalidadStockDetalle, Serie, SerieCalidad
 
 
 class FallaMaterialForm(BSModalModelForm):
@@ -81,61 +81,44 @@ class NotaControlCalidadStockDetalleUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['material'].disabled = True
 
-class SerieAgregarBuenoForm(BSModalModelForm):
-    serie_base = forms.CharField(required=True)
+class SerieAgregarBuenoForm(BSModalForm):
+    serie_base = forms.CharField(max_length=200, required=True)
+    observacion = forms.CharField(required=False, widget=forms.Textarea())
+
     class Meta:
-        model = HistorialEstadoSerie
         fields=(
             'serie_base',
             'observacion',
             )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        serie_base = cleaned_data.get('serie_base')
-        filtro = Serie.objects.filter(serie_base__unaccent__iexact = serie_base, content_type = self.content_type, id_registro = self.id_registro)
-        if serie_base != self.instance.serie_id:
-            if len(filtro)>0:
-                self.add_error('serie_base', 'Esta serie ya se encuentre registrada')
-
     def __init__(self, *args, **kwargs):
-        self.content_type = kwargs.pop('content_type')
-        self.id_registro = kwargs.pop('id_registro')
         super(SerieAgregarBuenoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-class SerieAgregarMaloForm(BSModalModelForm):
-    serie_base = forms.CharField(required=True)
-    falla_material = forms.ModelChoiceField(queryset=None)
+
+class SerieAgregarMaloForm(BSModalForm):
+    serie_base = forms.CharField(max_length=200, required=True)
+    falla_material = forms.ModelChoiceField(queryset=None, required=True)
+    observacion = forms.CharField(required=False, widget=forms.Textarea())
     class Meta:
-        model = HistorialEstadoSerie
         fields=(
             'serie_base',
             'falla_material',
             'observacion',
             )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        serie_base = cleaned_data.get('serie_base')
-        filtro = Serie.objects.filter(serie_base__unaccent__iexact = serie_base, content_type = self.content_type, id_registro = self.id_registro)
-        if serie_base != self.instance.serie_id:
-            if len(filtro)>0:
-                self.add_error('serie_base', 'Esta serie ya se encuentre registrada')
-
     def __init__(self, *args, **kwargs):
-        self.content_type = kwargs.pop('content_type')
-        self.id_registro = kwargs.pop('id_registro')
-        lista_fallas = kwargs.pop('fallas')
+        falla_material = kwargs.pop('falla_material')
         super(SerieAgregarMaloForm, self).__init__(*args, **kwargs)
-        self.fields['falla_material'].queryset = lista_fallas
+        self.fields['falla_material'].queryset = falla_material
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class SerieAgregarMaloSinSerieForm(BSModalModelForm):
-    serie_base = forms.CharField(required=True)
-    falla_material = forms.ModelChoiceField(queryset=None)
+    serie_base = forms.CharField(max_length=200, required=True)
+    falla_material = forms.ModelChoiceField(queryset=None, required=True)
+    observacion = forms.CharField(required=False, widget=forms.Textarea())
     class Meta:
         model = HistorialEstadoSerie
         fields=(
@@ -144,108 +127,54 @@ class SerieAgregarMaloSinSerieForm(BSModalModelForm):
             'observacion',
             )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        serie_base = cleaned_data.get('serie_base')
-        filtro = Serie.objects.filter(serie_base__unaccent__iexact = serie_base, content_type = self.content_type, id_registro = self.id_registro)
-        if serie_base != self.instance.serie_id:
-            if len(filtro)>0:
-                self.add_error('serie_base', 'Esta serie ya se encuentre registrada')
-
     def __init__(self, *args, **kwargs):
-        self.content_type = kwargs.pop('content_type')
-        self.id_registro = kwargs.pop('id_registro')
-        lista_fallas = kwargs.pop('fallas')
-        nro_serie = kwargs.pop('nro_serie')
+        falla_material = kwargs.pop('falla_material')
         super(SerieAgregarMaloSinSerieForm, self).__init__(*args, **kwargs)
-        self.fields['falla_material'].queryset = lista_fallas
-        self.fields['serie_base'].initial = nro_serie
-        self.fields['serie_base'].disabled = True
+        self.fields['falla_material'].queryset = falla_material
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class SerieActualizarBuenoForm(BSModalModelForm):
-    serie_base = forms.CharField(required=True)
     class Meta:
-        model = HistorialEstadoSerie
+        model = SerieCalidad
         fields=(
-            'serie_base',
+            'serie',
             'observacion',
             )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        serie_base = cleaned_data.get('serie_base')
-        filtro = Serie.objects.filter(serie_base__unaccent__iexact = serie_base, content_type = self.content_type, id_registro = self.id_registro)
-        if serie_base != self.instance.serie_base:
-            if len(filtro)>0:
-                self.add_error('serie_base', 'Esta serie ya se encuentre registrada')
-
     def __init__(self, *args, **kwargs):
-        self.content_type = kwargs.pop('content_type')
-        self.id_registro = kwargs.pop('id_registro')
         super(SerieActualizarBuenoForm, self).__init__(*args, **kwargs)
-        self.fields['observacion'].initial = self.instance.observacion
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class SerieActualizarMaloForm(BSModalModelForm):
-    serie_base = forms.CharField(required=True)
-    falla_material = forms.ModelChoiceField(queryset=None)
     class Meta:
-        model = HistorialEstadoSerie
+        model = SerieCalidad
         fields=(
-            'serie_base',
+            'serie',
             'falla_material',
             'observacion',
             )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        serie_base = cleaned_data.get('serie_base')
-        filtro = Serie.objects.filter(serie_base__unaccent__iexact = serie_base, content_type = self.content_type, id_registro = self.id_registro)
-        if serie_base != self.instance.serie_base:
-            if len(filtro)>0:
-                self.add_error('serie_base', 'Esta serie ya se encuentre registrada')
-
     def __init__(self, *args, **kwargs):
-        self.content_type = kwargs.pop('content_type')
-        self.id_registro = kwargs.pop('id_registro')
-        lista_fallas = kwargs.pop('fallas')
+        falla_material = kwargs.pop('falla_material')
         super(SerieActualizarMaloForm, self).__init__(*args, **kwargs)
-        self.fields['falla_material'].queryset = lista_fallas
-        self.fields['falla_material'].initial = self.instance.falla
-        self.fields['observacion'].initial = self.instance.observacion
+        self.fields['falla_material'].queryset = falla_material
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 class SerieActualizarMaloSinSerieForm(BSModalModelForm):
-    serie_base = forms.CharField(required=True)
-    falla_material = forms.ModelChoiceField(queryset=None)
     class Meta:
-        model = HistorialEstadoSerie
+        model = SerieCalidad
         fields=(
-            'serie_base',
+            'serie',
             'falla_material',
             'observacion',
             )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        serie_base = cleaned_data.get('serie_base')
-        filtro = Serie.objects.filter(serie_base__unaccent__iexact = serie_base, content_type = self.content_type, id_registro = self.id_registro)
-        if serie_base != self.instance.serie_base:
-            if len(filtro)>0:
-                self.add_error('serie_base', 'Esta serie ya se encuentre registrada')
-
     def __init__(self, *args, **kwargs):
-        self.content_type = kwargs.pop('content_type')
-        self.id_registro = kwargs.pop('id_registro')
-        lista_fallas = kwargs.pop('fallas')
+        falla_material = kwargs.pop('falla_material')
         super(SerieActualizarMaloSinSerieForm, self).__init__(*args, **kwargs)
-        self.fields['falla_material'].queryset = lista_fallas
-        self.fields['falla_material'].initial = self.instance.falla
-        self.fields['observacion'].initial = self.instance.observacion
-        self.fields['serie_base'].disabled = True
+        self.fields['falla_material'].queryset = falla_material
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

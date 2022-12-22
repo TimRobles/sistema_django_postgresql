@@ -381,7 +381,7 @@
                     <td class="text-end text-nowrap table-primary">{{ material.material.stock|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap table-primary">{{ material.material.en_camino|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
-                        <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type %}"
+                        <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.material.id material.material.content_type.id %}"
                             class="read btn swatch-purple btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
                             <i class="bi bi-box-seam"></i>

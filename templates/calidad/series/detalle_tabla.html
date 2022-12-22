@@ -1,3 +1,6 @@
+{% load humanize %}
+{% load funciones_propias %}
+
 <h3>
     {% if contexto_nota_control_calidad_stock_detalle.inspeccion == 1 %}
         Series
@@ -26,10 +29,26 @@
     {% endif %}
     <a href="{% url 'calidad_app:nota_control_calidad_stock_detalle' contexto_nota_control_calidad_stock_detalle.nota_control_calidad_stock.id %}"><span class="badge bg-primary">Regresar</span></a>   
 </h3>
-<br>
+
+<div class="input-group flex-nowrap mt-3">
+    <label class="input-group-text">Cantidad Inspeccionada</label>
+    <input type="text" class="form-control" value="{{ contexto_nota_control_calidad_stock_detalle.cantidad_calidad|redondear|intcomma }}" style="max-width: 150px;">
+    <label class="input-group-text ms-auto">Cantidad Registrada</label>
+    <input type="text" class="form-control" value="{{ contexto_nota_control_calidad_stock_detalle.series_calidad|redondear|intcomma }}" style="max-width: 150px;">
+</div>
+
 <h4>
     {{ contexto_nota_control_calidad_stock_detalle.nota_ingreso_detalle }}
 </h4>
+<button class="read btn btn-primary"
+    data-form-url="{% url 'calidad_app:falla_material_detalle_modal' contexto_nota_control_calidad_stock_detalle.material.subfamilia.id %}">
+    Ver Fallas
+</button>
+<button class="create btn btn-primary"
+    data-form-url="{% url 'calidad_app:falla_material_detalle_registrar' contexto_nota_control_calidad_stock_detalle.material.subfamilia.id %}"
+    data-table-url="{% url 'calidad_app:series_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}">
+    Agregar Fallas
+</button>
 <br>
 
 <div class="table-responsive">
@@ -40,7 +59,6 @@
                 {% if contexto_nota_control_calidad_stock_detalle.inspeccion != 1 %} 
                     <th>Falla</th>       
                 {% endif %}      
-                <th>Sociedad</th>
                 <th>Observación</th>       
                 <th>Estado</th>    
                 <th class="text-center">Acciones</th>    
@@ -49,21 +67,12 @@
         <tbody>
             {% for serie in contexto_series %}
                 <tr>
-                    {% if serie.serie_base %}
-                        <td> 
-                            {{ serie.serie_base}} 
-                        </td>
-                        {% endif %}
+                    <td>{{ serie.serie }}</td>
                     {% if contexto_nota_control_calidad_stock_detalle.inspeccion != 1 %} 
-                        <td>{{ serie.falla}}</td>
+                        <td>{{ serie.falla_material }}</td>
                     {% endif %}  
-                    <td>
-                        {% if serie.sociedad %}
-                            {{ serie.sociedad }}
-                        {% endif %}  
-                    </td>
                     <td>{{ serie.observacion }}</td>
-                    <td>{{ serie.estado}}</td>
+                    <td>{{ serie.get_estado_display }}</td>
                     <td class="text-center text-nowrap">
                         
                         {% if contexto_nota_control_calidad_stock_detalle.inspeccion == 1 %}

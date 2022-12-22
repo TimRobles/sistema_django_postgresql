@@ -166,10 +166,7 @@ class Material(models.Model):
             'estado_alta_baja',
             'descripcion_venta',
         ]
-
-    def content_type(self):
-        return ContentType.objects.get_for_model(self).id
-
+    
     @property
     def codigo_producto_sunat(self):
         if self.producto_sunat:
@@ -337,6 +334,10 @@ class Material(models.Model):
     @property
     def en_camino(self):
         return self.transito - self.confirmado_anticipo
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     def __str__(self):
         return self.descripcion_venta

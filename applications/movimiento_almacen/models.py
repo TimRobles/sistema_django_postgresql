@@ -79,6 +79,13 @@ class MovimientosAlmacen(models.Model):
         except:
             return "Error"
 
+    @property
+    def producto(self):
+        try:
+            return self.content_type_producto.model_class().objects.get(id=self.id_registro_producto)
+        except:
+            return "Error"
+
     def valor(self):
         return self.cantidad * self.signo_factor_multiplicador
 

@@ -612,7 +612,7 @@
 <br>
 
 <h3>Precio Lista Material
-    <button data-form-url="{% url 'material_app:precio_material_registrar' contexto_material.id contexto_material.content_type %}"
+    <button data-form-url="{% url 'material_app:precio_material_registrar' contexto_material.id contexto_material.content_type.id %}"
         data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
         data-modal="modal-xl"
         class="create badge bg-primary">

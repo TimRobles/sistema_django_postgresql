@@ -1,0 +1,32 @@
+{% extends 'includes/modal generico.html' %}
+
+{% block content %}
+<h3>{{ contexto_subfamilia }}</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Comentario</th>
+                <th class="text-center">Visible</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for falla in fallas %}
+                <tr>
+                    <td>{{ falla.titulo }}</td>
+                    <td>{{ falla.comentario }}</td>
+                    <td class="text-center">
+                        {% if  falla.visible %}
+                            Si 
+                        {% else %}
+                            No 
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}

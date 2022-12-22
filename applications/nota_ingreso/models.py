@@ -55,6 +55,7 @@ class NotaIngresoDetalle(models.Model):
     cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
+    #Control Calidad y Sede?
     nota_ingreso = models.ForeignKey(NotaIngreso, on_delete=models.PROTECT, related_name='NotaIngresoDetalle_nota_ingreso')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

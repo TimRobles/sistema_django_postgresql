@@ -15,7 +15,7 @@
         </button>
     {% endif %}
     {% if contexto_nota_control_calidad_stock.estado == 2 %}
-        <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_concluir' contexto_nota_control_calidad_stock.id %}"
+        <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_registrar_series' contexto_nota_control_calidad_stock.id %}"
             data-table-url="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"
             class="delete badge bg-primary">
             Registrar Series
@@ -56,6 +56,7 @@
                 <th>Descripción</th>
                 <th>Almacén</th>
                 <th class="text-end">Cantidad</th>
+                <th class="text-end">Series Registradas</th>
                 <th>Estado de Inspección</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -67,6 +68,7 @@
                 <td>{{ material.material }} | Control calidad: {{ material.material.control_calidad }} | Control serie: {{ material.control_serie }} </td>
                 <td>{{ material.nota_ingreso_detalle.almacen }}</td>
                 <td class="text-end text-nowrap">{{ material.cantidad_calidad|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ material.series_calidad|redondear|intcomma }}</td>
                 <td>{{ material.get_inspeccion_display}}</td>
                 <td class="text-center text-nowrap">
                     

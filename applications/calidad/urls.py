@@ -23,6 +23,7 @@ urlNotaControlCalidadStock = [
     path('nota-control-calidad-stock/registrar/', views.NotaControlCalidadStockCreateView.as_view(), name='nota_control_calidad_stock_registrar'),
     path('nota-control-calidad-stock/anular/<pk>/', views.NotaControlCalidadStockDeleteView.as_view(), name='nota_control_calidad_stock_anular'),
     path('nota-control-calidad-stock/concluir/<pk>/', views.NotaControlCalidadStockConcluirView.as_view(), name='nota_control_calidad_stock_concluir'),
+    path('nota-control-calidad-stock/registrar/series/<pk>/', views.NotaControlCalidadStockRegistrarSeriesView.as_view(), name='nota_control_calidad_stock_registrar_series'),
     path('nota-control-calidad-stock/detalle/<pk>/', views.NotaControlCalidadStockDetailView.as_view(), name='nota_control_calidad_stock_detalle'),
     path('nota-control-calidad-stock/detalle-tabla/<pk>/', views.NotaControlCalidadStockDetailTabla, name='nota_control_calidad_stock_detalle_tabla'),
     path('nota-control-calidad-stock/detalle/registrar/<int:nota_control_calidad_stock_id>/', views.NotaControlCalidadStockDetalleCreateView.as_view(), name='nota_control_calidad_stock_detalle_registrar'),
@@ -37,5 +38,6 @@ urlpatterns = [
     path('falla-material/detalle-tabla/<pk>/', views.FallaMaterialDetailTabla, name='falla_material_detalle_tabla'),    
     path('falla-material/detalle/registrar/<int:subfamilia_id>/', views.FallaMaterialCreateView.as_view(), name='falla_material_detalle_registrar'),
     path('falla-material/detalle/actualizar/<pk>/', views.FallaMaterialUpdateView.as_view(), name='falla_material_detalle_actualizar'),
+    path('falla-material/detalle/modal/<pk>/', views.FallaMaterialModalDetailView.as_view(), name='falla_material_detalle_modal'),
     path('falla-material/detalle/eliminar/<pk>/', views.FallaMaterialDeleteView.as_view(), name='falla_material_detalle_eliminar'),
 ] + urlNotaControlCalidadStock + urlSeries
