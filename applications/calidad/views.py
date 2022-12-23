@@ -45,6 +45,11 @@ class FallaMaterialDetailView(PermissionRequiredMixin, DetailView):
     template_name = "calidad/falla_material/detalle.html"
     context_object_name = 'contexto_subfamilia'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         sub_familia = SubFamilia.objects.get(id=self.kwargs['pk'])
         context = super(FallaMaterialDetailView, self).get_context_data(**kwargs)
@@ -73,6 +78,11 @@ class FallaMaterialModalDetailView(PermissionRequiredMixin, BSModalReadView):
     template_name = "calidad/falla_material/detalle_modal.html"
     context_object_name = 'contexto_subfamilia'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         sub_familia = SubFamilia.objects.get(id=self.kwargs['pk'])
         context = super(FallaMaterialModalDetailView, self).get_context_data(**kwargs)
@@ -85,6 +95,11 @@ class FallaMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
     model = FallaMaterial
     template_name = "includes/formulario generico.html"
     form_class = FallaMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:falla_material_detalle', kwargs={'pk':self.kwargs['subfamilia_id']})
@@ -162,6 +177,11 @@ class NotaControlCalidadStockCreateView(PermissionRequiredMixin, BSModalCreateVi
     form_class = NotaControlCalidadStockForm
     success_url = reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
             context = super(NotaControlCalidadStockCreateView, self).get_context_data(**kwargs)
             context['accion']="Registrar"
@@ -180,6 +200,11 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
     form_class = NotaControlCalidadStockAnularForm
     template_name = "includes/formulario generico.html"
     success_url = reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
@@ -272,6 +297,9 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
             if detalle.control_serie and detalle.series_calidad != detalle.cantidad_calidad:
                 error_cantidad_series = True
         
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+
         if error_cantidad_series:
             context['texto'] = 'Hay Series sin registrar.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -398,6 +426,11 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
     model = NotaControlCalidadStock
     template_name = "calidad/nota_control_calidad_stock/boton.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.get_object().id})
 
@@ -499,6 +532,11 @@ class NotaControlCalidadStockDetailView(PermissionRequiredMixin, DetailView):
     template_name = "calidad/nota_control_calidad_stock/detalle.html"
     context_object_name = 'contexto_nota_control_calidad_stock'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         nota_control_calidad_stock = NotaControlCalidadStock.objects.get(id = self.kwargs['pk'])
         context = super(NotaControlCalidadStockDetailView, self).get_context_data(**kwargs)
@@ -525,6 +563,11 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
     permission_required = ('calidad.add_notacontrolcalidadstockdetalle')
     template_name = "calidad/nota_control_calidad_stock/form_material.html"
     form_class = NotaControlCalidadStockDetalleAgregarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_id']})
@@ -603,6 +646,11 @@ class NotaControlCalidadStockDetalleUpdateView(PermissionRequiredMixin, BSModalU
     template_name = "includes/formulario generico.html"
     form_class = NotaControlCalidadStockDetalleUpdateForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_id})
 
@@ -646,6 +694,11 @@ class NotaControlCalidadStockDetalleDeleteView(PermissionRequiredMixin, BSModalD
     model = NotaControlCalidadStockDetalle
     template_name = "includes/eliminar generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_id})
 
@@ -683,6 +736,11 @@ class SeriesDetailView(PermissionRequiredMixin, DetailView):
     template_name = "calidad/series/detalle.html"
     context_object_name = 'contexto_series'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['pk'])
         context = super(SeriesDetailView, self).get_context_data(**kwargs)
@@ -717,6 +775,11 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_series')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarBuenoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
@@ -780,6 +843,11 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_series')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
@@ -853,6 +921,11 @@ class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormVi
     permission_required = ('calidad.add_series')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloSinSerieForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
@@ -928,6 +1001,11 @@ class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarBuenoForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.object.nota_control_calidad_stock_detalle.id})
 
@@ -972,6 +1050,11 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarMaloForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.object.nota_control_calidad_stock_detalle.id})
@@ -1026,6 +1109,11 @@ class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdate
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarMaloSinSerieForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.object.nota_control_calidad_stock_detalle.id})
 
@@ -1077,6 +1165,11 @@ class SeriesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.delete_serie')
     model = SerieCalidad
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_detalle.id})
