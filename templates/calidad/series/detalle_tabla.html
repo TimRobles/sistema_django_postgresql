@@ -66,17 +66,15 @@
         </thead>
         <tbody>
             {% for serie in contexto_series %}
-                <tr>
+                <tr {% if serie.estado == 2 %}
+                style="background-color: red;"
+                {% endif %} >
                     <td>{{ serie.serie }}</td>
                     {% if contexto_nota_control_calidad_stock_detalle.inspeccion != 1 %} 
                         <td>{{ serie.falla_material }}</td>
                     {% endif %}  
                     <td>{{ serie.observacion }}</td>
-                    <td
-                    {% if serie.estado == 2 %}
-                    style="color: red;"
-                    {% endif %} 
-                    >
+                    <td>
                         {{ serie.get_estado_display }}
                     </td>
                     <td class="text-center text-nowrap">
