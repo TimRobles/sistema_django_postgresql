@@ -46,7 +46,11 @@
 
 {% block extrajs %}
 <script>
-    console.log('Series')
-</script>
+    window.onload = function(){
+        setTimeout(() => {
+            document.getElementById("id_serie").focus();
+        }, 500);
+    }
+</script>    
 {% endblock extrajs %}
     
