@@ -772,7 +772,7 @@ def SeriesDetailTabla(request, pk):
         return JsonResponse(data)
 
 class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('calidad.add_series')
+    permission_required = ('calidad.add_serie')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarBuenoForm
 
@@ -840,7 +840,7 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
         return context
 
 class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('calidad.add_series')
+    permission_required = ('calidad.add_serie')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloForm
 
@@ -918,7 +918,7 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
         return context
 
 class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('calidad.add_series')
+    permission_required = ('calidad.add_serie')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloSinSerieForm
 
