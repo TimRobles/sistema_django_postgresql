@@ -252,7 +252,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
         return super(NotaControlCalidadStockRegistrarSeriesView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
+        return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.get_object().id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -356,7 +356,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
 
     def get_context_data(self, **kwargs):
         context = super(NotaControlCalidadStockRegistrarSeriesView, self).get_context_data(**kwargs)
-        context['accion'] = "Concluir"
+        context['accion'] = "Registrar Series"
         context['titulo'] = "Nota Control Calidad Stock"
         context['dar_baja'] = "true"
         context['item'] = self.object.nro_nota_calidad
@@ -369,7 +369,7 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
     template_name = "calidad/nota_control_calidad_stock/boton.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
+        return reverse_lazy('calidad_app:nota_control_calidad_stock_detalle', kwargs={'pk':self.get_object().id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -454,7 +454,7 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
 
     def get_context_data(self, **kwargs):
         context = super(NotaControlCalidadStockConcluirView, self).get_context_data(**kwargs)
-        context['accion'] = "Registrar Series"
+        context['accion'] = "Concluir"
         context['titulo'] = "Nota Control Calidad Stock"
         context['dar_baja'] = "true"
         context['item'] = self.object.nro_nota_calidad

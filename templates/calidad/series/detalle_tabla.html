@@ -72,7 +72,13 @@
                         <td>{{ serie.falla_material }}</td>
                     {% endif %}  
                     <td>{{ serie.observacion }}</td>
-                    <td>{{ serie.get_estado_display }}</td>
+                    <td
+                    {% if serie.estado == 2 %}
+                    style="color: red;"
+                    {% endif %} 
+                    >
+                        {{ serie.get_estado_display }}
+                    </td>
                     <td class="text-center text-nowrap">
                         
                         {% if contexto_nota_control_calidad_stock_detalle.inspeccion == 1 %}
