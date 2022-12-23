@@ -228,12 +228,16 @@ class NotaSalidaDetalle(models.Model):
     def id_registro(self):
         return self.producto.id
 
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieNotaSalidaDetalle_nota_salida_detalle.all())).quantize(Decimal('0.01'))
+
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
 
 
 class ValidarSerieNotaSalidaDetalle(models.Model):
-    nota_salida_detalle = models.ForeignKey(NotaSalidaDetalle, on_delete=models.PROTECT)
+    nota_salida_detalle = models.ForeignKey(NotaSalidaDetalle, on_delete=models.PROTECT, related_name='ValidarSerieNotaSalidaDetalle_nota_salida_detalle')
     serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

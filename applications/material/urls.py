@@ -82,4 +82,6 @@ urlpatterns = [
     path('stock/<int:id_material>/', views.StockView, name='stock'),
     path('stock/<int:id_material>/<int:id_sociedad>/', views.StockSociedadView, name='stock'),
     path('stock/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/', views.StockSociedadAlmacenView, name='stock'),
+
+    path('series/<pk>/', views.MaterialSeriesView.as_view(), name='series'),
 ]

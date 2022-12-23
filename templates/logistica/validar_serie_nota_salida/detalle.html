@@ -34,7 +34,19 @@
         </div>
     </form>
     <br>
+    <button data-form-url="{% url 'material_app:series' contexto_nota_salida_detalle.producto.id %}"
+        class="read btn btn-primary">
+        Ver series
+    </button>
     <div id="tabla">
         {% include 'logistica/validar_serie_nota_salida/detalle_tabla.html' %}
     </div>
 {% endblock contenido %}
+
+
+{% block extrajs %}
+<script>
+    console.log('Series')
+</script>
+{% endblock extrajs %}
+    

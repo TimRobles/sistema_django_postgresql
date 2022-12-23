@@ -1,0 +1,25 @@
+{% extends 'includes/modal generico.html' %}
+
+{% block content %}
+<h3>{{ material }}</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Serie</th>
+                <th>Sociedad</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for serie in series %}
+            <tr>
+                <td>{{ serie.serie_base }}</td>
+                <td>{{ serie.sociedad }}</td>
+                <td>{{ serie.estado }}</td>
+            </tr>
+            {% endfor %} 
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

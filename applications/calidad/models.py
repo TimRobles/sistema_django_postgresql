@@ -170,6 +170,10 @@ class NotaControlCalidadStock(models.Model):
         verbose_name_plural = 'Notas Control Calidad Stock'
         ordering = ['nro_nota_calidad',]
 
+    @property
+    def fecha(self):
+        return self.nota_ingreso.fecha
+
     def __str__(self):
         return str(self.id)
 

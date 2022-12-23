@@ -1,5 +1,6 @@
 from decimal import Decimal
 import json
+from applications.calidad.models import Serie
 from applications.funciones import obtener_atributos, registrar_excepcion
 from applications.importaciones import *
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
@@ -1624,3 +1625,20 @@ def ProveedorMaterialView(request, id_material):
             return HttpResponse(json.dumps(atributos))
         except Exception as e:
             return HttpResponse("")
+
+
+class MaterialSeriesView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('material.view_material')
+    model = Material
+    template_name = "material/series_material.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(MaterialSeriesView, self).get_context_data(**kwargs)
+        series = Serie.objects.filter(
+            content_type = self.object.content_type,
+            id_registro = self.object.id,
+        ).order_by('serie_base')
+        context['titulo'] = "Series"
+        context['material'] = self.object
+        context['series'] = series
+        return context
