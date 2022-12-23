@@ -684,7 +684,7 @@ def SeriesDetailTabla(request, pk):
 
 class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_series')
-    template_name = "includes/formulario generico.html"
+    template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarBuenoForm
 
     def get_success_url(self, **kwargs):
@@ -747,7 +747,7 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
 
 class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_series')
-    template_name = "includes/formulario generico.html"
+    template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloForm
 
     def get_success_url(self, **kwargs):
@@ -820,7 +820,7 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
 
 class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_series')
-    template_name = "includes/formulario generico.html"
+    template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloSinSerieForm
 
     def get_success_url(self, **kwargs):

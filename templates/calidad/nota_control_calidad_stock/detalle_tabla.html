@@ -5,25 +5,23 @@
     {% if contexto_nota_control_calidad_stock.estado == 1 %}
         <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_registrar' contexto_nota_control_calidad_stock.id %}"
             data-table-url="{% url 'calidad_app:nota_control_calidad_stock_detalle_tabla' contexto_nota_control_calidad_stock.id %}"
-            class="create badge bg-primary">
+            data-keep-open="true"
+            class="update badge bg-primary">
             Agregar Material
         </button>
         <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_concluir' contexto_nota_control_calidad_stock.id %}"
-            data-table-url="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"
             class="delete badge bg-primary">
             Concluir Nota
         </button>
     {% endif %}
     {% if contexto_nota_control_calidad_stock.estado == 2 %}
         <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_registrar_series' contexto_nota_control_calidad_stock.id %}"
-            data-table-url="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"
             class="delete badge bg-primary">
             Registrar Series
         </button>
     {% endif %}
     {% if contexto_nota_control_calidad_stock.estado == 3 %}
         <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_concluir' contexto_nota_control_calidad_stock.id %}"
-            data-table-url="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"
             class="delete badge bg-danger">
             Anular Nota
         </button>

@@ -171,5 +171,9 @@ class NotaStockInicialDetalle(models.Model):
     def pendiente(self):
         return self.cantidad - self.cantidad_contada
 
+    @property
+    def sociedad(self):
+        return self.nota_stock_inicial.sociedad
+
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)

@@ -6,6 +6,7 @@
             <th>Comentario</th>    
             <th>Motivo de Anulación</th>    
             <th>Estado</th>    
+            <th>Usuario</th>    
             <th class="text-center">Acciones</th>    
         </tr>
     </thead>
@@ -30,6 +31,7 @@
                     {% endif %}  
                 </td>
                 <td>{{ nota.get_estado_display }}</td>
+                <td>{{ nota.created_by }}</td>
                 <td class="text-center text-nowrap">
                     <a href="{% url 'calidad_app:nota_control_calidad_stock_detalle' nota.id %}"
                         class="btn btn-info btn-sm"
