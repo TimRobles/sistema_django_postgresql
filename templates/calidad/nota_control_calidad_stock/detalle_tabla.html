@@ -21,7 +21,7 @@
         </button>
     {% endif %}
     {% if contexto_nota_control_calidad_stock.estado == 3 %}
-        <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_concluir' contexto_nota_control_calidad_stock.id %}"
+        <button data-form-url="{% url 'calidad_app:nota_control_calidad_stock_anular' contexto_nota_control_calidad_stock.id %}"
             class="delete badge bg-danger">
             Anular Nota
         </button>

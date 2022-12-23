@@ -214,7 +214,33 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
                     movimiento_dos.delete()
                     movimiento_uno.delete()
             elif form.instance.estado == 3:
-                pass
+                detalles = form.instance.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
+                for detalle in detalles:
+                    if detalle.inspeccion == 2:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=141) #Registro de Serie, material dañado
+                    elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
+
+                    movimiento_dos = MovimientosAlmacen.objects.get(
+                        content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
+                        id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
+                        cantidad = detalle.cantidad_calidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                        id_registro_documento_proceso = form.instance.id,
+                        almacen = detalle.nota_ingreso_detalle.almacen,
+                        sociedad = form.instance.nota_ingreso.recepcion_compra.sociedad,
+                    )
+                    movimiento_uno = movimiento_dos.movimiento_anterior
+                    movimiento_anterior_dos = movimiento_uno.movimiento_anterior
+                    movimiento_anterior_uno = movimiento_anterior_dos.movimiento_anterior
+                    
+                    movimiento_dos.delete()
+                    movimiento_uno.delete()
+                    movimiento_anterior_dos.delete()
+                    movimiento_anterior_uno.delete()
             
             form.instance.estado = 4
             registro_guardar(form.instance, self.request)
@@ -262,11 +288,15 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
 
             detalles = self.object.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
             for detalle in detalles:
-                if detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
+                if detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_calidad:
                     if detalle.inspeccion == 1:
-                        movimiento_inicial = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
-                        movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
+                        if detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
+                            movimiento_inicial = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                            movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
+                        else:
+                            continue
                     else:
+                        print("Producto malo")
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
                         movimiento_final = TipoMovimiento.objects.get(codigo=141) #Registro de Serie, material dañado
 
@@ -991,7 +1021,7 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_serie')
-    model = Serie
+    model = SerieCalidad
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarMaloSinSerieForm
 
@@ -1029,20 +1059,11 @@ class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdate
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
-        registro = NotaControlCalidadStockDetalle.objects.get(id = self.object.nota_control_calidad_stock_detalle.id)
-        raiz_material = registro.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        material = registro.material
-
-        content_type = raiz_material.content_type
-        id_registro = raiz_material.id_registro
-
-        subfamilia = material.subfamilia
-        fallas = FallaMaterial.objects.filter(sub_familia = subfamilia, visible = True)
-
+        nota_control_calidad_stock_detalle = self.object.nota_control_calidad_stock_detalle
+        material = nota_control_calidad_stock_detalle.material
+        
         kwargs = super().get_form_kwargs()
-        kwargs['content_type'] = content_type
-        kwargs['id_registro'] = id_registro
-        kwargs['fallas'] = fallas
+        kwargs['falla_material'] = material.subfamilia.FallaMaterial_sub_familia.filter(visible=True)
         return kwargs
 
     def get_context_data(self, **kwargs):
