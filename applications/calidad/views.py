@@ -975,6 +975,14 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
+    def get_form_kwargs(self):
+        nota_control_calidad_stock_detalle = self.object.nota_control_calidad_stock_detalle
+        material = nota_control_calidad_stock_detalle.material
+        
+        kwargs = super().get_form_kwargs()
+        kwargs['falla_material'] = material.subfamilia.FallaMaterial_sub_familia.filter(visible=True)
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super(SeriesDetalleMaloUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
