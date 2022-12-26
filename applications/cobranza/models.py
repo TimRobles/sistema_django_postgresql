@@ -14,7 +14,7 @@ from applications.sociedad.models import Sociedad
 from applications.variables import ESTADO_SOLICITUD, ESTADOS
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-
+from django.urls import reverse_lazy
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 
@@ -148,6 +148,12 @@ class Nota(models.Model):
         verbose_name = 'Nota'
         verbose_name_plural = 'Notas'
 
+    @property
+    def url_detalle(self):
+        return reverse_lazy('home_app:home')
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.cuenta_bancaria.id})
+
+
     def __str__(self):
         return "%s" % (self.monto)
 
@@ -202,6 +208,10 @@ class Ingreso(models.Model):
     @property
     def saldo(self):
         return self.monto - self.usado
+
+    @property
+    def url_detalle(self):
+        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.cuenta_bancaria.id})
 
     def __str__(self):
         if self.cuenta_bancaria.efectivo:

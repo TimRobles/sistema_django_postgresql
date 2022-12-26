@@ -637,7 +637,6 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.get_object().id})
 
     @transaction.atomic
-    @transaction.atomic
     def delete(self, request, *args, **kwargs):
         sid = transaction.savepoint()
         try:
@@ -647,6 +646,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                     self.object = self.get_object()
 
                     detalles = self.object.detalles
+                    print(self.object.solicitud_prestamo_materiales)
                     if self.object.solicitud_prestamo_materiales:
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
                         movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
@@ -702,6 +702,8 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                     self.object.estado = 2
                     registro_guardar(self.object, self.request)
                     self.object.save()
+
+                    a = int('hola')
 
                     messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
                 except Exception as ex:

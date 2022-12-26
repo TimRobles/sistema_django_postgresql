@@ -80,7 +80,7 @@
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                                                     <i class="bi-x-lg"></i>
                                                 </button>
-                                                <a href="{% url 'cobranza_app:cuenta_bancaria_detalle' pago.ingreso_nota.cuenta_bancaria.id %}" class="btn btn-success btn-sm">
+                                                <a href="{{ pago.ingreso_nota.url_detalle }}" class="btn btn-success btn-sm">
                                                     <i class="bi bi-eye-fill"></i>
                                                 </a>
                                             </td>
