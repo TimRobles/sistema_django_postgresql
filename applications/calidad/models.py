@@ -65,7 +65,7 @@ class Serie(models.Model):
     id_registro = models.IntegerField(blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE)
-    serie_movimiento_almacen = models.ManyToManyField(MovimientosAlmacen, blank=True)
+    serie_movimiento_almacen = models.ManyToManyField(MovimientosAlmacen, blank=True, related_name='Serie_serie_movimiento_almacen')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Serie_created_by', editable=False)
