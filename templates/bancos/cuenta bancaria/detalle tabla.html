@@ -103,7 +103,7 @@
                                                     </div>                          
                                                 </div>
                                                 {% else %}
-                                                {{ deuda.documento }}
+                                                {{ pago.id }} - {{ pago.deuda.id }} - {{ pago.deuda.documento }}
                                                 {% endif %}
                                             </td>
                                             <td class="text-end text-nowrap">{{ pago.deuda.moneda.simbolo }} {{ pago.deuda.monto|redondear|intcomma }}</td>
