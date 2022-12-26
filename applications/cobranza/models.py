@@ -204,7 +204,10 @@ class Ingreso(models.Model):
         return self.monto - self.usado
 
     def __str__(self):
-        return "Ingreso %s %s %s %s (%s %s)" % (self.cuenta_bancaria.sociedad.alias, self.cuenta_bancaria.banco.nombre_comercial, self.cuenta_bancaria.moneda.simbolo, self.monto, self.cuenta_bancaria.moneda.simbolo, self.saldo)
+        if self.cuenta_bancaria.efectivo:
+            return "Ingreso %s %s %s %s (%s %s)" % (self.cuenta_bancaria.sociedad.alias, 'EFECTIVO', self.cuenta_bancaria.moneda.simbolo, self.monto, self.cuenta_bancaria.moneda.simbolo, self.saldo)
+        else:
+            return "Ingreso %s %s %s %s (%s %s)" % (self.cuenta_bancaria.sociedad.alias, self.cuenta_bancaria.banco.nombre_comercial, self.cuenta_bancaria.moneda.simbolo, self.monto, self.cuenta_bancaria.moneda.simbolo, self.saldo)
 
 
 class Egreso(models.Model):

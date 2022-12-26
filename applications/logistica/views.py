@@ -617,6 +617,22 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     model = NotaSalida
     template_name = "logistica/nota_salida/boton.html"
 
+    
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_series = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().NotaSalidaDetalle_nota_salida.all()
+        for detalle in detalles:
+            if detalle.series_validar != detalle.cantidad_salida and detalle.producto.control_serie:
+                error_series = True
+        
+        if error_series:
+            context['texto'] = 'La cantidad de series no coincide.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super().dispatch(request, *args, **kwargs)
+    
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.get_object().id})
 
