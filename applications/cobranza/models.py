@@ -149,13 +149,31 @@ class Nota(models.Model):
         verbose_name_plural = 'Notas'
 
     @property
+    def pagos(self):
+        return Pago.objects.filter(
+            content_type = ContentType.objects.get_for_model(self),
+            id_registro = self.id,
+            )
+    
+    @property
+    def usado(self):
+        if self.pagos.aggregate(Sum('monto'))['monto__sum']:
+            return self.pagos.aggregate(Sum('monto'))['monto__sum']
+        else:
+            return Decimal('0.00')
+
+    @property
+    def saldo(self):
+        return self.monto - self.usado
+
+    @property
     def url_detalle(self):
         return reverse_lazy('home_app:home')
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.cuenta_bancaria.id})
 
 
     def __str__(self):
-        return "%s" % (self.monto)
+        return "%s %s %s %s (%s %s)" % (self.nota_credito, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
 
 
 class Ingreso(models.Model):
