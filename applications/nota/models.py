@@ -1,7 +1,7 @@
 from django.db import models
 from decimal import Decimal
 from applications.clientes.models import Cliente, InterlocutorCliente
-from applications.funciones import obtener_totales
+from applications.funciones import numeroXn, obtener_totales
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesComprobante, TipoCambio, Unidad
 from django.contrib.contenttypes.models import ContentType
@@ -73,7 +73,7 @@ class NotaCredito(models.Model):
 
     def __str__(self):
         if self.numero_nota:
-            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_nota, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_nota, 6), self.cliente, self.moneda.simbolo, self.total)
         else:
             return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente, self.moneda.simbolo, self.total)
 
