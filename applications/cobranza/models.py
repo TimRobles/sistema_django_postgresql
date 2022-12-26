@@ -173,7 +173,7 @@ class Nota(models.Model):
 
 
     def __str__(self):
-        return "%s %s %s %s (%s %s)" % (self.nota_credito, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
+        return "%s %s %s (%s %s)" % (self.nota_credito, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
 
 
 class Ingreso(models.Model):
