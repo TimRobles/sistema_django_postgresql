@@ -420,10 +420,17 @@ class NotaIngresoAnularConteoView(BSModalUpdateView):
 
 #####################################################
 
-class NotaStockInicialCreateView(BSModalCreateView):
+class NotaStockInicialCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('nota_ingreso.add_notastockinicial')
+
     model = NotaStockInicial
     template_name = "includes/formulario generico.html"
     form_class = NotaStockInicialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('nota_ingreso_app:nota_stock_inicial_detalle', kwargs={'pk':self.object.id})
