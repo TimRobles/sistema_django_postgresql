@@ -206,7 +206,9 @@ def guia_nubefact(obj, user):
         transportista_placa_numero = numero_espacio(obj.placa_numero)
         conductor_documento_tipo = numero_guion(obj.conductor_tipo_documento)
         conductor_documento_numero = numero_guion(obj.conductor_numero_documento)
-        conductor_denominacion = numero_guion(obj.conductor_denominacion)
+        conductor_nombre = numero_guion(obj.conductor_nombre)
+        conductor_apellidos = numero_guion(obj.conductor_apellidos)
+        conductor_numero_licencia = numero_guion(obj.conductor_numero_licencia)
         punto_de_partida_ubigeo = obj.ubigeo_partida.codigo
         punto_de_partida_direccion = obj.direccion_partida
         punto_de_llegada_ubigeo = obj.ubigeo_destino.codigo
@@ -218,7 +220,7 @@ def guia_nubefact(obj, user):
             enviar_automaticamente_al_cliente = False
         formato_de_pdf = 'A4'
         productos = obj.detalles
-        data = funciones.generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, observaciones, motivo_de_traslado, peso_bruto_total, numero_de_bultos, tipo_de_transporte, fecha_de_inicio_de_traslado, transportista_documento_tipo, transportista_documento_numero, transportista_denominacion, transportista_placa_numero, conductor_documento_tipo, conductor_documento_numero, conductor_denominacion, punto_de_partida_ubigeo, punto_de_partida_direccion, punto_de_llegada_ubigeo, punto_de_llegada_direccion, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, formato_de_pdf, productos)
+        data = funciones.generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, observaciones, motivo_de_traslado, peso_bruto_total, numero_de_bultos, tipo_de_transporte, fecha_de_inicio_de_traslado, transportista_documento_tipo, transportista_documento_numero, transportista_denominacion, transportista_placa_numero, conductor_documento_tipo, conductor_documento_numero, conductor_nombre, conductor_apellidos, conductor_numero_licencia, punto_de_partida_ubigeo, punto_de_partida_direccion, punto_de_llegada_ubigeo, punto_de_llegada_direccion, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, formato_de_pdf, productos)
 
         acceso_nubefact = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.envio(obj.sociedad, ContentType.objects.get_for_model(obj))
         ruta = acceso_nubefact.acceso.ruta

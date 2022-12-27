@@ -19,6 +19,7 @@ from .forms import(
     GuiaClienteForm,
     GuiaConductorForm,
     GuiaDestinoForm,
+    GuiaDetallePesoForm,
     GuiaFechaTrasladoForm,
     GuiaMotivoTrasladoForm,
     GuiaPartidaForm,
@@ -176,6 +177,47 @@ class GuiaTransportistaView(BSModalUpdateView):
         context['accion'] = "Elegir"
         context['titulo'] = "Transportista"
         return context
+
+
+class GuiaTransportistaLimpiarView(BSModalDeleteView):
+    model = Guia
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.transportista = None
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaTransportistaLimpiarView, self).get_context_data(**kwargs)
+        context['accion'] = "Limpiar"
+        context['titulo'] = "datos del Transportista"
+        context['dar_baja'] = True
+        return context
+        
+
+class GuiaDetallePesoView(BSModalUpdateView):
+    model = GuiaDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaDetallePesoForm
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.object.guia.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaDetallePesoView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Peso"
+        return context
         
 
 class GuiaSerieUpdateView(BSModalUpdateView):
@@ -286,6 +328,32 @@ class GuiaConductorView(BSModalUpdateView):
         context = super(GuiaConductorView, self).get_context_data(**kwargs)
         context['accion'] = "Asignar"
         context['titulo'] = "Conductor"
+        return context
+
+class GuiaConductorLimpiarView(BSModalDeleteView):
+    model = Guia
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.conductor_tipo_documento = None
+        self.object.conductor_numero_documento = None
+        self.object.conductor_nombre = None
+        self.object.conductor_apellidos = None
+        self.object.conductor_numero_licencia = None
+        self.object.placa_numero = None
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaConductorLimpiarView, self).get_context_data(**kwargs)
+        context['accion'] = "Limpiar"
+        context['titulo'] = "datos del Conductor"
+        context['dar_baja'] = True
         return context
 
 class GuiaMotivoTrasladoView(BSModalUpdateView):
@@ -438,12 +506,38 @@ class GuiaNubeFactEnviarView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_nubefact = False
+        error_peso = False
+        error_transportista_placa_numero = False
+        error_transportista_placa_numero_cero_guion = False
+        error_transporte_privado = False
         context['titulo'] = 'Error de guardar'
         if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
             error_nubefact = True
-        
+        for detalle in self.get_object().detalles:
+            if not detalle.peso:
+                error_peso = True
+        if not self.get_object().transportista: #Transporte privado
+            if not self.get_object().conductor_tipo_documento or not self.get_object().conductor_numero_documento or not self.get_object().conductor_nombre or not self.get_object().conductor_apellidos or not self.get_object().conductor_numero_licencia:
+                error_transporte_privado = True
+        if not self.get_object().placa_numero:
+            error_transportista_placa_numero = True
+        if '0' in self.get_object().placa_numero or '-' in self.get_object().placa_numero:
+            error_transportista_placa_numero_cero_guion = True
+    
         if error_nubefact:
             context['texto'] = 'No hay una ruta para envío a NubeFact'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_peso:
+            context['texto'] = 'Falta registrar los pesos de los materiales.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_transportista_placa_numero:
+            context['texto'] = 'Registrar la placa del transportista.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_transportista_placa_numero_cero_guion:
+            context['texto'] = 'La placa no debe tener ceros ni guiones.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_transporte_privado:
+            context['texto'] = 'Ingresar los datos del conductor de transporte privado.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(GuiaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
 

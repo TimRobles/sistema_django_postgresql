@@ -5,6 +5,7 @@ from applications.comprobante_despacho.managers import GuiaVentaManager
 from applications.funciones import numeroXn
 
 from applications.datos_globales.models import Distrito, SeriesComprobante, Unidad
+from applications.logistica.models import Despacho
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.envio_clientes.models import Transportista
@@ -23,7 +24,9 @@ class Guia(models.Model):
     transportista = models.ForeignKey(Transportista, on_delete=models.PROTECT, blank=True, null=True)
     conductor_tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT, blank=True, null=True)
     conductor_numero_documento = models.CharField('Número de Documento', max_length=15, blank=True, null=True)
-    conductor_denominacion = models.CharField('Nombre completo', max_length=100, blank=True, null=True)
+    conductor_nombre = models.CharField('Nombre', max_length=250, blank=True, null=True)
+    conductor_apellidos = models.CharField('Apellidos', max_length=250, blank=True, null=True)
+    conductor_numero_licencia = models.CharField('Número de Licencia', max_length=10, blank=True, null=True)
     placa_numero = models.CharField('Número de placa', max_length=8, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True, max_length=1000)
     motivo_traslado = models.CharField('Motivo de Traslado', choices=MOTIVO_TRASLADO, default='01', max_length=2)
@@ -33,6 +36,7 @@ class Guia(models.Model):
     ubigeo_partida = models.ForeignKey(Distrito, on_delete=models.PROTECT, related_name='Guia_ubigeo_partida',blank=True, null=True)
     ubigeo_destino = models.ForeignKey(Distrito, on_delete=models.PROTECT, related_name='Guia_ubigeo_destino',blank=True, null=True)
     motivo_anulacion = models.CharField('Motivo de Anulación', max_length=100, blank=True, null=True)
+    despacho = models.ForeignKey(Despacho, on_delete=models.CASCADE, related_name='Guia_despacho', blank=True, null=True)
     nubefact = models.URLField(max_length=400, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_DOCUMENTO, default=1)
    
@@ -89,6 +93,10 @@ class GuiaDetalle(models.Model):
     class Meta:
         verbose_name = 'Guia Detalle'
         verbose_name_plural = 'Guias Detalle'
+        ordering = [
+            'guia',
+            'item',
+        ]
 
     @property
     def producto(self):

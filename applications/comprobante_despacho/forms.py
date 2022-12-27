@@ -2,7 +2,7 @@ from datetime import date
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.envio_clientes.models import Transportista
-from applications.comprobante_despacho.models import Guia
+from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import Distrito, SeriesComprobante
 from applications.sede.models import Sede
@@ -18,6 +18,19 @@ class GuiaTransportistaForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(GuiaTransportistaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class GuiaDetallePesoForm(BSModalModelForm):
+    class Meta:
+        model = GuiaDetalle
+        fields=(
+            'peso',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaDetallePesoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -104,7 +117,9 @@ class GuiaConductorForm(BSModalModelForm):
         fields=(
             'conductor_tipo_documento',
             'conductor_numero_documento',
-            'conductor_denominacion',
+            'conductor_nombre',
+            'conductor_apellidos',
+            'conductor_numero_licencia',
             'placa_numero',
             )
 

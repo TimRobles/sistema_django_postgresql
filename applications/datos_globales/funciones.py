@@ -132,7 +132,7 @@ def anularDocumento(tipo_de_comprobante, serie, numero, motivo):
         return None
 
 
-def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, observaciones, motivo_de_traslado, peso_bruto_total, numero_de_bultos, tipo_de_transporte, fecha_de_inicio_de_traslado, transportista_documento_tipo, transportista_documento_numero, transportista_denominacion, transportista_placa_numero, conductor_documento_tipo, conductor_documento_numero, conductor_denominacion, punto_de_partida_ubigeo, punto_de_partida_direccion, punto_de_llegada_ubigeo, punto_de_llegada_direccion, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, formato_de_pdf, productos):
+def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, observaciones, motivo_de_traslado, peso_bruto_total, numero_de_bultos, tipo_de_transporte, fecha_de_inicio_de_traslado, transportista_documento_tipo, transportista_documento_numero, transportista_denominacion, transportista_placa_numero, conductor_documento_tipo, conductor_documento_numero, conductor_nombre, conductor_apellidos, conductor_numero_licencia, punto_de_partida_ubigeo, punto_de_partida_direccion, punto_de_llegada_ubigeo, punto_de_llegada_direccion, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, formato_de_pdf, productos):
     try:
         data = {}
         data['operacion'] = "generar_guia"
@@ -171,7 +171,9 @@ def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, c
         data["transportista_placa_numero"] = numero_espacio(transportista_placa_numero)
         data["conductor_documento_tipo"] = conductor_documento_tipo
         data["conductor_documento_numero"] = conductor_documento_numero
-        data["conductor_denominacion"] = conductor_denominacion
+        data["conductor_nombre"] = conductor_nombre
+        data["conductor_apellidos"] = conductor_apellidos
+        data["conductor_numero_licencia"] = conductor_numero_licencia
         data["punto_de_partida_ubigeo"] = punto_de_partida_ubigeo
         data["punto_de_partida_direccion"] = punto_de_partida_direccion
         data["punto_de_llegada_ubigeo"] = punto_de_llegada_ubigeo

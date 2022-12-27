@@ -1500,6 +1500,7 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
                 sociedad=self.object.sociedad,
                 serie_comprobante=serie_comprobante,
                 cliente=self.object.cliente,
+                despacho=self.object,
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )

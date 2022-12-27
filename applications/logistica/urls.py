@@ -36,7 +36,7 @@ urlDespacho = [
     path('despacho/anular/<pk>/', views.DespachoAnularView.as_view(), name='despacho_anular'),
     path('despacho/detalle/<pk>/', views.DespachoDetailView.as_view(), name='despacho_detalle'),
     path('despacho/detalle-tabla/<pk>/', views.DespachoDetailTabla, name='despacho_detalle_tabla'),
-    path('despacho-detalle/generar-guia/<pk>/', views.DespachoGenerarGuiaView.as_view(), name='despacho_generar_guia'),
+    path('despacho/generar-guia/<pk>/', views.DespachoGenerarGuiaView.as_view(), name='despacho_generar_guia'),
 ]
 urlpatterns = [
     path('solicitud-prestamo-materiales/', views.SolicitudPrestamoMaterialesListView.as_view(), name='solicitud_prestamo_materiales_inicio'),

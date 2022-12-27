@@ -41,12 +41,6 @@
         <a href="{% url 'logistica_app:despacho_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
 
-    <p>Series</p>
-    
-    {% for movimiento in series_buscar %}
-    <p>{{ movimiento.Serie_serie_movimiento_almacen.all }}</p>
-    {% endfor %}
-        
     <div id="tabla">
         {% include 'logistica/despacho/detalle_tabla.html' %}
     </div>

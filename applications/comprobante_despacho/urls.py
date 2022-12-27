@@ -17,13 +17,17 @@ urlpatterns = [
     path('guia/motivo-traslado/<pk>/', views.GuiaMotivoTrasladoView.as_view(), name='guia_motivo_traslado'),
     path('guia/fecha-traslado/<pk>/', views.GuiaFechaTrasladoView.as_view(), name='guia_fecha_traslado'),
     path('guia/transportista/<pk>/', views.GuiaTransportistaView.as_view(), name='guia_transportista'),
+    path('guia/transportista/limpiar/<pk>/', views.GuiaTransportistaLimpiarView.as_view(), name='guia_transportista_limpiar'),
     path('guia/partida/<pk>/', views.GuiaPartidaView.as_view(), name='guia_partida'),
     path('guia/destino/<pk>/', views.GuiaDestinoView.as_view(), name='guia_destino'),
     path('guia/bultos/<pk>/', views.GuiaBultosView.as_view(), name='guia_bultos'),
     path('guia/conductor/<pk>/', views.GuiaConductorView.as_view(), name='guia_conductor'),
+    path('guia/conductor/limpiar/<pk>/', views.GuiaConductorLimpiarView.as_view(), name='guia_conductor_limpiar'),
     path('guia/cliente/<pk>/', views.GuiaClienteView.as_view(), name='guia_cliente'),
     path('guia/serie/<pk>/', views.GuiaSerieUpdateView.as_view(), name='guia_serie'),
     path('guia/cliente-interlocutor/<int:id_cliente>/', views.ClienteInterlocutorView, name='guia_cliente_interlocutor'),
+    
+    path('guia-detalle/peso/<pk>/', views.GuiaDetallePesoView.as_view(), name='guia_detalle_peso'),
     
     path('guia/nubefact/enviar/<pk>/', views.GuiaNubeFactEnviarView.as_view(), name='guia_nubefact_enviar'),
     path('guia/nubefact/detalle/<pk>/', views.GuiaNubefactRespuestaDetailView.as_view(), name='guia_nubefact_detalle'),

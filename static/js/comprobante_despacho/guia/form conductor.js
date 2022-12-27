@@ -31,7 +31,8 @@ function ConsultarRuc() {
 
 function ConsultarDni() {
     $dni = $('#id_conductor_numero_documento')[0].value;
-    $nombre = $('#id_conductor_denominacion')[0];
+    $nombre = $('#id_conductor_nombre')[0];
+    $apellidos = $('#id_conductor_apellidos')[0];
     $boton = $('#consultar-documento')[0];
     
     url = '/consulta-dni/' + $dni;
@@ -43,10 +44,12 @@ function ConsultarDni() {
             $respuesta = JSON.parse(xhr.responseText);
             $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
 
-            $nombre.value = $info['nombre_completo'];
+            $nombre.value = $info['nombre'];
+            $apellidos.value = $info['apellidos'];
         }else{
             $respuesta = false;
             $nombre.value = "";
+            $apellidos.value = "";
             console.log("Error")
             Swal.fire({
                 title: "¡DNI inválido!",

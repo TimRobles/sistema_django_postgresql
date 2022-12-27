@@ -81,14 +81,18 @@ def ConsultaRucView(request, ruc):
 def ConsultaDniView(request, dni):
     data = dict()
     if request.method == 'GET':
-        datos_persona = consulta_dni(dni)
-        informacion = simplejson.dumps({
-                            'nombre_completo' : datos_persona['cliente'],
-                        })
-        # datos_persona = consulta_dni2(dni)
+        # datos_persona = consulta_dni(dni)
         # informacion = simplejson.dumps({
-        #                     'nombre_completo' : "%s %s %s" % (datos_persona['nombres'], datos_persona['apellidoPaterno'], datos_persona['apellidoMaterno']),
+        #                     'nombre_completo' : datos_persona['cliente'],
+        #                     'nombre' : " ".join(datos_persona['cliente'].split(' ')[:-2]),
+        #                     'apellidos' : " ".join(datos_persona['cliente'].split(' ')[-2:]),
         #                 })
+        datos_persona = consulta_dni2(dni)
+        informacion = simplejson.dumps({
+                            'nombre_completo' : "%s %s %s" % (datos_persona['nombres'], datos_persona['apellidoPaterno'], datos_persona['apellidoMaterno']),
+                            'nombre' : "%s" % (datos_persona['nombres']),
+                            'apellidos' : "%s %s" % (datos_persona['apellidoPaterno'], datos_persona['apellidoMaterno']),
+                        })
 
         data['info'] = render_to_string(
             'includes/info.html',

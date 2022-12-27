@@ -84,7 +84,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_cliente' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Interlocutor">
@@ -93,7 +93,7 @@
                         {% endif %}
                     </td>
                 </tr>
-                {% if not guia.conductor_denominacion %}
+                {% if not guia.conductor_nombre %}
                 <tr>
                     <th class="pe-2">Transportista:</th>
                     <td>
@@ -102,11 +102,20 @@
                         {% endif %}    
                     </td>
                     <td rowspan="2">
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_transportista' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Transportista">
                             Transportista
+                        </button>
+                        {% endif %}
+                    </td>
+                    <td rowspan="2">
+                        {% if guia.estado == 1 or guia.estado == 6 %}
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_transportista_limpiar' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="delete btn btn-danger" title="Limpiar Transportista">
+                            Limpiar
                         </button>
                         {% endif %}
                     </td>
@@ -130,12 +139,15 @@
                 <tr>
                     <th class="pe-2">Conductor:</th>
                     <td>
-                        {% if guia.conductor_denominacion %}
-                        {{guia.conductor_denominacion}}
-                        {% endif %}    
+                        {% if guia.conductor_nombre %}
+                        {{ guia.conductor_nombre }}
+                        {% endif %}
+                        {% if guia.conductor_apellidos %}
+                        {{ guia.conductor_apellidos }}
+                        {% endif %}
                     </td>
-                    <td rowspan="3">
-                        {% if guia.estado == 1 %}
+                    <td rowspan="4">
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_conductor' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Conductor">
@@ -143,16 +155,37 @@
                         </button>
                         {% endif %}
                     </td>
+                    <td rowspan="4">
+                        {% if guia.estado == 1 or guia.estado == 6 %}
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_conductor_limpiar' guia.id%}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="delete btn btn-danger" title="Limpiar Conductor">
+                            Limpiar
+                        </button>
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">
-                        {% if guia.conductor_denominacion %}
+                        {% if guia.conductor_nombre %}
+                        Licencia Conductor:
+                        {% endif %}
+                    </th>
+                    <td>
+                        {% if guia.conductor_nombre %}
+                        {{ guia.conductor_numero_licencia }}
+                        {% endif %}    
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">
+                        {% if guia.conductor_nombre %}
                         {{ guia.conductor_tipo_documento|diccionario_tipo_documento }}
                         Conductor:
                         {% endif %}
                     </th>
                     <td>
-                        {% if guia.conductor_denominacion %}
+                        {% if guia.conductor_nombre %}
                         {{ guia.conductor_numero_documento }}
                         {% endif %}    
                     </td>
@@ -178,7 +211,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_bultos' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="">
@@ -202,7 +235,7 @@
                     <th class="pe-2">Fecha de Emisión:</th>
                     <td>{{ guia.fecha_emision|date:'d/m/Y' }}</td>
                     <td class="px-2" rowspan="2">
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_fecha_traslado' guia.id %}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary text-nowrap">
@@ -230,7 +263,7 @@
                         ({{ nubefact_acceso }})
                     </td>
                     <td class="px-2" rowspan="2">
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_serie' guia.id %}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary text-nowrap">
@@ -262,7 +295,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_partida' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             data-modal="modal-xl"
@@ -286,7 +319,7 @@
                         {% endif %}
                     </td>
                     <td class="px-2">
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_destino' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             data-modal="modal-xl"
@@ -305,7 +338,7 @@
                     <th class="pe-2">Motivo de Traslado:</th>
                     <td>{{ guia.get_motivo_traslado_display }}</td>
                     <td class="px-2 text-nowrap">
-                        {% if guia.estado == 1 %}
+                        {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_motivo_traslado' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             data-modal="modal-xl"
@@ -351,6 +384,7 @@
                 <th class="text-end">Unidad</th>
                 <th class="text-end">Peso</th>
                 <th class="text-end">Peso Total</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -362,6 +396,15 @@
                     <td class="text-end">{{ material.unidad }}</td>
                     <td class="text-end">{{ material.peso|redondear|intcomma }} Kg</td>
                     <td class="text-end">{{ material.peso_total|redondear|intcomma }} Kg</td>
+                    <td class="text-center text-nowrap">
+                        {% if guia.estado == 1 or guia.estado == 6 %}
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_detalle_peso' material.id %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="update btn btn-sm btn-warning" title="Actualizar Peso">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>        
