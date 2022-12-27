@@ -1,0 +1,49 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Número de Traspaso: </th>
+                    <td>{{ contexto_traspaso_stock.nro_traspaso|numeroXn:6 }}</td>
+                    <th class="px-2">Encargado: </th>
+                    <td>{{ contexto_traspaso_stock.encargado }}</td>
+                    <th class="px-2">Sede: </th>
+                    <td>{{ contexto_traspaso_stock.sede }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Almacén</th>
+                <th>Tipo Stock Inicial</th>
+                <th class="text-end">Cantidad</th>
+                <th>Tipo Stock Final</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in contexto_traspaso_stock_detalle %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.material }}</td>
+                    <td>{{ material.almacen }}</td>
+                    <td>{{ material.tipo_stock_inicial }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td>{{ material.tipo_stock_final }}</td>
+                    <td class="text-center text-nowrap">
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -7,6 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 from applications.datos_globales.models import Unidad
 from django.conf import settings
 from applications.variables import ESTADOS_TRASLADO_PRODUCTO, ESTADOS_TRASLADO_PRODUCTO_DETALLE
+from applications.material.models import Material
+from applications.movimiento_almacen.models import TipoStock
 
 
 class MotivoTraslado(models.Model):
@@ -135,3 +137,50 @@ class RecepcionTrasladoProductoDetalle(models.Model):
     def __str__(self):
         return str(self.id)
 
+
+class TraspasoStock(models.Model):
+    ESTADOS_TRASPASO_STOCK = (
+        (1, 'EN PROCESO'),
+        (2, 'CONCLUIDO'),
+        (3, 'ANULADO'),
+        )
+    nro_traspaso = models.CharField('Nro. Traspaso', max_length=100,blank=True, null=True)
+    encargado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)  
+    sede = models.ForeignKey(Sede, on_delete=models.PROTECT, blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS_TRASPASO_STOCK, default=1, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False, blank=True, null=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TraspasoStock_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TraspasoStock_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Traspaso Stock'
+        verbose_name_plural = 'Traspasos Stock'
+        ordering = ['-nro_traspaso',]
+
+    def __str__(self):
+        return str(self.nro_traspaso)
+
+
+class TraspasoStockDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    traspaso_stock = models.ForeignKey(TraspasoStock, on_delete=models.CASCADE)
+    material = models.ForeignKey(Material, blank=True, null=True, on_delete=models.PROTECT)
+    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
+    tipo_stock_inicial = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_inicial', on_delete=models.PROTECT,blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad de Traspaso', max_digits=22, decimal_places=10,blank=True, null=True)
+    tipo_stock_final = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_final', on_delete=models.PROTECT,blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TraspasoStockDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TraspasoStockDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Traspaso Stock Detalle'
+        verbose_name_plural = 'Traspasos Stock Detalle'
+
+    def __str__(self):
+        return str(self.id)

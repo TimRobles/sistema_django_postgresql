@@ -38,4 +38,12 @@ urlpatterns = [
 
     path('motivo-traslado/crear/', views.MotivoTrasladoCreateView.as_view(), name='motivo_traslado_crear'),
 
+    path('traspaso-stock/', views.TraspasoStockListView.as_view(), name='traspaso_stock_inicio'),
+    path('traspaso-stock-tabla/', views.TraspasoStockTabla, name='traspaso_stock_tabla'),
+    path('traspaso-stock/registrar/', views.TraspasoStockCreateView.as_view(), name='traspaso_stock_registrar'),
+    path('traspaso-stock/actualizar/<pk>', views.TraspasoStockUpdateView.as_view(), name='traspaso_stock_actualizar'),
+    path('traspaso-stock/concluir/<pk>/', views.TraspasoStockConcluirView.as_view(), name='traspaso_stock_concluir'),
+    path('traspaso-stock/detalle/<pk>/', views.TraspasoStockDetailView.as_view(), name='traspaso_stock_detalle'),
+    path('traspaso-stock/detalle-tabla/<pk>/', views.TraspasoStockDetailTabla, name='traspaso_stock_detalle_tabla'),
+    path('traspaso-stock-detalle/registrar/<int:traspaso_stock_id>/', views.TraspasoStockDetalleCreateView.as_view(), name='traspaso_stock_detalle_registrar'),
  ]

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Traspaso Stock
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Traspaso Stock
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'traslado_producto_app:traspaso_stock_registrar' %}"
+            data-table-url="{% url 'traslado_producto_app:traspaso_stock_tabla' %}">
+            Registrar Nuevo
+        </button>
+    </h3>
+    <br>
+    <div class="table-responsive" id="tabla">
+        {% include 'traslado_producto/traspaso_stock/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

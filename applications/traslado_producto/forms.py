@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from applications.sede.models import Sede
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import EnvioTrasladoProducto, EnvioTrasladoProductoDetalle, MotivoTraslado, RecepcionTrasladoProducto, RecepcionTrasladoProductoDetalle 
+from .models import EnvioTrasladoProducto, EnvioTrasladoProductoDetalle, MotivoTraslado, RecepcionTrasladoProducto, RecepcionTrasladoProductoDetalle, TraspasoStock, TraspasoStockDetalle 
 from applications.material.models import Material
 
 
@@ -244,3 +244,35 @@ class MotivoTrasladoForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['visible'].widget.attrs['class'] = 'form-check-input'
+
+
+class TraspasoStockForm(BSModalModelForm):
+    class Meta:
+        model = TraspasoStock
+        fields = (
+            'encargado',
+            'sede',
+            'observaciones',
+            )
+        
+    def __init__(self, *args, **kwargs):
+        super(TraspasoStockForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TraspasoStockDetalleForm(BSModalModelForm):
+    class Meta:
+        model = TraspasoStockDetalle
+        fields = (
+            'material',
+            'almacen',
+            'tipo_stock_inicial',
+            'cantidad',
+            'tipo_stock_final',
+            )
+        
+    def __init__(self, *args, **kwargs):
+        super(TraspasoStockDetalleForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

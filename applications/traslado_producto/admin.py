@@ -5,6 +5,8 @@ from .models import (
     EnvioTrasladoProductoDetalle,
     RecepcionTrasladoProducto,
     RecepcionTrasladoProductoDetalle,
+    TraspasoStock,
+    TraspasoStockDetalle,
 )
 
 @admin.register(MotivoTraslado)
@@ -123,3 +125,47 @@ class RecepcionTrasladoProductoDetalleAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+@admin.register(TraspasoStock)
+class TraspasoStockAdmin(admin.ModelAdmin):
+    list_display = (
+        'nro_traspaso',
+        'encargado',
+        'sede',
+        'observaciones',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(TraspasoStockDetalle)
+class TraspasoStockDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'item',
+        'traspaso_stock',
+        'material',
+        'almacen',
+        'tipo_stock_inicial',
+        'cantidad',
+        'tipo_stock_final',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+        
