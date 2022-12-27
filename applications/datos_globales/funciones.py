@@ -199,3 +199,35 @@ def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, c
         print(e)
         print("**************************************************")
         return None
+
+
+def consultarDocumento(tipo_de_comprobante, serie, numero):
+    try:
+        data = {}
+        data['operacion'] = "consultar_comprobante"
+        data['tipo_de_comprobante'] = tipo_de_comprobante
+        data["serie"] = serie
+        data["numero"] = numero
+        return data
+
+    except Exception as e:
+        print("**************************************************")
+        print(e)
+        print("**************************************************")
+        return None
+        
+
+def consultarGuia(tipo_de_comprobante, serie, numero):
+    try:
+        data = {}
+        data['operacion'] = "consultar_guia"
+        data['tipo_de_comprobante'] = tipo_de_comprobante
+        data["serie"] = serie
+        data["numero"] = numero
+        return data
+
+    except Exception as e:
+        print("**************************************************")
+        print(e)
+        print("**************************************************")
+        return None

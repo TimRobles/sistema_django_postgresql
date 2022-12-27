@@ -31,5 +31,6 @@ urlpatterns = [
     
     path('guia/nubefact/enviar/<pk>/', views.GuiaNubeFactEnviarView.as_view(), name='guia_nubefact_enviar'),
     path('guia/nubefact/detalle/<pk>/', views.GuiaNubefactRespuestaDetailView.as_view(), name='guia_nubefact_detalle'),
+    path('guia/nubefact/consultar/<pk>/', views.GuiaNubeFactConsultarView.as_view(), name='guia_nubefact_consultar'),
 
 ]

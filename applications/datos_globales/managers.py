@@ -50,7 +50,10 @@ class NubefactRespuestaManager(models.Manager):
                 content_type = ContentType.objects.get_for_model(obj),
                 id_registro = obj.id
             ).exclude(error=True).latest('updated_at')
-            return filtro
+            if filtro.respuesta['enlace']:
+                return filtro
+            else:
+                return None
         except:
             pass
         return None

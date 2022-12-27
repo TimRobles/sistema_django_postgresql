@@ -38,9 +38,6 @@
     <div class="col-auto">
         <a href="{{ url_nubefact|get_enlace_nubefact }}" class="btn btn-primary" target="_blank">URL Nubefact</a>
     </div>
-    {% endif %}
-
-    {% if url_nubefact %}
     <div class="col-auto">
         <a href="{{ url_nubefact|get_enlace_pdf_nubefact }}" class="btn btn-danger" target="_blank">PDF Nubefact</a>
     </div>
@@ -51,6 +48,12 @@
         <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_detalle' guia.id %}"
             class="read btn btn-info">
             Movimientos NubeFact
+        </button>
+    </div>
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_consultar' guia.id %}"
+            class="delete btn btn-warning">
+            Consultar a NubeFact
         </button>
     </div>
     {% endif %}
@@ -90,6 +93,14 @@
                             class="update btn btn-primary" title="Seleccionar Interlocutor">
                             Interlocutor
                         </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Correos:</th>
+                    <td>
+                        {% if guia.cliente.correos %}
+                        {{ guia.cliente.correos }}   
                         {% endif %}
                     </td>
                 </tr>

@@ -251,3 +251,39 @@ def anular_nubefact(obj, user):
     token = acceso_nubefact.acceso.token
     respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
     return respuesta_nubefact
+
+
+def consultar_documento(obj, user):
+    tipo_de_comprobante = obj.tipo_comprobante
+    serie = obj.serie_comprobante.serie
+    if hasattr(obj, 'numero_boleta'):
+        numero = obj.numero_boleta
+    elif hasattr(obj, 'numero_factura'):
+        numero = obj.numero_factura
+    elif hasattr(obj, 'numero_guia'):
+        numero = obj.numero_guia
+    data = funciones.consultarDocumento(tipo_de_comprobante, serie, numero)
+
+    acceso_nubefact = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.envio(obj.sociedad, ContentType.objects.get_for_model(obj))
+    ruta = acceso_nubefact.acceso.ruta
+    token = acceso_nubefact.acceso.token
+    respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
+    return respuesta_nubefact
+
+
+def consultar_guia(obj, user):
+    tipo_de_comprobante = obj.tipo_comprobante
+    serie = obj.serie_comprobante.serie
+    if hasattr(obj, 'numero_boleta'):
+        numero = obj.numero_boleta
+    elif hasattr(obj, 'numero_factura'):
+        numero = obj.numero_factura
+    elif hasattr(obj, 'numero_guia'):
+        numero = obj.numero_guia
+    data = funciones.consultarGuia(tipo_de_comprobante, serie, numero)
+
+    acceso_nubefact = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.envio(obj.sociedad, ContentType.objects.get_for_model(obj))
+    ruta = acceso_nubefact.acceso.ruta
+    token = acceso_nubefact.acceso.token
+    respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
+    return respuesta_nubefact

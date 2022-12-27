@@ -1,6 +1,6 @@
 import requests
 from django import forms
-from applications.comprobante_venta.funciones import anular_nubefact, guia_nubefact
+from applications.comprobante_venta.funciones import anular_nubefact, consultar_guia, guia_nubefact
 from applications.funciones import registrar_excepcion
 from applications.importaciones import*
 from applications.logistica.models import Despacho
@@ -568,6 +568,41 @@ class GuiaNubeFactEnviarView(DeleteView):
         context['accion'] = 'Enviar'
         context['titulo'] = 'Guía de Remisión a NubeFact'
         context['texto'] = '¿Seguro de enviar la Guía de Remisión a NubeFact?'
+        context['item'] = self.get_object()
+        return context
+
+
+class GuiaNubeFactConsultarView(DeleteView):
+    model = Guia
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            respuesta = consultar_guia(obj, self.request.user)
+            if respuesta.error:
+                obj.estado = 6
+            elif respuesta.aceptado:
+                obj.estado = 4
+            else:
+                obj.estado = 5
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaNubeFactConsultarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Consultar'
+        context['titulo'] = 'Guía de Remisión a NubeFact'
+        context['texto'] = '¿Seguro de consultar la Guía de Remisión a NubeFact?'
         context['item'] = self.get_object()
         return context
 

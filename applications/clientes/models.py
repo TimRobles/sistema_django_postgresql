@@ -45,6 +45,13 @@ class Cliente(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def correos(self):
+        try:
+            return ", ".join(self.CorreoCliente_cliente.filter(estado=1))
+        except:
+            return ""
+
+    @property
     def direccion_anterior(self):
         try:
             return f'{self.direccion_fiscal} - {self.ubigeo_total}'

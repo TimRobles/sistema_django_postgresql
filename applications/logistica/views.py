@@ -1456,6 +1456,8 @@ class DespachoDetailView(PermissionRequiredMixin, DetailView):
         # despacho = Despacho.objects.get(id = self.kwargs['pk'])
         context = super(DespachoDetailView, self).get_context_data(**kwargs)
         context['materiales'] = self.object.DespachoDetalle_despacho.all()
+        if self.object.Guia_despacho.all():
+            context['url_guia'] = reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia' : self.object.Guia_despacho.latest('created_at').id})
         return context
 
 
@@ -1467,6 +1469,8 @@ def DespachoDetailTabla(request, pk):
         despacho = Despacho.objects.get(id=pk)
         context['contexto_despacho_detalle'] = despacho
         context['materiales'] = DespachoDetalle.objects.filter(despacho=despacho)
+        if despacho.Guia_despacho.all():
+            context['url_guia'] = reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia' : despacho.Guia_despacho.latest('created_at').id})
 
         data['table'] = render_to_string(
             template,

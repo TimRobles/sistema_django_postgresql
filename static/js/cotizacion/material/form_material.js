@@ -41,8 +41,21 @@ $(document).unbind().on('change', '#id_material', function (e) {
 
 $('#id_precio_lista')[0].disabled = true;
 
-$('.btn-primary').unbind().on('click', function () {
+$('.btn-primary-submit').unbind().on('click', function () {
     $precio_lista = $('#id_precio_lista')[0];
     console.log($precio_lista);
     $precio_lista.disabled = false;
 })
+
+function select_form() {
+    combos = document.getElementsByClassName('select2');
+    for (let index = 0; index < combos.length; index++) {
+        const element = combos[index];
+        element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control');
+        element.className = element.className.replace('select2-container--default', 'form-control');
+    }
+}
+
+setTimeout(() => {
+    select_form();
+}, 500);
