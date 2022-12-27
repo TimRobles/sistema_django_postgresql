@@ -65,6 +65,16 @@ class MovimientosAlmacenAdmin(admin.ModelAdmin):
         'updated_by',
         'updated_at',
         )
+    list_filter = (
+        'id',
+        'tipo_movimiento',
+        'tipo_stock',
+        )
+    search_fields = (
+        'id',
+        'tipo_movimiento',
+        'tipo_stock',
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
