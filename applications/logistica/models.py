@@ -136,6 +136,10 @@ class NotaSalida(models.Model):
         ordering = ['numero_salida',]
 
     @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    @property
     def pendiente(self):
         total = Decimal('0.00')
         try:

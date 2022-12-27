@@ -2,7 +2,7 @@ from django import forms
 from decimal import Decimal
 from applications.importaciones import *
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
-from applications.calidad.models import Serie
+from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
 from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, \
     SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieNotaSalidaDetalle
 from applications.logistica.forms import DespachoAnularForm, DespachoForm, DocumentoPrestamoMaterialesForm, \
@@ -14,7 +14,7 @@ from applications.logistica.pdf import generarSolicitudPrestamoMateriales
 from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcion
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
-from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 
 class SolicitudPrestamoMaterialesListView(PermissionRequiredMixin, ListView):
     permission_required = ('logistica.view_solicitudprestamomateriales')
@@ -646,12 +646,14 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                     self.object = self.get_object()
 
                     detalles = self.object.detalles
-                    print(self.object.solicitud_prestamo_materiales)
+
                     if self.object.solicitud_prestamo_materiales:
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
                         movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
+                        disponible = TipoStock.objects.get(codigo=3)
                         documento_anterior = self.object.solicitud_prestamo_materiales
-                
+
+                    consolidado = {}
                     for detalle in detalles:
                         movimiento_anterior = MovimientosAlmacen.objects.get(
                             content_type_producto=detalle.content_type,
@@ -663,7 +665,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                             id_registro_documento_proceso=documento_anterior.id,
                             sociedad=documento_anterior.sociedad,
                             movimiento_reversion=False,
-                        )
+                        )                        
 
                         movimiento_uno = MovimientosAlmacen.objects.create(
                             content_type_producto=detalle.content_type,
@@ -681,29 +683,62 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                             created_by=self.request.user,
                             updated_by=self.request.user,
                         )
+                        if not detalle.producto in consolidado:
+                            consolidado[detalle.producto] = Decimal('0.00')
+                        consolidado[detalle.producto] = consolidado[detalle.producto] + detalle.cantidad_salida
 
+                    for producto, cantidad in consolidado.items():
                         movimiento_dos = MovimientosAlmacen.objects.create(
-                            content_type_producto=detalle.content_type,
-                            id_registro_producto=detalle.id_registro,
-                            cantidad=detalle.cantidad_salida,
+                            content_type_producto=producto.content_type,
+                            id_registro_producto=producto.id,
+                            cantidad=cantidad,
+                            tipo_movimiento=movimiento_final,
+                            tipo_stock=disponible,
+                            signo_factor_multiplicador=-1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso=self.object.id,
+                            sociedad=self.object.sociedad,
+                            movimiento_anterior=None,
+                            movimiento_reversion=False,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+
+                        movimiento_tres = MovimientosAlmacen.objects.create(
+                            content_type_producto=producto.content_type,
+                            id_registro_producto=producto.id_registro,
+                            cantidad=cantidad,
                             tipo_movimiento=movimiento_final,
                             tipo_stock=movimiento_final.tipo_stock_final,
                             signo_factor_multiplicador=+1,
                             content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                             id_registro_documento_proceso=self.object.id,
-                            almacen=detalle.almacen,
                             sociedad=self.object.sociedad,
-                            movimiento_anterior=movimiento_uno,
+                            movimiento_anterior=movimiento_dos,
                             movimiento_reversion=False,
                             created_by=self.request.user,
                             updated_by=self.request.user,
                         )
-                    
+
+                        for detalle in detalles:
+                            for validar_serie in detalle.ValidarSerieNotaSalidaDetalle_nota_salida_detalle.all():
+                                serie = validar_serie.serie
+                                estado_serie = EstadoSerie.objects.get(numero_estado=9)
+                                HistorialEstadoSerie.objects.create(
+                                    serie=serie,
+                                    estado_serie=estado_serie,
+                                    created_by=self.request.user,
+                                    updated_by=self.request.user,
+                                )
+
+                                serie.serie_movimiento_almacen.add(movimiento_dos)
+                                serie.serie_movimiento_almacen.add(movimiento_tres)
+
+                                validar_serie.delete()
+                        
                     self.object.estado = 2
                     registro_guardar(self.object, self.request)
                     self.object.save()
-
-                    a = int('hola')
 
                     messages.success(request, MENSAJE_CONCLUIR_NOTA_SALIDA)
                 except Exception as ex:
@@ -752,7 +787,7 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                     movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
 
                 for detalle in detalles:
-                    movimiento_dos = MovimientosAlmacen.objects.get(
+                    movimiento_tres = MovimientosAlmacen.objects.get(
                         content_type_producto=detalle.content_type,
                         id_registro_producto=detalle.id_registro,
                         cantidad=detalle.cantidad_salida,
@@ -764,8 +799,10 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                         almacen=detalle.almacen,
                         sociedad=form.instance.sociedad,
                     )
+                    movimiento_dos = movimiento_tres.movimiento_anterior
                     movimiento_uno = movimiento_dos.movimiento_anterior
 
+                    movimiento_tres.delete()
                     movimiento_dos.delete()
                     movimiento_uno.delete()
                 messages.success(self.request, MENSAJE_ANULAR_NOTA_SALIDA)
@@ -1226,10 +1263,25 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                 self.object = self.get_object()
 
                 detalles = self.object.detalles
-                movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
-                movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                
+                if self.object.nota_salida.solicitud_prestamo_materiales:
+                    movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
+                    movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                    documento_anterior = self.object.nota_salida
 
                 for detalle in detalles:
+                    movimiento_anterior = MovimientosAlmacen.objects.get(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        tipo_movimiento=movimiento_inicial,
+                        tipo_stock=movimiento_inicial.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
+                        id_registro_documento_proceso=documento_anterior.id,
+                        sociedad=documento_anterior.sociedad,
+                        movimiento_reversion=False,
+                    )
+
                     movimiento_uno = MovimientosAlmacen.objects.create(
                         content_type_producto=detalle.content_type,
                         id_registro_producto=detalle.id_registro,
@@ -1239,7 +1291,6 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                         signo_factor_multiplicador=-1,
                         content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                         id_registro_documento_proceso=self.object.id,
-                        almacen=None,
                         sociedad=self.object.sociedad,
                         movimiento_anterior=None,
                         movimiento_reversion=False,
@@ -1256,13 +1307,25 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                         signo_factor_multiplicador=+1,
                         content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                         id_registro_documento_proceso=self.object.id,
-                        almacen=None,
                         sociedad=self.object.sociedad,
                         movimiento_anterior=movimiento_uno,
                         movimiento_reversion=False,
                         created_by=self.request.user,
                         updated_by=self.request.user,
                     )
+
+                    movimientos_serie_buscar = MovimientosAlmacen.objects.filter(
+                        tipo_movimiento = movimiento_inicial,
+                        tipo_stock = movimiento_inicial.tipo_stock_final,
+                        content_type_documento_proceso = documento_anterior.content_type,
+                        id_registro_documento_proceso = documento_anterior.id,
+                    )
+                    for movimientos_serie in movimientos_serie_buscar:
+                        for serie in movimientos_serie.Serie_serie_movimiento_almacen.all():
+                            if movimiento_uno.content_type_producto == serie.content_type and movimiento_uno.id_registro_producto == serie.id_registro:
+                                serie.serie_movimiento_almacen.add(movimiento_uno)
+                                serie.serie_movimiento_almacen.add(movimiento_dos)
+
 
                 self.object.estado = 2
                 registro_guardar(self.object, self.request)
@@ -1393,7 +1456,6 @@ class DespachoDetailView(PermissionRequiredMixin, DetailView):
         # despacho = Despacho.objects.get(id = self.kwargs['pk'])
         context = super(DespachoDetailView, self).get_context_data(**kwargs)
         context['materiales'] = self.object.DespachoDetalle_despacho.all()
-
         return context
 
 
