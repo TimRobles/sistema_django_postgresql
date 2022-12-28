@@ -652,6 +652,49 @@ class GuiaNubefactRespuestaDetailView(BSModalReadView):
         return context
 
 
+class GuiaEliminarView(DeleteView):
+    model = Guia
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # context = {}
+        # error_nubefact = False
+        # error_codigo_sunat = False
+        # context['titulo'] = 'Error de guardar'
+        # if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+        #     error_nubefact = True
+        # for detalle in self.get_object().GuiaDetalle_factura_venta.all():
+        #     if not detalle.codigo_producto_sunat:
+        #         error_codigo_sunat = True
+
+        # if error_nubefact:
+        #     context['texto'] = 'No hay una ruta para envío a NubeFact'
+        #     return render(request, 'includes/modal sin permiso.html', context)
+        # if error_codigo_sunat:
+        #     context['texto'] = 'Hay productos sin Código de Sunat'
+        #     return render(request, 'includes/modal sin permiso.html', context)
+        return super(GuiaEliminarView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.request.session['id_despacho']})
+
+    def delete(self, request, *args, **kwargs):
+        guia = self.get_object()
+        guia.despacho.estado = 2
+        guia.despacho.save()
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaEliminarView, self).get_context_data(**kwargs)
+        obj = self.get_object()
+        self.request.session['id_despacho'] = obj.despacho.id
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Guia'
+        context['texto'] = '¿Seguro de eliminar la Guia?'
+        context['item'] = self.get_object()
+        return context
+
+
 class ClienteInterlocutorForm(forms.Form):
     cliente_interlocutor = forms.ModelChoiceField(queryset = ClienteInterlocutor.objects.all(), required=False)
 

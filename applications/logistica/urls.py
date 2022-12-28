@@ -25,6 +25,7 @@ urlNotaSalida = [
     path('nota-salida-detalle/generar-despacho/<pk>/', views.NotaSalidaGenerarDespachoView.as_view(), name='nota_salida_generar_despacho'),
     
     path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'),
+    path('series/pdf/<pk>/', views.NotaSalidaSeriesPdf.as_view(), name='series_pdf'),
 ]
 
 urlDespacho = [

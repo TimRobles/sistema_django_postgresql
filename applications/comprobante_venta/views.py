@@ -6,7 +6,7 @@ from django.shortcuts import render
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import eliminarDeuda, generarDeuda
 from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaBuscarForm, BoletaVentaSerieForm, FacturaVentaAnularForm, FacturaVentaBuscarForm, FacturaVentaDetalleForm, FacturaVentaSerieForm
-from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, factura_nubefact
+from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, consultar_documento, factura_nubefact
 from applications.cotizacion.models import ConfirmacionVenta
 from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
 from applications.funciones import calculos_linea, consulta_ruc, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
@@ -762,14 +762,38 @@ class FacturaVentaNubefactRespuestaDetailView(BSModalReadView):
         return context
 
 
-class FacturaVentaNubefactConsultarView(BSModalReadView):
+class FacturaVentaNubefactConsultarView(DeleteView):
     model = FacturaVenta
-    template_name = "comprobante_venta/nubefact_respuesta.html"
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            respuesta = consultar_documento(obj, self.request.user)
+            if respuesta.error:
+                obj.estado = 6
+            elif respuesta.aceptado:
+                obj.estado = 4
+            else:
+                obj.estado = 5
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
     
     def get_context_data(self, **kwargs):
         context = super(FacturaVentaNubefactConsultarView, self).get_context_data(**kwargs)
-        context['titulo'] = 'Movimientos Nubefact'
-        context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
+        context['accion'] = 'Consultar'
+        context['titulo'] = 'Factura de Venta a NubeFact'
+        context['texto'] = '¿Seguro de consultar la Factura de Venta a NubeFact?'
+        context['item'] = self.get_object()
         return context
 
 
@@ -1371,6 +1395,41 @@ class BoletaVentaNubefactRespuestaDetailView(BSModalReadView):
         context = super(BoletaVentaNubefactRespuestaDetailView, self).get_context_data(**kwargs)
         context['titulo'] = 'Movimientos Nubefact'
         context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
+        return context
+
+
+class BoletaVentaNubefactConsultarView(DeleteView):
+    model = BoletaVenta
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            respuesta = consultar_documento(obj, self.request.user)
+            if respuesta.error:
+                obj.estado = 6
+            elif respuesta.aceptado:
+                obj.estado = 4
+            else:
+                obj.estado = 5
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaNubefactConsultarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Consultar'
+        context['titulo'] = 'Boleta de Venta a NubeFact'
+        context['texto'] = '¿Seguro de consultar la Boleta de Venta a NubeFact?'
+        context['item'] = self.get_object()
         return context
 
 

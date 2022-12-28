@@ -32,10 +32,7 @@
             </button>
         {% endif %}
         {% if contexto_despacho_detalle.estado == 5 %}
-            <a href="{{ url_guia }}"
-                class="badge bg-primary">
-                Ver Guía
-            </a>
+            <a href="{{ url_guia }}"><span class="badge bg-primary">Ver Guía</span></a>
         {% endif %}
         {% if contexto_despacho_detalle.estado == 2 or contexto_despacho_detalle.estado == 4 or contexto_despacho_detalle.estado == 6 %}
             <button data-form-url="{% url 'logistica_app:despacho_anular' contexto_despacho_detalle.id %}"
@@ -44,6 +41,8 @@
             </button>
         {% endif %}
         
+        <a href="{% url 'logistica_app:nota_salida_detalle' contexto_despacho_detalle.nota_salida.id %}"><span class="badge bg-primary">Ver Nota de Salida</span></a>
+        <a href="{% url 'logistica_app:series_pdf' contexto_despacho_detalle.nota_salida.id %}" target="_blank"><span class="badge bg-info">Ver Series</span></a>
         <a href="{% url 'logistica_app:despacho_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
 

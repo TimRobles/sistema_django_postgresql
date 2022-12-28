@@ -84,7 +84,7 @@
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                                 <i class="bi-x-lg"></i>
                             </button>
-                            <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.producto.id material.producto.content_type %}"
+                            <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' material.producto.id material.producto.content_type.id %}"
                                 class="read btn swatch-purple btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
                                 <i class="bi bi-box-seam"></i>

@@ -198,10 +198,10 @@ def stock_sede(content_type, id_registro, id_sociedad, id_sede):
     return vendible_sede(content_type, id_registro, id_sociedad, id_sede) + calidad_sede(content_type, id_registro, id_sociedad, id_sede)
 
 def stock_disponible(content_type, id_registro, id_sociedad, id_almacen=None):
-    return vendible(content_type, id_registro, id_sociedad, id_almacen)
+    return disponible(content_type, id_registro, id_sociedad, id_almacen)
 
 def stock_sede_disponible(content_type, id_registro, id_sociedad, id_sede):
-    return vendible_sede(content_type, id_registro, id_sociedad, id_sede)
+    return disponible_sede(content_type, id_registro, id_sociedad, id_sede)
 
 def en_camino(content_type, id_registro, id_sociedad):
     return transito(content_type, id_registro, id_sociedad) - confirmado_anticipo(content_type, id_registro, id_sociedad)

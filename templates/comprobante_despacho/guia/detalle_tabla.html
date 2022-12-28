@@ -43,20 +43,30 @@
     </div>
     {% endif %}
 
-    {% if respuestas_nubefact %}
-    <div class="col-auto ms-auto">
-        <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_detalle' guia.id %}"
-            class="read btn btn-info">
-            Movimientos NubeFact
-        </button>
+    <div class="col-auto ms-auto row">
+        {% if respuestas_nubefact %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_detalle' guia.id %}"
+                class="read btn btn-info">
+                Movimientos NubeFact
+            </button>
+        </div>
+        <div class="col-auto">
+            <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_consultar' guia.id %}"
+                class="delete btn btn-warning">
+                Consultar a NubeFact
+            </button>
+        </div>
+        {% endif %}
+        {% if guia.estado == 1 %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'comprobante_despacho_app:guia_eliminar' guia.id %}"
+                class="delete btn btn-danger">
+                Eliminar Guía
+            </button>
+        </div>
+        {% endif %}
     </div>
-    <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_consultar' guia.id %}"
-            class="delete btn btn-warning">
-            Consultar a NubeFact
-        </button>
-    </div>
-    {% endif %}
 </div>
 
 <div class="row mt-3">

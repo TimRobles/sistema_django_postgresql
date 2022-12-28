@@ -57,29 +57,37 @@
     </div>
     {% endif %}
     
-    {% if boleta.confirmacion %}
-    <div class="col-auto ms-auto">
-        <a href="{% url 'cotizacion_app:confirmacion_ver' boleta.confirmacion.id %}" class="btn btn-primary">Confirmación</a>
-    </div>
-    {% endif %}
+    <div class="col-auto ms-auto row">
+        {% if boleta.confirmacion %}
+        <div class="col-auto">
+            <a href="{% url 'cotizacion_app:confirmacion_ver' boleta.confirmacion.id %}" class="btn btn-primary">Confirmación</a>
+        </div>
+        {% endif %}
 
-    {% if not boleta.serie_comprobante %}
-    <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_eliminar' boleta.id %}"
-            class="delete btn btn-danger">
-            Anular en NubeFact
-        </button>
+        {% if not boleta.serie_comprobante %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_eliminar' boleta.id %}"
+                class="delete btn btn-danger">
+                Anular en NubeFact
+            </button>
+        </div>
+        {% endif %}
+        
+        {% if respuestas_nubefact %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_nubefact_detalle' boleta.id %}"
+                class="read btn btn-info">
+                Movimientos NubeFact
+            </button>
+        </div>
+        <div class="col-auto">
+            <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_nubefact_consultar' boleta.id %}"
+                class="delete btn btn-warning">
+                Consultar a NubeFact
+            </button>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-    
-    {% if respuestas_nubefact %}
-    <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_nubefact_detalle' boleta.id %}"
-            class="read btn btn-info">
-            Movimientos NubeFact
-        </button>
-    </div>
-    {% endif %}
 </div>
 
 <div class="row mt-3">
@@ -103,6 +111,14 @@
                     <td>
                         {% if boleta.cliente_interlocutor %}
                         {{ boleta.cliente_interlocutor.nombre_completo }}   
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Correos:</th>
+                    <td>
+                        {% if boleta.cliente.correos %}
+                        {{ boleta.cliente.correos }}   
                         {% endif %}
                     </td>
                 </tr>

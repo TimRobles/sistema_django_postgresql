@@ -11,7 +11,7 @@ from applications.logistica.forms import DespachoAnularForm, DespachoForm, Docum
     SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, \
     SolicitudPrestamoMaterialesAnularForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
-from applications.logistica.pdf import generarSolicitudPrestamoMateriales
+from applications.logistica.pdf import generarNotaSalidaSeries, generarSolicitudPrestamoMateriales
 from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcion
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
@@ -679,11 +679,11 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                             id_registro_producto=detalle.id_registro,
                             cantidad=detalle.cantidad_salida,
                             tipo_movimiento=movimiento_final,
-                            tipo_stock=movimiento_final.tipo_stock_inicial,
+                            tipo_stock=disponible,
                             signo_factor_multiplicador=-1,
                             content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                             id_registro_documento_proceso=self.object.id,
-                            almacen=None,
+                            almacen=detalle.almacen,
                             sociedad=self.object.sociedad,
                             movimiento_anterior=movimiento_anterior,
                             movimiento_reversion=False,
@@ -700,7 +700,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                             id_registro_producto=producto.id,
                             cantidad=cantidad,
                             tipo_movimiento=movimiento_final,
-                            tipo_stock=disponible,
+                            tipo_stock=movimiento_final.tipo_stock_inicial,
                             signo_factor_multiplicador=-1,
                             content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                             id_registro_documento_proceso=self.object.id,
@@ -1155,7 +1155,9 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
 
     model = NotaSalida
     template_name = "logistica/nota_salida/boton.html"
-    success_url = reverse_lazy('logistica_app:despacho_inicio')
+    
+    def get_success_url(self):
+        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.kwargs['despacho'].id})
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1225,6 +1227,7 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         )
                         item += 1
                 self.request.session['primero'] = False
+                self.kwargs['despacho'] = despacho
             registro_guardar(self.object, self.request)
             self.object.save()
             messages.success(request, MENSAJE_GENERAR_DESPACHO)
@@ -1602,3 +1605,57 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         context['titulo'] = "Guía"
         context['dar_baja'] = "true"
         return context
+
+
+class NotaSalidaSeriesPdf(View):
+    def get(self, request, *args, **kwargs):
+        obj = NotaSalida.objects.get(id=self.kwargs['pk'])
+
+        color = obj.sociedad.color
+        titulo = 'SERIES DE EQUIPOS'
+        vertical = True
+        logo = [obj.sociedad.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+
+        titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_salida, 6), obj.cliente)
+
+        Cabecera = {}
+        # Cabecera['numero_prestamo'] = numeroXn(obj.numero_prestamo, 6)
+        # Cabecera['fecha_prestamo'] = fecha_en_letras(obj.fecha_prestamo)
+        # Cabecera['razon_social'] = str(obj.cliente)
+        # Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
+        # Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
+        # Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
+        # Cabecera['interlocutor'] = str(obj.interlocutor_cliente)
+        # Cabecera['comentario'] = str(obj.comentario)
+
+        TablaEncabezado = ['Item',
+                           'Descripción',
+                           'Unidad',
+                           'Cantidad',
+                           'Observación',
+                           ]
+
+        # detalle = obj.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales
+        # solicitud_prestamo_materiales = detalle.all()
+
+        TablaDatos = []
+        # count = 1
+        # for solicitud in solicitud_prestamo_materiales:
+        #     fila = []
+        #     solicitud.material = solicitud.content_type.get_object_for_this_type(id=solicitud.id_registro)
+        #     fila.append(solicitud.item)
+        #     fila.append(intcomma(solicitud.material))
+        #     fila.append(intcomma(solicitud.material.unidad_base))
+        #     fila.append(intcomma(solicitud.cantidad_prestamo.quantize(Decimal('0.01'))))
+        #     fila.append(solicitud.observacion)
+
+        #     TablaDatos.append(fila)
+        #     count += 1
+
+        buf = generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
+
+        return respuesta

@@ -11,7 +11,7 @@ def retornar_fecha(movimiento):
 
 class MovimientoAlmacenManager(models.Manager):
     def ver_movimientos(self, content_type, id_registro):
-        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19, 22]
+        movimientos_fuera = [8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
         consulta = self.filter(
             content_type_producto = content_type,
             id_registro_producto = id_registro,
@@ -29,7 +29,7 @@ class MovimientoAlmacenManager(models.Manager):
         return lista, total
 
     def ver_stock(self, content_type, id_registro, tipo_stock):
-        movimientos_fuera = [9, 12, 14, 15, 16, 17, 19, 22]
+        movimientos_fuera = [8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
         lista_estados = list(tipo_stock)
         stocks = {}
         totales = {}

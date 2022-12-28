@@ -1,4 +1,4 @@
-from applications.material.funciones import stock
+from applications.material.funciones import stock, stock_disponible, stock_sede_disponible
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from applications.sede.models import Sede
@@ -191,7 +191,7 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
         self.fields['sede'].required = True
         self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         self.fields['almacen'].required = True
-        self.fields['stock'].initial = stock(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
+        self.fields['stock'].initial = stock_disponible(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
         self.fields['cantidad_salida'].required = True
         self.fields['cantidad_salida'].widget.attrs['min'] = 0
         self.fields['cantidad_prestamo'].disabled = True
@@ -200,6 +200,7 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
             sede = almacen.sede
             self.fields['sede'].initial = sede
             self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
+            self.fields['stock'].initial = stock_sede_disponible(ContentType.objects.get_for_model(material), material.id, self.id_sociedad, sede.id)
         except:
             pass
         for visible in self.visible_fields():

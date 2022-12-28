@@ -41,4 +41,5 @@ urlpatterns = [
     path('boleta-venta/nubefact/enviar/<pk>/', views.BoletaVentaNubeFactEnviarView.as_view(), name='boleta_venta_nubefact_enviar'),
     path('boleta-venta/nubefact/anular/<pk>/', views.BoletaVentaNubeFactAnularView.as_view(), name='boleta_venta_nubefact_anular'),
     path('boleta-venta/nubefact/detalle/<pk>/', views.BoletaVentaNubefactRespuestaDetailView.as_view(), name='boleta_venta_nubefact_detalle'),
+    path('boleta-venta/nubefact/consultar/<pk>/', views.BoletaVentaNubefactConsultarView.as_view(), name='boleta_venta_nubefact_consultar'),
 ]

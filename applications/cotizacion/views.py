@@ -1752,6 +1752,7 @@ class CotizacionVentaResumenView(BSModalReadView):
                 cuentas = CuentaBancariaSociedad.objects.filter(
                     sociedad=sociedad,
                     moneda=moneda,
+                    efectivo=False
                     )
                 sociedad.cuentas = cuentas
             moneda.sociedades = cotizacion_sociedad

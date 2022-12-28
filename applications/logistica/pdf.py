@@ -108,3 +108,20 @@ def generarSolicitudPrestamoMateriales(titulo, vertical, logo, pie_pagina, Cabec
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
     return buf
+
+###########################################################################################
+
+def generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color):
+    fuenteBase = "ComicNeue"
+    # data_cabecera = dataCabeceraSolicitudPrestamoMateriales(Cabecera, fuenteBase)
+    # data_tabla = dataSolicitudPrestamoMateriales(TablaEncabezado, TablaDatos, fuenteBase, color)
+    elementos = []
+    elementos.append(vacio())
+    # elementos.append(parrafoCentro('SOLICITUD DE PRÉSTAMO DE EQUIPOS', fuenteBase, 12, 'Bold'))
+    # elementos.append(data_cabecera)
+    # elementos.append(vacio(2.5))
+    # elementos.append(data_tabla)
+    
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+
+    return buf

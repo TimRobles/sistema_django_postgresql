@@ -76,53 +76,55 @@
     </div>
     {% endif %}
 
-    {% if cotizacion.cliente.estado_sunat == 1 and cotizacion.cliente.condicion_sunat == 1 %}
+    <div class="col-auto ms-auto row">
+        {% if cotizacion.cliente.estado_sunat == 1 and cotizacion.cliente.condicion_sunat == 1 %}
 
-    {% if cotizacion.estado > 1 and cotizacion.estado < 4 %}
-    <div class="col-auto ms-auto">
-        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar' cotizacion.id %}"
-            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-            class="delete btn btn-primary">
-            Confirmar
-        </button>
-    </div>
-    {% if cotizacion.estado != 3 %}
-    <div class="col-auto">
-        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar_anticipo' cotizacion.id %}"
-            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-            class="delete btn btn-primary">
-            Confirmar Anticipo
-        </button>
-    </div>
-    {% endif %}
+        {% if cotizacion.estado > 1 and cotizacion.estado < 4 %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar' cotizacion.id %}"
+                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                class="delete btn btn-primary">
+                Confirmar
+            </button>
+        </div>
+        {% if cotizacion.estado != 3 %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar_anticipo' cotizacion.id %}"
+                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                class="delete btn btn-primary">
+                Confirmar Anticipo
+            </button>
+        </div>
+        {% endif %}
 
-    {% endif %}
-    {% if cotizacion.estado > 3 and cotizacion.estado < 6 %}
-    <div class="col-auto ms-auto">
-        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar' cotizacion.id %}"
-            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-            class="delete btn btn-danger">
-            Anular Confirmación
-        </button>
-    </div>
-    {% endif %}
-    {% if cotizacion.estado == 6 %}
-    <div class="col-auto ms-auto">
-        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar_anticipo' cotizacion.id %}"
-            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-            class="delete btn btn-danger">
-            Anular Confirmación
-        </button>
-    </div>
-    {% endif %}
+        {% endif %}
+        {% if cotizacion.estado > 3 and cotizacion.estado < 6 %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar' cotizacion.id %}"
+                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                class="delete btn btn-danger">
+                Anular Confirmación
+            </button>
+        </div>
+        {% endif %}
+        {% if cotizacion.estado == 6 %}
+        <div class="col-auto">
+            <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar_anticipo' cotizacion.id %}"
+                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
+                class="delete btn btn-danger">
+                Anular Confirmación
+            </button>
+        </div>
+        {% endif %}
 
-    {% endif %}
+        {% endif %}
 
-    {% if cotizacion.estado > 3 and cotizacion.estado < 7 %}
-    <div class="col-auto">
-        <a href="{% url 'cotizacion_app:confirmacion_cotizacion_inicio' cotizacion.id  %}" class="btn btn-primary">Confirmaciones</a>
+        {% if cotizacion.estado > 3 and cotizacion.estado < 7 %}
+        <div class="col-auto">
+            <a href="{% url 'cotizacion_app:confirmacion_cotizacion_inicio' cotizacion.id  %}" class="btn btn-primary">Confirmaciones</a>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <div class="row mt-3">
@@ -156,6 +158,14 @@
                     <td>
                         {% if cotizacion.cliente_interlocutor %}
                         {{ cotizacion.cliente_interlocutor }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Correos:</th>
+                    <td>
+                        {% if cotizacion.cliente.correos %}
+                        {{ cotizacion.cliente.correos }}   
                         {% endif %}
                     </td>
                 </tr>
