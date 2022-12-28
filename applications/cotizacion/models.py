@@ -166,7 +166,6 @@ def cotizacion_venta_detalle_post_save(*args, **kwargs):
     obj.cotizacion_venta.total_exonerada = respuesta['total_exonerada']
     obj.cotizacion_venta.total_igv = respuesta['total_igv']
     obj.cotizacion_venta.total_gratuita = respuesta['total_gratuita']
-    obj.cotizacion_venta.otros_cargos = respuesta['total_otros_cargos']
     obj.cotizacion_venta.total = respuesta['total']
     obj.cotizacion_venta.save()
 
