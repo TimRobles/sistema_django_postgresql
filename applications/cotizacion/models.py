@@ -159,6 +159,14 @@ class CotizacionVentaDetalle(models.Model):
 def cotizacion_venta_detalle_post_save(*args, **kwargs):
     obj = kwargs['instance']
     respuesta = obtener_totales(obj.cotizacion_venta)
+    obj.cotizacion_venta.total_descuento = respuesta['total_descuento']
+    obj.cotizacion_venta.total_anticipo = respuesta['total_anticipo']
+    obj.cotizacion_venta.total_gravada = respuesta['total_gravada']
+    obj.cotizacion_venta.total_inafecta = respuesta['total_inafecta']
+    obj.cotizacion_venta.total_exonerada = respuesta['total_exonerada']
+    obj.cotizacion_venta.total_igv = respuesta['total_igv']
+    obj.cotizacion_venta.total_gratuita = respuesta['total_gratuita']
+    obj.cotizacion_venta.otros_cargos = respuesta['total_otros_cargos']
     obj.cotizacion_venta.total = respuesta['total']
     obj.cotizacion_venta.save()
 

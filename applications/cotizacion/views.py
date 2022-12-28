@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django import forms
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from applications.comprobante_venta.models import FacturaVentaDetalle
+from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
@@ -72,7 +73,7 @@ class CotizacionVentaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_vendedor'] = self.request.GET.get('vendedor')
         kwargs['filtro_fecha_cotizacion'] = self.request.GET.get('fecha_cotizacion')
         kwargs['filtro_fecha_validez'] = self.request.GET.get('fecha_validez')
-        kwargs['vendedores'] = get_user_model().objects.filter(id__in = [cotizacion.created_by.id for cotizacion in CotizacionVenta.objects.all()])
+        kwargs['vendedores'] = get_user_model().objects.filter(id__in = [cotizacion.vendedor.id for cotizacion in CotizacionVenta.objects.all()])
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -617,6 +618,20 @@ class CotizacionDescuentoGlobalUpdateView(BSModalUpdateView):
     form_class = CotizacionVentaDescuentoGlobalForm
     success_url = '.'
 
+    def form_valid(self, form):
+        respuesta = obtener_totales(form.instance)
+        form.instance.total_descuento = respuesta['total_descuento']
+        form.instance.total_anticipo = respuesta['total_anticipo']
+        form.instance.total_gravada = respuesta['total_gravada']
+        form.instance.total_inafecta = respuesta['total_inafecta']
+        form.instance.total_exonerada = respuesta['total_exonerada']
+        form.instance.total_igv = respuesta['total_igv']
+        form.instance.total_gratuita = respuesta['total_gratuita']
+        form.instance.otros_cargos = respuesta['total_otros_cargos']
+        form.instance.total = respuesta['total']
+        
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super(CotizacionDescuentoGlobalUpdateView, self).get_context_data(**kwargs)
         texto = []
@@ -694,6 +709,20 @@ class CotizacionOtrosCargosUpdateView(BSModalUpdateView):
     template_name = "cotizacion/cotizacion_venta/form_otros_cargos.html"
     form_class = CotizacionVentaOtrosCargosForm
     success_url = '.'
+
+    def form_valid(self, form):
+        respuesta = obtener_totales(form.instance)
+        form.instance.total_descuento = respuesta['total_descuento']
+        form.instance.total_anticipo = respuesta['total_anticipo']
+        form.instance.total_gravada = respuesta['total_gravada']
+        form.instance.total_inafecta = respuesta['total_inafecta']
+        form.instance.total_exonerada = respuesta['total_exonerada']
+        form.instance.total_igv = respuesta['total_igv']
+        form.instance.total_gratuita = respuesta['total_gratuita']
+        form.instance.otros_cargos = respuesta['total_otros_cargos']
+        form.instance.total = respuesta['total']
+        
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(CotizacionOtrosCargosUpdateView, self).get_context_data(**kwargs)
@@ -1672,7 +1701,7 @@ class CotizacionVentaSociedadPdfView(View):
         Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
         Cabecera['interlocutor'] = str(obj.cliente_interlocutor)
         Cabecera['fecha_validez'] = obj.fecha_validez.strftime('%d/%m/%Y')
-        Cabecera['vendedor'] = str(obj.created_by.get_full_name())
+        Cabecera['vendedor'] = str(nombre_usuario(obj.vendedor))
 
         TablaEncabezado = [ 'Item',
                             'Descripción',
