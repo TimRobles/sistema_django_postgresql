@@ -26,7 +26,6 @@ class NotaIngresoAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
-
 @admin.register(NotaIngresoDetalle)
 class NotaIngresoDetalleAdmin(admin.ModelAdmin):
     list_display = (
@@ -34,6 +33,7 @@ class NotaIngresoDetalleAdmin(admin.ModelAdmin):
         'item',
         'content_type',
         'id_registro',
+        'comprobante_compra_detalle',
         'proveedor',
         'cantidad_conteo',
         'almacen',
@@ -42,6 +42,9 @@ class NotaIngresoDetalleAdmin(admin.ModelAdmin):
         'created_by',
         'updated_at',
         'updated_by',
+        )
+    search_fields = (
+        'item',
         )
     
     def save_model(self, request, obj, form, change):
@@ -81,12 +84,16 @@ class NotaStockInicialDetalleAdmin(admin.ModelAdmin):
         'item',
         'content_type',
         'id_registro',
+        'producto',
         'cantidad_total',
         'nota_stock_inicial',
         'created_at',
         'created_by',
         'updated_at',
         'updated_by',
+        )
+    search_fields = (
+        'item',
         )
     
     def save_model(self, request, obj, form, change):
