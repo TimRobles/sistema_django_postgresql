@@ -79,6 +79,12 @@
             Movimientos NubeFact
         </button>
     </div>
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_nubefact_consultar' factura.id %}"
+            class="delete btn btn-warning">
+            Consultar a NubeFact
+        </button>
+    </div>
     {% endif %}
 </div>
 
@@ -119,6 +125,14 @@
                     <td>
                         {% if factura.cliente_interlocutor %}
                         {{ factura.cliente_interlocutor.nombre_completo }}   
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Correos:</th>
+                    <td>
+                        {% if factura.cliente.correos %}
+                        {{ factura.cliente.correos }}   
                         {% endif %}
                     </td>
                 </tr>

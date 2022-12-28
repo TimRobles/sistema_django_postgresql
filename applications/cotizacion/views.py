@@ -8,6 +8,7 @@ from applications.comprobante_venta.models import FacturaVentaDetalle
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
+from applications.logistica.models import NotaSalida
 from applications.material.funciones import calidad, en_camino, observacion, reservado, stock, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
@@ -1814,6 +1815,12 @@ class ConfirmarVerView(TemplateView):
         id_boleta = None
         if len(obj.BoletaVenta_confirmacion.exclude(estado=3)) == 1:
             id_boleta = obj.BoletaVenta_confirmacion.exclude(estado=3)[0].id
+        permiso_venta = False
+        if 'cotizacion.view_confirmacionventa' in self.request.user.get_all_permissions():
+            permiso_venta = True
+        permiso_logistica = False
+        if 'logistica.add_notasalida' in self.request.user.get_all_permissions():
+            permiso_logistica = True
 
         context = super(ConfirmarVerView, self).get_context_data(**kwargs)
         context['confirmacion'] = obj
@@ -1827,6 +1834,8 @@ class ConfirmarVerView(TemplateView):
         context['id_factura'] = id_factura
         context['id_factura_anticipo'] = id_factura_anticipo
         context['id_boleta'] = id_boleta
+        context['permiso_venta'] = permiso_venta
+        context['permiso_logistica'] = permiso_logistica
         
         return context
 
@@ -1873,6 +1882,17 @@ def ConfirmarVerTabla(request, id_confirmacion):
             request=request
         )
         return JsonResponse(data)
+
+
+class ConfirmacionPendienteSalidaView(TemplateView):
+    template_name = 'cotizacion/confirmacion/pendiente_salida.html'
+
+    def get_context_data(self, **kwargs):
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3)
+        
+        context = super(ConfirmacionPendienteSalidaView, self).get_context_data(**kwargs)
+        context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
+        return context
 
 
 class ConfirmacionVentaFormaPagoView(BSModalUpdateView):
@@ -2456,4 +2476,54 @@ class SolicitudCreditoRechazarView(DeleteView):
         context['titulo'] = "Solicitud de crédito"
         context['texto'] = "¿Está seguro de Rechazar la Solicitud de crédito?"
         context['item'] = self.object
+        return context
+
+
+class ConfirmacionNotaSalidaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_solicitudprestamomaterialesdetalle')
+
+    model = ConfirmacionVenta
+    template_name = "logistica/solicitud_prestamo_materiales/boton.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.nota_salida.id})
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        item = len(NotaSalida.objects.all())
+        try:
+            if self.request.session['primero']:
+                self.object = self.get_object()
+                confirmacion_venta = self.get_object()
+                nota_salida = NotaSalida.objects.create(
+                    numero_salida=item + 1,
+                    confirmacion_venta=confirmacion_venta,
+                    observacion_adicional="",
+                    motivo_anulacion="",
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+
+                self.request.session['primero'] = False
+                registro_guardar(self.object, self.request)
+                self.object.save()
+                messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        self.nota_salida = nota_salida
+        return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': nota_salida.id}))
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ConfirmacionNotaSalidaView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Nota Salida"
+        context['dar_baja'] = "true"
         return context

@@ -4,6 +4,7 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from django.db import models
 
 from applications.nota_ingreso.models import NotaIngresoDetalle
+from applications.sede.models import Sede
 
 def disponible(content_type, id_registro, id_sociedad, id_almacen=None):
     disponible = TipoStock.objects.get(codigo=3)
@@ -25,8 +26,34 @@ def disponible(content_type, id_registro, id_sociedad, id_almacen=None):
 
     return total
 
+def disponible_sede(content_type, id_registro, id_sociedad, id_sede):
+    disponible = TipoStock.objects.get(codigo=3)
+    total = Decimal('0.00')
+    try:
+        movimientos = MovimientosAlmacen.objects.filter(
+                        content_type_producto = content_type,
+                        id_registro_producto = id_registro,
+                        sociedad__id = id_sociedad,
+                    ).filter(
+                        tipo_stock = disponible,
+                    )
+        sede = Sede.objects.get(id=id_sede)
+        almacenes = []
+        for almacen in sede.Almacen_sede.filter(estado_alta_baja=1):
+            almacenes.append(almacen.id)
+        movimientos = movimientos.filter(almacen__id__in=almacenes)
+        for movimiento in movimientos:
+            total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+    except:
+        pass
+
+    return total
+
 def vendible(content_type, id_registro, id_sociedad, id_almacen=None):
     return disponible(content_type, id_registro, id_sociedad, id_almacen) - reservado(content_type, id_registro, id_sociedad) - confirmado(content_type, id_registro, id_sociedad) - prestado(content_type, id_registro, id_sociedad)
+
+def vendible_sede(content_type, id_registro, id_sociedad, id_sede):
+    return disponible_sede(content_type, id_registro, id_sociedad, id_sede) - reservado(content_type, id_registro, id_sociedad) - confirmado(content_type, id_registro, id_sociedad) - prestado(content_type, id_registro, id_sociedad)
 
 def reservado(content_type, id_registro, id_sociedad): #No tiene almacén
     reservado = TipoStock.objects.get(codigo=16)
@@ -121,6 +148,30 @@ def calidad(content_type, id_registro, id_sociedad, id_almacen=None):
 
     return total
 
+def calidad_sede(content_type, id_registro, id_sociedad, id_sede):
+    bloqueo_sin_serie = TipoStock.objects.get(id=4)
+    bloqueo_sin_qa = TipoStock.objects.get(id=5)
+    total = Decimal('0.00')
+    try:
+        movimientos = MovimientosAlmacen.objects.filter(
+                        content_type_producto = content_type,
+                        id_registro_producto = id_registro,
+                        sociedad__id = id_sociedad,
+                    ).filter(
+                        models.Q(tipo_stock=bloqueo_sin_serie) | models.Q(tipo_stock=bloqueo_sin_qa)
+                    )
+        sede = Sede.objects.get(id=id_sede)
+        almacenes = []
+        for almacen in sede.Almacen_sede.filter(estado_alta_baja=1):
+            almacenes.append(almacen.id)
+        movimientos = movimientos.filter(almacen__id__in=almacenes)
+        for movimiento in movimientos:
+            total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+    except:
+        pass
+
+    return total
+
 def transito(content_type, id_registro, id_sociedad): #No tiene almacén
     confirmado = TipoStock.objects.get(codigo=1)
     recibido = TipoStock.objects.get(codigo=2)
@@ -142,6 +193,15 @@ def transito(content_type, id_registro, id_sociedad): #No tiene almacén
 
 def stock(content_type, id_registro, id_sociedad, id_almacen=None):
     return vendible(content_type, id_registro, id_sociedad, id_almacen) + calidad(content_type, id_registro, id_sociedad, id_almacen)
+
+def stock_sede(content_type, id_registro, id_sociedad, id_sede):
+    return vendible_sede(content_type, id_registro, id_sociedad, id_sede) + calidad_sede(content_type, id_registro, id_sociedad, id_sede)
+
+def stock_disponible(content_type, id_registro, id_sociedad, id_almacen=None):
+    return vendible(content_type, id_registro, id_sociedad, id_almacen)
+
+def stock_sede_disponible(content_type, id_registro, id_sociedad, id_sede):
+    return vendible_sede(content_type, id_registro, id_sociedad, id_sede)
 
 def en_camino(content_type, id_registro, id_sociedad):
     return transito(content_type, id_registro, id_sociedad) - confirmado_anticipo(content_type, id_registro, id_sociedad)

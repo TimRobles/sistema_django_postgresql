@@ -1,5 +1,6 @@
 from django import forms
 from decimal import Decimal
+from applications.cotizacion.models import ConfirmacionVentaDetalle
 from applications.importaciones import *
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
@@ -506,11 +507,11 @@ class SolicitudPrestamoMaterialesGenerarNotaSalidaView(PermissionRequiredMixin, 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
         sid = transaction.savepoint()
+        item = len(NotaSalida.objects.all())
         try:
             if self.request.session['primero']:
                 self.object = self.get_object()
                 prestamo = self.get_object()
-                item = len(NotaSalida.objects.all())
                 nota_salida = NotaSalida.objects.create(
                     numero_salida=item + 1,
                     solicitud_prestamo_materiales=prestamo,
@@ -647,11 +648,17 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
 
                     detalles = self.object.detalles
 
+                    disponible = TipoStock.objects.get(codigo=3)
                     if self.object.solicitud_prestamo_materiales:
+                        print('Préstamo')
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
                         movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
-                        disponible = TipoStock.objects.get(codigo=3)
                         documento_anterior = self.object.solicitud_prestamo_materiales
+                    else:
+                        print('Confirmación')
+                        movimiento_inicial = TipoMovimiento.objects.get(codigo=120)  # Confirmado por venta
+                        movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                        documento_anterior = self.object.confirmacion_venta
 
                     consolidado = {}
                     for detalle in detalles:
@@ -661,8 +668,8 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                             tipo_movimiento=movimiento_inicial,
                             tipo_stock=movimiento_inicial.tipo_stock_final,
                             signo_factor_multiplicador=+1,
-                            content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
-                            id_registro_documento_proceso=documento_anterior.id,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior.cotizacion_venta),
+                            id_registro_documento_proceso=documento_anterior.cotizacion_venta.id,
                             sociedad=documento_anterior.sociedad,
                             movimiento_reversion=False,
                         )                        
@@ -706,7 +713,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
 
                         movimiento_tres = MovimientosAlmacen.objects.create(
                             content_type_producto=producto.content_type,
-                            id_registro_producto=producto.id_registro,
+                            id_registro_producto=producto.id,
                             cantidad=cantidad,
                             tipo_movimiento=movimiento_final,
                             tipo_stock=movimiento_final.tipo_stock_final,
@@ -876,17 +883,30 @@ class NotaSalidaDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.kwargs['nota_salida_id']})
 
     def get_form_kwargs(self):
-        registro = NotaSalida.objects.get(id=self.kwargs['nota_salida_id'])
-        solicitud = registro.solicitud_prestamo_materiales.id
-        materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales__id=solicitud)
-        lista_materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(
-            solicitud_prestamo_materiales__id=solicitud)
-        for material in materiales:
-            salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
-                'cantidad_salida__sum']
-            if salida:
-                if salida == material.cantidad_prestamo:
-                    lista_materiales = lista_materiales.exclude(id=material.id)
+        nota_salida = NotaSalida.objects.get(id=self.kwargs['nota_salida_id'])
+        if nota_salida.solicitud_prestamo_materiales:
+            solicitud = nota_salida.solicitud_prestamo_materiales.id
+            materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(solicitud_prestamo_materiales__id=solicitud)
+            lista_materiales = SolicitudPrestamoMaterialesDetalle.objects.filter(
+                solicitud_prestamo_materiales__id=solicitud)
+            for material in materiales:
+                salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
+                    'cantidad_salida__sum']
+                if salida:
+                    if salida == material.cantidad_prestamo:
+                        lista_materiales = lista_materiales.exclude(id=material.id)
+        else:
+            confirmacion = nota_salida.confirmacion_venta.id
+            materiales = ConfirmacionVentaDetalle.objects.filter(confirmacion_venta__id=confirmacion)
+            lista_materiales = ConfirmacionVentaDetalle.objects.filter(
+                confirmacion_venta__id=confirmacion)
+            for material in materiales:
+                salida = material.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
+                    'cantidad_salida__sum']
+                if salida:
+                    if salida == material.cantidad_confirmada:
+                        lista_materiales = lista_materiales.exclude(id=material.id)
+        
 
         kwargs = super().get_form_kwargs()
         kwargs['materiales'] = lista_materiales
@@ -897,17 +917,26 @@ class NotaSalidaDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                registro = NotaSalida.objects.get(id=self.kwargs['nota_salida_id'])
-                item = len(registro.NotaSalidaDetalle_nota_salida.all())
+                nota_salida = NotaSalida.objects.get(id=self.kwargs['nota_salida_id'])
+                item = len(nota_salida.NotaSalidaDetalle_nota_salida.all())
                 material = form.cleaned_data.get('material')
 
-                nota_salida_detalle = NotaSalidaDetalle.objects.create(
-                    solicitud_prestamo_materiales_detalle=material,
-                    nota_salida=registro,
-                    item=item + 1,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
+                if nota_salida.solicitud_prestamo_materiales:
+                    nota_salida_detalle = NotaSalidaDetalle.objects.create(
+                        solicitud_prestamo_materiales_detalle=material,
+                        nota_salida=nota_salida,
+                        item=item + 1,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                else:
+                    nota_salida_detalle = NotaSalidaDetalle.objects.create(
+                        confirmacion_venta_detalle=material,
+                        nota_salida=nota_salida,
+                        item=item + 1,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
 
                 self.request.session['primero'] = False
             return super().form_valid(form)
@@ -939,9 +968,14 @@ class NotaSalidaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk': self.object.nota_salida.id})
 
     def get_form_kwargs(self, *args, **kwargs):
-        material = self.object.solicitud_prestamo_materiales_detalle
-        suma = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
-            'cantidad_salida__sum']
+        if self.object.solicitud_prestamo_materiales_detalle:
+            material = self.object.solicitud_prestamo_materiales_detalle
+            suma = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
+                'cantidad_salida__sum']
+        else:
+            material = self.object.confirmacion_venta_detalle
+            suma = material.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
+                'cantidad_salida__sum']
         cantidad_salida = self.object.cantidad_salida
         kwargs = super(NotaSalidaDetalleUpdateView, self).get_form_kwargs(*args, **kwargs)
         kwargs['solicitud'] = material
@@ -959,6 +993,7 @@ class NotaSalidaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['titulo'] = "Material"
         context['id_sociedad'] = self.object.nota_salida.sociedad.id
         context['id_material'] = self.object.producto.id
+        context['url_stock'] = reverse_lazy('material_app:stock_disponible', kwargs={'id_material':1})[:-2]
         return context
 
 
@@ -1147,26 +1182,48 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                 nota_salida_detalle = nota_salida.NotaSalidaDetalle_nota_salida.all()
                 lista = []
                 lista_id_registro = []
-                for detalle in nota_salida_detalle:
-                    id_registro = detalle.solicitud_prestamo_materiales_detalle.id_registro
-                    if id_registro not in lista_id_registro:
-                        lista_id_registro.append(id_registro)
-                        lista.append(detalle)
-                item = 0
-                for dato in lista:
-                    material = dato.solicitud_prestamo_materiales_detalle
-                    despacho_detalle = DespachoDetalle.objects.create(
-                        item=item + 1,
-                        content_type=dato.solicitud_prestamo_materiales_detalle.content_type,
-                        id_registro=dato.solicitud_prestamo_materiales_detalle.id_registro,
-                        cantidad_despachada=
-                        material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
-                            'cantidad_salida__sum'],
-                        despacho=despacho,
-                        created_by=self.request.user,
-                        updated_by=self.request.user,
-                    )
-                    item += 1
+                if nota_salida.solicitud_prestamo_materiales:
+                    for detalle in nota_salida_detalle:
+                        id_registro = detalle.solicitud_prestamo_materiales_detalle.id_registro
+                        if id_registro not in lista_id_registro:
+                            lista_id_registro.append(id_registro)
+                            lista.append(detalle)
+                    item = 0
+                    for dato in lista:
+                        material = dato.solicitud_prestamo_materiales_detalle
+                        despacho_detalle = DespachoDetalle.objects.create(
+                            item=item + 1,
+                            content_type=dato.solicitud_prestamo_materiales_detalle.content_type,
+                            id_registro=dato.solicitud_prestamo_materiales_detalle.id_registro,
+                            cantidad_despachada=
+                            material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
+                                'cantidad_salida__sum'],
+                            despacho=despacho,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        item += 1
+                else:
+                    for detalle in nota_salida_detalle:
+                        id_registro = detalle.confirmacion_venta_detalle.id_registro
+                        if id_registro not in lista_id_registro:
+                            lista_id_registro.append(id_registro)
+                            lista.append(detalle)
+                    item = 0
+                    for dato in lista:
+                        material = dato.confirmacion_venta_detalle
+                        despacho_detalle = DespachoDetalle.objects.create(
+                            item=item + 1,
+                            content_type=dato.confirmacion_venta_detalle.content_type,
+                            id_registro=dato.confirmacion_venta_detalle.id_registro,
+                            cantidad_despachada=
+                            material.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
+                                'cantidad_salida__sum'],
+                            despacho=despacho,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        item += 1
                 self.request.session['primero'] = False
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -1264,11 +1321,14 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
 
                 detalles = self.object.detalles
                 
+                documento_anterior = self.object.nota_salida
                 if self.object.nota_salida.solicitud_prestamo_materiales:
                     movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
                     movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
-                    documento_anterior = self.object.nota_salida
-
+                else:
+                    movimiento_inicial = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                    movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
+                    
                 for detalle in detalles:
                     movimiento_anterior = MovimientosAlmacen.objects.get(
                         content_type_producto=detalle.content_type,
@@ -1374,7 +1434,7 @@ class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion'] = "Finalizar"
         context['titulo'] = "Despacho sin Guia"
         context['dar_baja'] = "true"
-        context['item'] = self.object.numero_despacho
+        context['item'] = self.object
         return context
 
 
@@ -1485,7 +1545,9 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
 
     model = Despacho
     template_name = "logistica/despacho/boton.html"
-    success_url = reverse_lazy('comprobante_despacho_app:guia_inicio')
+    
+    def get_success_url(self):
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['guia'].id})
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1522,7 +1584,8 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-                self.request.session['primero'] = False
+            self.kwargs['guia'] = guia
+            self.request.session['primero'] = False
             registro_guardar(self.object, self.request)
             self.object.estado = 5
             self.object.save()

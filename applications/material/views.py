@@ -8,7 +8,7 @@ from django import forms
 from django.shortcuts import render
 from django.contrib.contenttypes.models import ContentType
 from applications.cotizacion.models import PrecioListaMaterial
-from applications.material.funciones import stock
+from applications.material.funciones import stock, stock_disponible, stock_sede, stock_sede_disponible
 from ..recepcion_compra.models import RecepcionCompra
 from ..orden_compra.models import OrdenCompraDetalle
 from ..comprobante_compra.models import ComprobanteCompraCI, ComprobanteCompraPIDetalle, ComprobanteCompraPI
@@ -1603,6 +1603,46 @@ def StockSociedadAlmacenView(request, id_material, id_sociedad, id_almacen):
     if request.method == 'GET':
         try:
             return HttpResponse(stock(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_almacen))
+        except:
+            return HttpResponse("")
+
+
+def StockSedeView(request, id_material, id_sociedad, id_sede):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(stock_sede(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_sede))
+        except:
+            return HttpResponse("")
+
+
+def StockDisponibleView(request, id_material):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(Material.objects.get(id=id_material).vendible)
+        except:
+            return HttpResponse("")
+
+
+def StockDisponibleSociedadView(request, id_material, id_sociedad):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(stock_disponible(ContentType.objects.get_for_model(Material), id_material, id_sociedad))
+        except:
+            return HttpResponse("")
+
+
+def StockDisponibleSociedadAlmacenView(request, id_material, id_sociedad, id_almacen):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(stock_disponible(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_almacen))
+        except:
+            return HttpResponse("")
+
+
+def StockSedeDisponibleView(request, id_material, id_sociedad, id_sede):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(stock_sede_disponible(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_sede))
         except:
             return HttpResponse("")
 

@@ -180,8 +180,13 @@ class NotaSalidaDetalleUpdateForm(BSModalModelForm):
         self.suma = kwargs.pop('suma')
         self.id_sociedad = kwargs.pop('id_sociedad')
         super(NotaSalidaDetalleUpdateForm, self).__init__(*args, **kwargs)
-        material = self.instance.solicitud_prestamo_materiales_detalle.producto
-        self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_prestamo
+        if self.instance.solicitud_prestamo_materiales_detalle:
+            material = self.instance.solicitud_prestamo_materiales_detalle.producto
+            self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_prestamo
+        else:
+            material = self.instance.confirmacion_venta_detalle.producto
+            self.fields['cantidad_prestamo'].initial = self.solicitud.cantidad_confirmada
+            self.fields['cantidad_prestamo'].label = 'Cantidad Confirmada'
         self.fields['almacen'].queryset = Almacen.objects.none()
         self.fields['sede'].required = True
         self.fields['sede'].queryset = Sede.objects.filter(estado=1)

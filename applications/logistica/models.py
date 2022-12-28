@@ -118,8 +118,8 @@ class NotaSalida(models.Model):
         (3, 'ANULADO'),
     )
 
-    confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True)
-    solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE)
+    confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_confirmacion_venta')
+    solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True)
     numero_salida = models.IntegerField('Número Salida', blank=True, null=True)
     observacion_adicional = models.TextField('Observación Adicional', blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
@@ -170,7 +170,7 @@ class NotaSalida(models.Model):
     @property
     def interlocutor_cliente(self):
         try:
-            return self.confirmacion_venta.interlocutor_cliente
+            return self.confirmacion_venta.cliente_interlocutor
         except:
             return self.solicitud_prestamo_materiales.interlocutor_cliente
 
@@ -183,8 +183,8 @@ class NotaSalida(models.Model):
 
 class NotaSalidaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True)
-    solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
+    confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_confirmacion_venta_detalle')
+    solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
     cantidad_salida = models.DecimalField('Cantidad Salida', max_digits=22, decimal_places=10, default=Decimal('0.00'))

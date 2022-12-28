@@ -79,9 +79,18 @@ urlpatterns = [
     path('precio-material/<int:id_comprobante>/<int:comprobante_content_type>/<int:id_material>/<int:material_content_type>/', views.ComprobanteView, name='comprobante'),
     
     path('precio-lista/<int:id_material>/', views.PrecioListaView, name='precio_lista'),
+
     path('stock/<int:id_material>/', views.StockView, name='stock'),
     path('stock/<int:id_material>/<int:id_sociedad>/', views.StockSociedadView, name='stock'),
     path('stock/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/', views.StockSociedadAlmacenView, name='stock'),
+    
+    path('stock/sede/<int:id_material>/<int:id_sociedad>/<int:id_sede>/', views.StockSedeView, name='stock_sede'),
+
+    path('stock/disponible/<int:id_material>/', views.StockDisponibleView, name='stock_disponible'),
+    path('stock/disponible/<int:id_material>/<int:id_sociedad>/', views.StockDisponibleSociedadView, name='stock_disponible'),
+    path('stock/disponible/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/', views.StockDisponibleSociedadAlmacenView, name='stock_disponible'),
+    
+    path('stock/disponible/sede/<int:id_material>/<int:id_sociedad>/<int:id_sede>/', views.StockSedeDisponibleView, name='stock_disponible_sede'),
 
     path('series/<pk>/', views.MaterialSeriesView.as_view(), name='series'),
 ]

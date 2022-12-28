@@ -244,7 +244,7 @@ class ConfirmacionVenta(models.Model):
         return self.cotizacion_venta.monto_solicitado
 
     def __str__(self):
-        return str(self.id)
+        return "%s%s" % (self.sociedad.abreviatura, self.cotizacion_venta)
 
 
 class ConfirmacionVentaDetalle(models.Model):
@@ -284,7 +284,7 @@ class ConfirmacionVentaDetalle(models.Model):
         return self.cantidad_confirmada
 
     def __str__(self):
-        return str(self.id)
+        return "%s - %s" % (self.item, self.producto)
 
 def confirmacion_venta_detalle_post_save(*args, **kwargs):
     obj = kwargs['instance']

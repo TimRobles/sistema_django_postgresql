@@ -63,6 +63,7 @@ urlpatterns = [
 
     path('confirmacion/',views.ConfirmacionListView.as_view(),name='confirmacion_inicio'),
     path('confirmacion/<int:id_cotizacion>/',views.ConfirmacionListView.as_view(),name='confirmacion_cotizacion_inicio'),
+    path('pendiente-salida/',views.ConfirmacionPendienteSalidaView.as_view(),name='pendiente_salida'),
     path('confirmacion/forma-pago/<pk>/',views.ConfirmacionVentaFormaPagoView.as_view(),name='confirmacion_forma_pago'),
     path('confirmacion/orden-compra/<int:id_confirmacion>/',views.ConfirmacionVentaOrdenCompraCrearView.as_view(),name='confirmacion_orden_compra'),
     path('confirmacion/orden-compra/<int:id_confirmacion>/<pk>/',views.ConfirmacionVentaOrdenCompraActualizarView.as_view(),name='confirmacion_orden_compra'),
@@ -79,4 +80,6 @@ urlpatterns = [
     path('solicitud-credito/cuota/agregar/<int:id_solicitud>/',views.SolicitudCreditoCuotaCreateView.as_view(),name='solicitud_credito_cuota_agregar'),
     path('solicitud-credito/cuota/actualizar/<pk>/',views.SolicitudCreditoCuotaUpdateView.as_view(),name='solicitud_credito_cuota_actualizar'),
     path('solicitud-credito/cuota/eliminar/<pk>/',views.SolicitudCreditoCuotaDeleteView.as_view(),name='solicitud_credito_cuota_eliminar'),
+    
+    path('confirmacion/nota-salida/<pk>/',views.ConfirmacionNotaSalidaView.as_view(),name='confirmacion_nota_salida'),
 ]

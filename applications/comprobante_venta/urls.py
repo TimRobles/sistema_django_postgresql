@@ -24,6 +24,7 @@ urlpatterns = [
     path('factura-venta/nubefact/enviar/<pk>/', views.FacturaVentaNubeFactEnviarView.as_view(), name='factura_venta_nubefact_enviar'),
     path('factura-venta/nubefact/anular/<pk>/', views.FacturaVentaNubeFactAnularView.as_view(), name='factura_venta_nubefact_anular'),
     path('factura-venta/nubefact/detalle/<pk>/', views.FacturaVentaNubefactRespuestaDetailView.as_view(), name='factura_venta_nubefact_detalle'),
+    path('factura-venta/nubefact/consultar/<pk>/', views.FacturaVentaNubefactConsultarView.as_view(), name='factura_venta_nubefact_consultar'),
 
     path('boleta-venta/',views.BoletaVentaListView.as_view(),name='boleta_venta_inicio'),
     path('boleta-venta-tabla/',views.BoletaVentaTabla,name='boleta_venta_tabla'),

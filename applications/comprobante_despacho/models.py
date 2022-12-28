@@ -50,6 +50,9 @@ class Guia(models.Model):
     class Meta:
         verbose_name = 'Guia'
         verbose_name_plural = 'Guias'
+        ordering = [
+            '-created_at'
+        ]
 
     @property
     def peso_total(self):

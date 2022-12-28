@@ -1,12 +1,15 @@
 $id_sociedad = $('#id_sociedad')[0].innerHTML;
 $id_material = $('#id_material')[0].innerHTML;
+$url_stock = $('#url_stock')[0].innerHTML;
 
-url = '/material/stock/' + $id_material + '/' + $id_sociedad + '/';
+url = $url_stock + $id_material + '/' + $id_sociedad + '/';
+console.log(url);
 
 var xhr = new XMLHttpRequest();
 xhr.open('GET', url);
 xhr.onload = function(){
     if (this.status === 200) {
+        console.log(xhr.responseText);
         $stock = xhr.responseText;
     }else{
         $stock = 0;
@@ -32,6 +35,20 @@ function seleccionar_sede(id_sede) {
         }
     }
     xhr.send();
+
+    $id_stock = $('#id_stock')[0];
+    url = $url_stock + 'sede/' + $id_material + '/' + $id_sociedad + '/' + id_sede + '/';
+    
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', url);
+    xhr2.onload = function(){
+        if (this.status === 200) {
+            $id_stock.value = xhr2.responseText;
+        }else {
+            $id_stock.value = 0;
+        }
+    }
+    xhr2.send();
 }
 
 $('#id_sede').on('change', function (e) {
@@ -45,7 +62,7 @@ $('#id_sede').on('change', function (e) {
 
 function seleccionar_almacen(id_almacen) {
     $id_stock = $('#id_stock')[0];
-    url = '/material/stock/' + $id_material + '/' + $id_sociedad + '/' + id_almacen + '/';
+    url = $url_stock + $id_material + '/' + $id_sociedad + '/' + id_almacen + '/';
     
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);

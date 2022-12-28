@@ -189,6 +189,7 @@ class GuiaTransportistaLimpiarView(BSModalDeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.transportista = None
+        self.object.placa_numero = None
         registro_guardar(self.object, self.request)
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
@@ -436,6 +437,10 @@ class GuiaGuardarView(DeleteView):
         error_ubigeo_destino = False
         error_numero_bultos = False
         error_cliente_interlocutor = False
+        error_peso = False
+        error_transportista_placa_numero = False
+        error_transportista_placa_numero_cero_guion = False
+        error_transporte_privado = False
         context['titulo'] = 'Error de guardar'
         if not self.get_object().direccion_partida:
             error_direccion_partida = True
@@ -449,6 +454,17 @@ class GuiaGuardarView(DeleteView):
             error_numero_bultos = True
         if not self.get_object().cliente_interlocutor:
             error_cliente_interlocutor = True
+        for detalle in self.get_object().detalles:
+            if not detalle.peso:
+                error_peso = True
+        if not self.get_object().transportista: #Transporte privado
+            if not self.get_object().conductor_tipo_documento or not self.get_object().conductor_numero_documento or not self.get_object().conductor_nombre or not self.get_object().conductor_apellidos or not self.get_object().conductor_numero_licencia:
+                error_transporte_privado = True
+        if not self.get_object().placa_numero:
+            error_transportista_placa_numero = True
+        elif '0' in self.get_object().placa_numero or '-' in self.get_object().placa_numero:
+            error_transportista_placa_numero_cero_guion = True
+    
 
         if error_direccion_partida:
             context['texto'] = 'Ingrese una Dirección de partida'
@@ -467,6 +483,18 @@ class GuiaGuardarView(DeleteView):
             return render(request, 'includes/modal sin permiso.html', context)
         if error_cliente_interlocutor:
             context['texto'] = 'Ingrese un Interlocutor'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_peso:
+            context['texto'] = 'Falta registrar los pesos de los materiales.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_transportista_placa_numero:
+            context['texto'] = 'Registrar la placa del transportista.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_transportista_placa_numero_cero_guion:
+            context['texto'] = 'La placa no debe tener ceros ni guiones.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_transporte_privado:
+            context['texto'] = 'Ingresar los datos del conductor de transporte privado.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(GuiaGuardarView, self).dispatch(request, *args, **kwargs)
 
@@ -506,38 +534,12 @@ class GuiaNubeFactEnviarView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_nubefact = False
-        error_peso = False
-        error_transportista_placa_numero = False
-        error_transportista_placa_numero_cero_guion = False
-        error_transporte_privado = False
         context['titulo'] = 'Error de guardar'
         if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
             error_nubefact = True
-        for detalle in self.get_object().detalles:
-            if not detalle.peso:
-                error_peso = True
-        if not self.get_object().transportista: #Transporte privado
-            if not self.get_object().conductor_tipo_documento or not self.get_object().conductor_numero_documento or not self.get_object().conductor_nombre or not self.get_object().conductor_apellidos or not self.get_object().conductor_numero_licencia:
-                error_transporte_privado = True
-        if not self.get_object().placa_numero:
-            error_transportista_placa_numero = True
-        if '0' in self.get_object().placa_numero or '-' in self.get_object().placa_numero:
-            error_transportista_placa_numero_cero_guion = True
-    
+        
         if error_nubefact:
             context['texto'] = 'No hay una ruta para envío a NubeFact'
-            return render(request, 'includes/modal sin permiso.html', context)
-        if error_peso:
-            context['texto'] = 'Falta registrar los pesos de los materiales.'
-            return render(request, 'includes/modal sin permiso.html', context)
-        if error_transportista_placa_numero:
-            context['texto'] = 'Registrar la placa del transportista.'
-            return render(request, 'includes/modal sin permiso.html', context)
-        if error_transportista_placa_numero_cero_guion:
-            context['texto'] = 'La placa no debe tener ceros ni guiones.'
-            return render(request, 'includes/modal sin permiso.html', context)
-        if error_transporte_privado:
-            context['texto'] = 'Ingresar los datos del conductor de transporte privado.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super(GuiaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
 
@@ -620,11 +622,10 @@ class GuiaAnularView(BSModalDeleteView):
         try:
             obj = self.get_object()
             obj.estado = 3
-            if obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj)) == 'MANUAL':
-                obj.save()
-                return HttpResponseRedirect(self.get_success_url())
-
-            return super().delete(request, *args, **kwargs)
+            obj.despacho.estado = 2
+            obj.despacho.save()
+            obj.save()
+            return HttpResponseRedirect(self.get_success_url())
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)

@@ -232,7 +232,7 @@ class FacturaVentaCrearView(DeleteView):
         return super(FacturaVentaCrearView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.object.id})
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -292,6 +292,7 @@ class FacturaVentaCrearView(DeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
+            self.kwargs['factura_venta'] = factura_venta
 
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -316,7 +317,7 @@ class FacturaVentaAnticipoCrearView(DeleteView):
     template_name = "includes/form generico.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.object.id})
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -368,6 +369,7 @@ class FacturaVentaAnticipoCrearView(DeleteView):
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
+            self.kwargs['factura_venta'] = factura_venta
 
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -392,7 +394,7 @@ class FacturaVentaAnticipoRegularizarCrearView(DeleteView):
     template_name = "includes/form generico.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.object.id})
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -478,6 +480,7 @@ class FacturaVentaAnticipoRegularizarCrearView(DeleteView):
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
+            self.kwargs['factura_venta'] = factura_venta
 
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -754,6 +757,17 @@ class FacturaVentaNubefactRespuestaDetailView(BSModalReadView):
     
     def get_context_data(self, **kwargs):
         context = super(FacturaVentaNubefactRespuestaDetailView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Movimientos Nubefact'
+        context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
+        return context
+
+
+class FacturaVentaNubefactConsultarView(BSModalReadView):
+    model = FacturaVenta
+    template_name = "comprobante_venta/nubefact_respuesta.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaNubefactConsultarView, self).get_context_data(**kwargs)
         context['titulo'] = 'Movimientos Nubefact'
         context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
         return context
@@ -1061,7 +1075,7 @@ class BoletaVentaCrearView(DeleteView):
         return super(BoletaVentaCrearView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.object.id})
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['boleta_venta'].id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -1121,6 +1135,7 @@ class BoletaVentaCrearView(DeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
+            self.kwargs['boleta_venta'] = boleta_venta
                 
             registro_guardar(self.object, self.request)
             self.object.save()
