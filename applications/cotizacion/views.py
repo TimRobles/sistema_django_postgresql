@@ -36,6 +36,7 @@ from .forms import (
     CotizacionVentaObservacionForm,
     CotizacionVentaOtrosCargosForm,
     CotizacionVentaPdfsForm,
+    CotizacionVentaVendedorForm,
     PrecioListaMaterialForm,
     SolicitudCreditoCuotaForm,
     SolicitudCreditoForm,
@@ -294,6 +295,7 @@ def CotizacionVentaCreateView(request):
     obj = CotizacionVenta.objects.create(
         slug = slug_aleatorio(CotizacionVenta),
         moneda=Moneda.objects.get(principal=True),
+        vendedor=request.user,
         created_by=request.user,
         updated_by=request.user,
     )
@@ -986,6 +988,7 @@ class CotizacionVentaClonarView(DeleteView):
                 moneda=self.object.moneda,
                 total=self.object.total,
                 slug = slug_aleatorio(CotizacionVenta),
+                vendedor=self.request.user,
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
@@ -1057,6 +1060,23 @@ class CotizacionVentaClonarView(DeleteView):
         context['titulo'] = "Cotización"
         context['texto'] = "¿Está seguro de Clonar la cotización?"
         context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
+        return context
+
+
+class CotizacionVentaVendedorView(BSModalUpdateView):
+    model = CotizacionVenta
+    template_name = "cotizacion/cotizacion_venta/form_cliente.html"
+    form_class = CotizacionVentaVendedorForm
+    success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CotizacionVentaVendedorView, self).get_context_data(**kwargs)
+        context['accion'] = "Elegir"
+        context['titulo'] = "Vendedor"
         return context
 
 

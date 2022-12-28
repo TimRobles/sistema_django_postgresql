@@ -91,6 +91,20 @@ class CotizacionVentaClienteForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+class CotizacionVentaVendedorForm(BSModalModelForm):
+    class Meta:
+        model = CotizacionVenta
+        fields = (
+            'vendedor',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CotizacionVentaVendedorForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class CotizacionVentaDescuentoGlobalForm(BSModalModelForm):
     class Meta:
         model = CotizacionDescuentoGlobal

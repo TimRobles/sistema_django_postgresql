@@ -26,7 +26,7 @@
                 <td>{{ cotizacion.fecha_cotizacion|date:'d/m/Y' }}</td>
                 <td>{{ cotizacion.fecha_validez|date:'d/m/Y' }}</td>
                 <td class="text-end text-nowrap">$ {{ cotizacion.total|redondear|intcomma }}</td>
-                <td>{{ cotizacion.created_by }}</td>
+                <td>{{ cotizacion.vendedor|nombre_usuario }}</td>
                 <td>{{ cotizacion.get_estado_display }}</td>
                 <td class="text-center">
                     <a href="{% url 'cotizacion_app:cotizacion_venta_ver' cotizacion.id %}"

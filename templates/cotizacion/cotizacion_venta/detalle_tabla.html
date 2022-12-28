@@ -11,7 +11,6 @@
     {% if cotizacion.estado == 2 %}
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_reservar' cotizacion.id %}"
-            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
             class="delete btn btn-primary">
             Reservar
         </button>
@@ -20,7 +19,6 @@
     {% if cotizacion.estado == 3 %}
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_reserva' cotizacion.id %}"
-            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
             class="delete btn btn-danger">
             Anular Reserva
         </button>
@@ -82,7 +80,6 @@
         {% if cotizacion.estado > 1 and cotizacion.estado < 4 %}
         <div class="col-auto">
             <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar' cotizacion.id %}"
-                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
                 class="delete btn btn-primary">
                 Confirmar
             </button>
@@ -90,7 +87,6 @@
         {% if cotizacion.estado != 3 %}
         <div class="col-auto">
             <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_confirmar_anticipo' cotizacion.id %}"
-                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
                 class="delete btn btn-primary">
                 Confirmar Anticipo
             </button>
@@ -101,7 +97,6 @@
         {% if cotizacion.estado > 3 and cotizacion.estado < 6 %}
         <div class="col-auto">
             <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar' cotizacion.id %}"
-                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
                 class="delete btn btn-danger">
                 Anular Confirmación
             </button>
@@ -110,7 +105,6 @@
         {% if cotizacion.estado == 6 %}
         <div class="col-auto">
             <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_anular_confirmar_anticipo' cotizacion.id %}"
-                data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
                 class="delete btn btn-danger">
                 Anular Confirmación
             </button>
@@ -190,7 +184,6 @@
                     <td class="px-2" rowspan="2"> 
                         {% if cotizacion.estado == 1 %}
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_guardar' cotizacion.id %}"
-                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_inicio' %}"
                             class="delete btn btn-primary">
                             Guardar Cotización
                         </button>
@@ -219,7 +212,22 @@
                 </tr>
                 <tr>
                     <th>Estado:</th>
-                    <td>{{ cotizacion.get_estado_display }}</td>
+                    <td colspan="2">{{ cotizacion.get_estado_display }}</td>
+                    <td rowspan="2">
+                        {% if cotizacion.estado < 3 %}
+                        <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_vendedor' cotizacion.id %}"
+                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id  %}"
+                            class="update btn btn-primary">
+                            Cambiar Vendedor
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Vendedor:</th>
+                    <td colspan="2">
+                        {{ cotizacion.vendedor|nombre_usuario }}
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -285,7 +293,6 @@
                         
                         {% if cotizacion.estado < 4 %}
                         <button data-form-url="{% url 'cotizacion_app:solicitud_credito_eliminar' cotizacion.SolicitudCredito_cotizacion_venta.id %}"
-                            data-table-url="{% url 'cotizacion_app:cotizacion_venta_inicio' %}"
                             class="delete btn btn-danger">
                             Eliminar Solicitud
                         </button>

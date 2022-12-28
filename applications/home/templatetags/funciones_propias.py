@@ -66,3 +66,12 @@ def es_diccionario_nubefact(respuesta):
         return type(respuesta[0]) == type(dict())
     except:
         return False
+
+@register.filter
+def nombre_usuario(usuario):
+    try:
+        if usuario.get_full_name():
+            return usuario.get_full_name()
+        return usuario
+    except:
+        return usuario
