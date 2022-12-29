@@ -45,7 +45,7 @@ class NotaIngreso(models.Model):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "NOTA DE INGRESO %s - %s" % (numeroXn(self.nro_nota_ingreso, 6), self.recepcion_compra)
+        return "NOTA DE INGRESO %s - %s %s %s" % (numeroXn(self.nro_nota_ingreso, 6), self.fecha_ingreso.strftime('%d/%m/%Y'), self.created_by, self.recepcion_compra)
 
 
 class NotaIngresoDetalle(models.Model):
