@@ -15,7 +15,7 @@
         
         {% for nota in contexto_nota_control_calidad_stock %}
             <tr>
-                <td class="fondo-personalizado" style="--color-fondo: {{ nota.sociedad.color }};"> {{ nota.sociedad }}</td>
+                <td class="fondo-personalizado" style="--color-fondo: {{ nota.nota_ingreso.sociedad.color }};"> {{ nota.nota_ingreso.sociedad }}</td>
                 <td> 
                     {% if  nota.nro_nota_calidad %}
                         {{ nota.nro_nota_calidad}} 
