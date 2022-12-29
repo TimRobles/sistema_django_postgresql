@@ -36,16 +36,16 @@ def generarDeuda(documento, request):
         if cuota_final.fecha_pago:
             fecha_vencimiento = cuota_final.fecha_pago
         else:
-            fecha_vencimiento = date.today() + timedelta(cuota_final.dias_pago)
+            fecha_vencimiento = documento.fecha + timedelta(cuota_final.dias_pago)
     else:
-        fecha_vencimiento = date.today()
+        fecha_vencimiento = documento.fecha
     obj = cobranza.models.Deuda.objects.create(
         content_type = ContentType.objects.get_for_model(documento),
         id_registro = documento.id,
         monto = documento.confirmacion.total,
         moneda = documento.confirmacion.moneda,
         tipo_cambio = tipo_de_cambio(),
-        fecha_deuda = date.today(),
+        fecha_deuda = documento.fecha,
         fecha_vencimiento = fecha_vencimiento,
         sociedad = documento.confirmacion.sociedad,
         cliente = documento.confirmacion.cliente,
@@ -57,7 +57,7 @@ def generarDeuda(documento, request):
         if cuota.fecha_pago:
             fecha = cuota.fecha_pago
         else:
-            fecha = date.today() + timedelta(cuota.dias_pago)
+            fecha = documento.fecha + timedelta(cuota.dias_pago)
         cobranza.models.Cuota.objects.create(
             deuda = obj,
             fecha = fecha,

@@ -73,6 +73,10 @@ class FacturaVenta(models.Model):
         return 2
 
     @property
+    def fecha(self):
+        return self.fecha_emision
+
+    @property
     def documento(self):
         return "%s-%s" % (self.serie_comprobante, numeroXn(self.numero_factura, 6))
 
@@ -232,6 +236,10 @@ class BoletaVenta(models.Model):
     @property
     def internacional_nacional(self):
         return 2
+
+    @property
+    def fecha(self):
+        return self.fecha_emision
 
     @property
     def documento(self):
