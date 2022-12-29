@@ -109,7 +109,9 @@ class CotizacionVenta(models.Model):
 
     @property
     def monto_solicitado(self):
-        return self.SolicitudCredito_cotizacion_venta.SolicitudCreditoCuota_solicitud_credito.all().aggregate(models.Sum('monto'))['monto__sum']
+        if self.SolicitudCredito_cotizacion_venta:
+            return self.SolicitudCredito_cotizacion_venta.SolicitudCreditoCuota_solicitud_credito.all().aggregate(models.Sum('monto'))['monto__sum']
+        return Decimal('0.00')
 
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_cotizacion, 6), self.cliente)
