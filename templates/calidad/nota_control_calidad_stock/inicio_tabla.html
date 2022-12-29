@@ -1,6 +1,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Sociedad</th>    
             <th>Nro. de Nota Calidad</th>    
             <th>Nota de Ingreso</th>
             <th>Comentario</th>    
@@ -14,6 +15,7 @@
         
         {% for nota in contexto_nota_control_calidad_stock %}
             <tr>
+                <td class="fondo-personalizado" style="--color-fondo: {{ nota.sociedad.color }};"> {{ nota.sociedad }}</td>
                 <td> 
                     {% if  nota.nro_nota_calidad %}
                         {{ nota.nro_nota_calidad}} 
