@@ -1829,7 +1829,7 @@ class ConfirmacionListView(FormView):
         context = super(ConfirmacionListView, self).get_context_data(**kwargs)
         contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3)
         try:
-            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(cotizacion_venta__id = kwargs['id_cotizacion'])
+            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(cotizacion_venta__id = self.kwargs['id_cotizacion'])
         except:
             print("Error")
         
