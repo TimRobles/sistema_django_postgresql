@@ -10,6 +10,13 @@ Confirmaciones
 {% block contenido %}
     <h3>Confirmaciones</h3>
 
+    <form id="formulario" action="" method="get">
+        {% include 'includes/formulario lineal.html' %}
+        <input type="submit" class="btn btn-primary" value="Buscar">
+    </form>
+
+    {% include 'includes/paginador.html' %}
+
     <div class="table-responsive" id="tabla">
         <table class="table">
             <thead>
@@ -46,4 +53,49 @@ Confirmaciones
             </tbody>
         </table>
     </div>
+    <div>
+        <ul class="pagination pagination-sm justify-content-end">
+            {% if contexto_pagina.has_previous %}
+                <li>
+                    <span><a href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.previous_page_number }}{% else %}?page={{ contexto_pagina.previous_page_number }}{% endif %}">Anterior</a></span>
+                    <span>...</span>
+                </li>
+            {% endif %}
+            <li class="">
+                <span>Página {% if contexto_pagina.number %}{{ contexto_pagina.number }}{% else %} 1 {% endif %} de {% if contexto_pagina.paginator.num_pages %}{{ contexto_pagina.paginator.num_pages }}{% else %} 1.{% endif %}</span>
+            </li>
+            {% if contexto_pagina.has_next %}
+                <li>
+                    <span>...</span>
+                    <span><a href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.next_page_number }}{% else %}?page={{ contexto_pagina.next_page_number }}{% endif %}">Siguiente</a></span>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
 {% endblock contenido %}
+
+{% block extrajs %}
+    <script>
+        $(function () {
+
+            $("#id_cliente").select2({
+                width: '100%',
+                matcher: buscar_select2
+            });
+            
+        });
+
+        function select_form() {
+            combos = document.getElementsByClassName('select2');
+            for (let index = 0; index < combos.length; index++) {
+                const element = combos[index];
+                element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control field-lineal');
+                element.className = element.className.replace('select2-container--default', 'form-control field-lineal');
+            }
+        }
+
+        setTimeout(() => {
+            select_form();
+        }, 500);
+    </script>
+{% endblock extrajs %}

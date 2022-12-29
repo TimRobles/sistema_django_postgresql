@@ -1962,14 +1962,43 @@ def ConfirmarVerTabla(request, id_confirmacion):
         return JsonResponse(data)
 
 
-class ConfirmacionPendienteSalidaView(TemplateView):
+class ConfirmacionPendienteSalidaView(FormView):
     template_name = 'cotizacion/confirmacion/pendiente_salida.html'
+    form_class = ConfirmacionVentaBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(ConfirmacionPendienteSalidaView, self).get_form_kwargs()
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        return kwargs
 
     def get_context_data(self, **kwargs):
+        context = super(ConfirmacionPendienteSalidaView, self).get_context_data(**kwargs)
         contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3)
         
-        context = super(ConfirmacionPendienteSalidaView, self).get_context_data(**kwargs)
         context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
+        filtro_estado = self.request.GET.get('estado')
+        filtro_cliente = self.request.GET.get('cliente')
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
+            context['contexto_filtro'] = "?estado=" + filtro_estado
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+        
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(contexto_cotizacion_venta) > objectsxpage:
+            paginator = Paginator(contexto_cotizacion_venta, objectsxpage)
+            page_number = self.request.GET.get('page')
+            contexto_cotizacion_venta = paginator.get_page(page_number)
+
+        context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
+        context['contexto_pagina'] = contexto_cotizacion_venta
         return context
 
 
