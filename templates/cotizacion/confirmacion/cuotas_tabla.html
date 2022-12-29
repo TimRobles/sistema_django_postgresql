@@ -47,7 +47,7 @@
                         {% if confirmacion.monto_solicitado %}
                         {{ confirmacion.monto_solicitado|intcomma }}
                         {% else %}
-                        {{ confirmacion.cotizacion_venta.total|intcomma }}
+                        {{ confirmacion.total|intcomma }}
                         {% endif %}
                     </td>
                 </tr>
