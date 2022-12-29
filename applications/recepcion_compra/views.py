@@ -164,7 +164,7 @@ class RecepcionCompraGenerarNotaIngresoView(BSModalFormView):
     form_class = RecepcionCompraGenerarNotaIngresoForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':kwargs['nota'].id})
+        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['nota'].id})
 
     @transaction.atomic
     def form_valid(self, form):
@@ -175,8 +175,9 @@ class RecepcionCompraGenerarNotaIngresoView(BSModalFormView):
                 numero_nota = len(NotaIngreso.objects.all()) + 1
                 nota = NotaIngreso.objects.create(
                     nro_nota_ingreso = numeroXn(numero_nota, 6),
-                    recepcion_compra = recepcion_compra,
-                    sociedad = recepcion_compra.content_type.get_object_for_this_type(id=recepcion_compra.id_registro).sociedad,
+                    content_type=ContentType.objects.get_for_model(recepcion_compra),
+                    id_registro=recepcion_compra.id,
+                    sociedad = recepcion_compra.sociedad,
                     fecha_ingreso = form.cleaned_data['fecha_ingreso'],
                     created_by = self.request.user,
                     updated_by = self.request.user,
