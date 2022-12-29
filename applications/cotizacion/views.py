@@ -2061,7 +2061,21 @@ def ConfirmacionVentaCuotaTabla(request, id_confirmacion):
         template = "cotizacion/confirmacion/cuotas_tabla.html"
         context = {}
         confirmacion = ConfirmacionVenta.objects.get(id=id_confirmacion)
+        total = confirmacion.ConfirmacionVentaCuota_confirmacion_venta.all().aggregate(Sum('monto'))['monto__sum']
+        try:
+            if confirmacion.cotizacion_venta.SolicitudCredito_cotizacion_venta.estado == 3:
+                credito_temporal = confirmacion.cotizacion_venta.SolicitudCredito_cotizacion_venta.total_credito
+            else:
+                credito_temporal = Decimal('0.00')
+        except:
+            credito_temporal = Decimal('0.00')
+        disponible = confirmacion.cliente.disponible_monto + credito_temporal
+        if disponible < 0:
+            disponible = Decimal('0.00')
         context['confirmacion'] = confirmacion
+        context['credito_temporal'] = credito_temporal
+        context['disponible'] = disponible
+        context['total'] = total
         
         data['table'] = render_to_string(
             template,
