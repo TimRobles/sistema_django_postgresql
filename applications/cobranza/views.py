@@ -144,6 +144,24 @@ def DeudaTabla(request, id_cliente):
             request=request
         )
         return JsonResponse(data)
+
+
+def DeudaJsonView(request, sociedad_id):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        buscar = Deuda.objects.filter(
+            sociedad__id=sociedad_id,
+            ).filter(
+                Q(cliente__razon_social__icontains=term)
+            )
+        for deuda in buscar:
+            if deuda.saldo > 0:
+                data.append({
+                    'id' : deuda.id,
+                    'nombre' : deuda.__str__(),
+                    })
+        return JsonResponse(data, safe=False)
     
 
 class DeudaPagarCreateView(BSModalFormView):
@@ -428,16 +446,11 @@ class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
         #********************************************
         kwargs = super().get_form_kwargs()
         ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
-        lista_deudas = []
-        for deuda in Deuda.objects.filter(sociedad=ingreso.cuenta_bancaria.sociedad):
-            if deuda.saldo > 0:
-                lista_deudas.append(deuda.id)
-
+        
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(ingreso.fecha)
         tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
         kwargs['tipo_cambio'] = tipo_cambio
-        kwargs['lista_deudas'] = lista_deudas
         return kwargs
 
     def get_context_data(self, **kwargs):

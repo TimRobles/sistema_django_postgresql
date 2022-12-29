@@ -19,6 +19,8 @@ urlpatterns = [
     
     path('deudores/eliminar/pago/<int:id_cliente>/<pk>/',views.DeudaPagarDeleteView.as_view(),name='deudores_eliminar_pago'),
     path('deudores/actualizar/pago/<int:id_cliente>/<int:id_deuda>/<pk>/',views.DeudaPagarUpdateView.as_view(),name='deudores_actualizar_pago'),
+    
+    path('deuda-json/<int:sociedad_id>/', views.DeudaJsonView, name='deuda_json'),
 
     path('cuenta-bancaria/depositos/',views.DepositosView.as_view(),name='cuenta_bancaria_depositos_inicio'),
     path('cuenta-bancaria/depositos/tabla/',views.DepositosTabla,name='cuenta_bancaria_depositos_tabla'),

@@ -121,11 +121,9 @@ class CuentaBancariaIngresoPagarForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         tipo_cambio = kwargs.pop('tipo_cambio')
-        lista_deudas = kwargs.pop('lista_deudas')
         super(CuentaBancariaIngresoPagarForm, self).__init__(*args, **kwargs)   
         if not self.fields['tipo_cambio'].initial:
             self.fields['tipo_cambio'].initial = tipo_cambio
-        self.fields['deuda'].queryset = Deuda.objects.filter(id__in=lista_deudas)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

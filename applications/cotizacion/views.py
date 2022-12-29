@@ -320,7 +320,8 @@ def CotizacionVentaCreateView(request):
     return HttpResponseRedirect(reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':obj.id}))
 
 
-class CotizacionVentaVerView(TemplateView):
+class CotizacionVentaVerView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('cotizacion.view_cotizacionventa')
     template_name = "cotizacion/cotizacion_venta/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -427,11 +428,17 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         return JsonResponse(data)
 
 
-class CotizacionVentaClienteView(BSModalUpdateView):
+class CotizacionVentaClienteView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_cliente.html"
     form_class = CotizacionVentaClienteForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -480,10 +487,16 @@ def ClienteInterlocutorView(request, id_cliente):
         return JsonResponse(data)
 
 
-class CotizacionVentaMaterialDetalleView(BSModalFormView):
+class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('cotizacion.add_cotizacionventadetalle')
     template_name = "cotizacion/cotizacion_venta/form_material.html"
     form_class = CotizacionVentaMaterialDetalleForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
