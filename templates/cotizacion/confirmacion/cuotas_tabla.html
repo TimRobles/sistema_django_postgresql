@@ -39,17 +39,11 @@
             <tbody>
                 <tr>
                     <th class="pe-2">N° Cotización:</th>
-                    <td>{{ confirmacion.sociedad.abreviatura }} {{ confirmacion.cotizacion_venta.numero_cotizacion|numeroXn:6 }}</td>
+                    <td>{{ confirmacion.sociedad.abreviatura }}{{ confirmacion.cotizacion_venta.numero_cotizacion|numeroXn:6 }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Solicitud de Crédito:</th>
-                    <td>{{ confirmacion.moneda.simbolo }}
-                        {% if confirmacion.monto_solicitado %}
-                        {{ confirmacion.monto_solicitado|intcomma }}
-                        {% else %}
-                        {{ confirmacion.total|intcomma }}
-                        {% endif %}
-                    </td>
+                    <td>{{ confirmacion.moneda.simbolo }} {{ confirmacion.monto_solicitado|intcomma }}</td>
                 </tr>
                 <tr>
                     <th class="pe-2">Condición de Pago:</th>

@@ -252,7 +252,9 @@ class ConfirmacionVenta(models.Model):
 
     @property
     def monto_solicitado(self):
-        return self.cotizacion_venta.monto_solicitado
+        if self.cotizacion_venta.monto_solicitado:
+            return self.cotizacion_venta.monto_solicitado
+        return self.total
 
     def __str__(self):
         return "%s%s" % (self.sociedad.abreviatura, self.cotizacion_venta)
