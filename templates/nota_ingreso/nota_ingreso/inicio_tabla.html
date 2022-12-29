@@ -3,6 +3,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Sociedad</th>
             <th>Fecha</th>
             <th>N° de Nota de Ingreso</th>
             <th>Observaciones</th>
@@ -16,6 +17,7 @@
     <tbody>
         {% for nota_ingreso in contexto_nota_ingreso %}
         <tr> 
+            <td class="fondo-personalizado" style="--color-fondo: {{ nota_ingreso.sociedad.color }};">{{ nota_ingreso.sociedad }}</td>
             <td>{{ nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
             <td>{{ nota_ingreso.nro_nota_ingreso|numeroXn:6 }}</td>
             <td>
