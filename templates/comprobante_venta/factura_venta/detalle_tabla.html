@@ -155,6 +155,15 @@
                 <tr>
                     <th class="pe-2">Fecha:</th>
                     <td>{{ factura.fecha_emision|date:'d/m/Y' }}</td>
+                    {% if factura.estado == 1 %}
+                    <td class="ps-2" rowspan="3">
+                        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_serie' factura.id %}"
+                            data-table-url="{% url 'comprobante_venta_app:factura_venta_detalle_tabla' factura.id %}"
+                            class="update btn btn-primary text-nowrap">
+                            Seleccionar Serie
+                        </button>
+                    </td>
+                    {% endif %}
                     <th class="pe-2">Tipo de Cambio (HOY):</th>
                     <td>
                         {% if tipo_cambio_hoy %}
@@ -172,13 +181,10 @@
                         {% endif %}
                         ({{ nubefact_acceso }})
                     </td>
-                    <td class="ps-2" rowspan="2">
-                        {% if factura.estado == 1 %}
-                        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_serie' factura.id %}"
-                            data-table-url="{% url 'comprobante_venta_app:factura_venta_detalle_tabla' factura.id %}"
-                            class="update btn btn-primary text-nowrap">
-                            Seleccionar Serie
-                        </button>
+                    <th class="pe-2">Tipo de Cambio:</th>
+                    <td>
+                        {% if tipo_cambio %}
+                        {{ tipo_cambio }}
                         {% endif %}
                     </td>
                 </tr>

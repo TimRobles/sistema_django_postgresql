@@ -140,6 +140,15 @@
                 <tr>
                     <th class="pe-2">Fecha:</th>
                     <td>{{ boleta.fecha_emision|date:'d/m/Y' }}</td>
+                    {% if boleta.estado == 1 %}
+                    <td class="ps-2" rowspan="3">
+                        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_serie' boleta.id %}"
+                            data-table-url="{% url 'comprobante_venta_app:boleta_venta_detalle_tabla' boleta.id %}"
+                            class="update btn btn-primary text-nowrap">
+                            Seleccionar Serie
+                        </button>
+                    </td>
+                    {% endif %}
                     <th class="px-2">Tipo de Cambio (HOY):</th>
                     <td>
                         {% if tipo_cambio_hoy %}
@@ -157,13 +166,10 @@
                         {% endif %}
                         ({{ nubefact_acceso }})
                     </td>
-                    <td class="ps-2" rowspan="2">
-                        {% if boleta.estado == 1 %}
-                        <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_serie' boleta.id %}"
-                            data-table-url="{% url 'comprobante_venta_app:boleta_venta_detalle_tabla' boleta.id %}"
-                            class="update btn btn-primary text-nowrap">
-                            Seleccionar Serie
-                        </button>
+                    <th class="px-2">Tipo de Cambio:</th>
+                    <td>
+                        {% if tipo_cambio %}
+                        {{ tipo_cambio }}
                         {% endif %}
                     </td>
                 </tr>

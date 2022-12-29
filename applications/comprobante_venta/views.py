@@ -142,7 +142,7 @@ class FacturaVentaDetalleView(TemplateView):
         
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         if obj.confirmacion:
-            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+            tipo_cambio = obj.confirmacion.tipo_cambio.tipo_cambio_venta
         else:
             tipo_cambio = Decimal('1.00')
         context = super(FacturaVentaDetalleView, self).get_context_data(**kwargs)
@@ -171,7 +171,7 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
 
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         if obj.confirmacion:
-            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+            tipo_cambio = obj.confirmacion.tipo_cambio.tipo_cambio_venta
         else:
             tipo_cambio = Decimal('1.00')
         materiales = None
@@ -1008,7 +1008,7 @@ class BoletaVentaDetalleView(TemplateView):
 
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         if obj.confirmacion:
-            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+            tipo_cambio = obj.confirmacion.tipo_cambio.tipo_cambio_venta
         else:
             tipo_cambio = Decimal('1.00')
 
@@ -1037,7 +1037,7 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         if obj.confirmacion:
-            tipo_cambio = TipoCambio.objects.tipo_cambio_venta(obj.confirmacion.fecha_confirmacion)
+            tipo_cambio = obj.confirmacion.tipo_cambio.tipo_cambio_venta
         else:
             tipo_cambio = Decimal('1.00')
  
