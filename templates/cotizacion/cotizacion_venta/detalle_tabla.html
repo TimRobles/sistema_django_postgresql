@@ -408,7 +408,7 @@
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_detalle_costeador' material.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"    
                             data-modal="modal-xl"
-                            class="update btn btn-success btn-sm"
+                            class="create btn btn-success btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Costeador">
                             <i class="bi bi-calculator"></i>
                         </button>
@@ -428,8 +428,7 @@
 
                         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_sociedad' material.id %}"
                             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-                            data-keep-open="true"
-                            class="update btn swatch-teal btn-sm"
+                            class="create btn swatch-teal btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Stock Sociedad">
                             <i class="bi bi-ui-checks"></i>
                         </button>
