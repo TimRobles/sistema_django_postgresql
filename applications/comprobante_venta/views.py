@@ -780,6 +780,8 @@ class FacturaVentaNubefactConsultarView(DeleteView):
                 obj.estado = 6
             elif respuesta.aceptado:
                 obj.estado = 4
+                obj.confirmacion.estado = 2
+                obj.confirmacion.save()
             else:
                 obj.estado = 5
             registro_guardar(obj, self.request)
@@ -1417,6 +1419,8 @@ class BoletaVentaNubefactConsultarView(DeleteView):
                 obj.estado = 6
             elif respuesta.aceptado:
                 obj.estado = 4
+                obj.confirmacion.estado = 2
+                obj.confirmacion.save()
             else:
                 obj.estado = 5
             registro_guardar(obj, self.request)
