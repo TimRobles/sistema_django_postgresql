@@ -172,6 +172,16 @@
                     </td>
                 </tr>
                 <tr>
+                    <th class="pe-2">Fecha Vencimiento:</th>
+                    <td>{{ factura.fecha_vencimiento|date:'d/m/Y' }}</td>
+                    <th class="pe-2">Tipo de Cambio:</th>
+                    <td>
+                        {% if tipo_cambio %}
+                        {{ tipo_cambio }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <th class="pe-2">N° Factura:</th>
                     <td class="text-nowrap">
                         {{ factura.serie_comprobante }}
@@ -181,14 +191,6 @@
                         {% endif %}
                         ({{ nubefact_acceso }})
                     </td>
-                    <th class="pe-2">Tipo de Cambio:</th>
-                    <td>
-                        {% if tipo_cambio %}
-                        {{ tipo_cambio }}
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
                     <th class="pe-2">Estado Factura:</th>
                     <td>{{ factura.get_estado_display }}</td>
                 </tr>
