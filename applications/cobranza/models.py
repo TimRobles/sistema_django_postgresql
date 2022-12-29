@@ -277,6 +277,7 @@ class Deuda(models.Model):
     fecha_vencimiento = models.DateField('Fecha de vencimiento', auto_now=False, auto_now_add=False)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='Deuda_cliente')
+    estado_cancelado = models.BooleanField(default=False)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Deuda_created_by', editable=False)

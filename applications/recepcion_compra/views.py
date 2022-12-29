@@ -164,7 +164,7 @@ class RecepcionCompraGenerarNotaIngresoView(BSModalFormView):
     form_class = RecepcionCompraGenerarNotaIngresoForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['nota'].id})
+        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.request.session['nota'].id})
 
     @transaction.atomic
     def form_valid(self, form):
@@ -181,7 +181,7 @@ class RecepcionCompraGenerarNotaIngresoView(BSModalFormView):
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
-                self.kwargs['nota']=nota
+                self.request.session['nota']=nota
                 self.request.session['primero'] = False
             return super().form_valid(form)
         except Exception as ex:
