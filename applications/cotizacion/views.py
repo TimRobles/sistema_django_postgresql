@@ -23,6 +23,7 @@ from applications.recepcion_compra.models import RecepcionCompra
 from .forms import (
     ConfirmacionClienteForm,
     ConfirmacionOrdenCompraForm,
+    ConfirmacionVentaBuscarForm,
     ConfirmacionVentaCuotaForm,
     ConfirmacionVentaFormaPagoForm,
     ConfirmacionVentaGenerarCuotasForm,
@@ -1813,18 +1814,46 @@ class CotizacionVentaResumenView(BSModalReadView):
 
 #################################################################################################################
 
-class ConfirmacionListView(TemplateView):
+class ConfirmacionListView(FormView):
     template_name = 'cotizacion/confirmacion/inicio.html'
+    form_class = ConfirmacionVentaBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(ConfirmacionListView, self).get_form_kwargs()
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        return kwargs
 
     def get_context_data(self, **kwargs):
+        context = super(ConfirmacionListView, self).get_context_data(**kwargs)
         contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3)
         try:
             contexto_cotizacion_venta = contexto_cotizacion_venta.filter(cotizacion_venta__id = kwargs['id_cotizacion'])
         except:
             print("Error")
+        
+        filtro_estado = self.request.GET.get('estado')
+        filtro_cliente = self.request.GET.get('cliente')
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
+            context['contexto_filtro'] = "?estado=" + filtro_estado
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
+            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+        
 
-        context = super(ConfirmacionListView, self).get_context_data(**kwargs)
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(contexto_cotizacion_venta) > objectsxpage:
+            paginator = Paginator(contexto_cotizacion_venta, objectsxpage)
+            page_number = self.request.GET.get('page')
+            contexto_cotizacion_venta = paginator.get_page(page_number)
+
         context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
+        context['contexto_pagina'] = contexto_cotizacion_venta
         return context
 
 

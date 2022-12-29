@@ -4,9 +4,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from applications.datos_globales.models import Moneda
+from applications.variables import ESTADOS_CONFIRMACION
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.cotizacion.models import ConfirmacionOrdenCompra, ConfirmacionVenta, ConfirmacionVentaCuota, CotizacionDescuentoGlobal, CotizacionObservacion, CotizacionOtrosCargos, CotizacionVenta, CotizacionVentaDetalle, PrecioListaMaterial
-from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
+from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
 from applications.material.models import Material
 from applications.usuario.models import DatosUsuario
 
@@ -424,3 +425,17 @@ class CosteadorForm (BSModalModelForm):
         self.fields['precio_final'].initial = precio_final
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ConfirmacionVentaBuscarForm(forms.Form):
+    estado = forms.ChoiceField(choices=((None,'------------'),) + ESTADOS_CONFIRMACION, required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        super(ConfirmacionVentaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['estado'].initial = filtro_estado
+        self.fields['cliente'].initial = filtro_cliente
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'
