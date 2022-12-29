@@ -587,10 +587,11 @@ class FacturaVentaGuardarView(DeleteView):
             obj.fecha_vencimiento = fecha_vencimiento
             obj.estado = 2
             obj.numero_factura = FacturaVenta.objects.nuevo_numero(obj)
+            obj.confirmacion.estado = 2
+            registro_guardar(obj.confirmacion, self.request)
+            obj.confirmacion.save()
             registro_guardar(obj, self.request)
             obj.save()
-            obj.confirmacion.estado = 2
-            obj.confirmacion.save()
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -1222,10 +1223,11 @@ class BoletaVentaGuardarView(DeleteView):
             obj.fecha_vencimiento = fecha_vencimiento
             obj.estado = 2
             obj.numero_boleta = BoletaVenta.objects.nuevo_numero(obj)
+            obj.confirmacion.estado = 2
+            registro_guardar(obj.confirmacion, self.request)
+            obj.confirmacion.save()
             registro_guardar(obj, self.request)
             obj.save()
-            obj.confirmacion.estado = 2
-            obj.confirmacion.save()
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
