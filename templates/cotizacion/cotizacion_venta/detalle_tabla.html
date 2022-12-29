@@ -29,7 +29,7 @@
     <div class="col-auto">
         <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_observacion' cotizacion.id %}"
             data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-            class="update btn btn-primary">
+            class="create btn btn-primary">
             Observaciones
         </button>
     </div>
@@ -523,7 +523,6 @@
                     {% if cotizacion.estado < 3 %}
                     <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_otros_cargos' cotizacion.id %}"
                         data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id %}"
-                        data-keep-open="true"
                         class="update btn btn-success btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Otros Cargos">
                         <i class="bi bi-plus-square"></i>
