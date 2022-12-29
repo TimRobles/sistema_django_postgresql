@@ -114,16 +114,22 @@ class CuentaBancariaIngresoPagarForm(BSModalModelForm):
     class Meta:
         model = Pago
         fields = (
-            'deuda',
             'monto',
+            'deuda',
             'tipo_cambio',
             )
+    def clean_monto(self):
+        monto = self.cleaned_data.get('monto')
+        self.fields['deuda'].queryset = Deuda.objects.all()
+    
+        return monto
 
     def __init__(self, *args, **kwargs):
         tipo_cambio = kwargs.pop('tipo_cambio')
         super(CuentaBancariaIngresoPagarForm, self).__init__(*args, **kwargs)   
         if not self.fields['tipo_cambio'].initial:
             self.fields['tipo_cambio'].initial = tipo_cambio
+        self.fields['deuda'].queryset = Deuda.objects.none()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

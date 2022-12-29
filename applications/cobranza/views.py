@@ -408,7 +408,7 @@ class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
 
     def get_success_url(self):
         if self.kwargs['opcion']==1:
-            return reverse_lazy('cobranza_app:cuenta_bancaria_depositos_tabla')
+            return reverse_lazy('cobranza_app:cuenta_bancaria_depositos_inicio')
         else:
             return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
