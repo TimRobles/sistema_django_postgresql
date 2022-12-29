@@ -4,12 +4,10 @@ from applications.material.forms import (
     ComponenteForm,
     AtributoForm,
     FamiliaForm,
-    IdiomaMaterialForm,    
     SubFamiliaForm,
     MarcaForm,
     ModeloForm,
     IdiomaForm,      
-    IdiomaMaterialForm,      
     )
 
 from .models import (
