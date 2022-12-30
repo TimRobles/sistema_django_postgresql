@@ -1,5 +1,6 @@
 from datetime import datetime, time
 from django.shortcuts import render
+from django.core.paginator import Paginator
 
 from django.conf import settings
 from applications.funciones import consulta_distancia, registrar_excepcion
@@ -267,7 +268,16 @@ class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
             asistencias = asistencias.filter(condicion)
             context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
 
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(asistencias) > objectsxpage:
+            paginator = Paginator(asistencias, objectsxpage)
+            page_number = self.request.GET.get('page')
+            asistencias = paginator.get_page(page_number)
+
         context['contexto_asistencia_personal'] = asistencias
+        context['contexto_pagina'] = asistencias
+        
         return context
 
 def AsistenciaPersonalTabla(request):
@@ -298,7 +308,15 @@ def AsistenciaPersonalTabla(request):
             asistencias = asistencias.filter(condicion)
    
 
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(asistencias) > objectsxpage:
+            paginator = Paginator(asistencias, objectsxpage)
+            page_number = request.GET.get('page')
+            asistencias = paginator.get_page(page_number)
+
         context['contexto_asistencia_personal'] = asistencias
+        context['contexto_pagina'] = asistencias
 
         data['table'] = render_to_string(
             template,
@@ -340,8 +358,9 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
         sede = form.cleaned_data['sede']
         
         if consulta_distancia(longitud, latitud, sede.id) != "Estás en la oficina":
-            form.add_error('sede', 'No estás en la oficina, no seas sapo.')
-            return super().form_invalid(form)
+            if not self.request.user.is_superuser:
+                form.add_error('sede', 'No estás en la oficina, no seas sapo.')
+                return super().form_invalid(form)
 
         try:
             sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad
@@ -380,8 +399,9 @@ class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpda
         sede = form.cleaned_data['sede']
         
         if consulta_distancia(longitud, latitud, sede.id) != "Estás en la oficina":
-            form.add_error('sede', 'No estás en la oficina, no seas sapo.')
-            return super().form_invalid(form)
+            if not self.request.user.is_superuser:
+                form.add_error('sede', 'No estás en la oficina, no seas sapo.')
+                return super().form_invalid(form)
 
         hour = datetime.now()     
         self.object.hora_salida = hour.strftime("%H:%M") 
