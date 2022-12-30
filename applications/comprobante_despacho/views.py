@@ -28,7 +28,8 @@ from .forms import(
 )
 
 
-class GuiaListView(ListView):
+class GuiaListView(PermissionRequiredMixin, ListView):
+    permission_required = ('comprobante_despacho.view_guia')
     model = Guia
     template_name = 'comprobante_despacho/guia/inicio.html'
     context_object_name = 'contexto_guia'
@@ -48,7 +49,8 @@ def GuiaTabla(request):
         return JsonResponse(data)
 
 
-class GuiaDetalleView(TemplateView):
+class GuiaDetalleView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('comprobante_despacho.view_guia')
     template_name = "comprobante_despacho/guia/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -104,9 +106,15 @@ def GuiaDetalleVerTabla(request, id_guia):
         return JsonResponse(data)
 
 
-class GuiaCrearView(DeleteView):
+class GuiaCrearView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.add_guia')
     model = Despacho
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.object.id})
@@ -160,10 +168,16 @@ class GuiaCrearView(DeleteView):
         context['item'] = str(self.object.cliente) 
         return context
 
-class GuiaTransportistaView(BSModalUpdateView):
+class GuiaTransportistaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "comprobante_despacho/guia/form.html"
     form_class = GuiaTransportistaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -179,9 +193,15 @@ class GuiaTransportistaView(BSModalUpdateView):
         return context
 
 
-class GuiaTransportistaLimpiarView(BSModalDeleteView):
+class GuiaTransportistaLimpiarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -202,10 +222,16 @@ class GuiaTransportistaLimpiarView(BSModalDeleteView):
         return context
         
 
-class GuiaDetallePesoView(BSModalUpdateView):
+class GuiaDetallePesoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guiadetalle')
     model = GuiaDetalle
     template_name = "includes/formulario generico.html"
     form_class = GuiaDetallePesoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.object.guia.id})
@@ -221,11 +247,17 @@ class GuiaDetallePesoView(BSModalUpdateView):
         return context
         
 
-class GuiaSerieUpdateView(BSModalUpdateView):
+class GuiaSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/formulario generico.html"
     form_class = GuiaSerieForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(GuiaSerieUpdateView, self).get_context_data(**kwargs)
@@ -234,10 +266,16 @@ class GuiaSerieUpdateView(BSModalUpdateView):
         return context
 
 
-class GuiaPartidaView(BSModalUpdateView):
+class GuiaPartidaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "comprobante_despacho/guia/form direccion.html"
     form_class = GuiaPartidaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -264,10 +302,16 @@ class GuiaPartidaView(BSModalUpdateView):
         context['titulo'] = "Dirección de Partida"
         return context
 
-class GuiaDestinoView(BSModalUpdateView):
+class GuiaDestinoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "comprobante_despacho/guia/form direccion.html"
     form_class = GuiaDestinoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -295,10 +339,16 @@ class GuiaDestinoView(BSModalUpdateView):
         context['titulo'] = "Dirección de Destino"
         return context
 
-class GuiaBultosView(BSModalUpdateView):
+class GuiaBultosView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/formulario generico.html"
     form_class = GuiaBultosForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -313,10 +363,16 @@ class GuiaBultosView(BSModalUpdateView):
         context['titulo'] = "Número de Bultos"
         return context
 
-class GuiaConductorView(BSModalUpdateView):
+class GuiaConductorView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "comprobante_despacho/guia/form conductor.html"
     form_class = GuiaConductorForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -331,9 +387,15 @@ class GuiaConductorView(BSModalUpdateView):
         context['titulo'] = "Conductor"
         return context
 
-class GuiaConductorLimpiarView(BSModalDeleteView):
+class GuiaConductorLimpiarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -357,10 +419,16 @@ class GuiaConductorLimpiarView(BSModalDeleteView):
         context['dar_baja'] = True
         return context
 
-class GuiaMotivoTrasladoView(BSModalUpdateView):
+class GuiaMotivoTrasladoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/formulario generico.html"
     form_class = GuiaMotivoTrasladoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -375,11 +443,17 @@ class GuiaMotivoTrasladoView(BSModalUpdateView):
         context['titulo'] = "MotivoTraslado"
         return context
 
-class GuiaFechaTrasladoView(BSModalUpdateView):
+class GuiaFechaTrasladoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/formulario generico.html"
     form_class = GuiaFechaTrasladoForm
     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
@@ -393,11 +467,17 @@ class GuiaFechaTrasladoView(BSModalUpdateView):
         context['titulo'] = "Fecha de Traslado"
         return context
 
-class GuiaClienteView(BSModalUpdateView):
+class GuiaClienteView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "comprobante_despacho/guia/form_cliente.html"
     form_class = GuiaClienteForm
     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
@@ -425,7 +505,8 @@ class GuiaClienteView(BSModalUpdateView):
         return context
 
 
-class GuiaGuardarView(DeleteView):
+class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/form generico.html"
 
@@ -496,6 +577,9 @@ class GuiaGuardarView(DeleteView):
         if error_transporte_privado:
             context['texto'] = 'Ingresar los datos del conductor de transporte privado.'
             return render(request, 'includes/modal sin permiso.html', context)
+
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super(GuiaGuardarView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
@@ -527,7 +611,8 @@ class GuiaGuardarView(DeleteView):
         return context
 
 
-class GuiaNubeFactEnviarView(DeleteView):
+class GuiaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/form generico.html"
 
@@ -541,6 +626,9 @@ class GuiaNubeFactEnviarView(DeleteView):
         if error_nubefact:
             context['texto'] = 'No hay una ruta para envío a NubeFact'
             return render(request, 'includes/modal sin permiso.html', context)
+
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super(GuiaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
@@ -574,9 +662,15 @@ class GuiaNubeFactEnviarView(DeleteView):
         return context
 
 
-class GuiaNubeFactConsultarView(DeleteView):
+class GuiaNubeFactConsultarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
@@ -609,9 +703,15 @@ class GuiaNubeFactConsultarView(DeleteView):
         return context
 
 
-class GuiaAnularView(BSModalDeleteView):
+class GuiaAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_despacho_app:guia_inicio')
@@ -641,9 +741,15 @@ class GuiaAnularView(BSModalDeleteView):
         return context
 
 
-class GuiaNubefactRespuestaDetailView(BSModalReadView):
+class GuiaNubefactRespuestaDetailView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('comprobante_despacho.view_guia')
     model = Guia
     template_name = "comprobante_venta/nubefact_respuesta.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(GuiaNubefactRespuestaDetailView, self).get_context_data(**kwargs)
@@ -652,28 +758,15 @@ class GuiaNubefactRespuestaDetailView(BSModalReadView):
         return context
 
 
-class GuiaEliminarView(DeleteView):
+class GuiaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_despacho.delete_guia')
     model = Guia
     template_name = "includes/form generico.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # context = {}
-        # error_nubefact = False
-        # error_codigo_sunat = False
-        # context['titulo'] = 'Error de guardar'
-        # if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
-        #     error_nubefact = True
-        # for detalle in self.get_object().GuiaDetalle_factura_venta.all():
-        #     if not detalle.codigo_producto_sunat:
-        #         error_codigo_sunat = True
-
-        # if error_nubefact:
-        #     context['texto'] = 'No hay una ruta para envío a NubeFact'
-        #     return render(request, 'includes/modal sin permiso.html', context)
-        # if error_codigo_sunat:
-        #     context['texto'] = 'Hay productos sin Código de Sunat'
-        #     return render(request, 'includes/modal sin permiso.html', context)
-        return super(GuiaEliminarView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.request.session['id_despacho']})

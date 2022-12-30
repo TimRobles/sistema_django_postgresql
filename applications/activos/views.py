@@ -124,7 +124,7 @@ def ProductoSunatActivoView(request, id_clase):
         ).replace('selected', 'selected=""')
         return JsonResponse(data)
 
-class ProductoSunatActivoUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+class ProductoSunatActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('material.change_material')
     model = ActivoBase
     template_name = "material/material/form_sunat.html"
@@ -1745,7 +1745,8 @@ class InventarioActivoFinalizarView(PermissionRequiredMixin,BSModalDeleteView):
         context['item'] = self.object.usuario
         return context
 
-class InventarioActivoDetalleImprimirView(View):
+class InventarioActivoDetalleImprimirView(PermissionRequiredMixin, View):
+    permission_required = ('activos.view_inventarioactivo')
     def get(self, request, *args, **kwargs):
         color = COLOR_DEFAULT
         titulo = 'Inventario de Activos'

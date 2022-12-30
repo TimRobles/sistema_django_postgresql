@@ -26,7 +26,8 @@ from .forms import(
     ClienteBuscarForm,
 )
 
-class LineaCreditoView(ListView):
+class LineaCreditoView(PermissionRequiredMixin, ListView):
+    permission_required = ('cobranza.view_lineacredito')
     model = LineaCredito
     template_name = 'cobranza/linea_credito/inicio.html'
     context_object_name = 'contexto_linea_credito'
@@ -45,11 +46,17 @@ def LineaCreditoTabla(request):
         )
         return JsonResponse(data)
 
-class LineaCreditoCreateView(BSModalCreateView):
+class LineaCreditoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('cobranza.add_lineacredito')
     model = LineaCredito
     template_name = "cobranza/linea_credito/form.html"
     form_class = LineaCreditoForm
     success_url = reverse_lazy('cobranza_app:linea_credito_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if self.request.session['primero']:
@@ -65,7 +72,8 @@ class LineaCreditoCreateView(BSModalCreateView):
         return context
 
 
-class DeudoresView(FormView): 
+class DeudoresView(PermissionRequiredMixin, FormView): 
+    permission_required = ('cobranza.view_deuda')
     template_name = "cobranza/deudas/inicio.html"
     form_class = ClienteBuscarForm
     success_url = '.'
@@ -102,9 +110,10 @@ class DeudoresView(FormView):
         return context
     
 
-class DeudaView(TemplateView):
+class DeudaView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('cobranza.view_deuda')
     template_name = "cobranza/deudas/detalle.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super(DeudaView, self).get_context_data(**kwargs)
         deudas = Deuda.objects.filter(cliente__id=self.kwargs['id_cliente'])    
@@ -162,12 +171,37 @@ def DeudaJsonView(request, sociedad_id):
                     'nombre' : deuda.__str__(),
                     })
         return JsonResponse(data, safe=False)
+
+
+def IngresoJsonView(request, sociedad_id):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        buscar = Ingreso.objects.filter(
+            cuenta_bancaria__sociedad__id=sociedad_id,
+            es_pago=True,
+            ).filter(
+                Q(monto__icontains=term) | Q(cuenta_bancaria__banco__razon_social__icontains=term)  | Q(cuenta_bancaria__banco__nombre_comercial__icontains=term)
+            )
+        for ingreso in buscar:
+            if ingreso.saldo > 0:
+                data.append({
+                    'id' : ingreso.id,
+                    'nombre' : ingreso.__str__(),
+                    })
+        return JsonResponse(data, safe=False)
     
 
-class DeudaPagarCreateView(BSModalFormView):
+class DeudaPagarCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('cobranza.add_pago')
     template_name = "cobranza/deudas/form pagar.html"
     form_class = DeudaPagarForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
 
@@ -204,16 +238,10 @@ class DeudaPagarCreateView(BSModalFormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
-        lista_ingresos = []
-        for ingreso in Ingreso.objects.all():
-            if ingreso.saldo > 0:
-                lista_ingresos.append(ingreso.id)
-
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(deuda.fecha_deuda)
         tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
         kwargs['tipo_cambio'] = tipo_cambio
-        kwargs['lista_ingresos'] = lista_ingresos
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -226,10 +254,16 @@ class DeudaPagarCreateView(BSModalFormView):
         return context
 
 
-class DeudaPagarUpdateView(BSModalUpdateView):
+class DeudaPagarUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cobranza.change_pago')
     model = Pago
     template_name = "cobranza/deudas/form pagar.html"
     form_class = DeudaPagarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
@@ -243,11 +277,11 @@ class DeudaPagarUpdateView(BSModalUpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
-        lista_ingresos = []
-        for ingreso in Ingreso.objects.all():
-            if ingreso.saldo > 0:
-                lista_ingresos.append(ingreso.id)
-        lista_ingresos.append(self.object.id_registro)
+        # lista_ingresos = []
+        # for ingreso in Ingreso.objects.all():
+        #     if ingreso.saldo > 0:
+        #         lista_ingresos.append(ingreso.id)
+        # lista_ingresos.append(self.object.id_registro)
         
         # lista_notas = []
         # for nota in Nota.objects.all():
@@ -262,7 +296,7 @@ class DeudaPagarUpdateView(BSModalUpdateView):
         tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(deuda.fecha_deuda)
         tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
         kwargs['tipo_cambio'] = tipo_cambio
-        kwargs['lista_ingresos'] = lista_ingresos
+        # kwargs['lista_ingresos'] = lista_ingresos
         # kwargs['lista_notas'] = lista_notas
         return kwargs
 
@@ -276,9 +310,15 @@ class DeudaPagarUpdateView(BSModalUpdateView):
         return context
 
 
-class DeudaPagarDeleteView(BSModalDeleteView):
+class DeudaPagarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cobranza.delete_pago')
     model = Pago
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
@@ -291,9 +331,15 @@ class DeudaPagarDeleteView(BSModalDeleteView):
         return context
     
 
-class DeudaCancelarView(BSModalDeleteView):
+class DeudaCancelarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cobranza.change_deuda')
     model = Deuda
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
@@ -333,7 +379,8 @@ class DeudaCancelarView(BSModalDeleteView):
         return context
 
 
-class CuentaBancariaView(TemplateView):
+class CuentaBancariaView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('datos_globales.view_cuentabancariasociedad')
     template_name = "bancos/cuenta bancaria/inicio.html"
 
     def get_context_data(self, **kwargs):
@@ -342,15 +389,11 @@ class CuentaBancariaView(TemplateView):
         return context
 
 
-class CuentaBancariaDetalleView(DetailView):
+class CuentaBancariaDetalleView(PermissionRequiredMixin, DetailView):
+    permission_required = ('datos_globales.view_cuentabancariasociedad')
     model = CuentaBancariaSociedad
     template_name = "bancos/cuenta bancaria/detalle.html"
     context_object_name = 'cuenta_bancaria'
-
-    # def get_context_data(self, **kwargs):
-    #     context = super(CuentaBancariaDetalleView, self).get_context_data(**kwargs)
-    #     context['movimientos'] = movimientos_bancarios(self.object.id)
-    #     return context
 
     def get_context_data(self, **kwargs):
         context = super(CuentaBancariaDetalleView, self).get_context_data(**kwargs)
@@ -372,16 +415,6 @@ def CuentaBancariaDetalleTabla(request, pk):
     if request.method == 'GET':
         template = "bancos/cuenta bancaria/detalle tabla.html"
         context = {}
-        # context['cuenta_bancaria'] = CuentaBancariaSociedad.objects.get(id=pk)
-        # context['movimientos'] = movimientos_bancarios(pk)
-
-        # data['table'] = render_to_string(
-        #     template,
-        #     context,
-        #     request=request
-        # )
-        # return JsonResponse(data)
-
         context['cuenta_bancaria'] = CuentaBancariaSociedad.objects.get(id=pk)
         movimientos = movimientos_bancarios(pk)
 
@@ -402,10 +435,16 @@ def CuentaBancariaDetalleTabla(request, pk):
         return JsonResponse(data)
     
 
-class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
+class CuentaBancariaIngresoPagarCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('cobranza.add_pago')
     template_name = "bancos/cuenta bancaria/form pagar.html"
     form_class = CuentaBancariaIngresoPagarForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self):
         if self.kwargs['opcion']==1:
             return reverse_lazy('cobranza_app:cuenta_bancaria_depositos_inicio')
@@ -463,11 +502,17 @@ class CuentaBancariaIngresoPagarCreateView(BSModalFormView):
         return context
     
 
-class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
+class CuentaBancariaIngresoPagarUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cobranza.change_pago')
     model = Pago
     template_name = "bancos/cuenta bancaria/form pagar.html"
     form_class = CuentaBancariaIngresoPagarForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
@@ -480,17 +525,10 @@ class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         ingreso = Ingreso.objects.get(id=self.kwargs['id_ingreso'])
-        lista_deudas = []
-        for deuda in Deuda.objects.filter(sociedad=ingreso.cuenta_bancaria.sociedad):
-            if deuda.saldo > 0:
-                lista_deudas.append(deuda.id)
-        lista_deudas.append(self.object.deuda.id)
-
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(ingreso.fecha)
         tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
         kwargs['tipo_cambio'] = tipo_cambio
-        kwargs['lista_deudas'] = lista_deudas
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -503,10 +541,16 @@ class CuentaBancariaIngresoPagarUpdateView(BSModalUpdateView):
         return context
 
 
-class CuentaBancariaIngresoPagarDeleteView(BSModalDeleteView):
+class CuentaBancariaIngresoPagarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cobranza.delete_pago')
     model = Pago
     template_name = "includes/eliminar generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
 
@@ -518,10 +562,16 @@ class CuentaBancariaIngresoPagarDeleteView(BSModalDeleteView):
         return context
     
 
-class CuentaBancariaIngresoView(BSModalCreateView):
+class CuentaBancariaIngresoView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('cobranza.add_ingreso')
     model = Ingreso
     template_name = "includes/formulario generico.html"
     form_class = CuentaBancariaIngresoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
@@ -542,10 +592,16 @@ class CuentaBancariaIngresoView(BSModalCreateView):
         return context
     
 
-class CuentaBancariaEfectivoIngresoView(BSModalCreateView):
+class CuentaBancariaEfectivoIngresoView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('cobranza.add_ingreso')
     model = Ingreso
     template_name = "includes/formulario generico.html"
     form_class = CuentaBancariaEfectivoIngresoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
@@ -566,10 +622,16 @@ class CuentaBancariaEfectivoIngresoView(BSModalCreateView):
         return context
     
 
-class CuentaBancariaIngresoCambiarUpdateView(BSModalUpdateView):
+class CuentaBancariaIngresoCambiarUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cobranza.change_ingreso')
     model = Ingreso
     template_name = "includes/formulario generico.html"
     form_class = CuentaBancariaIngresoCambiarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
@@ -588,10 +650,16 @@ class CuentaBancariaIngresoCambiarUpdateView(BSModalUpdateView):
         return context
     
 
-class CuentaBancariaIngresoUpdateView(BSModalUpdateView):
+class CuentaBancariaIngresoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cobranza.change_ingreso')
     model = Ingreso
     template_name = "includes/formulario generico.html"
     form_class = CuentaBancariaIngresoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
@@ -610,10 +678,16 @@ class CuentaBancariaIngresoUpdateView(BSModalUpdateView):
         return context
     
 
-class CuentaBancariaEfectivoIngresoUpdateView(BSModalUpdateView):
+class CuentaBancariaEfectivoIngresoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cobranza.change_ingreso')
     model = Ingreso
     template_name = "includes/formulario generico.html"
     form_class = CuentaBancariaEfectivoIngresoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
@@ -632,9 +706,15 @@ class CuentaBancariaEfectivoIngresoUpdateView(BSModalUpdateView):
         return context
     
 
-class CuentaBancariaIngresoDeleteView(BSModalDeleteView):
+class CuentaBancariaIngresoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cobranza.delete_ingreso')
     model = Ingreso
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
@@ -647,10 +727,16 @@ class CuentaBancariaIngresoDeleteView(BSModalDeleteView):
         return context
 
 
-class CuentaBancariaIngresoVerVoucherView(BSModalReadView):
+class CuentaBancariaIngresoVerVoucherView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('cobranza.view_ingreso')
     model = Ingreso
     template_name = "bancos/cuenta bancaria/ver voucher.html"
     context_object_name = 'cuenta_bancaria'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(CuentaBancariaIngresoVerVoucherView, self).get_context_data(**kwargs)
@@ -658,9 +744,15 @@ class CuentaBancariaIngresoVerVoucherView(BSModalReadView):
         return context
     
 
-class CuentaBancariaIngresoCancelarView(BSModalDeleteView):
+class CuentaBancariaIngresoCancelarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cobranza.add_redondeo')
     model = Deuda
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.kwargs['id_cuenta_bancaria']})
@@ -700,9 +792,15 @@ class CuentaBancariaIngresoCancelarView(BSModalDeleteView):
         return context
 
 
-class RedondeoDeleteView(BSModalDeleteView):
+class RedondeoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cobranza.delete_redondeo')
     model = Redondeo
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
@@ -715,7 +813,8 @@ class RedondeoDeleteView(BSModalDeleteView):
         return context
 
 
-class DepositosView(FormView):
+class DepositosView(PermissionRequiredMixin, FormView):
+    permission_required = ('cobranza.view_ingreso')
     template_name = "bancos/cuenta bancaria/depositos.html"
     form_class = DepositosBuscarForm
     success_url = '.'
@@ -839,7 +938,8 @@ def DepositosTabla(request):
         return JsonResponse(data)
 
 
-class DepositosPagarDeleteView(BSModalDeleteView):
+class DepositosPagarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cobranza.delete_pago')
     model = Pago
     template_name = "includes/eliminar generico.html"
 

@@ -27,7 +27,20 @@
         $("#id_ingresos").select2({
             width:'100%',
             dropdownParent: $(".modal-body"),
-            matcher: buscar_select2
+            matcher: buscar_select2,
+            ajax: {
+                url: "{% url 'cobranza_app:ingreso_json' deuda.sociedad.id %}",
+                dataType: 'json',
+                type: "GET",
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {id: item.id, text: item.nombre}
+                        })
+                    };
+                }
+            },
+            minimumInputLength: 3,
         });
     });
 </script>

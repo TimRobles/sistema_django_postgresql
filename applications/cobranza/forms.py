@@ -127,33 +127,45 @@ class CuentaBancariaIngresoPagarForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         tipo_cambio = kwargs.pop('tipo_cambio')
         super(CuentaBancariaIngresoPagarForm, self).__init__(*args, **kwargs)   
-        if not self.fields['tipo_cambio'].initial:
+        try:
+            deuda = self.instance.deuda
+            self.fields['deuda'].queryset = Deuda.objects.filter(id=deuda.id)
+            self.fields['deuda'].initial = deuda
+        except:
             self.fields['tipo_cambio'].initial = tipo_cambio
-        self.fields['deuda'].queryset = Deuda.objects.none()
+            self.fields['deuda'].queryset = Deuda.objects.none()
+
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 
 class DeudaPagarForm(BSModalModelForm):
-    ingresos = forms.ModelChoiceField(queryset=Ingreso.objects.all())
+    ingresos = forms.ModelChoiceField(queryset=Ingreso.objects.none())
     class Meta:
         model = Pago
         fields = (
-            'ingresos',
             'monto',
+            'ingresos',
             'tipo_cambio',
             )
 
+    def clean_monto(self):
+        monto = self.cleaned_data.get('monto')
+        self.fields['ingresos'].queryset = Ingreso.objects.all()
+    
+        return monto
+
     def __init__(self, *args, **kwargs):
         tipo_cambio = kwargs.pop('tipo_cambio')
-        lista_ingresos = kwargs.pop('lista_ingresos')
         super(DeudaPagarForm, self).__init__(*args, **kwargs)   
-        if not self.fields['tipo_cambio'].initial:
-            self.fields['tipo_cambio'].initial = tipo_cambio
-        self.fields['ingresos'].queryset = Ingreso.objects.filter(id__in=lista_ingresos)
-        if self.instance.id:
+        try:
+            # ingreso = self.instance.content_type.get_object_for_this_type(id=self.instance.id_registro)
             ingreso = Ingreso.objects.get(id=self.instance.id_registro)
+            self.fields['ingresos'].queryset = Ingreso.objects.filter(id=ingreso.id)
             self.fields['ingresos'].initial = ingreso
+        except:
+            self.fields['tipo_cambio'].initial = tipo_cambio
+
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

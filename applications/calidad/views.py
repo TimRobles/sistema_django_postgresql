@@ -29,7 +29,8 @@ from .models import(
 )
 from applications.funciones import numeroXn, registrar_excepcion
 
-class FallaMaterialTemplateView(TemplateView):
+class FallaMaterialTemplateView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('calidad.view_fallamaterial')
     template_name = "calidad/falla_material/inicio.html"
 
     def get_context_data(self, **kwargs):
@@ -38,6 +39,7 @@ class FallaMaterialTemplateView(TemplateView):
         context['contexto_subfamilias'] = sub_familias
 
         return context
+
 
 class FallaMaterialDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('calidad.view_fallamaterial')
@@ -56,6 +58,7 @@ class FallaMaterialDetailView(PermissionRequiredMixin, DetailView):
         context['fallas'] = FallaMaterial.objects.filter(sub_familia = sub_familia)
         return context
 
+
 def FallaMaterialDetailTabla(request, pk):
     data = dict()
     if request.method == 'GET':
@@ -71,6 +74,7 @@ def FallaMaterialDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
 
 class FallaMaterialModalDetailView(PermissionRequiredMixin, BSModalReadView):
     permission_required = ('calidad.view_fallamaterial')
@@ -89,6 +93,7 @@ class FallaMaterialModalDetailView(PermissionRequiredMixin, BSModalReadView):
         context['fallas'] = FallaMaterial.objects.filter(sub_familia = sub_familia)
         context['titulo'] = 'Fallas Material'
         return context
+
 
 class FallaMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('calidad.add_fallamaterial')
@@ -115,19 +120,20 @@ class FallaMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
         context['titulo']="Falla"
         return context
 
-class FallaMaterialUpdateView(BSModalUpdateView):
+
+class FallaMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.view_fallamaterial')
     model = FallaMaterial
     template_name = "includes/formulario generico.html"
     form_class = FallaMaterialForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:falla_material_detalle_tabla', kwargs={'pk':self.object.sub_familia.id})
-
-    def get_context_data(self, **kwargs):
-        context = super(FallaMaterialUpdateView, self).get_context_data(**kwargs)
-        context['accion'] = "Actualizar"
-        context['titulo'] = "Falla"
-        return context
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
@@ -135,10 +141,23 @@ class FallaMaterialUpdateView(BSModalUpdateView):
 
         return super().form_valid(form)
 
-class FallaMaterialDeleteView(BSModalDeleteView):
+    def get_context_data(self, **kwargs):
+        context = super(FallaMaterialUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Falla"
+        return context
+
+
+class FallaMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_fallamaterial')
     model = FallaMaterial
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('calidad_app:falla_material')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:falla_material_detalle', kwargs={'pk':self.object.sub_familia.id})
@@ -731,7 +750,7 @@ class NotaControlCalidadStockDetalleDeleteView(PermissionRequiredMixin, BSModalD
         return context
 
 class SeriesDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('calidad.view_serie')
+    permission_required = ('calidad.view_seriecalidad')
     model = NotaControlCalidadStockDetalle
     template_name = "calidad/series/detalle.html"
     context_object_name = 'contexto_series'
@@ -772,7 +791,7 @@ def SeriesDetailTabla(request, pk):
         return JsonResponse(data)
 
 class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('calidad.add_serie')
+    permission_required = ('calidad.add_seriecalidad')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarBuenoForm
 
@@ -840,7 +859,7 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
         return context
 
 class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('calidad.add_serie')
+    permission_required = ('calidad.add_seriecalidad')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloForm
 
@@ -918,7 +937,7 @@ class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
         return context
 
 class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('calidad.add_serie')
+    permission_required = ('calidad.add_seriecalidad')
     template_name = "calidad/series/form_agregar.html"
     form_class = SerieAgregarMaloSinSerieForm
 
@@ -996,7 +1015,7 @@ class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormVi
         return context
 
 class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('calidad.change_serie')
+    permission_required = ('calidad.change_seriecalidad')
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarBuenoForm
@@ -1046,7 +1065,7 @@ class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('calidad.change_serie')
+    permission_required = ('calidad.change_seriecalidad')
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarMaloForm
@@ -1104,7 +1123,7 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('calidad.change_serie')
+    permission_required = ('calidad.change_seriecalidad')
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
     form_class = SerieActualizarMaloSinSerieForm
@@ -1162,7 +1181,7 @@ class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdate
         return context
 
 class SeriesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('calidad.delete_serie')
+    permission_required = ('calidad.delete_seriecalidad')
     model = SerieCalidad
     template_name = "includes/eliminar generico.html"
 
@@ -1179,48 +1198,3 @@ class SeriesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion']="Eliminar"
         context['titulo']="Serie"
         return context
-
-# from applications.calidad.models import(
-#     EstadoSerie,
-#     NotaControlCalidadStock,
-#     NotaControlCalidadStockDetalle,
-#     Serie,
-#     FallaMaterial,
-#     HistorialEstadoSerie,
-#     SerieCalidad,
-# )
-# from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
-# from applications.material.models import Material
-# from applications.nota_ingreso.models import NotaIngreso
-# from applications.sociedad.models import Sociedad
-# from django.contrib.contenttypes.models import ContentType
-
-# object = NotaControlCalidadStock.objects.get(id=2)
-
-# detalles = object.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
-# if ContentType.objects.get_for_model(object.nota_ingreso) == ContentType.objects.get_for_model(NotaIngreso):
-#     movimiento_inicial = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
-# else:
-#     movimiento_inicial = TipoMovimiento.objects.get(codigo=999) #Stock inicial
-
-# for detalle in detalles:
-#     print(detalle)
-#     if detalle.inspeccion == 2:
-#         movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
-#     elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
-#         movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
-#     else:
-#         movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
-#     movimiento_anterior = MovimientosAlmacen.objects.get(
-#         content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
-#         id_registro_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.id_registro,
-#         tipo_movimiento = movimiento_inicial,
-#         tipo_stock = movimiento_inicial.tipo_stock_final,
-#         signo_factor_multiplicador = +1,
-#         content_type_documento_proceso = ContentType.objects.get_for_model(object.nota_ingreso),
-#         id_registro_documento_proceso = object.nota_ingreso.id,
-#         sociedad = object.nota_ingreso.recepcion_compra.sociedad,
-#         almacen = detalle.nota_ingreso_detalle.almacen,
-#         movimiento_reversion = False,
-#     )
-#     print(movimiento_anterior)

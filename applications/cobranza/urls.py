@@ -21,6 +21,7 @@ urlpatterns = [
     path('deudores/actualizar/pago/<int:id_cliente>/<int:id_deuda>/<pk>/',views.DeudaPagarUpdateView.as_view(),name='deudores_actualizar_pago'),
     
     path('deuda-json/<int:sociedad_id>/', views.DeudaJsonView, name='deuda_json'),
+    path('ingreso-json/<int:sociedad_id>/', views.IngresoJsonView, name='ingreso_json'),
 
     path('cuenta-bancaria/depositos/',views.DepositosView.as_view(),name='cuenta_bancaria_depositos_inicio'),
     path('cuenta-bancaria/depositos/tabla/',views.DepositosTabla,name='cuenta_bancaria_depositos_tabla'),
