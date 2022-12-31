@@ -19,8 +19,8 @@ from . models import(
     FacturaVentaDetalle,
 )
 
-class FacturaVentaListView(FormView):
-    # model = FacturaVenta
+class FacturaVentaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('comprobante_venta.view_facturaventa')
     template_name = 'comprobante_venta/factura_venta/inicio.html'
     form_class = FacturaVentaBuscarForm
     success_url = '.'
@@ -28,6 +28,7 @@ class FacturaVentaListView(FormView):
     def get_form_kwargs(self):
         kwargs = super(FacturaVentaListView, self).get_form_kwargs()
         kwargs['filtro_numero_factura'] = self.request.GET.get('numero_factura')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
         # kwargs['filtro_estado'] = self.request.GET.get('estado')
@@ -39,34 +40,36 @@ class FacturaVentaListView(FormView):
         factura_venta = FacturaVenta.objects.all()
 
         filtro_numero_factura = self.request.GET.get('numero_factura')
-        #Agregar filtro Sociedad
+        filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
         # filtro_estado = self.request.GET.get('estado')
 
-        if filtro_cliente and filtro_fecha_emision:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            factura_venta = factura_venta.filter(condicion)
-            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_emision="
+        contexto_filtro = []
 
-        elif filtro_cliente:
+        if filtro_cliente:
             condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
             for palabra in filtro_cliente.split(" ")[1:]:
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
             factura_venta = factura_venta.filter(condicion)
-            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+            contexto_filtro.append("?cliente=" + filtro_cliente)
 
-        elif filtro_fecha_emision:
+        if filtro_fecha_emision:
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             factura_venta = factura_venta.filter(condicion)
-            context['contexto_filtro'] = "?fecha_emision=" + filtro_fecha_emision
+            contexto_filtro.append("?fecha_emision=" + filtro_fecha_emision)
 
-        elif filtro_numero_factura:
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+
+        if filtro_numero_factura:
             condicion = Q(numero_factura = filtro_numero_factura)
             factura_venta = factura_venta.filter(condicion)
-            context['contexto_filtro'] = "?numero_factura=" + filtro_numero_factura
+            contexto_filtro.append("?numero_factura=" + filtro_numero_factura)
+        
+        context['contexto_filtro'] = "".join(contexto_filtro)
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -85,6 +88,7 @@ def FacturaVentaTabla(request):
         context = {}
         factura_venta = FacturaVenta.objects.all()
         filtro_numero_factura = request.GET.get('numero_factura')
+        filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_fecha_emision = request.GET.get('fecha_emision')
         # filtro_estado = request.GET.get('estado')
@@ -103,6 +107,10 @@ def FacturaVentaTabla(request):
 
         elif filtro_fecha_emision:
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            factura_venta = factura_venta.filter(condicion)
+
+        elif filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
             factura_venta = factura_venta.filter(condicion)
 
         elif filtro_numero_factura:
@@ -125,7 +133,8 @@ def FacturaVentaTabla(request):
         )
         return JsonResponse(data)
 
-class FacturaVentaDetalleView(TemplateView):
+class FacturaVentaDetalleView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('comprobante_venta.view_facturaventa')
     template_name = "comprobante_venta/factura_venta/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -205,7 +214,8 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         )
         return JsonResponse(data)
 
-class FacturaVentaCrearView(DeleteView):
+class FacturaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.add_facturaventa')
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
 
@@ -229,7 +239,9 @@ class FacturaVentaCrearView(DeleteView):
         if error_cuotas:
             context['texto'] = 'Falta ingresar las cuotas.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(FacturaVentaCrearView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
@@ -312,9 +324,27 @@ class FacturaVentaCrearView(DeleteView):
         return context
 
 
-class FacturaVentaAnticipoCrearView(DeleteView):
+class FacturaVentaAnticipoCrearView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.add_facturaventa')
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_codigo_sunat = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
+        for detalle in detalles:
+            producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            if not producto.producto_sunat:
+                error_codigo_sunat = True
+
+        if error_codigo_sunat:
+            context['texto'] = 'Hay productos sin Código de Sunat.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
@@ -389,9 +419,27 @@ class FacturaVentaAnticipoCrearView(DeleteView):
         return context
 
 
-class FacturaVentaAnticipoRegularizarCrearView(DeleteView):
+class FacturaVentaAnticipoRegularizarCrearView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.add_facturaventa')
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_codigo_sunat = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().ConfirmacionVentaDetalle_confirmacion_venta.all()
+        for detalle in detalles:
+            producto = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            if not producto.producto_sunat:
+                error_codigo_sunat = True
+
+        if error_codigo_sunat:
+            context['texto'] = 'Hay productos sin Código de Sunat.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
@@ -501,12 +549,18 @@ class FacturaVentaAnticipoRegularizarCrearView(DeleteView):
         return context
 
 
-class FacturaVentaSerieUpdateView(BSModalUpdateView):
+class FacturaVentaSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_venta.change_facturaventa')
     model = FacturaVenta
     template_name = "includes/formulario generico.html"
     form_class = FacturaVentaSerieForm
     success_url = '.'
     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(FacturaVentaSerieUpdateView, self).get_context_data(**kwargs)
         context['accion'] = 'Seleccionar'
@@ -514,7 +568,8 @@ class FacturaVentaSerieUpdateView(BSModalUpdateView):
         return context
 
 
-class FacturaVentaDireccionView(BSModalDeleteView):
+class FacturaVentaDireccionView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('clientes.change_cliente')
     model = Cliente
     template_name = "includes/form generico.html"
 
@@ -528,7 +583,9 @@ class FacturaVentaDireccionView(BSModalDeleteView):
         if error_tipo_documento:
             context['texto'] = 'El cliente debe tener RUC.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(FacturaVentaDireccionView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['id_factura']})
@@ -557,7 +614,8 @@ class FacturaVentaDireccionView(BSModalDeleteView):
         return context
 
 
-class FacturaVentaGuardarView(DeleteView):
+class FacturaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_facturaventa')
     model = FacturaVenta
     template_name = "includes/form generico.html"
 
@@ -571,7 +629,9 @@ class FacturaVentaGuardarView(DeleteView):
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(FacturaVentaGuardarView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
@@ -606,9 +666,15 @@ class FacturaVentaGuardarView(DeleteView):
         return context
 
 
-class FacturaVentaAnularView(BSModalDeleteView):
+class FacturaVentaAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_facturaventa')
     model = FacturaVenta
     template_name = "includes/form generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.request.session['id_confirmacion']})
@@ -648,7 +714,8 @@ class FacturaVentaAnularView(BSModalDeleteView):
         return context
 
 
-class FacturaVentaNubeFactEnviarView(DeleteView):
+class FacturaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_facturaventa')
     model = FacturaVenta
     template_name = "includes/form generico.html"
 
@@ -669,7 +736,9 @@ class FacturaVentaNubeFactEnviarView(DeleteView):
         if error_codigo_sunat:
             context['texto'] = 'Hay productos sin Código de Sunat'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(FacturaVentaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
@@ -704,7 +773,8 @@ class FacturaVentaNubeFactEnviarView(DeleteView):
         return context
 
 
-class FacturaVentaNubeFactAnularView(BSModalUpdateView):
+class FacturaVentaNubeFactAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_venta.change_facturaventa')
     model = FacturaVenta
     template_name = "includes/formulario generico.html"
     form_class = FacturaVentaAnularForm
@@ -719,7 +789,9 @@ class FacturaVentaNubeFactAnularView(BSModalUpdateView):
         if error_fecha:
             context['texto'] = 'No se puede anular, realizar nota de crédito.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(FacturaVentaNubeFactAnularView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
@@ -752,9 +824,15 @@ class FacturaVentaNubeFactAnularView(BSModalUpdateView):
         return context
 
 
-class FacturaVentaNubefactRespuestaDetailView(BSModalReadView):
+class FacturaVentaNubefactRespuestaDetailView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('comprobante_venta.view_facturaventa')
     model = FacturaVenta
     template_name = "comprobante_venta/nubefact_respuesta.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(FacturaVentaNubefactRespuestaDetailView, self).get_context_data(**kwargs)
@@ -763,9 +841,15 @@ class FacturaVentaNubefactRespuestaDetailView(BSModalReadView):
         return context
 
 
-class FacturaVentaNubefactConsultarView(DeleteView):
+class FacturaVentaNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_facturaventa')
     model = FacturaVenta
     template_name = "includes/form generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
@@ -800,28 +884,15 @@ class FacturaVentaNubefactConsultarView(DeleteView):
         return context
 
 
-class FacturaVentaEliminarView(DeleteView):
+class FacturaVentaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.delete_facturaventa')
     model = FacturaVenta
     template_name = "includes/form generico.html"
-
+    
     def dispatch(self, request, *args, **kwargs):
-        # context = {}
-        # error_nubefact = False
-        # error_codigo_sunat = False
-        # context['titulo'] = 'Error de guardar'
-        # if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
-        #     error_nubefact = True
-        # for detalle in self.get_object().FacturaVentaDetalle_factura_venta.all():
-        #     if not detalle.codigo_producto_sunat:
-        #         error_codigo_sunat = True
-
-        # if error_nubefact:
-        #     context['texto'] = 'No hay una ruta para envío a NubeFact'
-        #     return render(request, 'includes/modal sin permiso.html', context)
-        # if error_codigo_sunat:
-        #     context['texto'] = 'Hay productos sin Código de Sunat'
-        #     return render(request, 'includes/modal sin permiso.html', context)
-        return super(FacturaVentaEliminarView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.request.session['id_confirmacion']})
@@ -854,11 +925,17 @@ class FacturaVentaEliminarView(DeleteView):
 
 
 
-class FacturaVentaDetalleUpdateView(BSModalUpdateView):
+class FacturaVentaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_venta.change_facturaventa')
     model = FacturaVentaDetalle
     template_name = "includes/formulario generico.html"
     form_class = FacturaVentaDetalleForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.descripcion_documento = "%s (Cotización %s%s)" % (form.instance.descripcion_documento, form.instance.factura_venta.confirmacion.sociedad.abreviatura, numeroXn(form.instance.factura_venta.confirmacion.cotizacion_venta.numero_cotizacion, 6))
@@ -882,7 +959,8 @@ class FacturaVentaDetalleUpdateView(BSModalUpdateView):
 
 ###########################################################################################
 
-class BoletaVentaListView(FormView):
+class BoletaVentaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('comprobante_venta.view_boletaventa')
     # model = BoletaVenta
     template_name = 'comprobante_venta/boleta_venta/inicio.html'
     form_class = BoletaVentaBuscarForm
@@ -890,7 +968,9 @@ class BoletaVentaListView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(BoletaVentaListView, self).get_form_kwargs()
-        # kwargs['filtro_nro_boleta'] = self.request.GET.get('nro_boleta')
+        kwargs['filtro_numero_boleta'] = self.request.GET.get('numero_boleta')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
         # kwargs['filtro_estado'] = self.request.GET.get('estado')
@@ -901,7 +981,8 @@ class BoletaVentaListView(FormView):
         context = super(BoletaVentaListView,self).get_context_data(**kwargs)
         boleta_venta = BoletaVenta.objects.all()
 
-        # filtro_nro_boleta = self.request.GET.get('nro_boleta')
+        filtro_numero_boleta = self.request.GET.get('numero_boleta')
+        filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
         # filtro_estado = self.request.GET.get('estado')
@@ -925,12 +1006,15 @@ class BoletaVentaListView(FormView):
             boleta_venta = boleta_venta.filter(condicion)
             context['contexto_filtro'] = "?fecha_emision=" + filtro_fecha_emision
 
-        # elif filtro_nro_boleta:
-        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_boleta.split(" ")[0])|Q(numero_boleta__icontains = filtro_nro_boleta.split(" ")[0]))
-        #     for palabra in filtro_nro_boleta.split(" ")[1:]:
-        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_boleta__icontains = palabra))
-        #     boleta_venta = boleta_venta.filter(condicion)
-        #     context['contexto_filtro'] = "?nro_boleta=" + filtro_nro_boleta
+        elif filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            factura_venta = factura_venta.filter(condicion)
+            context['contexto_filtro'] = "?sociedad=" + filtro_sociedad
+
+        elif filtro_numero_boleta:
+            condicion = Q(numero_boleta = filtro_numero_boleta)
+            boleta_venta = boleta_venta.filter(condicion)
+            context['contexto_filtro'] = "?numero_boleta=" + filtro_numero_boleta
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -950,7 +1034,8 @@ def BoletaVentaTabla(request):
         context = {}
         boleta_venta = BoletaVenta.objects.all()
 
-        # filtro_nro_boleta = request.GET.get('nro_boleta')
+        filtro_numero_boleta = request.GET.get('numero_boleta')
+        filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_fecha_emision = request.GET.get('fecha_emision')
         # filtro_estado = request.GET.get('estado')
@@ -971,11 +1056,15 @@ def BoletaVentaTabla(request):
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             boleta_venta = boleta_venta.filter(condicion)
 
-        # elif filtro_nro_boleta:
-        #     condicion = (Q(serie_comprobante__serie__unaccent__icontains = filtro_nro_boleta.split(" ")[0])|Q(numero_boleta__icontains = filtro_nro_boleta.split(" ")[0]))
-        #     for palabra in filtro_nro_boleta.split(" ")[1:]:
-        #         condicion &= (Q(serie_comprobante__serie__unaccent__icontains = palabra)|Q(numero_boleta__icontains = palabra))
-        #     boleta_venta = boleta_venta.filter(condicion)
+        elif filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            factura_venta = factura_venta.filter(condicion)
+            context['contexto_filtro'] = "?sociedad=" + filtro_sociedad
+
+        elif filtro_numero_boleta:
+            condicion = Q(numero_boleta = filtro_numero_boleta)
+            boleta_venta = boleta_venta.filter(condicion)
+            context['contexto_filtro'] = "?numero_boleta=" + filtro_numero_boleta
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -994,7 +1083,8 @@ def BoletaVentaTabla(request):
         return JsonResponse(data)
 
 
-class BoletaVentaDetalleView(TemplateView):
+class BoletaVentaDetalleView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('comprobante_venta.view_boletaventa')
     template_name = "comprobante_venta/boleta_venta/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -1075,7 +1165,8 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         )
         return JsonResponse(data)
 
-class BoletaVentaCrearView(DeleteView):
+class BoletaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.add_boletaventa')
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
 
@@ -1099,7 +1190,9 @@ class BoletaVentaCrearView(DeleteView):
         if error_cuotas:
             context['texto'] = 'Falta ingresar las cuotas.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(BoletaVentaCrearView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['boleta_venta'].id})
@@ -1182,11 +1275,17 @@ class BoletaVentaCrearView(DeleteView):
         return context
 
 
-class BoletaVentaSerieUpdateView(BSModalUpdateView):
+class BoletaVentaSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "includes/formulario generico.html"
     form_class = BoletaVentaSerieForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(BoletaVentaSerieUpdateView, self).get_context_data(**kwargs)
@@ -1195,7 +1294,8 @@ class BoletaVentaSerieUpdateView(BSModalUpdateView):
         return context
     
 
-class BoletaVentaGuardarView(DeleteView):
+class BoletaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "includes/form generico.html"
 
@@ -1209,7 +1309,9 @@ class BoletaVentaGuardarView(DeleteView):
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(BoletaVentaGuardarView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
@@ -1244,10 +1346,16 @@ class BoletaVentaGuardarView(DeleteView):
         return context
     
 
-class BoletaVentaAnularView(BSModalDeleteView):
+class BoletaVentaAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "includes/form generico.html"
     form_class = BoletaVentaAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.request.session['id_confirmacion']})
@@ -1287,7 +1395,8 @@ class BoletaVentaAnularView(BSModalDeleteView):
         return context
     
 
-class BoletaVentaNubeFactEnviarView(DeleteView):
+class BoletaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "includes/form generico.html"
 
@@ -1308,7 +1417,9 @@ class BoletaVentaNubeFactEnviarView(DeleteView):
         if error_codigo_sunat:
             context['texto'] = 'Hay productos sin Código de Sunat'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(BoletaVentaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
@@ -1343,7 +1454,8 @@ class BoletaVentaNubeFactEnviarView(DeleteView):
         return context
     
 
-class BoletaVentaNubeFactAnularView(BSModalUpdateView):
+class BoletaVentaNubeFactAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "includes/formulario generico.html"
     form_class = BoletaVentaAnularForm
@@ -1358,7 +1470,9 @@ class BoletaVentaNubeFactAnularView(BSModalUpdateView):
         if error_fecha:
             context['texto'] = 'No se puede anular, realizar nota de crédito.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(BoletaVentaNubeFactAnularView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
@@ -1391,9 +1505,15 @@ class BoletaVentaNubeFactAnularView(BSModalUpdateView):
         return context
 
 
-class BoletaVentaNubefactRespuestaDetailView(BSModalReadView):
+class BoletaVentaNubefactRespuestaDetailView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "comprobante_venta/nubefact_respuesta.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(BoletaVentaNubefactRespuestaDetailView, self).get_context_data(**kwargs)
@@ -1402,9 +1522,15 @@ class BoletaVentaNubefactRespuestaDetailView(BSModalReadView):
         return context
 
 
-class BoletaVentaNubefactConsultarView(DeleteView):
+class BoletaVentaNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['pk']})
@@ -1439,28 +1565,15 @@ class BoletaVentaNubefactConsultarView(DeleteView):
         return context
 
 
-class BoletaVentaEliminarView(DeleteView):
+class BoletaVentaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_boletaventa')
     model = BoletaVenta
     template_name = "includes/form generico.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # context = {}
-        # error_nubefact = False
-        # error_codigo_sunat = False
-        # context['titulo'] = 'Error de guardar'
-        # if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
-        #     error_nubefact = True
-        # for detalle in self.get_object().BoletaVentaDetalle_factura_venta.all():
-        #     if not detalle.codigo_producto_sunat:
-        #         error_codigo_sunat = True
-
-        # if error_nubefact:
-        #     context['texto'] = 'No hay una ruta para envío a NubeFact'
-        #     return render(request, 'includes/modal sin permiso.html', context)
-        # if error_codigo_sunat:
-        #     context['texto'] = 'Hay productos sin Código de Sunat'
-        #     return render(request, 'includes/modal sin permiso.html', context)
-        return super(BoletaVentaEliminarView, self).dispatch(request, *args, **kwargs)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.request.session['id_confirmacion']})

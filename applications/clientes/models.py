@@ -47,7 +47,7 @@ class Cliente(models.Model):
     @property
     def correos(self):
         try:
-            return ", ".join(self.CorreoCliente_cliente.filter(estado=1))
+            return ", ".join(list(correo[0] for correo in self.CorreoCliente_cliente.filter(estado=1).values_list('correo')))
         except:
             return ""
 

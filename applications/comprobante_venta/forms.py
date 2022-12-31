@@ -2,13 +2,15 @@ import re
 from django import forms
 from django.contrib.auth import get_user_model
 from applications.datos_globales.models import SeriesComprobante
+from applications.sociedad.models import Sociedad
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
 
 
 class BoletaVentaBuscarForm(forms.Form):
-    # nro_boleta = forms.CharField(label='Nro. boleta',max_length=150, required=False)
+    numero_boleta = forms.CharField(label='Nro. boleta',max_length=150, required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
     cliente = forms.CharField(max_length=150, required=False)
     fecha_emision = forms.DateField(
         required=False,
@@ -22,13 +24,15 @@ class BoletaVentaBuscarForm(forms.Form):
     # estado = forms.ModelChoiceField(queryset=get_user_model().objects)
 
     def __init__(self, *args, **kwargs):
-        # filtro_nro_boleta = kwargs.pop('filtro_nro_boleta')
+        filtro_numero_boleta = kwargs.pop('filtro_numero_boleta')
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_fecha_emision = kwargs.pop('filtro_fecha_emision')
         # filtro_estado = kwargs.pop('filtro_estado')
         # estado = kwargs.pop('estados')
         super(BoletaVentaBuscarForm, self).__init__(*args, **kwargs)
-        # self.fields['nro_boleta'].initial = filtro_nro_boleta
+        self.fields['numero_boleta'].initial = filtro_numero_boleta
+        self.fields['sociedad'].initial = filtro_sociedad
         self.fields['cliente'].initial = filtro_cliente
         self.fields['fecha_emision'].initial = filtro_fecha_emision
         # self.fields['estado'].initial = filtro_estado
@@ -68,6 +72,7 @@ class BoletaVentaAnularForm(BSModalModelForm):
 
 class FacturaVentaBuscarForm(forms.Form):
     numero_factura = forms.IntegerField(label='Nro. Factura', required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
     cliente = forms.CharField(max_length=150, required=False)
     fecha_emision = forms.DateField(
         required=False,
@@ -82,12 +87,14 @@ class FacturaVentaBuscarForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         filtro_numero_factura = kwargs.pop('filtro_numero_factura')
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_fecha_emision = kwargs.pop('filtro_fecha_emision')
         # filtro_estado = kwargs.pop('filtro_estado')
         # estado = kwargs.pop('estados')
         super(FacturaVentaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['numero_factura'].initial = filtro_numero_factura
+        self.fields['sociedad'].initial = filtro_sociedad
         self.fields['cliente'].initial = filtro_cliente
         self.fields['fecha_emision'].initial = filtro_fecha_emision
         # self.fields['estado'].initial = filtro_estado
