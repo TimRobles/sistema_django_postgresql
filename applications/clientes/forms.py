@@ -90,7 +90,7 @@ class TipoInterlocutorClienteForm(forms.ModelForm):
 
 class InterlocutorClienteForm(BSModalForm):
     tipo_documento = forms.ChoiceField(label = 'Tipo de Documento', choices = TIPO_DOCUMENTO_CHOICES)
-    numero_documento = forms.CharField(label = 'Número de Documento', max_length=15)
+    numero_documento = forms.CharField(label = 'Número de Documento', max_length=15, required=True)
     nombre_completo = forms.CharField(label = 'Nombre Completo', max_length=120, required=True)
     tipo_interlocutor = forms.ModelChoiceField(label = 'Tipo de Interlocutor', queryset = TipoInterlocutorCliente.objects.all(), required=False)
     
@@ -113,6 +113,7 @@ class InterlocutorClienteUpdateForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(InterlocutorClienteUpdateForm, self).__init__(*args, **kwargs)
         self.fields['tipo_interlocutor'].initial = self.instance.ClienteInterlocutor_interlocutor.all()[0].tipo_interlocutor
+        self.fields['numero_documento'].required = False
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
