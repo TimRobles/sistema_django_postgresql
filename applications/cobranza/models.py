@@ -106,7 +106,7 @@ class SolicitudCreditoCuota(models.Model):
     @property
     def fecha(self):
         try:
-            return self.solicitud_credito.cotizacion_venta.ConfirmacionVenta_cotizacion_venta.latest('created_at').created_at
+            return self.solicitud_credito.cotizacion_venta.ConfirmacionVenta_cotizacion_venta.latest('created_at').created_at.date()
         except:
             return self.solicitud_credito.cotizacion_venta.fecha_cotizacion
 
