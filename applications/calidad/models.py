@@ -77,6 +77,10 @@ class Serie(models.Model):
         verbose_name_plural = 'Series'
 
     @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
     def falla(self):
         if self.HistorialEstadoSerie_serie.all():
             return self.HistorialEstadoSerie_serie.all()[0].falla_material

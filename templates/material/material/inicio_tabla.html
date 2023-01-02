@@ -60,6 +60,12 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
                     <i class="bi bi-box-seam"></i>
                 </button>
+
+                <button data-form-url="{% url 'material_app:series' material.id %}"
+                    class="read btn btn-dark btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Series">
+                    <i class="bi bi-upc-scan"></i>
+                </button>
             </td>
         </tr>
         {% endfor %}

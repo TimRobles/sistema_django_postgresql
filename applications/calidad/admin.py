@@ -36,6 +36,7 @@ class SerieAdmin(admin.ModelAdmin):
         'serie_base',
         'content_type',
         'id_registro',
+        'producto',
         'sociedad',
         'created_at',
         'created_by',
