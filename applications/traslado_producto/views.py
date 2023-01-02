@@ -285,6 +285,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
         context['titulo'] = 'Material'
         context['sociedad'] = envio_traslado_producto.sociedad.id
         context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
+        context['url_stock_tipo_stock'] = reverse_lazy('material_app:stock_tipo_stock', kwargs={'id_material':1})[:-2]
         context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 
@@ -354,6 +355,7 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
         context['material'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
         context['sociedad'] = envio_traslado_producto.sociedad.id
         context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
+        context['url_stock_tipo_stock'] = reverse_lazy('material_app:stock_tipo_stock', kwargs={'id_material':1})[:-2]
         context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 

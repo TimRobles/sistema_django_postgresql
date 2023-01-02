@@ -1955,8 +1955,8 @@ class ConfirmacionPendienteSalidaView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(ConfirmacionPendienteSalidaView, self).get_context_data(**kwargs)
-        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3)
-        
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.filter(estado=1).filter(estado=2)
+
         context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
         filtro_estado = self.request.GET.get('estado')
         filtro_cliente = self.request.GET.get('cliente')

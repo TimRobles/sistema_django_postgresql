@@ -28,8 +28,9 @@ class EstadoSerieAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+
 @admin.register(Serie)
-class Admin(admin.ModelAdmin):
+class SerieAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'serie_base',
@@ -41,6 +42,9 @@ class Admin(admin.ModelAdmin):
         'updated_at',
         'updated_by',
     )
+    search_fields = (
+        'serie_base',
+        )
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:

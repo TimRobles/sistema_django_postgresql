@@ -203,6 +203,9 @@ def stock_disponible(content_type, id_registro, id_sociedad, id_almacen=None):
 def stock_sede_disponible(content_type, id_registro, id_sociedad, id_sede):
     return disponible_sede(content_type, id_registro, id_sociedad, id_sede)
 
+def stock_sede_tipo_stock(content_type, id_registro, id_sociedad, id_sede, id_tipo_stock):
+    return tipo_stock_sede(content_type, id_registro, id_sociedad, id_sede, id_tipo_stock)
+
 def en_camino(content_type, id_registro, id_sociedad):
     return transito(content_type, id_registro, id_sociedad) - confirmado_anticipo(content_type, id_registro, id_sociedad)
 
