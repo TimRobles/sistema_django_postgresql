@@ -57,5 +57,6 @@ function select_form() {
 }
 
 setTimeout(() => {
+    console.log('select_form prueb<')
     select_form();
 }, 500);

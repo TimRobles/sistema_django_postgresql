@@ -894,10 +894,16 @@ class CotizacionVentaMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalU
         return context
 
 
-class CotizacionVentaDeleteView(BSModalDeleteView):
+class CotizacionVentaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.delete_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(CotizacionVentaDeleteView, self).get_context_data(**kwargs)
@@ -907,9 +913,15 @@ class CotizacionVentaDeleteView(BSModalDeleteView):
         return context
     
 
-class CotizacionVentaAnularView(BSModalDeleteView):
+class CotizacionVentaAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
@@ -938,9 +950,15 @@ class CotizacionVentaAnularView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaClonarView(BSModalDeleteView):
+class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.add_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
@@ -1035,11 +1053,17 @@ class CotizacionVentaClonarView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaVendedorView(BSModalUpdateView):
+class CotizacionVentaVendedorView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_cliente.html"
     form_class = CotizacionVentaVendedorForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -1052,9 +1076,15 @@ class CotizacionVentaVendedorView(BSModalUpdateView):
         return context
 
 
-class CotizacionVentaReservaView(BSModalDeleteView):
+class CotizacionVentaReservaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
         error_cantidad_sociedad = False
@@ -1122,9 +1152,15 @@ class CotizacionVentaReservaView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaReservaAnularView(BSModalDeleteView):
+class CotizacionVentaReservaAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
@@ -2569,7 +2605,7 @@ class ConfirmacionNotaSalidaView(PermissionRequiredMixin, BSModalDeleteView):
                 nota_salida = NotaSalida.objects.create(
                     numero_salida=item + 1,
                     confirmacion_venta=confirmacion_venta,
-                    observacion_adicional="",
+                    observacion_adicional=confirmacion_venta.observacion_adicional,
                     motivo_anulacion="",
                     created_by=self.request.user,
                     updated_by=self.request.user,

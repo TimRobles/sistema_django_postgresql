@@ -214,6 +214,7 @@ class ConfirmacionVenta(models.Model):
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='ConfirmacionVenta_tipo_cambio')
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, default=1)
     observacion = models.TextField(blank=True, null=True)
+    observacion_adicional = models.TextField(blank=True, null=True)
     condiciones_pago = models.CharField('Condiciones de Pago', max_length=50, blank=True, null=True, help_text='Factura a 30 días')
     tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=Decimal('0.00'))

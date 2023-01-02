@@ -792,6 +792,10 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                 detalles = form.instance.detalles
                 if form.instance.solicitud_prestamo_materiales:
                     movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
+                    documento_anterior = form.instance.solicitud_prestamo_materiales
+                if form.instance.confirmacion_venta:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                    documento_anterior = form.instance.confirmacion_venta
 
                 for detalle in detalles:
                     movimiento_tres = MovimientosAlmacen.objects.get(
@@ -803,15 +807,27 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                         signo_factor_multiplicador=+1,
                         content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
                         id_registro_documento_proceso=form.instance.id,
-                        almacen=detalle.almacen,
+                        # almacen=detalle.almacen,
+                        sociedad=form.instance.sociedad,
+                    )
+                    movimiento_uno = MovimientosAlmacen.objects.filter(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        # cantidad=detalle.cantidad_salida,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador=-1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
+                        id_registro_documento_proceso=documento_anterior.id,
+                        # almacen=detalle.almacen,
                         sociedad=form.instance.sociedad,
                     )
                     movimiento_dos = movimiento_tres.movimiento_anterior
-                    movimiento_uno = movimiento_dos.movimiento_anterior
 
                     movimiento_tres.delete()
                     movimiento_dos.delete()
-                    movimiento_uno.delete()
+                    for movimiento in movimiento_uno:
+                        movimiento.delete()
                 messages.success(self.request, MENSAJE_ANULAR_NOTA_SALIDA)
             except Exception as ex:
                 transaction.savepoint_rollback(sid)
@@ -1569,6 +1585,7 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
                 sociedad=self.object.sociedad,
                 serie_comprobante=serie_comprobante,
                 cliente=self.object.cliente,
+                observaciones=self.object.observacion,
                 despacho=self.object,
                 created_by=self.request.user,
                 updated_by=self.request.user,

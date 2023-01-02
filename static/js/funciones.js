@@ -257,7 +257,9 @@ $(function () {
         combos = document.getElementsByClassName('select2');
         for (let index = 0; index < combos.length; index++) {
             const element = combos[index];
+            element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control');
             element.className = element.className.replace('select2-container--default', 'form-control');
+            element.className = element.className.replace('select2-container--focus', '');
         }
     }
 
