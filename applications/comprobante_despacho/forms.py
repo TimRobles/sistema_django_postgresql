@@ -14,7 +14,6 @@ class GuiaTransportistaForm(BSModalModelForm):
         model = Guia
         fields=(
             'transportista',
-            'placa_numero',
             )
 
     def __init__(self, *args, **kwargs):

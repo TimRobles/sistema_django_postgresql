@@ -209,7 +209,6 @@ class GuiaTransportistaLimpiarView(PermissionRequiredMixin, BSModalDeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.transportista = None
-        self.object.placa_numero = None
         registro_guardar(self.object, self.request)
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
@@ -539,12 +538,12 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             if not detalle.peso:
                 error_peso = True
         if not self.get_object().transportista: #Transporte privado
-            if not self.get_object().conductor_tipo_documento or not self.get_object().conductor_numero_documento or not self.get_object().conductor_nombre or not self.get_object().conductor_apellidos or not self.get_object().conductor_numero_licencia:
+            if not self.get_object().placa_numero:
+                error_transportista_placa_numero = True
+            elif '0'*len(self.get_object().placa_numero) == self.get_object().placa_numero or '-' in self.get_object().placa_numero:
+                error_transportista_placa_numero_cero_guion = True
+            elif not self.get_object().conductor_tipo_documento or not self.get_object().conductor_numero_documento or not self.get_object().conductor_nombre or not self.get_object().conductor_apellidos or not self.get_object().conductor_numero_licencia:
                 error_transporte_privado = True
-        if not self.get_object().placa_numero:
-            error_transportista_placa_numero = True
-        elif '0'*len(self.get_object().placa_numero) == self.get_object().placa_numero or '-' in self.get_object().placa_numero:
-            error_transportista_placa_numero_cero_guion = True
     
 
         if error_direccion_partida:
