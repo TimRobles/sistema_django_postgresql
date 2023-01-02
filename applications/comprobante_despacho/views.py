@@ -543,7 +543,7 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
                 error_transporte_privado = True
         if not self.get_object().placa_numero:
             error_transportista_placa_numero = True
-        elif '0' in self.get_object().placa_numero or '-' in self.get_object().placa_numero:
+        elif '0'*len(self.get_object().placa_numero) == self.get_object().placa_numero or '-' in self.get_object().placa_numero:
             error_transportista_placa_numero_cero_guion = True
     
 
@@ -572,7 +572,7 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             context['texto'] = 'Registrar la placa del transportista.'
             return render(request, 'includes/modal sin permiso.html', context)
         if error_transportista_placa_numero_cero_guion:
-            context['texto'] = 'La placa no debe tener ceros ni guiones.'
+            context['texto'] = 'La placa no deben ser ceros ni debe tener guiones.'
             return render(request, 'includes/modal sin permiso.html', context)
         if error_transporte_privado:
             context['texto'] = 'Ingresar los datos del conductor de transporte privado.'

@@ -1,5 +1,6 @@
 from django.db import models
 from applications.funciones import numeroXn
+from applications.movimiento_almacen.models import TipoStock
 from applications.sede.models import Sede
 from applications.almacenes.models import Almacen
 from applications.sociedad.models import Sociedad
@@ -59,6 +60,7 @@ class EnvioTrasladoProductoDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
     almacen_origen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
     cantidad_envio = models.DecimalField('Cantidad de Envio', max_digits=8, decimal_places=2,blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT,blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_TRASLADO_PRODUCTO_DETALLE, default=1,blank=True, null=True)

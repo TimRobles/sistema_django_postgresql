@@ -165,6 +165,7 @@ Agregar Material
                 <th>Item</th>
                 <th>Producto</th>
                 <th>Almacén Origen</th>
+                <th>Tipo Stock</th>
                 <th>Cantidad Envio</th>
                 <th>Unidad</th>
                 <th>Estado</th>
@@ -178,6 +179,7 @@ Agregar Material
                 <td>{{ material.item }}</td>
                 <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                 <td class="text-nowrap">{{ material.almacen_origen }}</td>
+                <td class="text-nowrap">{{ material.tipo_stock }}</td>
                 <td class="text-nowrap">{{ material.cantidad_envio }}</td>
                 <td class="text-nowrap">{{ material.unidad }}</td>
                 <td class="text-nowrap">{{ material.get_estado_display }}</td>

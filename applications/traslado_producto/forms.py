@@ -47,9 +47,9 @@ class EnvioTrasladoProductoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(EnvioTrasladoProductoForm, self).__init__(*args, **kwargs)  
-        if kwargs['instance']:
+        try:
             self.fields['sede_origen'].queryset = kwargs['instance'].sociedad.Sede_sociedad.filter(estado=1)
-        else:
+        except:
             self.fields['sede_origen'].queryset = Sede.objects.none()
         self.fields['motivo_traslado'].queryset = MotivoTraslado.objects.filter(visible=True)
         for visible in self.visible_fields():
@@ -78,6 +78,7 @@ class EnvioTrasladoProductoMaterialDetalleForm(BSModalModelForm):
         fields=(
             'material',
             'almacen_origen',
+            'tipo_stock',
             'cantidad_envio',
             'stock_disponible',
             'unidad',
