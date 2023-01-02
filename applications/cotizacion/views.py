@@ -620,11 +620,17 @@ def GuardarCotizacionObservacion(request, texto, id_cotizacion, abreviatura):
     return HttpResponse('Fin')
 
 
-class CotizacionOtrosCargosUpdateView(BSModalUpdateView):
+class CotizacionOtrosCargosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_otros_cargos.html"
     form_class = CotizacionVentaOtrosCargosForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         respuesta = obtener_totales(form.instance)
@@ -670,7 +676,8 @@ def GuardarCotizacionOtrosCargos(request, monto, id_cotizacion, abreviatura):
     return HttpResponse('Fin')
 
 
-class CotizacionVentaGuardarView(BSModalDeleteView):
+class CotizacionVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_guardar.html"
 
@@ -684,6 +691,8 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
             return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super(CotizacionVentaGuardarView, self).dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
@@ -717,11 +726,17 @@ class CotizacionVentaGuardarView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
+class CotizacionVentaCosteadorDetalleView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVentaDetalle
     template_name = "cotizacion/cotizacion_venta/form_precio.html"
     form_class = CosteadorForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if form.cleaned_data.get('precio_final') > form.instance.precio_unitario_con_igv:
@@ -791,9 +806,15 @@ class CotizacionVentaCosteadorDetalleView(BSModalUpdateView):
         )
         return context
 
-class CotizacionVentaDetalleDeleteView(BSModalDeleteView):
+class CotizacionVentaDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.delete_cotizacionventa')
     model = CotizacionVentaDetalle
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
@@ -807,10 +828,16 @@ class CotizacionVentaDetalleDeleteView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
+class CotizacionVentaMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVentaDetalle
     template_name = "cotizacion/cotizacion_venta/actualizar.html"
     form_class = CotizacionVentaMaterialDetalleUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
@@ -867,7 +894,7 @@ class CotizacionVentaMaterialDetalleUpdateView(BSModalUpdateView):
         return context
 
 
-class CotizacionVentaDeleteView(DeleteView):
+class CotizacionVentaDeleteView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
@@ -880,7 +907,7 @@ class CotizacionVentaDeleteView(DeleteView):
         return context
     
 
-class CotizacionVentaAnularView(DeleteView):
+class CotizacionVentaAnularView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -911,7 +938,7 @@ class CotizacionVentaAnularView(DeleteView):
         return context
 
 
-class CotizacionVentaClonarView(DeleteView):
+class CotizacionVentaClonarView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -1025,7 +1052,7 @@ class CotizacionVentaVendedorView(BSModalUpdateView):
         return context
 
 
-class CotizacionVentaReservaView(DeleteView):
+class CotizacionVentaReservaView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -1095,7 +1122,7 @@ class CotizacionVentaReservaView(DeleteView):
         return context
 
 
-class CotizacionVentaReservaAnularView(DeleteView):
+class CotizacionVentaReservaAnularView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -1139,7 +1166,7 @@ class CotizacionVentaReservaAnularView(DeleteView):
         return context
 
 
-class CotizacionVentaConfirmarView(DeleteView):
+class CotizacionVentaConfirmarView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -1328,7 +1355,7 @@ class CotizacionVentaConfirmarView(DeleteView):
         return context
 
 
-class CotizacionVentaConfirmarAnularView(DeleteView):
+class CotizacionVentaConfirmarAnularView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"   
 
@@ -1387,7 +1414,7 @@ class CotizacionVentaConfirmarAnularView(DeleteView):
         return context
 
 
-class CotizacionVentaConfirmarAnticipoView(DeleteView):
+class CotizacionVentaConfirmarAnticipoView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -1506,7 +1533,7 @@ class CotizacionVentaConfirmarAnticipoView(DeleteView):
         return context
 
 
-class CotizacionVentaConfirmarAnticipoAnularView(DeleteView):
+class CotizacionVentaConfirmarAnticipoAnularView(BSModalDeleteView):
     model = CotizacionVenta
     template_name = "includes/form generico.html"   
 
@@ -1717,7 +1744,8 @@ class CotizacionVentaResumenView(BSModalReadView):
                 cuentas = CuentaBancariaSociedad.objects.filter(
                     sociedad=sociedad,
                     moneda=moneda,
-                    efectivo=False
+                    efectivo=False,
+                    estado=1,
                     )
                 sociedad.cuentas = cuentas
             moneda.sociedades = cotizacion_sociedad
@@ -2273,7 +2301,7 @@ class SolicitudCreditoUpdateView(BSModalUpdateView):
         return context
 
 
-class SolicitudCreditoEliminarView(DeleteView):
+class SolicitudCreditoEliminarView(BSModalDeleteView):
     model = SolicitudCredito
     template_name = "includes/form generico.html"   
 
@@ -2416,7 +2444,7 @@ class SolicitudCreditoCuotaDeleteView(BSModalDeleteView):
         return context
 
 
-class SolicitudCreditoFinalizarView(DeleteView):
+class SolicitudCreditoFinalizarView(BSModalDeleteView):
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 
@@ -2457,7 +2485,7 @@ class SolicitudCreditoFinalizarView(DeleteView):
         return context
 
 
-class SolicitudCreditoAprobarView(DeleteView):
+class SolicitudCreditoAprobarView(BSModalDeleteView):
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 
@@ -2487,7 +2515,7 @@ class SolicitudCreditoAprobarView(DeleteView):
         return context
 
 
-class SolicitudCreditoRechazarView(DeleteView):
+class SolicitudCreditoRechazarView(BSModalDeleteView):
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 
