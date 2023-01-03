@@ -3,6 +3,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from applications.datos_globales.models import SeriesComprobante
 from applications.sociedad.models import Sociedad
+from applications.variables import ESTADOS_DOCUMENTO
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
@@ -83,23 +84,20 @@ class FacturaVentaBuscarForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    # estado = forms.ModelChoiceField(queryset=get_user_model().objects)
+    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_DOCUMENTO, required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_numero_factura = kwargs.pop('filtro_numero_factura')
         filtro_sociedad = kwargs.pop('filtro_sociedad')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_fecha_emision = kwargs.pop('filtro_fecha_emision')
-        # filtro_estado = kwargs.pop('filtro_estado')
-        # estado = kwargs.pop('estados')
+        filtro_estado = kwargs.pop('filtro_estado')
         super(FacturaVentaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['numero_factura'].initial = filtro_numero_factura
         self.fields['sociedad'].initial = filtro_sociedad
         self.fields['cliente'].initial = filtro_cliente
         self.fields['fecha_emision'].initial = filtro_fecha_emision
-        # self.fields['estado'].initial = filtro_estado
-        # self.fields['estado'].required = False
-        # self.fields['estado'].queryset = estados
+        self.fields['estado'].initial = filtro_estado
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

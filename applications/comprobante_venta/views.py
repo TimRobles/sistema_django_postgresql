@@ -31,8 +31,7 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
-        # kwargs['filtro_estado'] = self.request.GET.get('estado')
-        # kwargs['estados'] = get_user_model().objects.filter(id__in = [cotizacion.created_by.id for cotizacion in CotizacionVenta.objects.all()])
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -43,7 +42,7 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
-        # filtro_estado = self.request.GET.get('estado')
+        filtro_estado = self.request.GET.get('estado')
 
         contexto_filtro = []
 
@@ -68,6 +67,11 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
             condicion = Q(numero_factura = filtro_numero_factura)
             factura_venta = factura_venta.filter(condicion)
             contexto_filtro.append("?numero_factura=" + filtro_numero_factura)
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("?estado=" + filtro_estado)
         
         context['contexto_filtro'] = "".join(contexto_filtro)
 
@@ -91,7 +95,7 @@ def FacturaVentaTabla(request):
         filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_fecha_emision = request.GET.get('fecha_emision')
-        # filtro_estado = request.GET.get('estado')
+        filtro_estado = request.GET.get('estado')
 
         if filtro_cliente and filtro_fecha_emision:
             condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
@@ -99,22 +103,26 @@ def FacturaVentaTabla(request):
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             factura_venta = factura_venta.filter(condicion)
 
-        elif filtro_cliente:
+        if filtro_cliente:
             condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
             for palabra in filtro_cliente.split(" ")[1:]:
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
             factura_venta = factura_venta.filter(condicion)
 
-        elif filtro_fecha_emision:
+        if filtro_fecha_emision:
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             factura_venta = factura_venta.filter(condicion)
 
-        elif filtro_sociedad:
+        if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
             factura_venta = factura_venta.filter(condicion)
 
-        elif filtro_numero_factura:
+        if filtro_numero_factura:
             condicion = Q(numero_factura = filtro_numero_factura)
+            factura_venta = factura_venta.filter(condicion)
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
             factura_venta = factura_venta.filter(condicion)
             
         objectsxpage = 25 # Show 25 objects per page.
@@ -973,8 +981,7 @@ class BoletaVentaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
-        # kwargs['filtro_estado'] = self.request.GET.get('estado')
-        # kwargs['estados'] = get_user_model().objects.filter(id__in = [cotizacion.created_by.id for cotizacion in CotizacionVenta.objects.all()])
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -985,36 +992,38 @@ class BoletaVentaListView(PermissionRequiredMixin, FormView):
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
-        # filtro_estado = self.request.GET.get('estado')
+        filtro_estado = self.request.GET.get('estado')
 
-        if filtro_cliente and filtro_fecha_emision:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            boleta_venta = boleta_venta.filter(condicion)
-            context['contexto_filtro'] = "?cliente=" + filtro_cliente + "&fecha_emision="
+        contexto_filtro = []
 
-        elif filtro_cliente:
+        if filtro_cliente:
             condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
             for palabra in filtro_cliente.split(" ")[1:]:
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
             boleta_venta = boleta_venta.filter(condicion)
-            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+            contexto_filtro.append("?cliente=" + filtro_cliente)
 
-        elif filtro_fecha_emision:
+        if filtro_fecha_emision:
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             boleta_venta = boleta_venta.filter(condicion)
-            context['contexto_filtro'] = "?fecha_emision=" + filtro_fecha_emision
+            contexto_filtro.append("?fecha_emision=" + filtro_fecha_emision)
 
-        elif filtro_sociedad:
+        if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
-            factura_venta = factura_venta.filter(condicion)
-            context['contexto_filtro'] = "?sociedad=" + filtro_sociedad
+            boleta_venta = boleta_venta.filter(condicion)
+            contexto_filtro.append("?sociedad=" + filtro_sociedad)
 
-        elif filtro_numero_boleta:
+        if filtro_numero_boleta:
             condicion = Q(numero_boleta = filtro_numero_boleta)
             boleta_venta = boleta_venta.filter(condicion)
-            context['contexto_filtro'] = "?numero_boleta=" + filtro_numero_boleta
+            contexto_filtro.append("?numero_boleta=" + filtro_numero_boleta)
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            boleta_venta = boleta_venta.filter(condicion)
+            contexto_filtro.append("?estado=" + filtro_estado)
+        
+        context['contexto_filtro'] = "".join(contexto_filtro)
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -1038,33 +1047,29 @@ def BoletaVentaTabla(request):
         filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_fecha_emision = request.GET.get('fecha_emision')
-        # filtro_estado = request.GET.get('estado')
+        filtro_estado = request.GET.get('estado')
 
-        if filtro_cliente and filtro_fecha_emision:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            boleta_venta = boleta_venta.filter(condicion)
-
-        elif filtro_cliente:
+        if filtro_cliente:
             condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
             for palabra in filtro_cliente.split(" ")[1:]:
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
             boleta_venta = boleta_venta.filter(condicion)
 
-        elif filtro_fecha_emision:
+        if filtro_fecha_emision:
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             boleta_venta = boleta_venta.filter(condicion)
 
-        elif filtro_sociedad:
+        if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
-            factura_venta = factura_venta.filter(condicion)
-            context['contexto_filtro'] = "?sociedad=" + filtro_sociedad
+            boleta_venta = boleta_venta.filter(condicion)
 
-        elif filtro_numero_boleta:
+        if filtro_numero_boleta:
             condicion = Q(numero_boleta = filtro_numero_boleta)
             boleta_venta = boleta_venta.filter(condicion)
-            context['contexto_filtro'] = "?numero_boleta=" + filtro_numero_boleta
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            boleta_venta = boleta_venta.filter(condicion)
 
         objectsxpage = 25 # Show 25 objects per page.
 
