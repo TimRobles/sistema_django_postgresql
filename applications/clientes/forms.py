@@ -32,6 +32,11 @@ class ClienteForm(BSModalModelForm):
             'estado_sunat',
             'condicion_sunat',
             )
+        
+    def clean_direccion_fiscal(self):
+        direccion_fiscal = self.cleaned_data.get('direccion_fiscal')
+        self.fields['distrito'].queryset = Distrito.objects.all()
+        return direccion_fiscal
 
     def __init__(self, *args, **kwargs):
         super(ClienteForm, self).__init__(*args, **kwargs)
