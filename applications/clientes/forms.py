@@ -18,7 +18,7 @@ from .models import (
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 class ClienteForm(BSModalModelForm):
-    distrito = forms.ModelChoiceField(queryset=Distrito.objects.none())
+    distrito = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=False)
     class Meta:
         model = Cliente
         fields = (
