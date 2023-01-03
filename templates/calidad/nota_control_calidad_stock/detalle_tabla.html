@@ -42,6 +42,10 @@
                 <th>Estado:</th>
                 <td>{{ contexto_nota_control_calidad_stock.get_estado_display }}</td>
             </tr>
+            <tr>
+                <th>Sociedad:</th>
+                <td colspan="7" class="fondo-personalizado" style="--color-fondo: {{ contexto_nota_control_calidad_stock.nota_ingreso.sociedad.color }};"> {{ contexto_nota_control_calidad_stock.nota_ingreso.sociedad }}</td>
+            </tr>
         </thead>
     </table>
 </div>
