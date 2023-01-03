@@ -1,10 +1,12 @@
 from urllib import request
+from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.importaciones import*
 from applications.material.models import SubFamilia
 from applications.calidad.forms import(
     FallaMaterialForm,
     NotaControlCalidadStockAnularForm,
+    NotaControlCalidadStockBuscarForm,
     NotaControlCalidadStockDetalleAgregarForm,
     NotaControlCalidadStockDetalleUpdateForm,
     NotaControlCalidadStockForm,
@@ -169,11 +171,57 @@ class FallaMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['item'] = self.object.titulo
         return context
 
-class NotaControlCalidadStockListView(PermissionRequiredMixin, ListView):
+class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
     permission_required = ('calidad.view_notacontrolcalidadstock')
-    model = NotaControlCalidadStock
+    form_class = NotaControlCalidadStockBuscarForm
     template_name = 'calidad/nota_control_calidad_stock/inicio.html'
     context_object_name = 'contexto_nota_control_calidad_stock'
+
+    def get_form_kwargs(self):
+        kwargs = super(NotaControlCalidadStockListView, self).get_form_kwargs()
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_usuario'] = self.request.GET.get('usuario')
+        return kwargs
+
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaControlCalidadStockListView,self).get_context_data(**kwargs)
+        nota_control_calidad_stock = NotaControlCalidadStock.objects.all()
+
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_estado = self.request.GET.get('estado')
+        filtro_usuario = self.request.GET.get('usuario')
+        
+        contexto_filtro = []
+
+        if filtro_sociedad:
+            condicion = Q(nota_ingreso__sociedad = filtro_sociedad)
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            contexto_filtro.append("?estado=" + filtro_estado)
+
+        if filtro_usuario:
+            condicion = Q(created_by = filtro_usuario)
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            contexto_filtro.append("?usuario=" + filtro_usuario)
+
+        context['contexto_filtro'] = "".join(contexto_filtro)
+
+        objectsxpage = 10 # Show 10 objects per page.
+
+        if len(nota_control_calidad_stock) > objectsxpage:
+            paginator = Paginator(nota_control_calidad_stock, objectsxpage)
+            page_number = self.request.GET.get('page')
+            nota_control_calidad_stock = paginator.get_page(page_number)
+   
+        context['contexto_nota_control_calidad_stock'] = nota_control_calidad_stock
+        context['contexto_pagina'] = nota_control_calidad_stock
+        return context
 
 def NotaControlCalidadStockTabla(request):
     data = dict()

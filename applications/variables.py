@@ -379,3 +379,10 @@ SERIE_CONSULTA = (
         (1, 'PENDIENTE'),
         (2, 'SUBIDO'),
     )
+
+ESTADOS_NOTA_CALIDAD_STOCK = (
+    (1, 'EN PROCESO'),
+    (2, 'POR REGISTRAR SERIES'),
+    (3, 'CONCLUIDA'),
+    (4, 'ANULADA'),
+)

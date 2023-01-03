@@ -181,6 +181,8 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
                     updated_by=self.request.user,
                 )
 
+                #Movimiento de series
+
             numero_envio_traslado = EnvioTrasladoProducto.objects.all().aggregate(Count('numero_envio_traslado'))['numero_envio_traslado__count'] + 1
             self.object.numero_envio_traslado = numero_envio_traslado
             self.object.estado = 2

@@ -1,7 +1,26 @@
 from django import forms
 from applications.nota_ingreso.models import NotaIngreso
+from applications.sociedad.models import Sociedad
+from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
+from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import FallaMaterial, HistorialEstadoSerie, NotaControlCalidadStock, NotaControlCalidadStockDetalle, Serie, SerieCalidad
+
+class NotaControlCalidadStockBuscarForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    estado = forms.ChoiceField(choices=((None, '-----------------'),) + ESTADOS_NOTA_CALIDAD_STOCK, required=False)
+    usuario = forms.ModelChoiceField(queryset=get_user_model().objects, required=False)
+    
+    def __init__(self, *args, **kwargs):
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_usuario = kwargs.pop('filtro_usuario')
+        super(NotaControlCalidadStockBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['estado'].initial = filtro_estado
+        self.fields['usuario'].initial = filtro_usuario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 
 class FallaMaterialForm(BSModalModelForm):

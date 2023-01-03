@@ -8,7 +8,7 @@ from applications.sociedad.models import Sociedad
 from applications.material.models import Material, SubFamilia
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.movimiento_almacen.models import MovimientosAlmacen
-from applications.variables import SERIE_CONSULTA
+from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, SERIE_CONSULTA
 
 class FallaMaterial(models.Model):
     sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE, related_name='FallaMaterial_sub_familia')
@@ -152,12 +152,6 @@ class HistorialEstadoSerie(models.Model):
         return str(self.serie)
 
 class NotaControlCalidadStock(models.Model):
-    ESTADOS_NOTA_CALIDAD_STOCK = [
-    (1, 'EN PROCESO'),
-    (2, 'POR REGISTRAR SERIES'),
-    (3, 'CONCLUIDA'),
-    (4, 'ANULADA'),
-    ]
     nro_nota_calidad = models.CharField('Nro. Nota Calidad', max_length=50, blank=True, null=True)
     nota_ingreso = models.ForeignKey(NotaIngreso, on_delete=models.CASCADE)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
@@ -172,7 +166,7 @@ class NotaControlCalidadStock(models.Model):
     class Meta:
         verbose_name = 'Nota Control Calidad Stock'
         verbose_name_plural = 'Notas Control Calidad Stock'
-        ordering = ['nro_nota_calidad',]
+        ordering = ['-nro_nota_calidad',]
 
     @property
     def fecha(self):
