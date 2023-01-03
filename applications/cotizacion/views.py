@@ -1811,7 +1811,7 @@ class ConfirmacionListView(FormView):
         try:
             contexto_cotizacion_venta = contexto_cotizacion_venta.filter(cotizacion_venta__id = self.kwargs['id_cotizacion'])
         except:
-            print("Error")
+            pass
         
         filtro_estado = self.request.GET.get('estado')
         filtro_cliente = self.request.GET.get('cliente')

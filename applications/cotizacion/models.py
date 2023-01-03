@@ -257,6 +257,24 @@ class ConfirmacionVenta(models.Model):
             return self.cotizacion_venta.monto_solicitado
         return self.total
 
+    @property
+    def pendiente_despachar(self):
+        try:
+            print(self)
+            respuesta = False
+            for confirmacion_venta_detalle in self.ConfirmacionVentaDetalle_confirmacion_venta.all():
+                confirmacion_venta_detalle.cantidad_confirmada
+                cantidad_despachada = Decimal('0.00')
+                for nota_salida_detalle in confirmacion_venta_detalle.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(nota_salida__estado=3):
+                    print(nota_salida_detalle)
+                    cantidad_despachada += nota_salida_detalle.despachado
+                print(cantidad_despachada, confirmacion_venta_detalle.cantidad_confirmada)
+                if confirmacion_venta_detalle.cantidad_confirmada != cantidad_despachada:
+                    respuesta = True
+            return respuesta
+        except:
+            return True
+
     def __str__(self):
         return "%s%s" % (self.sociedad.abreviatura, self.cotizacion_venta)
 
