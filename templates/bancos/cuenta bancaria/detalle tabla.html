@@ -7,9 +7,9 @@
         <tr>
             <th>Fecha</th>
             <th>Operación</th>
-            <th class="text-end">Ingreso</th>
-            <th class="text-end">Egreso</th>
-            <th class="text-end">Saldo</th>
+            <th class="text-end">Monto</th>
+            <th class="text-end">Usado</th>
+            <th class="text-end">Disponible</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -166,19 +166,13 @@
                 {% endif %}
             </td>
             <td class="text-end text-nowrap">
-                {% if movimiento.ingreso %}
                 {{ movimiento.moneda.simbolo }} {{ movimiento.ingreso|redondear|intcomma }}
-                {% endif %}
             </td>
             <td class="text-end text-nowrap">
-                {% if movimiento.egreso %}
-                {{ movimiento.moneda.simbolo }} {{ movimiento.egreso|redondear|intcomma }}
-                {% endif %}
+                {{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}
             </td>
             <td class="text-end text-nowrap">
-                {% if movimiento.saldo_cuenta %}
-                {{ movimiento.moneda.simbolo }} {{ movimiento.saldo_cuenta|redondear|intcomma }}
-                {% endif %}
+                {{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}
             </td>
             <td class="text-center text-nowrap">
                 
