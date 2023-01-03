@@ -39,7 +39,12 @@ class ClienteForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ClienteForm, self).__init__(*args, **kwargs)
-        self.fields['distrito'].queryset = Distrito.objects.none()
+        try:
+            distrito = kwargs['instance'].distrito
+            self.fields['distrito'].queryset = Distrito.objects.filter(codigo = distrito.codigo)
+            self.fields['distrito'].initial = distrito
+        except:
+            self.fields['distrito'].queryset = Distrito.objects.none()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
