@@ -11,7 +11,7 @@
 
 {% block contenido %}
     <h1>Cambio de Contraseña</h1>
-    <form action="" enctype="multipart/form-data" method="post" >
+    <form action="" enctype="multipart/form-data" method="post" autocomplete="off">
         {% csrf_token %}
 
         {% for field in form %}

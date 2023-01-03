@@ -4,7 +4,7 @@
 {% load static %}
 
 {% block content %}
-<form action="" method="post" id="formulario-sociedad">
+<form action="" method="post" id="formulario-sociedad" autocomplete="off">
     {% csrf_token %}
     
     {% for sociedad in sociedades %}

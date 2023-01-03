@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
-from applications.material.funciones import stock
+from applications.material.funciones import stock, tipo_stock_sede
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.sociedad.models import Sociedad
 
@@ -146,6 +146,22 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
             self.object = self.get_object()
             movimiento_final = TipoMovimiento.objects.get(codigo=139)  # Salida por traslado
             for detalle in self.object.EnvioTrasladoProductoDetalle_envio_traslado_producto.all():
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad_envio,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=detalle.tipo_stock,
+                    signo_factor_multiplicador=-1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=detalle.almacen_origen,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
                 movimiento_dos = MovimientosAlmacen.objects.create(
                     content_type_producto=detalle.content_type,
                     id_registro_producto=detalle.id_registro,
@@ -155,9 +171,8 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
                     signo_factor_multiplicador=+1,
                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                     id_registro_documento_proceso=self.object.id,
-                    almacen=detalle.almacen_origen,
                     sociedad=self.object.sociedad,
-                    movimiento_anterior=None,
+                    movimiento_anterior=movimiento_uno,
                     movimiento_reversion=False,
                     created_by=self.request.user,
                     updated_by=self.request.user,
@@ -226,6 +241,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
         sid = transaction.savepoint()
         envio_traslado_producto = EnvioTrasladoProducto.objects.get(id = self.kwargs['id_envio_traslado_producto'])
         almacen_origen = form.cleaned_data.get('almacen_origen')
+        tipo_stock = form.cleaned_data.get('tipo_stock')
         material = form.cleaned_data.get('material')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
         stock_disponible = stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id)
@@ -254,6 +270,7 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
                     id_registro = material.id,
                     envio_traslado_producto = envio_traslado_producto,
                     almacen_origen = almacen_origen,
+                    tipo_stock = tipo_stock,
                     unidad = form.cleaned_data.get('unidad')
                 )
                 if created:
@@ -285,7 +302,6 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
         context['titulo'] = 'Material'
         context['sociedad'] = envio_traslado_producto.sociedad.id
         context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
-        context['url_stock_tipo_stock'] = reverse_lazy('material_app:stock_tipo_stock', kwargs={'id_material':1})[:-2]
         context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 
@@ -324,9 +340,10 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
         detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
         envio_traslado_producto = detalle.envio_traslado_producto
         almacen_origen = form.cleaned_data.get('almacen_origen')
+        tipo_stock = form.cleaned_data.get('tipo_stock')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
         material = detalle.producto
-        stock_disponible = stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id)
+        stock_disponible = tipo_stock_sede(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
@@ -355,7 +372,6 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
         context['material'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
         context['sociedad'] = envio_traslado_producto.sociedad.id
         context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
-        context['url_stock_tipo_stock'] = reverse_lazy('material_app:stock_tipo_stock', kwargs={'id_material':1})[:-2]
         context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 

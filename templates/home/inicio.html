@@ -10,7 +10,7 @@
         <div class="col-lg-4 login mx-auto">
             <h1>Bienvenido</h1>
 
-            <form action="" enctype="multipart/form-data" method="post">
+            <form action="" enctype="multipart/form-data" method="post" autocomplete="off">
                 {% csrf_token %}
         
                 {% for field in form  %}

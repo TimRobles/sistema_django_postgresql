@@ -37,7 +37,7 @@
     </table>
 </div>
 
-<form action="" method="post" id="formulario-sociedad">
+<form action="" method="post" id="formulario-sociedad" autocomplete="off">
     {% csrf_token %}
     {% for field in form %}
         <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"

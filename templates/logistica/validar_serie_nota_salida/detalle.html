@@ -9,7 +9,7 @@
         <a href="{% url 'logistica_app:nota_salida_detalle' contexto_nota_salida_detalle.nota_salida.id %}"><span class="badge bg-primary">Regresar</span></a>   
     </h3>
     <br>
-    <form action="" method="post">
+    <form action="" method="post" autocomplete="off">
         {% csrf_token %}
         <div class="row">
             {% for field in form %}

@@ -6,7 +6,7 @@ Encuestar
 {% endblock titulo %}
 
 {% block contenido %}
-<form action="" method="post">
+<form action="" method="post" autocomplete="off">
     {% csrf_token %}
     {{ form.as_p }}
 

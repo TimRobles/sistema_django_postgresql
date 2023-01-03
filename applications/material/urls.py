@@ -91,6 +91,7 @@ urlpatterns = [
     path('stock/disponible/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/', views.StockDisponibleSociedadAlmacenView, name='stock_disponible'),
     
     path('stock/disponible/sede/<int:id_material>/<int:id_sociedad>/<int:id_sede>/', views.StockSedeDisponibleView, name='stock_disponible_sede'),
+    path('stock/tipo_stock/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/<int:id_tipo_stock>/', views.StockSedeTipoStockView, name='stock_tipo_stock'),
 
     path('series/<pk>/', views.MaterialSeriesView.as_view(), name='series'),
 ]

@@ -9,7 +9,7 @@
 </h3>
 
 <div>
-    <form action="" method="post">
+    <form action="" method="post" autocomplete="off">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" class="create btn btn-primary"  value="Guardar">

@@ -101,6 +101,7 @@ class EnvioTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
         model = EnvioTrasladoProductoDetalle
         fields=(
             'almacen_origen',
+            'tipo_stock',
             'cantidad_envio',
             'stock_disponible',
             'unidad',
@@ -112,6 +113,7 @@ class EnvioTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
         self.fields['almacen_origen'].queryset = envio_traslado_producto.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
         self.fields['unidad'].queryset = kwargs['instance'].producto.subfamilia.unidad.all()
         self.fields['almacen_origen'].required = True
+        self.fields['tipo_stock'].required = True
         self.fields['cantidad_envio'].required = True
         self.fields['unidad'].required = True
         self.fields['stock_disponible'].disabled = True

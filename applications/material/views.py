@@ -8,7 +8,7 @@ from django import forms
 from django.shortcuts import render
 from django.contrib.contenttypes.models import ContentType
 from applications.cotizacion.models import PrecioListaMaterial
-from applications.material.funciones import stock, stock_disponible, stock_sede, stock_sede_disponible
+from applications.material.funciones import stock, stock_disponible, stock_sede, stock_sede_disponible, stock_sede_tipo_stock
 from ..recepcion_compra.models import RecepcionCompra
 from ..orden_compra.models import OrdenCompraDetalle
 from ..comprobante_compra.models import ComprobanteCompraCI, ComprobanteCompraPIDetalle, ComprobanteCompraPI
@@ -1643,6 +1643,14 @@ def StockSedeDisponibleView(request, id_material, id_sociedad, id_sede):
     if request.method == 'GET':
         try:
             return HttpResponse(stock_sede_disponible(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_sede))
+        except:
+            return HttpResponse("")
+
+
+def StockSedeTipoStockView(request, id_material, id_sociedad, id_almacen, id_tipo_stock):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(stock_sede_tipo_stock(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_almacen, id_tipo_stock))
         except:
             return HttpResponse("")
 
