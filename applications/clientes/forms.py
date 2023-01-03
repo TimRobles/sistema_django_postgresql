@@ -52,8 +52,10 @@ class ClienteForm(BSModalModelForm):
         tipo_documento = self.cleaned_data.get('tipo_documento')
         if tipo_documento == '-' or tipo_documento == '0':
             self.fields['numero_documento'].required = False
+            self.fields['ubigeo'].required = False
         else:
             self.fields['numero_documento'].required = True
+            self.fields['ubigeo'].required = True
     
         return tipo_documento
     
