@@ -16,7 +16,7 @@ class Cliente(models.Model):
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=50, blank=True, null=True)
     direccion_fiscal = models.CharField('Dirección Fiscal', max_length=100)
-    ubigeo = models.CharField('Ubigeo', max_length=6)
+    ubigeo = models.CharField('Ubigeo', max_length=6, blank=True, null=True)
     distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT)
     condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)

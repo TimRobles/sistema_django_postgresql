@@ -94,7 +94,7 @@ function habilitar() {
             e.target.disabled = true;
             ConsultarDni();
         });
-    } else if ($tipo_documento == '-' ) {
+    } else if ($tipo_documento == '-' || $tipo_documento == '0') {
         $boton.hidden = true;
         $numero_documento.required = false;
         $numero_documento.disabled = true;
