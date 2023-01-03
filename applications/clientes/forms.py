@@ -18,6 +18,7 @@ from .models import (
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 class ClienteForm(BSModalModelForm):
+    distrito = forms.ModelChoiceField(queryset=Distrito.objects.none())
     class Meta:
         model = Cliente
         fields = (
@@ -26,6 +27,7 @@ class ClienteForm(BSModalModelForm):
             'razon_social',
             'nombre_comercial',
             'direccion_fiscal',
+            'distrito',
             'ubigeo',
             'estado_sunat',
             'condicion_sunat',

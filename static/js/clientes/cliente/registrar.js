@@ -109,3 +109,7 @@ $('#id_tipo_documento').change(function (e) {
 });
 
 habilitar();
+
+$('#id_distrito').change(function (e) {
+    $('#id_ubigeo')[0].value = e.target.value;
+})
