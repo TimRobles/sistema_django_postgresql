@@ -121,6 +121,31 @@ class EnvioTrasladoProductoMaterialActualizarDetalleForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class EnvioTrasladoProductoDetalleSeriesForm(BSModalModelForm):
+    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10, required=False)
+    serie = forms.CharField(required=False)
+    class Meta:
+        model = EnvioTrasladoProductoDetalle
+        fields=(
+            'serie',
+            'cantidad_envio',
+            'cantidad_ingresada',
+            )
+
+    def __init__(self, *args, **kwargs):
+        cantidad_envio = kwargs.pop('cantidad_envio')
+        cantidad_ingresada = kwargs.pop('cantidad_ingresada')
+        super(EnvioTrasladoProductoDetalleSeriesForm, self).__init__(*args, **kwargs)
+        self.fields['cantidad_envio'].initial = cantidad_envio
+        self.fields['cantidad_ingresada'].initial = cantidad_ingresada
+        if cantidad_ingresada == cantidad_envio:
+            self.fields['serie'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['cantidad_envio'].disabled = True
+            self.fields['cantidad_ingresada'].disabled = True
+
+
 class RecepcionTrasladoProductoForm(BSModalModelForm):
     class Meta:
         model = RecepcionTrasladoProducto

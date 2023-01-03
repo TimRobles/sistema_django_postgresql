@@ -1,4 +1,6 @@
+from decimal import Decimal
 from django.db import models
+from applications.calidad.models import Serie
 from applications.funciones import numeroXn
 from applications.movimiento_almacen.models import TipoStock
 from applications.sede.models import Sede
@@ -80,8 +82,29 @@ class EnvioTrasladoProductoDetalle(models.Model):
     def producto(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle.all())).quantize(Decimal('0.01'))
+
     def __str__(self):
         return "%s" % (self.producto)
+
+
+class ValidarSerieEnvioTrasladoProductoDetalle(models.Model):
+    envio_traslado_producto_detalle = models.ForeignKey(EnvioTrasladoProductoDetalle, on_delete=models.PROTECT, related_name='ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieEnvioTrasladoProductoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieEnvioTrasladoProductoDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Envio Traslado Producto Detalle'
+        verbose_name_plural = 'Validar Series Envios Traslado Producto Detalle'
+
+    def __str__(self):
+        return "%s - %s" % (self.envio_traslado_producto_detalle , str(self.serie))
 
 
 class RecepcionTrasladoProducto(models.Model):
@@ -137,3 +160,19 @@ class RecepcionTrasladoProductoDetalle(models.Model):
     def __str__(self):
         return str(self.id)
 
+
+class ValidarSerieRecepcionTrasladoProductoDetalle(models.Model):
+    recepcion_traslado_producto_detalle = models.ForeignKey(RecepcionTrasladoProductoDetalle, on_delete=models.PROTECT, related_name='ValidarSerieRecepcionTrasladoProductoDetalle_recepcion_traslado_producto_detalle')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieRecepcionTrasladoProductoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieRecepcionTrasladoProductoDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Recepcion Traslado Producto Detalle'
+        verbose_name_plural = 'Validar Series Recepciones Traslado Producto Detalle'
+
+    def __str__(self):
+        return "%s - %s" % (self.recepcion_traslado_producto_detalle , str(self.serie))

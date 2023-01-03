@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Envío Traslado Producto Validar Series
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>
+        <a href="{% url 'traslado_producto_app:envio_ver' contexto_envio_traslado_producto_detalle.envio_traslado_producto.id %}"><span class="badge bg-primary">Regresar</span></a>   
+    </h3>
+    <br>
+    <form action="" method="post" autocomplete="off">
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+                <div class="col-lg-4">
+                    <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                    {% if field.help_text %}
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                    {% endif %}
+                    >
+                    <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    </div>
+                    {% for error in field.errors %}
+                        <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+            {% endfor %}
+            <div class="col-lg-4 my-auto">
+                <button type="submit" class="btn btn-success" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a class="btn btn-success" href="{% url 'traslado_producto_app:validar_series_envio_traslado_producto_detalle' contexto_envio_traslado_producto_detalle.id %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+    <br>
+    <button data-form-url="{% url 'material_app:series' contexto_envio_traslado_producto_detalle.producto.id %}"
+        class="read btn btn-primary">
+        Ver series
+    </button>
+    <div id="tabla">
+        {% include 'traslado_producto/validar_serie_envio_traslado_producto/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+
+
+{% block extrajs %}
+<script>
+    window.onload = function(){
+        setTimeout(() => {
+            document.getElementById("id_serie").focus();
+        }, 500);
+    }
+</script>    
+{% endblock extrajs %}
+    

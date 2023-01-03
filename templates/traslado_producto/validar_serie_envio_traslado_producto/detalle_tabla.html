@@ -1,0 +1,50 @@
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ contexto_envio_traslado_producto_detalle.envio_traslado_producto.sociedad}}</td>
+                    <th class="px-2">Cliente:</th>
+                    <td>{{ contexto_envio_traslado_producto_detalle.envio_traslado_producto.cliente }}</td>
+                    <th class="px-2">Producto:</th>
+                    <td>{{ contexto_envio_traslado_producto_detalle.producto}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nro. de Serie</th>         
+                <th>Estado</th>    
+                <th class="text-center">Acciones</th>    
+            </tr>
+        </thead>
+        <tbody>
+            {% for validacion in contexto_series %}
+                <tr>
+                    {% if validacion.serie %}
+                    <td> 
+                        {{ validacion.serie}} 
+                    </td>
+                    {% endif %}
+                    <td>{{ validacion.serie.estado }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_envio_traslado_producto_detalle.envio_traslado_producto.estado == 1 %}
+                            <button data-form-url="{% url 'traslado_producto_app:validar_series_envio_traslado_producto_detalle_eliminar' validacion.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+                           
+        </tbody>
+    </table>
+</div>

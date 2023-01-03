@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from applications.calidad.models import Serie
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.material.funciones import stock, tipo_stock_sede
@@ -11,9 +12,11 @@ from .models import (
     MotivoTraslado,
     RecepcionTrasladoProducto,
     RecepcionTrasladoProductoDetalle,
+    ValidarSerieEnvioTrasladoProductoDetalle,
 )
 
 from .forms import (
+    EnvioTrasladoProductoDetalleSeriesForm,
     EnvioTrasladoProductoForm,
     EnvioTrasladoProductoMaterialDetalleForm,
     EnvioTrasladoProductoObservacionesForm,
@@ -407,6 +410,102 @@ class EnvioTrasladoProductoMaterialDeleteView(BSModalDeleteView):
 
         return context
 
+
+class ValidarSeriesEnvioTrasladoProductoDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('traslado_producto.view_enviotrasladoproductodetalle')
+    template_name = "traslado_producto/validar_serie_envio_traslado_producto/detalle.html"
+    form_class = EnvioTrasladoProductoDetalleSeriesForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            serie = form.cleaned_data['serie']
+            envio_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id = self.kwargs['pk'])
+            try:
+                buscar = Serie.objects.get(
+                    serie_base=serie,
+                    content_type=ContentType.objects.get_for_model(envio_traslado_producto_detalle.producto),
+                    id_registro=envio_traslado_producto_detalle.producto.id,
+                )
+                buscar2 = ValidarSerieEnvioTrasladoProductoDetalle.objects.filter(serie = buscar)
+
+                if len(buscar2) != 0:
+                    form.add_error('serie', "Serie ya ha sido registrada")
+                    return super().form_invalid(form)
+
+                if buscar.estado != 'DISPONIBLE':
+                    form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                    return super().form_invalid(form)
+            except:
+                form.add_error('serie', "Serie no encontrada: %s" % serie)
+                return super().form_invalid(form)
+
+            envio_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id = self.kwargs['pk'])
+            obj, created = ValidarSerieEnvioTrasladoProductoDetalle.objects.get_or_create(
+                envio_traslado_producto_detalle=envio_traslado_producto_detalle,
+                serie=buscar,
+            )
+            if created:
+                obj.estado = 1
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        envio_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id = self.kwargs['pk'])
+        cantidad_envio = envio_traslado_producto_detalle.cantidad_envio
+        cantidad_ingresada = len(ValidarSerieEnvioTrasladoProductoDetalle.objects.filter(envio_traslado_producto_detalle=envio_traslado_producto_detalle))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad_envio'] = cantidad_envio
+        kwargs['cantidad_ingresada'] = cantidad_ingresada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        envio_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesEnvioTrasladoProductoDetailView, self).get_context_data(**kwargs)
+        context['contexto_envio_traslado_producto_detalle'] = envio_traslado_producto_detalle
+        context['contexto_series'] = ValidarSerieEnvioTrasladoProductoDetalle.objects.filter(envio_traslado_producto_detalle = envio_traslado_producto_detalle)
+        return context
+
+def ValidarSeriesEnvioTrasladoProductoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'traslado_producto/validar_serie_envio_traslado_producto/detalle_tabla.html'
+        context = {}
+        envio_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id = pk)
+        context['contexto_envio_traslado_producto_detalle'] = envio_traslado_producto_detalle
+        context['contexto_series'] = ValidarSerieEnvioTrasladoProductoDetalle.objects.filter(envio_traslado_producto_detalle = envio_traslado_producto_detalle)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ValidarSeriesEnvioTrasladoProductoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.delete_validarseriesenviotrasladoproductodetalle')
+    model = ValidarSerieEnvioTrasladoProductoDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:validar_series_envio_traslado_producto_detalle', kwargs={'pk': self.get_object().envio_traslado_producto_detalle.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesEnvioTrasladoProductoDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
+        return context
+
+####################################################################################################
 
 
 class RecepcionTrasladoProductoListView(ListView):

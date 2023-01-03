@@ -8,6 +8,7 @@ class TipoStockAdmin(admin.ModelAdmin):
         'id',
         'codigo',
         'descripcion',
+        'serie_registrada',
         'created_by',
         'created_at',
         'updated_by',

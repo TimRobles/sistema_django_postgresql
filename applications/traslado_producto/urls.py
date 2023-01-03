@@ -5,7 +5,14 @@ from .import views
 
 app_name='traslado_producto_app'
 
-urlpatterns = [
+urlSeries = [
+
+    path('validar-series/envio-traslado-producto/detalle/<pk>/', views.ValidarSeriesEnvioTrasladoProductoDetailView.as_view(), name='validar_series_envio_traslado_producto_detalle'),
+    path('validar-series/envio-traslado-producto/detalle-tabla/<pk>/', views.ValidarSeriesEnvioTrasladoProductoDetailTabla, name='validar_series_envio_traslado_producto_detalle_tabla'),
+    path('validar-series-detalle/envio-traslado-producto/eliminar/<pk>/', views.ValidarSeriesEnvioTrasladoProductoDetalleDeleteView.as_view(), name='validar_series_envio_traslado_producto_detalle_eliminar'),
+]
+
+urlpatterns = urlSeries + [
     path('envio/',views.EnvioTrasladoProductoListView.as_view(), name='envio_inicio'),
     path('envio/tabla/',views.EnvioTrasladoProductoTabla, name='envio_tabla'),
     path('envio/registrar/',views.EnvioTrasladoProductoCrearView, name='envio_registrar'),

@@ -11,11 +11,15 @@
         Observaciones
     </button>
     {% endif %}
-    
     {% if envio_traslado_producto.RecepcionTrasladoProducto_envio_traslado_producto.all %}
     <a href="{% url 'traslado_producto_app:recepcion_inicio' %}" class="btn btn-primary">Ver Recepciones</a>
+    {% endif %}    
+    {% if envio_traslado_producto.estado != 1 %}
+        <a href="{% url 'traslado_producto_app:recepcion_registrar' %}"
+            class="delete btn btn-primary" title="Nueva Recepción">
+            Recepción
+        </a>
     {% endif %}
-        
 </h3>
 
 
@@ -100,15 +104,6 @@
                             Guardar Envio
                         </button>
                         {% endif %}
-
-                        {% if envio_traslado_producto.estado != 1 %}
-                        <a href="{% url 'traslado_producto_app:recepcion_registrar' %}"
-                            class="badge btn btn-primary" title="Nueva Recepción">
-                            Recepción
-                        </a>
-                        
-                        {% endif %}
-                            
                     </td>
                 </tr>
                 <tr>
@@ -166,10 +161,11 @@ Agregar Material
                 <th>Producto</th>
                 <th>Almacén Origen</th>
                 <th>Tipo Stock</th>
-                <th>Cantidad Envio</th>
+                <th class="text-end">Cantidad Envio</th>
+                <th class="text-end">Series Registradas</th>
                 <th>Unidad</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -180,10 +176,15 @@ Agregar Material
                 <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                 <td class="text-nowrap">{{ material.almacen_origen }}</td>
                 <td class="text-nowrap">{{ material.tipo_stock }}</td>
-                <td class="text-nowrap">{{ material.cantidad_envio }}</td>
+                <td class="text-end text-nowrap">{{ material.cantidad_envio }}</td>
+                <td class="text-end text-nowrap">
+                    {% if material.tipo_stock.serie_registrada %}
+                    {{ material.series_validar }}
+                    {% endif %}
+                </td>
                 <td class="text-nowrap">{{ material.unidad }}</td>
                 <td class="text-nowrap">{{ material.get_estado_display }}</td>
-                <td>
+                <td class="text-center text-nowrap">
                     {% if envio_traslado_producto.estado == 1 %}
                     <button data-form-url="{% url 'traslado_producto_app:envio_actualizar_material' material.id %}"
                         data-table-url="{% url 'traslado_producto_app:envio_ver_tabla' envio_traslado_producto.id %}"
@@ -197,6 +198,16 @@ Agregar Material
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi-x-lg"></i>
                     </button>
+                    {% endif %}
+                    
+                    {% if material.tipo_stock.serie_registrada %}
+                        {% if material.producto.control_serie %}
+                            <a href="{% url 'traslado_producto_app:validar_series_envio_traslado_producto_detalle' material.id %}"
+                                class="btn btn-dark btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
+                        {% endif %}
                     {% endif %}
                 </td>
             </tr>                
