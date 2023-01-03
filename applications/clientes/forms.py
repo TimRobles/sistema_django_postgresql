@@ -64,7 +64,8 @@ class ClienteForm(BSModalModelForm):
         try:
             datos_globales.models.Distrito.objects.get(codigo = ubigeo)
         except:
-            self.add_error('ubigeo', 'Usar un ubigeo válido')
+            if self.fields['ubigeo'].required:
+                self.add_error('ubigeo', 'Usar un ubigeo válido')
     
         return ubigeo
 
