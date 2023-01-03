@@ -18,7 +18,6 @@ from .models import (
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 class ClienteForm(BSModalModelForm):
-    distrito = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=False)
     class Meta:
         model = Cliente
         fields = (
@@ -40,6 +39,7 @@ class ClienteForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ClienteForm, self).__init__(*args, **kwargs)
+        self.fields['distrito'].queryset = Distrito.objects.none()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
