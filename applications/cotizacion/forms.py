@@ -137,7 +137,7 @@ class CotizacionVentaOtrosCargosForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class CotizacionVentaMaterialDetalleForm(BSModalForm):
-    material = forms.ModelChoiceField(queryset=Material.objects.all())
+    material = forms.ModelChoiceField(queryset=Material.objects.filter(mostrar=True))
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
     precio_lista = forms.DecimalField(max_digits=22, decimal_places=10, required=False)
     stock = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)

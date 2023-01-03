@@ -188,7 +188,7 @@ def guia_nubefact(obj, user):
         cliente_direccion = obj.cliente.direccion_fiscal
         correos = obj.cliente.CorreoCliente_cliente.filter(estado=1)
         fecha_de_emision = obj.fecha_emision.strftime("%d-%m-%Y")
-        observaciones = obj.observaciones
+        observaciones = f"Contacto: {obj.cliente_interlocutor.nombre_completo} {obj.cliente_interlocutor.get_tipo_documento_display()}: {obj.cliente_interlocutor.numero_documento} | {obj.observaciones}"
         motivo_de_traslado = obj.motivo_traslado
         peso_bruto_total = numero_cero(obj.peso_total)
         numero_de_bultos = numero_espacio(obj.numero_bultos)
