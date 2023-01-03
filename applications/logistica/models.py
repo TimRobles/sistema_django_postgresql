@@ -297,7 +297,7 @@ class Despacho(models.Model):
 
 class DespachoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     cantidad_despachada = models.DecimalField('Cantidad Despachada', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     despacho = models.ForeignKey(Despacho, on_delete=models.CASCADE, related_name='DespachoDetalle_despacho')

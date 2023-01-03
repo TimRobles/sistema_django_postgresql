@@ -4,6 +4,7 @@ from applications.clientes.forms import TipoInterlocutorClienteForm
 
 from .models import (
     Cliente,
+    ClienteAnexo,
     CorreoCliente,
     TipoInterlocutorCliente,
     InterlocutorCliente,
@@ -202,3 +203,28 @@ admin.site.register(CorreoCliente, CorreoClienteAdmin)
 admin.site.register(TelefonoInterlocutorCliente, TelefonoInterlocutorClienteAdmin)
 admin.site.register(CorreoInterlocutorCliente, CorreoInterlocutorClienteAdmin)
 admin.site.register(RepresentanteLegalCliente, RepresentanteLegalClienteAdmin)
+
+
+@admin.register(ClienteAnexo)
+class ClienteAnexoAdmin(admin.ModelAdmin):
+    list_display = (
+        'cliente',
+        'direccion',
+        'distrito',
+        'fecha_baja',
+        'estado',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',        
+        )
+    search_fields = (
+        'direccion',
+        )
+        
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+    

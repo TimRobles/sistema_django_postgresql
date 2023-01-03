@@ -826,7 +826,7 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
                     content_type = ContentType.objects.get_for_model(material),
                     id_registro = material.id,
                     recepcion_traslado_producto = recepcion_traslado_producto,
-                    almacen_destino = form.cleaned_data.get('almacen_destino'),
+                    almacen_destino = almacen_destino,
                     unidad = form.cleaned_data.get('unidad')
                 )
                 if created:
