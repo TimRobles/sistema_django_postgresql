@@ -69,7 +69,7 @@ class ClienteForm(BSModalModelForm):
     def clean(self):
         cleaned_data = super().clean()
         numero_documento = cleaned_data.get('numero_documento')
-        filtro = Cliente.objects.filter(numero_documento__unaccent__iexact = numero_documento)
+        filtro = Cliente.objects.filter(numero_documento__unaccent__iexact = numero_documento).exclude(numero_documento=None).exclude(numero_documento="")
         if numero_documento != self.instance.numero_documento:
             if len(filtro)>0:
                 self.add_error('numero_documento', 'Ya existe un Cliente con este Número de documento')
