@@ -45,4 +45,7 @@ urlpatterns = urlSeries + [
 
     path('motivo-traslado/crear/', views.MotivoTrasladoCreateView.as_view(), name='motivo_traslado_crear'),
 
+    path('stock/<int:id_recepcion_traslado_producto_detalle>/', views.StockView, name='stock'),
+    path('stock/<int:id_recepcion_traslado_producto_detalle>/<int:id_sociedad>/<int:id_almacen>/', views.StockSociedadAlmacenView, name='stock'),
+    path('unidad/material/<str:id_recepcion_traslado_producto_detalle>/', views.UnidadMaterialView, name='unidad_material'),
  ]

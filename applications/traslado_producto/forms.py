@@ -208,7 +208,7 @@ class RecepcionTrasladoProductoObservacionesForm(BSModalModelForm):
 
 
 class RecepcionTrasladoProductoMaterialDetalleForm(BSModalModelForm):
-    material = forms.ModelChoiceField(queryset=Material.objects.all())
+    material = forms.ModelChoiceField(queryset=RecepcionTrasladoProductoDetalle.objects.all())
     cantidad_recepcion = forms.DecimalField(max_digits=22, decimal_places=10)
     stock_disponible = forms.CharField(required=False)
 
@@ -226,7 +226,7 @@ class RecepcionTrasladoProductoMaterialDetalleForm(BSModalModelForm):
         recepcion_traslado_producto = kwargs.pop('recepcion_traslado_producto')
         lista_materiales = kwargs.pop('lista_materiales')
         super(RecepcionTrasladoProductoMaterialDetalleForm, self).__init__(*args, **kwargs)
-        self.fields['material'].queryset = Material.objects.filter(id__in=lista_materiales)
+        self.fields['material'].queryset = lista_materiales
         self.fields['almacen_destino'].queryset = recepcion_traslado_producto.sede_destino.Almacen_sede.filter(estado_alta_baja=1)
         self.fields['stock_disponible'].disabled = True
         self.fields['almacen_destino'].required = True

@@ -1,8 +1,11 @@
 from django.shortcuts import render
+from django import forms
 from applications.calidad.models import Serie
+from applications.datos_globales.models import Unidad
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.material.funciones import stock, tipo_stock_sede
+from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.sociedad.models import Sociedad
 
@@ -795,13 +798,13 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
         material = form.cleaned_data.get('material')
         cantidad_recepcion = form.cleaned_data.get('cantidad_recepcion')
         cantidad_enviada = recepcion_traslado_producto.envio_traslado_producto.EnvioTrasladoProductoDetalle_envio_traslado_producto.filter(
-            content_type=ContentType.objects.get_for_model(material),
-            id_registro=material.id,
+            content_type = material.content_type,
+            id_registro = material.id_registro,
         ).aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
 
         buscar = RecepcionTrasladoProductoDetalle.objects.filter(
-            content_type=ContentType.objects.get_for_model(material),
-            id_registro=material.id,
+            content_type = material.content_type,
+            id_registro = material.id_registro,
             recepcion_traslado_producto=recepcion_traslado_producto,
         ).exclude(recepcion_traslado_producto__estado=4)
 
@@ -823,21 +826,27 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
                 cantidad_recepcion = form.cleaned_data.get('cantidad_recepcion')
 
                 obj, created = RecepcionTrasladoProductoDetalle.objects.get_or_create(
-                    content_type = ContentType.objects.get_for_model(material),
-                    id_registro = material.id,
+                    envio_traslado_producto_detalle = material,
+                    content_type = material.content_type,
+                    id_registro = material.id_registro,
                     recepcion_traslado_producto = recepcion_traslado_producto,
                     almacen_destino = almacen_destino,
-                    unidad = form.cleaned_data.get('unidad')
+                    unidad = form.cleaned_data.get('unidad'),
                 )
+
+                print(obj, created)
+
                 if created:
                     obj.item = item + 1
                     obj.cantidad_recepcion = cantidad_recepcion
-
                 else:
                     obj.cantidad_recepcion = obj.cantidad_recepcion + cantidad_recepcion
 
                 registro_guardar(obj, self.request)
+                print("Por grabar")
                 obj.save()
+                print("Grabado")
+                self.request.session['primero'] = False
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -847,10 +856,7 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
         kwargs = super().get_form_kwargs()
         recepcion_traslado_producto = RecepcionTrasladoProducto.objects.get(id = self.kwargs['id_recepcion_traslado_producto'])
         kwargs['recepcion_traslado_producto'] = recepcion_traslado_producto
-        lista_materiales = []
-        for detalle in recepcion_traslado_producto.envio_traslado_producto.EnvioTrasladoProductoDetalle_envio_traslado_producto.all():
-            lista_materiales.append(detalle.id_registro)
-        kwargs['lista_materiales'] = lista_materiales
+        kwargs['lista_materiales'] = recepcion_traslado_producto.envio_traslado_producto.EnvioTrasladoProductoDetalle_envio_traslado_producto.all()
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -860,8 +866,8 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
         context['titulo'] = 'Agregar'
         context['accion'] = 'Material'
         context['sociedad'] = recepcion_traslado_producto.sociedad.id
-        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
-        context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
+        context['url_stock'] = reverse_lazy('traslado_producto_app:stock', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
+        context['url_unidad'] = reverse_lazy('traslado_producto_app:unidad_material', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
         return context
 
 class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
@@ -931,8 +937,8 @@ class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView)
         context['titulo'] = "Item"
         context['material'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
         context['sociedad'] = recepcion_traslado_producto.sociedad.id
-        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
-        context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
+        context['url_stock'] = reverse_lazy('traslado_producto_app:stock', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
+        context['url_unidad'] = reverse_lazy('traslado_producto_app:unidad_material', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
         return context
 
 class RecepcionTrasladoProductoMaterialDeleteView(BSModalDeleteView):
@@ -980,3 +986,42 @@ class MotivoTrasladoCreateView(BSModalCreateView):
         context['titulo'] = "Motivo de Traslado"
 
         return context
+
+
+def StockView(request, id_recepcion_traslado_producto_detalle):
+    if request.method == 'GET':
+        try:
+            recepcion_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id=id_recepcion_traslado_producto_detalle)
+            return HttpResponse(recepcion_traslado_producto_detalle.producto.stock)
+        except:
+            return HttpResponse("")
+
+
+def StockSociedadAlmacenView(request, id_recepcion_traslado_producto_detalle, id_sociedad, id_almacen):
+    if request.method == 'GET':
+        try:
+            recepcion_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id=id_recepcion_traslado_producto_detalle)
+            return HttpResponse(stock(recepcion_traslado_producto_detalle.content_type, recepcion_traslado_producto_detalle.id_registro, id_sociedad, id_almacen))
+        except:
+            return HttpResponse("")
+
+
+class UnidadForm(forms.Form):
+    unidad = forms.ModelChoiceField(queryset = Unidad.objects.all(), required=False)
+
+
+def UnidadMaterialView(request, id_recepcion_traslado_producto_detalle):
+    form = UnidadForm()
+    recepcion_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id=id_recepcion_traslado_producto_detalle)
+    form.fields['unidad'].queryset = recepcion_traslado_producto_detalle.producto.subfamilia.unidad.all()
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form':form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)

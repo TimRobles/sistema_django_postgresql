@@ -87,7 +87,7 @@ class EnvioTrasladoProductoDetalle(models.Model):
         return Decimal(len(self.ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle.all())).quantize(Decimal('0.01'))
 
     def __str__(self):
-        return "%s" % (self.producto)
+        return f"{self.item} - {self.producto} - {self.almacen_origen} - {self.tipo_stock}"
 
 
 class ValidarSerieEnvioTrasladoProductoDetalle(models.Model):
