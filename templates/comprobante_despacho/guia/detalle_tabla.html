@@ -93,7 +93,12 @@
                     <th class="pe-2">Interlocutor:</th>
                     <td>
                         {% if guia.cliente_interlocutor %}
-                        {{ guia.cliente_interlocutor.nombre_completo }}   
+                            {{ guia.cliente_interlocutor.nombre_completo }}
+                            
+                            {% if guia.cliente_interlocutor.numero_documento %}
+                            {{ guia.cliente_interlocutor.get_tipo_documento_display }}: {{ guia.cliente_interlocutor.numero_documento }}
+                            {% endif %}
+                            
                         {% endif %}
                     </td>
                     <td>

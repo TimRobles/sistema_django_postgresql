@@ -18,7 +18,7 @@
             <td class="text-center">{{ tipo_cambio.tipo_cambio_compra }}</td>
             <td class="text-center">1 {{ tipo_cambio.moneda_origen }} = {{ tipo_cambio.venta }} {{ tipo_cambio.moneda_destino }}</td>
             <td class="text-center">{{ tipo_cambio.compra }} {{ tipo_cambio.moneda_destino }} = 1 {{ tipo_cambio.moneda_origen }}</td>
-            <td class="text-center">{{ tipo_cambio.updated_by }}</td>
+            <td class="text-center text-nowrap">{{ tipo_cambio.updated_by }} {{ tipo_cambio.updated_at|date:'d/m/Y H:i:s' }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'datos_globales_app:tipo_cambio_actualizar' tipo_cambio.id %}"
                     data-table-url="{% url 'datos_globales_app:tipo_cambio_tabla' %}"
