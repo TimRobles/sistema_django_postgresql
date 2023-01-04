@@ -29,7 +29,7 @@ class BoletaVentaBuscarForm(forms.Form):
         filtro_sociedad = kwargs.pop('filtro_sociedad')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_fecha_emision = kwargs.pop('filtro_fecha_emision')
-        # filtro_estado = kwargs.pop('filtro_estado')
+        filtro_estado = kwargs.pop('filtro_estado')
         # estado = kwargs.pop('estados')
         super(BoletaVentaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['numero_boleta'].initial = filtro_numero_boleta
