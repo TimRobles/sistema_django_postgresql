@@ -96,7 +96,7 @@
                             {{ guia.cliente_interlocutor.nombre_completo }}
                             
                             {% if guia.cliente_interlocutor.numero_documento %}
-                            {{ guia.cliente_interlocutor.get_tipo_documento_display }}: {{ guia.cliente_interlocutor.numero_documento }}
+                            {{ guia.cliente_interlocutor.tipo_documento|diccionario_tipo_documento }}: {{ guia.cliente_interlocutor.numero_documento }}
                             {% endif %}
                             
                         {% endif %}

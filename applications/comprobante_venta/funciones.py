@@ -4,6 +4,7 @@ import requests, json
 from applications.datos_globales.models import NubefactRespuesta
 
 from applications.funciones import igv, numero_cero, numero_espacio, numero_guion
+from applications.home.templatetags.funciones_propias import diccionario_tipo_documento
 from applications.importaciones import registro_guardar_user
 
 def subir_nubefact(obj, data, ruta, token, user):
@@ -191,7 +192,7 @@ def guia_nubefact(obj, user):
         if not obj.cliente_interlocutor:
             observaciones = obj.observaciones
         elif obj.cliente_interlocutor.numero_documento:
-            observaciones = f"Contacto: {obj.cliente_interlocutor.nombre_completo} {obj.cliente_interlocutor.get_tipo_documento_display()}: {obj.cliente_interlocutor.numero_documento} | {obj.observaciones}"
+            observaciones = f"Contacto: {obj.cliente_interlocutor.nombre_completo} {diccionario_tipo_documento(obj.cliente_interlocutor.tipo_documento)}: {obj.cliente_interlocutor.numero_documento} | {obj.observaciones}"
         else:
             observaciones = f"Contacto: {obj.cliente_interlocutor.nombre_completo} | {obj.observaciones}"
         motivo_de_traslado = obj.motivo_traslado
