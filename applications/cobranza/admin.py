@@ -31,7 +31,7 @@ class LineaCreditoAdmin(admin.ModelAdmin):
     )
     search_fields = (
         'id',
-        'cliente',
+        'cliente__razon_social',
     )
 
     def save_model(self, request, obj, form, change):
@@ -190,7 +190,7 @@ class DeudaAdmin(admin.ModelAdmin):
     )
     search_fields = (
         'id',
-        'cliente',
+        'cliente__razon_social',
     )
     list_filter = (
         'sociedad',
