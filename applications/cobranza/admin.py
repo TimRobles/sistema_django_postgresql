@@ -29,6 +29,10 @@ class LineaCreditoAdmin(admin.ModelAdmin):
         'updated_at',
         'updated_by',
     )
+    search_fields = (
+        'id',
+        'cliente',
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -40,6 +44,7 @@ class LineaCreditoAdmin(admin.ModelAdmin):
 @admin.register(SolicitudCredito)
 class SolicitudCreditoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'cotizacion_venta',
         'total_cotizado',
         'total_credito',
@@ -50,6 +55,9 @@ class SolicitudCreditoAdmin(admin.ModelAdmin):
         'created_by',
         'updated_at',
         'updated_by',
+    )
+    search_fields = (
+        'id',
     )
 
     def save_model(self, request, obj, form, change):
@@ -62,6 +70,7 @@ class SolicitudCreditoAdmin(admin.ModelAdmin):
 @admin.register(SolicitudCreditoCuota)
 class SolicitudCreditoCuotaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'solicitud_credito',
         'monto',
         'dias_pago',
@@ -70,6 +79,9 @@ class SolicitudCreditoCuotaAdmin(admin.ModelAdmin):
         'created_by',
         'updated_at',
         'updated_by',
+    )
+    search_fields = (
+        'id',
     )
 
     def save_model(self, request, obj, form, change):
@@ -119,6 +131,9 @@ class IngresoAdmin(admin.ModelAdmin):
         'updated_at',
         'updated_by',
     )
+    search_fields = (
+        'id',
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
@@ -143,6 +158,9 @@ class EgresoAdmin(admin.ModelAdmin):
         'created_by',
         'updated_at',
         'updated_by',
+    )
+    search_fields = (
+        'id',
     )
 
     def save_model(self, request, obj, form, change):
@@ -170,13 +188,19 @@ class DeudaAdmin(admin.ModelAdmin):
         'updated_at',
         'updated_by',
     )
+    search_fields = (
+        'id',
+        'cliente',
+    )
+    list_filter = (
+        'sociedad',
+        )    
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
-
 
 @admin.register(Cuota)
 class CuotaAdmin(admin.ModelAdmin):
@@ -234,6 +258,12 @@ class PagoAdmin(admin.ModelAdmin):
         'updated_at',
         'updated_by',
     )
+    search_fields = (
+        'id',
+    )
+    list_filter = (
+        'deuda',
+        )    
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
