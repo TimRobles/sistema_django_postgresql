@@ -111,6 +111,19 @@ class GuiaBultosForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class GuiaObservacionForm(BSModalModelForm):
+    class Meta:
+        model = Guia
+        fields=(
+            'observaciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaObservacionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class GuiaConductorForm(BSModalModelForm):
     class Meta:
         model = Guia

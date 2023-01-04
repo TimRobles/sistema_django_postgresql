@@ -14,6 +14,7 @@ urlpatterns = [
     path('guia/guardar/<pk>/', views.GuiaGuardarView.as_view(), name='guia_guardar'),
     path('guia/anular/<pk>/', views.GuiaAnularView.as_view(), name='guia_anular'),
 
+    path('guia/observacion/<pk>/', views.GuiaObservacionView.as_view(), name='guia_observacion'),
     path('guia/motivo-traslado/<pk>/', views.GuiaMotivoTrasladoView.as_view(), name='guia_motivo_traslado'),
     path('guia/fecha-traslado/<pk>/', views.GuiaFechaTrasladoView.as_view(), name='guia_fecha_traslado'),
     path('guia/transportista/<pk>/', views.GuiaTransportistaView.as_view(), name='guia_transportista'),

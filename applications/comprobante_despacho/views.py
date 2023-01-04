@@ -22,6 +22,7 @@ from .forms import(
     GuiaDetallePesoForm,
     GuiaFechaTrasladoForm,
     GuiaMotivoTrasladoForm,
+    GuiaObservacionForm,
     GuiaPartidaForm,
     GuiaSerieForm,
     GuiaTransportistaForm,
@@ -179,7 +180,7 @@ class GuiaTransportistaView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -203,7 +204,7 @@ class GuiaTransportistaLimpiarView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def delete(self, request, *args, **kwargs):
@@ -232,7 +233,7 @@ class GuiaDetallePesoView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.object.guia.id})
 
     def form_valid(self, form):
@@ -276,7 +277,7 @@ class GuiaPartidaView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -312,7 +313,7 @@ class GuiaDestinoView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -349,7 +350,7 @@ class GuiaBultosView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -360,6 +361,30 @@ class GuiaBultosView(PermissionRequiredMixin, BSModalUpdateView):
         context = super(GuiaBultosView, self).get_context_data(**kwargs)
         context['accion'] = "Asignar"
         context['titulo'] = "Número de Bultos"
+        return context
+
+class GuiaObservacionView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaObservacionForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self):
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(GuiaObservacionView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Observaciones"
         return context
 
 class GuiaConductorView(PermissionRequiredMixin, BSModalUpdateView):
@@ -373,7 +398,7 @@ class GuiaConductorView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -396,7 +421,7 @@ class GuiaConductorLimpiarView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def delete(self, request, *args, **kwargs):
@@ -429,7 +454,7 @@ class GuiaMotivoTrasladoView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
     
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -453,7 +478,7 @@ class GuiaFechaTrasladoView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -477,7 +502,7 @@ class GuiaClienteView(PermissionRequiredMixin, BSModalUpdateView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
@@ -581,7 +606,7 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super(GuiaGuardarView, self).dispatch(request, *args, **kwargs)
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     @transaction.atomic
@@ -630,7 +655,7 @@ class GuiaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super(GuiaNubeFactEnviarView, self).dispatch(request, *args, **kwargs)
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     @transaction.atomic
@@ -671,7 +696,7 @@ class GuiaNubeFactConsultarView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     @transaction.atomic
@@ -712,7 +737,7 @@ class GuiaAnularView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_inicio')
 
     @transaction.atomic
@@ -767,7 +792,7 @@ class GuiaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.request.session['id_despacho']})
 
     def delete(self, request, *args, **kwargs):

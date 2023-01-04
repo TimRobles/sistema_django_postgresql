@@ -9,6 +9,12 @@
     </div>
     {% if guia.estado == 1 %}
     <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_observacion' guia.id%}"
+            class="delete btn btn-primary">
+            Observaciones
+        </button>
+    </div>
+    <div class="col-auto">
         <button data-form-url="{% url 'comprobante_despacho_app:guia_guardar' guia.id%}"
             class="delete btn btn-danger">
             Guardar
@@ -26,6 +32,12 @@
     {% endif %}
 
     {% if guia.estado == 2 and nubefact_acceso == 'NUBEFACT' or guia.estado == 6 %}
+    <div class="col-auto">
+        <button data-form-url="{% url 'comprobante_despacho_app:guia_observacion' guia.id%}"
+            class="delete btn btn-primary">
+            Observaciones
+        </button>
+    </div>
     <div class="col-auto">
         <button data-form-url="{% url 'comprobante_despacho_app:guia_nubefact_enviar' guia.id %}"
             class="delete btn btn-info">
