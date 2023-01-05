@@ -168,6 +168,9 @@ class DeudaView(PermissionRequiredMixin, FormView):
             paginator = Paginator(deudas, objectsxpage)
             page_number = self.request.GET.get('page')
             deudas = paginator.get_page(page_number)
+        
+        if self.request.GET.get('page'):
+            contexto_filtro = contexto_filtro + '?page=' + self.request.GET.get('page')
 
         context['contexto_deuda'] = deudas
         context['contexto_pagina'] = deudas
@@ -218,6 +221,9 @@ def DeudaTabla(request, id_cliente):
             paginator = Paginator(deudas, objectsxpage)
             page_number = request.GET.get('page')
             deudas = paginator.get_page(page_number)
+        
+        if request.GET.get('page'):
+            contexto_filtro = contexto_filtro + '?page=' + request.GET.get('page')
 
         context['contexto_deuda'] = deudas
         context['contexto_pagina'] = deudas
