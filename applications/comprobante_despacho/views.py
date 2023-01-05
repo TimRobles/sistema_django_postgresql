@@ -113,6 +113,16 @@ class GuiaCrearView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/form generico.html"
 
     def dispatch(self, request, *args, **kwargs):
+        # context = {}
+        # error_boleta = False
+        # context['titulo'] = 'Confirmación con Boleta'
+        # if self.get_object().nota_cliente.tipo_documento == '1':
+        #     error_boleta = True
+        
+        # if error_boleta:
+        #     context['texto'] = 'No se puede generar Guía desde una Boleta.'
+        #     return render(request, 'includes/modal sin permiso.html', context)
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)

@@ -1,6 +1,8 @@
 from django import forms
+from applications.clientes.models import Cliente
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda
 from applications.funciones import tipo_de_cambio
+from applications.sociedad.models import Sociedad
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.cobranza.models import Deuda, Ingreso, LineaCredito, Pago
 
@@ -205,3 +207,48 @@ class DepositosBuscarForm(forms.Form):
         self.fields['comentario'].initial = filtro_comentario
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
+
+
+class CuentaBancariaDetalleBuscarForm(forms.Form):
+    fecha = forms.DateField(required=False, widget=forms.DateInput(attrs ={'type':'date',},format = '%Y-%m-%d',))
+    monto = forms.DecimalField(required=False)
+    numero_operacion = forms.CharField(label = 'Número de Operación', max_length=100, required=False)
+    comentario = forms.CharField(label = 'Comentario', max_length=100, required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_fecha = kwargs.pop('filtro_fecha')
+        filtro_monto = kwargs.pop('filtro_monto')
+        filtro_numero_operacion = kwargs.pop('filtro_numero_operacion')
+        filtro_comentario = kwargs.pop('filtro_comentario')
+        super(CuentaBancariaDetalleBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['fecha'].initial = filtro_fecha
+        self.fields['monto'].initial = filtro_monto
+        self.fields['numero_operacion'].initial = filtro_numero_operacion
+        self.fields['comentario'].initial = filtro_comentario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'
+
+
+class DeudaBuscarForm(forms.Form):
+    fecha_deuda = forms.DateField(required=False, widget=forms.DateInput(attrs ={'type':'date',},format = '%Y-%m-%d',))
+    monto = forms.DecimalField(required=False)
+    moneda = forms.ModelChoiceField(queryset=Moneda.objects.all(), required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
+    numero_documento = forms.IntegerField(required=False)
+    
+    def __init__(self, *args, **kwargs):
+        filtro_fecha_deuda = kwargs.pop('filtro_fecha_deuda')
+        filtro_monto = kwargs.pop('filtro_monto')
+        filtro_moneda = kwargs.pop('filtro_moneda')
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_numero_documento = kwargs.pop('filtro_numero_documento')
+        super(DeudaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['fecha_deuda'].initial = filtro_fecha_deuda
+        self.fields['monto'].initial = filtro_monto
+        self.fields['moneda'].initial = filtro_moneda
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['numero_documento'].initial = filtro_numero_documento
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'
+
+

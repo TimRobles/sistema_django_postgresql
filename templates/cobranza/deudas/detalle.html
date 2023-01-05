@@ -10,6 +10,15 @@ Detalle Deuda
 {% block contenido %}
     <h3>Detalle Deuda - {{ contexto_deuda.0.cliente }}</h3>
 
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'cobranza_app:deudores_detalle' id_cliente %}">Limpiar</a>
+    </form>
+    <br>
+    
     {% include 'includes/paginador.html' %}
 
     <div class="table-responsive" id="tabla">

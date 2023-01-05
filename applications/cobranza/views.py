@@ -4,6 +4,7 @@ from datetime import timedelta
 from reportlab.lib import colors
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import movimientos_bancarios
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
 from applications.funciones import registrar_excepcion, tipo_de_cambio
 from applications.importaciones import *
@@ -16,11 +17,13 @@ from .models import(
 )
 
 from .forms import(
+    CuentaBancariaDetalleBuscarForm,
     CuentaBancariaEfectivoIngresoForm,
     CuentaBancariaIngresoCambiarForm,
     CuentaBancariaIngresoForm,
     CuentaBancariaIngresoPagarForm,
     DepositosBuscarForm,
+    DeudaBuscarForm,
     DeudaPagarForm,
     LineaCreditoForm,
     ClienteBuscarForm,
@@ -110,13 +113,55 @@ class DeudoresView(PermissionRequiredMixin, FormView):
         return context
     
 
-class DeudaView(PermissionRequiredMixin, TemplateView):
+class DeudaView(PermissionRequiredMixin, FormView):
     permission_required = ('cobranza.view_deuda')
     template_name = "cobranza/deudas/detalle.html"
+    form_class = DeudaBuscarForm
+    success_url = '.'
 
+    def get_form_kwargs(self):
+        kwargs = super(DeudaView, self).get_form_kwargs()
+        kwargs['filtro_fecha_deuda'] = self.request.GET.get('fecha_deuda')
+        kwargs['filtro_monto'] = self.request.GET.get('monto')
+        kwargs['filtro_moneda'] = self.request.GET.get('moneda')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_numero_documento'] = self.request.GET.get('numero_documento')
+        return kwargs
+    
     def get_context_data(self, **kwargs):
         context = super(DeudaView, self).get_context_data(**kwargs)
         deudas = Deuda.objects.filter(cliente__id=self.kwargs['id_cliente'])    
+
+        filtro_fecha_deuda = self.request.GET.get('fecha_deuda')
+        filtro_monto = self.request.GET.get('monto')
+        filtro_moneda = self.request.GET.get('moneda')
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_numero_documento = self.request.GET.get('numero_documento')
+        contexto_filtro = []
+        if filtro_fecha_deuda:
+            condicion = Q(fecha_deuda = filtro_fecha_deuda)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?fecha_deuda=" + filtro_fecha_deuda)
+        if filtro_monto:
+            condicion = Q(monto = filtro_monto)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?monto=" + filtro_monto)
+        if filtro_moneda:
+            condicion = Q(moneda = filtro_moneda)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?moneda=" + filtro_moneda)
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+        if filtro_numero_documento:
+            facturas = FacturaVenta.objects.filter(numero_factura=filtro_numero_documento)
+            boletas = BoletaVenta.objects.filter(numero_boleta=filtro_numero_documento)
+            condicion = (Q(content_type = ContentType.objects.get_for_model(FacturaVenta))) & (Q(id_registro__in = facturas.values_list('id')) | Q(content_type = ContentType.objects.get_for_model(BoletaVenta)) & Q(id_registro__in = boletas.values_list('id')))
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?numero_documento=" + filtro_numero_documento)
+        context['contexto_filtro'] = "".join(contexto_filtro)
+
         objectsxpage =  10 # Show 10 objects per page.
 
         if len(deudas) > objectsxpage:
@@ -136,6 +181,37 @@ def DeudaTabla(request, id_cliente):
         template = "cobranza/deudas/detalle tabla.html"
         context = {}
         deudas = Deuda.objects.filter(cliente__id=id_cliente)    
+
+        filtro_fecha_deuda = request.GET.get('fecha_deuda')
+        filtro_monto = request.GET.get('monto')
+        filtro_moneda = request.GET.get('moneda')
+        filtro_sociedad = request.GET.get('sociedad')
+        filtro_numero_documento = request.GET.get('numero_documento')
+        contexto_filtro = []
+        if filtro_fecha_deuda:
+            condicion = Q(fecha_deuda = filtro_fecha_deuda)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?fecha_deuda=" + filtro_fecha_deuda)
+        if filtro_monto:
+            condicion = Q(monto = filtro_monto)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?monto=" + filtro_monto)
+        if filtro_moneda:
+            condicion = Q(moneda = filtro_moneda)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?moneda=" + filtro_moneda)
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+        if filtro_numero_documento:
+            facturas = FacturaVenta.objects.filter(numero_factura=filtro_numero_documento)
+            boletas = BoletaVenta.objects.filter(numero_boleta=filtro_numero_documento)
+            condicion = (Q(content_type = ContentType.objects.get_for_model(FacturaVenta))) & (Q(id_registro__in = facturas.values_list('id')) | Q(content_type = ContentType.objects.get_for_model(BoletaVenta)) & Q(id_registro__in = boletas.values_list('id')))
+            deudas = deudas.filter(condicion)
+            contexto_filtro.append("?numero_documento=" + filtro_numero_documento)
+        context['contexto_filtro'] = "".join(contexto_filtro)
+
         objectsxpage =  10 # Show 10 objects per page.
 
         if len(deudas) > objectsxpage:
@@ -389,15 +465,40 @@ class CuentaBancariaView(PermissionRequiredMixin, TemplateView):
         return context
 
 
-class CuentaBancariaDetalleView(PermissionRequiredMixin, DetailView):
+class CuentaBancariaDetalleView(PermissionRequiredMixin, FormView):
     permission_required = ('datos_globales.view_cuentabancariasociedad')
-    model = CuentaBancariaSociedad
     template_name = "bancos/cuenta bancaria/detalle.html"
-    context_object_name = 'cuenta_bancaria'
+    form_class = CuentaBancariaDetalleBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(CuentaBancariaDetalleView, self).get_form_kwargs()
+        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        kwargs['filtro_monto'] = self.request.GET.get('monto')
+        kwargs['filtro_numero_operacion'] = self.request.GET.get('numero_operacion')
+        kwargs['filtro_comentario'] = self.request.GET.get('comentario')
+        return kwargs
+    
 
     def get_context_data(self, **kwargs):
         context = super(CuentaBancariaDetalleView, self).get_context_data(**kwargs)
-        movimientos = movimientos_bancarios(self.object.id)
+        cuenta_bancaria = CuentaBancariaSociedad.objects.get(id=self.kwargs['pk'])
+        filtro_fecha = self.request.GET.get('fecha')
+        filtro_monto = self.request.GET.get('monto')
+        filtro_numero_operacion = self.request.GET.get('numero_operacion')
+        filtro_comentario = self.request.GET.get('comentario')
+        contexto_filtro = []
+        if filtro_fecha:
+            contexto_filtro.append("?fecha=" + filtro_fecha)
+        if filtro_monto:
+            contexto_filtro.append("?monto=" + filtro_monto)
+        if filtro_numero_operacion:
+            contexto_filtro.append("?numero_operacion=" + filtro_numero_operacion)
+        if filtro_comentario:
+            contexto_filtro.append("?comentario=" + filtro_comentario)
+        context['contexto_filtro'] = "".join(contexto_filtro)
+
+        movimientos = movimientos_bancarios(cuenta_bancaria.id, filtro_fecha, filtro_monto, filtro_numero_operacion, filtro_comentario)
         
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -406,6 +507,7 @@ class CuentaBancariaDetalleView(PermissionRequiredMixin, DetailView):
             page_number = self.request.GET.get('page')
             movimientos = paginator.get_page(page_number)
    
+        context['cuenta_bancaria'] = cuenta_bancaria
         context['contexto_pagina'] = movimientos
         return context
 
@@ -416,7 +518,22 @@ def CuentaBancariaDetalleTabla(request, pk):
         template = "bancos/cuenta bancaria/detalle tabla.html"
         context = {}
         context['cuenta_bancaria'] = CuentaBancariaSociedad.objects.get(id=pk)
-        movimientos = movimientos_bancarios(pk)
+        filtro_fecha = request.GET.get('fecha')
+        filtro_monto = request.GET.get('monto')
+        filtro_numero_operacion = request.GET.get('numero_operacion')
+        filtro_comentario = request.GET.get('comentario')
+        contexto_filtro = []
+        if filtro_fecha:
+            contexto_filtro.append("?fecha=" + filtro_fecha)
+        if filtro_monto:
+            contexto_filtro.append("?monto=" + filtro_monto)
+        if filtro_numero_operacion:
+            contexto_filtro.append("?numero_operacion=" + filtro_numero_operacion)
+        if filtro_comentario:
+            contexto_filtro.append("?comentario=" + filtro_comentario)
+        context['contexto_filtro'] = "".join(contexto_filtro)
+
+        movimientos = movimientos_bancarios(pk, filtro_fecha, filtro_monto, filtro_numero_operacion, filtro_comentario)
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -838,34 +955,36 @@ class DepositosView(PermissionRequiredMixin, FormView):
         filtro_cuenta_bancaria = self.request.GET.get('cuenta_bancaria')
         filtro_numero_operacion = self.request.GET.get('numero_operacion')
         filtro_comentario = self.request.GET.get('comentario')
+        contexto_filtro = []
         if filtro_fecha:
             condicion = Q(fecha = filtro_fecha)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?fecha=" + filtro_fecha
+            contexto_filtro.append("?fecha=" + filtro_fecha)
         if filtro_monto:
             condicion = Q(monto = filtro_monto)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?monto=" + filtro_monto
+            contexto_filtro.append("?monto=" + filtro_monto)
         if filtro_moneda:
             condicion = Q(cuenta_bancaria__moneda = filtro_moneda)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?moneda=" + filtro_moneda
+            contexto_filtro.append("?moneda=" + filtro_moneda)
         if filtro_cuenta_bancaria:
             condicion = Q(cuenta_bancaria = filtro_cuenta_bancaria)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?cuenta_bancaria=" + filtro_cuenta_bancaria
+            contexto_filtro.append("?cuenta_bancaria=" + filtro_cuenta_bancaria)
         if filtro_numero_operacion:
             condicion = Q(numero_operacion__unaccent__icontains = filtro_numero_operacion.split(" ")[0])
             for palabra in filtro_numero_operacion.split(" ")[1:]:
                 condicion &= Q(numero_operacion__unaccent__icontains = palabra)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?numero_operacion=" + filtro_numero_operacion
+            contexto_filtro.append("?numero_operacion=" + filtro_numero_operacion)
         if filtro_comentario:
             condicion = Q(comentario__unaccent__icontains = filtro_comentario.split(" ")[0])
             for palabra in filtro_comentario.split(" ")[1:]:
                 condicion &= Q(comentario__unaccent__icontains = palabra)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?comentario=" + filtro_comentario
+            contexto_filtro.append("?comentario=" + filtro_comentario)
+        context['contexto_filtro'] = "".join(contexto_filtro)
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -891,34 +1010,36 @@ def DepositosTabla(request):
         filtro_cuenta_bancaria = request.GET.get('cuenta_bancaria')
         filtro_numero_operacion = request.GET.get('numero_operacion')
         filtro_comentario = request.GET.get('comentario')
+        contexto_filtro = []
         if filtro_fecha:
             condicion = Q(fecha = filtro_fecha)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?fecha=" + filtro_fecha
+            contexto_filtro.append("?fecha=" + filtro_fecha)
         if filtro_monto:
             condicion = Q(monto = filtro_monto)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?monto=" + filtro_monto
+            contexto_filtro.append("?monto=" + filtro_monto)
         if filtro_moneda:
             condicion = Q(cuenta_bancaria__moneda = filtro_moneda)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?moneda=" + filtro_moneda
+            contexto_filtro.append("?moneda=" + filtro_moneda)
         if filtro_cuenta_bancaria:
             condicion = Q(cuenta_bancaria = filtro_cuenta_bancaria)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?cuenta_bancaria=" + filtro_cuenta_bancaria
+            contexto_filtro.append("?cuenta_bancaria=" + filtro_cuenta_bancaria)
         if filtro_numero_operacion:
             condicion = Q(numero_operacion__unaccent__icontains = filtro_numero_operacion.split(" ")[0])
             for palabra in filtro_numero_operacion.split(" ")[1:]:
                 condicion &= Q(numero_operacion__unaccent__icontains = palabra)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?numero_operacion=" + filtro_numero_operacion
+            contexto_filtro.append("?numero_operacion=" + filtro_numero_operacion)
         if filtro_comentario:
             condicion = Q(comentario__unaccent__icontains = filtro_comentario.split(" ")[0])
             for palabra in filtro_comentario.split(" ")[1:]:
                 condicion &= Q(comentario__unaccent__icontains = palabra)
             ingresos = ingresos.filter(condicion)
-            context['contexto_filtro'] = "?comentario=" + filtro_comentario
+            contexto_filtro.append("?comentario=" + filtro_comentario)
+        context['contexto_filtro'] = "".join(contexto_filtro)
 
         objectsxpage =  10 # Show 10 objects per page.
 

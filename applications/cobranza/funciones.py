@@ -17,10 +17,28 @@ def convertir_moneda(tipo_cambio, moneda_destino, moneda_inicial):
     return Decimal('0')
 
 
-def movimientos_bancarios(cuenta_bancaria):
+def movimientos_bancarios(cuenta_bancaria, fecha=None, monto=None, numero_operacion=None, comentario=None):
     movimientos = []
     ingresos = cobranza.models.Ingreso.objects.filter(cuenta_bancaria__id=cuenta_bancaria)
+    if fecha:
+        ingresos = ingresos.filter(fecha = fecha)
+    if monto:
+        ingresos = ingresos.filter(monto = monto)
+    if numero_operacion:
+        ingresos = ingresos.filter(numero_operacion = numero_operacion)
+    if comentario:
+        ingresos = ingresos.filter(comentario = comentario)
+
     egresos = cobranza.models.Egreso.objects.filter(cuenta_bancaria__id=cuenta_bancaria)
+    if fecha:
+        egresos = egresos.filter(fecha = fecha)
+    if monto:
+        egresos = egresos.filter(monto = monto)
+    if numero_operacion:
+        egresos = egresos.filter(numero_operacion = numero_operacion)
+    if comentario:
+        egresos = egresos.filter(comentario = comentario)
+        
     for ingreso in ingresos:
         ingreso.ingreso = ingreso.monto
         movimientos.append(ingreso)
