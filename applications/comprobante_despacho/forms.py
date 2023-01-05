@@ -1,9 +1,11 @@
 from datetime import date
 from django import forms
+from applications.sociedad.models import Sociedad
+from applications.variables import ESTADOS_DOCUMENTO
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.envio_clientes.models import Transportista
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
-from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
+from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import Distrito, SeriesComprobante
 from applications.sede.models import Sede
 from django.contrib.contenttypes.models import ContentType
@@ -213,3 +215,26 @@ class GuiaAnularForm(BSModalModelForm):
         super(GuiaAnularForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class GuiaBuscarForm(forms.Form):
+    fecha_emision = forms.DateField(required=False, widget=forms.DateInput(attrs ={'type':'date',},format = '%Y-%m-%d',))
+    numero_guia = forms.IntegerField(required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
+    estado = forms.ChoiceField(choices=((None, '-------------------'),) + ESTADOS_DOCUMENTO, required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_fecha_emision = kwargs.pop('filtro_fecha_emision')
+        filtro_numero_guia = kwargs.pop('filtro_numero_guia')
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_estado = kwargs.pop('filtro_estado')
+        super(GuiaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['fecha_emision'].initial = filtro_fecha_emision
+        self.fields['numero_guia'].initial = filtro_numero_guia
+        self.fields['cliente'].initial = filtro_cliente
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['estado'].initial = filtro_estado
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'

@@ -41,3 +41,29 @@
     </div>
 
 {% endblock contenido %}
+
+{% block extrajs %}
+    <script>
+        $(function () {
+
+            $("#id_cliente").select2({
+                width: '100%',
+                matcher: buscar_select2
+            });
+            
+        });
+
+        function select_form() {
+            combos = document.getElementsByClassName('select2');
+            for (let index = 0; index < combos.length; index++) {
+                const element = combos[index];
+                element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control field-lineal');
+                element.className = element.className.replace('select2-container--default', 'form-control field-lineal');
+            }
+        }
+
+        setTimeout(() => {
+            select_form();
+        }, 500);
+    </script>
+{% endblock extrajs %}

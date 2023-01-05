@@ -47,9 +47,7 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         contexto_filtro = []
 
         if filtro_cliente:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            condicion = Q(cliente = filtro_cliente)
             factura_venta = factura_venta.filter(condicion)
             contexto_filtro.append("?cliente=" + filtro_cliente)
 
@@ -97,16 +95,8 @@ def FacturaVentaTabla(request):
         filtro_fecha_emision = request.GET.get('fecha_emision')
         filtro_estado = request.GET.get('estado')
 
-        if filtro_cliente and filtro_fecha_emision:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0]) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra) & Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
-            factura_venta = factura_venta.filter(condicion)
-
         if filtro_cliente:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            condicion = Q(cliente = filtro_cliente)
             factura_venta = factura_venta.filter(condicion)
 
         if filtro_fecha_emision:
@@ -997,9 +987,7 @@ class BoletaVentaListView(PermissionRequiredMixin, FormView):
         contexto_filtro = []
 
         if filtro_cliente:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            condicion = Q(cliente = filtro_cliente)
             boleta_venta = boleta_venta.filter(condicion)
             contexto_filtro.append("?cliente=" + filtro_cliente)
 
@@ -1050,9 +1038,7 @@ def BoletaVentaTabla(request):
         filtro_estado = request.GET.get('estado')
 
         if filtro_cliente:
-            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
-            for palabra in filtro_cliente.split(" ")[1:]:
-                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            condicion = Q(cliente = filtro_cliente)
             boleta_venta = boleta_venta.filter(condicion)
 
         if filtro_fecha_emision:

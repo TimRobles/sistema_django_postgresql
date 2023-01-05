@@ -1,6 +1,7 @@
 import re
 from django import forms
 from django.contrib.auth import get_user_model
+from applications.clientes.models import Cliente
 from applications.datos_globales.models import SeriesComprobante
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADOS_DOCUMENTO
@@ -12,7 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 class BoletaVentaBuscarForm(forms.Form):
     numero_boleta = forms.CharField(label='Nro. boleta',max_length=150, required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
-    cliente = forms.CharField(max_length=150, required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
     fecha_emision = forms.DateField(
         required=False,
         widget = forms.DateInput(
@@ -71,7 +72,7 @@ class BoletaVentaAnularForm(BSModalModelForm):
 class FacturaVentaBuscarForm(forms.Form):
     numero_factura = forms.IntegerField(label='Nro. Factura', required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
-    cliente = forms.CharField(max_length=150, required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
     fecha_emision = forms.DateField(
         required=False,
         widget = forms.DateInput(

@@ -1,4 +1,5 @@
 import requests
+from django.core.paginator import Paginator
 from django import forms
 from applications.comprobante_venta.funciones import anular_nubefact, consultar_guia, guia_nubefact
 from applications.funciones import registrar_excepcion
@@ -16,6 +17,7 @@ from .models import(
 from .forms import(
     GuiaAnularForm,
     GuiaBultosForm,
+    GuiaBuscarForm,
     GuiaClienteForm,
     GuiaConductorForm,
     GuiaDestinoForm,
@@ -29,11 +31,62 @@ from .forms import(
 )
 
 
-class GuiaListView(PermissionRequiredMixin, ListView):
+class GuiaListView(PermissionRequiredMixin, FormView):
     permission_required = ('comprobante_despacho.view_guia')
-    model = Guia
     template_name = 'comprobante_despacho/guia/inicio.html'
-    context_object_name = 'contexto_guia'
+    form_class = GuiaBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(GuiaListView, self).get_form_kwargs()
+        kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
+        kwargs['filtro_numero_guia'] = self.request.GET.get('numero_guia')
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super(GuiaListView, self).get_context_data(**kwargs)
+        guias = Guia.objects.all()
+        filtro_fecha_emision = self.request.GET.get('fecha_emision')
+        filtro_numero_guia = self.request.GET.get('numero_guia')
+        filtro_cliente = self.request.GET.get('cliente')
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_estado = self.request.GET.get('estado')
+        contexto_filtro = []
+        if filtro_fecha_emision:
+            condicion = Q(fecha_emision = filtro_fecha_emision)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("?fecha_emision=" + filtro_fecha_emision)
+        if filtro_numero_guia:
+            condicion = Q(numero_guia = filtro_numero_guia)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("?numero_guia=" + filtro_numero_guia)
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("?cliente=" + filtro_cliente)
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("?estado=" + filtro_estado)
+        context['contexto_filtro'] = "".join(contexto_filtro)
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(guias) > objectsxpage:
+            paginator = Paginator(guias, objectsxpage)
+            page_number = self.request.GET.get('page')
+            guias = paginator.get_page(page_number)
+
+        context['contexto_guia'] = guias
+        context['contexto_pagina'] = guias
+        return context
 
 def GuiaTabla(request):
     data = dict()
