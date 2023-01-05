@@ -198,19 +198,27 @@ class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
         if filtro_sociedad:
             condicion = Q(nota_ingreso__sociedad = filtro_sociedad)
             nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
-            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
-            contexto_filtro.append("?estado=" + filtro_estado)
+            contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
             nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
-            contexto_filtro.append("?usuario=" + filtro_usuario)
+            contexto_filtro.append(f"usuario={filtro_usuario}")
 
-        context['contexto_filtro'] = "".join(contexto_filtro)
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage = 10 # Show 10 objects per page.
 
@@ -228,7 +236,48 @@ def NotaControlCalidadStockTabla(request):
     if request.method == 'GET':
         template = 'calidad/nota_control_calidad_stock/inicio_tabla.html'
         context = {}
-        context['contexto_nota_control_calidad_stock'] = NotaControlCalidadStock.objects.all()
+        nota_control_calidad_stock = NotaControlCalidadStock.objects.all()
+
+        filtro_sociedad = request.GET.get('sociedad')
+        filtro_estado = request.GET.get('estado')
+        filtro_usuario = request.GET.get('usuario')
+        
+        contexto_filtro = []
+
+        if filtro_sociedad:
+            condicion = Q(nota_ingreso__sociedad = filtro_sociedad)
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_usuario:
+            condicion = Q(created_by = filtro_usuario)
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            contexto_filtro.append(f"usuario={filtro_usuario}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage = 10 # Show 10 objects per page.
+
+        if len(nota_control_calidad_stock) > objectsxpage:
+            paginator = Paginator(nota_control_calidad_stock, objectsxpage)
+            page_number = request.GET.get('page')
+            nota_control_calidad_stock = paginator.get_page(page_number)
+   
+        context['contexto_nota_control_calidad_stock'] = nota_control_calidad_stock
+        context['contexto_pagina'] = nota_control_calidad_stock
 
         data['table'] = render_to_string(
             template,

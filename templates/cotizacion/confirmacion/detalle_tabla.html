@@ -244,6 +244,7 @@
     </div>
 </div>
 
+{% if permiso_venta %}
 <div class="row mt-3">
     <div class="col-lg-6 table-responsive mb-3">
         <table>
@@ -316,6 +317,7 @@
         </table>
     </div>
 </div>
+{% endif %}
 
 <div class="row mt-3">
     <div class="table-responsive mb-3">
@@ -346,6 +348,7 @@
                 <th style="min-width: 500px;">Material</th>
                 <th>Unidad</th>
                 <th class="text-end">Cantidad</th>
+                {% if permiso_venta %}
                 <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
                 <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
                 <th class="text-nowrap">Prec. Final<br>con IGV</th>
@@ -353,6 +356,7 @@
                 <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
+                {% endif %}
                 <th class="text-center">Vendible</th>
                 <th class="text-center">Calidad</th>
                 <th class="text-center">Stock</th>
@@ -366,6 +370,7 @@
                     <td style="min-width: 500px;">{{ material.material.descripcion_documento }}</td>
                     <td class="text-nowrap">{{ material.material.unidad_base }}</td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    {% if permiso_venta %}
                     <td class="text-end text-nowrap">$ {{ material.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap table-secondary">$ {{ material.precio_final_con_igv|redondear|intcomma }}</td>
@@ -373,6 +378,7 @@
                     <td class="text-end text-nowrap">$ {{ material.sub_total|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">$ {{ material.total|redondear|intcomma }}</td>
+                    {% endif %}
                     <td class="text-end text-nowrap table-primary">
                         {{ material.material.vendible|redondear|intcomma }}
                         {% if material.material.reservado %}
@@ -388,6 +394,8 @@
                 </tr>
             {% endfor %}
         </tbody>
+        
+        {% if permiso_venta %}
         <tfoot>
             <tr>
                 <td colspan="10" class="text-end">
@@ -458,5 +466,6 @@
                 <td colspan="3"></td>
             </tr>
         </tfoot>
+        {% endif %}
     </table>
 </div>

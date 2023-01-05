@@ -2,12 +2,12 @@
     <ul class="pagination pagination-sm justify-content-center">
         {% if contexto_pagina.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.previous_page_number }}{% else %}?page={{ contexto_pagina.previous_page_number }}{% endif %}">
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ contexto_pagina.previous_page_number }}{% else %}?page={{ contexto_pagina.previous_page_number }}{% endif %}">
                     &laquo;
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
             </li>
             <li class="page-item">
                 <a class="page-link">...</a>
@@ -28,7 +28,7 @@
                                 </li>
                             {% else %}
                                 <li class="page-item">
-                                    <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                                    <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
                                 </li>
                             {% endif %}
                         {% endif %}
@@ -36,7 +36,7 @@
                 {% endfor %}
             {% else %}
                 <li class="page-item">
-                    <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
+                    <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
                 </li>
             {% endif %}
         {% endif %}
@@ -53,7 +53,7 @@
                             </li>
                         {% else %}
                             <li class="page-item">
-                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
                             </li>
                         {% endif %}
                     {% endif %}
@@ -66,10 +66,10 @@
                 <a class="page-link">...</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.paginator.num_pages }}{% else %}?page={{ contexto_pagina.paginator.num_pages }}{% endif %}">{{ contexto_pagina.paginator.num_pages }}</a>
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ contexto_pagina.paginator.num_pages }}{% else %}?page={{ contexto_pagina.paginator.num_pages }}{% endif %}">{{ contexto_pagina.paginator.num_pages }}</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.next_page_number }}{% else %}?page={{ contexto_pagina.next_page_number }}{% endif %}">
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ contexto_pagina.next_page_number }}{% else %}?page={{ contexto_pagina.next_page_number }}{% endif %}">
                     &raquo;
                 </a>
             </li>
@@ -85,7 +85,7 @@
                             </li>
                         {% else %}
                             <li class="page-item">
-                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
                             </li>
                         {% endif %}
                     {% endif %}
@@ -105,12 +105,12 @@
     <ul class="row pagination pagination-sm justify-content-center">
         {% if contexto_pagina.has_previous %}
             <li class="col-auto page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.previous_page_number }}{% else %}?page={{ contexto_pagina.previous_page_number }}{% endif %}">
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ contexto_pagina.previous_page_number }}{% else %}?page={{ contexto_pagina.previous_page_number }}{% endif %}">
                     &laquo;
                 </a>
             </li>
             <li class="col-auto page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
             </li>
             <li class="col-auto page-item">
                 <a class="page-link">...</a>
@@ -131,7 +131,7 @@
                                 </li>
                             {% else %}
                                 <li class="col-auto page-item">
-                                    <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                                    <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
                                 </li>
                             {% endif %}
                         {% endif %}
@@ -139,7 +139,7 @@
                 {% endfor %}
             {% else %}
                 <li class="col-auto page-item">
-                    <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
+                    <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page=1{% else %}?page=1{% endif %}">1</a>
                 </li>
             {% endif %}
         {% endif %}
@@ -156,7 +156,7 @@
                             </li>
                         {% else %}
                             <li class="col-auto page-item">
-                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
                             </li>
                         {% endif %}
                     {% endif %}
@@ -169,10 +169,10 @@
                 <a class="page-link">...</a>
             </li>
             <li class="col-auto page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.paginator.num_pages }}{% else %}?page={{ contexto_pagina.paginator.num_pages }}{% endif %}">{{ contexto_pagina.paginator.num_pages }}</a>
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ contexto_pagina.paginator.num_pages }}{% else %}?page={{ contexto_pagina.paginator.num_pages }}{% endif %}">{{ contexto_pagina.paginator.num_pages }}</a>
             </li>
             <li class="col-auto page-item">
-                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ contexto_pagina.next_page_number }}{% else %}?page={{ contexto_pagina.next_page_number }}{% endif %}">
+                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ contexto_pagina.next_page_number }}{% else %}?page={{ contexto_pagina.next_page_number }}{% endif %}">
                     &raquo;
                 </a>
             </li>
@@ -188,7 +188,7 @@
                             </li>
                         {% else %}
                             <li class="col-auto page-item">
-                                <a class="page-link" href="{% if contexto_filtro %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
+                                <a class="page-link" href="{% if contexto_filtro != '?' %}{{ contexto_filtro }}&page={{ i }}{% else %}?page={{ i }}{% endif %}">{{ i }}</a>
                             </li>
                         {% endif %}
                     {% endif %}

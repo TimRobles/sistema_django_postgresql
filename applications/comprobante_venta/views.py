@@ -49,29 +49,37 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         if filtro_cliente:
             condicion = Q(cliente = filtro_cliente)
             factura_venta = factura_venta.filter(condicion)
-            contexto_filtro.append("?cliente=" + filtro_cliente)
+            contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_fecha_emision:
-            condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            condicion = Q(fecha_emision = filtro_fecha_emision)
             factura_venta = factura_venta.filter(condicion)
-            contexto_filtro.append("?fecha_emision=" + filtro_fecha_emision)
+            contexto_filtro.append("fecha_emision=" + filtro_fecha_emision)
 
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
             factura_venta = factura_venta.filter(condicion)
-            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
 
         if filtro_numero_factura:
             condicion = Q(numero_factura = filtro_numero_factura)
             factura_venta = factura_venta.filter(condicion)
-            contexto_filtro.append("?numero_factura=" + filtro_numero_factura)
+            contexto_filtro.append("numero_factura=" + filtro_numero_factura)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             factura_venta = factura_venta.filter(condicion)
-            contexto_filtro.append("?estado=" + filtro_estado)
+            contexto_filtro.append("estado=" + filtro_estado)
         
-        context['contexto_filtro'] = "".join(contexto_filtro)
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -95,26 +103,43 @@ def FacturaVentaTabla(request):
         filtro_fecha_emision = request.GET.get('fecha_emision')
         filtro_estado = request.GET.get('estado')
 
+        contexto_filtro = []
+
         if filtro_cliente:
             condicion = Q(cliente = filtro_cliente)
             factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_fecha_emision:
-            condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
+            condicion = Q(fecha_emision = filtro_fecha_emision)
             factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("fecha_emision=" + filtro_fecha_emision)
 
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
             factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
 
         if filtro_numero_factura:
             condicion = Q(numero_factura = filtro_numero_factura)
             factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("numero_factura=" + filtro_numero_factura)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("estado=" + filtro_estado)
             
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+        
         objectsxpage = 25 # Show 25 objects per page.
 
         if len(factura_venta) > objectsxpage:
@@ -989,29 +1014,37 @@ class BoletaVentaListView(PermissionRequiredMixin, FormView):
         if filtro_cliente:
             condicion = Q(cliente = filtro_cliente)
             boleta_venta = boleta_venta.filter(condicion)
-            contexto_filtro.append("?cliente=" + filtro_cliente)
+            contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_fecha_emision:
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             boleta_venta = boleta_venta.filter(condicion)
-            contexto_filtro.append("?fecha_emision=" + filtro_fecha_emision)
+            contexto_filtro.append("fecha_emision=" + filtro_fecha_emision)
 
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
             boleta_venta = boleta_venta.filter(condicion)
-            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
 
         if filtro_numero_boleta:
             condicion = Q(numero_boleta = filtro_numero_boleta)
             boleta_venta = boleta_venta.filter(condicion)
-            contexto_filtro.append("?numero_boleta=" + filtro_numero_boleta)
+            contexto_filtro.append("numero_boleta=" + filtro_numero_boleta)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             boleta_venta = boleta_venta.filter(condicion)
-            contexto_filtro.append("?estado=" + filtro_estado)
+            contexto_filtro.append("estado=" + filtro_estado)
         
-        context['contexto_filtro'] = "".join(contexto_filtro)
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -1037,25 +1070,42 @@ def BoletaVentaTabla(request):
         filtro_fecha_emision = request.GET.get('fecha_emision')
         filtro_estado = request.GET.get('estado')
 
+        contexto_filtro = []
+
         if filtro_cliente:
             condicion = Q(cliente = filtro_cliente)
             boleta_venta = boleta_venta.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_fecha_emision:
             condicion = Q(fecha_emision = datetime.strptime(filtro_fecha_emision, "%Y-%m-%d").date())
             boleta_venta = boleta_venta.filter(condicion)
+            contexto_filtro.append("fecha_emision=" + filtro_fecha_emision)
 
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
             boleta_venta = boleta_venta.filter(condicion)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
 
         if filtro_numero_boleta:
             condicion = Q(numero_boleta = filtro_numero_boleta)
             boleta_venta = boleta_venta.filter(condicion)
+            contexto_filtro.append("numero_boleta=" + filtro_numero_boleta)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             boleta_venta = boleta_venta.filter(condicion)
+            contexto_filtro.append("estado=" + filtro_estado)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage = 25 # Show 25 objects per page.
 

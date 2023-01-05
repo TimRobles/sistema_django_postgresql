@@ -119,14 +119,14 @@
                                             <td class="text-center">
                                                 {% if pago.deuda.saldo != 0 %}    
                                                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_cancelar_deuda' cuenta_bancaria.id pago.deuda.id %}"
-                                                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                                                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}{{ contexto_filtro }}{{ pagina_filtro }}"
                                                     class="create btn btn-info btn-sm"
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Cancelar Deuda">
                                                     <i class="bi bi-bandaid-fill"></i>
                                                 </button>
                                                 {% endif %}
                                                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_pago' cuenta_bancaria.id movimiento.id pago.id %}"
-                                                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                                                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}{{ contexto_filtro }}{{ pagina_filtro }}"
                                                     class="create btn btn-warning btn-sm"
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                                                     <i class="bi bi-pencil-fill"></i>
@@ -178,7 +178,6 @@
                 
                 {% if movimiento.es_pago %}
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' cuenta_bancaria.id movimiento.id 2 %}"
-                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
                     class="delete btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
                     <i class="bi bi-wallet2"></i>
@@ -186,7 +185,7 @@
                 {% endif %}
                 
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_cambiar_ingreso' cuenta_bancaria.id movimiento.id %}"
-                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     class="create btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Cambiar cuenta">
                     <i class="bi bi-arrow-down-up"></i>
@@ -194,14 +193,14 @@
                 
                 {% if cuenta_bancaria.efectivo %}
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_ingreso_efectivo' cuenta_bancaria.id movimiento.id %}"
-                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     class="create btn btn-warning btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>    
                 {% else %}
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_actualizar_ingreso' cuenta_bancaria.id movimiento.id %}"
-                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}"
+                    data-table-url="{% url 'cobranza_app:cuenta_bancaria_detalle_tabla' cuenta_bancaria.id %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     class="create btn btn-warning btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>

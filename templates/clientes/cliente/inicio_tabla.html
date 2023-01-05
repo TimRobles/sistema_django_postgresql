@@ -26,7 +26,7 @@
             <td class="text-center text-nowrap">
                 {% if cliente.estado_sunat == 1 %}
                     <button data-form-url="{% url 'clientes_app:cliente_actualizar' cliente.id %}"
-                        data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}"
+                        data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                         data-keep-open="true"
                         class="update btn btn-warning btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">

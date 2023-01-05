@@ -1794,7 +1794,8 @@ class CotizacionVentaResumenView(BSModalReadView):
 
 #################################################################################################################
 
-class ConfirmacionListView(FormView):
+class ConfirmacionListView(PermissionRequiredMixin, FormView):
+    permission_required = ('cotizacion.view_confirmacionventa')
     template_name = 'cotizacion/confirmacion/inicio.html'
     form_class = ConfirmacionVentaBuscarForm
     success_url = '.'
@@ -1837,7 +1838,8 @@ class ConfirmacionListView(FormView):
         return context
 
 
-class ConfirmarVerView(TemplateView):
+class ConfirmarVerView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('cotizacion.view_confirmacionventa')
     template_name = "cotizacion/confirmacion/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -1874,7 +1876,7 @@ class ConfirmarVerView(TemplateView):
         if len(obj.BoletaVenta_confirmacion.exclude(estado=3)) == 1:
             id_boleta = obj.BoletaVenta_confirmacion.exclude(estado=3)[0].id
         permiso_venta = False
-        if 'cotizacion.view_confirmacionventa' in self.request.user.get_all_permissions():
+        if 'cotizacion.add_confirmacionventa' in self.request.user.get_all_permissions():
             permiso_venta = True
         permiso_logistica = False
         if 'logistica.add_notasalida' in self.request.user.get_all_permissions():

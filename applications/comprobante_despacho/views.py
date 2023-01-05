@@ -58,24 +58,33 @@ class GuiaListView(PermissionRequiredMixin, FormView):
         if filtro_fecha_emision:
             condicion = Q(fecha_emision = filtro_fecha_emision)
             guias = guias.filter(condicion)
-            contexto_filtro.append("?fecha_emision=" + filtro_fecha_emision)
+            contexto_filtro.append("fecha_emision=" + filtro_fecha_emision)
         if filtro_numero_guia:
             condicion = Q(numero_guia = filtro_numero_guia)
             guias = guias.filter(condicion)
-            contexto_filtro.append("?numero_guia=" + filtro_numero_guia)
+            contexto_filtro.append("numero_guia=" + filtro_numero_guia)
         if filtro_cliente:
             condicion = Q(cliente = filtro_cliente)
             guias = guias.filter(condicion)
-            contexto_filtro.append("?cliente=" + filtro_cliente)
+            contexto_filtro.append("cliente=" + filtro_cliente)
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
             guias = guias.filter(condicion)
-            contexto_filtro.append("?sociedad=" + filtro_sociedad)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             guias = guias.filter(condicion)
-            contexto_filtro.append("?estado=" + filtro_estado)
-        context['contexto_filtro'] = "".join(contexto_filtro)
+            contexto_filtro.append("estado=" + filtro_estado)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -93,7 +102,54 @@ def GuiaTabla(request):
     if request.method == 'GET':
         template = 'comprobante_despacho/guia/inicio_tabla.html'
         context = {}
-        context['contexto_guia'] = Guia.objects.all()
+        
+        guias = Guia.objects.all()
+        filtro_fecha_emision = request.GET.get('fecha_emision')
+        filtro_numero_guia = request.GET.get('numero_guia')
+        filtro_cliente = request.GET.get('cliente')
+        filtro_sociedad = request.GET.get('sociedad')
+        filtro_estado = request.GET.get('estado')
+        contexto_filtro = []
+        if filtro_fecha_emision:
+            condicion = Q(fecha_emision = filtro_fecha_emision)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("fecha_emision=" + filtro_fecha_emision)
+        if filtro_numero_guia:
+            condicion = Q(numero_guia = filtro_numero_guia)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("numero_guia=" + filtro_numero_guia)
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            guias = guias.filter(condicion)
+            contexto_filtro.append("estado=" + filtro_estado)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(guias) > objectsxpage:
+            paginator = Paginator(guias, objectsxpage)
+            page_number = request.GET.get('page')
+            guias = paginator.get_page(page_number)
+
+        context['contexto_guia'] = guias
+        context['contexto_pagina'] = guias
 
         data['table'] = render_to_string(
             template,

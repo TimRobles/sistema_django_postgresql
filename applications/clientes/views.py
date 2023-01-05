@@ -44,13 +44,27 @@ class ClienteListView(PermissionRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super(ClienteListView,self).get_context_data(**kwargs)
         clientes = Cliente.objects.all()
+        
         filtro_razon_social = self.request.GET.get('razon_social')
+        
+        contexto_filtro = []
+
         if filtro_razon_social:
             condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
             for palabra in filtro_razon_social.split(" ")[1:]:
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes = clientes.filter(condicion)
-            context['contexto_filtro'] = "?razon_social=" + filtro_razon_social
+            contexto_filtro.append(f"razon_social={filtro_razon_social}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  15 # Show 10 objects per page.
 
@@ -68,12 +82,27 @@ def ClienteTabla(request):
         template = 'clientes/cliente/inicio_tabla.html'
         context = {}
         clientes = Cliente.objects.all()
+
         filtro_razon_social = request.GET.get('razon_social')
+
+        contexto_filtro = []
+
         if filtro_razon_social:
             condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
             for palabra in filtro_razon_social.split(" ")[1:]:
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes = clientes.filter(condicion)
+            contexto_filtro.append(f"razon_social={filtro_razon_social}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  15 # Show 10 objects per page.
 
