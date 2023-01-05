@@ -70,7 +70,7 @@
                                             </td>
                                             <td class="text-center text-nowrap">
                                                 <button data-form-url="{% url 'cobranza_app:deudores_actualizar_pago' id_cliente deuda.id pago.id %}"
-                                                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"
+                                                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"{% if contexto_filtro %}{{ contexto_filtro }}{% endif %}
                                                     class="create btn btn-warning btn-sm"
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                                                     <i class="bi bi-pencil-fill"></i>
@@ -152,7 +152,7 @@
             <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'cobranza_app:deudores_pagar_deuda' id_cliente deuda.id %}"
-                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"
+                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"{% if contexto_filtro %}{{ contexto_filtro }}{% endif %}
                     class="create btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
                     <i class="bi bi-wallet2"></i>
@@ -160,7 +160,7 @@
                 
                 {% if deuda.saldo != 0 %}    
                 <button data-form-url="{% url 'cobranza_app:deudores_cancelar_deuda' id_cliente deuda.id %}"
-                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"
+                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}"{% if contexto_filtro %}{{ contexto_filtro }}{% endif %}
                     class="create btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Cancelar Deuda">
                     <i class="bi bi-bandaid-fill"></i>

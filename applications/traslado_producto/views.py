@@ -642,17 +642,13 @@ class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
                 movimiento_anterior = MovimientosAlmacen.objects.get(
                     content_type_producto=detalle.content_type,
                     id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.envio_traslado_producto_detalle.cantidad_envio,
                     tipo_movimiento=movimiento_inicial,
                     tipo_stock=movimiento_inicial.tipo_stock_final,
                     signo_factor_multiplicador=+1,
                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object.envio_traslado_producto),
                     id_registro_documento_proceso=self.object.envio_traslado_producto.id,
-                    almacen=detalle.envio_traslado_producto_detalle.almacen_origen,
-                    sociedad=self.object.envio_traslado_producto.sociedad,
-                    movimiento_anterior=None,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
+                    sociedad=self.object.sociedad,
                 )
                 movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto=detalle.content_type,
@@ -663,13 +659,30 @@ class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
                     signo_factor_multiplicador=-1,
                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                     id_registro_documento_proceso=self.object.id,
-                    almacen=detalle.almacen_destino,
                     sociedad=self.object.sociedad,
                     movimiento_anterior=movimiento_anterior,
                     movimiento_reversion=False,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad_recepcion,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=detalle.almacen_destino,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=movimiento_uno,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+
+                #Movimiento de series
 
             numero_recepcion_traslado = RecepcionTrasladoProducto.objects.all().aggregate(Count('numero_recepcion_traslado'))['numero_recepcion_traslado__count'] + 1
             self.object.numero_recepcion_traslado = numero_recepcion_traslado
@@ -795,52 +808,28 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
         sid = transaction.savepoint()
         recepcion_traslado_producto = RecepcionTrasladoProducto.objects.get(id = self.kwargs['id_recepcion_traslado_producto'])
         almacen_destino = form.cleaned_data.get('almacen_destino')
-        material = form.cleaned_data.get('material')
-        cantidad_recepcion = form.cleaned_data.get('cantidad_recepcion')
-        cantidad_enviada = recepcion_traslado_producto.envio_traslado_producto.EnvioTrasladoProductoDetalle_envio_traslado_producto.filter(
-            content_type = material.content_type,
-            id_registro = material.id_registro,
-        ).aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
-
-        buscar = RecepcionTrasladoProductoDetalle.objects.filter(
-            content_type = material.content_type,
-            id_registro = material.id_registro,
-            recepcion_traslado_producto=recepcion_traslado_producto,
-        ).exclude(recepcion_traslado_producto__estado=4)
-
-        if buscar:
-            contar = buscar.aggregate(Sum('cantidad_recepcion'))['cantidad_recepcion__sum']
-        else:
-            contar = 0
-
-        if cantidad_enviada < contar + cantidad_recepcion:
-            form.add_error('cantidad_recepcion', 'Se superó la cantidad enviada. Máximo: %s. Contado: %s.' % (cantidad_enviada, contar + cantidad_recepcion))
-            return super().form_invalid(form)
-
+        envio_traslado_producto_detalle = form.cleaned_data.get('material')
         try:
             if self.request.session['primero']:
                 recepcion_traslado_producto = RecepcionTrasladoProducto.objects.get(id = self.kwargs['id_recepcion_traslado_producto'])
                 item = len(RecepcionTrasladoProductoDetalle.objects.filter(recepcion_traslado_producto = recepcion_traslado_producto))
 
-                material = form.cleaned_data.get('material')
-                cantidad_recepcion = form.cleaned_data.get('cantidad_recepcion')
-
                 obj, created = RecepcionTrasladoProductoDetalle.objects.get_or_create(
-                    envio_traslado_producto_detalle = material,
-                    content_type = material.content_type,
-                    id_registro = material.id_registro,
+                    envio_traslado_producto_detalle = envio_traslado_producto_detalle,
                     recepcion_traslado_producto = recepcion_traslado_producto,
-                    almacen_destino = almacen_destino,
-                    unidad = form.cleaned_data.get('unidad'),
                 )
 
                 print(obj, created)
 
                 if created:
                     obj.item = item + 1
-                    obj.cantidad_recepcion = cantidad_recepcion
+                    obj.content_type = envio_traslado_producto_detalle.content_type
+                    obj.id_registro = envio_traslado_producto_detalle.id_registro
+                    obj.almacen_destino = almacen_destino
+                    obj.cantidad_recepcion = envio_traslado_producto_detalle.cantidad_envio
+                    obj.unidad = envio_traslado_producto_detalle.unidad
                 else:
-                    obj.cantidad_recepcion = obj.cantidad_recepcion + cantidad_recepcion
+                    obj.almacen_destino = almacen_destino
 
                 registro_guardar(obj, self.request)
                 print("Por grabar")
@@ -902,30 +891,6 @@ class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView)
 
 
     def form_valid(self, form):
-        detalle = RecepcionTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
-        recepcion_traslado_producto = detalle.recepcion_traslado_producto
-        material = detalle.producto
-        cantidad_recepcion = form.cleaned_data.get('cantidad_recepcion')
-        cantidad_enviada = recepcion_traslado_producto.envio_traslado_producto.EnvioTrasladoProductoDetalle_envio_traslado_producto.filter(
-            content_type=ContentType.objects.get_for_model(material),
-            id_registro=material.id,
-        ).aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
-
-        buscar = RecepcionTrasladoProductoDetalle.objects.filter(
-            content_type=ContentType.objects.get_for_model(material),
-            id_registro=material.id,
-            recepcion_traslado_producto=recepcion_traslado_producto,
-        ).exclude(recepcion_traslado_producto__estado=4).exclude(id=detalle.id)
-
-        if buscar:
-            contar = buscar.aggregate(Sum('cantidad_recepcion'))['cantidad_recepcion__sum']
-        else:
-            contar = 0
-
-        if cantidad_enviada < contar + cantidad_recepcion:
-            form.add_error('cantidad_recepcion', 'Se superó la cantidad enviada. Máximo: %s. Contado: %s.' % (cantidad_enviada, contar + cantidad_recepcion))
-            return super().form_invalid(form)
-
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -936,6 +901,7 @@ class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView)
         context['accion'] = "Actualizar"
         context['titulo'] = "Item"
         context['material'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
+        context['id_material'] = self.get_object().id
         context['sociedad'] = recepcion_traslado_producto.sociedad.id
         context['url_stock'] = reverse_lazy('traslado_producto_app:stock', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
         context['url_unidad'] = reverse_lazy('traslado_producto_app:unidad_material', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
@@ -1003,7 +969,11 @@ def StockSociedadAlmacenView(request, id_recepcion_traslado_producto_detalle, id
             recepcion_traslado_producto_detalle = EnvioTrasladoProductoDetalle.objects.get(id=id_recepcion_traslado_producto_detalle)
             return HttpResponse(stock(recepcion_traslado_producto_detalle.content_type, recepcion_traslado_producto_detalle.id_registro, id_sociedad, id_almacen))
         except:
-            return HttpResponse("")
+            try:
+                recepcion_traslado_producto_detalle = RecepcionTrasladoProductoDetalle.objects.get(id=id_recepcion_traslado_producto_detalle)
+                return HttpResponse(stock(recepcion_traslado_producto_detalle.content_type, recepcion_traslado_producto_detalle.id_registro, id_sociedad, id_almacen))
+            except:
+                return HttpResponse("")
 
 
 class UnidadForm(forms.Form):
