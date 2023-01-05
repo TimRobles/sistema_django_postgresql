@@ -160,7 +160,6 @@ class DeudaView(PermissionRequiredMixin, FormView):
             condicion = (Q(content_type = ContentType.objects.get_for_model(FacturaVenta))) & (Q(id_registro__in = facturas.values_list('id')) | Q(content_type = ContentType.objects.get_for_model(BoletaVenta)) & Q(id_registro__in = boletas.values_list('id')))
             deudas = deudas.filter(condicion)
             contexto_filtro.append("?numero_documento=" + filtro_numero_documento)
-        context['contexto_filtro'] = "".join(contexto_filtro)
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -170,7 +169,8 @@ class DeudaView(PermissionRequiredMixin, FormView):
             deudas = paginator.get_page(page_number)
         
         if self.request.GET.get('page'):
-            contexto_filtro = contexto_filtro + '?page=' + self.request.GET.get('page')
+            contexto_filtro.append('?page=' + self.request.GET.get('page'))
+        context['contexto_filtro'] = "".join(contexto_filtro)
 
         context['contexto_deuda'] = deudas
         context['contexto_pagina'] = deudas
@@ -213,7 +213,6 @@ def DeudaTabla(request, id_cliente):
             condicion = (Q(content_type = ContentType.objects.get_for_model(FacturaVenta))) & (Q(id_registro__in = facturas.values_list('id')) | Q(content_type = ContentType.objects.get_for_model(BoletaVenta)) & Q(id_registro__in = boletas.values_list('id')))
             deudas = deudas.filter(condicion)
             contexto_filtro.append("?numero_documento=" + filtro_numero_documento)
-        context['contexto_filtro'] = "".join(contexto_filtro)
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -223,7 +222,8 @@ def DeudaTabla(request, id_cliente):
             deudas = paginator.get_page(page_number)
         
         if request.GET.get('page'):
-            contexto_filtro = contexto_filtro + '?page=' + request.GET.get('page')
+            contexto_filtro.append('?page=' + request.GET.get('page'))
+        context['contexto_filtro'] = "".join(contexto_filtro)
 
         context['contexto_deuda'] = deudas
         context['contexto_pagina'] = deudas
