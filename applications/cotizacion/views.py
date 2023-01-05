@@ -1925,6 +1925,23 @@ def ConfirmarVerTabla(request, id_confirmacion):
                 material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
         except:
             pass
+        
+        id_factura = None
+        id_factura_anticipo = None
+        if len(obj.FacturaVenta_confirmacion.exclude(estado=3)) == 1:
+            id_factura = obj.FacturaVenta_confirmacion.exclude(estado=3)[0].id
+        elif len(obj.FacturaVenta_confirmacion.exclude(estado=3)) == 2:
+            id_factura = obj.FacturaVenta_confirmacion.exclude(estado=3).latest('updated_at').id
+            id_factura_anticipo = obj.FacturaVenta_confirmacion.exclude(estado=3).earliest('updated_at').id
+        id_boleta = None
+        if len(obj.BoletaVenta_confirmacion.exclude(estado=3)) == 1:
+            id_boleta = obj.BoletaVenta_confirmacion.exclude(estado=3)[0].id
+        permiso_venta = False
+        if 'cotizacion.add_confirmacionventa' in request.user.get_all_permissions():
+            permiso_venta = True
+        permiso_logistica = False
+        if 'logistica.add_notasalida' in request.user.get_all_permissions():
+            permiso_logistica = True
 
         context = {}
         context['confirmacion'] = obj
@@ -1935,6 +1952,11 @@ def ConfirmarVerTabla(request, id_confirmacion):
         context['totales_soles'] = obtener_totales_soles(context['totales'], obj.tipo_cambio.tipo_cambio_venta)
         context['credito_temporal'] = credito_temporal
         context['disponible'] = disponible
+        context['id_factura'] = id_factura
+        context['id_factura_anticipo'] = id_factura_anticipo
+        context['id_boleta'] = id_boleta
+        context['permiso_venta'] = permiso_venta
+        context['permiso_logistica'] = permiso_logistica
 
         data['table'] = render_to_string(
             template,
