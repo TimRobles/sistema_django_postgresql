@@ -33,6 +33,10 @@ $('#id_monto').unbind().on('input', function (e) {
     calcular(e.target);
 })
 
+$('#id_tipo_cambio').unbind().on('input', function (e) {
+    calcular(e.target);
+})
+
 monto_final = $('#monto_final')[0];
 texto_monto_final = $('#monto_final')[0].parentElement.children[0];
 texto_monto_final.innerHTML = 'Moneda Final ' + $('#moneda')[0].innerHTML;
