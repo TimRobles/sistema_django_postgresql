@@ -1842,11 +1842,6 @@ class ConfirmacionListView(PermissionRequiredMixin, FormView):
     template_name = 'cotizacion/confirmacion/inicio.html'
     form_class = ConfirmacionVentaBuscarForm
     success_url = '.'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
     
     def get_form_kwargs(self):
         kwargs = super(ConfirmacionListView, self).get_form_kwargs()
@@ -1901,11 +1896,6 @@ class ConfirmacionListView(PermissionRequiredMixin, FormView):
 class ConfirmarVerView(PermissionRequiredMixin, TemplateView):
     permission_required = ('cotizacion.view_confirmacionventa')
     template_name = "cotizacion/confirmacion/detalle.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         obj = ConfirmacionVenta.objects.get(id = kwargs['id_confirmacion'])
@@ -2036,11 +2026,6 @@ class ConfirmacionPendienteSalidaView(PermissionRequiredMixin, FormView):
     template_name = 'cotizacion/confirmacion/pendiente_salida.html'
     form_class = ConfirmacionVentaBuscarForm
     success_url = '.'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
     
     def get_form_kwargs(self):
         kwargs = super(ConfirmacionPendienteSalidaView, self).get_form_kwargs()
@@ -2197,11 +2182,6 @@ class ConfirmacionVentaVerCuotaView(PermissionRequiredMixin, BSModalReadView):
 class ConfirmacionVentaCuotaView(PermissionRequiredMixin, TemplateView):
     permission_required = ('cotizacion.view_cofirmacionventa')
     template_name = "cotizacion/confirmacion/cuotas.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(ConfirmacionVentaCuotaView, self).get_context_data(**kwargs)
@@ -2464,11 +2444,6 @@ class ConfirmacionOrdenCompraDeleteView(PermissionRequiredMixin, BSModalDeleteVi
 class SolicitudCreditoView(PermissionRequiredMixin, TemplateView):
     permission_required = ('cotizacion.add_solicitudcredito')
     template_name = "cotizacion/cotizacion_venta/form_solicitud_credito.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(SolicitudCreditoView, self).get_context_data(**kwargs)
