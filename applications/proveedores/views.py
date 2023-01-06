@@ -19,7 +19,6 @@ from .models import (
 
 class ProveedorListView(PermissionRequiredMixin, ListView):
     permission_required = ('proveedores.view_proveedor')
-
     model = Proveedor
     template_name = "proveedores/proveedor/inicio.html"
     context_object_name = 'contexto_proveedores'
@@ -45,6 +44,11 @@ class ProveedorCreateView(PermissionRequiredMixin, BSModalCreateView):
     form_class = ProveedorForm
     success_url = reverse_lazy('proveedores_app:proveedor_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(ProveedorCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
@@ -60,11 +64,15 @@ class ProveedorCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 class ProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('proveedores.change_proveedor')
-
     model = Proveedor
     template_name = "includes/formulario generico.html"
     form_class = ProveedorForm
     success_url = reverse_lazy('proveedores_app:proveedor_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ProveedorUpdateView, self).get_context_data(**kwargs)
@@ -73,7 +81,6 @@ class ProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
     def form_valid(self, form):
-
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         
@@ -81,10 +88,14 @@ class ProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class ProveedorDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('proveedores.change_proveedor')
-
     model = Proveedor
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('proveedores_app:proveedor_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -114,6 +125,11 @@ class ProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('proveedores_app:proveedor_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
         sid = transaction.savepoint()
@@ -138,7 +154,6 @@ class ProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
 
 class ProveedorDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('proveedores.view_proveedorinterlocutor')
-
     model = Proveedor
     template_name = "proveedores/proveedor/detalle.html"
     context_object_name = 'contexto_proveedores'
@@ -167,9 +182,13 @@ def ProveedorDetailTabla(request, pk):
 
 class InterlocutorProveedorCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('proveedores.add_interlocutorproveedor')
-
     template_name = "includes/formulario generico.html"
     form_class = InterlocutorProveedorForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.kwargs['proveedor_id']})
@@ -219,6 +238,11 @@ class InterlocutorProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView
     template_name = "includes/formulario generico.html"
     form_class = InterlocutorProveedorUpdateForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('home_app:home')
 
@@ -236,10 +260,13 @@ class InterlocutorProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView
 
 class InterlocutorProveedorDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('proveedores.change_proveedorinterlocutor')
-
     model = ProveedorInterlocutor
     template_name = "includes/eliminar generico.html"
-    success_url = reverse_lazy()
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.object.proveedor.id})
@@ -268,10 +295,13 @@ class InterlocutorProveedorDarBajaView(PermissionRequiredMixin, BSModalDeleteVie
 
 class InterlocutorProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('proveedores.change_proveedorinterlocutor')
-
     model = ProveedorInterlocutor
     template_name = "includes/eliminar generico.html"
-    success_url = reverse_lazy()
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:proveedor_detalle', kwargs={'pk':self.object.proveedor.id})
@@ -300,7 +330,6 @@ class InterlocutorProveedorDarAltaView(PermissionRequiredMixin, BSModalDeleteVie
 
 class InterlocutorProveedorDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('proveedores.view_interlocutorproveedor')
-
     model = InterlocutorProveedor
     template_name = "proveedores/interlocutor/detalle.html"
     context_object_name = 'contexto_interlocutores'
@@ -331,10 +360,14 @@ def InterlocutorProveedorDetailTabla(request, pk):
 
 class TelefonoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('proveedores.add_telefonointerlocutorproveedor')
-
     model = TelefonoInterlocutorProveedor
     template_name = "includes/formulario generico.html"
     form_class = TelefonoInterlocutorForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.kwargs['interlocutor_id']})
@@ -359,6 +392,11 @@ class TelefonoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView)
     template_name = "includes/formulario generico.html"
     form_class = TelefonoInterlocutorForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
 
@@ -376,10 +414,14 @@ class TelefonoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView)
 
 class TelefonoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('proveedores.change_telefonointerlocutorproveedor')
-
     model = TelefonoInterlocutorProveedor
     template_name = "includes/formulario generico.html"
     form_class = TelefonoInterlocutorDarBajaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
@@ -397,10 +439,14 @@ class TelefonoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView
 
 class CorreoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('proveedores.add_correointerlocutorproveedor')
-
     model = CorreoInterlocutorProveedor
     template_name = "includes/formulario generico.html"
     form_class = CorreoInterlocutorForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.kwargs['interlocutor_id']})
@@ -425,6 +471,11 @@ class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     template_name = "includes/formulario generico.html"
     form_class = CorreoInterlocutorForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
 
@@ -442,10 +493,14 @@ class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('proveedores.change_correointerlocutorproveedor')
-
     model = CorreoInterlocutorProveedor
     template_name = "includes/formulario generico.html"
     form_class = CorreoInterlocutorDarBajaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
@@ -463,9 +518,13 @@ class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
 
 class CorreoInterlocutorDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('proveedores.change_correointerlocutorproveedor')
-
     model = CorreoInterlocutorProveedor
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('proveedores_app:interlocutor_detalle', kwargs={'pk':self.get_object().interlocutor.id})

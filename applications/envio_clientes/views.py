@@ -6,7 +6,7 @@ from applications.importaciones import *
 # Create your views here.
 
 class TransportistaListView(PermissionRequiredMixin, FormView):
-    permission_required = ('transportista.view_transportista')
+    permission_required = ('envio_clientes.view_transportista')
     template_name = "transportistas/transportista/inicio.html"
     form_class = TransportistaBuscarForm
     success_url = '.'
@@ -20,12 +20,25 @@ class TransportistaListView(PermissionRequiredMixin, FormView):
         context = super(TransportistaListView,self).get_context_data(**kwargs)
         transportistas = Transportista.objects.all()
         filtro_razon_social = self.request.GET.get('razon_social')
+
+        contexto_filtro = []
+
         if filtro_razon_social:
             condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
             for palabra in filtro_razon_social.split(" ")[1:]:
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             transportistas = transportistas.filter(condicion)
-            context['contexto_filtro'] = "?razon_social=" + filtro_razon_social
+            contexto_filtro.append("razon_social=" + filtro_razon_social)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -44,11 +57,25 @@ def TransportistaTabla(request):
         context = {}
         transportistas = Transportista.objects.all()
         filtro_razon_social = request.GET.get('razon_social')
+
+        contexto_filtro = []
+        
         if filtro_razon_social:
             condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
             for palabra in filtro_razon_social.split(" ")[1:]:
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             transportistas = transportistas.filter(condicion)
+            contexto_filtro.append("razon_social=" + filtro_razon_social)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -67,11 +94,16 @@ def TransportistaTabla(request):
         return JsonResponse(data)
 
 class TransportistaCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('transportista.add_transportista')
+    permission_required = ('envio_clientes.add_transportista')
     model = Transportista
     template_name = "transportistas/transportista/form.html"
     form_class = TransportistaForm
     success_url = reverse_lazy('transportistas_app:transportista_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(TransportistaCreateView, self).get_context_data(**kwargs)
@@ -87,12 +119,17 @@ class TransportistaCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().form_valid(form)
 
 class TransportistaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('transportista.change_transportista')
+    permission_required = ('envio_clientes.change_transportista')
 
     model = Transportista
     template_name = "transportistas/transportista/form.html"
     form_class = TransportistaForm
     success_url = reverse_lazy('transportistas_app:transportista_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(TransportistaUpdateView, self).get_context_data(**kwargs)

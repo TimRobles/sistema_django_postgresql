@@ -9,7 +9,8 @@ from .models import FotoRecepcionCompra, RecepcionCompra, ArchivoRecepcionCompra
 
 # Create your views here.
 
-class RecepcionCompraDetailView(DetailView):
+class RecepcionCompraDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('recepcion_compra.view_recepcioncompra')
     model = RecepcionCompra
     template_name = "recepcion_compra/recepcion_compra/detalle.html"
     context_object_name = 'contexto_recepcion_compra'
@@ -42,10 +43,16 @@ def RecepcionCompraDetailTabla(request, pk):
         return JsonResponse(data)
 
 
-class RecepcionCompraAnularView(BSModalUpdateView):
+class RecepcionCompraAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('recepcion_compra.delete_recepcioncompra')
     model = RecepcionCompra
     template_name = "includes/formulario generico.html"
     form_class = RecepcionCompraAnularForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('recepcion_compra_app:recepcion_compra_detalle', kwargs={'pk':self.object.id})
@@ -93,11 +100,17 @@ class RecepcionCompraAnularView(BSModalUpdateView):
         return context
 
 
-class ArchivoRecepcionCompraCreateView(BSModalCreateView):
+class ArchivoRecepcionCompraCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('recepcion_compra.add_archivorecepcioncompra')
     model = ArchivoRecepcionCompra
     template_name = "includes/formulario generico.html"
     form_class = ArchivoRecepcionCompraForm
     success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.recepcion_compra = RecepcionCompra.objects.get(pk=self.kwargs['pk'])
@@ -111,9 +124,15 @@ class ArchivoRecepcionCompraCreateView(BSModalCreateView):
         return context
     
 
-class ArchivoRecepcionCompraDeleteView(BSModalDeleteView):
+class ArchivoRecepcionCompraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_archivorecepcioncompra')
     model = ArchivoRecepcionCompra
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('recepcion_compra_app:recepcion_compra_detalle', kwargs={'pk':self.object.recepcion_compra.id})
@@ -126,11 +145,17 @@ class ArchivoRecepcionCompraDeleteView(BSModalDeleteView):
         return context
 
 
-class FotoRecepcionCompraCreateView(BSModalCreateView):
+class FotoRecepcionCompraCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('recepcion_compra.add_fotorecepcioncompra')
     model = FotoRecepcionCompra
     template_name = "includes/formulario generico.html"
     form_class = FotoRecepcionCompraForm
     success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.recepcion_compra = RecepcionCompra.objects.get(pk=self.kwargs['pk'])
@@ -144,9 +169,15 @@ class FotoRecepcionCompraCreateView(BSModalCreateView):
         return context
     
 
-class FotoRecepcionCompraDeleteView(BSModalDeleteView):
+class FotoRecepcionCompraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_fotorecepcioncompra')
     model = FotoRecepcionCompra
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('recepcion_compra_app:recepcion_compra_detalle', kwargs={'pk':self.object.recepcion_compra.id})
@@ -159,9 +190,15 @@ class FotoRecepcionCompraDeleteView(BSModalDeleteView):
         return context
 
 
-class RecepcionCompraGenerarNotaIngresoView(BSModalFormView):
+class RecepcionCompraGenerarNotaIngresoView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota_ingreso.add_notaingreso')
     template_name = "includes/formulario generico.html"
     form_class = RecepcionCompraGenerarNotaIngresoForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['nota'].id})

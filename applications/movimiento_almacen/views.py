@@ -4,9 +4,15 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 
 # Create your views here.
 
-class MovimientoMaterialView(BSModalReadView):
+class MovimientoMaterialView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('material.view_material')
     model = ContentType
     template_name = "movimiento_almacen/ver_movimiento.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         movimientos, total = MovimientosAlmacen.objects.ver_movimientos(
@@ -20,9 +26,15 @@ class MovimientoMaterialView(BSModalReadView):
         return context
     
 
-class StockMaterialView(BSModalReadView):
+class StockMaterialView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('material.view_material')
     model = ContentType
     template_name = "movimiento_almacen/ver_stock.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         stocks, estados = MovimientosAlmacen.objects.ver_stock(

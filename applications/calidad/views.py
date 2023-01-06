@@ -175,7 +175,6 @@ class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
     permission_required = ('calidad.view_notacontrolcalidadstock')
     form_class = NotaControlCalidadStockBuscarForm
     template_name = 'calidad/nota_control_calidad_stock/inicio.html'
-    context_object_name = 'contexto_nota_control_calidad_stock'
 
     def get_form_kwargs(self):
         kwargs = super(NotaControlCalidadStockListView, self).get_form_kwargs()
@@ -183,7 +182,6 @@ class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_estado'] = self.request.GET.get('estado')
         kwargs['filtro_usuario'] = self.request.GET.get('usuario')
         return kwargs
-
 
     def get_context_data(self, **kwargs):
         context = super(NotaControlCalidadStockListView,self).get_context_data(**kwargs)

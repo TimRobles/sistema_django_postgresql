@@ -133,7 +133,7 @@ class NotaSalida(models.Model):
     class Meta:
         verbose_name = 'Nota de Salida'
         verbose_name_plural = 'Notas de Salida'
-        ordering = ['numero_salida',]
+        ordering = ['-numero_salida',]
 
     @property
     def content_type(self):

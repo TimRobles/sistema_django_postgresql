@@ -98,7 +98,7 @@ class VisitaCreateView(PermissionRequiredMixin, BSModalCreateView):
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)    
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(VisitaCreateView, self).get_context_data(**kwargs)
@@ -224,7 +224,6 @@ def AsistenciaTabla(request):
 
 class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     permission_required = ('recepcion.view_asistencia')
-
     template_name = "recepcion/asistencia/inicio_personal.html"
     form_class = AsistenciaPersonalBuscarForm
     success_url = '.'

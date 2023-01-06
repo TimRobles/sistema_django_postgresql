@@ -69,6 +69,9 @@ class SolicitudCredito(models.Model):
     class Meta:
         verbose_name = 'Solicitud de Credito'
         verbose_name_plural = 'Solicitudes de Credito'
+        permissions = [
+            ('aprobar_solicitudcredito', 'Puede aprobar o rechazar solicitud de créditos'),
+            ]
 
     @property
     def total_cuotas(self):
@@ -257,6 +260,10 @@ class Egreso(models.Model):
     class Meta:
         verbose_name = 'Egreso'
         verbose_name_plural = 'Egresos'
+        ordering = [
+            '-fecha',
+            'cuenta_bancaria',
+            ]
 
     @property
     def moneda(self):
@@ -442,6 +449,9 @@ class Pago(models.Model):
     class Meta:
         verbose_name = 'Pago'
         verbose_name_plural = 'Pagos'
+        ordering = [
+            'deuda',
+            ]
 
     @property
     def ingreso_nota(self):
@@ -474,6 +484,9 @@ class PagoProveedor(models.Model):
     class Meta:
         verbose_name = 'Pago Proveedor'
         verbose_name_plural = 'Pagos a Proveedores'
+        ordering = [
+            'egreso',
+            ]
 
     def __str__(self):
         return "%s" % (self.monto)

@@ -30,10 +30,14 @@ def OfertaProveedorTabla(request):
 
 class OfertaProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('oferta_proveedor.change_ofertaproveedor')
-
     model = OfertaProveedor
     template_name = "includes/formulario generico.html"
     form_class = OfertaProveedorUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['slug']})
@@ -50,10 +54,14 @@ class OfertaProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class OfertaProveedorComentarioView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('oferta_proveedor.change_ofertaproveedor')
-
     model = OfertaProveedor
     template_name = "includes/formulario generico.html"
     form_class = OfertaProveedorComentarioForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['slug']})
@@ -105,6 +113,9 @@ class OfertaProveedorFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
         if error_tiempo_estimado_entrega:
             context['texto'] = 'Actualizar el Tiempo Estimado de Entrega'
             return render(request, 'includes/modal sin permiso.html', context)
+        
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -130,10 +141,10 @@ class OfertaProveedorRechazarView(PermissionRequiredMixin, BSModalDeleteView):
     model = OfertaProveedor
     template_name = "oferta_proveedor/oferta_proveedor/boton.html"
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     if not self.has_permission():
-    #         return render(request, 'includes/modal sin permiso.html')
-    #     return super().dispatch(request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
@@ -197,7 +208,6 @@ def OfertaProveedorDetailTabla(request, slug):
 
 class OfertaProveedorMonedaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('oferta_proveedor.change_ofertaproveedor')
-
     model = OfertaProveedor
     template_name = "includes/formulario generico.html"
     form_class = OfertaProveedorMonedaForm
@@ -222,7 +232,6 @@ class OfertaProveedorMonedaView(PermissionRequiredMixin, BSModalUpdateView):
 
 class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('oferta_proveedor.change_ofertaproveedordetalle')
-
     model = OfertaProveedorDetalle
     template_name = "oferta_proveedor/oferta_proveedor/actualizar.html"
     form_class = OfertaProveedorDetalleUpdateForm
@@ -260,7 +269,6 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
 
 class OfertaProveedorDetalleProveedorMaterialUpdateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('oferta_proveedor.change_ofertaproveedordetalle')
-
     template_name = "includes/formulario generico.html"
     form_class = OfertaProveedorDetalleProveedorMaterialUpdateForm
 
@@ -338,6 +346,11 @@ class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormVie
     template_name = "oferta_proveedor/oferta_proveedor/form_material.html"
     form_class = AgregarMaterialOfertaProveedorForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
 
@@ -400,6 +413,11 @@ class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView)
     template_name = "includes/formulario generico.html"
     form_class = CrearMaterialOfertaProveedorForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
             return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
 
@@ -458,13 +476,13 @@ class ArchivoOfertaProveedorCreateView(PermissionRequiredMixin, BSModalCreateVie
     template_name = "includes/formulario generico.html"
     form_class = ArchivoOfertaProveedorForm
 
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
-
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
 
     def form_valid(self, form):
         form.instance.oferta_proveedor = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
@@ -485,6 +503,11 @@ class ArchivoOfertaProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteVie
     model =ArchivoOfertaProveedor
     template_name = "includes/eliminar generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.object.oferta_proveedor.slug})
 
@@ -496,7 +519,6 @@ class ArchivoOfertaProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteVie
 
 class OfertaProveedorGenerarNuevoRequerimientoView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('requerimiento_de_materiales.change_ofertaproveedordetalle')
-
     model = OfertaProveedor
     template_name = "oferta_proveedor/oferta_proveedor/boton.html"
     success_url = reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
@@ -571,10 +593,10 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
     template_name = "includes/formulario generico.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     if not self.has_permission():
-    #         return render(request, 'includes/modal sin permiso.html')
-    #     return super().dispatch(request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):

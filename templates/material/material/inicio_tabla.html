@@ -5,6 +5,7 @@
             <th>Descripción Corta</th>
             <th>Marca</th>
             <th>Modelo</th>
+            <th class="text-center">Mostrar</th>
             <th class="text-center text-nowrap">Acciones</th>
 
         </tr>
@@ -16,11 +17,18 @@
             <td>{{ material.descripcion_corta }}</td>
             <td>{{ material.marca }}</td>
             <td>{{ material.modelo }}</td>
+            <td class="text-center">
+            {% if material.mostrar %}
+                SI
+            {% else %}
+                NO
+            {% endif %}
+            </td>
 
             <td class="text-center text-nowrap">
                 {% if material.estado_alta_baja == 1 %}
                     <button data-form-url="{% url 'material_app:material_actualizar' material.id %}"
-                        data-table-url="{% url 'material_app:material_tabla' %}{{ contexto_filtro }}"
+                        data-table-url="{% url 'material_app:material_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                         data-keep-open="true"
                         class="update btn btn-warning btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">

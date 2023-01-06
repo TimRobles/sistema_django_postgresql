@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import TipoMovimiento, MovimientosAlmacen, TipoStock
+from import_export.admin import ExportActionMixin
 
 # Register your models here.
 @admin.register(TipoStock)
@@ -44,7 +45,7 @@ class TipoMovimientoAdmin(admin.ModelAdmin):
         
 
 @admin.register(MovimientosAlmacen)
-class MovimientosAlmacenAdmin(admin.ModelAdmin):
+class MovimientosAlmacenAdmin(ExportActionMixin, admin.ModelAdmin):
     list_display = (
         'id',
         'content_type_producto',

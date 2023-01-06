@@ -33,7 +33,8 @@ from .forms import (
 )
 
 
-class EnvioTrasladoProductoListView(ListView):
+class EnvioTrasladoProductoListView(PermissionRequiredMixin, ListView):
+    permission_required = ('traslado_producto.view_enviotrasladoproducto')
     model = EnvioTrasladoProducto
     template_name = "traslado_producto/envio/inicio.html"
     context_object_name = 'contexto_envio_traslado_producto'
@@ -60,7 +61,8 @@ def EnvioTrasladoProductoCrearView(request):
     obj.save()
     return HttpResponseRedirect(reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':obj.id}))
 
-class EnvioTrasladoProductoVerView(TemplateView):
+class EnvioTrasladoProductoVerView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('traslado_producto.view_enviotrasladoproducto')
     template_name = "traslado_producto/envio/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -113,10 +115,16 @@ def EnvioTrasladoProductoVerTabla(request, id_envio_traslado_producto):
         return JsonResponse(data)
 
 
-class  EnvioTrasladoProductoActualizarView(BSModalUpdateView):
+class  EnvioTrasladoProductoActualizarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_enviotrasladoproducto')
     model = EnvioTrasladoProducto
     template_name = "traslado_producto/envio/form_actualizar.html"
     form_class = EnvioTrasladoProductoForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
@@ -138,9 +146,15 @@ class  EnvioTrasladoProductoActualizarView(BSModalUpdateView):
         context['url_sede'] = reverse_lazy('sociedad_app:sociedad_sede', kwargs={'id_sociedad':1})[:-2]
         return context
 
-class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
+class EnvioTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.change_enviotrasladoproducto')
     model = EnvioTrasladoProducto
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
@@ -206,10 +220,16 @@ class EnvioTrasladoProductoGuardarView(BSModalDeleteView):
         context['dar_baja'] = True
         return context
 
-class  EnvioTrasladoProductoObservacionesView(BSModalUpdateView):
+class  EnvioTrasladoProductoObservacionesView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_enviotrasladoproducto')
     model = EnvioTrasladoProducto
     template_name = "includes/formulario generico.html"
     form_class = EnvioTrasladoProductoObservacionesForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.object.id})
@@ -224,7 +244,8 @@ class  EnvioTrasladoProductoObservacionesView(BSModalUpdateView):
         return context
 
 
-class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
+class EnvioTrasladoProductoMaterialDetalleView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('traslado_producto.change_enviotrasladoproducto')
     template_name = "traslado_producto/envio/form_material.html"
     form_class = EnvioTrasladoProductoMaterialDetalleForm
 
@@ -239,7 +260,10 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
         if error_sede:
             context['texto'] = 'Ingrese una sede de origen.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(EnvioTrasladoProductoMaterialDetalleView, self).dispatch(request, *args, **kwargs)
+        
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.kwargs['id_envio_traslado_producto']})
@@ -313,21 +337,11 @@ class EnvioTrasladoProductoMaterialDetalleView(BSModalFormView):
         context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 
-class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
+class  EnvioTrasladoProductoActualizarMaterialDetalleView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_enviotrasladoproducto')
     model = EnvioTrasladoProductoDetalle
     template_name = "traslado_producto/envio/form_actualizar_material.html"
     form_class = EnvioTrasladoProductoMaterialActualizarDetalleForm
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.get_object().envio_traslado_producto.id})
-
-    def get_form_kwargs(self, *args, **kwargs):
-        print(self.kwargs)
-        detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
-        envio_traslado_producto = detalle.envio_traslado_producto
-        kwargs = super().get_form_kwargs()
-        kwargs['envio_traslado_producto'] = envio_traslado_producto
-        return kwargs
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
@@ -341,8 +355,21 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
         if error_sede:
             context['texto'] = 'Ingrese una sede de origen.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(EnvioTrasladoProductoActualizarMaterialDetalleView, self).dispatch(request, *args, **kwargs)
+    
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.get_object().envio_traslado_producto.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        print(self.kwargs)
+        detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        envio_traslado_producto = detalle.envio_traslado_producto
+        kwargs = super().get_form_kwargs()
+        kwargs['envio_traslado_producto'] = envio_traslado_producto
+        return kwargs
 
     def form_valid(self, form):
         detalle = EnvioTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
@@ -383,9 +410,15 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
         context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
         return context
 
-class EnvioTrasladoProductoMaterialDeleteView(BSModalDeleteView):
+class EnvioTrasladoProductoMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.change_enviotrasladoproducto')
     model = EnvioTrasladoProductoDetalle
     template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:envio_ver', kwargs={'id_envio_traslado_producto':self.get_object().envio_traslado_producto.id})
@@ -421,6 +454,11 @@ class ValidarSeriesEnvioTrasladoProductoDetailView(PermissionRequiredMixin, Form
     template_name = "traslado_producto/validar_serie_envio_traslado_producto/detalle.html"
     form_class = EnvioTrasladoProductoDetalleSeriesForm
     success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if self.request.session['primero']:
@@ -513,7 +551,8 @@ class ValidarSeriesEnvioTrasladoProductoDetalleDeleteView(PermissionRequiredMixi
 ####################################################################################################
 
 
-class RecepcionTrasladoProductoListView(ListView):
+class RecepcionTrasladoProductoListView(PermissionRequiredMixin, ListView):
+    permission_required = ('traslado_producto.view_recepciontrasladoproducto')
     model = RecepcionTrasladoProducto
     template_name = "traslado_producto/recepcion/inicio.html"
     context_object_name = 'contexto_recepcion_traslado_producto'
@@ -532,10 +571,16 @@ def RecepcionTrasladoProductoTabla(request):
         )
         return JsonResponse(data)
 
-class RecepcionTrasladoProductoCrearView(BSModalCreateView):
+class RecepcionTrasladoProductoCrearView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('traslado_producto.add_recepciontrasladoproducto')
     model = RecepcionTrasladoProducto
     template_name = "includes/formulario generico.html"
     form_class = RecepcionTrasladoProductoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.kwargs['recepcion'].id})
@@ -552,7 +597,8 @@ class RecepcionTrasladoProductoCrearView(BSModalCreateView):
         return context
 
 
-class RecepcionTrasladoProductoVerView(TemplateView):
+class RecepcionTrasladoProductoVerView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('traslado_producto.view_recepciontrasladoproducto')
     template_name = "traslado_producto/recepcion/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -605,10 +651,16 @@ def RecepcionTrasladoProductoVerTabla(request, id_recepcion_traslado_producto):
         return JsonResponse(data)
 
 
-class  RecepcionTrasladoProductoActualizarView(BSModalUpdateView):
+class  RecepcionTrasladoProductoActualizarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_recepciontrasladoproducto')
     model = RecepcionTrasladoProducto
     template_name = "includes/formulario generico.html"
     form_class = RecepcionTrasladoProductoActualizarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
@@ -624,9 +676,15 @@ class  RecepcionTrasladoProductoActualizarView(BSModalUpdateView):
         return context
 
 
-class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
+class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.change_recepciontrasladoproducto')
     model = RecepcionTrasladoProducto
     template_name = "traslado_producto/recepcion/form_guardar.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
@@ -709,9 +767,15 @@ class RecepcionTrasladoProductoGuardarView(BSModalDeleteView):
         return context
 
 
-class RecepcionTrasladoProductoAnularView(BSModalDeleteView):
+class RecepcionTrasladoProductoAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.change_recepciontrasladoproducto')
     model = RecepcionTrasladoProducto
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
@@ -765,10 +829,16 @@ class RecepcionTrasladoProductoAnularView(BSModalDeleteView):
         return context
 
 
-class  RecepcionTrasladoProductoObservacionesView(BSModalUpdateView):
+class  RecepcionTrasladoProductoObservacionesView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_recepciontrasladoproducto')
     model = RecepcionTrasladoProducto
     template_name = "includes/formulario generico.html"
     form_class = RecepcionTrasladoProductoObservacionesForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.object.id})
@@ -783,7 +853,8 @@ class  RecepcionTrasladoProductoObservacionesView(BSModalUpdateView):
         return context
 
 
-class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
+class RecepcionTrasladoProductoMaterialDetalleView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('traslado_producto.change_recepciontrasladoproducto')
     template_name = "traslado_producto/recepcion/from_material.html"
     form_class = RecepcionTrasladoProductoMaterialDetalleForm
 
@@ -798,7 +869,10 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
         if error_sede:
             context['texto'] = 'Ingrese una sede de destino.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(RecepcionTrasladoProductoMaterialDetalleView, self).dispatch(request, *args, **kwargs)
+
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.kwargs['id_recepcion_traslado_producto']})
@@ -859,20 +933,11 @@ class RecepcionTrasladoProductoMaterialDetalleView(BSModalFormView):
         context['url_unidad'] = reverse_lazy('traslado_producto_app:unidad_material', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
         return context
 
-class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView):
+class  RecepcionTrasladoProductoActualizarMaterialDetalleView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_recepciontrasladoproducto')
     model = RecepcionTrasladoProductoDetalle
     template_name = "traslado_producto/recepcion/form_actualizar_material.html"
     form_class = RecepcionTrasladoProductoMaterialActualizarDetalleForm
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.get_object().recepcion_traslado_producto.id})
-
-    def get_form_kwargs(self, *args, **kwargs):
-        detalle = RecepcionTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
-        recepcion_traslado_producto = detalle.recepcion_traslado_producto
-        kwargs = super().get_form_kwargs()
-        kwargs['recepcion_traslado_producto'] = recepcion_traslado_producto
-        return kwargs
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
@@ -887,8 +952,20 @@ class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView)
         if error_sede:
             context['texto'] = 'Ingrese una sede destino.'
             return render(request, 'includes/modal sin permiso.html', context)
-        return super(RecepcionTrasladoProductoActualizarMaterialDetalleView, self).dispatch(request, *args, **kwargs)
+        
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.get_object().recepcion_traslado_producto.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        detalle = RecepcionTrasladoProductoDetalle.objects.get(id=self.kwargs['pk'])
+        recepcion_traslado_producto = detalle.recepcion_traslado_producto
+        kwargs = super().get_form_kwargs()
+        kwargs['recepcion_traslado_producto'] = recepcion_traslado_producto
+        return kwargs
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -907,9 +984,15 @@ class  RecepcionTrasladoProductoActualizarMaterialDetalleView(BSModalUpdateView)
         context['url_unidad'] = reverse_lazy('traslado_producto_app:unidad_material', kwargs={'id_recepcion_traslado_producto_detalle':1})[:-2]
         return context
 
-class RecepcionTrasladoProductoMaterialDeleteView(BSModalDeleteView):
+class RecepcionTrasladoProductoMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.delete_recepciontrasladoproducto')
     model = RecepcionTrasladoProductoDetalle
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:recepcion_ver', kwargs={'id_recepcion_traslado_producto':self.get_object().recepcion_traslado_producto.id})
@@ -940,11 +1023,17 @@ class RecepcionTrasladoProductoMaterialDeleteView(BSModalDeleteView):
         return context
 
 
-class MotivoTrasladoCreateView(BSModalCreateView):
+class MotivoTrasladoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('traslado_producto.add_motivotraslado')
     model = MotivoTraslado
     template_name = "includes/formulario generico.html"
     form_class = MotivoTrasladoForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(MotivoTrasladoCreateView, self).get_context_data(**kwargs)

@@ -1,4 +1,7 @@
+from applications.clientes.models import Cliente
 from applications.material.funciones import stock, stock_disponible, stock_sede_disponible
+from applications.sociedad.models import Sociedad
+from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from applications.sede.models import Sede
@@ -304,3 +307,20 @@ class DespachoAnularForm(BSModalModelForm):
         #         obj.estado = 1
         #     self.request.session['primero'] = False
         # return super().form_valid(form)
+
+
+class NotaSalidaBuscarForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(estado_sunat=1), required=False)
+    estado = forms.ChoiceField(choices=((None, '---------'),) + ESTADOS_NOTA_CALIDAD_STOCK, required=False)
+    
+    def __init__(self, *args, **kwargs):
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        filtro_estado = kwargs.pop('filtro_estado')
+        super(NotaSalidaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['cliente'].initial = filtro_cliente
+        self.fields['estado'].initial = filtro_estado
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

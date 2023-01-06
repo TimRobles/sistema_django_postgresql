@@ -28,7 +28,8 @@ from .forms import (
 )
 
 
-class OrdenCompraListView(ListView):
+class OrdenCompraListView(PermissionRequiredMixin, ListView):
+    permission_required = ('orden_compra.view_ordencompra')
     model = OrdenCompra
     template_name = "orden_compra/orden_compra/inicio.html"
     context_object_name = 'contexto_orden_compra'
@@ -47,11 +48,17 @@ def OrdenCompraTabla(request):
         )
         return JsonResponse(data)
 
-class OrdenCompraAnularView(BSModalUpdateView):
+class OrdenCompraAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('orden_compra.delete_ordencompra')
     model = OrdenCompra
     form_class = OrdenCompraAnularForm    
     template_name = "includes/formulario generico.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.estado = 4
@@ -103,12 +110,18 @@ class OrdenCompraMotivoAnulacionPdfView(View):
 
         return respuesta
 
-class OrdenCompraNuevaVersionView(BSModalUpdateView):
+class OrdenCompraNuevaVersionView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('orden_compra.add_ordencompra')
     model = OrdenCompra
     form_class = OrdenCompraAnularForm    
     template_name = "orden_compra/orden_compra/nueva_version.html"
     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
     context_object_name = 'contexto_orden_compra' 
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
@@ -189,7 +202,8 @@ class OrdenCompraNuevaVersionView(BSModalUpdateView):
         context['titulo'] = 'Orden de Compra'
         return context
 
-class OrdenCompraDetailView(DetailView):
+class OrdenCompraDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('orden_compra.view_ordencompra')
     model = OrdenCompra
     template_name = "orden_compra/orden_compra/detalle.html"
     context_object_name = 'contexto_orden_compra'
@@ -296,9 +310,6 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
     template_name = "includes/formulario generico.html"
     form_class = OrdenCompraEnviarCorreoForm
 
-    def get_success_url(self):
-        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.kwargs['slug']})
-    
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
@@ -316,8 +327,13 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
         if error_correo_proveedor:
             context['texto'] = 'Registrar correos del proveedor'
             return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_success_url(self):
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.kwargs['slug']})
+    
     @transaction.atomic
     def form_valid(self, form):
         print("Inicio")
@@ -365,10 +381,16 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
         context['titulo']="Correos"
         return context
 
-class OfertaProveedorDetalleUpdateView(BSModalUpdateView):
+class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('orden_compra.change_ordencompradetalle')
     model = OrdenCompraDetalle
     template_name = "orden_compra/orden_compra/actualizar.html"
     form_class = OrdenCompraDetalleUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().orden_compra.slug})
@@ -386,11 +408,16 @@ class OfertaProveedorDetalleUpdateView(BSModalUpdateView):
         return context
 
 
-class OfertaProveedorlDetalleCreateView(BSModalFormView):
+class OfertaProveedorlDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('orden_compra.add_ordencompradetalle')
     template_name = "orden_compra/orden_compra/form_material.html"
     form_class = OrdenCompraDetalleAgregarForm
-
     success_url = reverse_lazy('orden_compra_app:orden_compra_detalle')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
@@ -429,11 +456,17 @@ class OfertaProveedorlDetalleCreateView(BSModalFormView):
         context['accion'] = 'Guardar'
         return context
 
-class OrdenCompraGenerarComprobanteTotalView(BSModalDeleteView):
+class OrdenCompraGenerarComprobanteTotalView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_compra.add_comprobantecomprapi')
     model = OrdenCompra
     template_name = "includes/form generico.html"
     success_url = reverse_lazy('comprobante_compra_app:comprobante_compra_pi_lista')
     context_object_name = 'contexto_orden_compra' 
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):

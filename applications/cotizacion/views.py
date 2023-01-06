@@ -93,24 +93,32 @@ class CotizacionVentaListView(PermissionRequiredMixin, FormView):
             for palabra in filtro_cliente.split(" ")[1:]:
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?cliente=" + filtro_cliente)
+            contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_fecha_cotizacion:
             condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?fecha_cotizacion=" + filtro_fecha_cotizacion)
+            contexto_filtro.append("fecha_cotizacion=" + filtro_fecha_cotizacion)
 
         if filtro_fecha_validez:
             condicion = Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?fecha_validez=" + filtro_fecha_validez)
+            contexto_filtro.append("fecha_validez=" + filtro_fecha_validez)
 
         if filtro_vendedor:
             condicion = Q(created_by__id = filtro_vendedor)
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?vendedor=" + filtro_vendedor)
+            contexto_filtro.append("vendedor=" + filtro_vendedor)
 
-        context['contexto_filtro'] = "".join(contexto_filtro)
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  15 # Show 10 objects per page.
 
@@ -142,24 +150,32 @@ def CotizacionVentaTabla(request):
             for palabra in filtro_cliente.split(" ")[1:]:
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?cliente=" + filtro_cliente)
+            contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_fecha_cotizacion:
             condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha_cotizacion, "%Y-%m-%d").date())
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?fecha_cotizacion=" + filtro_fecha_cotizacion)
+            contexto_filtro.append("fecha_cotizacion=" + filtro_fecha_cotizacion)
 
         if filtro_fecha_validez:
             condicion = Q(fecha_validez = datetime.strptime(filtro_fecha_validez, "%Y-%m-%d").date())
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?fecha_validez=" + filtro_fecha_validez)
+            contexto_filtro.append("fecha_validez=" + filtro_fecha_validez)
 
         if filtro_vendedor:
             condicion = Q(created_by__id = filtro_vendedor)
             cotizacion_ventas = cotizacion_ventas.filter(condicion)
-            contexto_filtro.append("?vendedor=" + filtro_vendedor)
+            contexto_filtro.append("vendedor=" + filtro_vendedor)
 
-        context['contexto_filtro'] = "".join(contexto_filtro)
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  15 # Show 10 objects per page.
 
@@ -693,7 +709,7 @@ class CotizacionVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
-        return super(CotizacionVentaGuardarView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
@@ -1202,7 +1218,8 @@ class CotizacionVentaReservaAnularView(PermissionRequiredMixin, BSModalDeleteVie
         return context
 
 
-class CotizacionVentaConfirmarView(BSModalDeleteView):
+class CotizacionVentaConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -1235,6 +1252,8 @@ class CotizacionVentaConfirmarView(BSModalDeleteView):
         if error_cantidad_stock and self.get_object().estado != 3:
             context['texto'] = 'No hay stock suficiente en un producto.'
             return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -1391,10 +1410,16 @@ class CotizacionVentaConfirmarView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaConfirmarAnularView(BSModalDeleteView):
+class CotizacionVentaConfirmarAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"   
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
@@ -1450,7 +1475,8 @@ class CotizacionVentaConfirmarAnularView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaConfirmarAnticipoView(BSModalDeleteView):
+class CotizacionVentaConfirmarAnticipoView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"
 
@@ -1477,6 +1503,8 @@ class CotizacionVentaConfirmarAnticipoView(BSModalDeleteView):
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
 
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -1569,10 +1597,16 @@ class CotizacionVentaConfirmarAnticipoView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaConfirmarAnticipoAnularView(BSModalDeleteView):
+class CotizacionVentaConfirmarAnticipoAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     model = CotizacionVenta
     template_name = "includes/form generico.html"   
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.id})
 
@@ -1623,7 +1657,8 @@ class CotizacionVentaConfirmarAnticipoAnularView(BSModalDeleteView):
         return context
 
 
-class CotizacionVentaPdfsView(BSModalFormView):
+class CotizacionVentaPdfsView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('cotizacion.change_cotizacionventa')
     template_name = "cotizacion/cotizacion_venta/form_pdfs.html"
     form_class = CotizacionVentaPdfsForm
 
@@ -1644,6 +1679,8 @@ class CotizacionVentaPdfsView(BSModalFormView):
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
             
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -1754,10 +1791,16 @@ class CotizacionVentaSociedadPdfView(View):
         return respuesta
 
 
-class CotizacionVentaResumenView(BSModalReadView):
+class CotizacionVentaResumenView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('cotizacion.view_cotizacionventa')
     model = CotizacionVenta
     template_name = "cotizacion/cotizacion_venta/form_resumen.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         monedas = Moneda.objects.all()
         tipo_de_cambio_cotizacion = TipoCambio.objects.tipo_cambio_venta(self.object.fecha)
@@ -1800,6 +1843,11 @@ class ConfirmacionListView(PermissionRequiredMixin, FormView):
     form_class = ConfirmacionVentaBuscarForm
     success_url = '.'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_form_kwargs(self):
         kwargs = super(ConfirmacionListView, self).get_form_kwargs()
         kwargs['filtro_estado'] = self.request.GET.get('estado')
@@ -1816,15 +1864,27 @@ class ConfirmacionListView(PermissionRequiredMixin, FormView):
         
         filtro_estado = self.request.GET.get('estado')
         filtro_cliente = self.request.GET.get('cliente')
+
+        contexto_filtro = []
+
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
-            context['contexto_filtro'] = "?estado=" + filtro_estado
+            contexto_filtro.append("estado=" + filtro_estado)
         if filtro_cliente:
             condicion = Q(cliente = filtro_cliente)
             contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
-            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+            contexto_filtro.append("cliente=" + filtro_cliente)
         
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -1842,6 +1902,11 @@ class ConfirmarVerView(PermissionRequiredMixin, TemplateView):
     permission_required = ('cotizacion.view_confirmacionventa')
     template_name = "cotizacion/confirmacion/detalle.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         obj = ConfirmacionVenta.objects.get(id = kwargs['id_confirmacion'])
         
@@ -1966,11 +2031,17 @@ def ConfirmarVerTabla(request, id_confirmacion):
         return JsonResponse(data)
 
 
-class ConfirmacionPendienteSalidaView(FormView):
+class ConfirmacionPendienteSalidaView(PermissionRequiredMixin, FormView):
+    permission_required = ('cotizacion.view_cofirmacionventa')
     template_name = 'cotizacion/confirmacion/pendiente_salida.html'
     form_class = ConfirmacionVentaBuscarForm
     success_url = '.'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_form_kwargs(self):
         kwargs = super(ConfirmacionPendienteSalidaView, self).get_form_kwargs()
         kwargs['filtro_estado'] = self.request.GET.get('estado')
@@ -1979,20 +2050,32 @@ class ConfirmacionPendienteSalidaView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(ConfirmacionPendienteSalidaView, self).get_context_data(**kwargs)
-        contexto_cotizacion_venta = ConfirmacionVenta.objects.filter(estado=1).filter(estado=2)
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.filter(Q(estado=1) | Q(estado=2))
 
         context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
         filtro_estado = self.request.GET.get('estado')
         filtro_cliente = self.request.GET.get('cliente')
+
+        contexto_filtro = []
+
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
             contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
-            context['contexto_filtro'] = "?estado=" + filtro_estado
+            contexto_filtro.append("estado=" + filtro_estado)
         if filtro_cliente:
             condicion = Q(cliente = filtro_cliente)
             contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
-            context['contexto_filtro'] = "?cliente=" + filtro_cliente
+            contexto_filtro.append("cliente=" + filtro_cliente)
         
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  10 # Show 10 objects per page.
 
@@ -2006,12 +2089,18 @@ class ConfirmacionPendienteSalidaView(FormView):
         return context
 
 
-class ConfirmacionVentaFormaPagoView(BSModalUpdateView):
+class ConfirmacionVentaFormaPagoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionVenta
     template_name = "cotizacion/confirmacion/form_forma_pago.html"
     form_class = ConfirmacionVentaFormaPagoForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     @transaction.atomic
     def form_valid(self, form):
         sid = transaction.savepoint()
@@ -2035,11 +2124,17 @@ class ConfirmacionVentaFormaPagoView(BSModalUpdateView):
         return context
 
 
-class ConfirmacionClienteView(BSModalUpdateView):
+class ConfirmacionClienteView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionVenta
     template_name = "cotizacion/cotizacion_venta/form_cliente.html"
     form_class = ConfirmacionClienteForm
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if form.instance.cliente.linea_credito_monto == 0:
@@ -2067,9 +2162,15 @@ class ConfirmacionClienteView(BSModalUpdateView):
         return context
 
 
-class ConfirmacionVentaVerCuotaView(BSModalReadView):
+class ConfirmacionVentaVerCuotaView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('cotizacion.view_cofirmacionventa')
     model = ConfirmacionVenta
     template_name = "cotizacion/confirmacion/modal cuotas.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(ConfirmacionVentaVerCuotaView, self).get_context_data(**kwargs)
@@ -2093,8 +2194,14 @@ class ConfirmacionVentaVerCuotaView(BSModalReadView):
         return context
 
 
-class ConfirmacionVentaCuotaView(TemplateView):
+class ConfirmacionVentaCuotaView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('cotizacion.view_cofirmacionventa')
     template_name = "cotizacion/confirmacion/cuotas.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(ConfirmacionVentaCuotaView, self).get_context_data(**kwargs)
@@ -2147,9 +2254,15 @@ def ConfirmacionVentaCuotaTabla(request, id_confirmacion):
         return JsonResponse(data)
 
 
-class ConfirmacionVentaGenerarCuotasFormView(BSModalFormView):
+class ConfirmacionVentaGenerarCuotasFormView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionVentaGenerarCuotasForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion': self.kwargs['id_confirmacion']})
@@ -2196,11 +2309,17 @@ class ConfirmacionVentaGenerarCuotasFormView(BSModalFormView):
         return context
 
 
-class ConfirmacionVentaCuotaCreateView(BSModalCreateView):
+class ConfirmacionVentaCuotaCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionVentaCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = ConfirmacionVentaCuotaForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
         form.instance.confirmacion_venta = ConfirmacionVenta.objects.get(id=self.kwargs['id_confirmacion'])
@@ -2221,11 +2340,17 @@ class ConfirmacionVentaCuotaCreateView(BSModalCreateView):
         return context
     
 
-class ConfirmacionVentaCuotaUpdateView(BSModalUpdateView):
+class ConfirmacionVentaCuotaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionVentaCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = ConfirmacionVentaCuotaForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -2244,9 +2369,15 @@ class ConfirmacionVentaCuotaUpdateView(BSModalUpdateView):
         return context
     
 
-class ConfirmacionVentaCuotaDeleteView(BSModalDeleteView):
+class ConfirmacionVentaCuotaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionVentaCuota
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cotizacion_app:confirmacion_cuotas', kwargs={'id_confirmacion':self.get_object().confirmacion_venta.id})
@@ -2259,10 +2390,16 @@ class ConfirmacionVentaCuotaDeleteView(BSModalDeleteView):
         return context
     
 
-class ConfirmacionVentaOrdenCompraCrearView(BSModalCreateView):
+class ConfirmacionVentaOrdenCompraCrearView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionOrdenCompra
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionOrdenCompraForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.kwargs['id_confirmacion']})
@@ -2279,10 +2416,16 @@ class ConfirmacionVentaOrdenCompraCrearView(BSModalCreateView):
         return context
 
 
-class ConfirmacionVentaOrdenCompraActualizarView(BSModalUpdateView):
+class ConfirmacionVentaOrdenCompraActualizarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionOrdenCompra
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionOrdenCompraForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.kwargs['id_confirmacion']})
@@ -2298,9 +2441,15 @@ class ConfirmacionVentaOrdenCompraActualizarView(BSModalUpdateView):
         return context
 
 
-class ConfirmacionOrdenCompraDeleteView(BSModalDeleteView):
+class ConfirmacionOrdenCompraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_cofirmacionventa')
     model = ConfirmacionOrdenCompra
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cotizacion_app:confirmacion_ver', kwargs={'id_confirmacion':self.kwargs['id_confirmacion']})
@@ -2312,8 +2461,14 @@ class ConfirmacionOrdenCompraDeleteView(BSModalDeleteView):
         context['item'] = self.get_object()
         return context
 
-class SolicitudCreditoView(TemplateView):
+class SolicitudCreditoView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('cotizacion.add_solicitudcredito')
     template_name = "cotizacion/cotizacion_venta/form_solicitud_credito.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super(SolicitudCreditoView, self).get_context_data(**kwargs)
@@ -2348,11 +2503,17 @@ def SolicitudCreditoTabla(request, id_cotizacion):
         return JsonResponse(data)
     
 
-class SolicitudCreditoUpdateView(BSModalUpdateView):
+class SolicitudCreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/formulario generico.html"
     form_class = SolicitudCreditoForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SolicitudCreditoUpdateView, self).get_context_data(**kwargs)
@@ -2361,9 +2522,15 @@ class SolicitudCreditoUpdateView(BSModalUpdateView):
         return context
 
 
-class SolicitudCreditoEliminarView(BSModalDeleteView):
+class SolicitudCreditoEliminarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_solicitudcredito')
     model = SolicitudCredito
-    template_name = "includes/form generico.html"   
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.object.cotizacion_venta.id})
@@ -2377,9 +2544,15 @@ class SolicitudCreditoEliminarView(BSModalDeleteView):
         return context
     
 
-class SolicitudCreditoGenerarCuotasFormView(BSModalFormView):
+class SolicitudCreditoGenerarCuotasFormView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('cotizacion.change_solicitudcredito')
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionVentaGenerarCuotasForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self) -> str:
         solicitud = SolicitudCredito.objects.get(id=self.kwargs['id_solicitud'])
@@ -2428,7 +2601,8 @@ class SolicitudCreditoGenerarCuotasFormView(BSModalFormView):
         return context
 
 
-class SolicitudCreditoCuotaCreateView(BSModalCreateView):
+class SolicitudCreditoCuotaCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('cotizacion.change_solicitudcredito')
     model = SolicitudCreditoCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = SolicitudCreditoCuotaForm
@@ -2451,6 +2625,8 @@ class SolicitudCreditoCuotaCreateView(BSModalCreateView):
         if error_saldo:
             context['texto'] = 'No hay saldo para agregar más cuotas.'
             return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super(SolicitudCreditoCuotaCreateView, self).dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
@@ -2466,11 +2642,17 @@ class SolicitudCreditoCuotaCreateView(BSModalCreateView):
         return context
     
 
-class SolicitudCreditoCuotaUpdateView(BSModalUpdateView):
+class SolicitudCreditoCuotaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_solicitudcredito')
     model = SolicitudCreditoCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = SolicitudCreditoCuotaForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -2489,9 +2671,15 @@ class SolicitudCreditoCuotaUpdateView(BSModalUpdateView):
         return context
     
 
-class SolicitudCreditoCuotaDeleteView(BSModalDeleteView):
+class SolicitudCreditoCuotaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_solicitudcredito')
     model = SolicitudCreditoCuota
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().solicitud_credito.cotizacion_venta.id})
@@ -2504,7 +2692,8 @@ class SolicitudCreditoCuotaDeleteView(BSModalDeleteView):
         return context
 
 
-class SolicitudCreditoFinalizarView(BSModalDeleteView):
+class SolicitudCreditoFinalizarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.change_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 
@@ -2518,6 +2707,8 @@ class SolicitudCreditoFinalizarView(BSModalDeleteView):
         if error_cuotas:
             context['texto'] = 'El total de las cuotas no coincide con el monto solicitado.'
             return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super(SolicitudCreditoFinalizarView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -2545,9 +2736,15 @@ class SolicitudCreditoFinalizarView(BSModalDeleteView):
         return context
 
 
-class SolicitudCreditoAprobarView(BSModalDeleteView):
+class SolicitudCreditoAprobarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.aprobar_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
@@ -2575,9 +2772,15 @@ class SolicitudCreditoAprobarView(BSModalDeleteView):
         return context
 
 
-class SolicitudCreditoRechazarView(BSModalDeleteView):
+class SolicitudCreditoRechazarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('cotizacion.aprobar_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('cotizacion_app:solicitud_credito', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
@@ -2605,18 +2808,17 @@ class SolicitudCreditoRechazarView(BSModalDeleteView):
 
 
 class ConfirmacionNotaSalidaView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.change_solicitudprestamomaterialesdetalle')
-
+    permission_required = ('logistica.add_notasalida')
     model = ConfirmacionVenta
     template_name = "logistica/solicitud_prestamo_materiales/boton.html"
     
-    def get_success_url(self):
-        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.nota_salida.id})
-
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':self.nota_salida.id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):

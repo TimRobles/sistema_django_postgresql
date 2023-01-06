@@ -33,7 +33,6 @@ from .models import (
 
 class ListaRequerimientoMaterialListView(PermissionRequiredMixin, ListView):
     permission_required = ('requerimiento_de_materiales.view_listarequerimientomaterial')
-
     model = ListaRequerimientoMaterial
     template_name = "requerimiento_material/lista_requerimiento_material/inicio.html"
     context_object_name = 'contexto_lista_requerimiento_material'
@@ -57,6 +56,11 @@ class ListaRequerimientoMaterialCreateView(PermissionRequiredMixin, FormView):
     template_name = "requerimiento_material/lista_requerimiento_material/detalle.html"
     form_class = ListaRequerimientoMaterialForm
     success_url = reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
@@ -202,7 +206,6 @@ def ListaRequerimientoMaterialDetalleTabla(request, requerimiento_id):
 
 class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('requerimiento_de_materiales.add_listarequerimientomaterialdetalle')
-
     template_name = "requerimiento_material/lista_requerimiento_material/form_material.html"
     form_class = ListaRequerimientoMaterialDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
@@ -476,7 +479,6 @@ class RequerimientoMaterialProveedorDuplicarView(PermissionRequiredMixin, BSModa
 
 class RequerimientoMaterialProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('requerimiento_de_materiales.change_requerimientomaterialproveedordetalle')
-
     model = RequerimientoMaterialProveedorDetalle
     template_name = "requerimiento_material/requerimiento_material_proveedor/actualizar.html"
     form_class = RequerimientoMaterialProveedorDetalleUpdateForm
@@ -555,10 +557,16 @@ class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, B
         context['dar_baja'] = "true"
         return context
 
-class RequerimientoMaterialProveedorDetalleCreateView(BSModalFormView):
+class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedordetalle')
     template_name = "requerimiento_material/requerimiento_material_proveedor/form_material.html"
     form_class = RequerimientoMaterialProveedorDetalleForm
     success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
@@ -728,6 +736,9 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
         if error_descripciones:
             context['texto'] = 'Completar las descripciones'
             return render(request, 'includes/modal sin permiso.html', context)
+    
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
@@ -820,9 +831,6 @@ class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BS
         context['accion']="Enviar"
         context['titulo']="Correos"
         return context
-
-
-
 
 
 class ProveedorForm(forms.Form):

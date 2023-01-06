@@ -37,7 +37,6 @@ from .models import (
 
 class ModeloListView(PermissionRequiredMixin, ListView):
     permission_required = ('material.view_modelo')
-
     model = Modelo
     template_name = "material/modelo/inicio.html"
     context_object_name = 'contexto_modelo'
@@ -108,7 +107,6 @@ class ModeloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class MarcaListView(PermissionRequiredMixin, ListView):
     permission_required = ('material.view_marca')
-
     model = Marca
     template_name = "material/marca/inicio.html"
     context_object_name = 'contexto_marca'
@@ -178,7 +176,7 @@ class MarcaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().form_valid(form)
 
 
-class MaterialListView(PermissionRequiredMixin,FormView):
+class MaterialListView(PermissionRequiredMixin, FormView):
     permission_required = ('material.view_material')
     template_name = "material/material/inicio.html"
     form_class = MaterialBuscarForm
@@ -194,13 +192,25 @@ class MaterialListView(PermissionRequiredMixin,FormView):
         materiales = Material.objects.all().order_by('descripcion_venta','descripcion_corta','marca','modelo')
         filtro = self.request.GET.get('buscar')
 
+        contexto_filtro = []
+
         if filtro:
             condicion = Q(descripcion_venta__unaccent__icontains = filtro.split(" ")[0]) | Q(descripcion_corta__unaccent__icontains = filtro.split(" ")[0]) | Q(marca__nombre__unaccent__icontains = filtro.split(" ")[0]) | Q(modelo__nombre__unaccent__icontains = filtro.split(" ")[0])
             for palabra in filtro.split(" ")[1:]:
                 condicion &= Q(descripcion_venta__unaccent__icontains = palabra) | Q(descripcion_corta__unaccent__icontains = palabra) | Q(marca__nombre__unaccent__icontains = palabra) | Q(modelo__nombre__unaccent__icontains = palabra)
             materiales = materiales.filter(condicion)
-            context['contexto_filtro'] = "?buscar=" + filtro   
+            contexto_filtro.append("buscar=" + filtro)
         
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
         context['contexto_material'] = materiales
         return context
 
@@ -212,11 +222,24 @@ def MaterialTabla(request):
         materiales = Material.objects.all()
         filtro = request.GET.get('buscar')
 
+        contexto_filtro = []
+
         if filtro:
             condicion = Q(descripcion_venta__unaccent__icontains = filtro.split(" ")[0]) | Q(descripcion_corta__unaccent__icontains = filtro.split(" ")[0]) | Q(marca__nombre__unaccent__icontains = filtro.split(" ")[0]) | Q(modelo__nombre__unaccent__icontains = filtro.split(" ")[0])
             for palabra in filtro.split(" ")[1:]:
                 condicion &= Q(descripcion_venta__unaccent__icontains = palabra) | Q(descripcion_corta__unaccent__icontains = palabra) | Q(marca__nombre_unaccent__icontains = palabra) | Q(modelo__nombre__unaccent__icontains = palabra)
             materiales = materiales.filter(condicion)
+            contexto_filtro.append("buscar=" + filtro)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         context['contexto_material'] = materiales
 
@@ -619,6 +642,7 @@ class DatasheetCreateView(PermissionRequiredMixin,BSModalCreateView):
         context['titulo']="Datasheet"
         return context
 
+
 class DatasheetUpdateView(PermissionRequiredMixin,BSModalUpdateView):
     permission_required = ('material.change_datasheet')
     model = Datasheet
@@ -642,6 +666,7 @@ class DatasheetUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         context['accion']="Actualizar"
         context['titulo']="Datasheet"
         return context
+
 
 class DatasheetDeleteView(PermissionRequiredMixin,BSModalDeleteView):
     permission_required = ('material.delete_datasheet')
@@ -1050,6 +1075,7 @@ class VideoMaterialUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         context['accion']="Actualizar"
         context['titulo']="Video"
         return context
+
 
 class VideoMaterialDarBaja(PermissionRequiredMixin,BSModalDeleteView):
     permission_required = ('material.delete_videomaterial')
@@ -1471,10 +1497,16 @@ class IdiomaMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 
-class PrecioListaMaterialCreateView(BSModalCreateView):
+class PrecioListaMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('material.add_preciolistamaterial')
     model = PrecioListaMaterial
     template_name = "material/material/form_precio.html"
     form_class = PrecioListaMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.kwargs['material_id']})
@@ -1679,6 +1711,11 @@ class MaterialSeriesView(PermissionRequiredMixin, BSModalReadView):
     permission_required = ('material.view_material')
     model = Material
     template_name = "material/series_material.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(MaterialSeriesView, self).get_context_data(**kwargs)

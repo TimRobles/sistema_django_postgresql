@@ -9,7 +9,8 @@ from applications.funciones import numeroXn, registrar_excepcion
 
 # Create your views here.
 
-class NotaIngresoView(TemplateView):
+class NotaIngresoView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('nota_ingreso.view_notaingreso')
     template_name = "nota_ingreso/nota_ingreso/inicio.html"
 
     def get_context_data(self, **kwargs):
@@ -24,7 +25,8 @@ class NotaIngresoView(TemplateView):
         return context
 
 
-class NotaIngresoNotaStockInicialView(TemplateView):
+class NotaIngresoNotaStockInicialView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('nota_ingreso.view_notaingreso')
     template_name = "nota_ingreso/nota_ingreso/inicio.html"
 
     def get_context_data(self, **kwargs):
@@ -39,7 +41,8 @@ class NotaIngresoNotaStockInicialView(TemplateView):
         return context
 
 
-class NotaIngresoListaView(TemplateView):
+class NotaIngresoListaView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('nota_ingreso.view_notaingreso')
     template_name = "nota_ingreso/nota_ingreso/inicio.html"
 
     def get_context_data(self, **kwargs):
@@ -48,7 +51,8 @@ class NotaIngresoListaView(TemplateView):
         return context
 
 
-class NotaIngresoDetailView(DetailView):
+class NotaIngresoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('nota_ingreso.view_notaingreso')
     model = NotaIngreso
     template_name = "nota_ingreso/nota_ingreso/detalle.html"
     context_object_name = 'contexto_nota_ingreso'
@@ -84,9 +88,15 @@ def NotaIngresoDetailTabla(request, recepcion_id):
         return JsonResponse(data)
 
 
-class NotaIngresoAgregarMaterialView(BSModalFormView):
+class NotaIngresoAgregarMaterialView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota_ingreso.add_notaingresodetalle')
     template_name = "nota_ingreso/nota_ingreso/form.html"
     form_class = NotaIngresoAgregarMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['id_nota_ingreso']})
@@ -161,9 +171,15 @@ class NotaIngresoAgregarMaterialView(BSModalFormView):
         return context
 
 
-class NotaIngresoActualizarMaterialView(BSModalFormView):
+class NotaIngresoActualizarMaterialView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota_ingreso.change_notaingresodetalle')
     template_name = "nota_ingreso/nota_ingreso/form.html"
     form_class = NotaIngresoAgregarMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         nota_ingreso_detalle = NotaIngresoDetalle.objects.get(id=self.kwargs['id_nota_ingreso_detalle'])
@@ -243,9 +259,15 @@ class NotaIngresoActualizarMaterialView(BSModalFormView):
         return context
 
 
-class NotaIngresoDetalleEliminarView(BSModalDeleteView):
+class NotaIngresoDetalleEliminarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota_ingreso.delete_notaingresodetalle')
     model = NotaIngresoDetalle
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         nota_ingreso = self.object.nota_ingreso
@@ -276,10 +298,16 @@ class NotaIngresoDetalleEliminarView(BSModalDeleteView):
         return context
 
 
-class NotaIngresoFinalizarConteoView(BSModalUpdateView):
+class NotaIngresoFinalizarConteoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota_ingreso.change_notaingreso')
     model = NotaIngreso
     template_name = "includes/formulario generico.html"
     form_class = NotaIngresoFinalizarConteoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.object.id})
@@ -361,10 +389,16 @@ class NotaIngresoFinalizarConteoView(BSModalUpdateView):
         return context
 
 
-class NotaIngresoAnularConteoView(BSModalUpdateView):
+class NotaIngresoAnularConteoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota_ingreso.add_notaingresodetalle')
     model = NotaIngreso
     template_name = "includes/formulario generico.html"
     form_class = NotaIngresoAnularConteoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.object.id})
@@ -422,7 +456,6 @@ class NotaIngresoAnularConteoView(BSModalUpdateView):
 
 class NotaStockInicialCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('nota_ingreso.add_notastockinicial')
-
     model = NotaStockInicial
     template_name = "includes/formulario generico.html"
     form_class = NotaStockInicialForm
@@ -443,9 +476,6 @@ class NotaStockInicialCreateView(PermissionRequiredMixin, BSModalCreateView):
 
     def form_valid(self, form):
         nro_nota_stock_inicial = NotaStockInicial.objects.all().aggregate(Max('nro_nota_stock_inicial'))['nro_nota_stock_inicial__max'] + 1
-        print("**************************")
-        print(nro_nota_stock_inicial)
-        print("**************************")
         form.instance.nro_nota_stock_inicial = nro_nota_stock_inicial
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
@@ -453,10 +483,16 @@ class NotaStockInicialCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().form_valid(form)
 
 
-class NotaStockInicialEliminarView(BSModalDeleteView):
+class NotaStockInicialEliminarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota_ingreso.delete_notastockinicial')
     model = NotaStockInicial
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('nota_ingreso_app:nota_stock_inicial_lista_total')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(NotaStockInicialEliminarView, self).get_context_data(**kwargs)
@@ -466,7 +502,8 @@ class NotaStockInicialEliminarView(BSModalDeleteView):
         return context
 
 
-class NotaStockInicialListaView(TemplateView):
+class NotaStockInicialListaView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('nota_ingreso.view_notastockinicial')
     template_name = "nota_ingreso/nota_stock_inicial/inicio.html"
 
     def get_context_data(self, **kwargs):
@@ -475,7 +512,8 @@ class NotaStockInicialListaView(TemplateView):
         return context
 
 
-class NotaStockInicialDetailView(DetailView):
+class NotaStockInicialDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('nota_ingreso.view_notastockinicial')
     model = NotaStockInicial
     template_name = "nota_ingreso/nota_stock_inicial/detalle.html"
     context_object_name = 'contexto_nota_stock_inicial'
@@ -505,9 +543,15 @@ def NotaStockInicialDetailTabla(request, pk):
         return JsonResponse(data)
 
 
-class NotaStockInicialAgregarMaterialView(BSModalFormView):
+class NotaStockInicialAgregarMaterialView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota_ingreso.add_notastockinicialdetalle')
     template_name = "nota_ingreso/nota_stock_inicial/form.html"
     form_class = NotaStockInicialAgregarMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_stock_inicial_detalle', kwargs={'pk':self.kwargs['id_nota_stock_inicial']})
@@ -563,9 +607,15 @@ class NotaStockInicialAgregarMaterialView(BSModalFormView):
         return context
 
 
-class NotaStockInicialActualizarMaterialView(BSModalFormView):
+class NotaStockInicialActualizarMaterialView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota_ingreso.change_notastockinicialdetalle')
     template_name = "nota_ingreso/nota_stock_inicial/form.html"
     form_class = NotaStockInicialAgregarMaterialForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         nota_stock_inicial_detalle = NotaStockInicialDetalle.objects.get(id=self.kwargs['id_nota_stock_inicial_detalle'])
@@ -615,9 +665,15 @@ class NotaStockInicialActualizarMaterialView(BSModalFormView):
         return context
 
 
-class NotaStockInicialDetalleEliminarView(BSModalDeleteView):
+class NotaStockInicialDetalleEliminarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota_ingreso.delete_notastockinicialdetalle')
     model = NotaStockInicialDetalle
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         nota_stock_inicial = self.object.nota_stock_inicial
@@ -648,10 +704,16 @@ class NotaStockInicialDetalleEliminarView(BSModalDeleteView):
         return context
 
 
-class NotaStockInicialGuardarView(BSModalUpdateView):
+class NotaStockInicialGuardarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota_ingreso.change_notastockinicial')
     model = NotaStockInicial
     template_name = "includes/formulario generico.html"
     form_class = NotaStockInicialGuardarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_stock_inicial_detalle', kwargs={'pk':self.object.id})
@@ -696,10 +758,16 @@ class NotaStockInicialGuardarView(BSModalUpdateView):
         return context
 
 
-class NotaStockInicialAnularView(BSModalUpdateView):
+class NotaStockInicialAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota_ingreso.change_notastockinicial')
     model = NotaStockInicial
     template_name = "includes/formulario generico.html"
     form_class = NotaStockInicialAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_stock_inicial_detalle', kwargs={'pk':self.object.id})
@@ -742,9 +810,15 @@ class NotaStockInicialAnularView(BSModalUpdateView):
         return context
 
 
-class NotaStockInicialGenerarNotaIngresoView(BSModalFormView):
+class NotaStockInicialGenerarNotaIngresoView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota_ingreso.add_notaingreso')
     template_name = "includes/formulario generico.html"
     form_class = NotaStockInicialGenerarNotaIngresoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['nota'].id})

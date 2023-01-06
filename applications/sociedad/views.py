@@ -18,7 +18,6 @@ from .models import (
 
 class SociedadListView(PermissionRequiredMixin, ListView):
     permission_required = ('sociedad.view_sociedad')
-
     model = Sociedad
     template_name = "sociedad/sociedad/inicio.html"
     context_object_name = 'contexto_sociedad'
@@ -41,11 +40,15 @@ def SociedadTabla(request):
 
 class SociedadUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('sociedad.change_sociedad')
-
     model = Sociedad
     template_name = "sociedad/sociedad/actualizar.html"
     form_class = SociedadForm
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SociedadUpdateView, self).get_context_data(**kwargs)
@@ -62,10 +65,14 @@ class SociedadUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class SociedadDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('sociedad.change_sociedad')
-
     model = Sociedad
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -95,6 +102,11 @@ class SociedadDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     model = Sociedad
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sociedad_app:sociedad_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -120,7 +132,6 @@ class SociedadDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
 
 class SociedadDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('sociedad.view_sociedad')
-
     model = Sociedad
     template_name = "sociedad/sociedad/detalle.html"
     context_object_name = 'contexto_sociedad'
@@ -191,10 +202,14 @@ def SedeNoneView(request):
 
 class DocumentoCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('sociedad.add_documento')
-
     model = Documento
     template_name = "includes/formulario generico.html"
     form_class = DocumentoForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('sociedad_app:sociedad_detalle', kwargs={'pk':self.kwargs['sociedad_id']})
@@ -218,6 +233,11 @@ class DocumentoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     model = Documento
     template_name = "sociedad/documento/eliminar.html"
     context_object_name = 'contexto_documento' 
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('sociedad_app:sociedad_detalle', kwargs={'pk':self.object.sociedad.id})
@@ -230,10 +250,14 @@ class DocumentoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 
 class RepresentanteCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('sociedad.add_representantelegal')
-
     model = RepresentanteLegal
     template_name = "sociedad/representante/form.html"
     form_class = RepresentanteLegalForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('sociedad_app:sociedad_detalle', kwargs={'pk':self.kwargs['sociedad_id']})
@@ -255,6 +279,11 @@ class RepresentanteLegalDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     model = RepresentanteLegal
     template_name = "includes/formulario generico.html"
     form_class = RepresentanteLegalDarBajaForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('sociedad_app:sociedad_detalle', kwargs={'pk':self.object.sociedad.id})

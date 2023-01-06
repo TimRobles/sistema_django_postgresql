@@ -9,7 +9,6 @@ from .models import (
 
 class SedeListView(PermissionRequiredMixin, ListView):
     permission_required = ('sede.view_sede')
-
     model = Sede
     template_name = "sede/sede/inicio.html"
     context_object_name = 'contexto_sede'
@@ -34,6 +33,11 @@ class SedeCreateView(PermissionRequiredMixin, BSModalCreateView):
     template_name = "sede/sede/form.html"
     form_class = SedeCreateForm
     success_url = reverse_lazy('sede_app:sede_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SedeCreateView, self).get_context_data(**kwargs)
@@ -50,11 +54,15 @@ class SedeCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 class SedeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('sede.change_sede')
-
     model = Sede
     template_name = "sede/sede/form.html"
     form_class = SedeUpdateForm
     success_url = reverse_lazy('sede_app:sede_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SedeUpdateView, self).get_context_data(**kwargs)
@@ -71,10 +79,14 @@ class SedeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class SedeDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('sede.delete_sede')
-
     model = Sede
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sede_app:sede_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -103,6 +115,11 @@ class SedeDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     model = Sede
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('sede_app:sede_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
