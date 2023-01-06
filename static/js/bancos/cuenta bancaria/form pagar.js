@@ -30,6 +30,10 @@ $('#id_monto').unbind().on('input', function (e) {
     calcular(e.target);
 })
 
+$('#id_tipo_cambio').unbind().on('input', function (e) {
+    calcular($('#id_monto')[0]);
+})
+
 
 monto_final = $('#monto_final')[0];
 texto_monto = $('#id_monto')[0].parentElement.children[0];

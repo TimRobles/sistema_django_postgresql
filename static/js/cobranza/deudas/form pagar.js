@@ -34,7 +34,7 @@ $('#id_monto').unbind().on('input', function (e) {
 })
 
 $('#id_tipo_cambio').unbind().on('input', function (e) {
-    calcular(e.target);
+    calcular($('#id_monto')[0]);
 })
 
 monto_final = $('#monto_final')[0];
