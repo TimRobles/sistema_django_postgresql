@@ -1831,7 +1831,7 @@ class CotizacionVentaResumenView(PermissionRequiredMixin, BSModalReadView):
 
         context = super(CotizacionVentaResumenView, self).get_context_data(**kwargs)
         context['monedas'] = monedas
-        context['titulo'] = 'Resumen a Depositar'
+        context['titulo'] = f'Resumen a Depositar: {self.object}'
         return context
     
 

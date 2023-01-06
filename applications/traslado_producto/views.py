@@ -728,7 +728,7 @@ class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDelet
                     id_registro_producto=detalle.id_registro,
                     cantidad=detalle.cantidad_recepcion,
                     tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_final,
+                    tipo_stock=detalle.envio_traslado_producto_detalle.tipo_stock,
                     signo_factor_multiplicador=+1,
                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                     id_registro_documento_proceso=self.object.id,
