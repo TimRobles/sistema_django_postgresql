@@ -7,7 +7,7 @@ from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
 from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, \
     SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieNotaSalidaDetalle
-from applications.logistica.forms import DespachoAnularForm, DespachoForm, DocumentoPrestamoMaterialesForm, \
+from applications.logistica.forms import DespachoAnularForm, DespachoBuscarForm, DespachoForm, DocumentoPrestamoMaterialesForm, \
     NotaSalidaAnularForm, NotaSalidaBuscarForm, NotaSalidaDetalleForm, NotaSalidaDetalleSeriesForm, NotaSalidaDetalleUpdateForm, SolicitudPrestamoMaterialesDetalleForm, \
     SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, \
     SolicitudPrestamoMaterialesAnularForm
@@ -1377,25 +1377,118 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 
-class DespachoListView(PermissionRequiredMixin, ListView):
+class DespachoListView(PermissionRequiredMixin, FormView):
     permission_required = ('logistica.view_despacho')
-    model = Despacho
+    form_class = DespachoBuscarForm
     template_name = 'logistica/despacho/inicio.html'
-    context_object_name = 'contexto_despacho'
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
+    def get_form_kwargs(self):
+        kwargs = super(DespachoListView, self).get_form_kwargs()
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super(DespachoListView,self).get_context_data(**kwargs)
+        despacho = Despacho.objects.all()
+
         if 'id_nota_salida' in self.kwargs:
-            queryset = queryset.filter(nota_salida__id=self.kwargs['id_nota_salida'])
-        return queryset
+            despacho = despacho.filter(nota_salida__id=self.kwargs['id_nota_salida'])
+
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_cliente = self.request.GET.get('cliente')
+        filtro_estado = self.request.GET.get('estado')
+        
+        contexto_filtro = []
+
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad) | Q(solicitud_prestamo_materiales__sociedad = filtro_sociedad)
+            despacho = despacho.filter(condicion)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente) | Q(solicitud_prestamo_materiales__cliente = filtro_cliente)
+            despacho = despacho.filter(condicion)
+            contexto_filtro.append(f"cliente={filtro_cliente}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            despacho = despacho.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage = 10 # Show 10 objects per page.
+
+        if len(despacho) > objectsxpage:
+            paginator = Paginator(despacho, objectsxpage)
+            page_number = self.request.GET.get('page')
+            despacho = paginator.get_page(page_number)
+   
+        context['contexto_despacho'] = despacho
+        context['contexto_pagina'] = despacho
+        return context
 
 
-def DespachoTabla(request):
+def DespachoTabla(request, **kwargs):
     data = dict()
     if request.method == 'GET':
         template = 'logistica/despacho/inicio_tabla.html'
         context = {}
-        context['contexto_despacho'] = Despacho.objects.all()
+        despacho = Despacho.objects.all()
+
+        if 'id_nota_salida' in kwargs:
+            despacho = despacho.filter(nota_salida__id=kwargs['id_nota_salida'])
+
+        filtro_sociedad = request.GET.get('sociedad')
+        filtro_cliente = request.GET.get('cliente')
+        filtro_estado = request.GET.get('estado')
+        
+        contexto_filtro = []
+
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad) | Q(solicitud_prestamo_materiales__sociedad = filtro_sociedad)
+            despacho = despacho.filter(condicion)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente) | Q(solicitud_prestamo_materiales__cliente = filtro_cliente)
+            despacho = despacho.filter(condicion)
+            contexto_filtro.append(f"cliente={filtro_cliente}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            despacho = despacho.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage = 10 # Show 10 objects per page.
+
+        if len(despacho) > objectsxpage:
+            paginator = Paginator(despacho, objectsxpage)
+            page_number = request.GET.get('page')
+            despacho = paginator.get_page(page_number)
+   
+        context['contexto_despacho'] = despacho
+        context['contexto_pagina'] = despacho
 
         data['table'] = render_to_string(
             template,

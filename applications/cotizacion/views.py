@@ -2442,7 +2442,7 @@ class ConfirmacionOrdenCompraDeleteView(PermissionRequiredMixin, BSModalDeleteVi
         return context
 
 class SolicitudCreditoView(PermissionRequiredMixin, TemplateView):
-    permission_required = ('cotizacion.add_solicitudcredito')
+    permission_required = ('cobranza.add_solicitudcredito')
     template_name = "cotizacion/cotizacion_venta/form_solicitud_credito.html"
     
     def get_context_data(self, **kwargs):
@@ -2479,7 +2479,7 @@ def SolicitudCreditoTabla(request, id_cotizacion):
     
 
 class SolicitudCreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cotizacion.change_solicitudcredito')
+    permission_required = ('cobranza.change_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/formulario generico.html"
     form_class = SolicitudCreditoForm
@@ -2498,7 +2498,7 @@ class SolicitudCreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class SolicitudCreditoEliminarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cotizacion.change_solicitudcredito')
+    permission_required = ('cobranza.change_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/form generico.html"
 
@@ -2520,7 +2520,7 @@ class SolicitudCreditoEliminarView(PermissionRequiredMixin, BSModalDeleteView):
     
 
 class SolicitudCreditoGenerarCuotasFormView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('cotizacion.change_solicitudcredito')
+    permission_required = ('cobranza.change_solicitudcredito')
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionVentaGenerarCuotasForm
 
@@ -2577,7 +2577,7 @@ class SolicitudCreditoGenerarCuotasFormView(PermissionRequiredMixin, BSModalForm
 
 
 class SolicitudCreditoCuotaCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cotizacion.change_solicitudcredito')
+    permission_required = ('cobranza.change_solicitudcredito')
     model = SolicitudCreditoCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = SolicitudCreditoCuotaForm
@@ -2618,7 +2618,7 @@ class SolicitudCreditoCuotaCreateView(PermissionRequiredMixin, BSModalCreateView
     
 
 class SolicitudCreditoCuotaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cotizacion.change_solicitudcredito')
+    permission_required = ('cobranza.change_solicitudcredito')
     model = SolicitudCreditoCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = SolicitudCreditoCuotaForm
@@ -2647,7 +2647,7 @@ class SolicitudCreditoCuotaUpdateView(PermissionRequiredMixin, BSModalUpdateView
     
 
 class SolicitudCreditoCuotaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cotizacion.change_solicitudcredito')
+    permission_required = ('cobranza.change_solicitudcredito')
     model = SolicitudCreditoCuota
     template_name = "includes/eliminar generico.html"
 
@@ -2668,7 +2668,7 @@ class SolicitudCreditoCuotaDeleteView(PermissionRequiredMixin, BSModalDeleteView
 
 
 class SolicitudCreditoFinalizarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cotizacion.change_solicitudcredito')
+    permission_required = ('cobranza.change_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 
@@ -2712,7 +2712,7 @@ class SolicitudCreditoFinalizarView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class SolicitudCreditoAprobarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cotizacion.aprobar_solicitudcredito')
+    permission_required = ('cobranza.aprobar_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 
@@ -2748,7 +2748,7 @@ class SolicitudCreditoAprobarView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class SolicitudCreditoRechazarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cotizacion.aprobar_solicitudcredito')
+    permission_required = ('cobranza.aprobar_solicitudcredito')
     model = SolicitudCredito
     template_name = "includes/form generico.html" 
 

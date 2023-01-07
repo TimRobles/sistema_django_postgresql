@@ -324,3 +324,20 @@ class NotaSalidaBuscarForm(forms.Form):
         self.fields['estado'].initial = filtro_estado
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DespachoBuscarForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(estado_sunat=1), required=False)
+    estado = forms.ChoiceField(choices=((None, '---------'),) + ESTADOS_NOTA_CALIDAD_STOCK, required=False)
+    
+    def __init__(self, *args, **kwargs):
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        filtro_estado = kwargs.pop('filtro_estado')
+        super(DespachoBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['cliente'].initial = filtro_cliente
+        self.fields['estado'].initial = filtro_estado
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
