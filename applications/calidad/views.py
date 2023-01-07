@@ -10,13 +10,14 @@ from applications.calidad.forms import(
     NotaControlCalidadStockDetalleAgregarForm,
     NotaControlCalidadStockDetalleUpdateForm,
     NotaControlCalidadStockForm,
-    SerieActualizarBuenoForm,
-    SerieActualizarMaloForm,
-    SerieActualizarMaloSinSerieForm,
-    # SerieActualizarBuenoForm,
-    SerieAgregarBuenoForm,
-    SerieAgregarMaloForm,
-    SerieAgregarMaloSinSerieForm,
+    NotaControlCalidadStockBuenoUpdateForm,
+    NotaControlCalidadStockMaloUpdateForm,
+    NotaControlCalidadStockMaloSinSerieUpdateForm,
+    # NotaControlCalidadStockBuenoUpdateForm,
+    NotaControlCalidadStockBuenoCreateForm,
+    NotaControlCalidadStockAgregarMaloCreateForm,
+    NotaControlCalidadStockAgregarMaloSinSerieCreateForm,
+    SerieBuscarForm,
 )
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
@@ -48,11 +49,6 @@ class FallaMaterialDetailView(PermissionRequiredMixin, DetailView):
     model = SubFamilia
     template_name = "calidad/falla_material/detalle.html"
     context_object_name = 'contexto_subfamilia'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         sub_familia = SubFamilia.objects.get(id=self.kwargs['pk'])
@@ -641,15 +637,9 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
 
 class NotaControlCalidadStockDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('calidad.view_notacontrolcalidadstockdetalle')
-
     model = NotaControlCalidadStock
     template_name = "calidad/nota_control_calidad_stock/detalle.html"
     context_object_name = 'contexto_nota_control_calidad_stock'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         nota_control_calidad_stock = NotaControlCalidadStock.objects.get(id = self.kwargs['pk'])
@@ -844,20 +834,15 @@ class NotaControlCalidadStockDetalleDeleteView(PermissionRequiredMixin, BSModalD
         context['titulo']="Registro"
         return context
 
-class SeriesDetailView(PermissionRequiredMixin, DetailView):
+class NotaControlCalidadStockDetalleView(PermissionRequiredMixin, DetailView):
     permission_required = ('calidad.view_seriecalidad')
     model = NotaControlCalidadStockDetalle
     template_name = "calidad/series/detalle.html"
     context_object_name = 'contexto_series'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['pk'])
-        context = super(SeriesDetailView, self).get_context_data(**kwargs)
+        context = super(NotaControlCalidadStockDetalleView, self).get_context_data(**kwargs)
         context['contexto_nota_control_calidad_stock_detalle'] = nota_control_calidad_stock_detalle
         context_series = nota_control_calidad_stock_detalle.SerieCalidad_nota_control_calidad_stock_detalle.all()
         context['contexto_series'] = context_series
@@ -866,7 +851,7 @@ class SeriesDetailView(PermissionRequiredMixin, DetailView):
 
         return context
 
-def SeriesDetailTabla(request, pk):
+def NotaControlCalidadStockDetalleTabla(request, pk):
     data = dict()
     if request.method == 'GET':
         template = 'calidad/series/detalle_tabla.html'
@@ -885,10 +870,10 @@ def SeriesDetailTabla(request, pk):
         )
         return JsonResponse(data)
 
-class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
+class NotaControlCalidadStockBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_seriecalidad')
     template_name = "calidad/series/form_agregar.html"
-    form_class = SerieAgregarBuenoForm
+    form_class = NotaControlCalidadStockBuenoCreateForm
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -948,93 +933,15 @@ class SeriesDetalleBuenoCreateView(PermissionRequiredMixin, BSModalFormView):
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
-        context = super(SeriesDetalleBuenoCreateView, self).get_context_data(**kwargs)
+        context = super(NotaControlCalidadStockBuenoCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Serie'
         return context
 
-class SeriesDetalleMaloCreateView(PermissionRequiredMixin, BSModalFormView):
+class NotaControlCalidadStockAgregarMaloCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('calidad.add_seriecalidad')
     template_name = "calidad/series/form_agregar.html"
-    form_class = SerieAgregarMaloForm
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
-
-    @transaction.atomic
-    def form_valid(self, form):
-        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-        sid = transaction.savepoint()
-        try:
-            if self.request.session['primero']:
-                material = nota_control_calidad_stock_detalle.material
-                content_type = material.content_type
-                id_registro = material.id
-                serie_base = form.cleaned_data.get('serie_base')
-                falla_material = form.cleaned_data.get('falla_material')
-                observacion = form.cleaned_data.get('observacion')
-
-                buscar = SerieCalidad.objects.filter(
-                    serie = serie_base,
-                    content_type = content_type,
-                    id_registro = id_registro,
-                )
-                estado = 1
-                if len(buscar) > 0:
-                    estado = 2
-
-                buscar2 = Serie.objects.filter(
-                    serie_base = serie_base,
-                    content_type = content_type,
-                    id_registro = id_registro,
-                )
-
-                if len(buscar2) > 0:
-                    estado = 2
-                
-                serie = SerieCalidad.objects.create(
-                    serie = serie_base,
-                    content_type = content_type,
-                    id_registro = id_registro,
-                    observacion = observacion,
-                    falla_material = falla_material,
-                    estado = estado,
-                    nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
-                )
-
-                self.request.session['primero'] = False
-            return super().form_valid(form)
-        except Exception as ex:
-            transaction.savepoint_rollback(sid)
-            registrar_excepcion(self, ex, __file__)
-        return HttpResponseRedirect(self.get_success_url())
-
-    def get_form_kwargs(self):
-        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
-        material = nota_control_calidad_stock_detalle.material
-        
-        kwargs = super().get_form_kwargs()
-        kwargs['falla_material'] = material.subfamilia.FallaMaterial_sub_familia.filter(visible=True)
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        self.request.session['primero'] = True
-        context = super(SeriesDetalleMaloCreateView, self).get_context_data(**kwargs)
-        context['accion'] = 'Agregar'
-        context['titulo'] = 'Serie'
-        return context
-
-class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('calidad.add_seriecalidad')
-    template_name = "calidad/series/form_agregar.html"
-    form_class = SerieAgregarMaloSinSerieForm
+    form_class = NotaControlCalidadStockAgregarMaloCreateForm
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1104,16 +1011,94 @@ class SeriesDetalleMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormVi
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
-        context = super(SeriesDetalleMaloSinSerieCreateView, self).get_context_data(**kwargs)
+        context = super(NotaControlCalidadStockAgregarMaloCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Serie'
         return context
 
-class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+class NotaControlCalidadStockAgregarMaloSinSerieCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.add_seriecalidad')
+    template_name = "calidad/series/form_agregar.html"
+    form_class = NotaControlCalidadStockAgregarMaloSinSerieCreateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                material = nota_control_calidad_stock_detalle.material
+                content_type = material.content_type
+                id_registro = material.id
+                serie_base = form.cleaned_data.get('serie_base')
+                falla_material = form.cleaned_data.get('falla_material')
+                observacion = form.cleaned_data.get('observacion')
+
+                buscar = SerieCalidad.objects.filter(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                estado = 1
+                if len(buscar) > 0:
+                    estado = 2
+
+                buscar2 = Serie.objects.filter(
+                    serie_base = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+
+                if len(buscar2) > 0:
+                    estado = 2
+                
+                serie = SerieCalidad.objects.create(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                    observacion = observacion,
+                    falla_material = falla_material,
+                    estado = estado,
+                    nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        material = nota_control_calidad_stock_detalle.material
+        
+        kwargs = super().get_form_kwargs()
+        kwargs['falla_material'] = material.subfamilia.FallaMaterial_sub_familia.filter(visible=True)
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaControlCalidadStockAgregarMaloSinSerieCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Serie'
+        return context
+
+class NotaControlCalidadStockBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_seriecalidad')
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
-    form_class = SerieActualizarBuenoForm
+    form_class = NotaControlCalidadStockBuenoUpdateForm
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1154,16 +1139,16 @@ class SeriesDetalleBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
-        context = super(SeriesDetalleBuenoUpdateView, self).get_context_data(**kwargs)
+        context = super(NotaControlCalidadStockBuenoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Serie"
         return context
 
-class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+class NotaControlCalidadStockMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_seriecalidad')
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
-    form_class = SerieActualizarMaloForm
+    form_class = NotaControlCalidadStockMaloUpdateForm
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1212,16 +1197,16 @@ class SeriesDetalleMaloUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return kwargs
 
     def get_context_data(self, **kwargs):
-        context = super(SeriesDetalleMaloUpdateView, self).get_context_data(**kwargs)
+        context = super(NotaControlCalidadStockMaloUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Serie"
         return context
 
-class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+class NotaControlCalidadStockMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_seriecalidad')
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
-    form_class = SerieActualizarMaloSinSerieForm
+    form_class = NotaControlCalidadStockMaloSinSerieUpdateForm
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1270,12 +1255,12 @@ class SeriesDetalleMaloSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdate
         return kwargs
 
     def get_context_data(self, **kwargs):
-        context = super(SeriesDetalleMaloSinSerieUpdateView, self).get_context_data(**kwargs)
+        context = super(NotaControlCalidadStockMaloSinSerieUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Serie"
         return context
 
-class SeriesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+class NotaControlCalidadStockSerieCalidadDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.delete_seriecalidad')
     model = SerieCalidad
     template_name = "includes/eliminar generico.html"
@@ -1289,7 +1274,40 @@ class SeriesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.get_object().nota_control_calidad_stock_detalle.id})
 
     def get_context_data(self, **kwargs):
-        context = super(SeriesDetalleDeleteView, self).get_context_data(**kwargs)
+        context = super(NotaControlCalidadStockSerieCalidadDeleteView, self).get_context_data(**kwargs)
         context['accion']="Eliminar"
         context['titulo']="Serie"
         return context
+
+
+class SerieBuscarView(PermissionRequiredMixin, FormView):
+    permission_required = ('calidad.view_serie')
+    template_name = "calidad/series/buscar.html"
+    form_class = SerieBuscarForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['serie'] = self.request.GET.get('serie')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(SerieBuscarView, self).get_context_data(**kwargs)
+        serie = self.request.GET.get('serie')
+        if serie:
+            buscar_serie = Serie.objects.filter(serie_base = serie)
+            context['buscar_serie'] = buscar_serie
+        
+        return context
+
+
+class SerieDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('calidad.view_serie')
+    model = Serie
+    template_name = "calidad/series/ver.html"
+    context_object_name = 'contexto_series'
+
+    def get_context_data(self, **kwargs):
+        context = super(SerieDetailView, self).get_context_data(**kwargs)
+        context['form'] = SerieBuscarForm(serie=None)
+        return context
+

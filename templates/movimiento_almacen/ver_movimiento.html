@@ -16,6 +16,7 @@
                 <th>Sociedad</th>
                 <th>Almacén</th>
                 <th>Movimiento Anterior</th>
+                <th>Usuario</th>
             </tr>
         </thead>
         <tbody>
@@ -38,6 +39,7 @@
                     {{ movimiento.movimiento_anterior }}
                     {% endif %}
                 </td>
+                <td>{{ movimiento.updated_by|nombre_usuario }}</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -4,7 +4,7 @@ from applications.calidad.models import Serie
 from applications.datos_globales.models import Unidad
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
-from applications.material.funciones import stock, tipo_stock_sede
+from applications.material.funciones import stock, stock_sede_tipo_stock, tipo_stock_sede
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.sociedad.models import Sociedad
@@ -198,7 +198,9 @@ class EnvioTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDeleteVie
                     updated_by=self.request.user,
                 )
 
-                #Movimiento de series
+                for validar in detalle.ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle.all():
+                    validar.serie.serie_movimiento_almacen.add(movimiento_uno)
+                    validar.serie.serie_movimiento_almacen.add(movimiento_dos)
 
             numero_envio_traslado = EnvioTrasladoProducto.objects.all().aggregate(Count('numero_envio_traslado'))['numero_envio_traslado__count'] + 1
             self.object.numero_envio_traslado = numero_envio_traslado
@@ -276,18 +278,25 @@ class EnvioTrasladoProductoMaterialDetalleView(PermissionRequiredMixin, BSModalF
         tipo_stock = form.cleaned_data.get('tipo_stock')
         material = form.cleaned_data.get('material')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
-        stock_disponible = stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id)
+        stock_disponible = tipo_stock_sede(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
+            tipo_stock=tipo_stock,
             envio_traslado_producto=envio_traslado_producto,
         ).exclude(envio_traslado_producto__estado=4)
+
+        print(buscar)
 
         if buscar:
             contar = buscar.aggregate(Sum('cantidad_envio'))['cantidad_envio__sum']
         else:
             contar = 0
+        
+        print(stock_disponible)
+        print(contar)
+        print(cantidad_envio)
 
         if stock_disponible < contar + cantidad_envio:
             form.add_error('cantidad_envio', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_envio))
@@ -383,6 +392,7 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(PermissionRequiredMixi
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
+            tipo_stock=tipo_stock,
             envio_traslado_producto=envio_traslado_producto,
         ).exclude(envio_traslado_producto__estado=4).exclude(id=detalle.id)
 
@@ -740,7 +750,10 @@ class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDelet
                     updated_by=self.request.user,
                 )
 
-                #Movimiento de series
+                for validar in detalle.envio_traslado_producto_detalle.ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle.all():
+                    validar.serie.serie_movimiento_almacen.add(movimiento_uno)
+                    validar.serie.serie_movimiento_almacen.add(movimiento_dos)
+                    validar.delete()
 
             numero_recepcion_traslado = RecepcionTrasladoProducto.objects.all().aggregate(Count('numero_recepcion_traslado'))['numero_recepcion_traslado__count'] + 1
             self.object.numero_recepcion_traslado = numero_recepcion_traslado

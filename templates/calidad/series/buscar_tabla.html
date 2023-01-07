@@ -1,0 +1,23 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Material</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for serie in buscar_serie %}
+        <tr>
+            <td>{{ serie.producto }}</td>
+            <td>{{ serie.estado }}</td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'calidad_app:serie_ver' serie.id %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block titulo %}
+    Ver Serie
+{% endblock titulo %}
+
+{% block contenido %}
+    <h1>Ver Serie - {{ contexto_series }}</h1>
+
+    <form action="{% url 'calidad_app:serie_buscar' %}" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+
+    <h3>Movimientos</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Documento</th>
+                    <th class="text-center">Movimiento</th>
+                    <th>Tipo Movimiento</th>
+                    <th>Tipo Stock</th>
+                    <th>Sociedad</th>
+                    <th>Almacén</th>
+                    <th>Movimiento Anterior</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movimiento in contexto_series.serie_movimiento_almacen.all %} 
+                <tr>
+                    <td>{{ movimiento.id }}</td>
+                    <td>{{ movimiento.documento_proceso.fecha|date:'d/m/Y' }}</td>
+                    <td style="min-width: 250px;">{{ movimiento.content_type_documento_proceso.name }} - {{ movimiento.documento_proceso }}</td>
+                    <td class="text-center">{{ movimiento.signo_factor_multiplicador }}</td>
+                    <td class="text-nowrap">{{ movimiento.tipo_movimiento }}</td>
+                    <td class="text-nowrap">{{ movimiento.tipo_stock }}</td>
+                    <td>{{ movimiento.sociedad }}</td>
+                    <td>
+                        {% if movimiento.almacen %}
+                        {{ movimiento.almacen }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if movimiento.movimiento_anterior %}
+                        {{ movimiento.movimiento_anterior }}
+                        {% endif %}
+                    </td>
+                    <td>{{ movimiento.updated_by|nombre_usuario }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-end">{{ total|redondear|intcomma }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <hr>
+{% endblock contenido %}

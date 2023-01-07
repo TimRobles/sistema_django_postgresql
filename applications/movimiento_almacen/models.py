@@ -19,6 +19,9 @@ class TipoStock(models.Model):
     class Meta:
         verbose_name = 'Tipo de Stock'
         verbose_name_plural = 'Tipos de Stocks'
+        ordering = [
+            'codigo',
+        ]
 
     def __str__(self):
         return "%s - %s" % (self.codigo, self.descripcion)
@@ -38,6 +41,9 @@ class TipoMovimiento(models.Model):
     class Meta:
         verbose_name = 'Tipo de Movimiento'
         verbose_name_plural = 'Tipos de Movimientos'
+        ordering = [
+            'codigo',
+        ]
 
     def __str__(self):
         return "%s - %s" % (self.codigo, self.descripcion)

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Buscar Serie
+{% endblock titulo %}
+
+{% block contenido %}
+    <h1>Buscar Serie</h1>
+
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+
+    <div id="tabla">
+        {% include 'calidad/series/buscar_tabla.html' %}
+    </div>
+{% endblock contenido %}
