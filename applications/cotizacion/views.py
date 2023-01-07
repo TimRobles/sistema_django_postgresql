@@ -2022,7 +2022,7 @@ def ConfirmarVerTabla(request, id_confirmacion):
 
 
 class ConfirmacionPendienteSalidaView(PermissionRequiredMixin, FormView):
-    permission_required = ('cotizacion.view_cofirmacionventa')
+    permission_required = ('cotizacion.view_confirmacionventa')
     template_name = 'cotizacion/confirmacion/pendiente_salida.html'
     form_class = ConfirmacionVentaBuscarForm
     success_url = '.'
@@ -2075,7 +2075,7 @@ class ConfirmacionPendienteSalidaView(PermissionRequiredMixin, FormView):
 
 
 class ConfirmacionVentaFormaPagoView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionVenta
     template_name = "cotizacion/confirmacion/form_forma_pago.html"
     form_class = ConfirmacionVentaFormaPagoForm
@@ -2110,7 +2110,7 @@ class ConfirmacionVentaFormaPagoView(PermissionRequiredMixin, BSModalUpdateView)
 
 
 class ConfirmacionClienteView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionVenta
     template_name = "cotizacion/cotizacion_venta/form_cliente.html"
     form_class = ConfirmacionClienteForm
@@ -2148,7 +2148,7 @@ class ConfirmacionClienteView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class ConfirmacionVentaVerCuotaView(PermissionRequiredMixin, BSModalReadView):
-    permission_required = ('cotizacion.view_cofirmacionventa')
+    permission_required = ('cotizacion.view_confirmacionventa')
     model = ConfirmacionVenta
     template_name = "cotizacion/confirmacion/modal cuotas.html"
 
@@ -2180,7 +2180,7 @@ class ConfirmacionVentaVerCuotaView(PermissionRequiredMixin, BSModalReadView):
 
 
 class ConfirmacionVentaCuotaView(PermissionRequiredMixin, TemplateView):
-    permission_required = ('cotizacion.view_cofirmacionventa')
+    permission_required = ('cotizacion.view_confirmacionventa')
     template_name = "cotizacion/confirmacion/cuotas.html"
     
     def get_context_data(self, **kwargs):
@@ -2235,7 +2235,7 @@ def ConfirmacionVentaCuotaTabla(request, id_confirmacion):
 
 
 class ConfirmacionVentaGenerarCuotasFormView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionVentaGenerarCuotasForm
 
@@ -2290,7 +2290,7 @@ class ConfirmacionVentaGenerarCuotasFormView(PermissionRequiredMixin, BSModalFor
 
 
 class ConfirmacionVentaCuotaCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionVentaCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = ConfirmacionVentaCuotaForm
@@ -2321,7 +2321,7 @@ class ConfirmacionVentaCuotaCreateView(PermissionRequiredMixin, BSModalCreateVie
     
 
 class ConfirmacionVentaCuotaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionVentaCuota
     template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
     form_class = ConfirmacionVentaCuotaForm
@@ -2350,7 +2350,7 @@ class ConfirmacionVentaCuotaUpdateView(PermissionRequiredMixin, BSModalUpdateVie
     
 
 class ConfirmacionVentaCuotaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionVentaCuota
     template_name = "includes/eliminar generico.html"
 
@@ -2371,7 +2371,7 @@ class ConfirmacionVentaCuotaDeleteView(PermissionRequiredMixin, BSModalDeleteVie
     
 
 class ConfirmacionVentaOrdenCompraCrearView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionOrdenCompra
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionOrdenCompraForm
@@ -2397,7 +2397,7 @@ class ConfirmacionVentaOrdenCompraCrearView(PermissionRequiredMixin, BSModalCrea
 
 
 class ConfirmacionVentaOrdenCompraActualizarView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionOrdenCompra
     template_name = "includes/formulario generico.html"
     form_class = ConfirmacionOrdenCompraForm
@@ -2422,7 +2422,7 @@ class ConfirmacionVentaOrdenCompraActualizarView(PermissionRequiredMixin, BSModa
 
 
 class ConfirmacionOrdenCompraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cotizacion.change_cofirmacionventa')
+    permission_required = ('cotizacion.change_confirmacionventa')
     model = ConfirmacionOrdenCompra
     template_name = "includes/eliminar generico.html"
 
