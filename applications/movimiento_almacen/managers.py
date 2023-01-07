@@ -10,6 +10,13 @@ def retornar_fecha(movimiento):
     return fecha
 
 class MovimientoAlmacenManager(models.Manager):
+    def buscar_movimiento(self, obj, content_type):
+        consulta = self.filter(
+            content_type_producto = content_type,
+            id_registro_producto = obj.id,
+        )
+        return consulta
+
     def ver_movimientos(self, content_type, id_registro):
         movimientos_fuera = [8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
         consulta = self.filter(

@@ -771,11 +771,13 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
                         movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
                         documento_anterior = self.object.solicitud_prestamo_materiales
+                        estado_serie = EstadoSerie.objects.get(numero_estado=9)
                     else:
                         print('Confirmación')
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=120)  # Confirmado por venta
                         movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
                         documento_anterior = self.object.confirmacion_venta
+                        estado_serie = EstadoSerie.objects.get(numero_estado=3)
 
                     consolidado = {}
                     for detalle in detalles:
@@ -847,7 +849,6 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                         for detalle in detalles:
                             for validar_serie in detalle.ValidarSerieNotaSalidaDetalle_nota_salida_detalle.all():
                                 serie = validar_serie.serie
-                                estado_serie = EstadoSerie.objects.get(numero_estado=9)
                                 HistorialEstadoSerie.objects.create(
                                     serie=serie,
                                     estado_serie=estado_serie,
@@ -1852,6 +1853,8 @@ class NotaSalidaSeriesPdf(View):
         pie_pagina = PIE_DE_PAGINA_DEFAULT
 
         titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_salida, 6), obj.cliente)
+
+
 
         Cabecera = {}
         # Cabecera['numero_prestamo'] = numeroXn(obj.numero_prestamo, 6)

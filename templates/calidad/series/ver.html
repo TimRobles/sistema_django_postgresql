@@ -58,20 +58,48 @@
                 </tr>
                 {% endfor %}
             </tbody>
-            <tfoot>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td class="text-end">{{ total|redondear|intcomma }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tfoot>
         </table>
     </div>
 
     <hr>
+
+    <h3>Historial</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Estado</th>
+                    <th>Falla</th>
+                    <th>Solución</th>
+                    <th>Observación</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for historia in contexto_series.HistorialEstadoSerie_serie.all %} 
+                <tr>
+                    <td>{{ historia.id }}</td>
+                    <td>{{ historia.estado_serie }}</td>
+                    <td>
+                        {% if historia.falla_material %}
+                        {{ historia.falla_material }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if historia.solucion %}
+                        {{ historia.solucion }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if historia.observacion %}
+                        {{ historia.observacion }}
+                        {% endif %}
+                    </td>
+                    <td>{{ historia.updated_by|nombre_usuario }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock contenido %}

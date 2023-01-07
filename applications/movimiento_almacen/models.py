@@ -78,6 +78,9 @@ class MovimientosAlmacen(models.Model):
     class Meta:
         verbose_name = 'Movimiento de Almacen'
         verbose_name_plural = 'Movimientos de Almacenes'
+        ordering = [
+            'id',
+            ]
 
     @property
     def documento_proceso(self):
