@@ -1498,7 +1498,7 @@ class IdiomaMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class PrecioListaMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('material.add_preciolistamaterial')
+    permission_required = ('cotizacion.add_preciolistamaterial')
     model = PrecioListaMaterial
     template_name = "material/material/form_precio.html"
     form_class = PrecioListaMaterialForm

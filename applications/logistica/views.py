@@ -1403,12 +1403,12 @@ class DespachoListView(PermissionRequiredMixin, FormView):
         contexto_filtro = []
 
         if filtro_sociedad:
-            condicion = Q(sociedad = filtro_sociedad) | Q(solicitud_prestamo_materiales__sociedad = filtro_sociedad)
+            condicion = Q(sociedad = filtro_sociedad)
             despacho = despacho.filter(condicion)
             contexto_filtro.append(f"sociedad={filtro_sociedad}")
 
         if filtro_cliente:
-            condicion = Q(cliente = filtro_cliente) | Q(solicitud_prestamo_materiales__cliente = filtro_cliente)
+            condicion = Q(cliente = filtro_cliente)
             despacho = despacho.filter(condicion)
             contexto_filtro.append(f"cliente={filtro_cliente}")
 
@@ -1456,12 +1456,12 @@ def DespachoTabla(request, **kwargs):
         contexto_filtro = []
 
         if filtro_sociedad:
-            condicion = Q(sociedad = filtro_sociedad) | Q(solicitud_prestamo_materiales__sociedad = filtro_sociedad)
+            condicion = Q(sociedad = filtro_sociedad)
             despacho = despacho.filter(condicion)
             contexto_filtro.append(f"sociedad={filtro_sociedad}")
 
         if filtro_cliente:
-            condicion = Q(cliente = filtro_cliente) | Q(solicitud_prestamo_materiales__cliente = filtro_cliente)
+            condicion = Q(cliente = filtro_cliente)
             despacho = despacho.filter(condicion)
             contexto_filtro.append(f"cliente={filtro_cliente}")
 

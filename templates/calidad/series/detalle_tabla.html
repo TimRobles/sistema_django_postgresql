@@ -40,6 +40,11 @@
 <h4>
     {{ contexto_nota_control_calidad_stock_detalle.nota_ingreso_detalle }}
 </h4>
+<button data-form-url="{% url 'material_app:series' contexto_nota_control_calidad_stock_detalle.material.id %}"
+    class="read btn btn-dark"
+    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Series">
+    Ver Series
+</button>
 <button class="read btn btn-primary"
     data-form-url="{% url 'calidad_app:falla_material_detalle_modal' contexto_nota_control_calidad_stock_detalle.material.subfamilia.id %}">
     Ver Fallas
