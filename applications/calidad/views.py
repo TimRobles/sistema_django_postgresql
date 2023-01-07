@@ -506,6 +506,8 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                             estado_serie=estado_serie,
                             falla_material=serie_calidad.falla_material,
                             observacion=serie_calidad.observacion,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
                         )
                         serie.serie_movimiento_almacen.add(movimiento_anterior)
                         serie.serie_movimiento_almacen.add(movimiento_uno)
