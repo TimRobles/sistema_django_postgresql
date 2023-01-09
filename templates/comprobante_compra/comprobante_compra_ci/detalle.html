@@ -12,6 +12,10 @@
             Finalizar
         </button>
     {% endif %}
+    <a href="{% url 'comprobante_compra_app:comprobante_compra_ci_traduccion' contexto_comprobante_compra_ci.slug %}"
+    class="btn btn-primary">
+        Ver Traducción CI
+    </a>
     <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle' contexto_comprobante_compra_ci.comprobante_compra_PI.slug %}"
     class="btn btn-danger">
         Regresar

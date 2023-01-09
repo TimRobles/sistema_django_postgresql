@@ -31,7 +31,7 @@
             Anular PI
         </button>
     {% endif %}
-    {% if contexto_comprobante_compra_pi.estado == 2 and contexto_comprobante_compra_pi.no_existe_CI %}
+    {% if contexto_comprobante_compra_pi.estado > 0 and contexto_comprobante_compra_pi.no_existe_CI %}
         <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_registrar' contexto_comprobante_compra_pi.slug %}"
             class="delete btn btn-primary">
             Registrar CI
@@ -49,6 +49,10 @@
         Ver CI
     </a>
     {% endif %}
+    <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_traduccion' contexto_comprobante_compra_pi.slug %}"
+    class="btn btn-info">
+        Ver Traducción PI
+    </a>
     <br>
     <div id="tabla">
         {% include 'comprobante_compra/comprobante_compra_pi/detalle_tabla.html' %}

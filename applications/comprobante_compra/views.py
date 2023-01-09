@@ -60,6 +60,19 @@ def ComprobanteCompraPIDetailTabla(request, slug):
         return JsonResponse(data)
 
 
+class ComprobanteCompraPITraduccionView(PermissionRequiredMixin, DetailView):
+    permission_required = ('comprobante_compra.view_comprobantecomprapi')
+
+    model = ComprobanteCompraPI
+    template_name = "comprobante_compra/comprobante_compra_pi/traduccion.html"
+    context_object_name = 'contexto_comprobante_compra_pi'
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraPITraduccionView, self).get_context_data(**kwargs)
+        context['materiales'] = ComprobanteCompraPIDetalle.objects.ver_detalle(self.get_object())
+        return context
+
+
 class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('comprobante_compra.change_comprobantecomprapi')
     model = ComprobanteCompraPI
@@ -467,6 +480,18 @@ def ComprobanteCompraCIDetailTabla(request, slug):
         )
         return JsonResponse(data)
 
+
+class ComprobanteCompraCITraduccionView(PermissionRequiredMixin, DetailView):
+    permission_required = ('comprobante_compra.view_comprobantecompraci')
+    model = ComprobanteCompraCI
+    template_name = "comprobante_compra/comprobante_compra_ci/traduccion.html"
+    context_object_name = 'contexto_comprobante_compra_ci'
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraCITraduccionView, self).get_context_data(**kwargs)
+        context['materiales'] = ComprobanteCompraCIDetalle.objects.ver_detalle(self.get_object())
+        return context
+    
 
 class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('oferta_proveedor.change_comprobantecompraci')
