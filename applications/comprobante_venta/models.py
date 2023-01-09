@@ -95,6 +95,10 @@ class FacturaVenta(models.Model):
         except:
             return []
 
+    @property
+    def descripcion(self):
+        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_factura, 6))
+
     def __str__(self):
         if self.numero_factura:
             return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_factura, self.cliente, self.moneda.simbolo, self.total)
@@ -259,6 +263,10 @@ class BoletaVenta(models.Model):
             return cobranza.models.Deuda.objects.get(content_type=ContentType.objects.get_for_model(self), id_registro=self.id).Cuota_deuda.all()
         except:
             return []
+
+    @property
+    def descripcion(self):
+        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_boleta, 6))
 
     def __str__(self):
         if self.numero_boleta:

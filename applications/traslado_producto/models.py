@@ -104,6 +104,9 @@ class ValidarSerieEnvioTrasladoProductoDetalle(models.Model):
     class Meta:
         verbose_name = 'Validar Series Envio Traslado Producto Detalle'
         verbose_name_plural = 'Validar Series Envios Traslado Producto Detalle'
+        ordering = [
+            'created_at',
+            ]
 
     def __str__(self):
         return "%s - %s" % (self.envio_traslado_producto_detalle , str(self.serie))
@@ -178,6 +181,9 @@ class ValidarSerieRecepcionTrasladoProductoDetalle(models.Model):
     class Meta:
         verbose_name = 'Validar Series Recepcion Traslado Producto Detalle'
         verbose_name_plural = 'Validar Series Recepciones Traslado Producto Detalle'
+        ordering = [
+            'created_at',
+            ]
 
     def __str__(self):
         return "%s - %s" % (self.recepcion_traslado_producto_detalle , str(self.serie))

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications.clientes.models import Cliente
+from applications.logistica.managers import SerieManager
 from applications.sociedad.models import Sociedad
 from applications.material.models import Material, SubFamilia
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
@@ -72,6 +73,8 @@ class Serie(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Serie_updated_by', editable=False)
 
+    objects = SerieManager()
+
     class Meta:
         verbose_name = 'Serie'
         verbose_name_plural = 'Series'
@@ -125,6 +128,9 @@ class SerieCalidad(models.Model):
     class Meta:
         verbose_name = 'Serie Calidad'
         verbose_name_plural = 'Series Calidad'
+        ordering = [
+            'created_at',
+            ]
 
     def __str__(self):
         return "%s - %s" % (self.serie, self.nota_control_calidad_detalle)
@@ -146,7 +152,9 @@ class HistorialEstadoSerie(models.Model):
     class Meta:
         verbose_name = 'Historial Estado Serie'
         verbose_name_plural = 'Historial Estado Series'
-        ordering = ['-created_at',]
+        ordering = [
+            'created_at',
+            ]
 
     def __str__(self):
         return str(self.serie)

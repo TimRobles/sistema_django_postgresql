@@ -178,6 +178,37 @@ class NotaSalida(models.Model):
     def detalles(self):
         return self.NotaSalidaDetalle_nota_salida.all()
 
+    @property
+    def documentos(self):
+        return self.documentos_despacho + self.documentos_venta
+
+    @property
+    def documentos_venta(self):
+        documentos = []
+        try:
+            for factura in self.confirmacion_venta.FacturaVenta_confirmacion.filter(estado=4):
+                documentos.append(factura.descripcion)
+        except:
+            pass
+        try:
+            for boleta in self.confirmacion_venta.BoletaVenta_confirmacion.filter(estado=4):
+                documentos.append(boleta.descripcion)
+        except:
+            pass
+        return documentos
+
+    @property
+    def documentos_despacho(self):
+        guias = []
+        try:
+            despachos = self.Despacho_nota_salida.all()
+            for despacho in despachos:
+                for guia in despacho.Guia_despacho.filter(estado=4):
+                    guias.append(guia.descripcion)
+        except:
+            pass
+        return guias
+
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_salida, 6), self.cliente)
 
@@ -252,6 +283,9 @@ class ValidarSerieNotaSalidaDetalle(models.Model):
     class Meta:
         verbose_name = 'Validar Series Nota de Salida Detalle'
         verbose_name_plural = 'Validar Series Notas de Salida Detalle'
+        ordering = [
+            'created_at',
+            ]
 
     def __str__(self):
         return "%s - %s" % (self.nota_salida_detalle , str(self.serie))

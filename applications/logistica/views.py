@@ -1854,43 +1854,32 @@ class NotaSalidaSeriesPdf(View):
 
         titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_salida, 6), obj.cliente)
 
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(obj, ContentType.objects.get_for_model(NotaSalida))
+        series = Serie.objects.buscar_series(movimientos)
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        
+        texto_cabecera = 'La empresa MULTICABLE PERU SAC certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:'
+        
+        series_final = {}
+        for serie in series_unicas:
+            if not serie.producto in series_final:
+                series_final[serie.producto] = []
+            series_final[serie.producto].append(serie.serie_base)
 
-
-        Cabecera = {}
-        # Cabecera['numero_prestamo'] = numeroXn(obj.numero_prestamo, 6)
-        # Cabecera['fecha_prestamo'] = fecha_en_letras(obj.fecha_prestamo)
-        # Cabecera['razon_social'] = str(obj.cliente)
-        # Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
-        # Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
-        # Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
-        # Cabecera['interlocutor'] = str(obj.interlocutor_cliente)
-        # Cabecera['comentario'] = str(obj.comentario)
-
-        TablaEncabezado = ['Item',
-                           'Descripción',
-                           'Unidad',
-                           'Cantidad',
-                           'Observación',
+        TablaEncabezado = ['DOCUMENTOS',
+                           'FECHA',
+                           'RAZÓN SOCIAL',
+                           DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento],
                            ]
 
-        # detalle = obj.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales
-        # solicitud_prestamo_materiales = detalle.all()
-
         TablaDatos = []
-        # count = 1
-        # for solicitud in solicitud_prestamo_materiales:
-        #     fila = []
-        #     solicitud.material = solicitud.content_type.get_object_for_this_type(id=solicitud.id_registro)
-        #     fila.append(solicitud.item)
-        #     fila.append(intcomma(solicitud.material))
-        #     fila.append(intcomma(solicitud.material.unidad_base))
-        #     fila.append(intcomma(solicitud.cantidad_prestamo.quantize(Decimal('0.01'))))
-        #     fila.append(solicitud.observacion)
+        TablaDatos.append("<br/>".join(obj.documentos))
+        TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
+        TablaDatos.append(obj.cliente.razon_social)
+        TablaDatos.append(obj.cliente.numero_documento)
 
-        #     TablaDatos.append(fila)
-        #     count += 1
-
-        buf = generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color)
+        buf = generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo

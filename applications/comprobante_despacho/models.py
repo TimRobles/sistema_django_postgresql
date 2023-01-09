@@ -70,6 +70,10 @@ class Guia(models.Model):
     def detalles(self):
         return self.GuiaDetalle_guia_venta.all()
 
+    @property
+    def descripcion(self):
+        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_guia, 6))
+
     def __str__(self):
         if self.numero_guia:
             return "%s %s-%s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_guia, self.cliente)
