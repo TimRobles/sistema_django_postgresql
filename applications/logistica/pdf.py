@@ -149,6 +149,9 @@ def dataSerieNotaSalidaSeries(series, fuenteBase):
 
     fila = []
     for dato in series:
+        if len(fila) % 3 == 0 and len(fila) > 2:
+            data.append(fila)
+            fila = []
         fila.append(parrafoCentro(dato, fuenteBase))
     data.append(fila)
 
