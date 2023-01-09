@@ -192,6 +192,7 @@ class ComprobanteCompraCIDetalle(models.Model):
     item = models.IntegerField()
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     id_registro = models.IntegerField()
+    descripcion = models.CharField(max_length=200, blank=True, null=True)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio Unitario Sin IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     precio_unitario_con_igv = models.DecimalField('Precio Unitario Con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
