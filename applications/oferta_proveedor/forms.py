@@ -110,7 +110,6 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 1
         self.fields['unidad'].initial = self.instance.proveedor_material.unidad
-        self.fields['unidad'].disabled = True
         self.fields['precio_unitario_con_igv'].widget.attrs['min'] = 0
         self.fields['precio_final_con_igv'].widget.attrs['min'] = 0
         
