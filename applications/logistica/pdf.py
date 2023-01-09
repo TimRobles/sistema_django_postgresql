@@ -142,6 +142,10 @@ def dataCabeceraNotaSalidaSeries(TablaEncabezado, TablaDatos, fuenteBase, color)
 
 def dataSerieNotaSalidaSeries(series, fuenteBase):
     data = []
+    
+    for i in range(3 - (len(series) % 3)):
+        series.append("")
+        
 
     fila = []
     for dato in series:
@@ -173,6 +177,7 @@ def generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, 
     elementos.append(vacio())
     for producto, series in series_final.items():
         elementos.append(parrafoCentro(producto, fuenteBase, 10, 'Bold'))
+        elementos.append(vacio())
         elementos.append(dataSerieNotaSalidaSeries(series, fuenteBase))
         elementos.append(vacio(1.5))
     
