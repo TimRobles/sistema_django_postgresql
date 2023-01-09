@@ -191,7 +191,7 @@ class NotaSalida(models.Model):
         except:
             pass
         try:
-            for boleta in self.confirmacion_venta.BoletaVenta_confirmacion.filter(estado=4):
+            for boleta in self.confirmacion_venta.BoletaVenta_confirmacion.filter(models.Q(estado=4) | models.Q(estado=5)):
                 documentos.append(boleta.descripcion)
         except:
             pass
