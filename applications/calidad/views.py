@@ -1323,13 +1323,14 @@ class NotaControlCalidadStockSeriesPdf(View):
         TablaDatos = []
         TablaDatos.append("<br/>".join(obj.documentos))
         TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
-        TablaDatos.append(obj.proveedor.nombre)
         if obj.proveedor:
+            TablaDatos.append(obj.proveedor.nombre)
             if obj.proveedor.ruc:
                 TablaDatos.append(obj.proveedor.ruc)
             else:
                 TablaDatos.append("")
         else:
+            TablaDatos.append("")
             TablaDatos.append("")
 
         buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
