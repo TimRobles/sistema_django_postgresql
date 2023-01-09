@@ -63,7 +63,7 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
     name = forms.CharField(max_length=50)
     brand = forms.CharField(max_length=50)
     description = forms.CharField(max_length=50)
-    unidad = forms.CharField(label='Unidad Base', required=False)
+    unidad = forms.ModelChoiceField(label='Unidad Base', queryset=Unidad.objects.all())
     class Meta:
         model = OfertaProveedorDetalle
         fields=(
