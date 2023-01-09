@@ -251,6 +251,7 @@ class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateVie
             form.instance.proveedor_material.name = form.cleaned_data['name']
             form.instance.proveedor_material.brand = form.cleaned_data['brand']
             form.instance.proveedor_material.description = form.cleaned_data['description']
+            form.instance.proveedor_material.unidad = form.cleaned_data['unidad']
             form.instance.proveedor_material.save()
             registro_guardar(form.instance, self.request)
             return super().form_valid(form)
