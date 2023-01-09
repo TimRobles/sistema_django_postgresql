@@ -180,6 +180,20 @@ class NotaControlCalidadStock(models.Model):
     def fecha(self):
         return self.nota_ingreso.fecha
 
+    @property
+    def sociedad(self):
+        return self.nota_ingreso.sociedad
+
+    @property
+    def proveedor(self):
+        return self.nota_ingreso.recepcion_compra.proveedor
+
+    @property
+    def documentos(self):
+        documentos = []
+        documentos.append(self.nota_ingreso.recepcion_compra.__str__())
+        return documentos
+
     def __str__(self):
         return str(self.id)
 

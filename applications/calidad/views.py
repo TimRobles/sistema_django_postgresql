@@ -2,6 +2,7 @@ from urllib import request
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.importaciones import*
+from applications.logistica.pdf import generarSeries
 from applications.material.models import SubFamilia
 from applications.calidad.forms import(
     FallaMaterialForm,
@@ -1280,6 +1281,61 @@ class NotaControlCalidadStockSerieCalidadDeleteView(PermissionRequiredMixin, BSM
         context['accion']="Eliminar"
         context['titulo']="Serie"
         return context
+
+
+class NotaControlCalidadStockSeriesPdf(View):
+    def get(self, request, *args, **kwargs):
+        obj = NotaControlCalidadStock.objects.get(id=self.kwargs['pk'])
+
+        color = obj.sociedad.color
+        titulo = 'REGISTRO DE SERIES DE EQUIPOS'
+        vertical = True
+        logo = [obj.sociedad.logo.url]
+        pie_pagina = obj.sociedad.pie_pagina
+
+        titulo = "%s - %s - %s" % (titulo, numeroXn(obj.nota_ingreso, 6), obj.proveedor)
+
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(obj, ContentType.objects.get_for_model(NotaControlCalidadStock))
+        series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        
+        if obj.proveedor.ruc:
+            tipo_documento = "RUC"
+        else:
+            tipo_documento = "INTERNACIONAL"
+
+
+        texto_cabecera = 'La empresa MULTICABLE PERU SAC certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:'
+        
+        series_final = {}
+        for serie in series_unicas:
+            if not serie.producto in series_final:
+                series_final[serie.producto] = []
+            series_final[serie.producto].append(serie.serie_base)
+
+        TablaEncabezado = ['DOCUMENTOS',
+                           'FECHA',
+                           'RAZÓN SOCIAL',
+                           tipo_documento,
+                           ]
+
+        TablaDatos = []
+        TablaDatos.append("<br/>".join(obj.documentos))
+        TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
+        TablaDatos.append(obj.proveedor.nombre)
+        if obj.proveedor.ruc:
+            TablaDatos.append(obj.proveedor.ruc)
+        else:
+            TablaDatos.append("")
+
+        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
+
+        return respuesta
 
 
 class SerieBuscarView(PermissionRequiredMixin, FormView):

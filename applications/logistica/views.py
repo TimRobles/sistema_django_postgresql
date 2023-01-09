@@ -12,7 +12,7 @@ from applications.logistica.forms import DespachoAnularForm, DespachoBuscarForm,
     SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, \
     SolicitudPrestamoMaterialesAnularForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
-from applications.logistica.pdf import generarNotaSalidaSeries, generarSolicitudPrestamoMateriales
+from applications.logistica.pdf import generarSeries, generarSolicitudPrestamoMateriales
 from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcion
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
@@ -1850,7 +1850,7 @@ class NotaSalidaSeriesPdf(View):
         titulo = 'SERIES DE EQUIPOS'
         vertical = True
         logo = [obj.sociedad.logo.url]
-        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        pie_pagina = obj.sociedad.pie_pagina
 
         titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_salida, 6), obj.cliente)
 
@@ -1880,7 +1880,7 @@ class NotaSalidaSeriesPdf(View):
         TablaDatos.append(obj.cliente.razon_social)
         TablaDatos.append(obj.cliente.numero_documento)
 
-        buf = generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo

@@ -7,7 +7,7 @@ urlSeries = [
 
     path('serie/buscar/', views.SerieBuscarView.as_view(), name='serie_buscar'),
     path('serie/ver/<pk>/', views.SerieDetailView.as_view(), name='serie_ver'),
-
+    
     path('series/detalle/<pk>/', views.NotaControlCalidadStockDetalleView.as_view(), name='series_detalle'),
     path('series/detalle-tabla/<pk>/', views.NotaControlCalidadStockDetalleTabla, name='series_detalle_tabla'),
     path('series/detalle/bueno/registrar/<int:nota_control_calidad_stock_detalle_id>/', views.NotaControlCalidadStockBuenoCreateView.as_view(), name='series_detalle_bueno_registrar'),
@@ -32,6 +32,7 @@ urlNotaControlCalidadStock = [
     path('nota-control-calidad-stock/detalle/registrar/<int:nota_control_calidad_stock_id>/', views.NotaControlCalidadStockDetalleCreateView.as_view(), name='nota_control_calidad_stock_detalle_registrar'),
     path('nota-control-calidad-stock/detalle/actualizar/<pk>/', views.NotaControlCalidadStockDetalleUpdateView.as_view(), name='nota_control_calidad_stock_detalle_actualizar'),
     path('nota-control-calidad-stock/detalle/eliminar/<pk>/', views.NotaControlCalidadStockDetalleDeleteView.as_view(), name='nota_control_calidad_stock_detalle_eliminar'),
+    path('nota-control-calidad-stock/series/pdf/<pk>/', views.NotaControlCalidadStockSeriesPdf.as_view(), name='nota_control_calidad_stock_series_pdf'),
 ]
 
 urlpatterns = [

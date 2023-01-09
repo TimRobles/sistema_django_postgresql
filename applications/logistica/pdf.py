@@ -168,7 +168,7 @@ def dataSerieNotaSalidaSeries(series, fuenteBase):
     
     return t
 
-def generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color):
+def generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color):
     fuenteBase = "ComicNeue"
     data_cabecera = dataCabeceraNotaSalidaSeries(TablaEncabezado, TablaDatos, fuenteBase, color)
     elementos = []
@@ -179,7 +179,7 @@ def generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, 
     elementos.append(data_cabecera)
     elementos.append(vacio())
     for producto, series in series_final.items():
-        elementos.append(parrafoCentro(producto, fuenteBase, 10, 'Bold'))
+        elementos.append(parrafoCentro(f"{producto} / Cantidad: {len(series)}", fuenteBase, 10, 'Bold'))
         elementos.append(vacio())
         elementos.append(dataSerieNotaSalidaSeries(series, fuenteBase))
         elementos.append(vacio(1.5))

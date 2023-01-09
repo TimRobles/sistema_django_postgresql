@@ -26,6 +26,7 @@
             Anular Nota
         </button>
     {% endif %}
+    <a href="{% url 'calidad_app:nota_control_calidad_stock_series_pdf' contexto_nota_control_calidad_stock.id %}" target="_blank"><span class="badge bg-info">Ver Series</span></a>
     <a href="{% url 'calidad_app:nota_control_calidad_stock_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
