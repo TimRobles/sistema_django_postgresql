@@ -143,8 +143,9 @@ def dataCabeceraNotaSalidaSeries(TablaEncabezado, TablaDatos, fuenteBase, color)
 def dataSerieNotaSalidaSeries(series, fuenteBase):
     data = []
     
-    for i in range(3 - (len(series) % 3)):
-        series.append("")
+    if len(series) % 3 != 0:
+        for i in range(3 - (len(series) % 3)):
+            series.append("")
         
 
     fila = []
@@ -170,7 +171,6 @@ def dataSerieNotaSalidaSeries(series, fuenteBase):
 def generarNotaSalidaSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color):
     fuenteBase = "ComicNeue"
     data_cabecera = dataCabeceraNotaSalidaSeries(TablaEncabezado, TablaDatos, fuenteBase, color)
-    # data_tabla = dataSolicitudPrestamoMateriales(TablaEncabezado, TablaDatos, fuenteBase, color)
     elementos = []
     elementos.append(parrafoCentro(titulo, fuenteBase, 12, 'Bold'))
     elementos.append(vacio())

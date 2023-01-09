@@ -1856,6 +1856,7 @@ class NotaSalidaSeriesPdf(View):
 
         movimientos = MovimientosAlmacen.objects.buscar_movimiento(obj, ContentType.objects.get_for_model(NotaSalida))
         series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
         if series:
             series_unicas = series.order_by('id_registro', 'serie_base').distinct()
         

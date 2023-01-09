@@ -301,7 +301,7 @@ class Despacho(models.Model):
 )
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
     nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE,blank=True, null=True, related_name='Despacho_nota_salida')
-    numero_despacho = models.CharField('Número Despacho', max_length=50, blank=True, null=True)
+    numero_despacho = models.IntegerField('Número Despacho', blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE,blank=True, null=True)
     fecha_despacho = models.DateField('Fecha Despacho', auto_now=False, auto_now_add=False, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
@@ -316,7 +316,7 @@ class Despacho(models.Model):
 
         verbose_name = 'Despacho'
         verbose_name_plural = 'Despachos'
-        ordering = ['numero_despacho',]
+        ordering = ['-numero_despacho',]
 
     @property
     def detalles(self):
