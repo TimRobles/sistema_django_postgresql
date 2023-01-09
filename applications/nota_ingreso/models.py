@@ -118,6 +118,10 @@ class NotaStockInicial(models.Model):
         return self
     
     @property
+    def proveedor(self):
+        return ""
+    
+    @property
     def detalle(self):
         return self.NotaStockInicialDetalle_nota_stock_inicial.all()
 
