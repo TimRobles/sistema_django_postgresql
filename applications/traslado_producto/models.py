@@ -52,6 +52,7 @@ class EnvioTrasladoProducto(models.Model):
             '-numero_envio_traslado',
             '-fecha_traslado',]
 
+    @property
     def fecha(self):
         return self.fecha_traslado
 
@@ -130,6 +131,7 @@ class RecepcionTrasladoProducto(models.Model):
         verbose_name = 'Recepcion Traslado Producto'
         verbose_name_plural = 'Recepcion Traslado Productos'
 
+    @property
     def fecha(self):
         return self.fecha_recepcion
 
