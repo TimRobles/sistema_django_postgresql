@@ -169,20 +169,21 @@ def dataCuentas(monedas, moneda_cotizacion, fuenteBase, color):
         for moneda in monedas:
             if moneda == moneda_cotizacion:
                 for sociedad in moneda.sociedades:
-                    fila = []
-                    fila.append(parrafoCentro(f'MONTO: {moneda.simbolo} {sociedad.total}', fuenteBase, 10))
-                    data.append(fila)
-                    fila = []
-                    fila.append(parrafoIzquierda("BANCO", fuenteBase))
-                    fila.append(parrafoCentro("NÚMERO DE CUENTA", fuenteBase))
-                    fila.append(parrafoCentro("CCI", fuenteBase))
-                    data.append(fila)
-                    for banco in sociedad.cuentas:
+                    if sociedad.color == color:
                         fila = []
-                        fila.append(parrafoIzquierda(f"{banco.banco.nombre_comercial} - {moneda.nombre}", fuenteBase))
-                        fila.append(parrafoCentro(f"{banco.numero_cuenta}", fuenteBase))
-                        fila.append(parrafoCentro(f"{banco.numero_cuenta_interbancaria}", fuenteBase))
+                        fila.append(parrafoCentro(f'MONTO: {moneda.simbolo} {sociedad.total}', fuenteBase, 10))
                         data.append(fila)
+                        fila = []
+                        fila.append(parrafoIzquierda("BANCO", fuenteBase))
+                        fila.append(parrafoCentro("NÚMERO DE CUENTA", fuenteBase))
+                        fila.append(parrafoCentro("CCI", fuenteBase))
+                        data.append(fila)
+                        for banco in sociedad.cuentas:
+                            fila = []
+                            fila.append(parrafoIzquierda(f"{banco.banco.nombre_comercial} - {moneda.nombre}", fuenteBase))
+                            fila.append(parrafoCentro(f"{banco.numero_cuenta}", fuenteBase))
+                            fila.append(parrafoCentro(f"{banco.numero_cuenta_interbancaria}", fuenteBase))
+                            data.append(fila)
 
 
     t=Table(
