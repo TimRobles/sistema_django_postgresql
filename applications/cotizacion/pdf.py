@@ -1,5 +1,5 @@
 from decimal import Decimal
-from applications.datos_globales.models import CuentaBancariaSociedad
+from applications.datos_globales.models import CuentaBancariaSociedad, Moneda
 from applications.pdf import *
 
 def dataCabeceraCotizacionVenta(Cabecera, fuenteBase):
@@ -170,7 +170,7 @@ def dataCuentas(monedas, moneda_cotizacion, fuenteBase, color):
             if moneda == moneda_cotizacion:
                 for sociedad in moneda.sociedades:
                     fila = []
-                    fila.append(parrafoCentro(f'MONEDA: {moneda.nombre}', fuenteBase, 10))
+                    fila.append(parrafoCentro(f'MONTO: {moneda.simbolo} {sociedad.total}', fuenteBase, 10))
                     data.append(fila)
                     fila = []
                     fila.append(parrafoIzquierda("BANCO", fuenteBase))
@@ -191,7 +191,8 @@ def dataCuentas(monedas, moneda_cotizacion, fuenteBase, color):
             ('GRID',(0,0),(-1,-1),1,colors.black),
             ('BOX',(0,0),(-1,-1),2,colors.black),
             ('SPAN', (0, 0), (-1, 0)),
-            ('BACKGROUND', (0, 0), (-1, 1), color),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.darkgray),
+            ('BACKGROUND', (0, 1), (-1, 1), color),
             ('VALIGN',(0,0),(-1,-1),'TOP'),
             ('ALIGN',(0,0),(-1,-1),'CENTER')
             ]
@@ -202,12 +203,15 @@ def dataCuentas(monedas, moneda_cotizacion, fuenteBase, color):
     
     return t
 
-def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, fuenteBase, moneda, observaciones, monedas=None):
+def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, fuenteBase, moneda, observaciones, monedas=None, soles=None):
     data_cabecera = dataCabeceraCotizacionVenta(Cabecera, fuenteBase)
     # data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
     data_items, data_totales = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
-    data_monedas = dataCuentas(monedas, moneda, fuenteBase, color)
-    
+    if soles:
+        data_monedas = dataCuentas(monedas, Moneda.objects.get(simbolo='S/'), fuenteBase, color)
+    else:
+        data_monedas = dataCuentas(monedas, moneda, fuenteBase, color)
+
     elementos = []
     elementos.append(parrafoCentro('SOLICITUD DE COTIZACIÓN DEL CLIENTE', fuenteBase, 12, 'Bold'))
     elementos.append(data_cabecera)
@@ -256,4 +260,3 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEn
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
     return buf
-

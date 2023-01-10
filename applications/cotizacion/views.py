@@ -1917,6 +1917,132 @@ class CotizacionVentaSociedadCuentasPdfView(View):
         return respuesta
 
 
+class CotizacionVentaSociedadCuentasSolesPdfView(View):
+    def get(self, request, *args, **kwargs):
+        sociedad = Sociedad.objects.get(abreviatura=self.kwargs['sociedad'])
+        color = sociedad.color
+        titulo = 'Cotización'
+        vertical = False
+        alinear = 'right'
+        logo = [[sociedad.logo.url, alinear]]
+        pie_pagina = sociedad.pie_pagina
+        fuenteBase = "ComicNeue"
+
+        obj = CotizacionVenta.objects.get(slug=self.kwargs['slug'])
+
+        moneda_cotizacion = obj.moneda
+        titulo = 'Cotización %s%s %s' % (self.kwargs['sociedad'], numeroXn(obj.numero_cotizacion, 6), str(obj.cliente.razon_social))
+
+        Cabecera = {}
+        Cabecera['nro_cotizacion'] = '%s%s' % (self.kwargs['sociedad'], numeroXn(obj.numero_cotizacion, 6))
+        Cabecera['fecha_cotizacion'] = fecha_en_letras(obj.fecha_cotizacion)
+        Cabecera['razon_social'] = str(obj.cliente)
+        Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento]
+        Cabecera['nro_documento'] = str(obj.cliente.numero_documento)
+        Cabecera['direccion'] = str(obj.cliente.direccion_fiscal)
+        Cabecera['interlocutor'] = str(obj.cliente_interlocutor)
+        Cabecera['fecha_validez'] = obj.fecha_validez.strftime('%d/%m/%Y')
+        Cabecera['vendedor'] = str(nombre_usuario(obj.vendedor))
+
+        TablaEncabezado = [ 'Item',
+                            'Descripción',
+                            'Unidad',
+                            'Cantidad',
+                            'Prec. Unit. con IGV',
+                            'Prec. Final con IGV',
+                            'Descuento',
+                            'Total',
+                            'Stock',
+                            '',
+                            ]
+
+        cotizacion_venta_detalle = obj.CotizacionVentaDetalle_cotizacion_venta.all()
+
+        TablaDatos = []
+        item = 1
+        for detalle in cotizacion_venta_detalle:
+            fila = []
+            confirmacion_detalle = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad)
+            if confirmacion_detalle.cantidad == 0: continue
+            calculo = calculos_linea(confirmacion_detalle.cantidad, detalle.precio_unitario_con_igv, detalle.precio_final_con_igv, igv(obj.fecha), detalle.tipo_igv)
+            detalle.material = detalle.content_type.get_object_for_this_type(id = detalle.id_registro)
+            fila.append(item)
+            fila.append(detalle.material)
+            fila.append(detalle.material.unidad_base)
+            fila.append(confirmacion_detalle.cantidad.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_unitario_con_igv.quantize(Decimal('0.01')))
+            fila.append(detalle.precio_final_con_igv.quantize(Decimal('0.01')))
+            fila.append(calculo['descuento_con_igv'].quantize(Decimal('0.01')))
+            fila.append(calculo['total'].quantize(Decimal('0.01')))
+            stock_disponible = stock(detalle.content_type, detalle.id_registro, sociedad.id)
+            if stock_disponible >= confirmacion_detalle.cantidad:
+                disponibilidad = "DISPONIBLE"
+            elif stock_disponible == 0:
+                if detalle.tiempo_entrega:
+                    disponibilidad = "LLEGADA EN %s DÍAS" % (detalle.tiempo_entrega)
+                else:
+                    disponibilidad = "NO DISPONIBLE"
+            else:
+                if detalle.tiempo_entrega:
+                    disponibilidad = "%s DISPONIBLE\nSALDO EN %s DÍAS" % (intcomma((stock_disponible).quantize(Decimal('0.01'))), detalle.tiempo_entrega)
+                else:
+                    disponibilidad = "%s DISPONIBLE" % (intcomma((stock_disponible).quantize(Decimal('0.01'))))
+            fila.append(disponibilidad)
+
+            TablaDatos.append(fila)
+            item += 1
+        
+        totales = obtener_totales(obj, sociedad)
+
+        TablaTotales = []
+        for k,v in totales.items():
+            if not k in DICCIONARIO_TOTALES: continue
+            if v==0:continue
+            fila = []
+            fila.append(DICCIONARIO_TOTALES[k])
+            fila.append(intcomma(v))
+
+            TablaTotales.append(fila)
+        
+        condiciones = CotizacionTerminosCondiciones.objects.filter(condicion_visible=True)
+        
+        observaciones = obj.CotizacionObservacion_cotizacion_venta.get(sociedad=sociedad).observacion
+
+        monedas = Moneda.objects.all()
+        tipo_de_cambio_cotizacion = TipoCambio.objects.tipo_cambio_venta(obj.fecha)
+        tipo_de_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_de_cambio_final = tipo_de_cambio(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
+        for moneda in monedas:
+            cotizacion_sociedad = []
+            sociedades = Sociedad.objects.all()
+            for sociedad in sociedades:
+                total = obtener_totales(obj, sociedad)['total']
+                if total > 0:
+                    if moneda.simbolo == '$':
+                        sociedad.total = total
+                    else:
+                        sociedad.total = (total * tipo_de_cambio_final).quantize(Decimal('0.01'))
+
+                    cotizacion_sociedad.append(sociedad)
+
+            for sociedad in cotizacion_sociedad:
+                cuentas = CuentaBancariaSociedad.objects.filter(
+                    sociedad=sociedad,
+                    moneda=moneda,
+                    efectivo=False,
+                    estado=1,
+                    )
+                sociedad.cuentas = cuentas
+            moneda.sociedades = cotizacion_sociedad
+
+        buf = generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, fuenteBase, moneda_cotizacion, observaciones, monedas, True)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta
+
+
 class CotizacionVentaResumenView(PermissionRequiredMixin, BSModalReadView):
     permission_required = ('cotizacion.view_cotizacionventa')
     model = CotizacionVenta
