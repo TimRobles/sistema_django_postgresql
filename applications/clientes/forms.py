@@ -104,9 +104,9 @@ class TipoInterlocutorClienteForm(forms.ModelForm):
         return nombre
 
 class InterlocutorBuscarForm(BSModalForm):
-    tipo_documento = forms.ChoiceField(label = 'Tipo de Documento', choices = TIPO_DOCUMENTO_CHOICES)
+    tipo_documento = forms.ChoiceField(label = 'Tipo de Documento', choices = ((None, '--------------'),) + TIPO_DOCUMENTO_CHOICES, required=False)
     numero_documento = forms.CharField(label = 'Número de Documento', max_length=15, required=False)
-    nombre_completo = forms.CharField(label = 'Nombre Completo', max_length=120, required=True)
+    nombre_completo = forms.CharField(label = 'Nombre Completo', max_length=120, required=False)
     
     def __init__(self, *args, **kwargs):
         filtro_tipo_documento = kwargs.pop('filtro_tipo_documento')
