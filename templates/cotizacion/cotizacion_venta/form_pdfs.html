@@ -9,4 +9,13 @@
     </a>
     {% endfor %}
 </div>
+
+<div class="row justify-content-around mt-3">
+    {% for sociedad in sociedades %}
+    <a href="{% url 'cotizacion_app:cotizacion_venta_cuentas_pdf' sociedad.nombre_sociedad.abreviatura cotizacion.slug  %}" target="_blank"
+        class="btn fondo-personalizado col-auto" style="--color-fondo: {{ sociedad.nombre_sociedad.color }};">
+        PDF {{ sociedad.nombre_sociedad.abreviatura }} con Cuentas
+    </a>
+    {% endfor %}
+</div>
 {% endblock content %}

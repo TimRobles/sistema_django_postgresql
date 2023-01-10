@@ -98,15 +98,20 @@ def parrafoHeader(texto, fuente, tamaño=8, tipo="Regular", alinear='center', co
     
     return Paragraph('''<para color=%s align=%s leftIndent=35 rightIndent=35>%s</para>''' % (color, alinear, texto), styleSheet[fuente + '-' + tipo + '-' + str(tamaño)])
 
-def bloque(texto):
-    t=Table(
-        [[texto]],
-        style=[
+def bloque(texto, centro=None):
+    style=[
             ('TOPPADDING', (0,0),(-1,-1), 0),
             ('BOTTOMPADDING', (0,0),(-1,-1), 0),
             ('LEFTPADDING', (0,0),(-1,-1), 0),
             ('RIGHTPADDING', (0,0),(-1,-1), 0),
         ]
+    if centro:
+        style += [('VALIGN',(0,0),(-1,-1),'TOP'),
+                    ('ALIGN',(0,0),(-1,-1),'CENTER')]
+                    
+    t=Table(
+        [[texto]],
+        style=style
     )
     return t
 

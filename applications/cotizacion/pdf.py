@@ -162,10 +162,51 @@ def dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, c
 
     return t_items, t_totales
 
-def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, fuenteBase, moneda, observaciones):
+
+def dataCuentas(monedas, moneda_cotizacion, fuenteBase, color):
+    data = []
+    if monedas:
+        for moneda in monedas:
+            if moneda == moneda_cotizacion:
+                for sociedad in moneda.sociedades:
+                    fila = []
+                    fila.append(parrafoCentro(f'MONEDA: {moneda.nombre}', fuenteBase, 10))
+                    data.append(fila)
+                    fila = []
+                    fila.append(parrafoIzquierda("BANCO", fuenteBase))
+                    fila.append(parrafoCentro("NÚMERO DE CUENTA", fuenteBase))
+                    fila.append(parrafoCentro("CCI", fuenteBase))
+                    data.append(fila)
+                    for banco in sociedad.cuentas:
+                        fila = []
+                        fila.append(parrafoIzquierda(f"{banco.banco.nombre_comercial} - {moneda.nombre}", fuenteBase))
+                        fila.append(parrafoCentro(f"{banco.numero_cuenta}", fuenteBase))
+                        fila.append(parrafoCentro(f"{banco.numero_cuenta_interbancaria}", fuenteBase))
+                        data.append(fila)
+
+
+    t=Table(
+        data,
+        style=[
+            ('GRID',(0,0),(-1,-1),1,colors.black),
+            ('BOX',(0,0),(-1,-1),2,colors.black),
+            ('SPAN', (0, 0), (-1, 0)),
+            ('BACKGROUND', (0, 0), (-1, 1), color),
+            ('VALIGN',(0,0),(-1,-1),'TOP'),
+            ('ALIGN',(0,0),(-1,-1),'CENTER')
+            ]
+        )
+    t._argW[0]=cmToPx(3)
+    t._argW[1]=cmToPx(4)
+    t._argW[2]=cmToPx(5)
+    
+    return t
+
+def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEncabezado, TablaDatos, color, condiciones, TablaTotales, fuenteBase, moneda, observaciones, monedas=None):
     data_cabecera = dataCabeceraCotizacionVenta(Cabecera, fuenteBase)
     # data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
     data_items, data_totales = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
+    data_monedas = dataCuentas(monedas, moneda, fuenteBase, color)
     
     elementos = []
     elementos.append(parrafoCentro('SOLICITUD DE COTIZACIÓN DEL CLIENTE', fuenteBase, 12, 'Bold'))
@@ -204,6 +245,13 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEn
                 )
             )
         elementos.append(vacio())
+    
+    if monedas:
+        elementos.append(
+            bloque(
+                [data_monedas,], True
+                )
+            )
 
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
