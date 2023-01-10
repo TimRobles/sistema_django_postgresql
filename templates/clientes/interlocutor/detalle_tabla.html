@@ -93,3 +93,56 @@
         </tbody>
     </table>
 </div>
+
+<br>
+<h3>Empresas
+    <button data-form-url="{% url 'clientes_app:cliente_interlocutor_agregar' contexto_interlocutores.id %}"
+        data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
+        class="create badge bg-primary">
+        Agregar Relación
+    </button>
+    <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Razón Social</th>
+                <th>Documento</th>
+                <th>Tipo de Interlocutor</th>
+                <th>Estado</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente_interlocutor in contexto_interlocutores.ClienteInterlocutor_interlocutor.all %}
+            <tr>
+                <td>{{ cliente_interlocutor.cliente.razon_social }}</td>
+                <td>{{ cliente_interlocutor.cliente.get_tipo_documento_display }}: {{ cliente_interlocutor.cliente.numero_documento }}</td>
+                <td>{{ cliente_interlocutor.tipo_interlocutor }}</td>
+                <td>{{ cliente_interlocutor.cliente.get_estado_sunat_display }}</td>
+                <td class="text-center text-nowrap">
+                    <a href="{% url 'clientes_app:cliente_detalle' cliente_interlocutor.cliente.id %}"
+                        class="btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Cliente">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                    <button data-form-url="{% url 'clientes_app:cliente_interlocutor_actualizar' cliente_interlocutor.id %}"
+                        data-table-url="{% url 'clientes_app:interlocutor_detalle_tabla' contexto_interlocutores.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'clientes_app:cliente_interlocutor_eliminar' contexto_interlocutores.id cliente_interlocutor.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

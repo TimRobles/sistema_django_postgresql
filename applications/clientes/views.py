@@ -8,8 +8,11 @@ from .forms import (
     ClienteAnexoForm,
     ClienteBuscarForm,
     ClienteForm,
+    ClienteInterlocutorCreateForm,
+    ClienteInterlocutorUpdateForm,
     CorreoClienteDarBajaForm,
-    CorreoClienteForm, 
+    CorreoClienteForm,
+    InterlocutorBuscarForm, 
     InterlocutorClienteForm,
     InterlocutorClienteUpdateForm,
     RepresentanteLegalClienteDarBajaForm,
@@ -126,6 +129,16 @@ class ClienteCreateView(PermissionRequiredMixin, BSModalCreateView):
     template_name = "clientes/cliente/form.html"
     form_class = ClienteForm
     success_url = reverse_lazy('clientes_app:cliente_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(ClienteCreateView, self).get_context_data(**kwargs)
@@ -133,20 +146,23 @@ class ClienteCreateView(PermissionRequiredMixin, BSModalCreateView):
         context['titulo']="Cliente"
         return context
 
-    def form_valid(self, form):
-
-        form.instance.usuario = self.request.user
-        registro_guardar(form.instance, self.request)
-
-        return super().form_valid(form)
 
 class ClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_cliente')
-
     model = Cliente
     template_name = "clientes/cliente/form.html"
     form_class = ClienteForm
     success_url = reverse_lazy('clientes_app:cliente_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(ClienteUpdateView, self).get_context_data(**kwargs)
@@ -154,19 +170,17 @@ class ClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['titulo'] = "Cliente"
         return context
 
-    def form_valid(self, form):
-
-        form.instance.usuario = self.request.user
-        registro_guardar(form.instance, self.request)
-        
-        return super().form_valid(form)
 
 class ClienteDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('clientes.change_cliente')
-
     model = Cliente
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('clientes_app:cliente_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -195,6 +209,11 @@ class ClienteDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     model = Cliente
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('clientes_app:cliente_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -255,9 +274,13 @@ def ClienteDetailTabla(request, pk):
 
 class InterlocutorClienteCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('clientes.add_interlocutorcliente')
-
     template_name = "clientes/interlocutor/form.html"
     form_class = InterlocutorClienteForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
@@ -310,15 +333,14 @@ class InterlocutorClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     model = InterlocutorCliente
     template_name = "clientes/interlocutor/form.html"
     form_class = InterlocutorClienteUpdateForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('home_app:home')
-
-    def get_context_data(self, **kwargs):
-        context = super(InterlocutorClienteUpdateView, self).get_context_data(**kwargs)
-        context['accion']="Actualizar"
-        context['titulo']="Interlocutor"
-        return context
     
     @transaction.atomic
     def form_valid(self, form):
@@ -336,12 +358,22 @@ class InterlocutorClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
+    def get_context_data(self, **kwargs):
+        context = super(InterlocutorClienteUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Interlocutor"
+        return context
+
 class InterlocutorClienteDarBajaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('clientes.change_clienteinterlocutor')
-
     model = ClienteInterlocutor
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy()
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
@@ -370,10 +402,14 @@ class InterlocutorClienteDarBajaView(PermissionRequiredMixin, BSModalDeleteView)
 
 class InterlocutorClienteDarAltaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('clientes.change_clienteinterlocutor')
-
     model = ClienteInterlocutor
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy()
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
@@ -402,7 +438,6 @@ class InterlocutorClienteDarAltaView(PermissionRequiredMixin, BSModalDeleteView)
 
 class InterlocutorClienteDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('clientes.view_interlocutorcliente')
-
     model = InterlocutorCliente
     template_name = "clientes/interlocutor/detalle.html"
     context_object_name = 'contexto_interlocutores'
@@ -431,12 +466,202 @@ def InterlocutorClienteDetailTabla(request, pk):
         )
         return JsonResponse(data)
 
+
+class InterlocutorClienteDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('clientes.delete_interlocutorcliente')
+    model = InterlocutorCliente
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_lista')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            for telefono in self.object.TelefonoInterlocutorCliente_interlocutor.all():
+                telefono.delete()
+            for correo in self.object.CorreoInterlocutorCliente_interlocutor.all():
+                correo.delete()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return super().delete(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(InterlocutorClienteDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Interlocutor"
+        context['item'] = self.get_object()
+        return context
+
+
+class InterlocutorClienteListaView(PermissionRequiredMixin, FormView):
+    permission_required = ('clientes.view_interlocutorcliente')
+    template_name = "clientes/interlocutor/inicio.html"
+    form_class = InterlocutorBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(InterlocutorClienteListaView, self).get_form_kwargs()
+        kwargs['filtro_tipo_documento'] = self.request.GET.get('tipo_documento')
+        kwargs['filtro_numero_documento'] = self.request.GET.get('numero_documento')
+        kwargs['filtro_nombre_completo'] = self.request.GET.get('nombre_completo')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(InterlocutorClienteListaView, self).get_context_data(**kwargs)
+        interlocutores = InterlocutorCliente.objects.all()
+
+        filtro_tipo_documento = self.request.GET.get('tipo_documento')
+        filtro_numero_documento = self.request.GET.get('numero_documento')
+        filtro_nombre_completo = self.request.GET.get('nombre_completo')
+        
+        contexto_filtro = []
+
+        if filtro_tipo_documento:
+            condicion = Q(tipo_documento = filtro_tipo_documento)
+            interlocutores = interlocutores.filter(condicion)
+            contexto_filtro.append("tipo_documento=" + filtro_tipo_documento)
+
+        if filtro_numero_documento:
+            condicion = Q(numero_documento = filtro_numero_documento)
+            interlocutores = interlocutores.filter(condicion)
+            contexto_filtro.append("numero_documento=" + filtro_numero_documento)
+
+        if filtro_nombre_completo:
+            condicion = Q(nombre_completo__unaccent__icontains = filtro_nombre_completo.split(" ")[0])
+            for palabra in filtro_nombre_completo.split(" ")[1:]:
+                condicion &= Q(nombre_completo__unaccent__icontains = palabra)
+            interlocutores = interlocutores.filter(condicion)
+            contexto_filtro.append("nombre_completo=" + filtro_nombre_completo)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 10 objects per page.
+
+        if len(interlocutores) > objectsxpage:
+            paginator = Paginator(interlocutores, objectsxpage)
+            page_number = self.request.GET.get('page')
+            interlocutores = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = interlocutores
+        context['interlocutores'] = interlocutores
+        return context
+
+
+class ClienteInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_clienteinterlocutor')
+    model = ClienteInterlocutor
+    template_name = "includes/formulario generico.html"
+    form_class = ClienteInterlocutorUpdateForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('home_app:home')
+    
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteInterlocutorUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Tipo de Interlocutor"
+        return context
+
+
+class ClienteInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('clientes.add_clienteinterlocutor')
+    model = ClienteInterlocutor
+    template_name = "clientes/interlocutor/form agregar relacion.html"
+    form_class = ClienteInterlocutorCreateForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('home_app:home')
+    
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            interlocutor_cliente = InterlocutorCliente.objects.get(id=self.kwargs['interlocutor_cliente_id'])
+            form.instance.interlocutor = interlocutor_cliente
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteInterlocutorCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Agregar"
+        context['titulo'] = "Relación"
+        return context
+
+
+class ClienteInterlocutorDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('clientes.delete_clienteinterlocutor')
+    model = ClienteInterlocutor
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.kwargs['interlocutor_cliente_id']})
+    
+    def get_context_data(self, **kwargs):
+        context = super(ClienteInterlocutorDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Relación"
+        context['item'] = self.get_object()
+        return context
+
+
 class CorreoClienteCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('clientes.add_correocliente')
 
     model = CorreoCliente
     template_name = "includes/formulario generico.html"
     form_class = CorreoClienteForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
@@ -470,6 +695,11 @@ class CorreoClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     model = CorreoCliente
     template_name = "includes/formulario generico.html"
     form_class = CorreoClienteForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
@@ -498,10 +728,14 @@ class CorreoClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class CorreoClienteDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_correocliente')
-
     model = CorreoCliente
     template_name = "includes/formulario generico.html"
     form_class = CorreoClienteDarBajaForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
@@ -519,10 +753,14 @@ class CorreoClienteDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
 
 class TelefonoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('clientes.add_telefonointerlocutorcliente')
-
     model = TelefonoInterlocutorCliente
     template_name = "includes/formulario generico.html"
     form_class = TelefonoInterlocutorForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.kwargs['interlocutor_id']})
@@ -546,6 +784,11 @@ class TelefonoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView)
     model = TelefonoInterlocutorCliente
     template_name = "includes/formulario generico.html"
     form_class = TelefonoInterlocutorForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
@@ -564,10 +807,14 @@ class TelefonoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView)
 
 class TelefonoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_telefonointerlocutorcliente')
-
     model = TelefonoInterlocutorCliente
     template_name = "includes/formulario generico.html"
     form_class = TelefonoInterlocutorDarBajaForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
@@ -585,10 +832,14 @@ class TelefonoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView
 
 class CorreoInterlocutorCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('clientes.add_correointerlocutorcliente')
-
     model = CorreoInterlocutorCliente
     template_name = "includes/formulario generico.html"
     form_class = CorreoInterlocutorForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.kwargs['interlocutor_id']})
@@ -612,6 +863,11 @@ class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     model = CorreoInterlocutorCliente
     template_name = "includes/formulario generico.html"
     form_class = CorreoInterlocutorForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
@@ -630,10 +886,14 @@ class CorreoInterlocutorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_correointerlocutorcliente')
-
     model = CorreoInterlocutorCliente
     template_name = "includes/formulario generico.html"
     form_class = CorreoInterlocutorDarBajaForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:interlocutor_detalle', kwargs={'pk':self.object.interlocutor.id})
@@ -651,9 +911,13 @@ class CorreoInterlocutorDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
 
 class RepresentanteLegalClienteCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('clientes.add_interlocutorcliente')
-
     template_name = "clientes/interlocutor/form.html"
     form_class = RepresentanteLegalClienteForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
@@ -701,10 +965,14 @@ class RepresentanteLegalClienteCreateView(PermissionRequiredMixin, BSModalFormVi
 
 class RepresentanteLegalClienteDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_correointerlocutorcliente')
-
     model = RepresentanteLegalCliente
     template_name = "includes/formulario generico.html"
     form_class = RepresentanteLegalClienteDarBajaForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})
@@ -723,9 +991,13 @@ class RepresentanteLegalClienteDarBajaView(PermissionRequiredMixin, BSModalUpdat
 
 class ClienteAnexoCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('clientes.add_clienteanexo')
-
     template_name = "clientes/cliente/form anexo.html"
     form_class = ClienteAnexoForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.kwargs['cliente_id']})
@@ -764,10 +1036,14 @@ class ClienteAnexoCreateView(PermissionRequiredMixin, BSModalFormView):
 
 class ClienteAnexoDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_clienteanexo')
-
     model = ClienteAnexo
     template_name = "includes/formulario generico.html"
     form_class = ClienteAnexoDarBajaForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('clientes_app:cliente_detalle', kwargs={'pk':self.object.cliente.id})

@@ -103,6 +103,22 @@ class TipoInterlocutorClienteForm(forms.ModelForm):
 
         return nombre
 
+class InterlocutorBuscarForm(BSModalForm):
+    tipo_documento = forms.ChoiceField(label = 'Tipo de Documento', choices = TIPO_DOCUMENTO_CHOICES)
+    numero_documento = forms.CharField(label = 'Número de Documento', max_length=15, required=False)
+    nombre_completo = forms.CharField(label = 'Nombre Completo', max_length=120, required=True)
+    
+    def __init__(self, *args, **kwargs):
+        filtro_tipo_documento = kwargs.pop('filtro_tipo_documento')
+        filtro_numero_documento = kwargs.pop('filtro_numero_documento')
+        filtro_nombre_completo = kwargs.pop('filtro_nombre_completo')
+        super(InterlocutorBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['tipo_documento'].initial = filtro_tipo_documento
+        self.fields['numero_documento'].initial = filtro_numero_documento
+        self.fields['nombre_completo'].initial = filtro_nombre_completo
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class InterlocutorClienteForm(BSModalForm):
     tipo_documento = forms.ChoiceField(label = 'Tipo de Documento', choices = TIPO_DOCUMENTO_CHOICES)
     numero_documento = forms.CharField(label = 'Número de Documento', max_length=15, required=False)
@@ -129,6 +145,31 @@ class InterlocutorClienteUpdateForm(BSModalModelForm):
         super(InterlocutorClienteUpdateForm, self).__init__(*args, **kwargs)
         self.fields['tipo_interlocutor'].initial = self.instance.ClienteInterlocutor_interlocutor.all()[0].tipo_interlocutor
         self.fields['numero_documento'].required = False
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ClienteInterlocutorUpdateForm(BSModalModelForm):
+    class Meta:
+        model = ClienteInterlocutor
+        fields = (
+            'tipo_interlocutor',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ClienteInterlocutorUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ClienteInterlocutorCreateForm(BSModalModelForm):
+    class Meta:
+        model = ClienteInterlocutor
+        fields = (
+            'cliente',
+            'tipo_interlocutor',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ClienteInterlocutorCreateForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

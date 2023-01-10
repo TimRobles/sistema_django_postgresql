@@ -211,6 +211,9 @@ def transito(content_type, id_registro, id_sociedad): #No tiene almacén
 def stock(content_type, id_registro, id_sociedad, id_almacen=None):
     return vendible(content_type, id_registro, id_sociedad, id_almacen) + calidad(content_type, id_registro, id_sociedad, id_almacen)
 
+def stock_vendible(content_type, id_registro, id_sociedad, id_almacen=None):
+    return vendible(content_type, id_registro, id_sociedad, id_almacen)
+
 def stock_sede(content_type, id_registro, id_sociedad, id_sede):
     return vendible_sede(content_type, id_registro, id_sociedad, id_sede) + calidad_sede(content_type, id_registro, id_sociedad, id_sede)
 

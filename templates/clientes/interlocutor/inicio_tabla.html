@@ -1,0 +1,55 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre Completo</th>
+            <th>Tipo de Documento</th>
+            <th>Número de Documento</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for interlocutor in interlocutores %}
+        <tr>
+            <td>{{ interlocutor.nombre_completo }}</td>
+            <td>{{ interlocutor.get_tipo_documento_display }}</td>
+            <td>{{ interlocutor.numero_documento }}</td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'clientes_app:interlocutor_detalle' interlocutor.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+                
+                {% if interlocutor.puede_borrar %}
+                <button data-form-url="{% url 'clientes_app:interlocutor_eliminar' interlocutor.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                {% endif %}
+                <!-- {% if cliente.estado_sunat == 1 %}
+                    <button data-form-url="{% url 'clientes_app:cliente_actualizar' cliente.id %}"
+                        data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'clientes_app:cliente_baja' cliente.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                    
+                {% elif cliente.estado_sunat > 1 %}
+                    <button data-form-url="{% url 'clientes_app:cliente_alta' cliente.id %}"
+                        class="delete btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                        <i class="bi bi-hand-thumbs-up-fill"></i>
+                    </button>
+                {% endif %} -->
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

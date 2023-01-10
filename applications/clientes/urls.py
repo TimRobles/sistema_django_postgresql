@@ -21,6 +21,12 @@ urlInterlocutor = [
     path('interlocutor/alta/<pk>/', views.InterlocutorClienteDarAltaView.as_view(), name='interlocutor_alta'),
     path('interlocutor/detalle/<pk>/', views.InterlocutorClienteDetailView.as_view(), name='interlocutor_detalle'),
     path('interlocutor/detalle-tabla/<pk>/', views.InterlocutorClienteDetailTabla, name='interlocutor_detalle_tabla'),
+    path('interlocutor/eliminar/<pk>/', views.InterlocutorClienteDeleteView.as_view(), name='interlocutor_eliminar'),
+
+    path('interlocutor/lista/', views.InterlocutorClienteListaView.as_view(), name='interlocutor_lista'),
+    path('cliente-interlocutor/actualizar/<pk>/', views.ClienteInterlocutorUpdateView.as_view(), name='cliente_interlocutor_actualizar'),
+    path('cliente-interlocutor/agregar/<int:interlocutor_cliente_id>/', views.ClienteInterlocutorCreateView.as_view(), name='cliente_interlocutor_agregar'),
+    path('cliente-interlocutor/eliminar/<int:interlocutor_cliente_id>/<pk>/', views.ClienteInterlocutorDeleteView.as_view(), name='cliente_interlocutor_eliminar'),
 ]
 
 urlCorreo = [

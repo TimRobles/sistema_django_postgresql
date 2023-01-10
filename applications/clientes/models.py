@@ -161,7 +161,6 @@ class TipoInterlocutorCliente(models.Model):
 
 
 class InterlocutorCliente(models.Model):
-
     nombre_completo = models.CharField('Nombre Completo', max_length=120)
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)
     numero_documento = models.CharField('Número de Documento', max_length=15, unique=True, blank=True, null=True)
@@ -171,16 +170,20 @@ class InterlocutorCliente(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InterlocutorCliente_updated_by', editable=False)
     
     class Meta:
-
         verbose_name = 'Interlocutor Cliente'
         verbose_name_plural = 'Interlocutores Cliente'
-        ordering = ['-nombre_completo',]
+        ordering = ['nombre_completo',]
+
+    @property
+    def puede_borrar(self):
+        if self.ClienteInterlocutor_interlocutor.all():
+            return False
+        return True
 
     def __str__(self):
         return str(self.nombre_completo)
 
 class ClienteInterlocutor(models.Model):
-
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='ClienteInterlocutor_cliente')
     interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ClienteInterlocutor_interlocutor')
     tipo_interlocutor = models.ForeignKey(TipoInterlocutorCliente, on_delete=models.PROTECT)
@@ -194,7 +197,7 @@ class ClienteInterlocutor(models.Model):
 
         verbose_name = 'Cliente Interlocutor'
         verbose_name_plural = 'Cliente Interlocutores'
-        ordering = ['estado', '-interlocutor',]
+        ordering = ['estado', 'interlocutor',]
 
     def __str__(self):
         return "%s - %s" % (self.cliente, self.interlocutor)
@@ -245,9 +248,8 @@ class RepresentanteLegalCliente(models.Model):
 
 
 class TelefonoInterlocutorCliente(models.Model):
-
     numero = PhoneNumberField('Teléfono')
-    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT)
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='TelefonoInterlocutorCliente_interlocutor')
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -266,9 +268,8 @@ class TelefonoInterlocutorCliente(models.Model):
 
 
 class CorreoInterlocutorCliente(models.Model):
-
     correo = models.EmailField('Correo')
-    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT)
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='CorreoInterlocutorCliente_interlocutor')
     fecha_baja = models.DateField('Fecha de Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

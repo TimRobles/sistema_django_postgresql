@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Interlocutores Clientes
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Interlocutores Clientes</h3>
+    <br>
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'clientes_app:interlocutor_lista' %}">Limpiar</a>
+    </form>
+    <br>
+
+    {% include 'includes/paginador.html' %}
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'clientes/interlocutor/inicio_tabla.html' %}
+    </div>
+    
+    {% include 'includes/paginador inferior.html' %}
+    
+{% endblock contenido %}

@@ -10,7 +10,7 @@ from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
 from applications.logistica.models import NotaSalida
-from applications.material.funciones import calidad, en_camino, observacion, reservado, stock, stock_disponible, vendible
+from applications.material.funciones import calidad, en_camino, observacion, reservado, stock, stock_disponible, stock_vendible, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
 from applications.funciones import calculos_linea, fecha_en_letras, igv, numeroXn, obtener_totales, obtener_totales_soles, registrar_excepcion, slug_aleatorio, tipo_de_cambio
@@ -453,7 +453,7 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
                 cantidades = {}
                 sociedades = Sociedad.objects.all()
                 for sociedad in sociedades:
-                    cantidades[sociedad.abreviatura] = stock_disponible(obj.content_type, obj.id_registro, sociedad.id)
+                    cantidades[sociedad.abreviatura] = stock_vendible(obj.content_type, obj.id_registro, sociedad.id)
 
                 cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
 
@@ -880,7 +880,7 @@ class CotizacionVentaMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalU
             cantidades = {}
             sociedades = Sociedad.objects.all()
             for sociedad in sociedades:
-                cantidades[sociedad.abreviatura] = stock(form.instance.content_type, form.instance.id_registro, sociedad.id)
+                cantidades[sociedad.abreviatura] = stock_vendible(form.instance.content_type, form.instance.id_registro, sociedad.id)
 
             cantidades = dict(sorted(cantidades.items(), key=lambda kv: kv[1], reverse=True))
 
