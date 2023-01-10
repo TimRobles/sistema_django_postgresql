@@ -12,9 +12,6 @@
     <thead>
         <tr>
             <th>Item</th>
-            <th>Material</th>
-            <th>Marca</th>
-            <th>Modelo</th>
             <th>Unidad</th>
             <th class="text-end">Cantidad</th>
             <th>Partida</th>
@@ -26,19 +23,23 @@
     </thead>
     <tbody>
         {% for material in materiales %}
+        
+        {% if material.cantidad %}
             <tr>
                 <td>{{ material.item}}</td>
-                <td>{{ material.material.descripcion_venta }}</td>
-                <td>{{ material.material.marca }}</td>
-                <td>{{ material.material.modelo }}</td>
                 <td>{{ material.material.unidad_base }}</td>
                 <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
-                <td>{{ material.material.partida }}</td>
+                <td>
+                    {{ material.descripcion_proveedor }}
+                    ({{ material.material.partida }})
+                </td>
                 <td>{{ material.material.traduccion }}</td>
                 <td>{{ material.material.uso_funcion }}</td>
                 <td>{{ material.material.compuesto_por }}</td>
                 <td>{{ material.material.es_componente }}</td>
             </tr>
+        {% endif %}
+        
         {% endfor %}    
     </tbody>
 </table>

@@ -84,6 +84,7 @@ class ComprobanteCompraCIDetalleUpdateForm(BSModalModelForm):
     class Meta:
         model = ComprobanteCompraCIDetalle
         fields=(
+            'descripcion',
             'tipo_igv',
             'cantidad',
             'precio_unitario_sin_igv',

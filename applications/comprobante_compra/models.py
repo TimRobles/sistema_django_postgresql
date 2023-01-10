@@ -4,6 +4,7 @@ from applications.comprobante_compra.managers import ComprobanteCompraCIDetalleM
 from applications.datos_globales.models import Moneda
 from django.conf import settings
 from applications.funciones import obtener_totales
+from applications.material.models import ProveedorMaterial
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from django.contrib.contenttypes.models import ContentType
 from applications.rutas import ARCHIVO_COMPROBANTE_COMPRA_PI_ARCHIVO, COMPROBANTE_COMPRA_CI_ARCHIVO, COMPROBANTE_COMPRA_PI_ARCHIVO
@@ -124,6 +125,16 @@ class ComprobanteCompraPIDetalle(models.Model):
     @property
     def proveedor(self):
         return self.comprobante_compra.proveedor
+    
+    @property
+    def descripcion_proveedor(self):
+        proveedor_material = ProveedorMaterial.objects.get(
+            content_type = self.orden_compra_detalle.content_type,
+            id_registro = self.orden_compra_detalle.id_registro,
+            proveedor = self.proveedor,
+            estado_alta_baja = 1,
+        )
+        return "%s %s" % (proveedor_material.name, proveedor_material.description)
 
     @property
     def sociedad(self):

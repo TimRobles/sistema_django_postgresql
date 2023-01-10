@@ -422,6 +422,7 @@ class ComprobanteCompraCIRegistrarView(PermissionRequiredMixin, BSModalFormView)
                         item = detalle.item,
                         content_type = detalle.orden_compra_detalle.content_type,
                         id_registro = detalle.orden_compra_detalle.id_registro,
+                        descripcion = detalle.descripcion_proveedor,
                         cantidad = detalle.cantidad,
                         precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
                         precio_unitario_con_igv = detalle.precio_unitario_con_igv,
