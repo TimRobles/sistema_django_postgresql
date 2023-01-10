@@ -16,6 +16,8 @@ from .models import (
     RecepcionTrasladoProducto,
     RecepcionTrasladoProductoDetalle,
     ValidarSerieEnvioTrasladoProductoDetalle,
+    TraspasoStock,
+    TraspasoStockDetalle,
 )
 
 from .forms import (
@@ -30,6 +32,8 @@ from .forms import (
     RecepcionTrasladoProductoObservacionesForm,
     RecepcionTrasladoProductoMaterialDetalleForm,
     RecepcionTrasladoProductoMaterialActualizarDetalleForm,
+    TraspasoStockDetalleForm,
+    TraspasoStockForm,
 )
 
 
@@ -1097,3 +1101,153 @@ def UnidadMaterialView(request, id_recepcion_traslado_producto_detalle):
             request=request
         ).replace('selected', 'selected=""')
         return JsonResponse(data)
+
+
+class TraspasoStockListView(PermissionRequiredMixin, ListView):
+    permission_required = ('traslado_producto.view_traspasostock')
+    model = TraspasoStock
+    template_name = "traslado_producto/traspaso_stock/inicio.html"
+    context_object_name = 'contexto_traspaso_stock'
+
+
+def TraspasoStockTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'traslado_producto/traspaso_stock/inicio_tabla.html'
+        context = {}
+        context['contexto_traspaso_stock'] = TraspasoStock.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class TraspasoStockCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('traslado_producto.add_traspasostock')
+    model = TraspasoStock
+    template_name = "includes/formulario generico.html"
+    form_class = TraspasoStockForm
+    success_url = reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
+
+    def form_valid(self, form):
+        item = len(TraspasoStock.objects.all())
+        form.instance.nro_traspaso = item + 1
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(TraspasoStockCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Traspaso de Stock"
+        return context
+
+
+class TraspasoStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_traspasostock')
+
+    model = TraspasoStock
+    template_name = "includes/formulario generico.html"
+    form_class = TraspasoStockForm
+    success_url = reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(TraspasoStockUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Traspaso Stock"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+
+class TraspasoStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.delete_traspasostock')
+    model = TraspasoStock
+    template_name = "traslado_producto/traspaso_stock/boton.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:traspaso_stock_detalle', kwargs={'pk': self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_CONCLUIR_TRASPASO_STOCK)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TraspasoStockConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Traspaso Stock"
+        context['dar_baja'] = "true"
+        context['item'] = self.object
+        return context
+
+
+class TraspasoStockDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('traslado_producto.view_traspasostock')
+
+    model = TraspasoStock
+    template_name = "traslado_producto/traspaso_stock/detalle.html"
+    context_object_name = 'contexto_traspaso_stock'
+
+    def get_context_data(self, **kwargs):
+        traspaso_stock = TraspasoStock.objects.get(id = self.kwargs['pk'])
+        context = super(TraspasoStockDetailView, self).get_context_data(**kwargs)
+        context['contexto_traspaso_stock_detalle'] = TraspasoStockDetalle.objects.filter(traspaso_stock = traspaso_stock)
+
+        return context
+
+
+def TraspasoStockDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'traslado_producto/traspaso_stock/detalle_tabla.html'
+        context = {}
+        traspaso_stock = TraspasoStock.objects.get(id = pk)
+        context['contexto_traspaso_stock'] = traspaso_stock
+        context['contexto_traspaso_stock_detalle'] = TraspasoStockDetalle.objects.filter(traspaso_stock = traspaso_stock)
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class TraspasoStockDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('traslado_producto.add_traspasostock')
+
+    model = TraspasoStockDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = TraspasoStockDetalleForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:traspaso_stock_detalle', kwargs={'pk':self.kwargs['traspaso_stock_id']})
+
+    def form_valid(self, form):
+        traspaso_stock = TraspasoStock.objects.get(id = self.kwargs['traspaso_stock_id'])
+        form.instance.traspaso_stock = traspaso_stock
+        item = len(TraspasoStockDetalle.objects.filter(traspaso_stock=traspaso_stock))
+        form.instance.item = item + 1
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(TraspasoStockDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Material"
+        return context

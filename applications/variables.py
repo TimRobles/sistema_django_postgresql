@@ -345,17 +345,16 @@ MENSAJE_ERROR_ELIMINAR_DEUDA = 'No se pudo eliminar la deuda, contactar con el a
 MENSAJE_GUARDAR_ENVIO = 'Operación exitosa: El envio fue guardado con éxito.'
 MENSAJE_GUARDAR_RECEPCION = 'Operación exitosa: La recepción fue guardado con éxito.'
 
-COLOR_DEFAULT = '#028A0F'
-PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
-
-EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'
-
-
 MENSAJE_ANULAR_ORDEN_COMPRA = 'Operación exitosa: La Orden de Compra fue anulada.'
 MENSAJE_ANULAR_NOTA_CONTROL_CALIDAD_STOCK = 'Operación exitosa: La Nota Control Calidad Stock fue anulada.'
 MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK = 'Operación exitosa: La Nota Control Calidad Stock fue concluida.'
 
+MENSAJE_CONCLUIR_TRASPASO_STOCK = 'Operación exitosa: El Traspaso Stock fue concluido.'
 
+COLOR_DEFAULT = '#028A0F'
+PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
+
+EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'
 
 DICCIONARIO_TOTALES={
     # 'descuento_global':'Descuento Global',

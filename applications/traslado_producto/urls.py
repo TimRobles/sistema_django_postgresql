@@ -48,4 +48,13 @@ urlpatterns = urlSeries + [
     path('stock/<int:id_recepcion_traslado_producto_detalle>/', views.StockView, name='stock'),
     path('stock/<int:id_recepcion_traslado_producto_detalle>/<int:id_sociedad>/<int:id_almacen>/', views.StockSociedadAlmacenView, name='stock'),
     path('unidad/material/<str:id_recepcion_traslado_producto_detalle>/', views.UnidadMaterialView, name='unidad_material'),
+    
+    path('traspaso-stock/', views.TraspasoStockListView.as_view(), name='traspaso_stock_inicio'),
+    path('traspaso-stock-tabla/', views.TraspasoStockTabla, name='traspaso_stock_tabla'),
+    path('traspaso-stock/registrar/', views.TraspasoStockCreateView.as_view(), name='traspaso_stock_registrar'),
+    path('traspaso-stock/actualizar/<pk>', views.TraspasoStockUpdateView.as_view(), name='traspaso_stock_actualizar'),
+    path('traspaso-stock/concluir/<pk>/', views.TraspasoStockConcluirView.as_view(), name='traspaso_stock_concluir'),
+    path('traspaso-stock/detalle/<pk>/', views.TraspasoStockDetailView.as_view(), name='traspaso_stock_detalle'),
+    path('traspaso-stock/detalle-tabla/<pk>/', views.TraspasoStockDetailTabla, name='traspaso_stock_detalle_tabla'),
+    path('traspaso-stock-detalle/registrar/<int:traspaso_stock_id>/', views.TraspasoStockDetalleCreateView.as_view(), name='traspaso_stock_detalle_registrar'),
  ]

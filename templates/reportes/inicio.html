@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Reportes
+{% endblock titulo %}
+
+{% block contenido %}
+<h1>Reportes</h1>
+<br>
+<form action="" method="get">
+    <div class="row">
+        {% for field in form %}
+            <div class="col-lg-4">
+                <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %}
+                >
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                </div>
+                {% for error in field.errors %}
+                    <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                {% endfor %}
+            </div>
+            
+        {% endfor %}
+        <div class="col-lg-4 my-auto">
+            <button type="submit" class="btn btn-success" title="Buscar">
+                <i class="bi bi-search"></i>
+            </button>
+            <a class="btn btn-success" href="{% url 'reportes_app:reportes_inicio' %}">Limpiar</a>
+        </div>            
+    </div>
+</form>
+<br>
+<h3>
+    <a href="{% url 'reportes_app:reporte_contador' %}"><span class="badge bg-primary">Contador</span></a>
+</h3>
+<h3>
+    <a href="{% url 'reportes_app:reporte_ventas_facturadas' %}"><span class="badge bg-primary">Ventas Facturadas</span></a>
+</h3>
+<h3>
+    <a href="{% url 'reportes_app:reporte_facturas_pendientes' %}"><span class="badge bg-primary">Facturas Pendientes</span></a>
+</h3>
+
+{% endblock contenido %}
+    
