@@ -208,11 +208,7 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEn
     data_cabecera = dataCabeceraCotizacionVenta(Cabecera, fuenteBase)
     # data_tabla = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
     data_items, data_totales = dataCotizacionVenta(TablaEncabezado, TablaDatos, TablaTotales, fuenteBase, color, moneda)
-    if soles:
-        data_monedas = dataCuentas(monedas, Moneda.objects.get(simbolo='S/'), fuenteBase, color)
-    else:
-        data_monedas = dataCuentas(monedas, moneda, fuenteBase, color)
-
+    
     elementos = []
     elementos.append(parrafoCentro('SOLICITUD DE COTIZACIÓN DEL CLIENTE', fuenteBase, 12, 'Bold'))
     elementos.append(data_cabecera)
@@ -252,6 +248,10 @@ def generarCotizacionVenta(titulo, vertical, logo, pie_pagina, Cabecera, TablaEn
         elementos.append(vacio())
     
     if monedas:
+        if soles:
+            data_monedas = dataCuentas(monedas, Moneda.objects.get(simbolo='S/'), fuenteBase, color)
+        else:
+            data_monedas = dataCuentas(monedas, moneda, fuenteBase, color)
         elementos.append(
             bloque(
                 [data_monedas,], True
