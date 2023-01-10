@@ -147,7 +147,7 @@
             </td>
             <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.monto|redondear|intcomma }}</td>
             <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.pagos|redondear|intcomma }}</td>
-            <td class="text-end text-nowrap">{{ deuda.moneda.simbolo }} {{ deuda.saldo|redondear|intcomma }}</td>
+            <td class="text-end text-nowrap"><b>{{ deuda.moneda.simbolo }} {{ deuda.saldo|redondear|intcomma }}</b></td>
             <td class="text-center">{{ deuda.fecha_vencimiento|date:'d/m/Y' }}</td>
             <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado }}</td>
             <td class="text-center text-nowrap">
