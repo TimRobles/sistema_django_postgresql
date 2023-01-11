@@ -201,6 +201,7 @@ class TraspasoStock(models.Model):
         )
     nro_traspaso = models.CharField('Nro. Traspaso', max_length=100,blank=True, null=True)
     encargado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT,blank=True, null=True)
     sede = models.ForeignKey(Sede, on_delete=models.PROTECT, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_TRASPASO_STOCK, default=1, blank=True, null=True)
@@ -222,11 +223,12 @@ class TraspasoStock(models.Model):
 class TraspasoStockDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     traspaso_stock = models.ForeignKey(TraspasoStock, on_delete=models.CASCADE)
-    material = models.ForeignKey(Material, blank=True, null=True, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) #Material
+    id_registro = models.IntegerField()
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
     tipo_stock_inicial = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_inicial', on_delete=models.PROTECT,blank=True, null=True)
-    cantidad = models.DecimalField('Cantidad de Traspaso', max_digits=22, decimal_places=10,blank=True, null=True)
     tipo_stock_final = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_final', on_delete=models.PROTECT,blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad de Traspaso', max_digits=22, decimal_places=10,blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TraspasoStockDetalle_created_by', editable=False)

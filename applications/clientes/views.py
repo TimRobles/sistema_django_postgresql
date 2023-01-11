@@ -295,6 +295,14 @@ class InterlocutorClienteCreateView(PermissionRequiredMixin, BSModalFormView):
             tipo_interlocutor = form.cleaned_data['tipo_interlocutor']
             cliente = Cliente.objects.get(id = self.kwargs['cliente_id'])
 
+            buscar = InterlocutorCliente.objects.filter(
+                tipo_documento = tipo_documento,
+                numero_documento = numero_documento,
+            )
+            if buscar:
+                form.add_error('numero_documento', 'Ya existe un interlocutor con ese documento y número de documento.')
+                return super().form_invalid(form)
+
             interlocutor, existe = InterlocutorCliente.objects.get_or_create(
                 tipo_documento = tipo_documento,
                 numero_documento = numero_documento,
@@ -346,6 +354,14 @@ class InterlocutorClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def form_valid(self, form):
         sid = transaction.savepoint()
         try:
+            buscar = InterlocutorCliente.objects.filter(
+                tipo_documento = form.instance.tipo_documento,
+                numero_documento = form.instance.numero_documento,
+            ).exclude(id=form.instance.id)
+            if buscar:
+                form.add_error('numero_documento', 'Ya existe un interlocutor con ese documento y número de documento.')
+                return super().form_invalid(form)
+
             form.instance.usuario = self.request.user
             cliente_interlocutor = form.instance.ClienteInterlocutor_interlocutor.all()[0]
             cliente_interlocutor.tipo_interlocutor = form.cleaned_data['tipo_interlocutor']

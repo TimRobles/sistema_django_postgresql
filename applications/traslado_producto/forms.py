@@ -280,13 +280,14 @@ class TraspasoStockForm(BSModalModelForm):
 
 
 class TraspasoStockDetalleForm(BSModalModelForm):
+    material = forms.ModelChoiceField(queryset=Material.objects.all())
     class Meta:
         model = TraspasoStockDetalle
         fields = (
             'material',
             'almacen',
-            'tipo_stock_inicial',
             'cantidad',
+            'tipo_stock_inicial',
             'tipo_stock_final',
             )
         

@@ -124,7 +124,7 @@ class InterlocutorClienteForm(BSModalForm):
     numero_documento = forms.CharField(label = 'Número de Documento', max_length=15, required=False)
     nombre_completo = forms.CharField(label = 'Nombre Completo', max_length=120, required=True)
     tipo_interlocutor = forms.ModelChoiceField(label = 'Tipo de Interlocutor', queryset = TipoInterlocutorCliente.objects.all(), required=False)
-    
+
     def __init__(self, *args, **kwargs):
         super(InterlocutorClienteForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():

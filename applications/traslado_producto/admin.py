@@ -151,7 +151,8 @@ class TraspasoStockDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'item',
         'traspaso_stock',
-        'material',
+        'content_type',
+        'id_registro',
         'almacen',
         'tipo_stock_inicial',
         'cantidad',
