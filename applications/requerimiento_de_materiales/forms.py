@@ -64,7 +64,7 @@ class ListaRequerimientoMaterialDetalleForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
-        self.fields['cantidad'].widget.attrs['step'] = 1
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
         self.fields['unidad'].disabled = True
 
 class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
@@ -90,7 +90,7 @@ class ListaRequerimientoMaterialDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
-        self.fields['cantidad'].widget.attrs['step'] = 1
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
 
 
 class RequerimientoMaterialProveedorForm(BSModalModelForm):
@@ -150,7 +150,7 @@ class RequerimientoMaterialProveedorDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
-        self.fields['cantidad'].widget.attrs['step'] = 1
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
 
 class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=None)
@@ -176,7 +176,7 @@ class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['unidad'].disabled = True
         self.fields['cantidad'].widget.attrs['min'] = 0
-        self.fields['cantidad'].widget.attrs['step'] = 1
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
 
 class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
     CHOICES = (

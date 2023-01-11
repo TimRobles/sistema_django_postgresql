@@ -108,7 +108,7 @@ class OfertaProveedorDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
-        self.fields['cantidad'].widget.attrs['step'] = 1
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
         self.fields['unidad'].initial = self.instance.proveedor_material.unidad
         self.fields['precio_unitario_con_igv'].widget.attrs['min'] = 0
         self.fields['precio_final_con_igv'].widget.attrs['min'] = 0
