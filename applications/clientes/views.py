@@ -299,7 +299,7 @@ class InterlocutorClienteCreateView(PermissionRequiredMixin, BSModalFormView):
                 tipo_documento = tipo_documento,
                 numero_documento = numero_documento,
             )
-            if buscar:
+            if buscar and tipo_documento and numero_documento:
                 form.add_error('numero_documento', 'Ya existe un interlocutor con ese documento y número de documento.')
                 return super().form_invalid(form)
 
@@ -358,7 +358,7 @@ class InterlocutorClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
                 tipo_documento = form.instance.tipo_documento,
                 numero_documento = form.instance.numero_documento,
             ).exclude(id=form.instance.id)
-            if buscar:
+            if buscar and form.instance.tipo_documento and form.instance.numero_documento:
                 form.add_error('numero_documento', 'Ya existe un interlocutor con ese documento y número de documento.')
                 return super().form_invalid(form)
 

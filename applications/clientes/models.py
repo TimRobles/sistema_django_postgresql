@@ -162,7 +162,7 @@ class TipoInterlocutorCliente(models.Model):
 
 class InterlocutorCliente(models.Model):
     nombre_completo = models.CharField('Nombre Completo', max_length=120)
-    tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES)
+    tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_CHOICES, blank=True, null=True)
     numero_documento = models.CharField('Número de Documento', max_length=15, blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InterlocutorCliente_created_by', editable=False)
