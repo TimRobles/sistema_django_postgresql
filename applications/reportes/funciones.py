@@ -69,3 +69,11 @@ def ajustarColumnasSheet(hoja):
     for col, value in dims.items():
         hoja.column_dimensions[col].width = value
 FECHA_HOY = datetime.now().strftime("%Y-%m-%d")
+
+def formatearFecha3(fecha):
+    # if fecha=="":
+    if not fecha:
+        return ""
+    fecha=fecha.split("/")
+    fecha.reverse()
+    return "/".join(fecha)

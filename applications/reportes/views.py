@@ -6,17 +6,21 @@ from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.styles import*
 from openpyxl.styles.borders import Border, Side
+from openpyxl.chart import Reference, Series,LineChart
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.plotarea import DataTable
 
 from applications.datos_globales.models import CuentaBancariaSociedad
 from applications.sociedad.models import Sociedad
 from applications.cobranza.models import Pago
 from applications.nota.models import NotaCredito
-from applications.comprobante_venta.models import FacturaVenta
+from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
 
 from applications.reportes.forms import ReportesFiltrosForm
 
 from applications.reportes.funciones import*
+from applications.reportes.data_resumen_ingresos_anterior import*
 
 
 class ReportesView(FormView):
@@ -45,6 +49,7 @@ class ReportesView(FormView):
 
         return kwargs
 
+
 class ReporteContador(TemplateView):
     def get(self,request, *args,**kwargs):
 
@@ -59,82 +64,6 @@ class ReporteContador(TemplateView):
         # print('##########################################')
         # wb = Workbook()
         # hoja = wb.active
-
-        def prueba():
-            # if global_sociedad == '2':
-            #     color_relleno = RELLENO_MP
-            # if global_sociedad == '1':
-            #     color_relleno = RELLENO_MC
-
-            # tabla_cuentas = CuentaBancariaSociedad.objects.raw('''SELECT id, banco_id, sociedad_id, numero_cuenta, numero_cuenta_interbancaria, moneda_id 
-            # FROM datos_globales_cuentabancariasociedad 
-            # WHERE estado='1' AND sociedad_id='%s' ;''' %('2')) 
-
-            # info_cuentas = []
-            # for fila in tabla_cuentas:
-            #     lista_datos = []
-            #     lista_datos.append(fila.banco)
-            #     lista_datos.append(fila.sociedad)
-            #     lista_datos.append(fila.numero_cuenta)
-            #     lista_datos.append(fila.numero_cuenta_interbancaria)
-            #     lista_datos.append(fila.moneda)
-            #     info_cuentas.append(lista_datos)
-
-            # print('***********************')
-            # print(info_cuentas)
-            # print('***********************')
-
-            # list_temp_hojas = []
-            # dict_totales_cuentas = {}
-            # count_cuenta = 0
-            # list_nro_cuentas = []
-            # dict_nro_cuentas = {}
-            # for fila in info_cuentas:
-            #     nro_cuenta = fila[2]
-            #     dict_nro_cuentas[nro_cuenta] = str(fila[0]) + ' ' +str(fila[4])
-            #     list_nro_cuentas.append(nro_cuenta)
-
-            #     tabla_depositos = Pago.objects.all()
-
-            #     print('***********************')
-            #     print(tabla_depositos)
-            #     print('***********************')
-
-                # sql_1 = ''' SELECT ci.fecha, ci.numero_operacion,
-                #     SUM(ROUND(IF(dgm.abreviatura='USD', ci.monto, ci.monto/ci.tipo_cambio),2)) AS monto_dolares,
-                #     SUM(ROUND(IF(dgm.abreviatura='USD', ci.monto*ci.tipo_cambio, ci.monto),2)) AS monto_soles,
-                #     STRING_AGG(cd.cliente_id, '\n') AS empresas,
-                #     STRING_AGG('FACTURA: ',dtsc.serie,'-',cvf.numero_factura, '\n') AS documentos,
-                #     STRING_AGG(cvf.fecha_emision, '\n') AS fecha_documentos,
-                #     STRING_AGG(ROUND(IF(dgm.abreviatura='USD', cp.monto, cp.monto/cp.tipo_cambio),2), '\n') AS pago_dolares,
-                #     STRING_AGG(ROUND(IF(dgm.abreviatura='USD', cp.monto*cp.tipo_cambio, cp.monto),2), '\n') AS pago_soles
-                #     FROM cobranza_pago cp
-                #     LEFT JOIN cobranza_ingreso ci ON ci.id=cp.id_registro AND cp.content_type_id = 166
-                #     LEFT JOIN datos_globales_cuentabancariasociedad dgcbs ON dgcbs.id=ci.cuenta_bancaria_id AND dgcbs.estado='1'
-                #     LEFT JOIN datos_globales_moneda dgm ON dgm.id=dgcbs.moneda_id 
-                #     LEFT JOIN cobranza_deuda cd ON cd.id = cp.deuda_id
-                #     LEFT JOIN comprobante_venta_facturaventa cvf ON cvf.id = cd.id_registro AND cd.content_type_id = 168
-                #     LEFT JOIN datos_globales_seriescomprobante dtsc ON dtsc.id = cvf.serie_comprobante_id
-                #     LEFT JOIN datos_globales_banco dgb ON dgb.id = dgcbs.banco_id'''
-
-                # sql_2 = ''' WHERE dgcbs.numero_cuenta='%s' AND CAST('%s' AS date) <= ci.fecha AND ci.fecha <= CAST('%s' AS date)
-                #     GROUP BY ci.numero_operacion, dgcbs.banco_id, ci.cuenta_bancaria_id, ci.fecha
-                #     ORDER BY ci.fecha ASC ;''' %(nro_cuenta, '2022-12-01', '2022-12-31')
-
-                # sql_suma = sql_1 + sql_2
-                # print('**************************')
-                # print(sql_suma)
-                # print('**************************')
-                # info_depositos = Pago.objects.raw(sql_suma)
-                # print('**************************')
-                # print(info_depositos)
-                # print('**************************')
-
-                # for fila in info_depositos:
-                #     print('**************************')
-                #     print(fila)
-                #     print('**************************')
-            print()
 
         def consultaNotasContador():
 
@@ -443,6 +372,7 @@ class ReporteContador(TemplateView):
         wb.save(respuesta)
         return respuesta
 
+
 class ReporteVentasFacturadas(TemplateView):
     def get(self,request, *args,**kwargs):
         global global_sociedad, global_fecha_inicio, global_fecha_fin
@@ -724,10 +654,10 @@ class ReporteVentasFacturadas(TemplateView):
                         'PENDIENTE'
                     ) END) AS estado_cobranza,
                 to_char(MAX(cvf.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
-                EXTRACT(DAY FROM MAX(cvf.fecha_vencimiento)) - EXTRACT(DAY FROM MAX(cvf.fecha_emision)) AS dias_credito,
+                MAX(cvf.fecha_vencimiento) - MAX(cvf.fecha_emision) AS dias_credito,
                 MAX(cvf.fecha_vencimiento) AS dias_vencimiento,
                 STRING_AGG(
-                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS guias,
+                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias,
                 '' AS letras,
                 '' AS pagos
                 FROM comprobante_venta_facturaventa cvf
@@ -775,10 +705,10 @@ class ReporteVentasFacturadas(TemplateView):
                         'PENDIENTE'
                     ) END) AS estado_cobranza,
                 to_char(MAX(cvb.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
-                EXTRACT(DAY FROM MAX(cvb.fecha_vencimiento)) - EXTRACT(DAY FROM MAX(cvb.fecha_emision)) AS dias_credito,
+                MAX(cvb.fecha_vencimiento) - MAX(cvb.fecha_emision) AS dias_credito,
                 MAX(cvb.fecha_vencimiento) AS dias_vencimiento,
                 STRING_AGG(
-                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS guias,
+                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias,
                 '' AS letras,
                 '' AS pagos
                 FROM comprobante_venta_boletaventa cvb
@@ -824,8 +754,8 @@ class ReporteVentasFacturadas(TemplateView):
                 lista_datos.append(fila.estado_cobranza)
                 lista_datos.append(fila.fecha_vencimiento_comprobante)
                 lista_datos.append(fila.dias_credito)
-                lista_datos.append(fila.dias_vencimiento)
-                lista_datos.append(fila.guias)
+                lista_datos.append(str(fila.dias_vencimiento))
+                lista_datos.append(fila.documento_guias)
                 lista_datos.append(fila.letras)
                 lista_datos.append(fila.pagos)
                 info_facturas.append(lista_datos)
@@ -838,13 +768,17 @@ class ReporteVentasFacturadas(TemplateView):
                 if fila[2] not in list_anulados:
                     try:
                         fila[4] = float(fila[4])
+                        if fila[5] == None:
+                            fila[5] = '0.00'
+                        if fila[6] == None:
+                            fila[6] = fila[4]
                         fila[5] = float(fila[5])
                         fila[6] = float(fila[6])
                         fila[9] = float(fila[9])
                     except:
                         ''
                     if fila[10] != '':
-                        fecha_hoy = time.strftime("%Y-%m-%d")
+                        fecha_hoy = datetime.now().strftime("%Y-%m-%d")
                         fecha1 = datetime.strptime(fecha_hoy, '%Y-%m-%d')
                         fecha2 = datetime.strptime(fila[10], '%Y-%m-%d')
                         dias = (fecha1 - fecha2) / timedelta(days=1)
@@ -1049,9 +983,9 @@ class ReporteVentasFacturadas(TemplateView):
                 fila_base = 4
                 year_base = int(ws['A' + str(fila_base)].value.split(' - ')[1]) - count # 2018
                 data_col = 2 # montos en dolares
-                if self.cod_soc == '1000':
+                if global_sociedad == '2':
                     chart.title = 'RESUMEN VENTAS FACTURADAS - MULTIPLAY'
-                if self.cod_soc == '2000':
+                if global_sociedad == '1':
                     chart.title = 'RESUMEN VENTAS FACTURADAS - MULTICABLE'
                 while max_fila >= 12:
                     values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
@@ -1074,7 +1008,6 @@ class ReporteVentasFacturadas(TemplateView):
                 chart.dataLabels.showVal = True
                 chart.dataLabels.dLblPos = 't' # top
 
-                from openpyxl.chart.plotarea import DataTable
                 chart.plot_area.dTable = DataTable()
                 chart.plot_area.dTable.showHorzBorder = True
                 chart.plot_area.dTable.showVertBorder = True
@@ -1098,6 +1031,7 @@ class ReporteVentasFacturadas(TemplateView):
         respuesta['content-disposition']= content
         wb.save(respuesta)
         return respuesta
+
 
 class ReporteFacturasPendientes(TemplateView):
     def get(self,request, *args,**kwargs):
@@ -1247,7 +1181,7 @@ class ReporteFacturasPendientes(TemplateView):
                             'PENDIENTE'
                         ) END) AS estado_cobranza,
                     to_char(MAX(cvf.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
-                    EXTRACT(DAY FROM MAX(cvf.fecha_vencimiento)) - EXTRACT(DAY FROM MAX(cvf.fecha_emision)) AS dias_credito,
+                    MAX(cvf.fecha_vencimiento) - MAX(cvf.fecha_emision) AS dias_credito,
                     MAX(cvf.fecha_vencimiento) AS dias_vencimiento,
                     '' AS observaciones,
                     '' AS letras,
@@ -1295,7 +1229,7 @@ class ReporteFacturasPendientes(TemplateView):
                             'PENDIENTE'
                         ) END) AS estado_cobranza,
                     to_char(MAX(cvb.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
-                    EXTRACT(DAY FROM MAX(cvb.fecha_vencimiento)) - EXTRACT(DAY FROM MAX(cvb.fecha_emision)) AS dias_credito,
+                    MAX(cvb.fecha_vencimiento) - MAX(cvb.fecha_emision) AS dias_credito,
                     MAX(cvb.fecha_vencimiento) AS dias_vencimiento,
                     '' AS observaciones,
                     '' AS letras,
@@ -1354,7 +1288,7 @@ class ReporteFacturasPendientes(TemplateView):
                 if fila[5] == None:
                     fila[5] = '0.00'
                 if fila[6] == None:
-                    fila[6] = '0.00'
+                    fila[6] = fila[4]
                 fila[5] = float(fila[5])
                 fila[6] = float(fila[6])
                 fila[9] = float(fila[9])
@@ -1441,6 +1375,920 @@ class ReporteFacturasPendientes(TemplateView):
         abreviatura = query_sociedad.abreviatura
         wb=reporte_facturas_pendientes()
         nombre_archivo = "Reporte_facturas_pendientes - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename ={0}".format(nombre_archivo)
+        respuesta['content-disposition']= content
+        wb.save(respuesta)
+        return respuesta
+
+
+class ReporteDepositosCuentasBancarias(TemplateView):
+    def get(self,request, *args,**kwargs):
+        global global_sociedad, global_fecha_inicio, global_fecha_fin
+
+        def reporte_depositos_cuentas():
+            # self.fecha_inicio = '2021-12-20'
+            # self.fecha_fin = '2022-01-31'
+
+            wb = Workbook()
+            hoja = wb.active
+
+            if global_sociedad == '2':
+                color_relleno = RELLENO_MP
+            if global_sociedad == '1':
+                color_relleno = RELLENO_MC
+
+            sql_cuentas = ''' SELECT
+                    dgcb.id,
+                    dgb.razon_social AS nombre_banco,
+                    ss.razon_social AS nombre_titular,
+                    dgcb.numero_cuenta AS cuenta_banco,
+                    dgcb.numero_cuenta_interbancaria AS cuenta_cci_banco,
+                    dgm.nombre AS moneda_descripcion
+                    FROM datos_globales_cuentabancariasociedad dgcb
+                    LEFT JOIN datos_globales_banco dgb
+                        ON dgb.id=dgcb.banco_id
+                    LEFT JOIN datos_globales_moneda dgm
+                        ON dgm.id=dgcb.moneda_id
+                    LEFT JOIN sociedad_sociedad ss
+                        ON ss.id=dgcb.sociedad_id
+                    WHERE dgcb.sociedad_id='%s' AND dgcb.estado='1' AND dgcb.efectivo=False ; ''' %(global_sociedad)
+            query_info = CuentaBancariaSociedad.objects.raw(sql_cuentas)
+
+            info_cuentas = []
+            for fila in query_info:
+                lista_datos = []
+                lista_datos.append(fila.nombre_banco)
+                lista_datos.append(fila.nombre_titular)
+                lista_datos.append(fila.cuenta_banco)
+                lista_datos.append(fila.cuenta_cci_banco)
+                lista_datos.append(fila.moneda_descripcion)
+                info_cuentas.append(lista_datos)
+
+            list_temp_hojas = []
+            dict_totales_cuentas = {}
+            count_cuenta = 0
+            list_nro_cuentas = []
+            dict_nro_cuentas = {}
+            for fila in info_cuentas:
+                nro_cuenta = fila[2]
+                dict_nro_cuentas[nro_cuenta] = fila[0] + ' ' +fila[4]
+                list_nro_cuentas.append(nro_cuenta)
+
+                sql = ''' (SELECT
+                    MAX(cp.id) AS id,
+                    ci.fecha AS fecha_orden,
+                    to_char(ci.fecha, 'DD/MM/YYYY') AS fecha_operacion_bancaria,
+                    ci.numero_operacion AS numero_operacion_bancaria,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(ci.tipo_cambio),2) END) AS monto_dolares,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(ci.tipo_cambio),2) ELSE MAX(ci.monto) END) AS monto_soles,
+                    STRING_AGG(cc.razon_social, '\n') AS empresas,
+                    STRING_AGG(CONCAT('FACTURA: ', dgsc.serie, '-', cvf.numero_factura), '\n') AS documentos,
+                    STRING_AGG(to_char(cvf.fecha_emision, 'DD/MM/YYYY'), '\n') AS fecha_documentos,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/cp.tipo_cambio,2) END) AS TEXT), '\n') AS pago_dolares,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*cp.tipo_cambio,2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
+                    FROM cobranza_pago cp
+                    LEFT JOIN cobranza_ingreso ci
+                        ON ci.id=cp.id_registro AND cp.content_type_id='%s'
+                    LEFT JOIN datos_globales_cuentabancariasociedad dgcbs
+                        ON dgcbs.id=ci.cuenta_bancaria_id AND dgcbs.estado='1' AND dgcbs.efectivo=False
+                    LEFT JOIN datos_globales_moneda dgm
+                        ON dgm.id=dgcbs.moneda_id
+                    LEFT JOIN cobranza_deuda cd
+                        ON cd.id=cp.deuda_id
+                    LEFT JOIN comprobante_venta_facturaventa cvf
+                        ON cvf.id=cd.id_registro AND cd.content_type_id='%s' AND cvf.estado='4'
+                    LEFT JOIN datos_globales_seriescomprobante dgsc
+                        ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+                    LEFT JOIN datos_globales_banco dgb
+                        ON dgb.id = dgcbs.banco_id
+                    LEFT JOIN clientes_cliente cc
+                        ON cc.id=cvf.cliente_id
+                    WHERE dgcbs.numero_cuenta='%s' AND '%s' <= ci.fecha AND ci.fecha <= '%s' AND cvf.id IS NOT NULL
+                    GROUP BY ci.numero_operacion, dgcbs.banco_id, ci.cuenta_bancaria_id, ci.fecha
+                    ORDER BY ci.fecha ASC)
+                UNION
+                (SELECT
+                    MAX(cp.id) AS id,
+                    ci.fecha AS fecha_orden,
+                    to_char(ci.fecha, 'DD/MM/YYYY') AS fecha_operacion_bancaria,
+                    ci.numero_operacion AS numero_operacion_bancaria,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(ci.tipo_cambio),2) END) AS monto_dolares,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(ci.tipo_cambio),2) ELSE MAX(ci.monto) END) AS monto_soles,
+                    STRING_AGG(cc.razon_social, '\n') AS empresas,
+                    STRING_AGG(CONCAT('BOLETA: ', dgsc.serie, '-', cvb.numero_boleta), '\n') AS documentos,
+                    STRING_AGG(to_char(cvb.fecha_emision, 'DD/MM/YYYY'), '\n') AS fecha_documentos,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/cp.tipo_cambio,2) END) AS TEXT), '\n') AS pago_dolares,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*cp.tipo_cambio,2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
+                    FROM cobranza_pago cp
+                    LEFT JOIN cobranza_ingreso ci
+                        ON ci.id=cp.id_registro AND cp.content_type_id='%s'
+                    LEFT JOIN datos_globales_cuentabancariasociedad dgcbs
+                        ON dgcbs.id=ci.cuenta_bancaria_id AND dgcbs.estado='1' AND dgcbs.efectivo=False
+                    LEFT JOIN datos_globales_moneda dgm
+                        ON dgm.id=dgcbs.moneda_id
+                    LEFT JOIN cobranza_deuda cd
+                        ON cd.id=cp.deuda_id
+                    LEFT JOIN comprobante_venta_boletaventa cvb
+                        ON cvb.id=cd.id_registro AND cd.content_type_id='%s' AND cvb.estado='4'
+                    LEFT JOIN datos_globales_seriescomprobante dgsc
+                        ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+                    LEFT JOIN datos_globales_banco dgb
+                        ON dgb.id = dgcbs.banco_id
+                    LEFT JOIN clientes_cliente cc
+                        ON cc.id=cvb.cliente_id
+                    WHERE dgcbs.numero_cuenta='%s' AND '%s' <= ci.fecha AND ci.fecha <= '%s' AND cvb.id IS NOT NULL
+                    GROUP BY ci.numero_operacion, dgcbs.banco_id, ci.cuenta_bancaria_id, ci.fecha
+                    ORDER BY ci.fecha ASC )
+                ORDER BY 1 ; ''' %(DICT_CONTENT_TYPE['cobranza | ingreso'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], nro_cuenta, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['cobranza | ingreso'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], nro_cuenta, global_fecha_inicio, global_fecha_fin)
+                query_info = Pago.objects.raw(sql)
+
+                info_depositos = []
+                for dato_fila in query_info:
+                    lista_datos = []
+                    lista_datos.append(dato_fila.fecha_operacion_bancaria)
+                    lista_datos.append(dato_fila.numero_operacion_bancaria)
+                    lista_datos.append(dato_fila.monto_dolares)
+                    lista_datos.append(dato_fila.monto_soles)
+                    lista_datos.append(dato_fila.empresas)
+                    lista_datos.append(dato_fila.documentos)
+                    lista_datos.append(dato_fila.fecha_documentos)
+                    lista_datos.append(dato_fila.pago_dolares)
+                    lista_datos.append(dato_fila.pago_soles)
+                    info_depositos.append(lista_datos)
+
+                count_cuenta += 1
+
+                count_mes = 0
+                list_general = []
+                list_mes = []
+                for deposito in info_depositos:
+                    if count_mes != 0:
+                        año_mes_actual = deposito[0][6:] + deposito[0][3:5]
+                        año_mes_anterior = info_depositos[count_mes-1][0][6:] + info_depositos[count_mes-1][0][3:5]
+                        if año_mes_actual != año_mes_anterior:
+                            list_general.append(list_mes)
+                            list_mes = []
+                    list_mes.append(deposito)
+                    try:
+                        deposito[2] = float(deposito[2])
+                        deposito[3] = float(deposito[3])
+                    except:
+                        ""
+                    count_mes += 1
+                if list_mes != []:
+                    list_general.append(list_mes)
+                print()
+                print(list_general)
+                print()
+
+    # ******************************************************************************************************************************
+                count = 0
+                for list_mes_deposito in list_general:
+                    mes = list_mes_deposito[0][0][3:5]
+                    año = list_mes_deposito[0][0][6:]
+                    name_sheet = DICT_MESES[str(mes)] + ' - ' + str(año)
+                    if count != 0:
+                        if name_sheet not in list_temp_hojas:
+                            hoja = wb.create_sheet(name_sheet)
+                            list_temp_hojas.append(name_sheet)
+                        else:
+                            hoja = wb[name_sheet]
+                    else:
+                        hoja = wb.active
+                        hoja.title = name_sheet
+                        if name_sheet not in list_temp_hojas:
+                            list_temp_hojas.append(name_sheet)
+                        count += 1
+                        # count_cuenta += 1
+
+                    hoja.append(('', ''))
+                    hoja.append(('', ''))
+                    hoja.append(('BANCO:', fila[0]))
+                    hoja.append(('EMPRESA:', fila[1]))
+                    hoja.append(('CUENTA:', fila[2]))
+                    hoja.append(('CCI:', fila[3]))
+                    hoja.append(('MONEDA:', fila[4]))
+                    # wb.active = hoja
+                    hoja.append(('FECHA', 'REFERENCIA', 'MONTO (US$)', 'MONTO (S/)', 'EMPRESAS', 'DOCUMENTOS', 'FECHA DOCUMENTOS', 'PAGOS (US$)', 'PAGOS (S/)'))
+                    col_range = hoja.max_column
+                    nueva_fila = hoja.max_row
+
+                    for col in range(1, col_range + 1):
+                        cell_header = hoja.cell(nueva_fila, col)
+                        cell_header.fill = color_relleno
+                        cell_header.font = NEGRITA
+                        for count_fila in range(1,6):
+                            cell_header = hoja.cell(nueva_fila-count_fila, col)
+                            cell_header.fill = color_relleno
+
+                    total_mes_cuenta_dolares = 0
+                    total_mes_cuenta_soles = 0
+                    for fila_deposito in list_mes_deposito:
+                        if fila_deposito[4] != "" and fila_deposito[4] != None:
+                            if 'Nota Credito:' not in fila_deposito[1]:
+                                total_mes_cuenta_dolares += float(fila_deposito[2])
+                                try:
+                                    total_mes_cuenta_soles += float(fila_deposito[3])
+                                except:
+                                    pass
+                        hoja.append(fila_deposito)
+                    cuenta_banco_ingreso = fila[0] + ' ' + fila[4]
+                    dict_totales_cuentas[cuenta_banco_ingreso + '|' + name_sheet] = str(round(total_mes_cuenta_soles,2)) + '|' + str(round(total_mes_cuenta_dolares,2))
+
+                    for i in range(hoja.max_row):
+                        if i >= nueva_fila-1:
+                            row = list(hoja.rows)[i]
+                            for col in range(hoja.max_column):
+                                row[col].border = BORDE_DELGADO
+                                if col == 2:
+                                    row[col].alignment = ALINEACION_DERECHA
+                                    row[col].number_format = FORMATO_DOLAR
+                                if col == 3:
+                                    row[col].alignment = ALINEACION_DERECHA
+                                    row[col].number_format = FORMATO_SOLES
+                                if col == 7 or col == 8:
+                                    row[col].alignment = ALINEACION_DERECHA
+                                if 4 <= col <= 8:
+                                    row[col].alignment = AJUSTAR_TEXTO
+
+                    ajustarColumnasSheet(hoja)
+
+    # ******************************************************************************************************************************
+            print(dict_totales_cuentas)
+            for k,v in dict_totales_cuentas.items():
+                print(k, v)
+
+            ''' BCP DOLARES|ENERO - 2022 107347.17|27469.59
+            BCP DOLARES|FEBRERO - 2022 62893.94|16654.11
+            BCP SOLES|ENERO - 2022 67272.71|17324.28
+            BCP SOLES|FEBRERO - 2022 37920.94|10013.3
+            BBVA SOLES|ENERO - 2022 2230.6|579.12
+            BBVA SOLES|FEBRERO - 2022 3884.22|1016.74
+            BBVA DOLARES|ENERO - 2022 140658.24|36246.8
+            BBVA DOLARES|FEBRERO - 2022 69518.89|18147.0 '''
+            print()
+
+            hoja = wb.create_sheet('Resumen Ingresos')
+            # hoja.append(('', ''))
+            hoja.append(('ENERO', 'FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'))
+            hoja.append(('', ''))
+            if global_sociedad == '2':
+                hoja.append(('SOLES', '', '', '', '', 'DOLARES'))
+                hoja.merge_cells(start_row = 3, start_column = 1, end_row = 3, end_column = 4)
+                hoja.merge_cells(start_row = 3, start_column = 6, end_row = 3, end_column = 9)
+                celda_multiple = hoja['A3']
+                celda_multiple.alignment = ALINEACION_CENTRO
+                celda_multiple = hoja['F3']
+                celda_multiple.alignment = ALINEACION_CENTRO
+            if global_sociedad == '1':
+                hoja.append(('SOLES', '', '', '', '', '', '', 'DOLARES'))
+                hoja.merge_cells(start_row = 3, start_column = 1, end_row = 3, end_column = 6)
+                hoja.merge_cells(start_row = 3, start_column = 8, end_row = 3, end_column = 13)
+                celda_multiple = hoja['A3']
+                celda_multiple.alignment = ALINEACION_CENTRO
+                celda_multiple = hoja['H3']
+                celda_multiple.alignment = ALINEACION_CENTRO
+
+            for i in range(len(list_nro_cuentas)):
+                list_nro_cuentas[i] = dict_nro_cuentas[list_nro_cuentas[i]]
+            list_encabezado = [''] + list_nro_cuentas + ['TOTAL','',''] + list_nro_cuentas + ['TOTAL']
+            hoja.append(tuple(list_encabezado))
+
+            col_range = hoja.max_column
+            nueva_fila = hoja.max_row
+            for col in range(1, col_range + 1):
+                if global_sociedad == '2':
+                    if col != 5:
+                        cell_header = hoja.cell(nueva_fila, col)
+                        cell_header.fill = color_relleno
+                        cell_header.font = NEGRITA
+                        for count_fila in range(1,2):
+                            cell_header = hoja.cell(nueva_fila-count_fila, col)
+                            cell_header.fill = color_relleno
+                if global_sociedad == '1':
+                    if col != 7:
+                        cell_header = hoja.cell(nueva_fila, col)
+                        cell_header.fill = color_relleno
+                        cell_header.font = NEGRITA
+                        for count_fila in range(1,2):
+                            cell_header = hoja.cell(nueva_fila-count_fila, col)
+                            cell_header.fill = color_relleno
+
+            def insertarResumenDataAnterior(hoja, data):
+                for fila in data:
+                    hoja.append(fila)
+                # return hoja
+
+            # rpta = mensajeDialogo('pregunta','Resumen Ingresos','¿Desea Agregar la Información en el Resumen de los años anteriores?')
+            # if rpta == 'Yes':
+            # if global_fecha_inicio <= '2022-01-01':
+            #     if global_sociedad == '2':
+            #         insertarResumenDataAnterior(hoja, list_resumen_ingresos_sis_anterior_mpl)
+            #     if global_sociedad == '1':
+            #         insertarResumenDataAnterior(hoja, list_resumen_ingresos_sis_anterior_mca)
+
+            for mes in list_temp_hojas:
+                list_temp_fila = []
+                # list_temp.append(mes)
+                list_temp_soles = []
+                list_temp_dolares = []
+                total_soles = 0
+                total_dolares = 0
+                for k,value in dict_totales_cuentas.items():
+                    if mes in k:
+                        print(k)
+                        monto_soles = float(value[:value.find("|")])
+                        monto_dolares = float(value[value.find("|")+1:])
+                        total_soles += monto_soles
+                        total_dolares += monto_dolares
+                        list_temp_soles.append(monto_soles)
+                        list_temp_dolares.append(monto_dolares)
+                if global_sociedad == '2':
+                    if len(list_temp_soles) < 2:
+                        if len(list_temp_soles) == 1:
+                            list_temp_soles.extend([''])
+                            list_temp_dolares.extend([''])
+                if global_sociedad == '1':
+                    if len(list_temp_soles) < 4:
+                        if len(list_temp_soles) == 1:
+                            list_temp_soles.extend(['','',''])
+                            list_temp_dolares.extend(['','',''])
+                        elif len(list_temp_soles) == 2:
+                            list_temp_soles.extend(['',''])
+                            list_temp_dolares.extend(['',''])
+                        elif len(list_temp_soles) == 3:
+                            list_temp_soles.extend([''])
+                            list_temp_dolares.extend([''])
+                list_temp_soles.append(total_soles)
+                list_temp_dolares.append(total_dolares)
+                list_temp_fila = [mes] + list_temp_soles + ['', mes] + list_temp_dolares
+                hoja.append(tuple(list_temp_fila))
+
+            i = 0
+            for row in hoja.rows:
+                if i >= 2:
+                    for col in range(hoja.max_column):
+                        if global_sociedad == '2':
+                            if col != 4:
+                                row[col].border = BORDE_DELGADO
+                            if 1 <= col <= 3:
+                                row[col].number_format = FORMATO_SOLES
+                            if col >= 6:
+                                row[col].number_format = FORMATO_DOLAR
+                        if global_sociedad == '1':
+                            if col != 6:
+                                row[col].border = BORDE_DELGADO
+                            if 1 <= col <= 5:
+                                row[col].number_format = FORMATO_SOLES
+                            if col >= 8:
+                                row[col].number_format = FORMATO_DOLAR
+                i += 1
+            ajustarColumnasSheet(hoja)
+
+            def extraer_resumen_bloc_de_notas(hoja):
+
+                if global_sociedad == '2':
+                    nro_col = 9
+                    file_mpl = open('resumen_ingresos_mpl.txt', "w")
+                    file = file_mpl
+                if global_sociedad == '1':
+                    nro_col = 13
+                    file_mca = open('resumen_ingresos_mca.txt', "w")
+                    file = file_mca
+
+                list_temp = []
+                for i in range(5, hoja.max_row + 1): # Nro de filas del excel
+                    celda = hoja.cell(row = i, column = nro_col)
+                    if celda.value == None:
+                        valor_celda = ''
+                    else:
+                        valor_celda = celda.value
+                    list_temp.append(valor_celda)
+                print(list_temp)
+
+                for pos in range(len(list_temp)):
+                    list_temp[pos] = str(round(list_temp[pos],2))
+
+                info = '\n'.join(list_temp)
+                file.write(info)
+                file.close()
+
+            extraer_resumen_bloc_de_notas(hoja)
+
+            def grafico_resumen_ingresos(ws):
+                max_fila = ws.max_row
+
+                chart = LineChart()
+                # print(help(chart))
+                chart.height = 15 # default is 7.5
+                chart.width = 30 # default is 15
+                chart.y_axis.title = 'INGRESOS'
+                chart.x_axis.title = 'MESES'
+                chart.legend.position = 'b' #bottom
+                # chart.style = 12
+
+                count = 1
+                fila_base = 5
+                year_base = 2018
+                if global_sociedad == '2':
+                    chart.title = 'RESUMEN DE INGRESOS - MULTIPLAY'
+                    data_col = 9 # montos en dolares
+                    # data_col = 4 # montos en soles
+                if global_sociedad == '1':
+                    chart.title = 'RESUMEN DE INGRESOS - MULTICABLE'
+                    data_col = 13 # montos en dolares
+                    # data_col = 6 # montos en soles
+                while max_fila >= 12:
+                    values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+                    series = Series(values, title = "Ingresos del " + str(year_base + count))
+                    chart.append(series)
+                    max_fila -= 12
+                    count += 1
+                if 1 <= max_fila <= 12:
+                    values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+                    series = Series(values, title = "Ingresos del " + str(year_base + count))
+                    chart.append(series)
+
+                meses = Reference(ws, min_col = 1, min_row = 1, max_col = 12, max_row = 1)
+                chart.set_categories(meses)
+                chart.dataLabels = DataLabelList()
+                chart.dataLabels.showVal = True
+                chart.dataLabels.dLblPos = 't' # top
+
+                chart.plot_area.dTable = DataTable()
+                chart.plot_area.dTable.showHorzBorder = True
+                chart.plot_area.dTable.showVertBorder = True
+                chart.plot_area.dTable.showOutline = True
+                chart.plot_area.dTable.showKeys = True
+
+                ws.add_chart(chart)
+
+            grafico_resumen_ingresos(hoja)
+
+            return wb
+            # wb.save('reporte3_prueba.xlsx')
+
+        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
+        abreviatura = query_sociedad.abreviatura
+        wb=reporte_depositos_cuentas()
+        nombre_archivo = "Reporte_depositos_cuentas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename ={0}".format(nombre_archivo)
+        respuesta['content-disposition']= content
+        wb.save(respuesta)
+        return respuesta
+
+
+class ReporteClientesProductos(TemplateView):
+    def get(self,request, *args,**kwargs):
+        global global_sociedad, global_fecha_inicio, global_fecha_fin
+
+        def consulta_resumen_cliente():
+            sql = ''' (SELECT
+                MAX(cvfd.id) AS id
+                cvf.cliente_id as codigo_cliente,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
+                MAX(mm.descripcion_corta) as texto_material,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv/1.18), 2) AS TEXT) AS precio_cotizado_sin_igv,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv) - SUM(cvfd.precio_final_con_igv/1.18), 2) AS TEXT) AS igv_cotizado,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv), 2) AS TEXT) AS precio_cotizado,
+                STRING_AGG(CAST(ROUND(cvfd.cantidad,3) AS TEXT), ' | ') AS cantidades,
+                ROUND(SUM(cvfd.cantidad),3) AS total_cantidades,
+                COUNT(DISTINCT cvfd.factura_venta_id) AS nro_compras,
+                SUM(CASE WHEN (cvf.descuento_global > 0.00) THEN 1 ELSE 0 END) AS nro_compras_en_oferta,
+                to_char(MAX(cvfd.created_at), 'YYYY-MM-DD') as fecha_registro
+                FROM comprobante_venta_facturaventadetalle cvfd
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cvf.id=cvfd.factura_venta_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN material_material mm
+                    ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
+                WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+                GROUP BY cvf.cliente_id, cvfd.content_type_id, cvfd.id_registro
+                ORDER BY 2, 4)
+            UNION
+            (SELECT
+                MAX(cvbd.id) AS id
+                cvb.cliente_id as codigo_cliente,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
+                MAX(mm.descripcion_corta) as texto_material,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv/1.18), 2) AS TEXT) AS precio_cotizado_sin_igv,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv) - SUM(cvbd.precio_final_con_igv/1.18), 2) AS TEXT) AS igv_cotizado,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv), 2) AS TEXT) AS precio_cotizado,
+                STRING_AGG(CAST(ROUND(cvbd.cantidad,3) AS TEXT), ' | ') AS cantidades,
+                ROUND(SUM(cvbd.cantidad),3) AS total_cantidades,
+                COUNT(DISTINCT cvbd.boleta_venta_id) AS nro_compras,
+                SUM(CASE WHEN (cvb.descuento_global > 0.00) THEN 1 ELSE 0 END) AS nro_compras_en_oferta,
+                to_char(MAX(cvbd.created_at), 'YYYY-MM-DD') as fecha_registro
+                FROM comprobante_venta_boletaventadetalle cvbd
+                LEFT JOIN comprobante_venta_boletaventa cvb
+                    ON cvb.id=cvbd.boleta_venta_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN material_material mm
+                    ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
+                WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+                GROUP BY cvb.cliente_id, cvbd.content_type_id, cvbd.id_registro
+                ORDER BY 2, 4)
+            ORDER BY 2, 4 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+
+            query_info = FacturaVentaDetalle.objects.raw(sql)
+            
+            info = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.codigo_cliente)
+                lista_datos.append(dato_fila.cliente_denominacion)
+                lista_datos.append(dato_fila.materiales)
+                lista_datos.append(dato_fila.texto_material)
+                lista_datos.append(dato_fila.precio_cotizado_sin_igv)
+                lista_datos.append(dato_fila.igv_cotizado)
+                lista_datos.append(dato_fila.precio_cotizado)
+                lista_datos.append(dato_fila.cantidades)
+                lista_datos.append(dato_fila.total_cantidades)
+                lista_datos.append(dato_fila.nro_compras)
+                lista_datos.append(dato_fila.nro_compras_en_oferta)
+                lista_datos.append(dato_fila.fecha_registro)
+                info.append(lista_datos)
+
+            return info
+
+        def consulta_resumen_producto():
+            sql = ''' (SELECT
+                MAX(cvfd.id) AS id
+                STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
+                MAX(mm.descripcion_corta) as texto_material,
+                cvf.cliente_id as codigo_cliente,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv/1.18), 2) AS TEXT) AS precio_cotizado_sin_igv,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv) - SUM(cvfd.precio_final_con_igv/1.18), 2) AS TEXT) AS igv_cotizado,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv), 2) AS TEXT) AS precio_cotizado,
+                STRING_AGG(CAST(ROUND(cvfd.cantidad,3) AS TEXT), ' | ') AS cantidades,
+                ROUND(SUM(cvfd.cantidad),3) AS total_cantidades,
+                COUNT(DISTINCT cvfd.factura_venta_id) AS nro_compras,
+                SUM(CASE WHEN (cvf.descuento_global > 0.00) THEN 1 ELSE 0 END) AS nro_compras_en_oferta,
+                to_char(MAX(cvfd.created_at), 'YYYY-MM-DD') as fecha_registro
+                FROM comprobante_venta_facturaventadetalle cvfd
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cvf.id=cvfd.factura_venta_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN material_material mm
+                    ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
+                WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+                GROUP BY cvfd.content_type_id, cvfd.id_registro, cvf.cliente_id
+                ORDER BY 2, 4)
+            UNION
+            (SELECT
+                MAX(cvbd.id) AS id
+                STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
+                MAX(mm.descripcion_corta) as texto_material,
+                cvb.cliente_id as codigo_cliente,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv/1.18), 2) AS TEXT) AS precio_cotizado_sin_igv,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv) - SUM(cvbd.precio_final_con_igv/1.18), 2) AS TEXT) AS igv_cotizado,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv), 2) AS TEXT) AS precio_cotizado,
+                STRING_AGG(CAST(ROUND(cvbd.cantidad,3) AS TEXT), ' | ') AS cantidades,
+                ROUND(SUM(cvbd.cantidad),3) AS total_cantidades,
+                COUNT(DISTINCT cvbd.boleta_venta_id) AS nro_compras,
+                SUM(CASE WHEN (cvb.descuento_global > 0.00) THEN 1 ELSE 0 END) AS nro_compras_en_oferta,
+                to_char(MAX(cvbd.created_at), 'YYYY-MM-DD') as fecha_registro
+                FROM comprobante_venta_boletaventadetalle cvbd
+                LEFT JOIN comprobante_venta_boletaventa cvb
+                    ON cvb.id=cvbd.boleta_venta_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN material_material mm
+                    ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
+                WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+                GROUP BY cvbd.content_type_id, cvbd.id_registro, cvb.cliente_id
+                ORDER BY 2, 4)
+            ORDER BY 2, 4 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+
+            query_info = FacturaVentaDetalle.objects.raw(sql)
+            
+            info = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.materiales)
+                lista_datos.append(dato_fila.texto_material)
+                lista_datos.append(dato_fila.codigo_cliente)
+                lista_datos.append(dato_fila.cliente_denominacion)
+                lista_datos.append(dato_fila.precio_cotizado_sin_igv)
+                lista_datos.append(dato_fila.igv_cotizado)
+                lista_datos.append(dato_fila.precio_cotizado)
+                lista_datos.append(dato_fila.cantidades)
+                lista_datos.append(dato_fila.total_cantidades)
+                lista_datos.append(dato_fila.nro_compras)
+                lista_datos.append(dato_fila.nro_compras_en_oferta)
+                lista_datos.append(dato_fila.fecha_registro)
+                info.append(lista_datos)
+
+            return info
+
+        def procesar_consulta_resumen(info, pos=0):
+            count = 0
+            list_general = []
+            list_temp = []
+            for fila in info:
+                fila[4] = float(fila[4])
+                fila[5] = float(fila[5])
+                fila[6] = float(fila[6])
+                fila[8] = float(fila[8])
+                fila[9] = float(fila[9])
+                fila[10] = float(fila[10])
+                if count != 0:
+                    if fila[pos] != info[count-1][pos]:
+                        list_general.append(list_temp)
+                        list_temp = []
+                list_temp.append(fila)
+                count += 1
+            list_general.append(list_temp)
+            # print(list_general)
+            return list_general
+
+
+        def consulta_general_cliente_productos():
+            sql = ''' (SELECT
+                MAX(cvfd.id) AS id
+                SUBSTRING(to_char(cvfd.created_at, 'YYYY-MM-DD'),1,7) AS fecha_orden,
+                cvf.cliente_id as codigo_cliente,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
+                MAX(mm.descripcion_corta) as texto_material,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv/1.18), 2) AS TEXT) AS precio_cotizado_sin_igv,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv) - SUM(cvfd.precio_final_con_igv/1.18), 2) AS TEXT) AS igv_cotizado,
+                CAST(ROUND(SUM(cvfd.precio_final_con_igv), 2) AS TEXT) AS precio_cotizado,
+                STRING_AGG(CAST(ROUND(cvfd.cantidad,3) AS TEXT), ' | ') AS cantidades,
+                ROUND(SUM(cvfd.cantidad),3) AS total_cantidades,
+                COUNT(DISTINCT cvfd.factura_venta_id) AS nro_compras,
+                SUM(CASE WHEN (cvf.descuento_global > 0.00) THEN 1 ELSE 0 END) AS nro_compras_en_oferta,
+                to_char(MAX(cvfd.created_at), 'YYYY-MM-DD') as fecha_registro
+                FROM comprobante_venta_facturaventadetalle cvfd
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cvf.id=cvfd.factura_venta_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN material_material mm
+                    ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
+                WHERE cvf.sociedad_id='%s'
+                GROUP BY cvf.cliente_id, fecha_orden, cvfd.content_type_id, cvfd.id_registro
+                ORDER BY 1, 3, 5)
+            UNION
+            (SELECT
+                MAX(cvbd.id) AS id
+                SUBSTRING(to_char(cvbd.created_at, 'YYYY-MM-DD'),1,7) AS fecha_orden,
+                cvb.cliente_id as codigo_cliente,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
+                MAX(mm.descripcion_corta) as texto_material,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv/1.18), 2) AS TEXT) AS precio_cotizado_sin_igv,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv) - SUM(cvbd.precio_final_con_igv/1.18), 2) AS TEXT) AS igv_cotizado,
+                CAST(ROUND(SUM(cvbd.precio_final_con_igv), 2) AS TEXT) AS precio_cotizado,
+                STRING_AGG(CAST(ROUND(cvbd.cantidad,3) AS TEXT), ' | ') AS cantidades,
+                ROUND(SUM(cvbd.cantidad),3) AS total_cantidades,
+                COUNT(DISTINCT cvbd.factura_venta_id) AS nro_compras,
+                SUM(CASE WHEN (cvb.descuento_global > 0.00) THEN 1 ELSE 0 END) AS nro_compras_en_oferta,
+                to_char(MAX(cvbd.created_at), 'YYYY-MM-DD') as fecha_registro
+                FROM comprobante_venta_facturaventadetalle cvbd
+                LEFT JOIN comprobante_venta_facturaventa cvb
+                    ON cvb.id=cvbd.factura_venta_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN material_material mm
+                    ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
+                WHERE cvb.sociedad_id='%s'
+                GROUP BY cvb.cliente_id, fecha_orden, cvbd.content_type_id, cvbd.id_registro
+                ORDER BY 1, 3, 5)
+            ORDER BY 1, 3, 5; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, DICT_CONTENT_TYPE['material | material'], global_sociedad)
+            query_info = FacturaVentaDetalle.objects.raw(sql)
+            
+            info = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.fecha_orden)
+                lista_datos.append(dato_fila.codigo_cliente)
+                lista_datos.append(dato_fila.cliente_denominacion)
+                lista_datos.append(dato_fila.materiales)
+                lista_datos.append(dato_fila.texto_material)
+                lista_datos.append(dato_fila.precio_cotizado_sin_igv)
+                lista_datos.append(dato_fila.igv_cotizado)
+                lista_datos.append(dato_fila.precio_cotizado)
+                lista_datos.append(dato_fila.cantidades)
+                lista_datos.append(dato_fila.total_cantidades)
+                lista_datos.append(dato_fila.nro_compras)
+                lista_datos.append(dato_fila.nro_compras_en_oferta)
+                lista_datos.append(dato_fila.fecha_registro)
+                info.append(lista_datos)
+
+            return info
+
+        def procesar_consulta_cliente_productos(info):
+            list_general = []
+            list_mes = []
+            list_cliente = []
+            # list_temp = []
+            # count = 0
+            # for fila in info:
+            #     fila[4] = float(fila[4])
+            #     fila[5] = float(fila[5])
+            #     fila[6] = float(fila[6])
+            #     fila[8] = float(fila[8])
+            #     fila[9] = float(fila[9])
+            #     fila[10] = float(fila[10])
+            #     # list_cliente.append(fila)
+            #     if count != 0:
+            #         if fila[11][:7] != info[count-1][11][:7]: # verifica el mes
+            #             # list_mes.append(list_cliente)
+            #             list_general.append(list_mes)
+            #             list_mes = []
+            #             # list_cliente = []
+            #         if fila[0] != info[count-1][0]: # verifica el cliente
+            #             list_mes.append(list_cliente)
+            #             list_cliente = []
+            #     # list_mes.append(list_cliente)
+            #     list_cliente.append(fila)
+            #     count += 1
+            # if list_cliente != []:
+            #     list_mes.append(list_cliente)
+            # if list_mes != []:
+            #     list_general.append(list_mes)
+            # # print(list_general)
+
+            count = 0
+            for fila in info:
+                fila[4] = float(fila[4])
+                fila[5] = float(fila[5])
+                fila[6] = float(fila[6])
+                fila[8] = float(fila[8])
+                fila[9] = float(fila[9])
+                fila[10] = float(fila[10])
+                if count != 0:
+                    mes_actual = fila[11][:7]
+                    mes_anterior = info[count-1][11][:7]
+                    cliente_actual = fila[0]
+                    cliente_anterior = info[count-1][0]
+                    if (mes_actual == mes_anterior) and (cliente_actual != cliente_anterior):
+                        list_mes.append(list_cliente)
+                        list_cliente = []
+                        list_cliente.append(fila)
+                    elif (mes_actual != mes_anterior) and (cliente_actual == cliente_anterior):
+                        list_mes.append(list_cliente)
+                        list_general.append(list_mes)
+                        list_mes = []
+                        list_cliente = []
+                        list_cliente.append(fila)
+                    elif (mes_actual == mes_anterior) and (cliente_actual == cliente_anterior):
+                        list_cliente.append(fila)
+                        # list_mes.append(list_cliente)
+                    elif (mes_actual != mes_anterior) and (cliente_actual != cliente_anterior):
+                        list_mes.append(list_cliente)
+                        list_general.append(list_mes)
+                        list_mes = []
+                        list_cliente = []
+                        list_cliente.append(fila)
+                else:
+                    list_cliente = []
+                    list_cliente.append(fila)
+                count += 1
+            if list_mes != []:
+                list_general.append(list_mes)
+
+            return list_general
+
+            # sql = ''' SELECT COUNT(DISTINCT df.Cod_Material) AS producto, cf.Cod_Cliente, mc.Razon_Social, GROUP_CONCAT(df.Cod_Material SEPARATOR ' | ') AS materiales, cm.Texto_Breve,
+            #         ROUND(SUM(df.Precio_Final)/1.18,2) AS precio_cot_sin_igv,
+            #         (SUM(df.Precio_Final) - ROUND(SUM(df.Precio_Final)/1.18,2)) AS igv_cotizado,
+            #         SUM(df.Precio_Final) AS precio_cotizado,
+            #         GROUP_CONCAT(df.Precio_Final SEPARATOR ' | ') as precios,
+            #         GROUP_CONCAT(df.Cantidad SEPARATOR ' | ') AS cantidades, SUM(df.Cantidad), COUNT(DISTINCT df.Nro_Facturacion) as nro_compras,
+            #         GROUP_CONCAT(df.Fecha_Reg SEPARATOR ' | ') AS fechas_compra,
+            #         SUM(IF(cf.Descuento_Global > 0.00,1,0)) AS nro_compras_en_oferta
+            #     	FROM `TAB_VENTA_010_Detalle_Facturacion` df
+            #     	LEFT JOIN `TAB_VENTA_009_Cabecera_Facturacion` cf ON cf.Cod_Soc=df.Cod_Soc AND cf.Año=df.Año AND cf.Tipo_Comprobante=df.Tipo_Comprobante AND cf.Serie=df.Serie AND cf.Nro_Facturacion=df.Nro_Facturacion
+            #         LEFT JOIN `TAB_COM_001_Maestro Clientes` mc ON mc.Cod_Cliente=cf.Cod_Cliente
+            #         LEFT JOIN `TAB_MAT_001_Catalogo_Materiales` cm ON cm.Cod_Soc=df.Cod_Soc AND cm.Cod_Mat=df.Cod_Material
+            #         WHERE df.Fecha_Reg<=CAST('2021-11-30' AS date) AND df.Fecha_Reg>=CAST('2021-11-01' AS date)
+            #         GROUP BY df.Cod_Material, cf.Cod_Cliente
+            #         HAVING COUNT(DISTINCT df.Cod_Material)>1
+            #         ORDER BY mc.Razon_Social, cm.Texto_Breve ASC ;'''
+
+        def reporte_cliente_productos():
+            list_general = procesar_consulta_cliente_productos(consulta_general_cliente_productos())
+            # print(list_general)
+            # print()
+            list_resumen_cliente = procesar_consulta_resumen(consulta_resumen_cliente())
+            list_resumen_producto = procesar_consulta_resumen(consulta_resumen_producto())
+            # print(list_resumen_cliente)
+            # print()
+            # print(list_resumen_producto)
+
+            wb = Workbook() #  7429
+
+            count = 0
+            for info in list_general:
+                mes = info[0][0][11][5:7]
+                año = info[0][0][11][:4]
+                mes_inicial = global_fecha_inicio[5:7]
+                año_inicial = global_fecha_inicio[:4]
+                mes_final = global_fecha_fin[5:7]
+                año_final = global_fecha_fin[:4]
+                año_mes = año + mes
+                año_mes_inicial = año_inicial + mes_inicial
+                año_mes_final = año_final + mes_final
+
+                if float(año_mes) >= float(año_mes_inicial) and float(año_mes) <= float(año_mes_final):
+                    name_sheet = DICT_MESES[str(info[0][0][11][5:7])] + ' - ' + str(info[0][0][11][:4])
+                    if count != 0:
+                        hoja = wb.create_sheet(name_sheet)
+                        # wb.active = hoja
+                    else:
+                        hoja = wb.active
+                        hoja.title = name_sheet
+                        count += 1
+
+                    for data_cliente in info:
+                        if data_cliente != []:
+                            hoja.append((data_cliente[0][1],''))
+                            hoja.append(('PRODUCTO', 'SUB TOTAL (US$)', 'IGV (US$)', 'TOTAL (US$)', 'CANTIDADES', 'CANT. TOTAL', 'NRO. COMPRAS', 'NRO. COMPRAS EN OFERTA')) # Crea la fila del encabezado con los títulos
+                            if global_sociedad == '2':
+                                color_relleno = RELLENO_MP
+                            if global_sociedad == '1':
+                                color_relleno = RELLENO_MC
+
+                            col_range = hoja.max_column
+                            nueva_fila = hoja.max_row
+                            for col in range(1, col_range + 1):
+                                cell_header = hoja.cell(nueva_fila, col)
+                                cell_header.fill = color_relleno
+                                cell_header.font = NEGRITA
+                            for producto in data_cliente:
+                                fila = producto[3:-1]
+                                hoja.append(fila)
+
+                            for i in range(hoja.max_row):
+                                if i >= nueva_fila-1:
+                                    row = list(hoja.rows)[i]
+                                    for col in range(hoja.max_column):
+                                        row[col].border = BORDE_DELGADO
+                                        if 1 <= col <= 3:
+                                            row[col].number_format = FORMATO_DOLAR
+                                        elif col == 4:
+                                            row[col].alignment = ALINEACION_DERECHA
+                                        elif col == 5:
+                                            row[col].number_format = FORMATO_NUMERO
+                        hoja.append(('',''))
+                    ajustarColumnasSheet(hoja)
+
+            def crear_sheet_resumen(wb, name_sheet, list_resumen, nombre_columna):
+                hoja = wb.create_sheet(name_sheet)
+                for data_cliente in list_resumen:
+                    if data_cliente != []:
+                        hoja.append((data_cliente[0][1],''))
+                        hoja.append((nombre_columna, 'SUB TOTAL (US$)', 'IGV (US$)', 'TOTAL (US$)', 'CANTIDADES', 'CANT. TOTAL', 'NRO. COMPRAS', 'NRO. COMPRAS EN OFERTA')) # Crea la fila del encabezado con los títulos
+                        if global_sociedad == '2':
+                            color_relleno = RELLENO_MP
+                        if global_sociedad == '1':
+                            color_relleno = RELLENO_MC
+
+                        col_range = hoja.max_column
+                        nueva_fila = hoja.max_row
+                        for col in range(1, col_range + 1):
+                            cell_header = hoja.cell(nueva_fila, col)
+                            cell_header.fill = color_relleno
+                            cell_header.font = NEGRITA
+                        for producto in data_cliente:
+                            fila = producto[3:-1]
+                            hoja.append(fila)
+
+                        for i in range(hoja.max_row):
+                            if i >= nueva_fila-1:
+                                row = list(hoja.rows)[i]
+                                for col in range(hoja.max_column):
+                                    row[col].border = BORDE_DELGADO
+                                    if 1 <= col <= 3:
+                                        row[col].number_format = FORMATO_DOLAR
+                                    elif col == 4:
+                                        row[col].alignment = ALINEACION_DERECHA
+                                    elif col == 5:
+                                        row[col].number_format = FORMATO_NUMERO
+                    hoja.append(('',''))
+                ajustarColumnasSheet(hoja)
+
+            crear_sheet_resumen(wb, 'Resumen Cliente', list_resumen_cliente, 'PRODUCTO')
+            crear_sheet_resumen(wb, 'Resumen Productos', list_resumen_producto, 'CLIENTE')
+            ajustarColumnasSheet(hoja)
+
+            return wb
+
+        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
+        abreviatura = query_sociedad.abreviatura
+        wb=reporte_cliente_productos()
+        nombre_archivo = "Reporte_cliente_productos - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
