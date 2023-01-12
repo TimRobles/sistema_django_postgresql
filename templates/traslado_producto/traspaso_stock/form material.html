@@ -1,0 +1,18 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block js %}
+    <!-- <script src="{% static 'js/activos/form_activo_base.js' %}?{{ cache_bust }}"></script> -->
+    
+    <script>
+        $(function () {
+
+            $("#id_material").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+        });
+    </script>
+{% endblock js %}

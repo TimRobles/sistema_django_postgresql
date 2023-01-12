@@ -5,6 +5,7 @@ from applications.comprobante_despacho.managers import GuiaVentaManager
 from applications.funciones import numeroXn
 
 from applications.datos_globales.models import Distrito, SeriesComprobante, Unidad
+from applications.home.templatetags.funciones_propias import diccionario_tipo_documento
 from applications.logistica.models import Despacho
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
@@ -69,6 +70,33 @@ class Guia(models.Model):
     @property
     def detalles(self):
         return self.GuiaDetalle_guia_venta.all()
+
+    @property
+    def confirmacion(self):
+        try:
+            return self.despacho.nota_salida.confirmacion_venta
+        except:
+            return None
+    
+    @property
+    def observaciones_totales(self):
+        observaciones = []
+        if self.cliente_interlocutor:
+            if self.cliente_interlocutor.numero_documento:
+                observaciones.append(f"Contacto: {self.cliente_interlocutor.nombre_completo} {diccionario_tipo_documento(self.cliente_interlocutor.tipo_documento)}: {self.cliente_interlocutor.numero_documento}")
+            else:
+                observaciones.append(f"Contacto: {self.cliente_interlocutor.nombre_completo}")
+        if self.confirmacion:
+            if self.confirmacion.facturas:
+                for factura in self.confirmacion.facturas:
+                    observaciones.append(f"{factura.get_tipo_comprobante_display()} {factura.serie_comprobante}-{numeroXn(factura.numero_factura,6)}")
+        
+            if self.confirmacion.boletas:
+                for boleta in self.confirmacion.boletas:
+                    observaciones.append(f"{boleta.get_tipo_comprobante_display()} {boleta.serie_comprobante}-{numeroXn(boleta.numero_boleta,6)}")
+        if self.observaciones:
+            observaciones.append(self.observaciones)
+        return " | ".join(observaciones)
 
     @property
     def descripcion(self):

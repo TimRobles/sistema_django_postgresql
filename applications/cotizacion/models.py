@@ -275,6 +275,38 @@ class ConfirmacionVenta(models.Model):
         except:
             return True
 
+    @property
+    def facturas(self):
+        facturas = []
+        try:
+            for factura in self.FacturaVenta_confirmacion.filter(estado=4):
+                facturas.append(factura)
+        except:
+            pass
+        return facturas
+
+    @property
+    def boletas(self):
+        boletas = []
+        try:
+            for boleta in self.BoletaVenta_confirmacion.filter(models.Q(estado=4) | models.Q(estado=5)):
+                boletas.append(boleta)
+        except:
+            pass
+        return boletas
+
+    @property
+    def guias(self):
+        guias = []
+        try:
+            for nota_salida in self.NotaSalida_confirmacion_venta.filter(estado=2):
+                for despacho in nota_salida.Despacho_nota_salida.filter(estado=5):
+                    for guia in despacho.Guia_despacho.filter(estado=4):
+                        guias.append(guia)
+        except:
+            pass
+        return guias
+
     def __str__(self):
         return "%s%s" % (self.sociedad.abreviatura, self.cotizacion_venta)
 

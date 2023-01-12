@@ -275,23 +275,28 @@ class TraspasoStockForm(BSModalModelForm):
         
     def __init__(self, *args, **kwargs):
         super(TraspasoStockForm, self).__init__(*args, **kwargs)   
+        self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 
 class TraspasoStockDetalleForm(BSModalModelForm):
     material = forms.ModelChoiceField(queryset=Material.objects.all())
+    stock_disponible = forms.CharField(required=False)
     class Meta:
         model = TraspasoStockDetalle
         fields = (
             'material',
             'almacen',
-            'cantidad',
             'tipo_stock_inicial',
+            'stock_disponible',
+            'cantidad',
             'tipo_stock_final',
             )
         
     def __init__(self, *args, **kwargs):
+        traspaso_stock = kwargs.pop('traspaso_stock')
         super(TraspasoStockDetalleForm, self).__init__(*args, **kwargs)   
+        self.fields['almacen'].queryset = traspaso_stock.sede.Almacen_sede.filter(estado_alta_baja=1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

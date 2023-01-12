@@ -1232,7 +1232,7 @@ class TraspasoStockDetalleCreateView(PermissionRequiredMixin, BSModalCreateView)
     permission_required = ('traslado_producto.add_traspasostock')
 
     model = TraspasoStockDetalle
-    template_name = "includes/formulario generico.html"
+    template_name = "traslado_producto/traspaso_stock/form material.html"
     form_class = TraspasoStockDetalleForm
     
     def get_success_url(self, **kwargs):
