@@ -515,13 +515,13 @@ class InterlocutorClienteDeleteView(PermissionRequiredMixin, BSModalDeleteView):
                     solicitud_credito.interlocutor_solicita = interlocutor_reemplazo
                     solicitud_credito.save()
                 for guia in self.object.Guia_interlocutor.all():
-                    guia.interlocutor = interlocutor_reemplazo
+                    guia.cliente_interlocutor = interlocutor_reemplazo
                     guia.save()
                 for factura in self.object.FacturaVenta_interlocutor.all():
-                    factura.interlocutor = interlocutor_reemplazo
+                    factura.cliente_interlocutor = interlocutor_reemplazo
                     factura.save()
                 for boleta in self.object.BoletaVenta_interlocutor.all():
-                    boleta.interlocutor = interlocutor_reemplazo
+                    boleta.cliente_interlocutor = interlocutor_reemplazo
                     boleta.save()
                 for cotizacion in self.object.CotizacionVenta_cliente_interlocutor.all():
                     cotizacion.cliente_interlocutor = interlocutor_reemplazo
@@ -536,7 +536,7 @@ class InterlocutorClienteDeleteView(PermissionRequiredMixin, BSModalDeleteView):
                     solicitud_prestamo_materiales.interlocutor_cliente = interlocutor_reemplazo
                     solicitud_prestamo_materiales.save()
                 for nota_credito in self.object.NotaCredito_interlocutor.all():
-                    nota_credito.interlocutor = interlocutor_reemplazo
+                    nota_credito.cliente_interlocutor = interlocutor_reemplazo
                     nota_credito.save() 
 
         except Exception as ex:
