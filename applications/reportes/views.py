@@ -1774,7 +1774,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                 file.write(info)
                 file.close()
 
-            extraer_resumen_bloc_de_notas(hoja)
+            # extraer_resumen_bloc_de_notas(hoja)
 
             def grafico_resumen_ingresos(ws):
                 max_fila = ws.max_row
