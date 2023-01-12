@@ -5,21 +5,6 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Traspaso Stock
-        {% if contexto_traspaso_stock.estado == 1 %}
-            <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_detalle_registrar' contexto_traspaso_stock.id %}"
-                data-table-url="{% url 'traslado_producto_app:traspaso_stock_detalle_tabla' contexto_traspaso_stock.id %}"
-                class="create badge bg-primary">
-                Agregar Material
-            </button>
-            <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_concluir' contexto_traspaso_stock.id %}"
-                class="delete badge bg-primary">
-                Concluir Traspaso Stock
-            </button>
-        {% endif %}
-        <a href="{% url 'traslado_producto_app:traspaso_stock_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
-    </h3>
-    <br>
     <div id="tabla">
         {% include 'traslado_producto/traspaso_stock/detalle_tabla.html' %}
     </div>

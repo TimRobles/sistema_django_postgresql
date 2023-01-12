@@ -1132,6 +1132,11 @@ class TraspasoStockCreateView(PermissionRequiredMixin, BSModalCreateView):
     form_class = TraspasoStockForm
     success_url = reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         item = len(TraspasoStock.objects.all())
         form.instance.nro_traspaso = item + 1
@@ -1153,6 +1158,11 @@ class TraspasoStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     form_class = TraspasoStockForm
     success_url = reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(TraspasoStockUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
@@ -1169,6 +1179,11 @@ class TraspasoStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('traslado_producto.delete_traspasostock')
     model = TraspasoStock
     template_name = "traslado_producto/traspaso_stock/boton.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:traspaso_stock_detalle', kwargs={'pk': self.get_object().id})
@@ -1230,13 +1245,23 @@ def TraspasoStockDetailTabla(request, pk):
 
 class TraspasoStockDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('traslado_producto.add_traspasostock')
-
     model = TraspasoStockDetalle
     template_name = "traslado_producto/traspaso_stock/form material.html"
     form_class = TraspasoStockDetalleForm
     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('traslado_producto_app:traspaso_stock_detalle', kwargs={'pk':self.kwargs['traspaso_stock_id']})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        traspaso_stock = TraspasoStock.objects.get(id = self.kwargs['traspaso_stock_id'])
+        kwargs['traspaso_stock'] = traspaso_stock
+        return kwargs
 
     def form_valid(self, form):
         traspaso_stock = TraspasoStock.objects.get(id = self.kwargs['traspaso_stock_id'])
