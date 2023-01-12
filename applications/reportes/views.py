@@ -122,7 +122,7 @@ class ReporteContador(TemplateView):
                 lista_datos.append(fila.valor_venta)
                 lista_datos.append(fila.igv)
                 lista_datos.append(fila.total_venta)
-                lista_datos.append(fila.motivo_nota)
+                lista_datos.append(str(fila.motivo_nota))
                 lista_datos.append(fila.url_nota)
                 info.append(lista_datos)
 
@@ -1548,6 +1548,9 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     mes = list_mes_deposito[0][0][3:5]
                     año = list_mes_deposito[0][0][6:]
                     name_sheet = DICT_MESES[str(mes)] + ' - ' + str(año)
+                    print('*************************************')
+                    print(str(mes), name_sheet, list_temp_hojas)
+                    print('*************************************')
                     if count != 0:
                         if name_sheet not in list_temp_hojas:
                             hoja = wb.create_sheet(name_sheet)
@@ -1846,7 +1849,7 @@ class ReporteClientesProductos(TemplateView):
 
         def consulta_resumen_cliente():
             sql = ''' (SELECT
-                MAX(cvfd.id) AS id
+                MAX(cvfd.id) AS id,
                 cvf.cliente_id as codigo_cliente,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
@@ -1871,7 +1874,7 @@ class ReporteClientesProductos(TemplateView):
                 ORDER BY 2, 4)
             UNION
             (SELECT
-                MAX(cvbd.id) AS id
+                MAX(cvbd.id) AS id,
                 cvb.cliente_id as codigo_cliente,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
@@ -1919,7 +1922,7 @@ class ReporteClientesProductos(TemplateView):
 
         def consulta_resumen_producto():
             sql = ''' (SELECT
-                MAX(cvfd.id) AS id
+                MAX(cvfd.id) AS id,
                 STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
                 MAX(mm.descripcion_corta) as texto_material,
                 cvf.cliente_id as codigo_cliente,
@@ -1944,7 +1947,7 @@ class ReporteClientesProductos(TemplateView):
                 ORDER BY 2, 4)
             UNION
             (SELECT
-                MAX(cvbd.id) AS id
+                MAX(cvbd.id) AS id,
                 STRING_AGG(DISTINCT CAST(mm.id AS TEXT), ' | ') AS materiales,
                 MAX(mm.descripcion_corta) as texto_material,
                 cvb.cliente_id as codigo_cliente,
@@ -2014,7 +2017,7 @@ class ReporteClientesProductos(TemplateView):
 
         def consulta_general_cliente_productos():
             sql = ''' (SELECT
-                MAX(cvfd.id) AS id
+                MAX(cvfd.id) AS id,
                 SUBSTRING(to_char(cvfd.created_at, 'YYYY-MM-DD'),1,7) AS fecha_orden,
                 cvf.cliente_id as codigo_cliente,
                 MAX(cc.razon_social) AS cliente_denominacion,
@@ -2040,7 +2043,7 @@ class ReporteClientesProductos(TemplateView):
                 ORDER BY 1, 3, 5)
             UNION
             (SELECT
-                MAX(cvbd.id) AS id
+                MAX(cvbd.id) AS id,
                 SUBSTRING(to_char(cvbd.created_at, 'YYYY-MM-DD'),1,7) AS fecha_orden,
                 cvb.cliente_id as codigo_cliente,
                 MAX(cc.razon_social) AS cliente_denominacion,
@@ -2070,7 +2073,6 @@ class ReporteClientesProductos(TemplateView):
             info = []
             for dato_fila in query_info:
                 lista_datos = []
-                lista_datos.append(dato_fila.fecha_orden)
                 lista_datos.append(dato_fila.codigo_cliente)
                 lista_datos.append(dato_fila.cliente_denominacion)
                 lista_datos.append(dato_fila.materiales)
