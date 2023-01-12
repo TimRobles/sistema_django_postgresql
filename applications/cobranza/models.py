@@ -57,7 +57,7 @@ class SolicitudCredito(models.Model):
     total_cotizado = models.DecimalField('Total Cotizado', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_credito = models.DecimalField('Total Crédito', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     condiciones_pago = models.CharField('Condiciones de pago', max_length=250, blank=True, null=True, help_text='Factura a 30 días')
-    interlocutor_solicita = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, blank=True, null=True)
+    interlocutor_solicita = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, blank=True, null=True, related_name='SolicitudCredito_interlocutor_solicita')
     estado = models.IntegerField(choices=ESTADO_SOLICITUD, default=1)
     aprobado_por = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Aprobado por', on_delete=models.RESTRICT, blank=True, null=True)
 

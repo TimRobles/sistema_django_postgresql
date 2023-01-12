@@ -130,6 +130,14 @@ class InterlocutorClienteForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class InterlocutorClienteEliminarForm(forms.Form):
+    interlocutor_reemplazo = forms.ModelChoiceField(queryset = InterlocutorCliente.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(InterlocutorClienteEliminarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class InterlocutorClienteUpdateForm(BSModalModelForm):
     tipo_interlocutor = forms.ModelChoiceField(label = 'Tipo de Interlocutor', queryset = TipoInterlocutorCliente.objects.all())
     class Meta:

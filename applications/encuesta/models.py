@@ -73,7 +73,7 @@ class Alternativa(models.Model):
 
 class Respuesta(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, blank=True, null=True)
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, blank=True, null=True, related_name='Respuesta_interlocutor')
     nombre_interlocutor = models.CharField('Nombre Interlocutor', max_length=50, blank=True, null=True)
     tipo_interlocutor = models.ForeignKey(TipoInterlocutorCliente, on_delete=models.PROTECT, blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

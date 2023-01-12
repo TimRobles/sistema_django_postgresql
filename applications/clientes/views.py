@@ -12,7 +12,8 @@ from .forms import (
     ClienteInterlocutorUpdateForm,
     CorreoClienteDarBajaForm,
     CorreoClienteForm,
-    InterlocutorBuscarForm, 
+    InterlocutorBuscarForm,
+    InterlocutorClienteEliminarForm, 
     InterlocutorClienteForm,
     InterlocutorClienteUpdateForm,
     RepresentanteLegalClienteDarBajaForm,
@@ -486,7 +487,8 @@ def InterlocutorClienteDetailTabla(request, pk):
 class InterlocutorClienteDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('clientes.delete_interlocutorcliente')
     model = InterlocutorCliente
-    template_name = "includes/eliminar generico.html"
+    template_name = "clientes/interlocutor/form eliminar.html"
+    form_class = InterlocutorClienteEliminarForm
     
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -505,6 +507,38 @@ class InterlocutorClienteDeleteView(PermissionRequiredMixin, BSModalDeleteView):
                 telefono.delete()
             for correo in self.object.CorreoInterlocutorCliente_interlocutor.all():
                 correo.delete()
+
+            form = self.form_class(request.POST)
+            if form.is_valid():
+                interlocutor_reemplazo = form.cleaned_data['interlocutor_reemplazo']
+                for solicitud_credito in self.object.SolicitudCredito_interlocutor_solicita.all():
+                    solicitud_credito.interlocutor_solicita = interlocutor_reemplazo
+                    solicitud_credito.save()
+                for guia in self.object.Guia_interlocutor.all():
+                    guia.interlocutor = interlocutor_reemplazo
+                    guia.save()
+                for factura in self.object.FacturaVenta_interlocutor.all():
+                    factura.interlocutor = interlocutor_reemplazo
+                    factura.save()
+                for boleta in self.object.BoletaVenta_interlocutor.all():
+                    boleta.interlocutor = interlocutor_reemplazo
+                    boleta.save()
+                for cotizacion in self.object.CotizacionVenta_cliente_interlocutor.all():
+                    cotizacion.cliente_interlocutor = interlocutor_reemplazo
+                    cotizacion.save()
+                for confirmacion in self.object.ConfirmacionVenta_cliente_interlocutor.all():
+                    confirmacion.cliente_interlocutor = interlocutor_reemplazo
+                    confirmacion.save()
+                for respuesta in self.object.Respuesta_interlocutor.all():
+                    respuesta.interlocutor = interlocutor_reemplazo
+                    respuesta.save()
+                for solicitud_prestamo_materiales in self.object.SolicitudPrestamoMateriales_interlocutor_cliente.all():
+                    solicitud_prestamo_materiales.interlocutor_cliente = interlocutor_reemplazo
+                    solicitud_prestamo_materiales.save()
+                for nota_credito in self.object.NotaCredito_interlocutor.all():
+                    nota_credito.interlocutor = interlocutor_reemplazo
+                    nota_credito.save() 
+
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -515,6 +549,7 @@ class InterlocutorClienteDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion'] = "Eliminar"
         context['titulo'] = "Interlocutor"
         context['item'] = self.get_object()
+        context['form'] = self.form_class
         return context
 
 

@@ -22,7 +22,7 @@ class SolicitudPrestamoMateriales(models.Model):
     numero_prestamo = models.IntegerField('Número Prestamo', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    interlocutor_cliente = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT,blank=True, null=True)
+    interlocutor_cliente = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT,blank=True, null=True, related_name='SolicitudPrestamoMateriales_interlocutor_cliente')
     fecha_prestamo = models.DateField('Fecha Prestamo', auto_now=False, auto_now_add=False)
     comentario = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
