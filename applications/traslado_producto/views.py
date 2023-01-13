@@ -6,7 +6,7 @@ from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.material.funciones import stock, stock_sede_tipo_stock, tipo_stock_sede
 from applications.material.models import Material
-from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 from applications.sociedad.models import Sociedad
 
 from .models import (
@@ -18,6 +18,7 @@ from .models import (
     ValidarSerieEnvioTrasladoProductoDetalle,
     TraspasoStock,
     TraspasoStockDetalle,
+    ValidarSerieTraspasoStockDetalle,
 )
 
 from .forms import (
@@ -32,7 +33,9 @@ from .forms import (
     RecepcionTrasladoProductoObservacionesForm,
     RecepcionTrasladoProductoMaterialDetalleForm,
     RecepcionTrasladoProductoMaterialActualizarDetalleForm,
+    TraspasoStockDetalleActualizarForm,
     TraspasoStockDetalleForm,
+    TraspasoStockDetalleSeriesForm,
     TraspasoStockForm,
 )
 
@@ -156,8 +159,20 @@ class EnvioTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDeleteVie
     template_name = "includes/eliminar generico.html"
     
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cantidad_series = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().EnvioTrasladoProductoDetalle_envio_traslado_producto.all()
+        for detalle in detalles:
+            if detalle.control_serie and detalle.series_validar != detalle.cantidad_envio:
+                error_cantidad_series = True
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_cantidad_series:
+            context['texto'] = 'Hay Series sin registrar.'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -1128,7 +1143,7 @@ def TraspasoStockTabla(request):
 class TraspasoStockCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('traslado_producto.add_traspasostock')
     model = TraspasoStock
-    template_name = "includes/formulario generico.html"
+    template_name = "traslado_producto/traspaso_stock/form_actualizar.html"
     form_class = TraspasoStockForm
     success_url = reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
 
@@ -1147,6 +1162,7 @@ class TraspasoStockCreateView(PermissionRequiredMixin, BSModalCreateView):
         context = super(TraspasoStockCreateView, self).get_context_data(**kwargs)
         context['accion'] = "Registrar"
         context['titulo'] = "Traspaso de Stock"
+        context['url_sede'] = reverse_lazy('sociedad_app:sociedad_sede', kwargs={'id_sociedad':1})[:-2]
         return context
 
 
@@ -1154,7 +1170,7 @@ class TraspasoStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('traslado_producto.change_traspasostock')
 
     model = TraspasoStock
-    template_name = "includes/formulario generico.html"
+    template_name = "traslado_producto/traspaso_stock/form_actualizar.html"
     form_class = TraspasoStockForm
     success_url = reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
 
@@ -1167,6 +1183,7 @@ class TraspasoStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context = super(TraspasoStockUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Traspaso Stock"
+        context['url_sede'] = reverse_lazy('sociedad_app:sociedad_sede', kwargs={'id_sociedad':1})[:-2]
         return context
 
     def form_valid(self, form):
@@ -1178,11 +1195,30 @@ class TraspasoStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 class TraspasoStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('traslado_producto.delete_traspasostock')
     model = TraspasoStock
-    template_name = "traslado_producto/traspaso_stock/boton.html"
+    template_name = "includes/eliminar generico.html"
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cantidad_series = False
+        error_almacen_series = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().TraspasoStockDetalle_traspaso_stock.all()
+        for detalle in detalles:
+            for validar_serie in detalle.ValidarSerieTraspasoStockDetalle_traspaso_stock_detalle.all():
+                if detalle.control_serie and detalle.almacen != validar_serie.serie.almacen:
+                    error_almacen_series = True
+            if detalle.control_serie and detalle.series_validar != detalle.cantidad:
+                error_cantidad_series = True
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_cantidad_series:
+            context['texto'] = 'Hay Series sin registrar.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_almacen_series:
+            context['texto'] = 'Hay errores en los almacenes de las series.'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -1193,6 +1229,79 @@ class TraspasoStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
+            movimiento_inicial = TipoMovimiento.objects.get(codigo=142)  # Salida por traspaso
+            movimiento_final = TipoMovimiento.objects.get(codigo=143)  # Recepción por traspaso
+            for detalle in self.object.TraspasoStockDetalle_traspaso_stock.all():
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    tipo_movimiento=movimiento_inicial,
+                    tipo_stock=detalle.tipo_stock_inicial,
+                    signo_factor_multiplicador=-1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=detalle.almacen,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    tipo_movimiento=movimiento_inicial,
+                    tipo_stock=movimiento_inicial.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=movimiento_uno,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                movimiento_tres = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=movimiento_final.tipo_stock_inicial,
+                    signo_factor_multiplicador=-1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=movimiento_dos,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                movimiento_cuatro = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=detalle.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=detalle.almacen,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=movimiento_tres,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+
+                for validar in detalle.ValidarSerieTraspasoStockDetalle_traspaso_stock_detalle.all():
+                    validar.serie.serie_movimiento_almacen.add(movimiento_uno)
+                    validar.serie.serie_movimiento_almacen.add(movimiento_dos)
+                    validar.serie.serie_movimiento_almacen.add(movimiento_tres)
+                    validar.serie.serie_movimiento_almacen.add(movimiento_cuatro)
+                    validar.delete()
+            
             self.object.estado = 2
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -1268,11 +1377,153 @@ class TraspasoStockDetalleCreateView(PermissionRequiredMixin, BSModalCreateView)
         form.instance.traspaso_stock = traspaso_stock
         item = len(TraspasoStockDetalle.objects.filter(traspaso_stock=traspaso_stock))
         form.instance.item = item + 1
+        form.instance.content_type = ContentType.objects.get_for_model(form.cleaned_data['material'])
+        form.instance.id_registro = form.cleaned_data['material'].id
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        traspaso_stock = TraspasoStock.objects.get(id = self.kwargs['traspaso_stock_id'])
         context = super(TraspasoStockDetalleCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Material"
+        context['sociedad'] = traspaso_stock.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
+        context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
+        return context
+
+
+class TraspasoStockDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('traslado_producto.change_traspasostock')
+    model = TraspasoStockDetalle
+    template_name = "traslado_producto/traspaso_stock/form_actualizar_material.html"
+    form_class = TraspasoStockDetalleActualizarForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:traspaso_stock_detalle', kwargs={'pk':self.kwargs['traspaso_stock_id']})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        traspaso_stock = TraspasoStock.objects.get(id = self.kwargs['traspaso_stock_id'])
+        kwargs['traspaso_stock'] = traspaso_stock
+        return kwargs
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        traspaso_stock = TraspasoStock.objects.get(id = self.kwargs['traspaso_stock_id'])
+        context = super(TraspasoStockDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Material"
+        context['material'] = self.get_object().producto
+        context['sociedad'] = traspaso_stock.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
+        context['url_unidad'] = reverse_lazy('material_app:unidad_material', kwargs={'id_material':1})[:-2]
+        return context
+
+
+class ValidarSeriesTraspasoStockDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('traslado_producto.view_traspasostockdetalle')
+    template_name = "traslado_producto/validar_serie_traspaso_stock/detalle.html"
+    form_class = TraspasoStockDetalleSeriesForm
+    success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            serie = form.cleaned_data['serie']
+            traspaso_stock_detalle = TraspasoStockDetalle.objects.get(id = self.kwargs['pk'])
+            try:
+                buscar = Serie.objects.get(
+                    serie_base=serie,
+                    content_type=ContentType.objects.get_for_model(traspaso_stock_detalle.producto),
+                    id_registro=traspaso_stock_detalle.producto.id,
+                )
+                buscar2 = ValidarSerieTraspasoStockDetalle.objects.filter(serie = buscar)
+
+                if len(buscar2) != 0:
+                    form.add_error('serie', "Serie ya ha sido registrada")
+                    return super().form_invalid(form)
+
+                if buscar.estado != 'DISPONIBLE':
+                    form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                    return super().form_invalid(form)
+            except:
+                form.add_error('serie', "Serie no encontrada: %s" % serie)
+                return super().form_invalid(form)
+
+            traspaso_stock_detalle = TraspasoStockDetalle.objects.get(id = self.kwargs['pk'])
+            obj, created = ValidarSerieTraspasoStockDetalle.objects.get_or_create(
+                traspaso_stock_detalle=traspaso_stock_detalle,
+                serie=buscar,
+            )
+            if created:
+                obj.estado = 1
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        traspaso_stock_detalle = TraspasoStockDetalle.objects.get(id = self.kwargs['pk'])
+        cantidad = traspaso_stock_detalle.cantidad
+        cantidad_registrada = len(ValidarSerieTraspasoStockDetalle.objects.filter(traspaso_stock_detalle=traspaso_stock_detalle))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad'] = cantidad
+        kwargs['cantidad_registrada'] = cantidad_registrada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        traspaso_stock_detalle = TraspasoStockDetalle.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesTraspasoStockDetailView, self).get_context_data(**kwargs)
+        context['contexto_traspaso_stock_detalle'] = traspaso_stock_detalle
+        context['contexto_series'] = ValidarSerieTraspasoStockDetalle.objects.filter(traspaso_stock_detalle = traspaso_stock_detalle)
+        return context
+
+def ValidarSeriesTraspasoStockDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'traslado_producto/validar_serie_traspaso_stock/detalle_tabla.html'
+        context = {}
+        traspaso_stock_detalle = TraspasoStockDetalle.objects.get(id = pk)
+        context['contexto_traspaso_stock_detalle'] = traspaso_stock_detalle
+        context['contexto_series'] = ValidarSerieTraspasoStockDetalle.objects.filter(traspaso_stock_detalle = traspaso_stock_detalle)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ValidarSeriesTraspasoStockDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.delete_validarseriesenviotrasladoproductodetalle')
+    model = ValidarSerieTraspasoStockDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:validar_series_traspaso_stock_detalle', kwargs={'pk': self.get_object().traspaso_stock_detalle.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesTraspasoStockDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
         return context

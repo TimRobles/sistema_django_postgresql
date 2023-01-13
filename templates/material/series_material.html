@@ -8,6 +8,7 @@
             <tr>
                 <th>Serie</th>
                 <th>Sociedad</th>
+                <th>Almacén</th>
                 <th>Estado</th>
             </tr>
         </thead>
@@ -16,6 +17,11 @@
             <tr>
                 <td>{{ serie.serie_base }}</td>
                 <td>{{ serie.sociedad }}</td>
+                <td>
+                    {% if serie.almacen %}    
+                    {{ serie.almacen }}
+                    {% endif %}
+                </td>
                 <td>{{ serie.estado }}</td>
             </tr>
             {% endfor %} 

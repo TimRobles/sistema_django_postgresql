@@ -1,0 +1,40 @@
+{% load widget_tweaks %}
+{% load static %}
+
+<form id="formulario" action="" enctype="multipart/form-data" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <span hidden id="url_stock">{{ url_stock }}</span>    
+        <span hidden id="url_unidad">{{ url_unidad }}</span>    
+        <span hidden id="sociedad">{{ sociedad }}</span>    
+        {{ material }}
+        <input type="text" hidden id="id_material" class="form-control" value="{{ material.id }}">
+        {% include 'includes/formulario.html' %}    
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-primary-submit">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
+
+
+{% block js %}
+<script src="{% static 'js/traslado_producto/traslado/form_material.js' %}?{{ cache_bust }}"></script>
+    <script>
+        $(function () {
+
+            $("#id_almacen").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+        });
+    </script>
+
+{% endblock js %}
+

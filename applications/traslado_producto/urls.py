@@ -10,6 +10,10 @@ urlSeries = [
     path('validar-series/envio-traslado-producto/detalle/<pk>/', views.ValidarSeriesEnvioTrasladoProductoDetailView.as_view(), name='validar_series_envio_traslado_producto_detalle'),
     path('validar-series/envio-traslado-producto/detalle-tabla/<pk>/', views.ValidarSeriesEnvioTrasladoProductoDetailTabla, name='validar_series_envio_traslado_producto_detalle_tabla'),
     path('validar-series-detalle/envio-traslado-producto/eliminar/<pk>/', views.ValidarSeriesEnvioTrasladoProductoDetalleDeleteView.as_view(), name='validar_series_envio_traslado_producto_detalle_eliminar'),
+
+    path('validar-series/traspaso-stock/detalle/<pk>/', views.ValidarSeriesTraspasoStockDetailView.as_view(), name='validar_series_traspaso_stock_detalle'),
+    path('validar-series/traspaso-stock/detalle-tabla/<pk>/', views.ValidarSeriesTraspasoStockDetailTabla, name='validar_series_traspaso_stock_detalle_tabla'),
+    path('validar-series-detalle/traspaso-stock/eliminar/<pk>/', views.ValidarSeriesTraspasoStockDetalleDeleteView.as_view(), name='validar_series_traspaso_stock_detalle_eliminar'),
 ]
 
 urlpatterns = urlSeries + [
@@ -57,4 +61,5 @@ urlpatterns = urlSeries + [
     path('traspaso-stock/detalle/<pk>/', views.TraspasoStockDetailView.as_view(), name='traspaso_stock_detalle'),
     path('traspaso-stock/detalle-tabla/<pk>/', views.TraspasoStockDetailTabla, name='traspaso_stock_detalle_tabla'),
     path('traspaso-stock-detalle/registrar/<int:traspaso_stock_id>/', views.TraspasoStockDetalleCreateView.as_view(), name='traspaso_stock_detalle_registrar'),
+    path('traspaso-stock-detalle/actualizar/<int:traspaso_stock_id>/<pk>/', views.TraspasoStockDetalleUpdateView.as_view(), name='traspaso_stock_detalle_actualizar'),
  ]

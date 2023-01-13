@@ -86,6 +86,10 @@ class EnvioTrasladoProductoDetalle(models.Model):
     @property
     def producto(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
+            
+    @property
+    def control_serie(self):
+        return self.producto.control_serie
 
     @property
     def series_validar(self):
@@ -216,19 +220,23 @@ class TraspasoStock(models.Model):
         verbose_name_plural = 'Traspasos Stock'
         ordering = ['-nro_traspaso',]
 
+    @property
+    def fecha(self):
+        return self.updated_at.date()
+
     def __str__(self):
-        return str(self.nro_traspaso)
+        return f"{self.sociedad.abreviatura}{numeroXn(self.nro_traspaso, 6)}"
 
 
 class TraspasoStockDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    traspaso_stock = models.ForeignKey(TraspasoStock, on_delete=models.CASCADE)
-    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) #Material
+    traspaso_stock = models.ForeignKey(TraspasoStock, on_delete=models.CASCADE, related_name='TraspasoStockDetalle_traspaso_stock')
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
-    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
-    tipo_stock_inicial = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_inicial', on_delete=models.PROTECT,blank=True, null=True)
-    tipo_stock_final = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_final', on_delete=models.PROTECT,blank=True, null=True)
-    cantidad = models.DecimalField('Cantidad de Traspaso', max_digits=22, decimal_places=10,blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT)
+    tipo_stock_inicial = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_inicial', on_delete=models.PROTECT)
+    tipo_stock_final = models.ForeignKey(TipoStock, related_name = 'TraspasoStockDetalle_tipo_stock_final', on_delete=models.PROTECT)
+    cantidad = models.DecimalField('Cantidad de Traspaso', max_digits=22, decimal_places=10)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TraspasoStockDetalle_created_by', editable=False)
@@ -239,5 +247,43 @@ class TraspasoStockDetalle(models.Model):
         verbose_name = 'Traspaso Stock Detalle'
         verbose_name_plural = 'Traspasos Stock Detalle'
 
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+            
+    @property
+    def control_serie(self):
+        return self.producto.control_serie
+            
+    @property
+    def sociedad(self):
+        return self.traspaso_stock.sociedad
+
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieTraspasoStockDetalle_traspaso_stock_detalle.all())).quantize(Decimal('0.01'))
+
     def __str__(self):
         return str(self.id)
+
+
+class ValidarSerieTraspasoStockDetalle(models.Model):
+    traspaso_stock_detalle = models.ForeignKey(TraspasoStockDetalle, on_delete=models.PROTECT, related_name='ValidarSerieTraspasoStockDetalle_traspaso_stock_detalle')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieTraspasoStockDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieTraspasoStockDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Traspaso Stock Detalle'
+        verbose_name_plural = 'Validar Series Traspasos Stock Detalle'
+        ordering = [
+            'created_at',
+            ]
+
+    def __str__(self):
+        return "%s - %s" % (self.traspaso_stock_detalle , str(self.serie))
+
+

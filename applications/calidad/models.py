@@ -104,6 +104,13 @@ class Serie(models.Model):
         else:
             return ""
 
+    @property
+    def almacen(self):
+        if self.serie_movimiento_almacen.all():
+            return self.serie_movimiento_almacen.latest('id').almacen
+        else:
+            return ""
+
     def __str__(self):
         return str(self.serie_base)
 
@@ -134,7 +141,6 @@ class SerieCalidad(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.serie, self.nota_control_calidad_detalle)
-
 
 
 class HistorialEstadoSerie(models.Model):
@@ -220,22 +226,11 @@ class NotaControlCalidadStockDetalle(models.Model):
 
     @property
     def material(self):
-        raiz_material = self.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        material = raiz_material.content_type.get_object_for_this_type(id = raiz_material.id_registro)        
-        if raiz_material:
-            return material
-        else:
-            return ""
-
+        return self.nota_ingreso_detalle.comprobante_compra_detalle.producto
+        
     @property
     def control_serie(self):
-        raiz_material = self.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle
-        material = raiz_material.content_type.get_object_for_this_type(id = raiz_material.id_registro)        
-        control_serie = material.control_serie      
-        if material:
-            return control_serie
-        else:
-            return ""
+        return self.material.control_serie      
 
     @property
     def series_calidad(self):
@@ -265,3 +260,4 @@ class SerieConsulta(models.Model):
 
     def __str__(self):
         return str(self.serie_base)
+

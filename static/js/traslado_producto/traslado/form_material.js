@@ -1,6 +1,6 @@
 function ver_stock() {
     material = $('#id_material')[0].value;
-    almacen_origen = $('#id_almacen_origen')[0].value;
+    almacen_origen = $('#id_almacen')[0].value;
     stock_disponible = $('#id_stock_disponible')[0];
     if (material && almacen_origen) {
         sociedad = $('#sociedad')[0].innerHTML;
@@ -21,8 +21,8 @@ function ver_stock() {
 
 function ver_stock_tipo_stock() {
     material = $('#id_material')[0].value;
-    almacen_origen = $('#id_almacen_origen')[0].value;
-    tipo_stock = $('#id_tipo_stock')[0].value;
+    almacen_origen = $('#id_almacen')[0].value;
+    tipo_stock = $('#id_tipo_stock_inicial')[0].value;
     if (!tipo_stock) {
         ver_stock();
     } else {
@@ -46,33 +46,15 @@ function ver_stock_tipo_stock() {
     }
 }
 
-function cambiar_unidad(id_material) {
-    unidad = $('#id_unidad')[0];
-    url_unidad = $('#url_unidad')[0].innerHTML + material;
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url_unidad);
-    xhr.onload = function(){
-        if (this.status === 200) {
-            console.log(xhr.responseText)
-            $respuesta = JSON.parse(xhr.responseText)['info'];
-        }else{
-            $respuesta = '---------';
-        }
-        unidad.innerHTML = $respuesta;
-    }
-    xhr.send();
-}
-
 $('#id_material').unbind().on('change', function (e) {
     ver_stock();
-    cambiar_unidad(e.target.value);
 })
 
-$('#id_almacen_origen').unbind().on('change', function () {
+$('#id_almacen').unbind().on('change', function () {
     ver_stock_tipo_stock();
 })
 
-$('#id_tipo_stock').unbind().on('change', function () {
+$('#id_tipo_stock_inicial').unbind().on('change', function () {
     ver_stock_tipo_stock();
 })
 

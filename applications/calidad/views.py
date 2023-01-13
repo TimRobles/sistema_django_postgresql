@@ -284,7 +284,7 @@ def NotaControlCalidadStockTabla(request):
 class NotaControlCalidadStockCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('calidad.add_notacontrolcalidadstock')
     model = NotaControlCalidadStock
-    template_name = "includes/formulario generico.html"
+    template_name = "calidad/nota_control_calidad_stock/form.html"
     form_class = NotaControlCalidadStockForm
     success_url = reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
 

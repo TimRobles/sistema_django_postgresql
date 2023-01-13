@@ -2,17 +2,6 @@
 {% load humanize %}
 
 <h3>Detalle Traspaso Stock
-    {% if contexto_traspaso_stock.estado == 1 %}
-        <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_detalle_registrar' contexto_traspaso_stock.id %}"
-            data-table-url="{% url 'traslado_producto_app:traspaso_stock_detalle_tabla' contexto_traspaso_stock.id %}"
-            class="create badge bg-primary">
-            Agregar Material
-        </button>
-        <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_concluir' contexto_traspaso_stock.id %}"
-            class="delete badge bg-primary">
-            Concluir Traspaso Stock
-        </button>
-    {% endif %}
     <a href="{% url 'traslado_producto_app:traspaso_stock_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
@@ -24,8 +13,36 @@
                 <tr>
                     <th class="pe-2">Número de Traspaso: </th>
                     <td>{{ contexto_traspaso_stock.nro_traspaso|numeroXn:6 }}</td>
+                    <td rowspan="2" class="text-center">
+                        {% if contexto_traspaso_stock.estado == 1 %}
+                            <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_actualizar' contexto_traspaso_stock.id %}"
+                                data-table-url="{% url 'traslado_producto_app:traspaso_stock_detalle_tabla' contexto_traspaso_stock.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                Actualizar Traspaso
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <th class="px-2">Encargado: </th>
                     <td>{{ contexto_traspaso_stock.encargado }}</td>
+
+                </tr>
+                <tr>
+                    <th class="px-2">Sociedad: </th>
+                    <td>{{ contexto_traspaso_stock.sociedad }}</td>
+                    <td rowspan="2" class="text-center">
+                        {% if contexto_traspaso_stock.estado == 1 %}
+                        <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_concluir' contexto_traspaso_stock.id %}"
+                            class="delete btn btn-primary">
+                            Concluir Traspaso Stock
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <th class="px-2">Sede: </th>
                     <td>{{ contexto_traspaso_stock.sede }}</td>
                 </tr>
@@ -33,6 +50,14 @@
         </table>
     </div>
 </div>
+
+{% if contexto_traspaso_stock.estado == 1 %}
+    <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_detalle_registrar' contexto_traspaso_stock.id %}"
+        data-table-url="{% url 'traslado_producto_app:traspaso_stock_detalle_tabla' contexto_traspaso_stock.id %}"
+        class="create btn btn-primary">
+        Agregar Material
+    </button>
+{% endif %}
 
 <div class="table-responsive">
     <table class="table">
@@ -43,20 +68,43 @@
                 <th>Almacén</th>
                 <th>Tipo Stock Inicial</th>
                 <th class="text-end">Cantidad</th>
+                <th class="text-end">Series Registradas</th>
                 <th>Tipo Stock Final</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for material in contexto_traspaso_stock_detalle %}
                 <tr>
                     <td>{{ material.item }}</td>
-                    <td>{{ material.material }}</td>
+                    <td>{{ material.producto }}</td>
                     <td>{{ material.almacen }}</td>
                     <td>{{ material.tipo_stock_inicial }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">
+                        {% if material.tipo_stock_inicial.serie_registrada %}
+                        {{ material.series_validar }}
+                        {% endif %}
+                    </td>
                     <td>{{ material.tipo_stock_final }}</td>
                     <td class="text-center text-nowrap">
+                        {% if contexto_traspaso_stock.estado == 1 %}
+                        <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_detalle_actualizar' contexto_traspaso_stock.id material.id %}"
+                            data-table-url="{% url 'traslado_producto_app:traspaso_stock_detalle_tabla' contexto_traspaso_stock.id %}"
+                            class="update btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+                    
+                        {% if material.tipo_stock_inicial.serie_registrada %}
+                            {% if material.producto.control_serie %}
+                                <a href="{% url 'traslado_producto_app:validar_series_traspaso_stock_detalle' material.id %}"
+                                    class="btn btn-dark btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                    <i class="bi bi-upc-scan"></i>
+                                </a>
+                            {% endif %}
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

@@ -269,13 +269,24 @@ class TraspasoStockForm(BSModalModelForm):
         model = TraspasoStock
         fields = (
             'encargado',
+            'sociedad',
             'sede',
             'observaciones',
             )
+    
+    def clean_sociedad(self):
+        sociedad = self.cleaned_data.get('sociedad')
+        sede = self.fields['sede']
+        sede.queryset = sociedad.Sede_sociedad.filter(estado=1)
+        
+        return sociedad
         
     def __init__(self, *args, **kwargs):
         super(TraspasoStockForm, self).__init__(*args, **kwargs)   
-        self.fields['sede'].queryset = Sede.objects.filter(estado=1)
+        try:
+            self.fields['sede'].queryset = kwargs['instance'].sociedad.Sede_sociedad.filter(estado=1)
+        except:
+            self.fields['sede'].queryset = Sede.objects.none()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -298,5 +309,54 @@ class TraspasoStockDetalleForm(BSModalModelForm):
         traspaso_stock = kwargs.pop('traspaso_stock')
         super(TraspasoStockDetalleForm, self).__init__(*args, **kwargs)   
         self.fields['almacen'].queryset = traspaso_stock.sede.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['stock_disponible'].disabled = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TraspasoStockDetalleActualizarForm(BSModalModelForm):
+    stock_disponible = forms.CharField(required=False)
+    class Meta:
+        model = TraspasoStockDetalle
+        fields = (
+            'almacen',
+            'tipo_stock_inicial',
+            'stock_disponible',
+            'cantidad',
+            'tipo_stock_final',
+            )
+        
+    def __init__(self, *args, **kwargs):
+        traspaso_stock = kwargs.pop('traspaso_stock')
+        super(TraspasoStockDetalleActualizarForm, self).__init__(*args, **kwargs)   
+        self.fields['almacen'].queryset = traspaso_stock.sede.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['stock_disponible'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TraspasoStockDetalleSeriesForm(BSModalModelForm):
+    cantidad_registrada = forms.DecimalField(label='Cantidad Registrada', max_digits=22, decimal_places=10, required=False)
+    serie = forms.CharField(required=False)
+    class Meta:
+        model = TraspasoStockDetalle
+        fields=(
+            'serie',
+            'cantidad',
+            'cantidad_registrada',
+            )
+
+    def __init__(self, *args, **kwargs):
+        cantidad = kwargs.pop('cantidad')
+        cantidad_registrada = kwargs.pop('cantidad_registrada')
+        super(TraspasoStockDetalleSeriesForm, self).__init__(*args, **kwargs)
+        self.fields['cantidad'].initial = cantidad
+        self.fields['cantidad_registrada'].initial = cantidad_registrada
+        if cantidad_registrada == cantidad:
+            self.fields['serie'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['cantidad'].disabled = True
+            self.fields['cantidad_registrada'].disabled = True
+
+
