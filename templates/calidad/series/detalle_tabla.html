@@ -34,7 +34,13 @@
     <label class="input-group-text">Cantidad Inspeccionada</label>
     <input type="text" class="form-control" value="{{ contexto_nota_control_calidad_stock_detalle.cantidad_calidad|redondear|intcomma }}" style="max-width: 150px;">
     <label class="input-group-text ms-auto">Cantidad Registrada</label>
-    <input type="text" class="form-control" value="{{ contexto_nota_control_calidad_stock_detalle.series_calidad|redondear|intcomma }}" style="max-width: 150px;">
+    <input type="text" class="fondo-personalizado form-control" value="{{ contexto_nota_control_calidad_stock_detalle.series_calidad|redondear|intcomma }}" style="max-width: 150px; 
+    {% if contexto_nota_control_calidad_stock_detalle.series_calidad != contexto_nota_control_calidad_stock_detalle.cantidad_calidad %}
+    --color-fondo:red;
+    {% else %}
+    --color-fondo:green;
+    {% endif %}
+    ">
 </div>
 
 <h4>

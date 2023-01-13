@@ -278,7 +278,7 @@ def SolicitudPrestamoMaterialesDetailTabla(request, pk):
 
 
 class SolicitudPrestamoMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('logistica.add_solicitudprestamomaterialdetalle')
+    permission_required = ('logistica.add_solicitudprestamomaterialesdetalle')
     template_name = "logistica/solicitud_prestamo_materiales/form_material.html"
     form_class = SolicitudPrestamoMaterialesDetalleForm
 
