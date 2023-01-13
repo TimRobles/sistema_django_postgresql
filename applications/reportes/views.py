@@ -30,10 +30,6 @@ class ReportesView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(ReportesView, self).get_form_kwargs()
-        # print('************************')
-        # print(kwargs)
-        # print('************************')
-        
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
         kwargs['filtro_fecha_fin'] = self.request.GET.get('fecha_fin')
@@ -41,29 +37,16 @@ class ReportesView(FormView):
         global_sociedad = self.request.GET.get('sociedad')
         global_fecha_inicio = self.request.GET.get('fecha_inicio')
         global_fecha_fin = self.request.GET.get('fecha_fin')
-        # print(kwargs['filtro_sociedad'])
-
-        # print('************************')
-        # print(self.request.GET.get('sociedad'))
-        # print('************************')
-
         return kwargs
-
 
 class ReporteContador(TemplateView):
     def get(self,request, *args,**kwargs):
 
 
-        print('************************')
+        # print('************************')
         global global_sociedad, global_fecha_inicio, global_fecha_fin
-        print(global_sociedad, global_fecha_inicio, global_fecha_fin)
-        print('************************')
-
-        # print('##########################################')
-        # print(DICT_CONTENT_TYPE)
-        # print('##########################################')
-        # wb = Workbook()
-        # hoja = wb.active
+        # print(global_sociedad, global_fecha_inicio, global_fecha_fin)
+        # print('************************')
 
         def consultaNotasContador():
 
@@ -647,7 +630,7 @@ class ReporteVentasFacturadas(TemplateView):
                 MAX(cvf.total) AS monto_facturado,
                 SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
                 MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) <= 0.00
+                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -698,7 +681,7 @@ class ReporteVentasFacturadas(TemplateView):
                 MAX(cvb.total) AS monto_facturado,
                 SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
                 MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) <= 0.00
+                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1174,7 +1157,7 @@ class ReporteFacturasPendientes(TemplateView):
                     MAX(cvf.total) AS monto_facturado,
                     SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
                     MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                    (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) <= 0.00
+                    (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                         THEN (
                             'CANCELADO'
                         ) ELSE (
@@ -1205,7 +1188,7 @@ class ReporteFacturasPendientes(TemplateView):
                         ON cr.deuda_id=cd.id
                     WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL
                     GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-                    HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) <= 0.00
+                    HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                         THEN (
                             'CANCELADO'
                         ) ELSE (
@@ -1222,7 +1205,7 @@ class ReporteFacturasPendientes(TemplateView):
                     MAX(cvb.total) AS monto_facturado,
                     SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
                     MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                    (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) <= 0.00
+                    (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                         THEN (
                             'CANCELADO'
                         ) ELSE (
@@ -1253,7 +1236,7 @@ class ReporteFacturasPendientes(TemplateView):
                         ON cr.deuda_id=cd.id
                     WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL
                     GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                    HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) <= 0.00
+                    HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                         THEN (
                             'CANCELADO'
                         ) ELSE (
@@ -1538,9 +1521,9 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     count_mes += 1
                 if list_mes != []:
                     list_general.append(list_mes)
-                print()
-                print(list_general)
-                print()
+                # print()
+                # print(list_general)
+                # print()
 
     # ******************************************************************************************************************************
                 count = 0
@@ -1548,9 +1531,9 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     mes = list_mes_deposito[0][0][3:5]
                     año = list_mes_deposito[0][0][6:]
                     name_sheet = DICT_MESES[str(mes)] + ' - ' + str(año)
-                    print('*************************************')
-                    print(str(mes), name_sheet, list_temp_hojas)
-                    print('*************************************')
+                    # print('*************************************')
+                    # print(str(mes), name_sheet, list_temp_hojas)
+                    # print('*************************************')
                     if count != 0:
                         if name_sheet not in list_temp_hojas:
                             hoja = wb.create_sheet(name_sheet)
@@ -1618,7 +1601,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     ajustarColumnasSheet(hoja)
 
     # ******************************************************************************************************************************
-            print(dict_totales_cuentas)
+            # print(dict_totales_cuentas)
             for k,v in dict_totales_cuentas.items():
                 print(k, v)
 
@@ -1700,7 +1683,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                 total_dolares = 0
                 for k,value in dict_totales_cuentas.items():
                     if mes in k:
-                        print(k)
+                        # print(k)
                         monto_soles = float(value[:value.find("|")])
                         monto_dolares = float(value[value.find("|")+1:])
                         total_soles += monto_soles
@@ -1768,7 +1751,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     else:
                         valor_celda = celda.value
                     list_temp.append(valor_celda)
-                print(list_temp)
+                # print(list_temp)
 
                 for pos in range(len(list_temp)):
                     list_temp[pos] = str(round(list_temp[pos],2))
