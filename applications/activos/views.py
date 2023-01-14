@@ -106,11 +106,11 @@ def ClaseSunatActivoView(request, id_familia):
         ).replace('selected', 'selected=""')
         return JsonResponse(data)
 
-class ProductoSunatActivoForm(forms.Form):
+class ProductoSunatActivoComboForm(forms.Form):
     producto = forms.ModelChoiceField(queryset = ProductoSunat.objects.all(), required=False)
 
 def ProductoSunatActivoView(request, id_clase):
-    form = ProductoSunatActivoForm()
+    form = ProductoSunatActivoComboForm()
     form.fields['producto'].queryset = ProductoSunat.objects.filter(clase = id_clase)
     data = dict()
     if request.method == 'GET':

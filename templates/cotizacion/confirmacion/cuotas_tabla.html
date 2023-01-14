@@ -58,7 +58,7 @@
     </div>
 </div>
 
-{% if confirmacion.estado == 1 %}
+{% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
 <button data-form-url="{% url 'cotizacion_app:confirmacion_cuota_agregar' confirmacion.id %}"
     data-table-url="{% url 'cotizacion_app:confirmacion_cuotas_tabla' confirmacion.id  %}"
     data-keep-open="True"
@@ -92,7 +92,7 @@
                     <td class="text-end">{{ cuota.dias_mostrar }}</td>
                     <td class="text-center">{{ cuota.fecha_mostrar|date:'d/m/Y' }}</td>
                     <td class="text-center text-nowrap">
-                        {% if confirmacion.estado == 1 %}
+                        {% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
                         <button data-form-url="{% url 'cotizacion_app:confirmacion_cuota_actualizar' cuota.id %}"
                             data-table-url="{% url 'cotizacion_app:confirmacion_cuotas_tabla' confirmacion.id %}"
                             data-keep-open="true"

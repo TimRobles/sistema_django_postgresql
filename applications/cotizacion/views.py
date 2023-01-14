@@ -562,7 +562,7 @@ class CotizacionDescuentoGlobalUpdateView(PermissionRequiredMixin, BSModalUpdate
         context = super(CotizacionDescuentoGlobalUpdateView, self).get_context_data(**kwargs)
         texto = []
         for sociedad in self.object.CotizacionDescuentoGlobal_cotizacion_venta.all():
-            texto.append(str(sociedad.descuento_global))
+            texto.append(str(sociedad.descuento_global_cotizacion))
 
         context['titulo'] = "Actualizar Descuento Global"
         context['url_guardar'] = reverse_lazy('cotizacion_app:guardar_cotizacion_venta_descuento_global', kwargs={'monto':1,'id_cotizacion':1,'abreviatura':"a",})[:-6]
@@ -583,7 +583,7 @@ def GuardarCotizacionDescuentoGlobal(request, monto, id_cotizacion, abreviatura)
         cotizacion_venta = cotizacion_venta,
         sociedad = sociedad,
     )
-    obj.descuento_global = monto
+    obj.descuento_global_cotizacion = monto
     obj.save()
     return HttpResponse('Fin')
 

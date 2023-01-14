@@ -670,7 +670,10 @@ class FacturaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             obj.fecha_vencimiento = fecha_vencimiento
             obj.estado = 2
             obj.numero_factura = FacturaVenta.objects.nuevo_numero(obj)
-            obj.confirmacion.estado = 2
+            if obj.confirmacion.estado == 1:
+                obj.confirmacion.estado = 2
+            elif obj.confirmacion.estado == 5:
+                obj.confirmacion.estado = 4
             registro_guardar(obj.confirmacion, self.request)
             obj.confirmacion.save()
             registro_guardar(obj, self.request)
@@ -713,7 +716,10 @@ class FacturaVentaAnularView(PermissionRequiredMixin, BSModalDeleteView):
             else:
                 messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
             obj.estado = 3
-            obj.confirmacion.estado = 1
+            if obj.confirmacion.estado == 2:
+                obj.confirmacion.estado = 1
+            elif obj.confirmacion.estado == 4:
+                obj.confirmacion.estado = 5
             registro_guardar(obj.confirmacion, self.request)
             obj.confirmacion.save()
             if obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj)) == 'MANUAL':
@@ -774,12 +780,24 @@ class FacturaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView)
             respuesta = factura_nubefact(obj, self.request.user)
             if respuesta.error:
                 obj.estado = 6
-                obj.confirmacion.estado = 1
-                obj.confirmacion.save()
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
             elif respuesta.aceptado:
                 obj.estado = 4
+                if obj.confirmacion.estado == 1:
+                    obj.confirmacion.estado = 2
+                elif obj.confirmacion.estado == 5:
+                    obj.confirmacion.estado = 4
             else:
                 obj.estado = 5
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
+            registro_guardar(obj.confirmacion, self.request)
+            obj.confirmacion.save()
             registro_guardar(obj, self.request)
             obj.save()
         except Exception as ex:
@@ -885,12 +903,24 @@ class FacturaVentaNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVi
             respuesta = consultar_documento(obj, self.request.user)
             if respuesta.error:
                 obj.estado = 6
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
             elif respuesta.aceptado:
                 obj.estado = 4
-                obj.confirmacion.estado = 2
-                obj.confirmacion.save()
+                if obj.confirmacion.estado == 1:
+                    obj.confirmacion.estado = 2
+                elif obj.confirmacion.estado == 5:
+                    obj.confirmacion.estado = 4
             else:
                 obj.estado = 5
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
+            registro_guardar(obj.confirmacion, self.request)
+            obj.confirmacion.save()
             registro_guardar(obj, self.request)
             obj.save()
         except Exception as ex:
@@ -1368,7 +1398,10 @@ class BoletaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             obj.fecha_vencimiento = fecha_vencimiento
             obj.estado = 2
             obj.numero_boleta = BoletaVenta.objects.nuevo_numero(obj)
-            obj.confirmacion.estado = 2
+            if obj.confirmacion.estado == 1:
+                obj.confirmacion.estado = 2
+            elif obj.confirmacion.estado == 5:
+                obj.confirmacion.estado = 4
             registro_guardar(obj.confirmacion, self.request)
             obj.confirmacion.save()
             registro_guardar(obj, self.request)
@@ -1412,7 +1445,10 @@ class BoletaVentaAnularView(PermissionRequiredMixin, BSModalDeleteView):
             else:
                 messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
             obj.estado = 3
-            obj.confirmacion.estado = 1
+            if obj.confirmacion.estado == 2:
+                obj.confirmacion.estado = 1
+            elif obj.confirmacion.estado == 4:
+                obj.confirmacion.estado = 5
             registro_guardar(obj.confirmacion, self.request)
             obj.confirmacion.save()
             if obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj)) == 'MANUAL':
@@ -1473,12 +1509,24 @@ class BoletaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
             respuesta = boleta_nubefact(obj, self.request.user)
             if respuesta.error:
                 obj.estado = 6
-                obj.confirmacion.estado = 1
-                obj.confirmacion.save()
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
             elif respuesta.aceptado:
                 obj.estado = 4
+                if obj.confirmacion.estado == 1:
+                    obj.confirmacion.estado = 2
+                elif obj.confirmacion.estado == 5:
+                    obj.confirmacion.estado = 4
             else:
                 obj.estado = 5
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
+            registro_guardar(obj.confirmacion, self.request)
+            obj.confirmacion.save()
             registro_guardar(obj, self.request)
             obj.save()
         except Exception as ex:
@@ -1584,12 +1632,24 @@ class BoletaVentaNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
             respuesta = consultar_documento(obj, self.request.user)
             if respuesta.error:
                 obj.estado = 6
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
             elif respuesta.aceptado:
                 obj.estado = 4
-                obj.confirmacion.estado = 2
-                obj.confirmacion.save()
+                if obj.confirmacion.estado == 1:
+                    obj.confirmacion.estado = 2
+                elif obj.confirmacion.estado == 5:
+                    obj.confirmacion.estado = 4
             else:
                 obj.estado = 5
+                if obj.confirmacion.estado == 2:
+                    obj.confirmacion.estado = 1
+                elif obj.confirmacion.estado == 4:
+                    obj.confirmacion.estado = 5
+            registro_guardar(obj.confirmacion, self.request)
+            obj.confirmacion.save()
             registro_guardar(obj, self.request)
             obj.save()
         except Exception as ex:

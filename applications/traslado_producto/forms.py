@@ -142,8 +142,9 @@ class EnvioTrasladoProductoDetalleSeriesForm(BSModalModelForm):
             self.fields['serie'].disabled = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-            self.fields['cantidad_envio'].disabled = True
-            self.fields['cantidad_ingresada'].disabled = True
+        self.fields['cantidad_envio'].disabled = True
+        self.fields['cantidad_ingresada'].disabled = True
+        self.fields['cantidad_ingresada'].widget.attrs['class'] = 'form-control fondo-personalizado'
 
 
 class RecepcionTrasladoProductoForm(BSModalModelForm):

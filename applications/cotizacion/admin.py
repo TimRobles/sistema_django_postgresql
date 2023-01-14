@@ -246,7 +246,7 @@ class CotizacionDescuentoGlobal(admin.ModelAdmin):
         'id',
         'cotizacion_venta',
         'sociedad',
-        'descuento_global',
+        # 'descuento_global',
         'created_at',
         'created_by',
         'updated_at',

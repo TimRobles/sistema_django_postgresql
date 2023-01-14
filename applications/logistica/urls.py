@@ -13,6 +13,7 @@ urlSeries = [
 urlNotaSalida = [
     path('nota-salida/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'),
     path('nota-salida/<int:id_solicitud_prestamo>/', views.NotaSalidaListView.as_view(), name='nota_salida_inicio'),
+    path('nota-salida/confirmacion/<int:id_confirmacion>/', views.NotaSalidaListView.as_view(), name='nota_salida_confirmacion'),
     path('nota-salida-tabla/', views.NotaSalidaTabla, name='nota_salida_tabla'),
     path('nota-salida/actualizar/<pk>', views.NotaSalidaUpdateView.as_view(), name='nota_salida_actualizar'),
     path('nota-salida/concluir/<pk>/', views.NotaSalidaConcluirView.as_view(), name='nota_salida_concluir'),

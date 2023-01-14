@@ -94,8 +94,6 @@
                             class="update btn btn-warning btn-sm">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        {% endif %}
-                    
                         {% if material.tipo_stock_inicial.serie_registrada %}
                             {% if material.producto.control_serie %}
                                 <a href="{% url 'traslado_producto_app:validar_series_traspaso_stock_detalle' material.id %}"
@@ -104,6 +102,7 @@
                                     <i class="bi bi-upc-scan"></i>
                                 </a>
                             {% endif %}
+                        {% endif %}
                         {% endif %}
                     </td>
                 </tr>

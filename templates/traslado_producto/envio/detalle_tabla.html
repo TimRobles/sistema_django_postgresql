@@ -192,8 +192,6 @@ Agregar Material
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi-x-lg"></i>
                     </button>
-                    {% endif %}
-                    
                     {% if material.tipo_stock.serie_registrada %}
                         {% if material.producto.control_serie %}
                             <a href="{% url 'traslado_producto_app:validar_series_envio_traslado_producto_detalle' material.id %}"
@@ -202,6 +200,7 @@ Agregar Material
                                 <i class="bi bi-upc-scan"></i>
                             </a>
                         {% endif %}
+                    {% endif %}
                     {% endif %}
                 </td>
             </tr>                

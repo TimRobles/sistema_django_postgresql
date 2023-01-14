@@ -161,9 +161,13 @@ class EnvioTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDeleteVie
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_cantidad_series = False
+        error_almacen_series = False
         context['titulo'] = 'Error de guardar'
         detalles = self.get_object().EnvioTrasladoProductoDetalle_envio_traslado_producto.all()
         for detalle in detalles:
+            for validar_serie in detalle.ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle.all():
+                if detalle.control_serie and detalle.almacen_origen != validar_serie.serie.almacen:
+                    error_almacen_series = True
             if detalle.control_serie and detalle.series_validar != detalle.cantidad_envio:
                 error_cantidad_series = True
         
@@ -172,6 +176,9 @@ class EnvioTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDeleteVie
 
         if error_cantidad_series:
             context['texto'] = 'Hay Series sin registrar.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_almacen_series:
+            context['texto'] = 'Hay errores en los almacenes de las series.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 

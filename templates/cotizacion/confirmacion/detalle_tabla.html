@@ -120,6 +120,15 @@
                 Generar Nota de Salida
             </button>
         </div>
+        
+        {% if confirmacion.NotaSalida_confirmacion_venta.all %}
+        <div class="col-auto">
+            <a href="{% url 'logistica_app:nota_salida_confirmacion' confirmacion.id %}" class="delete btn btn-primary">
+                Ver Notas de Salida
+            </a>
+        </div>
+        {% endif %}
+
         {% endif %}
     </div>
 </div>
@@ -132,7 +141,7 @@
                     <th class="pe-2">Razón Social:</th>
                     <td>{{ confirmacion.cliente.razon_social }}</td>
                     <td class="ps-2" rowspan="4">
-                        {% if confirmacion.estado == 1 %}
+                        {% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
                         <button data-form-url="{% url 'cotizacion_app:confirmacion_cliente' confirmacion.id %}"
                             data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
                             class="update btn btn-primary" title="Seleccionar Cliente">
@@ -208,7 +217,7 @@
                     <th class="pe-2">Transacción:</th>
                     <td>{{ confirmacion.get_sunat_transaction_display }}</td>
                     
-                    {% if confirmacion.estado == 1 %}
+                    {% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
                     <td class="px-2" rowspan="2">
                         {% if confirmacion.ConfirmacionOrdenCompra_confirmacion_venta %}
                         <button data-form-url="{% url 'cotizacion_app:confirmacion_orden_compra' confirmacion.id confirmacion.ConfirmacionOrdenCompra_confirmacion_venta.id %}"
@@ -275,18 +284,20 @@
                     <th class="pe-2">Tipo de Venta:</th>
                     <td>{{ confirmacion.get_tipo_venta_display }}</td>
                     <td class="ps-2" rowspan="2">
-                        {% if confirmacion.estado == 1 and confirmacion.cliente.linea_credito_monto != 0 %}
-                        <button data-form-url="{% url 'cotizacion_app:confirmacion_forma_pago' confirmacion.id %}"
-                            data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
-                            class="update btn btn-primary">
-                            Cambiar Forma de Pago
-                        </button>
-                        {% endif %}
-                        {% if confirmacion.tipo_venta == 2 %}
-                        <a href="{% url 'cotizacion_app:confirmacion_cuotas' confirmacion.id %}"
-                        class="update btn btn-warning">
-                            Cuotas
-                        </a>
+                        {% if confirmacion.cliente.linea_credito_monto != 0 %}
+                            {% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
+                            <button data-form-url="{% url 'cotizacion_app:confirmacion_forma_pago' confirmacion.id %}"
+                                data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
+                                class="update btn btn-primary">
+                                Cambiar Forma de Pago
+                            </button>
+                            {% endif %}
+                            {% if confirmacion.tipo_venta == 2 %}
+                            <a href="{% url 'cotizacion_app:confirmacion_cuotas' confirmacion.id %}"
+                            class="update btn btn-warning">
+                                Cuotas
+                            </a>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>

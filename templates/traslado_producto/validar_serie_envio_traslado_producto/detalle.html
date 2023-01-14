@@ -20,7 +20,20 @@
                     {% endif %}
                     >
                     <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    
+                    {% if field.label == 'Cantidad Ingresada' %}
+                    <span style="
+                    {% if contexto_envio_traslado_producto_detalle.series_validar != contexto_envio_traslado_producto_detalle.cantidad_envio %}
+                    --color-fondo:red;
+                    {% else %}
+                    --color-fondo:green;
+                    {% endif %}
+                    ">
                     {{ field }}
+                    </span>
+                    {% else %}
+                    {{ field }}
+                    {% endif %}
                     </div>
                     {% for error in field.errors %}
                         <p class="text-danger mt-0 error-formulario">{{ error }}</p>
@@ -29,9 +42,11 @@
                 
             {% endfor %}
             <div class="col-lg-4 my-auto">
+                {% if contexto_envio_traslado_producto_detalle.envio_traslado_producto.estado == 1 %}
                 <button type="submit" class="btn btn-success" title="Buscar">
                     <i class="bi bi-search"></i>
                 </button>
+                {% endif %}
                 <a class="btn btn-success" href="{% url 'traslado_producto_app:validar_series_envio_traslado_producto_detalle' contexto_envio_traslado_producto_detalle.id %}">Limpiar</a>
             </div>            
         </div>

@@ -1,12 +1,11 @@
 from django.contrib import admin
+from django import forms
 from applications.material.forms import (
     ClaseForm,
     ComponenteForm,
     AtributoForm,
     FamiliaForm,
     SubFamiliaForm,
-    MarcaForm,
-    ModeloForm,
     IdiomaForm,      
     )
 
@@ -105,6 +104,53 @@ class SubFamiliaAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+
+class ModeloForm(forms.ModelForm):
+    class Meta:
+        model = Modelo
+        fields=(
+            'nombre',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ModeloForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre')
+        filtro = Modelo.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe un Modelo con este nombre')
+
+        return nombre
+
+class MarcaForm(forms.ModelForm):
+    class Meta:
+        model = Marca
+        fields=(
+            'nombre',
+            'modelos',
+            )
+
+        widgets = {
+            'modelos': forms.CheckboxSelectMultiple(),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre')
+        filtro = Marca.objects.filter(nombre__unaccent__iexact = nombre)
+        if nombre != self.instance.nombre:
+            if len(filtro)>0:
+                self.add_error('nombre', 'Ya existe un Marca con este nombre')
+
+    def __init__(self, *args, **kwargs):
+        super(MarcaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['modelos'].widget.attrs['class'] = 'nobull'
 
 class ModeloAdmin(admin.ModelAdmin):
     list_display = (

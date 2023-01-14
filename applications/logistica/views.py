@@ -353,7 +353,7 @@ class SolicitudPrestamoMaterialesDetalleImprimirView(View):
         titulo = 'SOLICITUD DE PRÉSTAMO DE EQUIPOS'
         vertical = False
         logo = [obj.sociedad.logo.url]
-        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        pie_pagina = obj.sociedad.pie_pagina
 
         titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_prestamo, 6), obj.cliente)
 
@@ -603,6 +603,11 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
         if 'id_solicitud_prestamo' in self.kwargs:
             nota_salida = nota_salida.filter(
                 solicitud_prestamo_materiales__id=self.kwargs['id_solicitud_prestamo'],
+            )
+
+        if 'id_confirmacion' in self.kwargs:
+            nota_salida = nota_salida.filter(
+                confirmacion_venta__id=self.kwargs['id_confirmacion'],
             )
 
         filtro_sociedad = self.request.GET.get('sociedad')

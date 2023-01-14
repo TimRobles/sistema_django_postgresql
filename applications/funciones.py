@@ -177,7 +177,7 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
     return respuesta
 
 
-def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, valor_igv, tipo_cambio=Decimal('1')):
+def calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descuento_oferta, descuento_global, otros_cargos, valor_igv, tipo_cambio=Decimal('1')):
     respuesta = {}
 
     descuento_global_con_igv = (descuento_global * (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
@@ -215,6 +215,8 @@ def calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, val
     # total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
     total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
 
+    respuesta['descuento_global_cotizacion'] = (descuento_global_cotizacion * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['descuento_oferta'] = (descuento_oferta * tipo_cambio).quantize(Decimal('0.01'))
     respuesta['descuento_global'] = (descuento_global * tipo_cambio).quantize(Decimal('0.01'))
     respuesta['descuento_global_con_igv'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
     if descuento_global_con_igv >= total_otros_cargos:
@@ -290,24 +292,37 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, anticipo_regularizacion)
         lista_resultados_linea.append(calculo)
     if sociedad and hasattr(cabecera, 'CotizacionDescuentoGlobal_cotizacion_venta'):
+        descuento_global_cotizacion = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global_cotizacion
+        descuento_oferta = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_oferta
         descuento_global = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global
         otros_cargos = cabecera.CotizacionOtrosCargos_cotizacion_venta.get(sociedad=sociedad).otros_cargos
     else:
         if hasattr(cabecera, 'otros_cargos'):
+            print("Primero")
+            descuento_global_cotizacion = cabecera.descuento_global_cotizacion
+            descuento_oferta = cabecera.descuento_oferta
             descuento_global = cabecera.descuento_global
             otros_cargos = cabecera.otros_cargos
         elif hasattr(cabecera, 'total_otros_cargos'):
+            print("Segundo")
+            descuento_global_cotizacion = Decimal('0.00')
+            descuento_oferta = Decimal('0.00')
             descuento_global = cabecera.descuento_global
             otros_cargos = cabecera.total_otros_cargos
         else:
+            print("Tercero")
+            descuento_global_cotizacion = Decimal('0.00')
+            descuento_oferta = Decimal('0.00')
             descuento_global = Decimal('0.00')
             otros_cargos = Decimal('0.00')
 
-    return calculos_totales(lista_resultados_linea, descuento_global, otros_cargos, valor_igv, tipo_cambio)
+    return calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descuento_oferta, descuento_global, otros_cargos, valor_igv, tipo_cambio)
 
 
 def obtener_totales_soles(resultado, tipo_cambio, sociedad=None):
     respuesta = {}
+    respuesta['descuento_global_cotizacion'] = resultado['descuento_global_cotizacion'] * tipo_cambio
+    respuesta['descuento_oferta'] = resultado['descuento_oferta'] * tipo_cambio
     respuesta['descuento_global'] = resultado['descuento_global'] * tipo_cambio
     respuesta['total_descuento'] = resultado['total_descuento'] * tipo_cambio
     respuesta['total_anticipo'] = resultado['total_anticipo'] * tipo_cambio

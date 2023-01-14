@@ -92,7 +92,7 @@ class SubFamiliaForm(forms.ModelForm):
             if len(filtro)>0:
                 self.add_error('nombre', 'Ya existe una SubFamilia con este nombre')
 
-class ModeloForm(forms.ModelForm):
+class ModeloForm(BSModalModelForm):
     class Meta:
         model = Modelo
         fields=(
@@ -113,7 +113,7 @@ class ModeloForm(forms.ModelForm):
 
         return nombre
 
-class MarcaForm(forms.ModelForm):
+class MarcaForm(BSModalModelForm):
     class Meta:
         model = Marca
         fields=(

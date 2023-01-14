@@ -456,6 +456,22 @@
                         <i class="bi bi-percent"></i>
                     </button>
                     {% endif %}
+                    Descuento Cotización:
+                </td>
+                <td class="text-end text-nowrap">$ {{ totales.descuento_global_cotizacion|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global_cotizacion|redondear|intcomma }}</td>
+                <td colspan="4"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">
+                    Descuento Oferta:
+                </td>
+                <td class="text-end text-nowrap">$ {{ totales.descuento_oferta|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_oferta|redondear|intcomma }}</td>
+                <td colspan="4"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">
                     Descuento Global:
                 </td>
                 <td class="text-end text-nowrap">$ {{ totales.descuento_global|redondear|intcomma }}</td>

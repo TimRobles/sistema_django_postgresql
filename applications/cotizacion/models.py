@@ -97,7 +97,24 @@ class CotizacionVenta(models.Model):
 
     @property
     def descuento_global(self):
-        return self.CotizacionDescuentoGlobal_cotizacion_venta.all().aggregate(models.Sum('descuento_global'))['descuento_global__sum']
+        descuento = Decimal('0.00')
+        for cotizacion_descuento in self.CotizacionDescuentoGlobal_cotizacion_venta.all():
+            descuento += cotizacion_descuento.descuento_global
+        return descuento
+
+    @property
+    def descuento_global_cotizacion(self):
+        descuento = Decimal('0.00')
+        for cotizacion_descuento in self.CotizacionDescuentoGlobal_cotizacion_venta.all():
+            descuento += cotizacion_descuento.descuento_global_cotizacion
+        return descuento
+
+    @property
+    def descuento_oferta(self):
+        descuento = Decimal('0.00')
+        for cotizacion_descuento in self.CotizacionDescuentoGlobal_cotizacion_venta.all():
+            descuento += cotizacion_descuento.descuento_oferta
+        return descuento
 
     @property
     def otros_cargos(self):
@@ -140,6 +157,7 @@ class CotizacionVentaDetalle(models.Model):
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
     tiempo_entrega = models.IntegerField(default=0)
+    en_oferta = models.BooleanField(default=False)
     cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionVentaDetalle_cotizacion_venta')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -471,7 +489,7 @@ post_save.connect(cotizacion_sociedad_post_save, sender=CotizacionSociedad)
 class CotizacionDescuentoGlobal(models.Model):
     cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionDescuentoGlobal_cotizacion_venta')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    descuento_global_cotizacion = models.DecimalField('Descuento Cotización', max_digits=14, decimal_places=2, default=Decimal('0.00'))
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CotizacionDescuentoGlobal_created_by', editable=False)
@@ -484,6 +502,14 @@ class CotizacionDescuentoGlobal(models.Model):
         ordering = [
             'sociedad',
         ]
+    
+    @property
+    def descuento_global(self):
+        return self.descuento_global_cotizacion + self.descuento_oferta
+    
+    @property
+    def descuento_oferta(self):
+        return Decimal('0.00')
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.descuento_global)
