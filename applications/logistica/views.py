@@ -778,11 +778,18 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                         documento_anterior = self.object.solicitud_prestamo_materiales
                         estado_serie = EstadoSerie.objects.get(numero_estado=9)
                     else:
-                        print('Confirmación')
-                        movimiento_inicial = TipoMovimiento.objects.get(codigo=120)  # Confirmado por venta
-                        movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
-                        documento_anterior = self.object.confirmacion_venta
-                        estado_serie = EstadoSerie.objects.get(numero_estado=3)
+                        if self.object.confirmacion_venta.cotizacion_venta.estado == 4: #Confirmado con Reserva
+                            print('Confirmación')
+                            movimiento_inicial = TipoMovimiento.objects.get(codigo=119)  # Confirmación de reserva por venta
+                            movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                            documento_anterior = self.object.confirmacion_venta
+                            estado_serie = EstadoSerie.objects.get(numero_estado=3)
+                        elif self.object.confirmacion_venta.cotizacion_venta.estado == 5: #Confirmado sin Reserva
+                            print('Confirmación')
+                            movimiento_inicial = TipoMovimiento.objects.get(codigo=120)  # Confirmado por venta
+                            movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                            documento_anterior = self.object.confirmacion_venta
+                            estado_serie = EstadoSerie.objects.get(numero_estado=3)
 
                     consolidado = {}
                     for detalle in detalles:
