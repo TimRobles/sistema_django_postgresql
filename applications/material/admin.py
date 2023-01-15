@@ -192,6 +192,7 @@ class MaterialAdmin(admin.ModelAdmin):
         'control_lote',
         'control_calidad',
         'estado_alta_baja',
+        'id_multiplay',
         )
 
     def save_model(self, request, obj, form, change):

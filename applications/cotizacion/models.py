@@ -173,6 +173,22 @@ class CotizacionVentaDetalle(models.Model):
             'item',
             ]
 
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def precio_oferta(self):
+        try:
+            return self.producto.precio_oferta
+        except:
+            return self.precio_unitario_con_igv
+
+    @property
+    def descuento_oferta(self):
+        descuento_unitario = (self.precio_unitario_con_igv - self.precio_oferta).quantize(Decimal('0.0000000001'))
+        descuento_sin_igv = Decimal(Decimal(descuento_unitario)/(1 + Decimal(igv()))).quantize(Decimal('0.0000000001'))
+        return descuento_sin_igv
 
     def __str__(self):
         return str(self.id)
@@ -509,7 +525,13 @@ class CotizacionDescuentoGlobal(models.Model):
     
     @property
     def descuento_oferta(self):
-        return Decimal('0.00')
+        descuento = Decimal('0.00')
+        cotizacion_venta = self.cotizacion_venta
+        for detalle in cotizacion_venta.CotizacionVentaDetalle_cotizacion_venta.all():
+            cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=self.sociedad)
+            if detalle.en_oferta:
+                descuento += cotizacion_sociedad.cantidad * detalle.descuento_oferta
+        return descuento
 
     def __str__(self):
         return "%s - %s - %s" % (self.cotizacion_venta, self.sociedad, self.descuento_global)

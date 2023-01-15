@@ -385,3 +385,6 @@ ESTADOS_NOTA_CALIDAD_STOCK = (
     (3, 'CONCLUIDA'),
     (4, 'ANULADA'),
 )
+
+URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
+URL_MULTIPLAY = 'https://web.multiplay-group.com/'

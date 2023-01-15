@@ -181,6 +181,33 @@ class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 0.001
+        if kwargs['instance'].en_oferta:
+            self.fields['precio_final_con_igv'].disabled = True
+
+
+class CotizacionVentaMaterialDetalleOfertaForm(BSModalModelForm):
+    precio_lista = forms.DecimalField(required=False)
+    precio_oferta = forms.DecimalField(required=False)
+    class Meta:
+        model = CotizacionVentaDetalle
+        fields=(
+            'precio_lista',
+            'precio_oferta',
+            'en_oferta',
+            )
+
+    def __init__(self, *args, **kwargs):
+        precio_lista = kwargs.pop('precio_lista')
+        precio_oferta = kwargs.pop('precio_oferta')
+        super(CotizacionVentaMaterialDetalleOfertaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.disabled = True
+        self.fields['precio_lista'].initial = precio_lista
+        self.fields['precio_oferta'].initial = precio_oferta
+        self.fields['en_oferta'].widget.attrs['class'] = 'form-check-input'
+        self.fields['en_oferta'].disabled = False
+        
 
 class CotizacionVentaDetalleForm(BSModalModelForm):
     cantidad = forms.DecimalField(required=False, disabled=True)

@@ -35,6 +35,7 @@ from .forms import (
     CotizacionVentaForm,
     CotizacionVentaMaterialDetalleForm,
     CotizacionVentaMaterialDetalleUpdateForm,
+    CotizacionVentaMaterialDetalleOfertaForm,
     CotizacionVentaObservacionForm,
     CotizacionVentaOtrosCargosForm,
     CotizacionVentaPdfsForm,
@@ -910,6 +911,68 @@ class CotizacionVentaMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalU
         return context
 
 
+class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cotizacion.change_cotizacionventa')
+    model = CotizacionVentaDetalle
+    template_name = "cotizacion/cotizacion_venta/oferta.html"
+    form_class = CotizacionVentaMaterialDetalleOfertaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        error_oferta = False
+        context = {}
+        context['titulo'] = 'Error de Oferta'
+        if self.get_object().precio_oferta == self.get_object().precio_unitario_con_igv:
+            error_oferta = True
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        if error_oferta:
+            context['texto'] = 'El producto no está en oferta el día de hoy.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['precio_lista'] = self.object.precio_unitario_con_igv
+        kwargs['precio_oferta'] = self.object.precio_oferta
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                if form.instance.en_oferta:
+                    precio_unitario_con_igv = form.instance.precio_unitario_con_igv
+                    precio_final_con_igv = precio_unitario_con_igv
+                    respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), form.instance.tipo_igv)
+                    form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+                    form.instance.precio_unitario_con_igv = precio_unitario_con_igv
+                    form.instance.precio_final_con_igv = precio_final_con_igv
+                    form.instance.sub_total = respuesta['subtotal']
+                    form.instance.descuento = respuesta['descuento']
+                    form.instance.igv = respuesta['igv']
+                    form.instance.total = respuesta['total']
+                registro_guardar(form.instance, self.request)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            print(ex)
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(CotizacionVentaMaterialDetalleOfertaView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precio de Oferta"
+        context['material'] = self.object.content_type.get_object_for_this_type(id = self.object.id_registro)
+        return context
+
+
 class CotizacionVentaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('cotizacion.delete_cotizacionventa')
     model = CotizacionVenta
@@ -1098,11 +1161,6 @@ class CotizacionVentaReservaView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/form generico.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
-    def dispatch(self, request, *args, **kwargs):
         error_cantidad_sociedad = False
         context = {}
         context['titulo'] = 'Error de Reserva'
@@ -1112,6 +1170,8 @@ class CotizacionVentaReservaView(PermissionRequiredMixin, BSModalDeleteView):
                 sumar += cotizacion_sociedad.cantidad
             if sumar != detalle.cantidad:
                 error_cantidad_sociedad = True
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         if error_cantidad_sociedad:
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -1241,6 +1301,9 @@ class CotizacionVentaConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
         if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
             error_tipo_cambio = True
 
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -1252,8 +1315,6 @@ class CotizacionVentaConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
         if error_cantidad_stock and self.get_object().estado != 3:
             context['texto'] = 'No hay stock suficiente en un producto.'
             return render(request, 'includes/modal sin permiso.html', context)
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -1495,6 +1556,9 @@ class CotizacionVentaConfirmarAnticipoView(PermissionRequiredMixin, BSModalDelet
         if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
             error_tipo_cambio = True
 
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -1503,8 +1567,6 @@ class CotizacionVentaConfirmarAnticipoView(PermissionRequiredMixin, BSModalDelet
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
 
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
@@ -1675,12 +1737,13 @@ class CotizacionVentaPdfsView(PermissionRequiredMixin, BSModalFormView):
             if sumar != detalle.cantidad:
                 error_cantidad_sociedad = True
         
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+
         if error_cantidad_sociedad:
             context['texto'] = 'Revise las cantidades por Sociedad.'
             return render(request, 'includes/modal sin permiso.html', context)
             
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -2849,11 +2912,11 @@ class SolicitudCreditoCuotaCreateView(PermissionRequiredMixin, BSModalCreateView
         if self.saldo == 0:
             error_saldo = True
 
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         if error_saldo:
             context['texto'] = 'No hay saldo para agregar más cuotas.'
             return render(request, 'includes/modal sin permiso.html', context)
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
         return super(SolicitudCreditoCuotaCreateView, self).dispatch(request, *args, **kwargs)
     
     def form_valid(self, form):
@@ -2931,11 +2994,11 @@ class SolicitudCreditoFinalizarView(PermissionRequiredMixin, BSModalDeleteView):
         if self.get_object().total_cuotas == 0 or self.get_object().total_cuotas != self.get_object().total_credito:
             error_cuotas = True
 
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
         if error_cuotas:
             context['texto'] = 'El total de las cuotas no coincide con el monto solicitado.'
             return render(request, 'includes/modal sin permiso.html', context)
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
         return super(SolicitudCreditoFinalizarView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):

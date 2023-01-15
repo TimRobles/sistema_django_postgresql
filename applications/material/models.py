@@ -1,4 +1,5 @@
 from decimal import Decimal
+import requests
 from applications.cotizacion.models import PrecioListaMaterial
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications.variables import ESTADOS
@@ -10,6 +11,7 @@ from applications.datos_globales.models import Unidad,ProductoSunat
 from applications.proveedores.models import Proveedor
 from django.contrib.contenttypes.models import ContentType
 
+from applications.variables import URL_MULTIPLAY
 
 class Clase(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -153,6 +155,7 @@ class Material(models.Model):
     atributo = models.ManyToManyField(Atributo, verbose_name='Atributo', related_name='Material_atributo')
     componente = models.ManyToManyField(Componente, verbose_name='Componente', related_name='Material_componente', through='material.RelacionMaterialComponente')
     id_producto_temporal = models.IntegerField(blank=True, null=True)
+    id_multiplay = models.IntegerField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Material_created_by', editable=False)
@@ -338,6 +341,17 @@ class Material(models.Model):
     @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
+
+    @property
+    def precio_oferta(self):
+        try:
+            url = f'{URL_MULTIPLAY}producto/producto_api/{self.id_multiplay}/'
+            r = requests.get(url)
+            data = r.text
+            return Decimal(data)
+        except:
+            return None
+            
 
     def __str__(self):
         return self.descripcion_venta
