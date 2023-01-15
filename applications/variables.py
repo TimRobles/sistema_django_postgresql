@@ -387,4 +387,3 @@ ESTADOS_NOTA_CALIDAD_STOCK = (
 )
 
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
-URL_MULTIPLAY = 'https://web.multiplay-group.com/'
