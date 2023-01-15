@@ -411,11 +411,21 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
                 material = form.cleaned_data.get('material')
                 cantidad = form.cleaned_data.get('cantidad')
 
+                print(cotizacion, item, material, cantidad)
+
+                buscar = CotizacionVentaDetalle.objects.filter(
+                    content_type = ContentType.objects.get_for_model(material),
+                    id_registro = material.id,
+                    cotizacion_venta = cotizacion,
+                )
+                print(buscar)
+
                 obj, created = CotizacionVentaDetalle.objects.get_or_create(
                     content_type = ContentType.objects.get_for_model(material),
                     id_registro = material.id,
                     cotizacion_venta = cotizacion,
                 )
+                print(obj, created)
                 if created:
                     obj.item = item + 1
                     obj.cantidad = cantidad

@@ -526,11 +526,14 @@ class CotizacionDescuentoGlobal(models.Model):
     @property
     def descuento_oferta(self):
         descuento = Decimal('0.00')
-        cotizacion_venta = self.cotizacion_venta
-        for detalle in cotizacion_venta.CotizacionVentaDetalle_cotizacion_venta.all():
-            cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=self.sociedad)
-            if detalle.en_oferta:
-                descuento += cotizacion_sociedad.cantidad * detalle.descuento_oferta
+        try:
+            cotizacion_venta = self.cotizacion_venta
+            for detalle in cotizacion_venta.CotizacionVentaDetalle_cotizacion_venta.all():
+                cotizacion_sociedad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=self.sociedad)
+                if detalle.en_oferta:
+                    descuento += cotizacion_sociedad.cantidad * detalle.descuento_oferta
+        except:
+            pass
         return descuento
 
     def __str__(self):
