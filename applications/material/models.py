@@ -345,9 +345,14 @@ class Material(models.Model):
     @property
     def precio_oferta(self):
         try:
+            print("*****************************")
             url = f'{URL_MULTIPLAY}producto/producto_api/{self.id_multiplay}/'
+            print(url)
             r = requests.get(url)
+            print(r)
             data = r.text
+            print(data)
+            print("*****************************")
             return Decimal(data)
         except:
             return None

@@ -179,10 +179,10 @@ class CotizacionVentaDetalle(models.Model):
 
     @property
     def precio_oferta(self):
-        try:
-            return self.producto.precio_oferta
-        except:
-            return self.precio_unitario_con_igv
+        precio_oferta = self.producto.precio_oferta
+        if precio_oferta:
+            return precio_oferta
+        return self.precio_unitario_con_igv
 
     @property
     def descuento_oferta(self):
