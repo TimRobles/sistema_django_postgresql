@@ -290,7 +290,7 @@ class ConfirmacionVenta(models.Model):
         return Decimal('0.00')
 
     @property
-    def descuento_global_oferta(self):
+    def descuento_oferta(self):
         return Decimal('0.00')
 
     @property
