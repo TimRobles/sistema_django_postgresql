@@ -3,6 +3,7 @@ from django.db import models
 from applications.sociedad.models import Sociedad
 from applications.oferta_proveedor.models import OfertaProveedor,OfertaProveedorDetalle
 from applications.datos_globales.models import Moneda
+from applications.proveedores.models import Proveedor, InterlocutorProveedor
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from applications.variables import ESTADOS_ORDEN_COMPRA, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_IGV_CHOICES
@@ -32,6 +33,8 @@ class OrdenCompra(models.Model):
     archivo = models.FileField('Archivo',upload_to = 'file/orden_compra/', max_length=100, blank=True, null=True)
     condiciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField(blank=True, null=True)
+    proveedor_temporal = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)
+    interlocutor_temporal = models.ForeignKey(InterlocutorProveedor, on_delete=models.CASCADE, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_ORDEN_COMPRA,default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -49,6 +52,8 @@ class OrdenCompra(models.Model):
             
     @property
     def proveedor(self):
+        if self.proveedor_temporal:
+            return self.proveedor_temporal
         try:
             return self.oferta_proveedor.requerimiento_material.proveedor
         except:
@@ -56,6 +61,8 @@ class OrdenCompra(models.Model):
 
     @property
     def interlocutor(self):
+        if self.interlocutor_temporal:
+            return self.interlocutor_temporal
         try:
             return self.oferta_proveedor.requerimiento_material.interlocutor_proveedor
         except:
@@ -67,7 +74,7 @@ class OrdenCompra(models.Model):
 
 class OrdenCompraDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))

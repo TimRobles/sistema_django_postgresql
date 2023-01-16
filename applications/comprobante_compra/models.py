@@ -34,7 +34,6 @@ class ComprobanteCompraPI(models.Model):
     total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     slug = models.SlugField(blank=True, null=True)
-    archivo = models.FileField('Archivo', upload_to=COMPROBANTE_COMPRA_PI_ARCHIVO, max_length=100, blank=True, null=True)
     condiciones = models.TextField('Condiciones', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE_PI, default=0)
     motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)

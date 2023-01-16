@@ -248,8 +248,8 @@ class OrdenCompraPdfView(View):
 
         sociedad = obj.sociedad
         orden = obj
-        proveedor = obj.oferta_proveedor.requerimiento_material.proveedor
-        interlocutor = obj.oferta_proveedor.requerimiento_material.interlocutor_proveedor
+        proveedor = obj.proveedor
+        interlocutor = obj.interlocutor_proveedor
         usuario = request.user
 
         TablaEncabezado = ['Item',

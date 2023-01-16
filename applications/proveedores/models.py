@@ -9,6 +9,7 @@ class Proveedor(models.Model):
     ruc = models.CharField('RUC', max_length=15, blank=True, null=True)
     pais = models.ForeignKey(Pais, on_delete=models.PROTECT)
     direccion = models.CharField('Dirección', max_length=255)
+    id_antiguo = models.IntegerField(blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS,default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Proveedor_created_by', editable=False)
@@ -33,6 +34,7 @@ class InterlocutorProveedor(models.Model):
 
     nombres = models.CharField('Nombres', max_length=60)
     apellidos = models.CharField('Apellidos', max_length=60)
+    id_antiguo = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InterlocutorProveedor_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
