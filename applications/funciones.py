@@ -299,8 +299,8 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
     else:
         if hasattr(cabecera, 'otros_cargos'):
             print('Primero')
-            descuento_global_cotizacion = cabecera.descuento_global_cotizacion
-            descuento_oferta = cabecera.descuento_oferta
+            descuento_global_cotizacion = Decimal('0.00')
+            descuento_oferta = Decimal('0.00')
             descuento_global = cabecera.descuento_global
             otros_cargos = cabecera.otros_cargos
         elif hasattr(cabecera, 'total_otros_cargos'):
