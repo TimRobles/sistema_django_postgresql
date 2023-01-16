@@ -290,6 +290,10 @@ class ConfirmacionVenta(models.Model):
         return Decimal('0.00')
 
     @property
+    def descuento_global_oferta(self):
+        return Decimal('0.00')
+
+    @property
     def pendiente_despachar(self):
         try:
             print(self)
