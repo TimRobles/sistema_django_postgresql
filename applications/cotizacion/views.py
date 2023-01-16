@@ -929,15 +929,22 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
 
     def dispatch(self, request, *args, **kwargs):
         print('Dispatch')
+        print(self.kwargs)
+        print(kwargs)
+        print('primero' in self.request.session)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+
         error_oferta = False
         context = {}
         context['titulo'] = 'Error de Oferta'
-        precio_oferta = self.get_object().producto.precio_oferta
+        if self.get_object().precio_oferta:
+            precio_oferta = self.get_object().precio_oferta
+        else:
+            precio_oferta = self.get_object().producto.precio_oferta
         self.kwargs['precio_oferta'] = precio_oferta
         if not precio_oferta:
             error_oferta = True
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
         if error_oferta:
             context['texto'] = 'El producto no está en oferta el día de hoy.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -980,6 +987,7 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
+        print('context_data')
         self.request.session['primero'] = True
         context = super(CotizacionVentaMaterialDetalleOfertaView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
