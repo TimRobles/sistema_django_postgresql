@@ -286,6 +286,10 @@ class ConfirmacionVenta(models.Model):
         return self.total
 
     @property
+    def descuento_global_cotizacion(self):
+        return Decimal('0.00')
+
+    @property
     def pendiente_despachar(self):
         try:
             print(self)
