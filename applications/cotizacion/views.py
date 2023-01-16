@@ -942,9 +942,10 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
             precio_oferta = self.get_object().precio_oferta
         else:
             precio_oferta = self.get_object().producto.precio_oferta
-            objeto = self.get_object()
-            objeto.precio_oferta = precio_oferta
-            objeto.save()
+            if precio_oferta:
+                objeto = self.get_object()
+                objeto.precio_oferta = precio_oferta
+                objeto.save()
 
         self.kwargs['precio_oferta'] = precio_oferta
         if not precio_oferta:
