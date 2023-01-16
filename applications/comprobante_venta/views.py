@@ -241,7 +241,6 @@ class FacturaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('comprobante_venta.add_facturaventa')
     model = ConfirmacionVenta
     template_name = "includes/form generico.html"
-    factura_venta = None
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
@@ -268,7 +267,7 @@ class FacturaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.factura_venta.id})
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -328,7 +327,7 @@ class FacturaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-            self.factura_venta = factura_venta
+            kwargs['factura_venta'] = factura_venta
 
             registro_guardar(self.object, self.request)
             self.object.save()
