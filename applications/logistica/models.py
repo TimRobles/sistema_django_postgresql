@@ -52,7 +52,7 @@ class SolicitudPrestamoMateriales(models.Model):
 
 class SolicitudPrestamoMaterialesDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     cantidad_prestamo = models.DecimalField('Cantidad Prestamo', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     observacion = models.TextField(blank=True, null=True)
@@ -123,7 +123,7 @@ class NotaSalida(models.Model):
     )
 
     confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_confirmacion_venta')
-    solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True)
+    solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalida_solicitud_prestamo_materiales')
     numero_salida = models.IntegerField('Número Salida', blank=True, null=True)
     observacion_adicional = models.TextField('Observación Adicional', blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)

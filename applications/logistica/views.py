@@ -1329,22 +1329,25 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                 nota_salida_detalle = nota_salida.NotaSalidaDetalle_nota_salida.all()
                 lista = []
                 lista_id_registro = []
+                lista_nota_salida = []
                 if nota_salida.solicitud_prestamo_materiales:
                     for detalle in nota_salida_detalle:
                         id_registro = detalle.solicitud_prestamo_materiales_detalle.id_registro
                         if id_registro not in lista_id_registro:
                             lista_id_registro.append(id_registro)
                             lista.append(detalle)
+                    for nota_salida_buscar in nota_salida.solicitud_prestamo_materiales.NotaSalida_solicitud_prestamo_materiales.exclude(estado=3):
+                        lista_nota_salida.append(nota_salida_buscar.id)
                     item = 0
                     for dato in lista:
                         material = dato.solicitud_prestamo_materiales_detalle
+                        cantidad_notas_salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
+                        cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_prestamo'))['cantidad_prestamo__sum']
                         despacho_detalle = DespachoDetalle.objects.create(
                             item=item + 1,
                             content_type=dato.solicitud_prestamo_materiales_detalle.content_type,
                             id_registro=dato.solicitud_prestamo_materiales_detalle.id_registro,
-                            cantidad_despachada=
-                            material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
-                                'cantidad_salida__sum'],
+                            cantidad_despachada=cantidad_notas_salida - cantidad_despachos,
                             despacho=despacho,
                             created_by=self.request.user,
                             updated_by=self.request.user,
@@ -1356,16 +1359,18 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         if id_registro not in lista_id_registro:
                             lista_id_registro.append(id_registro)
                             lista.append(detalle)
+                    for nota_salida_buscar in nota_salida.confirmacion_venta_detalle.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(estado=3):
+                        lista_nota_salida.append(nota_salida_buscar.id)
                     item = 0
                     for dato in lista:
                         material = dato.confirmacion_venta_detalle
+                        cantidad_notas_salida = material.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
+                        cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_prestamo'))['cantidad_prestamo__sum']
                         despacho_detalle = DespachoDetalle.objects.create(
                             item=item + 1,
                             content_type=dato.confirmacion_venta_detalle.content_type,
                             id_registro=dato.confirmacion_venta_detalle.id_registro,
-                            cantidad_despachada=
-                            material.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))[
-                                'cantidad_salida__sum'],
+                            cantidad_despachada=cantidad_notas_salida - cantidad_despachos,
                             despacho=despacho,
                             created_by=self.request.user,
                             updated_by=self.request.user,
