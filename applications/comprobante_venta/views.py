@@ -267,7 +267,10 @@ class FacturaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
+        try:
+            return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
+        except:
+            return reverse_lazy('comprobante_venta_app:factura_venta_inicio')
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -327,7 +330,7 @@ class FacturaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-            kwargs['factura_venta'] = factura_venta
+            self.kwargs['factura_venta'] = factura_venta
 
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -370,7 +373,10 @@ class FacturaVentaAnticipoCrearView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
+        try:
+            return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
+        except:
+            return reverse_lazy('comprobante_venta_app:factura_venta_inicio')
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -465,7 +471,10 @@ class FacturaVentaAnticipoRegularizarCrearView(PermissionRequiredMixin, BSModalD
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
+        try:
+            return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['factura_venta'].id})
+        except:
+            return reverse_lazy('comprobante_venta_app:factura_venta_inicio')
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -1266,7 +1275,10 @@ class BoletaVentaCrearView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['boleta_venta'].id})
+        try:
+            return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['boleta_venta'].id})
+        except:
+            return reverse_lazy('comprobante_venta_app:boleta_venta_inicio')
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
