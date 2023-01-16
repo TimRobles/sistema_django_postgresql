@@ -87,6 +87,7 @@ class CotizacionVentaDetalleAdmin(admin.ModelAdmin):
         'total',
         'tipo_igv',
         'tiempo_entrega',
+        'precio_oferta',
         'created_at',
         'created_by',
         'updated_at',

@@ -928,10 +928,13 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
     form_class = CotizacionVentaMaterialDetalleOfertaForm
 
     def dispatch(self, request, *args, **kwargs):
+        print('Dispatch')
         error_oferta = False
         context = {}
         context['titulo'] = 'Error de Oferta'
-        if self.get_object().precio_oferta == self.get_object().precio_unitario_con_igv:
+        precio_oferta = self.get_object().producto.precio_oferta
+        self.kwargs['precio_oferta'] = precio_oferta
+        if not precio_oferta:
             error_oferta = True
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
@@ -944,9 +947,11 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
     def get_form_kwargs(self):
+        print('Kwargs')
+        print(self.kwargs)
         kwargs = super().get_form_kwargs()
         kwargs['precio_lista'] = self.object.precio_unitario_con_igv
-        kwargs['precio_oferta'] = self.object.precio_oferta
+        kwargs['precio_oferta'] = self.kwargs['precio_oferta']
         return kwargs
 
     @transaction.atomic

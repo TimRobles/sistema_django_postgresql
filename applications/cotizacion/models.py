@@ -158,6 +158,7 @@ class CotizacionVentaDetalle(models.Model):
     tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
     tiempo_entrega = models.IntegerField(default=0)
     en_oferta = models.BooleanField(default=False)
+    precio_oferta = models.DecimalField('Precio de Oferta', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     cotizacion_venta = models.ForeignKey(CotizacionVenta, on_delete=models.CASCADE, related_name='CotizacionVentaDetalle_cotizacion_venta')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -176,13 +177,6 @@ class CotizacionVentaDetalle(models.Model):
     @property
     def producto(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
-
-    @property
-    def precio_oferta(self):
-        precio_oferta = self.producto.precio_oferta
-        if precio_oferta:
-            return precio_oferta
-        return self.precio_unitario_con_igv
 
     @property
     def descuento_oferta(self):

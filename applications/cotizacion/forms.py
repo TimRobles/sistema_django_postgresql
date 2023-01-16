@@ -187,14 +187,21 @@ class CotizacionVentaMaterialDetalleUpdateForm(BSModalModelForm):
 
 class CotizacionVentaMaterialDetalleOfertaForm(BSModalModelForm):
     precio_lista = forms.DecimalField(required=False)
-    precio_oferta = forms.DecimalField(required=False)
+    precio_oferta_buscar = forms.DecimalField(label='Precio Oferta' ,required=False)
     class Meta:
         model = CotizacionVentaDetalle
         fields=(
             'precio_lista',
-            'precio_oferta',
+            'precio_oferta_buscar',
             'en_oferta',
             )
+    
+    def clean_en_oferta(self):
+        en_oferta = self.cleaned_data.get('en_oferta')
+        if en_oferta:
+            self.instance.precio_oferta = self.cleaned_data.get('precio_oferta_buscar')
+        
+        return en_oferta
 
     def __init__(self, *args, **kwargs):
         precio_lista = kwargs.pop('precio_lista')
@@ -204,7 +211,7 @@ class CotizacionVentaMaterialDetalleOfertaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.disabled = True
         self.fields['precio_lista'].initial = precio_lista
-        self.fields['precio_oferta'].initial = precio_oferta
+        self.fields['precio_oferta_buscar'].initial = precio_oferta
         self.fields['en_oferta'].widget.attrs['class'] = 'form-check-input'
         self.fields['en_oferta'].disabled = False
         

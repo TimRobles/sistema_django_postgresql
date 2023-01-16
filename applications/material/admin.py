@@ -181,6 +181,34 @@ class MarcaAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+class MaterialForm(forms.ModelForm):
+    class Meta:
+        model = Material
+        fields = (
+            'descripcion_venta',
+            'descripcion_corta',
+            'unidad_base',
+            'peso_unidad_base',
+            'marca',
+            'modelo',
+            'subfamilia',
+            'clase',
+            'control_serie',
+            'control_lote',
+            'control_calidad',
+            'estado_alta_baja',
+            'mostrar',
+            'traduccion',
+            'partida',
+            'uso_funcion',
+            'compuesto_por',
+            'es_componente',
+            'atributo',
+            'componente',
+            'id_producto_temporal',
+            'id_multiplay',
+            )
+
 class MaterialAdmin(admin.ModelAdmin):
     list_display = (
         'id',
@@ -194,6 +222,7 @@ class MaterialAdmin(admin.ModelAdmin):
         'estado_alta_baja',
         'id_multiplay',
         )
+    form = MaterialForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
