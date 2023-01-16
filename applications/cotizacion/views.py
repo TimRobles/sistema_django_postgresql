@@ -1094,7 +1094,7 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
                 CotizacionDescuentoGlobal.objects.create(
                     cotizacion_venta=nueva_cotizacion,
                     sociedad=descuento_global.sociedad,
-                    descuento_global=descuento_global.descuento_global,
+                    descuento_global_cotizacion=descuento_global.descuento_global_cotizacion,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )

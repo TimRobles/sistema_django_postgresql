@@ -40,6 +40,10 @@ class SolicitudPrestamoMateriales(models.Model):
         ordering = ['numero_prestamo',]
 
     @property
+    def cotizacion_venta(self):
+        return self
+
+    @property
     def fecha(self):
         return self.fecha_prestamo
 
