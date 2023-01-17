@@ -1336,12 +1336,12 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         if id_registro not in lista_id_registro:
                             lista_id_registro.append(id_registro)
                             lista.append(detalle)
-                    for nota_salida_buscar in nota_salida.solicitud_prestamo_materiales.NotaSalida_solicitud_prestamo_materiales.exclude(estado=3):
+                    for nota_salida_buscar in nota_salida.solicitud_prestamo_materiales.NotaSalida_solicitud_prestamo_materiales.all().exclude(estado=3):
                         lista_nota_salida.append(nota_salida_buscar.id)
                     item = 0
                     for dato in lista:
                         material = dato.solicitud_prestamo_materiales_detalle
-                        cantidad_notas_salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
+                        cantidad_notas_salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.all().exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
                         cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_prestamo'))['cantidad_prestamo__sum']
                         despacho_detalle = DespachoDetalle.objects.create(
                             item=item + 1,
@@ -1359,12 +1359,15 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         if id_registro not in lista_id_registro:
                             lista_id_registro.append(id_registro)
                             lista.append(detalle)
-                    for nota_salida_buscar in nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.exclude(estado=3):
+                    alalaa = nota_salida.confirmacion_venta
+                    alalab = nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.all()
+                    alalac = nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.all().exclude(estado=3)
+                    for nota_salida_buscar in nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.all().exclude(estado=3):
                         lista_nota_salida.append(nota_salida_buscar.id)
                     item = 0
                     for dato in lista:
                         material = dato.confirmacion_venta_detalle
-                        cantidad_notas_salida = material.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
+                        cantidad_notas_salida = material.NotaSalidaDetalle_confirmacion_venta_detalle.all().exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
                         cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_prestamo'))['cantidad_prestamo__sum']
                         despacho_detalle = DespachoDetalle.objects.create(
                             item=item + 1,
