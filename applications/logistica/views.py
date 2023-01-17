@@ -1343,11 +1343,14 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         material = dato.solicitud_prestamo_materiales_detalle
                         cantidad_notas_salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.all().exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
                         cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_despachada'))['cantidad_despachada__sum']
+                        cantidad_despachada = cantidad_notas_salida
+                        if cantidad_despachos:
+                            cantidad_despachada = cantidad_notas_salida - cantidad_despachos
                         despacho_detalle = DespachoDetalle.objects.create(
                             item=item + 1,
                             content_type=dato.solicitud_prestamo_materiales_detalle.content_type,
                             id_registro=dato.solicitud_prestamo_materiales_detalle.id_registro,
-                            cantidad_despachada=cantidad_notas_salida - cantidad_despachos,
+                            cantidad_despachada=cantidad_despachada,
                             despacho=despacho,
                             created_by=self.request.user,
                             updated_by=self.request.user,
@@ -1366,11 +1369,14 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         material = dato.confirmacion_venta_detalle
                         cantidad_notas_salida = material.NotaSalidaDetalle_confirmacion_venta_detalle.all().exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
                         cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_despachada'))['cantidad_despachada__sum']
+                        cantidad_despachada = cantidad_notas_salida
+                        if cantidad_despachos:
+                            cantidad_despachada = cantidad_notas_salida - cantidad_despachos
                         despacho_detalle = DespachoDetalle.objects.create(
                             item=item + 1,
                             content_type=dato.confirmacion_venta_detalle.content_type,
                             id_registro=dato.confirmacion_venta_detalle.id_registro,
-                            cantidad_despachada=cantidad_notas_salida - cantidad_despachos,
+                            cantidad_despachada=cantidad_despachada,
                             despacho=despacho,
                             created_by=self.request.user,
                             updated_by=self.request.user,
