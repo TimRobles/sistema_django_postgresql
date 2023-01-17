@@ -1359,10 +1359,7 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         if id_registro not in lista_id_registro:
                             lista_id_registro.append(id_registro)
                             lista.append(detalle)
-                    alalaa = nota_salida.confirmacion_venta
-                    alalab = nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.all()
-                    alalac = nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.all().exclude(estado=3)
-                    for nota_salida_buscar in nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.all().exclude(estado=3):
+                    for nota_salida_buscar in nota_salida.confirmacion_venta.NotaSalida_confirmacion_venta.all().exclude(estado=3):
                         lista_nota_salida.append(nota_salida_buscar.id)
                     item = 0
                     for dato in lista:
