@@ -1359,7 +1359,7 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                         if id_registro not in lista_id_registro:
                             lista_id_registro.append(id_registro)
                             lista.append(detalle)
-                    for nota_salida_buscar in nota_salida.confirmacion_venta_detalle.NotaSalidaDetalle_confirmacion_venta_detalle.exclude(estado=3):
+                    for nota_salida_buscar in nota_salida.confirmacion_venta.NotaSalidaDetalle_confirmacion_venta.exclude(estado=3):
                         lista_nota_salida.append(nota_salida_buscar.id)
                     item = 0
                     for dato in lista:
