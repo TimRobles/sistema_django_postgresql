@@ -16,7 +16,6 @@ class ComprobanteCompraPIAdmin(admin.ModelAdmin):
         'moneda',
         'total',
         'slug',
-        'archivo',
         'condiciones',
         'estado',
         'motivo_anulacion',
