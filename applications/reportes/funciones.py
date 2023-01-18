@@ -24,7 +24,7 @@ DICT_SOCIEDAD = {}
 query_sociedad = Sociedad.objects.all()
 for dato in query_sociedad:
     c_id = str(dato.id)
-    DICT_SOCIEDAD[c_id] = dato.color
+    DICT_SOCIEDAD[c_id] = dato
 
 DICT_TIPO_NOTA_CREDITO = {
     '1' :"ANULACIÓN DE LA OPERACIÓN",
