@@ -9,6 +9,7 @@ from .models import (
 
 from .forms import (
     DatosUsuarioForm,
+    HistoricoUserCreateForm,
     UserPasswordForm,
     HistoricoUserDarBajaForm,
     HistoricoUserDarAltaForm,
@@ -221,3 +222,32 @@ class HistoricoDetailView(PermissionRequiredMixin, DetailView):
         return context
 
 
+class HistoricoUserCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('usuario.add_historicouser')
+    template_name = "includes/formulario generico.html"
+    form_class = HistoricoUserCreateForm
+    success_url = reverse_lazy('usuario_app:historico_usuarios')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs) 
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            form.instance.fecha_baja = None
+            registro_guardar(form.instance, self.request)
+            
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())        
+
+    def get_context_data(self, **kwargs):
+        context = super(HistoricoUserCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Registrar'
+        context['titulo'] = 'Historico Usuario'
+        return context

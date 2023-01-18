@@ -163,9 +163,12 @@ class HistoricoUserDarAltaForm(BSModalModelForm):
     def clean_fecha_alta(self):
         fecha_alta = self.cleaned_data.get('fecha_alta')
         if self.fecha_baja:
-            if fecha_alta== None:
+            if fecha_alta == None:
                 texto = 'Ingresar fecha de alta.'
                 self.add_error('fecha_alta', texto)
+            elif fecha_alta > date.today():
+                texto = 'Fecha de alta no puede ser mayor a la fecha actual.'
+                self.add_error('fecha_alta', texto)            
 
             try:
                 if self.fecha_baja > fecha_alta:
@@ -181,5 +184,39 @@ class HistoricoUserDarAltaForm(BSModalModelForm):
         super(HistoricoUserDarAltaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class HistoricoUserCreateForm(BSModalModelForm):
+    class Meta:
+        model = HistoricoUser
+        fields = (
+            'usuario',
+            'fecha_alta',
+            )
+        widgets = {
+            'fecha_alta': forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ), 
+        }
+    
+    def clean_fecha_alta(self):
+        fecha_alta = self.cleaned_data.get('fecha_alta')
+        if fecha_alta == None:
+            texto = 'Ingresar fecha de alta.'
+            self.add_error('fecha_alta', texto)
+        elif fecha_alta > date.today():
+                texto = 'Fecha de alta no puede ser mayor a la fecha actual.'
+                self.add_error('fecha_alta', texto)            
+        
+        return fecha_alta
+
+    def __init__(self, *args, **kwargs):
+        super(HistoricoUserCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['usuario'].queryset = get_user_model().objects.exclude(HistoricoUser_usuario__estado=1).exclude(HistoricoUser_usuario__estado=2)
 
 

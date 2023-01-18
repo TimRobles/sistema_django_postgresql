@@ -11,6 +11,11 @@
 
 {% block contenido %}
 <h2> Historico de Usuarios </h2>
+<button data-form-url="{% url 'usuario_app:historico_usuarios_registrar' %}"
+    data-table-url="{% url 'usuario_app:historico_usuarios_tabla' %}"
+    class="create btn btn-primary">
+    Registrar Usuario
+</button>
 <div class="table-responsive" id="tabla">
     {% include 'usuario/historico_user/list_tabla.html' %}
 </div>
