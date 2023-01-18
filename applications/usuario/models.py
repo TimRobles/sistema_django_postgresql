@@ -1,6 +1,7 @@
 from email.policy import default
 from django.db import models
 from django.conf import settings
+from datetime import date, timedelta
 from phonenumber_field.modelfields import PhoneNumberField
 
 from applications.variables import TIPO_DOCUMENTO_CHOICES
@@ -62,6 +63,17 @@ class DatosUsuario(models.Model):
     class Meta:
         verbose_name = 'Datos del Usuario'
         verbose_name_plural = 'Datos de los Usuarios'
+
+    @property
+    def fecha_cumpleaños(self):
+        fecha_cumpleaños = date(day=self.fecha_nacimiento.day, month=self.fecha_nacimiento.month, year=date.today().year)
+        if fecha_cumpleaños < date.today():
+            fecha_cumpleaños = date(day=self.fecha_nacimiento.day, month=self.fecha_nacimiento.month, year=date.today().year + 1)
+        return fecha_cumpleaños
+    
+    @property
+    def cuenta_regresiva(self):
+        return (self.fecha_cumpleaños - date.today()).days
 
     def __str__(self):
         return str(self.usuario)+ " - " + str(self.numero_documento)

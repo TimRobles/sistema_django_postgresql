@@ -4,7 +4,7 @@ from applications.importaciones import *
 from datetime import datetime, time
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from django.shortcuts import render
-
+from applications.usuario.models import DatosUsuario
 
 from .forms import (
     DatosContratoPlanillaForm,
@@ -254,3 +254,18 @@ class DatosContratoHonorariosDarBajaView(PermissionRequiredMixin, BSModalUpdateV
         context['accion'] = 'Dar de Baja'
         context['titulo'] = 'al contrato por honorarios'
         return context
+
+
+class CumpleañosView(TemplateView):
+    template_name = "colaborador/cumpleaños/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        usuarios = []
+        for usuario in DatosUsuario.objects.filter(usuario__HistoricoUser_usuario__estado=1):
+            usuarios.append(usuario)
+        usuarios.sort(key=lambda u : u.cuenta_regresiva)
+        context["usuarios"] = usuarios
+        return context
+    
+    

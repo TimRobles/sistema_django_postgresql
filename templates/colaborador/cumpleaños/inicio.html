@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block contenido %}
+<h1>Cumpleaños</h1>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre Completo</th>
+                <th class="text-center">Fecha</th>
+                <th class="text-center">Cuenta Regresiva</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.usuario.username }}</td>
+                <td class="text-center">{{ usuario.fecha_cumpleaños|date:"d F Y" }}</td>
+                <td class="text-center">{{ usuario.cuenta_regresiva }} días</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock contenido %}

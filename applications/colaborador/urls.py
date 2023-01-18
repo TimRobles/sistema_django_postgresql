@@ -15,4 +15,6 @@ urlpatterns = [
     path('datos-contrato-honorarios/registrar/', views.DatosContratoHonorariosCreateView.as_view(), name='datos_contrato_honorarios_registrar'),    
     path('datos-contrato-honorarios/actualizar/<pk>/', views.DatosContratoHonorariosUpdateView.as_view(), name='datos_contrato_honorarios_actualizar'),    
     path('datos-contrato-honorarios/baja/<pk>/', views.DatosContratoHonorariosDarBajaView.as_view(), name='datos_contrato_honorarios_baja'),    
+
+    path('cumpleaños/', views.CumpleañosView.as_view(),name='cumpleaños'),
 ]
