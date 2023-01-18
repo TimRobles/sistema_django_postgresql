@@ -2604,14 +2604,14 @@ class ReporteDeudas(TemplateView):
 
         fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
 
-        color = DICT_SOCIEDAD[global_sociedad]
+        color = DICT_SOCIEDAD[global_sociedad].color
         titulo = 'REPORTE DE DEUDA'
         vertical = False
         logo = None
         pie_pagina = texto_soc
-
-        Texto = '''Lima, %s''' % str(fecha_texto) + '\n''\n' + '''<b>SR. ''' + DICT_CLIENTE[global_cliente] + '''</b>''' + '\n' + '''Estimado cliente, se le remite la deuda actualizada al día de hoy <strong>%s</strong>, cuyos detalles son los siguientes:''' % (str(fecha_hoy))
-
+        list_texto = []
+        texto = '''Lima, %s''' % str(fecha_texto) + '\n''\n' + '''<b>SR. ''' + DICT_CLIENTE[global_cliente] + '''</b>''' + '\n' + '''Estimado cliente, se le remite la deuda actualizada al día de hoy <strong>%s</strong>, cuyos detalles son los siguientes:''' % (str(fecha_hoy))
+        list_texto.append(texto)
         TablaEncabezado = [
             'FECHA',
             'NRO. COMPROBANTE',
@@ -2645,6 +2645,9 @@ class ReporteDeudas(TemplateView):
             TablaDatos.append(fila)
 
         TablaDatos.append(["", "", "", "Deuda Total:", suma_deuda_total,"","","","","","",""])
+
+        texto = '''Agradeceremos pueda realizar los pagos a nombre de <strong>%s</strong> y confirmarnos el pago en cualquiera de las siguientes cuentas:''' % DICT_SOCIEDAD[global_sociedad].razon_social
+        list_texto.append(texto)
 
         sql_cuentas_bancarias = '''SELECT
             dgcb.id,
@@ -2713,7 +2716,7 @@ class ReporteDeudas(TemplateView):
         #     fila.append(lista[2])
         #     TablaDatos_2.append(fila)
 
-        buf = generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
+        buf = generarReporteDeudas(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo

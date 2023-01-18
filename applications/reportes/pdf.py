@@ -50,9 +50,11 @@ def generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabez
 
     data_tabla = dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color)
     elementos = []
-    elementos.append(parrafoIzquierda(Texto, fuenteBase, 10))
+    elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
     elementos.append(vacio(2.5))
     elementos.append(data_tabla)
+    elementos.append(vacio(2.5))
+    elementos.append(parrafoIzquierda(Texto[1], fuenteBase, 10))
     
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
