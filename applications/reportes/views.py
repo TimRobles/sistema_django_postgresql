@@ -42,16 +42,30 @@ class ReportesView(FormView):
         global_fecha_fin = self.request.GET.get('fecha_fin')
         global_cliente = self.request.GET.get('cliente')
         return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        contexto_filtros = []
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_fecha_inicio = self.request.GET.get('fecha_inicio')
+        filtro_fecha_fin = self.request.GET.get('fecha_fin')
+        filtro_cliente = self.request.GET.get('cliente')
+        contexto_filtros.append(f"filtro_sociedad={filtro_sociedad}")
+        contexto_filtros.append(f"filtro_fecha_inicio={filtro_fecha_inicio}")
+        contexto_filtros.append(f"filtro_fecha_fin={filtro_fecha_fin}")
+        contexto_filtros.append(f"filtro_cliente={filtro_cliente}")
+        context["contexto_filtros"] = "&".join(contexto_filtros)
+        return context
+    
 
 class ReporteContador(TemplateView):
     def get(self,request, *args,**kwargs):
 
-
-        # print('************************')
-        global global_sociedad, global_fecha_inicio, global_fecha_fin
-        # print(global_sociedad, global_fecha_inicio, global_fecha_fin)
-        # print('************************')
-
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
+        
         def consultaNotasContador():
 
             sql = ''' SELECT
@@ -360,7 +374,10 @@ class ReporteContador(TemplateView):
 
 class ReporteVentasFacturadas(TemplateView):
     def get(self,request, *args,**kwargs):
-        global global_sociedad, global_fecha_inicio, global_fecha_fin
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
 
         def consulta_ventas_notas():
             sql = ''' SELECT
@@ -1020,7 +1037,10 @@ class ReporteVentasFacturadas(TemplateView):
 
 class ReporteFacturasPendientes(TemplateView):
     def get(self,request, *args,**kwargs):
-        global global_sociedad, global_fecha_inicio, global_fecha_fin
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
 
         def reporte_facturas_pendientes():
             wb = Workbook()
@@ -1370,7 +1390,10 @@ class ReporteFacturasPendientes(TemplateView):
 
 class ReporteDepositosCuentasBancarias(TemplateView):
     def get(self,request, *args,**kwargs):
-        global global_sociedad, global_fecha_inicio, global_fecha_fin
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
 
         def reporte_depositos_cuentas():
             # self.fecha_inicio = '2021-12-20'
@@ -1831,7 +1854,10 @@ class ReporteDepositosCuentasBancarias(TemplateView):
 
 class ReporteClientesProductos(TemplateView):
     def get(self,request, *args,**kwargs):
-        global global_sociedad, global_fecha_inicio, global_fecha_fin
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
 
         def consulta_resumen_cliente():
             sql = ''' (SELECT
@@ -2286,8 +2312,11 @@ class ReporteClientesProductos(TemplateView):
 
 class ReporteDeudas(TemplateView):
     def get(self,request, *args,**kwargs):
-        global global_sociedad, global_fecha_inicio, global_fecha_fin, global_cliente
-
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
+        
         sql_productos = ''' (SELECT
             MAX(cvf.id) AS id,
             to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,

@@ -36,22 +36,22 @@
 </form>
 <br>
 <h3>
-    <a href="{% url 'reportes_app:reporte_contador' %}"><span class="badge bg-primary">Contador</span></a>
+    <a href="{% url 'reportes_app:reporte_contador' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Contador</span></a>
 </h3>
 <h3>
-    <a href="{% url 'reportes_app:reporte_ventas_facturadas' %}"><span class="badge bg-primary">Ventas Facturadas</span></a>
+    <a href="{% url 'reportes_app:reporte_ventas_facturadas' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Ventas Facturadas</span></a>
 </h3>
 <h3>
-    <a href="{% url 'reportes_app:reporte_facturas_pendientes' %}"><span class="badge bg-primary">Facturas Pendientes</span></a>
+    <a href="{% url 'reportes_app:reporte_facturas_pendientes' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Facturas Pendientes</span></a>
 </h3>
 <h3>
-    <a href="{% url 'reportes_app:reporte_depositos_cuentas_bancarias' %}"><span class="badge bg-primary">Deposito Cuentas Bancarias</span></a>
+    <a href="{% url 'reportes_app:reporte_depositos_cuentas_bancarias' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Deposito Cuentas Bancarias</span></a>
 </h3>
 <h3>
-    <a href="{% url 'reportes_app:reporte_clientes_productos' %}"><span class="badge bg-primary">Clientes vs Productos</span></a>
+    <a href="{% url 'reportes_app:reporte_clientes_productos' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Clientes vs Productos</span></a>
 </h3>
 <h3>
-    <a href="{% url 'reportes_app:reporte_deudas' %}" target="_blank"><span class="badge bg-primary">Deudas</span></a>
+    <a href="{% url 'reportes_app:reporte_deudas' %}?{{ contexto_filtros }}" target="_blank"><span class="badge bg-primary">Deudas</span></a>
 </h3>
 
 {% endblock contenido %}
