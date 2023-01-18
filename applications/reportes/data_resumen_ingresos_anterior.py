@@ -1,5 +1,5 @@
 
-# Información Extraida del resuemn de Ingresos del Sistema Anterior
+# Información Extraida del resumen de Ingresos del Sistema Anterior
 list_resumen_ingresos_sis_anterior_mca = [
     ['ENERO - 2019', 0, 0, 0, 0, 0, '', 'ENERO - 2019', 0, 0, 0, 0, 0],
     ['FEBRERO - 2019', 0, 0, 0, 0, 0, '', 'FEBRERO - 2019', 0, 0, 0, 0, 0],
