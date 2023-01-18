@@ -6,6 +6,7 @@
         <thead class="fondo-personalizado" style="--color-fondo: {{ contexto_orden_compra.sociedad.color }};">
             <tr>
                 <th>Item</th>
+                <th>Descripción Español</th>
                 <th>Name</th>
                 <th>Brand</th>
                 <th>Description</th>
@@ -26,6 +27,7 @@
             {% for detalle in orden_compra_detalle  %}
             <tr>
                 <td> {{ detalle.item }} </td>
+                <td> {{ detalle.material }} </td>
                 <td>
                     {% if detalle.proveedor_material %}
                     {{ detalle.proveedor_material.name }}
