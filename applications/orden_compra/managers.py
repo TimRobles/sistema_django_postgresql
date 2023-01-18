@@ -8,10 +8,13 @@ class OrdenCompraDetalleManager(models.Manager):
         proveedor = orden_compra.proveedor
         for dato in consulta:
             dato.material = dato.content_type.get_object_for_this_type(id = dato.id_registro)
-            dato.proveedor_material = ProveedorMaterial.objects.get(
-                content_type = dato.content_type,
-                id_registro = dato.id_registro,
-                proveedor = proveedor,
-                estado_alta_baja = 1,
-            )
+            try:
+                dato.proveedor_material = ProveedorMaterial.objects.get(
+                    content_type = dato.content_type,
+                    id_registro = dato.id_registro,
+                    proveedor = proveedor,
+                    estado_alta_baja = 1,
+                )
+            except:
+                dato.proveedor_material = None
         return consulta

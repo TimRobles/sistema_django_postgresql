@@ -26,9 +26,21 @@
             {% for detalle in orden_compra_detalle  %}
             <tr>
                 <td> {{ detalle.item }} </td>
-                <td> {{ detalle.proveedor_material.name  }}</td>
-                <td> {{ detalle.proveedor_material.brand  }}</td>
-                <td> {{ detalle.proveedor_material.description  }}</td>
+                <td>
+                    {% if detalle.proveedor_material %}
+                    {{ detalle.proveedor_material.name }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if detalle.proveedor_material %}
+                    {{ detalle.proveedor_material.brand }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if detalle.proveedor_material %}
+                    {{ detalle.proveedor_material.description }}
+                    {% endif %}
+                </td>
                 <td> {{ detalle.material.unidad_base }}</td>
                 <td> {{ detalle.get_tipo_igv_display }} </td>
                 <td class="text-end text-nowrap">{{ detalle.cantidad|redondear|intcomma }}</td>
