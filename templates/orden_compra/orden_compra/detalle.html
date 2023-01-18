@@ -34,14 +34,14 @@
     </button>
     {% endif %}
 
-    
-    {% if contexto_orden_compra.estado == 3 %}
-    <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle' contexto_orden_compra.ComprobanteCompraPI_orden_compra.slug %}"
-    class="delete btn btn-primary">
-        Comprobante de Compra PI
-    </a>
-    {% endif %}
-        
+    {% if contexto_orden_compra.ComprobanteCompraPI_orden_compra %}
+        {% if contexto_orden_compra.estado == 3 %}
+        <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle' contexto_orden_compra.ComprobanteCompraPI_orden_compra.slug %}"
+        class="delete btn btn-primary">
+            Comprobante de Compra PI
+        </a>
+        {% endif %}
+    {% endif %}    
 
     {% if contexto_orden_compra.estado < 3 %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_anular' contexto_orden_compra.id %}"
