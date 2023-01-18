@@ -2336,9 +2336,10 @@ class ReporteDeudas(TemplateView):
             CONCAT('RUC: ', ruc) AS texto_ruc,
             '' AS texto_telefonos,
             CONCAT('Dirección: ', direccion_legal, ' / E-mail: ', 'info@multiplay.com.pe', ' / Web: www.multiplay.com.pe') AS texto_direccion
-            FROM sociedad_sociedad; '''
+            FROM sociedad_sociedad
+            WHERE id = '%s'; ''' %(global_sociedad)
 
-        query_sociedad = FacturaVenta.objects.raw(sql_soc)
+        query_sociedad = Sociedad.objects.raw(sql_soc)
         
         list_soc = []
         for fila in query_sociedad:
@@ -2576,16 +2577,38 @@ class ReporteDeudas(TemplateView):
                 fila[11] = ''
             try:
                 fila[10] = dict_letras[fila[0]+'|'+fila[12]+'|'+fila[1]]
+                div = fila[10].split('\n')
+                rest = float(fila[4])
+                list_resumen_letra = []
+                for sub_div in div:
+                    list_fecha_monto = sub_div.split(' $ ')
+                    fecha_letra = list_fecha_monto[0]
+                    monto_letra = float(list_fecha_monto[1])
+                    rest = rest - monto_letra
+                    if rest >= float(0):
+                        estado_letra = "CANCELADO"
+                    else:
+                        fecha_base = datetime.strptime(fecha_hoy, '%Y-%m-%d')
+                        fecha_letra_dt = datetime.strptime(fecha_letra, '%d/%m/%Y')
+                        dias = (fecha_base - fecha_letra_dt) / timedelta(days=1)
+                        if float(dias) > float(0):
+                            estado_letra = 'VENCIDO'
+                        else:
+                            estado_letra = "PENDIENTE"
+                    fila_letra = fecha_letra + ' $ ' + str(monto_letra) + ' ' + estado_letra
+                    list_resumen_letra.append(fila_letra)
+                fila[10] = '\n'.join(list_resumen_letra)
+                    
             except:
                 fila[10] = ''
 
         fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
 
-        color = COLOR_DEFAULT
+        color = DICT_SOCIEDAD[global_sociedad]
         titulo = 'REPORTE DE DEUDA'
         vertical = False
         logo = None
-        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        pie_pagina = texto_soc
 
         Texto = '''Lima, %s''' % str(fecha_texto) + '\n''\n' + '''<b>SR. ''' + DICT_CLIENTE[global_cliente] + '''</b>''' + '\n' + '''Estimado cliente, se le remite la deuda actualizada al día de hoy <strong>%s</strong>, cuyos detalles son los siguientes:''' % (str(fecha_hoy))
 
@@ -2602,6 +2625,7 @@ class ReporteDeudas(TemplateView):
             'LETRAS',
             'PRODUCTOS',
             ]
+        suma_deuda_total = 0
 
         TablaDatos = []
         for lista in list_general:
@@ -2611,6 +2635,7 @@ class ReporteDeudas(TemplateView):
             fila.append(lista[3])
             fila.append(lista[4])
             fila.append(lista[5])
+            suma_deuda_total += float(lista[5])
             fila.append(lista[6])
             fila.append(lista[7])
             fila.append(lista[8])
@@ -2619,6 +2644,7 @@ class ReporteDeudas(TemplateView):
             fila.append(dict_productos[lista[0]+'|'+lista[1]])
             TablaDatos.append(fila)
 
+        TablaDatos.append(["", "", "", "Deuda Total:", suma_deuda_total,"","","","","","",""])
 
         sql_cuentas_bancarias = '''SELECT
             dgcb.id,

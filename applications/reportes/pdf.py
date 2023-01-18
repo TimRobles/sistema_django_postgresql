@@ -10,17 +10,17 @@ def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
     
     for dato in TablaDatos:
         fila = []
-        fila.append(parrafoCentro(dato[0], fuenteBase))
-        fila.append(parrafoCentro(dato[1], fuenteBase))
-        fila.append(parrafoDerecha(dato[2], fuenteBase))
-        fila.append(parrafoDerecha(dato[3], fuenteBase))
-        fila.append(parrafoDerecha(dato[4], fuenteBase))
-        fila.append(parrafoCentro(dato[5], fuenteBase))
-        fila.append(parrafoCentro(dato[6], fuenteBase))
-        fila.append(parrafoCentro(dato[7], fuenteBase))
-        fila.append(parrafoCentro(dato[8], fuenteBase))
-        fila.append(parrafoIzquierda(dato[9], fuenteBase))
-        fila.append(parrafoIzquierda(dato[10], fuenteBase))
+        fila.append(parrafoCentro(dato[0], fuenteBase, 7))
+        fila.append(parrafoCentro(dato[1], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[2], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[3], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[4], fuenteBase, 7))
+        fila.append(parrafoCentro(dato[5], fuenteBase, 7))
+        fila.append(parrafoCentro(dato[6], fuenteBase, 7))
+        fila.append(parrafoCentro(dato[7], fuenteBase, 7))
+        fila.append(parrafoCentro(dato[8], fuenteBase, 7))
+        fila.append(parrafoIzquierda(dato[9], fuenteBase, 6))
+        fila.append(parrafoIzquierda(dato[10], fuenteBase, 7))
 
         data.append(fila)  
 
@@ -29,7 +29,7 @@ def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
                         ('BOX',(0,0),(-1,-2),1,colors.black),
                         ('BOX',(0,0),(-1,0),1,colors.black),
                         ('BOX',(-9,-1),(-7,-1),1,colors.black), #Inicio(x,y), Fin(x+1,y+1),grosor,color
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.orange),
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),
                         ('VALIGN',(0,0),(-1,-1),'TOP'),
                         ('ALIGN',(0,0),(-1,-1),'CENTER')])
     t._argW[0]=cmToPx(1.8)
@@ -41,8 +41,7 @@ def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
     t._argW[6]=cmToPx(1.8)
     t._argW[7]=cmToPx(1.5)
     t._argW[8]=cmToPx(1.3)
-    t._argW[9]=cmToPx(2.5)
-    # t._argW[10]=cmToPx(4)
+    t._argW[9]=cmToPx(4)
 
     return t
 

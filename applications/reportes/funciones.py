@@ -5,6 +5,7 @@ from openpyxl.styles import*
 from openpyxl.styles.borders import Border, Side
 
 from applications.clientes.models import Cliente
+from applications.sociedad.models import Sociedad
 
 
 DICT_CONTENT_TYPE = {}
@@ -19,6 +20,11 @@ for dato in query_cliente:
     c_id = str(dato.id)
     DICT_CLIENTE[c_id] = dato.razon_social
 
+DICT_SOCIEDAD = {}
+query_sociedad = Sociedad.objects.all()
+for dato in query_sociedad:
+    c_id = str(dato.id)
+    DICT_SOCIEDAD[c_id] = dato.color
 
 DICT_TIPO_NOTA_CREDITO = {
     '1' :"ANULACIÓN DE LA OPERACIÓN",
