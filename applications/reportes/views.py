@@ -2369,6 +2369,7 @@ class ReporteDeudas(TemplateView):
             WHERE id = '%s'; ''' %(global_sociedad)
 
         query_sociedad = Sociedad.objects.raw(sql_soc)
+        objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
         
         list_soc = []
         for fila in query_sociedad:
@@ -2636,8 +2637,9 @@ class ReporteDeudas(TemplateView):
         color = DICT_SOCIEDAD[global_sociedad].color
         titulo = 'REPORTE DE DEUDA'
         vertical = False
-        logo = None
-        pie_pagina = texto_soc
+        alinear = 'right'
+        logo = [[objeto_sociedad.logo.url, alinear]]
+        pie_pagina = objeto_sociedad.pie_pagina
         list_texto = []
         texto = '''Lima, %s''' % str(fecha_texto) + '\n''\n' + '''<b>SR. ''' + DICT_CLIENTE[global_cliente] + '''</b>''' + '\n' + '''Estimado cliente, se le remite la deuda actualizada al día de hoy <strong>%s</strong>, cuyos detalles son los siguientes:''' % (str(fecha_hoy))
         list_texto.append(texto)
