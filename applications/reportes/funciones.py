@@ -1,14 +1,23 @@
-from datetime import datetime
+from datetime import date, datetime
 from django.contrib.contenttypes.models import ContentType
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.styles import*
 from openpyxl.styles.borders import Border, Side
+
+from applications.clientes.models import Cliente
+
 
 DICT_CONTENT_TYPE = {}
 query_content_type = ContentType.objects.all()
 for fila in query_content_type:
     c_type = str(fila.app_label)+' | '+str(fila.model)
     DICT_CONTENT_TYPE[c_type] = fila.id
+
+DICT_CLIENTE = {}
+query_cliente = Cliente.objects.all()
+for dato in query_cliente:
+    c_id = str(dato.id)
+    DICT_CLIENTE[c_id] = dato.razon_social
 
 
 DICT_TIPO_NOTA_CREDITO = {
@@ -77,3 +86,17 @@ def formatearFecha3(fecha):
     fecha=fecha.split("/")
     fecha.reverse()
     return "/".join(fecha)
+
+def StrToDate(FechaString):
+    if FechaString == "None" or FechaString == None or FechaString == "":
+        return date(2000,1,1)
+    else:
+        return date(int(FechaString.split("-")[0]), int(FechaString.split("-")[1]),int(FechaString.split("-")[2]))
+
+def formatoFechaTexto(fecha):
+    meses = ("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+    dia = fecha.day
+    mes = meses[fecha.month - 1]
+    año = fecha.year
+    fecha_texto = "{} de {} del {}".format(dia, mes, año)
+    return fecha_texto

@@ -11,4 +11,5 @@ urlpatterns = [
     path('reporte-facturas-pendientes/', views.ReporteFacturasPendientes.as_view(), name='reporte_facturas_pendientes'),
     path('reporte-depositos-cuentas-bancarias/', views.ReporteDepositosCuentasBancarias.as_view(), name='reporte_depositos_cuentas_bancarias'),
     path('reporte-clientes-productos/', views.ReporteClientesProductos.as_view(), name='reporte_clientes_productos'),
+    path('reporte-deudas/', views.ReporteDeudas.as_view(), name='reporte_deudas'),
  ]
