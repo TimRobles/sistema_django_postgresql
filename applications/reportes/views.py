@@ -90,7 +90,7 @@ class ReporteContador(TemplateView):
                 WHERE nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
                 GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota ;''' %(DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
 
-            query_info = NotaCredito.objects.raw(sql)
+            query_info_cuentas = NotaCredito.objects.raw(sql)
             
             info = []
             for fila in query_info:
@@ -2579,10 +2579,6 @@ class ReporteDeudas(TemplateView):
             except:
                 fila[10] = ''
 
-        # print('***********************************')
-        # print(query_info)
-        # print(list_general)
-        # print('***********************************')
         fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
 
         color = COLOR_DEFAULT
@@ -2622,6 +2618,74 @@ class ReporteDeudas(TemplateView):
             fila.append(lista[10])
             fila.append(dict_productos[lista[0]+'|'+lista[1]])
             TablaDatos.append(fila)
+
+
+        sql_cuentas_bancarias = '''SELECT
+            dgcb.id,
+            dgb.nombre_comercial AS nombre_banco,
+            dgcb.numero_cuenta AS cuenta_banco,
+            dgcb.numero_cuenta_interbancaria AS cuenta_cci_banco,
+            dgm.nombre AS moneda_descripcion
+            FROM datos_globales_cuentabancariasociedad dgcb
+            LEFT JOIN datos_globales_banco dgb
+                ON dgb.id=dgcb.banco_id
+            LEFT JOIN datos_globales_moneda dgm
+                ON dgm.id=dgcb.moneda_id
+            LEFT JOIN sociedad_sociedad ss
+                ON ss.id=dgcb.sociedad_id
+            WHERE dgcb.sociedad_id='%s' AND dgcb.estado='1' AND dgcb.efectivo=False''' %(global_sociedad)
+
+        query_info_cuentas = CuentaBancariaSociedad.objects.raw(sql_cuentas_bancarias)
+
+        info_cuentas = []
+        for fila in query_info_cuentas:
+            lista_datos = []
+
+            lista_datos.append(fila.nombre_banco)
+            lista_datos.append(fila.cuenta_banco)
+            lista_datos.append(fila.cuenta_cci_banco)
+            lista_datos.append(fila.moneda_descripcion)
+            info_cuentas.append(lista_datos)
+
+
+            list_cuenta_dolares, list_cuenta_soles = [], []
+            for fila in info_cuentas:
+                if fila[3] == 'SOL': # SOLES
+                    list_temp = []
+                    list_temp.extend([fila[0], fila[1], fila[2]])
+                    list_cuenta_soles.append(list_temp)
+                if fila[3] == 'DÓLAR': # DOLARES
+                    list_temp = []
+                    list_temp.extend([fila[0], fila[1], fila[2]])
+                    list_cuenta_dolares.append(list_temp)
+
+        # TablaEncabezado_1 = [
+        #     'BANCO',
+        #     'NÚMERO DE CUENTA',
+        #     'CCI',
+        #     ]        
+            
+        # TablaEncabezado_2 = [
+        #     'BANCO',
+        #     'NÚMERO DE CUENTA',
+        #     'CCI',
+        #     ]
+
+        # TablaDatos_1 = []
+        # for lista in info_cuentas:
+        #     fila = []
+        #     fila.append(lista[0])
+        #     fila.append(lista[1])
+        #     fila.append(lista[2])
+        #     TablaDatos_1.append(fila)        
+        
+        # TablaDatos_2 = []
+        # for lista in info_cuentas:
+        #     fila = []
+        #     fila.append(lista[0])
+        #     fila.append(lista[1])
+        #     fila.append(lista[2])
+        #     TablaDatos_2.append(fila)
 
         buf = generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color)
 
