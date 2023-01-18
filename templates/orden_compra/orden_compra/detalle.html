@@ -101,7 +101,7 @@
     <h3>Materiales</h3>
     {% if contexto_orden_compra.estado == 0 %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_agregar_material' contexto_orden_compra.id %}"
-    data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.id %}"
+    data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.slug %}"
     class="create btn btn-primary">
     Agregar Material
     </button>
