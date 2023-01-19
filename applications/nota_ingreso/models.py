@@ -1,5 +1,4 @@
 from decimal import Decimal
-from email.policy import default
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Notas de Ingreso de Muestras
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Notas de Ingreso de Muestras</h3>
+
+    <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+    <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_crear' %}"
+        class="delete btn btn-primary">
+        Generar Nota
+    </button>
+    <div class="table-responsive" id="tabla">
+        {% include 'muestra/nota_ingreso_muestra/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

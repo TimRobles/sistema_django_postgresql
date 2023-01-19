@@ -1,0 +1,110 @@
+{% load humanize %}
+{% load funciones_propias %}
+<a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+
+{% if contexto_nota_ingreso_muestra.estado == 1 %}
+<button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_guardar' contexto_nota_ingreso_muestra.id %}"
+    class="delete btn btn-primary">
+    Guardar
+</button>
+{% endif %}
+
+{% if contexto_nota_ingreso_muestra.estado == 2 %}
+<button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_anular' contexto_nota_ingreso_muestra.id %}"
+    class="delete btn btn-danger">
+    Anular
+</button>
+<a href="{% url 'muestra_app:nota_ingreso_lista_nota_ingreso_muestra' contexto_nota_ingreso_muestra.id %}" class="btn btn-primary">Ver Notas de Ingreso</a>
+<button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_generar_nota_ingreso' contexto_nota_ingreso_muestra.id %}"
+    class="delete btn btn-primary">
+    Generar Nota de Ingreso
+</button>
+{% endif %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Número de Ingreso</th>
+                <th>Sociedad</th>
+                <th>Usuario</th>
+                <th class="text-center">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_nota_ingreso_muestra.fecha_ingreso|date:'d/m/Y' }}</td>
+                <td>{{ contexto_nota_ingreso_muestra.nro_nota_ingreso_muestra|numeroXn:6 }}</td>
+                <td>{{ contexto_nota_ingreso_muestra.sociedad }}</td>
+                <td>{{ contexto_nota_ingreso_muestra.created_by }}</td>
+                <td class="text-center">
+                    {{ contexto_nota_ingreso_muestra.get_estado_display }}
+                    {% if contexto_nota_ingreso_muestra.motivo_anulacion %}
+                        - {{ contexto_nota_ingreso_muestra.motivo_anulacion }}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h4>Observaciones:</h4>
+<p>
+    {% if contexto_nota_ingreso_muestra.observaciones %}
+    {{ contexto_nota_ingreso_muestra.observaciones }}
+    {% endif %}
+</p>
+<br>
+<h3>Materiales</h3>
+
+{% if contexto_nota_ingreso_muestra.estado == 1 %}
+<button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_agregar_material' contexto_nota_ingreso_muestra.id %}"
+    data-table-url="{% url 'muestra_app:nota_ingreso_muestra_detalle_tabla' contexto_nota_ingreso_muestra.id %}"
+    class="create btn btn-primary">
+    Agregar Material
+</button>
+{% endif %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Cantidad Contada</th>
+                <th>Pendiente</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item}}</td>
+                    <td>{{ material.material.descripcion_venta }}</td>
+                    <td>{{ material.material.unidad_base }}</td>
+                    <td class="text-end">{{ material.cantidad_total|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.cantidad_contada|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_nota_ingreso_muestra.estado == 1 %}
+                        <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_actualizar_material' material.id %}"
+                            data-table-url="{% url 'muestra_app:nota_ingreso_muestra_detalle_tabla' contexto_nota_ingreso_muestra.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_eliminar_material' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
