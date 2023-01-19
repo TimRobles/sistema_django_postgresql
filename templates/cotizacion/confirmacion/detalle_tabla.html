@@ -285,6 +285,8 @@
                     <td>{{ confirmacion.get_tipo_venta_display }}</td>
                     <td class="ps-2" rowspan="2">
                         <span hidden class="confirmacion-cliente-linea-credito-monto">{{ confirmacion.cliente.linea_credito_monto }}</span>
+                        <span hidden class="confirmacion">{{ confirmacion }}</span>
+                        <span hidden class="confirmacion-cotizacion">{{ confirmacion.cotizacion }}</span>
                         <span hidden class="confirmacion-cotizacion-monto-solicitado">{{ confirmacion.cotizacion.monto_solicitado }}</span>
                         {% if confirmacion.cliente.linea_credito_monto != 0 or confirmacion.cotizacion.monto_solicitado != 0 %}
                             {% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
