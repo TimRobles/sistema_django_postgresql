@@ -286,9 +286,9 @@
                     <td class="ps-2" rowspan="2">
                         <span hidden class="confirmacion-cliente-linea-credito-monto">{{ confirmacion.cliente.linea_credito_monto }}</span>
                         <span hidden class="confirmacion">{{ confirmacion }}</span>
-                        <span hidden class="confirmacion-cotizacion">{{ confirmacion.cotizacion }}</span>
-                        <span hidden class="confirmacion-cotizacion-monto-solicitado">{{ confirmacion.cotizacion.monto_solicitado }}</span>
-                        {% if confirmacion.cliente.linea_credito_monto != 0 or confirmacion.cotizacion.monto_solicitado != 0 %}
+                        <span hidden class="confirmacion-cotizacion-venta">{{ confirmacion.cotizacion_venta }}</span>
+                        <span hidden class="confirmacion-cotizacion-venta-monto-solicitado">{{ confirmacion.cotizacion_venta.monto_solicitado }}</span>
+                        {% if confirmacion.cliente.linea_credito_monto != 0 or confirmacion.cotizacion_venta.monto_solicitado != 0 %}
                             {% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
                             <button data-form-url="{% url 'cotizacion_app:confirmacion_forma_pago' confirmacion.id %}"
                                 data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
