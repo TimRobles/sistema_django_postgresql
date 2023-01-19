@@ -284,8 +284,7 @@
                     <th class="pe-2">Tipo de Venta:</th>
                     <td>{{ confirmacion.get_tipo_venta_display }}</td>
                     <td class="ps-2" rowspan="2">
-                        {{confirmacion.cotizacion.monto_solicitado}}
-                        {% if confirmacion.cliente.linea_credito_monto!=0 or confirmacion.cotizacion.monto_solicitado!=0 %}
+                        {% if confirmacion.cliente.linea_credito_monto or confirmacion.cotizacion.monto_solicitado %}
                             {% if confirmacion.estado == 1 or confirmacion.estado == 5 %}
                             <button data-form-url="{% url 'cotizacion_app:confirmacion_forma_pago' confirmacion.id %}"
                                 data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
