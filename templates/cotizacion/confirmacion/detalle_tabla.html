@@ -295,12 +295,13 @@
                                 class="update btn btn-primary">
                                 Cambiar Forma de Pago
                             </button>
-                            {% endif %}
                             {% if confirmacion.tipo_venta == 2 %}
-                            <a href="{% url 'cotizacion_app:confirmacion_cuotas' confirmacion.id %}"
-                            class="update btn btn-warning">
-                                Cuotas
-                            </a>
+                                <a href="{% url 'cotizacion_app:confirmacion_cuotas' confirmacion.id %}"
+                                class="update btn btn-warning">
+                                    Cuotas
+                                </a>
+                            {% endif %}
+                            
                             {% endif %}
                         {% endif %}
                     </td>
