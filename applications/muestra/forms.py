@@ -14,15 +14,15 @@ class NotaIngresoMuestraAgregarMaterialForm(BSModalForm):
     def __init__(self, *args, **kwargs):
         productos = kwargs.pop('productos')
         try:
-            nota_stock_inicial_detalle = kwargs.pop('nota_stock_inicial_detalle')
+            nota_ingreso_muestra_detalle = kwargs.pop('nota_ingreso_muestra_detalle')
         except:
             pass
         super(NotaIngresoMuestraAgregarMaterialForm, self).__init__(*args, **kwargs)
         self.fields['producto'].choices = productos
         try:
-            valor = "%s|%s" % (nota_stock_inicial_detalle.content_type.id, nota_stock_inicial_detalle.id_registro)
+            valor = "%s|%s" % (nota_ingreso_muestra_detalle.content_type.id, nota_ingreso_muestra_detalle.id_registro)
             self.fields['producto'].initial = valor
-            self.fields['cantidad'].initial = nota_stock_inicial_detalle.cantidad_total
+            self.fields['cantidad'].initial = nota_ingreso_muestra_detalle.cantidad_total
         except:
             pass
         for visible in self.visible_fields():
