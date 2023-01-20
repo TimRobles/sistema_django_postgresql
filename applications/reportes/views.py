@@ -104,7 +104,7 @@ class ReporteContador(TemplateView):
                 WHERE nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
                 GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota ;''' %(DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
 
-            query_info_cuentas = NotaCredito.objects.raw(sql)
+            query_info = NotaCredito.objects.raw(sql)
             
             info = []
             for fila in query_info:
@@ -1306,8 +1306,33 @@ class ReporteFacturasPendientes(TemplateView):
                     fila[10] = str(dias)
                 if float(dias) > float(0):
                     fila[7] = 'VENCIDO'
+
                 if fila[0]+'|'+fila[1]+'|'+fila[2] in dict_letras:
                     fila[12] = dict_letras[fila[0]+'|'+fila[1]+'|'+fila[2]]
+                    div = fila[12].split('\n')
+                    rest = float(fila[5])
+                    list_resumen_letra = []
+                    try:
+                        for sub_div in div:
+                            list_fecha_monto = sub_div.split(' $ ')
+                            fecha_letra = list_fecha_monto[0]
+                            monto_letra = float(list_fecha_monto[1])
+                            rest = rest - monto_letra
+                            if rest >= float(0):
+                                estado_letra = "CANCELADO"
+                            else:
+                                fecha_base = datetime.strptime(fecha_hoy, '%Y-%m-%d')
+                                fecha_letra_dt = datetime.strptime(fecha_letra, '%d/%m/%Y')
+                                dias = (fecha_base - fecha_letra_dt) / timedelta(days=1)
+                                if float(dias) > float(0):
+                                    estado_letra = 'VENCIDO'
+                                else:
+                                    estado_letra = "PENDIENTE"
+                            fila_letra = fecha_letra + ' $ ' + str(monto_letra) + ' ' + estado_letra
+                            list_resumen_letra.append(fila_letra)
+                        fila[12] = '\n'.join(list_resumen_letra)
+                    except Exception as e:
+                        print(e)
                 else:
                     'ERROR AL EXTRAER LAS CUOTAS'
                 fila[13] = dict_productos[fila[0]+'|'+fila[1]+'|'+fila[2]]
@@ -2359,32 +2384,7 @@ class ReporteDeudas(TemplateView):
         for fila in info:
             dict_productos[fila[0]+'|'+fila[1]] = fila[2]
 
-        sql_soc = ''' SELECT
-            id,
-            razon_social,
-            CONCAT('RUC: ', ruc) AS texto_ruc,
-            '' AS texto_telefonos,
-            CONCAT('Dirección: ', direccion_legal, ' / E-mail: ', 'info@multiplay.com.pe', ' / Web: www.multiplay.com.pe') AS texto_direccion
-            FROM sociedad_sociedad
-            WHERE id = '%s'; ''' %(global_sociedad)
-
-        query_sociedad = Sociedad.objects.raw(sql_soc)
         objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
-        
-        list_soc = []
-        for fila in query_sociedad:
-            lista_datos = []
-            lista_datos.append(fila.razon_social)
-            lista_datos.append(fila.texto_ruc)
-            lista_datos.append(fila.texto_telefonos)
-            lista_datos.append(fila.texto_direccion)
-            list_soc.append(lista_datos)
-
-        nom_soc = list_soc[0][0]
-        for ele in list_soc:
-            texto_soc = ''
-            for dato in ele:
-                texto_soc = texto_soc + '\n' + dato
 
         # Letras según fechas pactadas al cotizar
         sql_letras = ''' (SELECT
@@ -2675,7 +2675,7 @@ class ReporteDeudas(TemplateView):
             fila.append(dict_productos[lista[0]+'|'+lista[1]])
             TablaDatos.append(fila)
 
-        TablaDatos.append(["", "", "", "Deuda Total:", suma_deuda_total,"","","","","","",""])
+        TablaDatos.append(["","","", "Deuda Total:", round(suma_deuda_total,2) ,"","","","","","",""])
 
         texto = '''Agradeceremos pueda realizar los pagos a nombre de <strong>%s</strong> y confirmarnos el pago en cualquiera de las siguientes cuentas:''' % DICT_SOCIEDAD[global_sociedad].razon_social
         list_texto.append(texto)
@@ -2719,37 +2719,11 @@ class ReporteDeudas(TemplateView):
                     list_temp.extend([fila[0], fila[1], fila[2]])
                     list_cuenta_dolares.append(list_temp)
 
-        # TablaEncabezado_1 = [
-        #     'BANCO',
-        #     'NÚMERO DE CUENTA',
-        #     'CCI',
-        #     ]        
-            
-        # TablaEncabezado_2 = [
-        #     'BANCO',
-        #     'NÚMERO DE CUENTA',
-        #     'CCI',
-        #     ]
-
-        # TablaDatos_1 = []
-        # for lista in info_cuentas:
-        #     fila = []
-        #     fila.append(lista[0])
-        #     fila.append(lista[1])
-        #     fila.append(lista[2])
-        #     TablaDatos_1.append(fila)        
-        
-        # TablaDatos_2 = []
-        # for lista in info_cuentas:
-        #     fila = []
-        #     fila.append(lista[0])
-        #     fila.append(lista[1])
-        #     fila.append(lista[2])
-        #     TablaDatos_2.append(fila)
-
-        buf = generarReporteDeudas(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)
+        buf = generarReporteDeudas(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color, list_cuenta_dolares, list_cuenta_soles)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
         return respuesta
+
+
