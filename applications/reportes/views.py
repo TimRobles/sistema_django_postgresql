@@ -12,7 +12,7 @@ from openpyxl.chart.plotarea import DataTable
 
 from applications.datos_globales.models import CuentaBancariaSociedad
 from applications.sociedad.models import Sociedad
-from applications.cobranza.models import Pago
+from applications.cobranza.models import Nota, Pago
 from applications.nota.models import NotaCredito
 from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
@@ -295,11 +295,8 @@ class ReporteContador(TemplateView):
             # for cell in hoja['A1:N1']:
             #     for _ in cell:
             #         _.fill = redFill
-
-            if global_sociedad == '2':
-                color_relleno = RELLENO_MP
-            if global_sociedad == '1':
-                color_relleno = RELLENO_MC
+            
+            color_relleno = rellenoSociedad(global_sociedad)
 
             col_range = hoja.max_column  # get max columns in the worksheet
             # cabecera de la tabla
@@ -640,6 +637,66 @@ class ReporteVentasFacturadas(TemplateView):
             for fila in info:
                 dict_letras[fila[0]+'|'+fila[1]+'|'+fila[2]] = fila[3]
 
+            sql_cobranza_nota = ''' (SELECT
+                MAX(cn.id) AS id,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+                SUM(cn.monto) as monto_nota_credito,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                'FACTURA' AS tipo_comprobante
+                FROM cobranza_nota cn
+                LEFT JOIN cobranza_pago cp
+                    ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_deuda cd
+                    ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cd.id_registro=cvf.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=cn.moneda_id
+                WHERE cvf.sociedad_id='%s'
+                GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+                ORDER BY 3)
+                UNION
+                (SELECT
+                MAX(cn.id) AS id,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+                SUM(cn.monto) as monto_nota_credito,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                'BOLETA' AS tipo_comprobante
+                FROM cobranza_nota cn
+                LEFT JOIN cobranza_pago cp
+                    ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_deuda cd
+                    ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+                LEFT JOIN comprobante_venta_boletaventa cvb
+                    ON cd.id_registro=cvb.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=cn.moneda_id
+                WHERE cvb.sociedad_id='%s'
+                GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+                ORDER BY 3) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+            query_info = Nota.objects.raw(sql_cobranza_nota)
+
+            info_cobranza_nota = []
+            for fila in query_info:
+                lista_datos = []
+                lista_datos.append(fila.nro_comprobante)
+                lista_datos.append(fila.monto_nota_credito)
+                lista_datos.append(fila.cliente_denominacion)
+                lista_datos.append(fila.tipo_comprobante)
+                info_cobranza_nota.append(lista_datos)
+
+            dict_cobranza_nota = {}
+            for fila in info_cobranza_nota:
+                dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
+
             sql_facturas = ''' (SELECT 
                 MAX(cvf.id) AS id,
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
@@ -793,6 +850,11 @@ class ReporteVentasFacturadas(TemplateView):
                     if float(dias) > float(0) and fila[7]=='PENDIENTE':
                         fila[7] = 'VENCIDO'
                     fila[13] = dict_pagos[fila[0]+'|'+fila[1]+'|'+fila[2]]
+                    if fila[2] + '|' + fila[1] in dict_cobranza_nota:
+                        fila[5] += float(dict_cobranza_nota[fila[2] + '|' + fila[1]])
+                        fila[6] = fila[4] - fila[5]
+                        if fila[6] <= float(0):
+                            fila[7] = 'CANCELADO'
                 else:
                     for i in range(13):
                         if i == 3:
@@ -834,10 +896,7 @@ class ReporteVentasFacturadas(TemplateView):
 
                 hoja.append(('FECHA', 'TIPO DE COMP.', 'N° COMPROB.', 'RAZON SOCIAL', 'FACTURADO (US$)', 'AMORITZADO (US$)', 'PENDIENTE(US$)', 'ESTADO', 'FECHA DE VENC.', 'CRÉDITO', 'DIAS DE VENC.', 'GUIAS', 'LETRAS', 'PAGOS')) # Crea la fila del encabezado con los títulos
 
-                if global_sociedad == '2':
-                    color_relleno = RELLENO_MP
-                if global_sociedad == '1':
-                    color_relleno = RELLENO_MC
+                color_relleno = rellenoSociedad(global_sociedad)
 
                 col_range = hoja.max_column  # get max columns in the worksheet
                 # cabecera de la tabla
@@ -928,21 +987,11 @@ class ReporteVentasFacturadas(TemplateView):
                     list_temp_anual.append(fila[0].split(" - ")[0])
                 for mes_calendario in list_meses:
                     if mes_calendario not in list_temp_anual:
-                        list_anual.insert(dict_meses_valor[mes_calendario]-1, [mes_calendario + " - " + fila[0].split(" - ")[1] , ])
+                        list_anual.insert(dict_meses_valor[mes_calendario]-1, [mes_calendario + " - " + fila[0].split(" - ")[1] , 0])
 
                 list_resumen_anuales += list_anual
 
-
-            # print(13*' -- ')
-            # print(list_general)
-            # print()
-            # print(list_resumen_anuales)
-            # print()
-
-            if global_sociedad == '2':
-                color_relleno = RELLENO_MP
-            if global_sociedad == '1':
-                color_relleno = RELLENO_MC
+            color_relleno = rellenoSociedad(global_sociedad)
 
             hoja = wb.create_sheet('Resumen')
             hoja.append(('ENERO', 'FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'))
@@ -1046,10 +1095,7 @@ class ReporteFacturasPendientes(TemplateView):
             wb = Workbook()
             hoja = wb.active
 
-            if global_sociedad == '2':
-                color_relleno = RELLENO_MP
-            if global_sociedad == '1':
-                color_relleno = RELLENO_MC
+            color_relleno = rellenoSociedad(global_sociedad)
 
             sql_productos = ''' (SELECT
                 MAX(cvf.id) AS id,
@@ -1171,6 +1217,66 @@ class ReporteFacturasPendientes(TemplateView):
             for fila in info:
                 dict_letras[fila[0]+'|'+fila[1]+'|'+fila[2]] = fila[4]
 
+            sql_cobranza_nota = ''' (SELECT
+                MAX(cn.id) AS id,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+                SUM(cn.monto) as monto_nota_credito,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                'FACTURA' AS tipo_comprobante
+                FROM cobranza_nota cn
+                LEFT JOIN cobranza_pago cp
+                    ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_deuda cd
+                    ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cd.id_registro=cvf.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=cn.moneda_id
+                WHERE cvf.sociedad_id='%s'
+                GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+                ORDER BY 3)
+                UNION
+                (SELECT
+                MAX(cn.id) AS id,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+                SUM(cn.monto) as monto_nota_credito,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                'BOLETA' AS tipo_comprobante
+                FROM cobranza_nota cn
+                LEFT JOIN cobranza_pago cp
+                    ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_deuda cd
+                    ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+                LEFT JOIN comprobante_venta_boletaventa cvb
+                    ON cd.id_registro=cvb.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=cn.moneda_id
+                WHERE cvb.sociedad_id='%s'
+                GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+                ORDER BY 3) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+            query_info = Nota.objects.raw(sql_cobranza_nota)
+
+            info_cobranza_nota = []
+            for fila in query_info:
+                lista_datos = []
+                lista_datos.append(fila.nro_comprobante)
+                lista_datos.append(fila.monto_nota_credito)
+                lista_datos.append(fila.cliente_denominacion)
+                lista_datos.append(fila.tipo_comprobante)
+                info_cobranza_nota.append(lista_datos)
+
+            dict_cobranza_nota = {}
+            for fila in info_cobranza_nota:
+                dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
+
             sql = ''' (SELECT
                 MAX(cvf.id) AS id,
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
@@ -1269,7 +1375,7 @@ class ReporteFacturasPendientes(TemplateView):
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
             query_info = FacturaVenta.objects.raw(sql)
 
-            info = []
+            info_general = []
             for fila in query_info:
                 lista_datos = []
                 lista_datos.append(fila.fecha_emision_comprobante)
@@ -1286,10 +1392,10 @@ class ReporteFacturasPendientes(TemplateView):
                 lista_datos.append(fila.observaciones)
                 lista_datos.append(fila.letras)
                 lista_datos.append(fila.productos)
-                info.append(lista_datos)
+                info_general.append(lista_datos)
 
             dias = 0
-            for fila in info:
+            for fila in info_general:
                 fila[4] = float(fila[4])
                 if fila[5] == None:
                     fila[5] = '0.00'
@@ -1298,6 +1404,10 @@ class ReporteFacturasPendientes(TemplateView):
                 fila[5] = float(fila[5])
                 fila[6] = float(fila[6])
                 fila[9] = float(fila[9])
+                if fila[2] + '|' + fila[1] in dict_cobranza_nota:
+                    fila[5] += float(dict_cobranza_nota[fila[2] + '|' + fila[1]])
+                    fila[6] = fila[4] - fila[5]
+
                 if fila[10] != '':
                     fecha_hoy = datetime.now().strftime("%Y-%m-%d")
                     fecha1 = datetime.strptime(fecha_hoy, '%Y-%m-%d')
@@ -1336,6 +1446,12 @@ class ReporteFacturasPendientes(TemplateView):
                 else:
                     'ERROR AL EXTRAER LAS CUOTAS'
                 fila[13] = dict_productos[fila[0]+'|'+fila[1]+'|'+fila[2]]
+
+
+            info = [] # nueva lista de listas filtrada con pagos por notas de credito:
+            for fila_general in info_general:
+                if fila_general[6] > float(0):
+                    info.append(fila_general)
 
             num_fila = 0
             total_deuda_cliente = 0
@@ -1427,10 +1543,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
             wb = Workbook()
             hoja = wb.active
 
-            if global_sociedad == '2':
-                color_relleno = RELLENO_MP
-            if global_sociedad == '1':
-                color_relleno = RELLENO_MC
+            color_relleno = rellenoSociedad(global_sociedad)
 
             sql_cuentas = ''' SELECT
                 dgcb.id,
@@ -2254,10 +2367,7 @@ class ReporteClientesProductos(TemplateView):
                         if data_cliente != []:
                             hoja.append((data_cliente[0][1],''))
                             hoja.append(('PRODUCTO', 'SUB TOTAL (US$)', 'IGV (US$)', 'TOTAL (US$)', 'CANTIDADES', 'CANT. TOTAL', 'NRO. COMPRAS', 'NRO. COMPRAS EN OFERTA')) # Crea la fila del encabezado con los títulos
-                            if global_sociedad == '2':
-                                color_relleno = RELLENO_MP
-                            if global_sociedad == '1':
-                                color_relleno = RELLENO_MC
+                            color_relleno = rellenoSociedad(global_sociedad)
 
                             col_range = hoja.max_column
                             nueva_fila = hoja.max_row
@@ -2289,10 +2399,7 @@ class ReporteClientesProductos(TemplateView):
                     if data_cliente != []:
                         hoja.append((data_cliente[0][1],''))
                         hoja.append((nombre_columna, 'SUB TOTAL (US$)', 'IGV (US$)', 'TOTAL (US$)', 'CANTIDADES', 'CANT. TOTAL', 'NRO. COMPRAS', 'NRO. COMPRAS EN OFERTA')) # Crea la fila del encabezado con los títulos
-                        if global_sociedad == '2':
-                            color_relleno = RELLENO_MP
-                        if global_sociedad == '1':
-                            color_relleno = RELLENO_MC
+                        color_relleno = rellenoSociedad(global_sociedad)
 
                         col_range = hoja.max_column
                         nueva_fila = hoja.max_row
@@ -2475,6 +2582,66 @@ class ReporteDeudas(TemplateView):
         dict_fact_invalidas['2'] = list_fact_invalidas_mpl
         dict_fact_invalidas['1'] = list_fact_invalidas_mca
 
+        sql = ''' (SELECT
+            MAX(cn.id) AS id,
+            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+            SUM(cn.monto) as monto_nota_credito,
+            MAX(cc.razon_social) AS cliente_denominacion,
+            'FACTURA' AS tipo_comprobante
+            FROM cobranza_nota cn
+            LEFT JOIN cobranza_pago cp
+                ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+            LEFT JOIN cobranza_deuda cd
+                ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+            LEFT JOIN comprobante_venta_facturaventa cvf
+                ON cd.id_registro=cvf.id
+            LEFT JOIN datos_globales_seriescomprobante dgsc
+                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+            LEFT JOIN clientes_cliente cc
+                ON cc.id=cvf.cliente_id
+            LEFT JOIN datos_globales_moneda dgm
+                ON dgm.id=cn.moneda_id
+            WHERE cvf.sociedad_id='%s'
+            GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+            ORDER BY 3)
+            UNION
+            (SELECT
+            MAX(cn.id) AS id,
+            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+            SUM(cn.monto) as monto_nota_credito,
+            MAX(cc.razon_social) AS cliente_denominacion,
+            'BOLETA' AS tipo_comprobante
+            FROM cobranza_nota cn
+            LEFT JOIN cobranza_pago cp
+                ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+            LEFT JOIN cobranza_deuda cd
+                ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+            LEFT JOIN comprobante_venta_boletaventa cvb
+                ON cd.id_registro=cvb.id
+            LEFT JOIN datos_globales_seriescomprobante dgsc
+                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+            LEFT JOIN clientes_cliente cc
+                ON cc.id=cvb.cliente_id
+            LEFT JOIN datos_globales_moneda dgm
+                ON dgm.id=cn.moneda_id
+            WHERE cvb.sociedad_id='%s'
+            GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+            ORDER BY 3) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+        query_info = Nota.objects.raw(sql)
+
+        info = []
+        for fila in query_info:
+            lista_datos = []
+            lista_datos.append(fila.nro_comprobante)
+            lista_datos.append(fila.monto_nota_credito)
+            lista_datos.append(fila.cliente_denominacion)
+            lista_datos.append(fila.tipo_comprobante)
+            info.append(lista_datos)
+        
+        dict_cobranza_nota = {}
+        for fila in info:
+            dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
+
         sql = ''' (SELECT 
             MAX(cvf.id) AS id,
             to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
@@ -2592,10 +2759,18 @@ class ReporteDeudas(TemplateView):
 
         fecha_hoy = datetime.now().strftime("%Y-%m-%d")
         for fila in list_general:
+            fila[3] = float(fila[3])
             if fila[4] == None:
                 fila[4] = '0.00'
             if fila[5] == None:
                 fila[5] = fila[3]
+            fila[4] = float(fila[4])
+            fila[5] = float(fila[5])
+
+            if fila[1] + '|' + fila[12] in dict_cobranza_nota:
+                fila[4] += float(dict_cobranza_nota[fila[1] + '|' + fila[12]])
+                fila[5] = fila[3] - fila[4]
+
             if fila[9] != '':
                 fecha1 = datetime.strptime(fecha_hoy, '%Y-%m-%d')
                 fecha2 = datetime.strptime(fila[9], '%Y-%m-%d')
@@ -2660,20 +2835,21 @@ class ReporteDeudas(TemplateView):
 
         TablaDatos = []
         for lista in list_general:
-            fila = []
-            fila.append(lista[0])
-            fila.append(lista[1])
-            fila.append(lista[3])
-            fila.append(lista[4])
-            fila.append(lista[5])
-            suma_deuda_total += float(lista[5])
-            fila.append(lista[6])
-            fila.append(lista[7])
-            fila.append(lista[8])
-            fila.append(lista[9])
-            fila.append(lista[10])
-            fila.append(dict_productos[lista[0]+'|'+lista[1]])
-            TablaDatos.append(fila)
+            if lista[5] > float(0):
+                fila = []
+                fila.append(lista[0])
+                fila.append(lista[1])
+                fila.append(lista[3])
+                fila.append(lista[4])
+                fila.append(lista[5])
+                suma_deuda_total += float(lista[5])
+                fila.append(lista[6])
+                fila.append(lista[7])
+                fila.append(lista[8])
+                fila.append(lista[9])
+                fila.append(lista[10])
+                fila.append(dict_productos[lista[0]+'|'+lista[1]])
+                TablaDatos.append(fila)
 
         TablaDatos.append(["","","", "Deuda Total:", round(suma_deuda_total,2) ,"","","","","","",""])
 
