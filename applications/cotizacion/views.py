@@ -928,10 +928,6 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
     form_class = CotizacionVentaMaterialDetalleOfertaForm
 
     def dispatch(self, request, *args, **kwargs):
-        print('Dispatch')
-        print(self.kwargs)
-        print(kwargs)
-        print('primero' in self.request.session)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
 
@@ -959,8 +955,6 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
         return reverse_lazy('cotizacion_app:cotizacion_venta_ver', kwargs={'id_cotizacion':self.get_object().cotizacion_venta.id})
 
     def get_form_kwargs(self):
-        print('Kwargs')
-        print(self.kwargs)
         kwargs = super().get_form_kwargs()
         kwargs['precio_lista'] = self.object.precio_unitario_con_igv
         kwargs['precio_oferta'] = self.kwargs['precio_oferta']
@@ -970,13 +964,21 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
     def form_valid(self, form):
         sid = transaction.savepoint()
         try:
+            print("Inicio de analisis")
             if self.request.session['primero']:
+                print(form.instance.en_oferta)
                 if form.instance.en_oferta:
+                    print('Ingresó')
                     precio_unitario_con_igv = form.instance.precio_unitario_con_igv
+                    print(precio_unitario_con_igv)
                     precio_final_con_igv = precio_unitario_con_igv
+                    print(precio_final_con_igv)
                     respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), form.instance.tipo_igv)
+                    print(respuesta)
                     form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+                    print(form.instance.precio_unitario_con_igv)
                     form.instance.precio_unitario_con_igv = precio_unitario_con_igv
+                    print(form.instance.precio_final_con_igv)
                     form.instance.precio_final_con_igv = precio_final_con_igv
                     form.instance.sub_total = respuesta['subtotal']
                     form.instance.descuento = respuesta['descuento']
@@ -984,6 +986,7 @@ class CotizacionVentaMaterialDetalleOfertaView(PermissionRequiredMixin, BSModalU
                     form.instance.total = respuesta['total']
                 registro_guardar(form.instance, self.request)
                 self.request.session['primero'] = False
+            print("Fin de analisis")
             return super().form_valid(form)
         except Exception as ex:
             print(ex)

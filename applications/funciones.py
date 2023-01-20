@@ -4,7 +4,7 @@ import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
 from django.core.exceptions import ValidationError
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 import applications
 import math
 import random
