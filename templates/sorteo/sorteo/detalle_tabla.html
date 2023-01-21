@@ -1,0 +1,40 @@
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>{{ sorteo.nombre_dato_uno }}</th>
+            <th>{{ sorteo.nombre_dato_dos }}</th>
+            {% if sorteo.nombre_dato_tres %}
+            <th>{{ sorteo.nombre_dato_tres }}</th>
+            {% endif %}
+            {% if sorteo.nombre_dato_cuatro %}
+            <th>{{ sorteo.nombre_dato_cuatro }}</th>
+            {% endif %}
+            <th>Elegido</th>
+            <th>Ganador</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in sorteo.Ticket_sorteo.all %}
+        <tr>
+            <td class="text-nowrap">{{ ticket.dato_uno }}</td>
+            <td class="text-nowrap">{{ ticket.dato_dos }}</td>
+            {% if ticket.dato_tres %}
+            <td class="text-nowrap">{{ ticket.dato_tres }}</td>
+            {% endif %}
+            {% if ticket.dato_cuatro %}
+            <td class="text-nowrap">{{ ticket.dato_cuatro }}</td>
+            {% endif %}
+            <td>
+                {% if ticket.elegido %}
+                Sí
+                {% endif %}
+            </td>
+            <td class="text-nowrap">
+                {% if ticket.premio %}
+                {{ ticket.premio }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

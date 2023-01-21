@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    {{ sorteo.nombre_sorteo }}
+{% endblock titulo %}
+    
+
+{% block contenido %}
+<h1>{{ sorteo.nombre_sorteo }}</h1>
+<button data-form-url="{% url 'sorteo_app:ticket_agregar' sorteo.id %}"
+    data-table-url="{% url 'sorteo_app:sorteo_ver_tabla' sorteo.slug %}"
+    class="create btn btn-primary">
+    Agregar Ticket
+</button>
+<button data-form-url="{% url 'sorteo_app:sorteo_webinar_excel' sorteo.slug %}"
+    data-table-url="{% url 'sorteo_app:sorteo_ver_tabla' sorteo.slug %}"
+    class="create btn btn-primary">
+    Cargar Excel
+</button>
+<a href="{% url 'sorteo_app:sorteo_iniciar' sorteo.slug %}" class="btn btn-primary">Iniciar Sorteo</a>
+<a href="{% url 'sorteo_app:sorteo_lista' %}" class="btn btn-danger">Regresar</a>
+<div id="tabla">
+    {% include "sorteo/sorteo/detalle_tabla.html" %}
+</div>
+{% endblock contenido %}
+    

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Sorteos
+{% endblock titulo %}
+    
+
+{% block contenido %}
+<h1>Sorteos</h1>
+<button data-form-url="{% url 'sorteo_app:sorteo_agregar' %}"
+    data-table-url="{% url 'sorteo_app:sorteo_lista_tabla' %}"
+    class="create btn btn-primary">
+    Agregar Sorteo
+</button>
+<div class="table-responsive" id="tabla">
+    {% include "sorteo/sorteo/lista_tabla.html" %}
+</div>
+{% endblock contenido %}
+    

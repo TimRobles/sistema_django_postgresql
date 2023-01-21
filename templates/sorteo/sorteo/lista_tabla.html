@@ -1,0 +1,26 @@
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Sorteo</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sorteo in sorteos %}
+        <tr>
+            <td class="text-nowrap">{{ sorteo.nombre_sorteo }}</td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'sorteo_app:sorteo_ver' sorteo.slug %}"
+                class="btn btn-sm btn-success">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+                <button data-form-url="{% url 'sorteo_app:sorteo_actualizar' sorteo.id %}"
+                    data-table-url="{% url 'sorteo_app:sorteo_lista_tabla' %}"
+                    class="update btn btn-sm btn-warning">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
