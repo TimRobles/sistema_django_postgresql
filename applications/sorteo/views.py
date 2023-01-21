@@ -189,12 +189,15 @@ class CargarExcelFormView(BSModalFormView):
     success_url = reverse_lazy('sorteo_webinar_app:sorteo_webinar_lista')
 
     def form_valid(self, form):
-        sorteo = Sorteo.objects.get(slug=self.kwargs['slug'])
-        excel = form.cleaned_data.get('excel')
-        llenar_datos(excel, sorteo)
+        if self.request.session['primero']:
+            sorteo = Sorteo.objects.get(slug=self.kwargs['slug'])
+            excel = form.cleaned_data.get('excel')
+            llenar_datos(excel, sorteo)
+            self.request.session['primero'] = False
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(CargarExcelFormView, self).get_context_data(**kwargs)
         context['accion'] = 'Cargar'
         context['titulo'] = 'Tickets'
