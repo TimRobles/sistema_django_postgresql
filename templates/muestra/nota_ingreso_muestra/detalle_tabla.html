@@ -73,7 +73,7 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th>Cantidad</th>
-                <th>Cantidad Contada</th>
+                <th>Series Registradas</th>
                 <th>Pendiente</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -85,7 +85,7 @@
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad_total|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.cantidad_contada|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.series_cantidad|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_nota_ingreso_muestra.estado == 1 %}

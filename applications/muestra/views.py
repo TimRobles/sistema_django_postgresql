@@ -296,6 +296,8 @@ class NotaIngresoMuestraGuardarView(PermissionRequiredMixin, BSModalUpdateView):
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
+            
+            ####Registrar Series
 
             form.instance.estado = 2
             registro_guardar(form.instance, self.request)
