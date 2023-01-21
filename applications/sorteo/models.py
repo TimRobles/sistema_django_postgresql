@@ -17,6 +17,10 @@ class Sorteo(models.Model):
         verbose_name = "Sorteo"
         verbose_name_plural = "Sorteos"
 
+    @property
+    def participantes(self):
+        return len(self.Ticket_sorteo.all())
+
     def __str__(self):
         return self.nombre_sorteo
 
