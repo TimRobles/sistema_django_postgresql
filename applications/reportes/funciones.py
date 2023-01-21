@@ -64,6 +64,11 @@ RELLENO_MC = PatternFill(start_color='FFCA0B', end_color='FFCA0B', fill_type='so
 RELLENO_MP = PatternFill(start_color='8FC6EA', end_color='8FC6EA', fill_type='solid')
 # relleno_mp_mc = PatternFill(start_color='00BB2D', end_color='00BB2D', fill_type='solid')
 RELLENO_MP_MC = PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')
+
+def rellenoSociedad(id_sociedad):
+    color_sociedad = str(DICT_SOCIEDAD[id_sociedad].color)[1:]
+    return PatternFill(start_color=color_sociedad, end_color=color_sociedad, fill_type='solid')
+
 ALINEACION_DERECHA = Alignment(horizontal='right')
 ALINEACION_CENTRO = Alignment(horizontal='center')
 AJUSTAR_TEXTO = Alignment(wrap_text=True)

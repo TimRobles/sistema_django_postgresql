@@ -45,16 +45,88 @@ def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
 
     return t
 
-def generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color):
+def dataCuentas(list_cuenta_dolares, list_cuenta_soles, fuenteBase, color):
+    tablaMacro=[]
+    filaMacro=[]
+    tablaGeneral=[]
+    fila=[]
+    fila.append(parrafoCentro('<b>Cuentas en <strong>DÓLARES</strong>:</b>', fuenteBase, 10, 'Bold'))
+    fila.append(parrafoCentro('<b>Cuentas en <strong>SOLES</strong>:</b>', fuenteBase, 10, 'Bold'))
+    tablaGeneral.append(fila)
+
+    fila=[]
+
+    data=[]
+    dato=[]
+    dato.append(parrafoCentro('BANCO', fuenteBase, 8, 'Bold'))
+    dato.append(parrafoCentro('NÚMERO DE CUENTA', fuenteBase, 8, 'Bold'))
+    dato.append(parrafoCentro('CCI', fuenteBase, 8, 'Bold'))
+    data.append(dato)
+
+    for lista in list_cuenta_dolares:
+        dato=[]
+        for item in lista:
+            dato.append(parrafoCentro(item, fuenteBase, 7))
+        data.append(dato)
+
+    t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-1),1,colors.black),
+                        ('BOX',(0,0),(-1,0),2,colors.black),
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),
+                        ('VALIGN',(0,0),(-1,-1),'TOP'),
+                        ('ALIGN',(0,0),(-1,-1),'CENTER')])
+    t._argW[0]=cmToPx(1.5)
+    t._argW[1]=cmToPx(4.2)
+    t._argW[2]=cmToPx(4.7)
+    t.hAlign = 'LEFT'
+    fila.append(t)
+
+    data=[]
+    dato=[]
+    dato.append(parrafoCentro('BANCO', fuenteBase, 8, 'Bold'))
+    dato.append(parrafoCentro('NÚMERO DE CUENTA', fuenteBase, 8, 'Bold'))
+    dato.append(parrafoCentro('CCI', fuenteBase, 8, 'Bold'))
+    data.append(dato)
+
+    for lista in list_cuenta_soles:
+        dato=[]
+        for item in lista:
+            dato.append(parrafoCentro(item, fuenteBase, 7))
+        data.append(dato)
+
+
+    t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-1),1,colors.black),
+                        ('BOX',(0,0),(-1,0),2,colors.black),
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),
+                        ('VALIGN',(0,0),(-1,-1),'TOP'),
+                        ('ALIGN',(0,0),(-1,-1),'CENTER')])
+    t._argW[0]=cmToPx(1.5)
+    t._argW[1]=cmToPx(4.2)
+    t._argW[2]=cmToPx(4.7)
+    t.hAlign = 'LEFT'
+    fila.append(t)
+
+    tablaGeneral.append(fila)
+    t=Table(tablaGeneral)
+
+    filaMacro.append(t)
+    tablaMacro.append(filaMacro)
+    t=Table(tablaMacro)
+
+    return t
+
+def generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, list_cuenta_dolares, list_cuenta_soles):
     fuenteBase = "ComicNeue"
 
     data_tabla = dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color)
+    data_tabla_cuentas = dataCuentas(list_cuenta_dolares, list_cuenta_soles, fuenteBase, color)
     elementos = []
     elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
     elementos.append(vacio(2.5))
     elementos.append(data_tabla)
     elementos.append(vacio(2.5))
     elementos.append(parrafoIzquierda(Texto[1], fuenteBase, 10))
+    elementos.append(vacio(2.5))
+    elementos.append(data_tabla_cuentas)
     
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
