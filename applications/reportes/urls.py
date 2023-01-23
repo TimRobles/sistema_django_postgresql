@@ -12,4 +12,5 @@ urlpatterns = [
     path('reporte-depositos-cuentas-bancarias/', views.ReporteDepositosCuentasBancarias.as_view(), name='reporte_depositos_cuentas_bancarias'),
     path('reporte-clientes-productos/', views.ReporteClientesProductos.as_view(), name='reporte_clientes_productos'),
     path('reporte-deudas/', views.ReporteDeudas.as_view(), name='reporte_deudas'),
+    path('reporte-cobranza/', views.ReporteCobranza.as_view(), name='reporte_cobranza'),
  ]
