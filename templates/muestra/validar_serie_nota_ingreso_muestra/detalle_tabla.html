@@ -1,0 +1,48 @@
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ contexto_nota_ingreso_muestra_detalle.nota_ingreso_muestra.sociedad}}</td>
+                    <th class="px-2">Producto:</th>
+                    <td>{{ contexto_nota_ingreso_muestra_detalle.producto}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nro. de Serie</th>         
+                <th>Estado</th>    
+                <th class="text-center">Acciones</th>    
+            </tr>
+        </thead>
+        <tbody>
+            {% for validacion in contexto_series %}
+                <tr>
+                    {% if validacion.serie %}
+                    <td> 
+                        {{ validacion.serie}} 
+                    </td>
+                    {% endif %}
+                    <td>{{ validacion.get_estado_display }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_nota_ingreso_muestra_detalle.nota_ingreso_muestra.estado == 1 %}
+                            <button data-form-url="{% url 'muestra_app:validar_series_nota_ingreso_muestra_detalle_eliminar' validacion.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+                           
+        </tbody>
+    </table>
+</div>

@@ -59,7 +59,10 @@ class EnvioTrasladoProducto(models.Model):
         return self.fecha_traslado
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (self.fecha_traslado.strftime('%d/%m/%Y'), numeroXn(self.id, 6), self.sede_origen, self.responsable)
+        if self.fecha_traslado:
+            return "%s - %s - %s - %s" % (self.fecha_traslado.strftime('%d/%m/%Y'), numeroXn(self.numero_envio_traslado, 6), self.sede_origen, self.responsable)
+        else:
+            return f"ID:{self.id} {self.created_by}"
 
 
 class EnvioTrasladoProductoDetalle(models.Model):

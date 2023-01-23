@@ -1,10 +1,11 @@
 from django.shortcuts import render
+from applications.calidad.models import Serie
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
-from applications.muestra.forms import NotaIngresoMuestraAgregarMaterialForm, NotaIngresoMuestraAnularForm, NotaIngresoMuestraForm, NotaIngresoMuestraGenerarNotaIngresoForm, NotaIngresoMuestraGuardarForm
-from applications.muestra.models import NotaIngresoMuestra, NotaIngresoMuestraDetalle
+from applications.muestra.forms import NotaIngresoMuestraAgregarMaterialForm, NotaIngresoMuestraAnularForm, NotaIngresoMuestraDetalleSeriesForm, NotaIngresoMuestraForm, NotaIngresoMuestraGenerarNotaIngresoForm, NotaIngresoMuestraGuardarForm
+from applications.muestra.models import NotaIngresoMuestra, NotaIngresoMuestraDetalle, SerieValidar
 
 
 # Create your views here.
@@ -267,8 +268,20 @@ class NotaIngresoMuestraGuardarView(PermissionRequiredMixin, BSModalUpdateView):
     form_class = NotaIngresoMuestraGuardarForm
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cantidad_series = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().NotaIngresoMuestraDetalle_nota_ingreso_muestra.all()
+        for detalle in detalles:
+            if detalle.producto.control_serie and detalle.series_cantidad != detalle.cantidad_total:
+                error_cantidad_series = True
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_cantidad_series:
+            context['texto'] = 'Hay Series sin registrar.'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
@@ -366,3 +379,101 @@ class NotaIngresoMuestraAnularView(PermissionRequiredMixin, BSModalUpdateView):
         context['titulo'] = "Ingreso de Muestra"
         return context
 
+
+class ValidarSeriesNotaIngresoMuestraDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('muestra.view_notaingresomuestradetalle')
+    template_name = "muestra/validar_serie_nota_ingreso_muestra/detalle.html"
+    form_class = NotaIngresoMuestraDetalleSeriesForm
+    success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            serie = form.cleaned_data['serie']
+            nota_ingreso_muestra_detalle = NotaIngresoMuestraDetalle.objects.get(id = self.kwargs['pk'])
+            try:
+                buscar = Serie.objects.filter(
+                    serie_base=serie,
+                    content_type=ContentType.objects.get_for_model(nota_ingreso_muestra_detalle.producto),
+                    id_registro=nota_ingreso_muestra_detalle.producto.id,
+                )
+                if len(buscar) != 0:
+                    form.add_error('serie', "Serie encontrada: %s" % serie)
+                    return super().form_invalid(form)
+
+                buscar2 = SerieValidar.objects.filter(serie = serie)
+
+                if len(buscar2) != 0:
+                    form.add_error('serie', "Serie ya ha sido registrada")
+                    return super().form_invalid(form)
+
+            except:
+                pass
+
+            nota_ingreso_muestra_detalle = NotaIngresoMuestraDetalle.objects.get(id = self.kwargs['pk'])
+            obj, created = SerieValidar.objects.get_or_create(
+                nota_ingreso_muestra_detalle=nota_ingreso_muestra_detalle,
+                serie=serie,
+            )
+            if created:
+                obj.estado = 1
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        nota_ingreso_muestra_detalle = NotaIngresoMuestraDetalle.objects.get(id = self.kwargs['pk'])
+        cantidad_registrada = len(SerieValidar.objects.filter(nota_ingreso_muestra_detalle=nota_ingreso_muestra_detalle))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad_total'] = nota_ingreso_muestra_detalle.cantidad_total
+        kwargs['cantidad_registrada'] = cantidad_registrada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        nota_ingreso_muestra_detalle = NotaIngresoMuestraDetalle.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesNotaIngresoMuestraDetailView, self).get_context_data(**kwargs)
+        context['contexto_nota_ingreso_muestra_detalle'] = nota_ingreso_muestra_detalle
+        context['contexto_series'] = SerieValidar.objects.filter(nota_ingreso_muestra_detalle = nota_ingreso_muestra_detalle)
+        return context
+
+def ValidarSeriesNotaIngresoMuestraDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'muestra/validar_serie_nota_ingreso_muestra/detalle_tabla.html'
+        context = {}
+        nota_ingreso_muestra_detalle = NotaIngresoMuestraDetalle.objects.get(id = pk)
+        context['contexto_nota_ingreso_muestra_detalle'] = nota_ingreso_muestra_detalle
+        context['contexto_series'] = SerieValidar.objects.filter(nota_ingreso_muestra_detalle = nota_ingreso_muestra_detalle)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ValidarSeriesNotaIngresoMuestraDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('muestra.delete_validarseriesenviotrasladoproductodetalle')
+    model = SerieValidar
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('muestra_app:validar_series_nota_ingreso_muestra_detalle', kwargs={'pk': self.get_object().nota_ingreso_muestra_detalle.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesNotaIngresoMuestraDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
+        return context

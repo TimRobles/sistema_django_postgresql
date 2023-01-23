@@ -28,6 +28,7 @@
                 <th>Fecha</th>
                 <th>Número de Ingreso</th>
                 <th>Sociedad</th>
+                <th>Proveedor</th>
                 <th>Usuario</th>
                 <th class="text-center">Estado</th>
             </tr>
@@ -37,6 +38,7 @@
                 <td>{{ contexto_nota_ingreso_muestra.fecha_ingreso|date:'d/m/Y' }}</td>
                 <td>{{ contexto_nota_ingreso_muestra.nro_nota_ingreso_muestra|numeroXn:6 }}</td>
                 <td>{{ contexto_nota_ingreso_muestra.sociedad }}</td>
+                <td>{{ contexto_nota_ingreso_muestra.proveedor }}</td>
                 <td>{{ contexto_nota_ingreso_muestra.created_by }}</td>
                 <td class="text-center">
                     {{ contexto_nota_ingreso_muestra.get_estado_display }}
@@ -72,6 +74,7 @@
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
+                <th>Almacén</th>
                 <th>Cantidad</th>
                 <th>Series Registradas</th>
                 <th>Pendiente</th>
@@ -84,6 +87,7 @@
                     <td>{{ material.item}}</td>
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
+                    <td>{{ material.almacen }}</td>
                     <td class="text-end">{{ material.cantidad_total|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.series_cantidad|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
@@ -96,6 +100,13 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
+                            {% if material.producto.control_serie %}
+                                <a href="{% url 'muestra_app:validar_series_nota_ingreso_muestra_detalle' material.id %}"
+                                    class="btn btn-dark btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                    <i class="bi bi-upc-scan"></i>
+                                </a>
+                            {% endif %}
                         <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_eliminar_material' material.id %}"
                             class="delete btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">

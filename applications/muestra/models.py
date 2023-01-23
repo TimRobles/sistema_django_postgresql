@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 
 from django.contrib.contenttypes.models import ContentType
+from applications.almacenes.models import Almacen
 from applications.calidad.models import FallaMaterial
 from applications.funciones import numeroXn
 from applications.muestra.managers import NotaIngresoMuestraManager
@@ -54,6 +55,7 @@ class NotaIngresoMuestraDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad_total = models.DecimalField('Cantidad total', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT)
     nota_ingreso_muestra = models.ForeignKey(NotaIngresoMuestra, on_delete=models.PROTECT, related_name='NotaIngresoMuestraDetalle_nota_ingreso_muestra')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -83,7 +85,7 @@ class NotaIngresoMuestraDetalle(models.Model):
 
     @property
     def series_cantidad(self):
-        return Decimal(len(self.SerieValidar_nota_ingreso_muestra_validar_detalle.all())).quantize(Decimal('0.01'))
+        return Decimal(len(self.SerieValidar_nota_ingreso_muestra_detalle.all())).quantize(Decimal('0.01'))
         
     @property
     def pendiente(self):
@@ -105,9 +107,7 @@ class SerieValidar(models.Model):
     serie = models.CharField('Nro. Serie', max_length=200)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Material
     id_registro = models.IntegerField(blank=True, null=True)
-    observacion = models.TextField('Observación', blank=True, null=True)
-    falla_material = models.ForeignKey(FallaMaterial, on_delete=models.CASCADE, blank=True, null=True)
-    nota_ingreso_muestra_validar_detalle = models.ForeignKey('NotaIngresoMuestraDetalle', on_delete=models.CASCADE, related_name='SerieValidar_nota_ingreso_muestra_validar_detalle')
+    nota_ingreso_muestra_detalle = models.ForeignKey('NotaIngresoMuestraDetalle', on_delete=models.CASCADE, related_name='SerieValidar_nota_ingreso_muestra_detalle')
     estado = models.IntegerField(choices=ESTADOS_SERIE_CALIDAD, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
