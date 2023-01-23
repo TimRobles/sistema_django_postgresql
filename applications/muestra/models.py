@@ -7,6 +7,7 @@ from applications.calidad.models import FallaMaterial
 from applications.funciones import numeroXn
 from applications.muestra.managers import NotaIngresoMuestraManager
 from applications.nota_ingreso.models import NotaIngresoDetalle
+from applications.proveedores.models import Proveedor
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADO_NOTA_INGRESO
 
@@ -15,6 +16,7 @@ from applications.variables import ESTADO_NOTA_INGRESO
 class NotaIngresoMuestra(models.Model):
     nro_nota_ingreso_muestra = models.IntegerField('Número de Nota de Ingreso de Muestra', help_text='Correlativo', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)
     observaciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
@@ -38,10 +40,6 @@ class NotaIngresoMuestra(models.Model):
     @property
     def documento(self):
         return self
-    
-    @property
-    def proveedor(self):
-        return ""
     
     @property
     def detalle(self):
@@ -83,7 +81,7 @@ class NotaIngresoMuestraDetalle(models.Model):
     def orden_compra_detalle(self):
         return self
 
-    @property #Cambiar por cantidad registrada por series temporales
+    @property
     def series_cantidad(self):
         return Decimal(len(self.SerieValidar_nota_ingreso_muestra_validar_detalle.all())).quantize(Decimal('0.01'))
         
