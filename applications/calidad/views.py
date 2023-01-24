@@ -501,7 +501,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
 
                     for serie_calidad in detalle.SerieCalidad_nota_control_calidad_stock_detalle.all():
                         serie = Serie.objects.create(
-                            serie_base = serie_calidad.serie,
+                            serie_base = serie_calidad.serie.upper(),
                             content_type = serie_calidad.content_type,
                             id_registro = serie_calidad.id_registro,
                             sociedad = serie_calidad.nota_control_calidad_stock_detalle.nota_ingreso_detalle.comprobante_compra_detalle.sociedad,
@@ -1379,7 +1379,7 @@ class SerieBuscarView(PermissionRequiredMixin, FormView):
         context = super(SerieBuscarView, self).get_context_data(**kwargs)
         serie = self.request.GET.get('serie')
         if serie:
-            buscar_serie = Serie.objects.filter(serie_base = serie)
+            buscar_serie = Serie.objects.filter(serie_base = serie.upper())
             context['buscar_serie'] = buscar_serie
         
         return context
