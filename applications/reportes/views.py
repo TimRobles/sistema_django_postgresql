@@ -361,7 +361,7 @@ class ReporteContador(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_facturas_contador()
-        nombre_archivo = "Reporte_Contador - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Contador - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -510,7 +510,7 @@ class ReporteVentasFacturadas(TemplateView):
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
                     ON dgm.id=dgcb.moneda_id
-                WHERE cvf.sociedad_id='%s'
+                WHERE cvf.sociedad_id='%s' AND cvf.estado='4'
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
                 ORDER BY cliente_denominacion ASC, pagos DESC )
                 UNION
@@ -545,7 +545,7 @@ class ReporteVentasFacturadas(TemplateView):
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
                     ON dgm.id=dgcb.moneda_id
-                WHERE cvb.sociedad_id='%s'
+                WHERE cvb.sociedad_id='%s' AND cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY cliente_denominacion ASC, pagos DESC)
                 ORDER BY cliente_denominacion ASC, pagos DESC; '''%(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad,  DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
@@ -590,7 +590,7 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cd.content_type_id='%s' AND cd.id_registro=cvf.id
                 LEFT JOIN cobranza_cuota cobc
                     ON cobc.deuda_id=cd.id
-                WHERE cvf.tipo_venta='2' AND cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+                WHERE cvf.tipo_venta='2' AND cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s' AND cvf.estado='4'
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
                 ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC)
                 UNION
@@ -618,7 +618,7 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cd.content_type_id='%s' AND cd.id_registro=cvb.id
                 LEFT JOIN cobranza_cuota cobc
                     ON cobc.deuda_id=cd.id
-                WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+                WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s' AND cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
 
@@ -1078,7 +1078,7 @@ class ReporteVentasFacturadas(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_ventas()
-        nombre_archivo = "Reporte_ventas_facturadas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Ventas Facturadas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -1112,6 +1112,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cvfd.factura_venta_id=cvf.id
                 LEFT JOIN material_material mm
                     ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
+                WHERE cvf.estado='4'
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura)
                 UNION
                 (SELECT
@@ -1127,6 +1128,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cvbd.boleta_venta_id=cvb.id
                 LEFT JOIN material_material mm
                     ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
+                WHERE cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta) ;'''%(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'],DICT_CONTENT_TYPE['material | material'],DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],DICT_CONTENT_TYPE['material | material'],)
             query_info = FacturaVenta.objects.raw(sql_productos)
 
@@ -1169,7 +1171,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cd.content_type_id='%s' AND cd.id_registro=cvf.id
                 LEFT JOIN cobranza_cuota cobc
                     ON cobc.deuda_id=cd.id
-                WHERE cvf.tipo_venta='2' AND cvf.sociedad_id='%s' AND cd.id IS NOT NULL
+                WHERE cvf.tipo_venta='2' AND cvf.sociedad_id='%s' AND cd.id IS NOT NULL AND cvf.estado='4'
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
                 ORDER BY cliente_denominacion ASC, letras ASC)
                 UNION
@@ -1198,7 +1200,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cd.content_type_id='%s' AND cd.id_registro=cvb.id
                 LEFT JOIN cobranza_cuota cobc
                     ON cobc.deuda_id=cd.id
-                WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND cd.id IS NOT NULL
+                WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND cd.id IS NOT NULL AND cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY cliente_denominacion ASC, letras ASC)
                 ORDER BY cliente_denominacion ASC, letras ASC ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'],DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
@@ -1536,7 +1538,7 @@ class ReporteFacturasPendientes(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_facturas_pendientes()
-        nombre_archivo = "Reporte_facturas_pendientes - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Facturas Pendientes - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -2076,7 +2078,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
         else:
             wb=reporte_depositos_cuentas_resumen()
             abreviatura = "MPL-MCA"
-        nombre_archivo = "Reporte_depositos_cuentas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Depositos Cuentas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -2113,7 +2115,7 @@ class ReporteClientesProductos(TemplateView):
                     ON cc.id=cvf.cliente_id
                 LEFT JOIN material_material mm
                     ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
-                WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+                WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s' AND cvf.estado='4'
                 GROUP BY cvf.cliente_id, cvfd.content_type_id, cvfd.id_registro
                 ORDER BY 3, 5)
                 UNION
@@ -2138,7 +2140,7 @@ class ReporteClientesProductos(TemplateView):
                     ON cc.id=cvb.cliente_id
                 LEFT JOIN material_material mm
                     ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
-                WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+                WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s' AND cvb.estado='4'
                 GROUP BY cvb.cliente_id, cvbd.content_type_id, cvbd.id_registro
                 ORDER BY 3, 5)
                 ORDER BY 3, 5 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
@@ -2186,7 +2188,7 @@ class ReporteClientesProductos(TemplateView):
                     ON cc.id=cvf.cliente_id
                 LEFT JOIN material_material mm
                     ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
-                WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+                WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s' AND cvf.estado='4'
                 GROUP BY cvfd.content_type_id, cvfd.id_registro, cvf.cliente_id
                 ORDER BY 3, 5)
                 UNION
@@ -2211,7 +2213,7 @@ class ReporteClientesProductos(TemplateView):
                     ON cc.id=cvb.cliente_id
                 LEFT JOIN material_material mm
                     ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
-                WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+                WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s' AND cvb.estado='4'
                 GROUP BY cvbd.content_type_id, cvbd.id_registro, cvb.cliente_id
                 ORDER BY 3, 5)
                 ORDER BY 3, 5 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
@@ -2282,7 +2284,7 @@ class ReporteClientesProductos(TemplateView):
                     ON cc.id=cvf.cliente_id
                 LEFT JOIN material_material mm
                     ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
-                WHERE cvf.sociedad_id='%s'
+                WHERE cvf.sociedad_id='%s' AND cvf.estado='4'
                 GROUP BY cvf.cliente_id, fecha_orden, cvfd.content_type_id, cvfd.id_registro
                 ORDER BY 2, 4, 6)
                 UNION
@@ -2308,7 +2310,7 @@ class ReporteClientesProductos(TemplateView):
                     ON cc.id=cvb.cliente_id
                 LEFT JOIN material_material mm
                     ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
-                WHERE cvb.sociedad_id='%s'
+                WHERE cvb.sociedad_id='%s' AND cvb.estado='4'
                 GROUP BY cvb.cliente_id, fecha_orden, cvbd.content_type_id, cvbd.id_registro
                 ORDER BY 2, 4, 6)
                 ORDER BY 2, 4, 6; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, DICT_CONTENT_TYPE['material | material'], global_sociedad)
@@ -2528,7 +2530,7 @@ class ReporteClientesProductos(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_cliente_productos()
-        nombre_archivo = "Reporte_cliente_productos - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Cliente vs Productos - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -2555,6 +2557,7 @@ class ReporteDeudas(TemplateView):
                 ON cvfd.factura_venta_id=cvf.id
             LEFT JOIN material_material mm
                 ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
+            WHERE cvf.estado='4'
             GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura)
             UNION
             (SELECT
@@ -2569,6 +2572,7 @@ class ReporteDeudas(TemplateView):
                 ON cvbd.boleta_venta_id=cvb.id
             LEFT JOIN material_material mm
                 ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
+            WHERE cvb.estado='4'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'])
 
         query_productos = FacturaVenta.objects.raw(sql_productos)
@@ -2613,7 +2617,7 @@ class ReporteDeudas(TemplateView):
                 ON cd.content_type_id='%s' AND cd.id_registro=cvf.id
             LEFT JOIN cobranza_cuota cobc
                 ON cobc.deuda_id=cd.id
-            WHERE cvf.tipo_venta='2' AND cvf.sociedad_id='%s' AND cd.id IS NOT NULL
+            WHERE cvf.tipo_venta='2' AND cvf.sociedad_id='%s' AND cd.id IS NOT NULL AND cvf.estado='4'
             GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
             ORDER BY cliente_denominacion ASC, letras ASC)
             UNION
@@ -2642,7 +2646,7 @@ class ReporteDeudas(TemplateView):
                 ON cd.content_type_id='%s' AND cd.id_registro=cvb.id
             LEFT JOIN cobranza_cuota cobc
                 ON cobc.deuda_id=cd.id
-            WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND cd.id IS NOT NULL
+            WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND cd.id IS NOT NULL AND cvb.estado='4'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
             ORDER BY cliente_denominacion ASC, letras ASC)
             ORDER BY cliente_denominacion ASC, letras ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
@@ -3296,4 +3300,3 @@ class ReporteCobranza(TemplateView):
         # while True:
         #     schedule.run_pending()
         #     time.sleep(1)
-

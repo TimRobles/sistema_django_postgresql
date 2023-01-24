@@ -30,7 +30,7 @@ def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
                         ('BOX',(0,0),(-1,0),1,colors.black),
                         ('BOX',(-8,-1),(-7,-1),1,colors.black), #Inicio(x,y), Fin(x+1,y+1),grosor,color
                         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),
-                        ('BACKGROUND',(-7,-7),(-7,-6),colors.HexColor("#CDCDCD")),
+                        # ('BACKGROUND',(-7,-7),(-7,-6),colors.HexColor("#CDCDCD")),
                         ('VALIGN',(0,0),(-1,-1),'TOP'),
                         ('ALIGN',(0,0),(-1,-1),'CENTER')])
     t._argW[0]=cmToPx(1.8)
