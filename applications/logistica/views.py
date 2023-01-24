@@ -1642,7 +1642,13 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                                 serie.serie_movimiento_almacen.add(movimiento_uno)
                                 serie.serie_movimiento_almacen.add(movimiento_dos)
 
-
+                if self.object.nota_salida.confirmacion_venta:
+                    if self.object.nota_salida.confirmacion_venta.estado == 2:
+                        self.object.nota_salida.confirmacion_venta.estado = 4
+                    elif self.object.nota_salida.confirmacion_venta.estado == 1:
+                        self.object.nota_salida.confirmacion_venta.estado = 5
+                    registro_guardar(self.object.nota_salida.confirmacion_venta, self.request)
+                    self.object.nota_salida.confirmacion_venta.save()
                 self.object.estado = 2
                 registro_guardar(self.object, self.request)
                 self.object.save()
@@ -1681,6 +1687,13 @@ class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
+            if self.object.nota_salida.confirmacion_venta:
+                if self.object.nota_salida.confirmacion_venta.estado == 2:
+                    self.object.nota_salida.confirmacion_venta.estado = 4
+                elif self.object.nota_salida.confirmacion_venta.estado == 1:
+                    self.object.nota_salida.confirmacion_venta.estado = 5
+                registro_guardar(self.object.nota_salida.confirmacion_venta, self.request)
+                self.object.nota_salida.confirmacion_venta.save()
             self.object.estado = 4
             registro_guardar(self.object, self.request)
             self.object.save()
