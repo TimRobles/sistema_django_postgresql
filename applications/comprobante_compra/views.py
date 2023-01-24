@@ -295,7 +295,7 @@ class ArchivoComprobanteCompraPIDeleteView(PermissionRequiredMixin, BSModalDelet
 
 
 class RecepcionComprobanteCompraPIView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('comprobante_compra.add_recepcioncomprobantecomprapi')
+    permission_required = ('comprobante_compra.add_recepcioncompra')
     template_name = "includes/formulario generico.html"
     form_class = RecepcionComprobanteCompraPIForm
     
