@@ -44,12 +44,18 @@
                 Registrar CI
             </button>
         {% endif %}
+    {% endif %}
+    
+    {% if permiso_logistica %}
         {% if contexto_comprobante_compra_pi.estado == 2 and contexto_recepcion_compra %}
             <a href="{% url 'recepcion_compra_app:recepcion_compra_detalle' contexto_recepcion_compra.id %}"
             class="btn btn-primary">
                 Ver Recepción de Compra
             </a>
         {% endif %}
+    {% endif %}
+
+    {% if permiso_compras %}
         {% if contexto_comprobante_compra_pi.ComprobanteCompraCI_comprobante_compra_PI %}
         <a href="{% url 'comprobante_compra_app:comprobante_compra_ci_detalle' contexto_comprobante_compra_pi.slug %}"
         class="btn btn-primary">
