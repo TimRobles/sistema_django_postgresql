@@ -21,6 +21,7 @@ from applications.calidad.forms import(
     SerieBuscarForm,
 )
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.muestra.models import NotaIngresoMuestra
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from .models import(
     EstadoSerie,
@@ -735,9 +736,13 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
             if not material.comprobante_compra_detalle.producto.control_calidad:
                 materiales_sin_calidad.append(material.id)
         materiales = materiales.exclude(id__in = materiales_sin_calidad)
+        inspeccion = None
+        if nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+            inspeccion = ESTADOS_INSPECCION = [(1, 'BUENO'),]
 
         kwargs = super().get_form_kwargs()
         kwargs['materiales'] = materiales
+        kwargs['inspeccion'] = inspeccion
         return kwargs
 
     def get_context_data(self, **kwargs):

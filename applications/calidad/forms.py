@@ -74,11 +74,14 @@ class NotaControlCalidadStockDetalleAgregarForm(BSModalModelForm):
             'cantidad_calidad',
             'inspeccion',
             )
-
+    
     def __init__(self, *args, **kwargs):
         lista_materiales = kwargs.pop('materiales')
+        inspeccion = kwargs.pop('inspeccion')
         super(NotaControlCalidadStockDetalleAgregarForm, self).__init__(*args, **kwargs)
         self.fields['material'].queryset = lista_materiales
+        if inspeccion:
+            self.fields['inspeccion'].choices = inspeccion
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

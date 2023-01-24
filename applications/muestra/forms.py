@@ -99,28 +99,3 @@ class NotaIngresoMuestraGenerarNotaIngresoForm(BSModalForm):
         super(NotaIngresoMuestraGenerarNotaIngresoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
-
-class NotaIngresoMuestraDetalleSeriesForm(BSModalModelForm):
-    cantidad_registrada = forms.DecimalField(label='Cantidad Registrada', max_digits=22, decimal_places=10, required=False)
-    serie = forms.CharField(required=False)
-    class Meta:
-        model = NotaIngresoMuestraDetalle
-        fields=(
-            'serie',
-            'cantidad_total',
-            'cantidad_registrada',
-            )
-
-    def __init__(self, *args, **kwargs):
-        cantidad_total = kwargs.pop('cantidad_total')
-        cantidad_registrada = kwargs.pop('cantidad_registrada')
-        super(NotaIngresoMuestraDetalleSeriesForm, self).__init__(*args, **kwargs)
-        self.fields['cantidad_total'].initial = cantidad_total
-        self.fields['cantidad_registrada'].initial = cantidad_registrada
-        if cantidad_registrada == cantidad_total:
-            self.fields['serie'].disabled = True
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
-            self.fields['cantidad_total'].disabled = True
-            self.fields['cantidad_registrada'].disabled = True

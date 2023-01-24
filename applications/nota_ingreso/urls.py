@@ -4,8 +4,9 @@ from . import views
 app_name = 'nota_ingreso_app'
 
 urlpatterns = [
-    path('nota-ingreso/lista/<int:recepcion_id>/', views.NotaIngresoView.as_view(), name='nota_ingreso_lista'),
+    path('nota-ingreso/lista/recepcion/<int:recepcion_id>/', views.NotaIngresoView.as_view(), name='nota_ingreso_lista'),
     path('nota-ingreso/lista/nota-stock-inicial/<int:nota_stock_inicial_id>/', views.NotaIngresoNotaStockInicialView.as_view(), name='nota_ingreso_lista_nota_stock_inicial'),
+    path('nota-ingreso/lista/nota-ingreso-muestra/<int:nota_ingreso_muestra_id>/', views.NotaIngresoNotaIngresoMuestraView.as_view(), name='nota_ingreso_lista_nota_ingreso_muestra'),
     path('nota-ingreso/lista/', views.NotaIngresoListaView.as_view(), name='nota_ingreso_lista_total'),
     path('nota-ingreso/detalle/<pk>/', views.NotaIngresoDetailView.as_view(), name='nota_ingreso_detalle'),
     path('nota-ingreso/detalle/tabla/<int:recepcion_id>/', views.NotaIngresoDetailTabla, name='nota_ingreso_detalle_tabla'),

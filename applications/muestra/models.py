@@ -55,7 +55,6 @@ class NotaIngresoMuestraDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad_total = models.DecimalField('Cantidad total', max_digits=22, decimal_places=10, default=Decimal('0.00'))
-    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT)
     nota_ingreso_muestra = models.ForeignKey(NotaIngresoMuestra, on_delete=models.PROTECT, related_name='NotaIngresoMuestraDetalle_nota_ingreso_muestra')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -84,42 +83,8 @@ class NotaIngresoMuestraDetalle(models.Model):
         return self
 
     @property
-    def series_cantidad(self):
-        return Decimal(len(self.SerieValidar_nota_ingreso_muestra_detalle.all())).quantize(Decimal('0.01'))
-        
-    @property
-    def pendiente(self):
-        return self.cantidad - self.series_cantidad
-
-    @property
     def sociedad(self):
         return self.nota_ingreso_muestra.sociedad
 
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
-
-
-class SerieValidar(models.Model):
-    ESTADOS_SERIE_CALIDAD = (
-        (1, 'DISPONIBLE'),
-        (2, 'DUPLICADO'),
-    )
-    serie = models.CharField('Nro. Serie', max_length=200)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Material
-    id_registro = models.IntegerField(blank=True, null=True)
-    nota_ingreso_muestra_detalle = models.ForeignKey('NotaIngresoMuestraDetalle', on_delete=models.CASCADE, related_name='SerieValidar_nota_ingreso_muestra_detalle')
-    estado = models.IntegerField(choices=ESTADOS_SERIE_CALIDAD, default=1)
-
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SerieValidar_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SerieValidar_updated_by', editable=False)
-    class Meta:
-        verbose_name = 'Serie Validar'
-        verbose_name_plural = 'Series Validar'
-        ordering = [
-            'created_at',
-            ]
-
-    def __str__(self):
-        return "%s - %s" % (self.serie, self.nota_ingreso_muestra_validar_detalle)

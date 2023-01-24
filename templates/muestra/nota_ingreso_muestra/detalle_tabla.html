@@ -14,7 +14,7 @@
     class="delete btn btn-danger">
     Anular
 </button>
-<a href="{% url 'muestra_app:nota_ingreso_lista_nota_ingreso_muestra' contexto_nota_ingreso_muestra.id %}" class="btn btn-primary">Ver Notas de Ingreso</a>
+<a href="{% url 'nota_ingreso_app:nota_ingreso_lista_nota_ingreso_muestra' contexto_nota_ingreso_muestra.id %}" class="btn btn-primary">Ver Notas de Ingreso</a>
 <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_generar_nota_ingreso' contexto_nota_ingreso_muestra.id %}"
     class="delete btn btn-primary">
     Generar Nota de Ingreso
@@ -74,10 +74,7 @@
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
-                <th>Almacén</th>
                 <th>Cantidad</th>
-                <th>Series Registradas</th>
-                <th>Pendiente</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -87,10 +84,7 @@
                     <td>{{ material.item}}</td>
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
-                    <td>{{ material.almacen }}</td>
                     <td class="text-end">{{ material.cantidad_total|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.series_cantidad|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_nota_ingreso_muestra.estado == 1 %}
                         <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_actualizar_material' material.id %}"
@@ -100,13 +94,6 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                            {% if material.producto.control_serie %}
-                                <a href="{% url 'muestra_app:validar_series_nota_ingreso_muestra_detalle' material.id %}"
-                                    class="btn btn-dark btn-sm"
-                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
-                                    <i class="bi bi-upc-scan"></i>
-                                </a>
-                            {% endif %}
                         <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_eliminar_material' material.id %}"
                             class="delete btn btn-danger btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">

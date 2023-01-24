@@ -92,7 +92,7 @@ class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView)
             error_numero_comprobante_compra = True
 
         error_logistico = False
-        if obj.logistico == Decimal('1.00'):
+        if obj.logistico == Decimal('0.00'):
             error_logistico = True
 
         if error_fecha:
