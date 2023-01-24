@@ -14,7 +14,7 @@
     class="delete btn btn-danger">
     Anular
 </button>
-<a href="{% url 'muestra_app:nota_ingreso_lista_nota_ingreso_muestra' contexto_nota_ingreso_muestra.id %}" class="btn btn-primary">Ver Notas de Ingreso</a>
+<a href="{% url 'nota_ingreso_app:nota_ingreso_lista_nota_ingreso_muestra' contexto_nota_ingreso_muestra.id %}" class="btn btn-primary">Ver Notas de Ingreso</a>
 <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_generar_nota_ingreso' contexto_nota_ingreso_muestra.id %}"
     class="delete btn btn-primary">
     Generar Nota de Ingreso
@@ -28,6 +28,7 @@
                 <th>Fecha</th>
                 <th>Número de Ingreso</th>
                 <th>Sociedad</th>
+                <th>Proveedor</th>
                 <th>Usuario</th>
                 <th class="text-center">Estado</th>
             </tr>
@@ -37,6 +38,7 @@
                 <td>{{ contexto_nota_ingreso_muestra.fecha_ingreso|date:'d/m/Y' }}</td>
                 <td>{{ contexto_nota_ingreso_muestra.nro_nota_ingreso_muestra|numeroXn:6 }}</td>
                 <td>{{ contexto_nota_ingreso_muestra.sociedad }}</td>
+                <td>{{ contexto_nota_ingreso_muestra.proveedor }}</td>
                 <td>{{ contexto_nota_ingreso_muestra.created_by }}</td>
                 <td class="text-center">
                     {{ contexto_nota_ingreso_muestra.get_estado_display }}
@@ -73,8 +75,6 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th>Cantidad</th>
-                <th>Cantidad Contada</th>
-                <th>Pendiente</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -85,8 +85,6 @@
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad_total|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.cantidad_contada|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_nota_ingreso_muestra.estado == 1 %}
                         <button data-form-url="{% url 'muestra_app:nota_ingreso_muestra_actualizar_material' material.id %}"

@@ -7,52 +7,60 @@
 {% block contenido %}
     <h3>Detalle Comprobante de Compra PI</h3>
     <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_lista' %}" class="btn btn-primary">Regresar</a>
-    {% if contexto_comprobante_compra_pi.estado == 0 %}
-        <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_actualizar' contexto_comprobante_compra_pi.slug %}"
-            data-table-url="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle_tabla' contexto_comprobante_compra_pi.slug %}"
-            class="update btn btn-primary">
-            Actualizar
-        </button>
+    {% if permiso_compras %}
+        {% if contexto_comprobante_compra_pi.estado == 0 %}
+            <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_actualizar' contexto_comprobante_compra_pi.slug %}"
+                data-table-url="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle_tabla' contexto_comprobante_compra_pi.slug %}"
+                class="update btn btn-primary">
+                Actualizar
+            </button>
+        
+            <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_guardar' contexto_comprobante_compra_pi.slug %}"
+                class="delete btn btn-primary">
+                Guardar
+            </button>
+        {% endif %}
+    {% endif %}
     
-        <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_guardar' contexto_comprobante_compra_pi.slug %}"
-            class="delete btn btn-primary">
-            Guardar
-        </button>
+    {% if permiso_logistica %}    
+        {% if contexto_comprobante_compra_pi.estado == 1 %}
+            <button data-form-url="{% url 'comprobante_compra_app:recepcion_comprobante_compra_pi' contexto_comprobante_compra_pi.slug %}"
+                class="delete btn btn-primary">
+                Recepción
+            </button>
+        {% endif %}
     {% endif %}
-    {% if contexto_comprobante_compra_pi.estado == 1 %}
-        <button data-form-url="{% url 'comprobante_compra_app:recepcion_comprobante_compra_pi' contexto_comprobante_compra_pi.slug %}"
-            class="delete btn btn-primary">
-            Recepción
-        </button>
-    {% endif %}
-    {% if contexto_comprobante_compra_pi.estado == 1 %}
-        <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_anular' contexto_comprobante_compra_pi.slug %}"
-            class="delete btn btn-danger">
-            Anular PI
-        </button>
-    {% endif %}
-    {% if contexto_comprobante_compra_pi.estado > 0 and contexto_comprobante_compra_pi.no_existe_CI %}
-        <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_registrar' contexto_comprobante_compra_pi.slug %}"
-            class="delete btn btn-primary">
-            Registrar CI
-        </button>
-    {% endif %}
-    {% if contexto_comprobante_compra_pi.estado == 2 and contexto_recepcion_compra %}
-        <a href="{% url 'recepcion_compra_app:recepcion_compra_detalle' contexto_recepcion_compra.id %}"
+
+    {% if permiso_compras %}
+        {% if contexto_comprobante_compra_pi.estado == 1 %}
+            <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_anular' contexto_comprobante_compra_pi.slug %}"
+                class="delete btn btn-danger">
+                Anular PI
+            </button>
+        {% endif %}
+        {% if contexto_comprobante_compra_pi.estado > 0 and contexto_comprobante_compra_pi.no_existe_CI %}
+            <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_ci_registrar' contexto_comprobante_compra_pi.slug %}"
+                class="delete btn btn-primary">
+                Registrar CI
+            </button>
+        {% endif %}
+        {% if contexto_comprobante_compra_pi.estado == 2 and contexto_recepcion_compra %}
+            <a href="{% url 'recepcion_compra_app:recepcion_compra_detalle' contexto_recepcion_compra.id %}"
+            class="btn btn-primary">
+                Ver Recepción de Compra
+            </a>
+        {% endif %}
+        {% if contexto_comprobante_compra_pi.ComprobanteCompraCI_comprobante_compra_PI %}
+        <a href="{% url 'comprobante_compra_app:comprobante_compra_ci_detalle' contexto_comprobante_compra_pi.slug %}"
         class="btn btn-primary">
-            Ver Recepción de Compra
+            Ver CI
+        </a>
+        {% endif %}
+        <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_traduccion' contexto_comprobante_compra_pi.slug %}"
+        class="btn btn-info">
+            Ver Traducción PI
         </a>
     {% endif %}
-    {% if contexto_comprobante_compra_pi.ComprobanteCompraCI_comprobante_compra_PI %}
-    <a href="{% url 'comprobante_compra_app:comprobante_compra_ci_detalle' contexto_comprobante_compra_pi.slug %}"
-    class="btn btn-primary">
-        Ver CI
-    </a>
-    {% endif %}
-    <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_traduccion' contexto_comprobante_compra_pi.slug %}"
-    class="btn btn-info">
-        Ver Traducción PI
-    </a>
     <br>
     <div id="tabla">
         {% include 'comprobante_compra/comprobante_compra_pi/detalle_tabla.html' %}

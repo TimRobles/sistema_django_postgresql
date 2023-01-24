@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from applications.importaciones import*
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Alignment
-from openpyxl.styles import*
+from openpyxl.styles import *
 from openpyxl.styles.borders import Border, Side
 from openpyxl.chart import Reference, Series,LineChart
 from openpyxl.chart.label import DataLabelList

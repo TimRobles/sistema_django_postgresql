@@ -37,7 +37,7 @@ class ComprobanteCompraPI(models.Model):
     condiciones = models.TextField('Condiciones', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE_PI, default=0)
     motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)
-    logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=Decimal('1.00'))
+    logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=Decimal('0.00'))
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraPI_created_by', editable=False)

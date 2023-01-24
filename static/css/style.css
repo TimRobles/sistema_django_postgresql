@@ -40,14 +40,6 @@
     border: solid black;
     border-radius: 0.5rem;
     font-size: 5rem;
-}
-
-.casillero-webinar{
-    padding: 0.5rem 1rem;
-    margin: 0 0.5rem;
-    border: solid black;
-    border-radius: 0.5rem;
-    font-size: 5rem;
     min-width: 1000px;
     text-align: center;
 }

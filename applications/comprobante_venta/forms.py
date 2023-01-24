@@ -145,3 +145,34 @@ class FacturaVentaDetalleForm(BSModalModelForm):
             pass
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+    
+class DescargarComprobantesForm(forms.Form):
+    inicio = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(
+                attrs ={
+                    'type':'datetime-local',
+                    },
+            ),
+        )
+    final = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(
+                attrs ={
+                    'type':'datetime-local',
+                    },
+            ),
+        )
+
+    class Meta:
+        fields = (
+            "inicio",
+            "final",
+            )
+        
+    def __init__(self, *args, **kwargs):
+        super(DescargarComprobantesForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+    

@@ -1,10 +1,10 @@
-from datetime import date
+from datetime import date, datetime
 import json
 import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
 from django.core.exceptions import ValidationError
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 import applications
 import math
 import random
@@ -430,3 +430,9 @@ def obtener_atributos(objeto):
                 pass
     return json.dumps(diccionario)
     
+
+def get_datetime(date_time):
+    fecha, hora = date_time.split('T')
+    fecha_split = fecha.split('-')
+    hora_split = hora.split(':')
+    return datetime(int(fecha_split[0]), int(fecha_split[1]), int(fecha_split[2]), int(hora_split[0]), int(hora_split[1]))

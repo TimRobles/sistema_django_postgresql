@@ -1,10 +1,12 @@
 from django.shortcuts import render
-from applications.funciones import registrar_excepcion
+from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
+from applications.funciones import numeroXn, registrar_excepcion
 from applications.importaciones import *
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.muestra.forms import NotaIngresoMuestraAgregarMaterialForm, NotaIngresoMuestraAnularForm, NotaIngresoMuestraForm, NotaIngresoMuestraGenerarNotaIngresoForm, NotaIngresoMuestraGuardarForm
 from applications.muestra.models import NotaIngresoMuestra, NotaIngresoMuestraDetalle
+from applications.nota_ingreso.models import NotaIngreso
 
 
 # Create your views here.
@@ -279,7 +281,7 @@ class NotaIngresoMuestraGuardarView(PermissionRequiredMixin, BSModalUpdateView):
         sid = transaction.savepoint()
         try:
             detalles = form.instance.NotaIngresoMuestraDetalle_nota_ingreso_muestra.all()
-            movimiento_final = TipoMovimiento.objects.get(codigo=998)
+            movimiento_final = TipoMovimiento.objects.get(codigo=144) #Recepción de Muestra
             
             for detalle in detalles:
                 movimiento_dos = MovimientosAlmacen.objects.create(
@@ -364,3 +366,47 @@ class NotaIngresoMuestraAnularView(PermissionRequiredMixin, BSModalUpdateView):
         context['titulo'] = "Ingreso de Muestra"
         return context
 
+
+class NotaIngresoMuestraGenerarNotaIngresoView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota_ingreso.add_notaingreso')
+    template_name = "includes/formulario generico.html"
+    form_class = NotaIngresoMuestraGenerarNotaIngresoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.kwargs['nota'].id})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                nota_stock_inicial = NotaIngresoMuestra.objects.get(id=self.kwargs['pk'])
+                numero_nota = len(NotaIngreso.objects.all()) + 1
+                nota = NotaIngreso.objects.create(
+                    nro_nota_ingreso = numeroXn(numero_nota, 6),
+                    content_type = ContentType.objects.get_for_model(nota_stock_inicial),
+                    id_registro = nota_stock_inicial.id,
+                    sociedad = nota_stock_inicial.sociedad,
+                    fecha_ingreso = form.cleaned_data['fecha_ingreso'],
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                self.kwargs['nota']=nota
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaIngresoMuestraGenerarNotaIngresoView, self).get_context_data(**kwargs)
+        context['accion'] = "Recibir"
+        context['titulo'] = "Nota de Ingreso"
+        return context

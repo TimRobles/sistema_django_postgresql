@@ -4,12 +4,19 @@ from . import views
 app_name='sorteo_app'
 
 urlpatterns = [
-    path('lista/', views.TicketListView.as_view(), name='lista'),
-    path('sorteo/', views.SorteoView.as_view(), name='sorteo'),
-    path('sortear/', views.Sortear, name='sortear'),
-    path('perdedor/', views.Perdedor, name='perdedor'),
-    path('ganador/', views.Ganador, name='ganador'),
-    path('datos/<str:ticket>', views.Datos, name='datos'),
-    path('ganador-formulario/', views.GanadorFormView.as_view(), name='ganador_formulario'),
-    path('reiniciar/', views.Reiniciar, name='reiniciar'),
+    path('sorteo/', views.SorteoListView.as_view(), name='sorteo_lista'),
+    path('sorteo/tabla', views.SorteoTabla, name='sorteo_lista_tabla'),
+    path('sorteo/agregar/', views.SorteoCreateView.as_view(), name='sorteo_agregar'),
+    path('sorteo/actualizar/<pk>/', views.SorteoUpdateView.as_view(), name='sorteo_actualizar'),
+    path('sorteo/ver/<slug>/', views.SorteoDetailView.as_view(), name='sorteo_ver'),
+    path('sorteo/ver/tabla/<slug>/', views.SorteoDetailTabla, name='sorteo_ver_tabla'),
+
+    path('ticket/agregar/<int:id_sorteo>/', views.TicketCreateView.as_view(), name='ticket_agregar'),
+    
+    path('sorteo/iniciar/<slug>/', views.SorteoIniciarView.as_view(), name='sorteo_iniciar'),
+    path('sortear/<slug>/', views.Sortear, name='sortear'),
+    path('datos/<slug>/', views.Datos, name='datos'),
+    path('excel/<slug>/', views.CargarExcelFormView.as_view(), name='sorteo_webinar_excel'),
+    path('reiniciar/<slug>/', views.Reiniciar, name='reiniciar'),
+    path('eliminar/<slug>/', views.Eliminar, name='eliminar'),
 ]

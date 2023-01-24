@@ -8,6 +8,7 @@
             <th>Observaciones</th>
             <th>Motivo de Anulación</th>
             <th>Sociedad</th>  
+            <th>Sociedad</th>  
             <th>Usuario</th>  
             <th>Estado</th>  
             <th class="text-center">Acciones</th>      
@@ -34,6 +35,7 @@
                 {% endif %}
             </td>
             <td>{{ nota_ingreso_muestra.sociedad }}</td>
+            <td>{{ nota_ingreso_muestra.proveedor }}</td>
             <td>{{ nota_ingreso_muestra.created_by }}</td>
             <td>{{ nota_ingreso_muestra.get_estado_display}}</td>
             <td class="text-nowrap text-center">

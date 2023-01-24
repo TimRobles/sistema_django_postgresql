@@ -16,3 +16,4 @@ django-cleanup
 reportlab
 openpyxl
 django-import-export
+python-slugify

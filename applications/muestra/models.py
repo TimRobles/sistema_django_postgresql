@@ -3,9 +3,12 @@ from django.db import models
 from django.conf import settings
 
 from django.contrib.contenttypes.models import ContentType
+from applications.almacenes.models import Almacen
+from applications.calidad.models import FallaMaterial
 from applications.funciones import numeroXn
 from applications.muestra.managers import NotaIngresoMuestraManager
 from applications.nota_ingreso.models import NotaIngresoDetalle
+from applications.proveedores.models import Proveedor
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADO_NOTA_INGRESO
 
@@ -14,6 +17,7 @@ from applications.variables import ESTADO_NOTA_INGRESO
 class NotaIngresoMuestra(models.Model):
     nro_nota_ingreso_muestra = models.IntegerField('Número de Nota de Ingreso de Muestra', help_text='Correlativo', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)
     observaciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
@@ -37,10 +41,6 @@ class NotaIngresoMuestra(models.Model):
     @property
     def documento(self):
         return self
-    
-    @property
-    def proveedor(self):
-        return ""
     
     @property
     def detalle(self):
@@ -81,20 +81,6 @@ class NotaIngresoMuestraDetalle(models.Model):
     @property
     def orden_compra_detalle(self):
         return self
-
-    @property #Cambiar por cantidad registrada por series temporales
-    def cantidad_contada(self):
-        nota_ingreso_muestra_detalle = NotaIngresoDetalle.objects.filter(
-            content_type=ContentType.objects.get_for_model(self),
-            id_registro=self.id,
-        )
-        if nota_ingreso_muestra_detalle:
-            return nota_ingreso_muestra_detalle.aggregate(models.Sum('cantidad_conteo'))['cantidad_conteo__sum']
-        return Decimal('0.00')
-
-    @property
-    def pendiente(self):
-        return self.cantidad - self.cantidad_contada
 
     @property
     def sociedad(self):

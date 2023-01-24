@@ -16,7 +16,7 @@ from django.db.models.signals import pre_save, post_save, post_delete
 # Create your models here.
 class NotaIngreso(models.Model):
     nro_nota_ingreso = models.IntegerField('Número de Nota de Ingreso', help_text='Correlativo', blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicial
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicial / NotaIngresoMuestra
     id_registro = models.IntegerField()
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)
@@ -49,7 +49,7 @@ class NotaIngreso(models.Model):
 
 class NotaIngresoDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraPIDetalle / NotaStockInicialDetalle
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraPIDetalle / NotaStockInicialDetalle / NotaIngresoMuestraDetalle
     id_registro = models.IntegerField()
     cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)

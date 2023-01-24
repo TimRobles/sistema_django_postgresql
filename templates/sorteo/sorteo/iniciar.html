@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    {{ sorteo.nombre_sorteo }}
+{% endblock titulo %}
+    
+
+{% block contenido %}
+<h1>{{ sorteo.nombre_sorteo }}</h1>
+<div class="row justify-content-center">
+    <div class="casillero col-auto">
+        <span id="nombre">GANADOR</span>
+    </div>
+</div>
+
+<span hidden id="url_datos">{{ url_datos }}</span>
+<span hidden id="url_sortear">{{ url_sortear }}</span>
+
+<div class="row justify-content-center mt-5">
+    <button id="sortear" class="btn btn-success col-lg-2 mx-2">Sorteo</button>
+    <a href="{% url 'sorteo_app:sorteo_ver' sorteo.slug %}" class="btn btn-primary col-lg-2 mx-2">Ver Lista</a>
+</div>
+
+{% endblock contenido %}
+
+{% block extrajs %}
+<script src="{% static 'js/sorteo/sorteo/iniciar.js' %}"></script>
+{% endblock extrajs %}
+    
+    

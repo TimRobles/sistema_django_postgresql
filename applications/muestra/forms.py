@@ -1,14 +1,17 @@
 from django import forms
-from applications.muestra.models import NotaIngresoMuestra
+from applications.almacenes.models import Almacen
+from applications.muestra.models import NotaIngresoMuestra, NotaIngresoMuestraDetalle
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 class NotaIngresoMuestraAgregarMaterialForm(BSModalForm):
     producto = forms.ChoiceField(choices=[('1', '1'), ('2', '2')])
     cantidad = forms.DecimalField(max_digits=8, decimal_places=2)
+    almacen = forms.ModelChoiceField(queryset=Almacen.objects.all())
     class Meta:
         fields=(
             'producto',
             'cantidad',
+            'almacen',
             )
         
     def __init__(self, *args, **kwargs):
@@ -23,6 +26,7 @@ class NotaIngresoMuestraAgregarMaterialForm(BSModalForm):
             valor = "%s|%s" % (nota_ingreso_muestra_detalle.content_type.id, nota_ingreso_muestra_detalle.id_registro)
             self.fields['producto'].initial = valor
             self.fields['cantidad'].initial = nota_ingreso_muestra_detalle.cantidad_total
+            self.fields['almacen'].initial = nota_ingreso_muestra_detalle.almacen
         except:
             pass
         for visible in self.visible_fields():

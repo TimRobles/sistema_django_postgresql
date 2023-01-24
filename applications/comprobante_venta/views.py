@@ -1,15 +1,17 @@
 from django.core.paginator import Paginator
 from decimal import Decimal
 import json
+from openpyxl import Workbook
+from openpyxl.styles import *
 from urllib import request
 from django.shortcuts import render
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import eliminarDeuda, generarDeuda
-from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaBuscarForm, BoletaVentaSerieForm, FacturaVentaAnularForm, FacturaVentaBuscarForm, FacturaVentaDetalleForm, FacturaVentaSerieForm
+from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaBuscarForm, BoletaVentaSerieForm, DescargarComprobantesForm, FacturaVentaAnularForm, FacturaVentaBuscarForm, FacturaVentaDetalleForm, FacturaVentaSerieForm
 from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, consultar_documento, factura_nubefact
 from applications.cotizacion.models import ConfirmacionVenta
 from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
-from applications.funciones import calculos_linea, consulta_ruc, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
+from applications.funciones import calculos_linea, consulta_ruc, get_datetime, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 from applications.importaciones import *
 
 from . models import(
@@ -1716,3 +1718,48 @@ class BoletaVentaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
         context['texto'] = '¿Seguro de eliminar la Boleta de Venta?'
         context['item'] = self.get_object()
         return context
+
+
+###################################################################################################
+
+class DescargarComprobantes(FormView):
+    template_name = 'comprobante_venta/descargar_comprobantes.html'
+    form_class = DescargarComprobantesForm
+    success_url = '.'
+
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            inicio = request.GET.get('inicio')
+            final = request.GET.get('final')
+            if inicio and final:
+                filtro_inicio = get_datetime(inicio)
+                filtro_final = get_datetime(final)
+
+                facturas = FacturaVenta.objects.filter(
+                    Q(created_at__gte=filtro_inicio) & Q(created_at__lte=filtro_final)
+                )
+                boletas = BoletaVenta.objects.filter(
+                    Q(created_at__gte=filtro_inicio) & Q(created_at__lte=filtro_final)
+                )
+
+                wb = Workbook()
+                hoja = wb.active
+                hoja.title = 'sheet'
+
+                fila = 1
+                for factura in facturas:
+                    hoja.cell(fila, 1).value = factura.descripcion
+                    hoja.cell(fila, 2).value = factura.cliente.__str__()
+                    fila += 1
+                for boleta in boletas:
+                    hoja.cell(fila, 1).value = boleta.descripcion
+                    hoja.cell(fila, 2).value = boleta.cliente.__str__()
+                    fila += 1
+                
+                nombre_archivo = "Comprobantes.xlsx"
+                respuesta = HttpResponse(content_type='application/ms-excel')
+                content = "attachment; filename ={0}".format(nombre_archivo)
+                respuesta['content-disposition']= content
+                wb.save(respuesta)
+                return respuesta
+        return super().get(request, *args, **kwargs)

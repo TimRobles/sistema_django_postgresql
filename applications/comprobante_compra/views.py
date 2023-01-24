@@ -38,6 +38,11 @@ class ComprobanteCompraPIDetailView(PermissionRequiredMixin, DetailView):
                                                     )
         except:
             context['contexto_recepcion_compra'] = None
+        if 'comprobante_compra.add_comprobantecomprapi' in self.request.user.get_all_permissions():
+            context['permiso_compras'] = True
+        if 'recepcion_compra.add_recepcioncompra' in self.request.user.get_all_permissions():
+            context['permiso_logistica'] = True
+
         return context
     
 
@@ -51,6 +56,9 @@ def ComprobanteCompraPIDetailTabla(request, slug):
         context['materiales'] = ComprobanteCompraPIDetalle.objects.ver_detalle(comprobante_compra)
         context['archivos'] = ArchivoComprobanteCompraPI.objects.filter(comprobante_compra=comprobante_compra)
         context['totales'] = obtener_totales(comprobante_compra)
+        if 'comprobante_compra.add_comprobantecomprapi' in request.user.get_all_permissions():
+            context['permiso_compras'] = True
+
 
         data['table'] = render_to_string(
             template,
@@ -92,7 +100,7 @@ class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView)
             error_numero_comprobante_compra = True
 
         error_logistico = False
-        if obj.logistico == Decimal('1.00'):
+        if obj.logistico == Decimal('0.00'):
             error_logistico = True
 
         if error_fecha:

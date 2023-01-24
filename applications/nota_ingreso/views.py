@@ -2,6 +2,7 @@ from applications.almacenes.models import Almacen
 from applications.importaciones import *
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.muestra.models import NotaIngresoMuestra
 from applications.nota_ingreso.forms import NotaIngresoAgregarMaterialForm, NotaIngresoFinalizarConteoForm, NotaIngresoAnularConteoForm, NotaStockInicialAgregarMaterialForm, NotaStockInicialAnularForm, NotaStockInicialForm, NotaStockInicialGenerarNotaIngresoForm, NotaStockInicialGuardarForm
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle, NotaStockInicial, NotaStockInicialDetalle
 from applications.recepcion_compra.models import RecepcionCompra
@@ -38,6 +39,22 @@ class NotaIngresoNotaStockInicialView(PermissionRequiredMixin, TemplateView):
             )
         context['recepcion'] = nota_stock_inicial
         context['regresar'] = reverse_lazy('nota_ingreso_app:nota_stock_inicial_detalle', kwargs={'pk':self.kwargs['nota_stock_inicial_id']})
+        return context
+
+
+class NotaIngresoNotaIngresoMuestraView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('nota_ingreso.view_notaingreso')
+    template_name = "nota_ingreso/nota_ingreso/inicio.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoNotaIngresoMuestraView, self).get_context_data(**kwargs)
+        nota_ingreso_muestra = NotaIngresoMuestra.objects.get(id=self.kwargs['nota_ingreso_muestra_id'])
+        context['contexto_nota_ingreso'] = NotaIngreso.objects.filter(
+            content_type=ContentType.objects.get_for_model(nota_ingreso_muestra),
+            id_registro=nota_ingreso_muestra.id,
+            )
+        context['recepcion'] = nota_ingreso_muestra
+        context['regresar'] = reverse_lazy('muestra_app:nota_ingreso_muestra_detalle', kwargs={'pk':self.kwargs['nota_ingreso_muestra_id']})
         return context
 
 
@@ -318,15 +335,25 @@ class NotaIngresoFinalizarConteoView(PermissionRequiredMixin, BSModalUpdateView)
         try:
             detalles = form.instance.NotaIngresoDetalle_nota_ingreso.all()
             if form.instance.content_type == ContentType.objects.get_for_model(RecepcionCompra):
-                movimiento_inicial = TipoMovimiento.objects.get(codigo=101)
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=101) #Recepción Compra
+            elif form.instance.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=144) #Recepción de Muestra
             else:
-                movimiento_inicial = TipoMovimiento.objects.get(codigo=999)
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=999) #Stock Inicial
 
             for detalle in detalles:
-                if detalle.comprobante_compra_detalle.producto.control_calidad or detalle.comprobante_compra_detalle.producto.control_serie:
-                    movimiento_final = TipoMovimiento.objects.get(codigo=104)
+                if form.instance.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                    #Recepción de Muestra
+                    if detalle.comprobante_compra_detalle.producto.control_calidad or detalle.comprobante_compra_detalle.producto.control_serie:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=147) #Ingreso por Muestra, c/QA
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=145) #Ingreso por Muestra, s/QA, s/Serie
                 else:
-                    movimiento_final = TipoMovimiento.objects.get(codigo=102)
+                    #Stock Inicial / Recepción Compra
+                    if detalle.comprobante_compra_detalle.producto.control_calidad or detalle.comprobante_compra_detalle.producto.control_serie:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=102) #Ingreso por Compra, s/QA, s/Serie
 
                 movimiento_anterior = MovimientosAlmacen.objects.get(
                     content_type_producto = detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,

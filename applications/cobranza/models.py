@@ -511,7 +511,7 @@ class DeudaProveedor(models.Model):
 
     class Meta:
         verbose_name = 'Deuda Proveedor'
-        verbose_name_plural = 'Deudas Proeveedor'
+        verbose_name_plural = 'Deudas Proveedor'
 
     @property
     def pago_proveedores(self):
