@@ -750,7 +750,7 @@ class NotaStockInicialGuardarView(PermissionRequiredMixin, BSModalUpdateView):
         sid = transaction.savepoint()
         try:
             detalles = form.instance.NotaStockInicialDetalle_nota_stock_inicial.all()
-            movimiento_final = TipoMovimiento.objects.get(codigo=999)
+            movimiento_final = TipoMovimiento.objects.get(codigo=999) #Stock Inicial
             
             for detalle in detalles:
 

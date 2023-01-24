@@ -330,9 +330,15 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
                     if detalle.inspeccion == 2:
                         movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
                     elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
-                        movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                        if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                            movimiento_final = TipoMovimiento.objects.get(codigo=148) #Inspección, muestra buena, sin registrar serie
+                        else:
+                            movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
                     else:
-                        movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
+                        if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                            movimiento_final = TipoMovimiento.objects.get(codigo=149) #Inspección, muestra buena, no requiere serie
+                        else:
+                            movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
 
                     movimiento_dos = MovimientosAlmacen.objects.get(
                         content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
@@ -356,7 +362,10 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
                     if detalle.inspeccion == 2:
                         movimiento_final = TipoMovimiento.objects.get(codigo=141) #Registro de Serie, material dañado
                     elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
-                        movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
+                        if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                            movimiento_final = TipoMovimiento.objects.get(codigo=150) #Registro de Serie de Muestra
+                        else:
+                            movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
 
                     movimiento_dos = MovimientosAlmacen.objects.get(
                         content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
@@ -431,8 +440,12 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                 if detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_calidad:
                     if detalle.inspeccion == 1:
                         if detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
-                            movimiento_inicial = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
-                            movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
+                            if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                                movimiento_inicial = TipoMovimiento.objects.get(codigo=148) #Inspección, muestra buena, sin registrar serie
+                                movimiento_final = TipoMovimiento.objects.get(codigo=150) #Registro de Serie de Muestra
+                            else:
+                                movimiento_inicial = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                                movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
                         else:
                             continue
                     else:
@@ -555,10 +568,10 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
             self.object = self.get_object()
 
             detalles = self.object.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
-            if ContentType.objects.get_for_model(self.object.nota_ingreso) == ContentType.objects.get_for_model(NotaIngreso):
-                movimiento_inicial = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
+            if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=147) #Ingreso por Muestra, c/QA
             else:
-                movimiento_inicial = TipoMovimiento.objects.get(codigo=999) #Stock inicial
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
             
             finalizar = True
             for detalle in detalles:
@@ -566,10 +579,16 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                     movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
                     finalizar &= False
                 elif detalle.nota_ingreso_detalle.comprobante_compra_detalle.producto.control_serie:
-                    movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
+                    if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                        movimiento_final = TipoMovimiento.objects.get(codigo=148) #Inspección, muestra buena, sin registrar serie
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
                     finalizar &= False
                 else:
-                    movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
+                    if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
+                        movimiento_final = TipoMovimiento.objects.get(codigo=149) #Inspección, muestra buena, no requiere serie
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
 
                 movimiento_anterior = MovimientosAlmacen.objects.get(
                     content_type_producto = detalle.nota_ingreso_detalle.comprobante_compra_detalle.orden_compra_detalle.content_type,
