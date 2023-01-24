@@ -64,6 +64,7 @@ class NotaIngresoMuestraForm(BSModalModelForm):
         model = NotaIngresoMuestra
         fields = (
             'sociedad',
+            'proveedor',
             'fecha_ingreso',
             )
         widgets = {
