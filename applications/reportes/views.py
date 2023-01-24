@@ -2915,7 +2915,7 @@ class ReporteDeudas(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         #####
-        titulo = "Reporte de Deudas - " + abreviatura + " - " + FECHA_HOY
+        titulo = "Reporte de Deudas - " + abreviatura + " - " + DICT_CLIENTE[global_cliente] + " - " + FECHA_HOY
         vertical = False
         alinear = 'right'
         logo = [[objeto_sociedad.logo.url, alinear]]
