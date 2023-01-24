@@ -1279,6 +1279,19 @@ class ReporteFacturasPendientes(TemplateView):
             for fila in info_cobranza_nota:
                 dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
 
+            # facturas por jarrones -- mejorar esto..
+            DICT_FACT_INVALIDAS = {}
+
+            list_fact_invalidas_mpl = [
+                'F001-000231',
+                'F001-000233',
+                'F001-000245',
+                'F001-000298',
+            ]
+            list_fact_invalidas_mca = ['','']
+            DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
+            DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
+
             sql = ''' (SELECT
                 MAX(cvf.id) AS id,
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
@@ -1324,7 +1337,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'CANCELADO'
                     ) ELSE (
                         'PENDIENTE'
-                    ) END) = 'PENDIENTE'
+                    ) END) = 'PENDIENTE' AND CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
                 UNION
                 (SELECT
@@ -1374,7 +1387,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'PENDIENTE'
                     ) END) = 'PENDIENTE'
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
-                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, tuple(DICT_FACT_INVALIDAS[global_sociedad]), DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
             query_info = FacturaVenta.objects.raw(sql)
 
             info_general = []
@@ -2651,7 +2664,7 @@ class ReporteDeudas(TemplateView):
             dict_letras[fila[0]+'|'+fila[1]+'|'+fila[2]] = fila[4]
 
         # facturas por jarrones -- mejorar esto..
-        dict_fact_invalidas = {}
+        DICT_FACT_INVALIDAS = {}
 
         list_fact_invalidas_mpl = [
             'F001-000231',
@@ -2660,8 +2673,8 @@ class ReporteDeudas(TemplateView):
             'F001-000298',
         ]
         list_fact_invalidas_mca = ['','']
-        dict_fact_invalidas['2'] = list_fact_invalidas_mpl
-        dict_fact_invalidas['1'] = list_fact_invalidas_mca
+        DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
+        DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
         sql = ''' (SELECT
             MAX(cn.id) AS id,
@@ -2768,7 +2781,7 @@ class ReporteDeudas(TemplateView):
                     'CANCELADO'
                 ) ELSE (
                     'PENDIENTE'
-                ) END) = 'PENDIENTE'
+                ) END) = 'PENDIENTE' AND CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s
             ORDER BY cliente_denominacion ASC, fecha_orden ASC)
             UNION
             (SELECT
@@ -2818,7 +2831,7 @@ class ReporteDeudas(TemplateView):
                     'PENDIENTE'
                 ) END) = 'PENDIENTE'
             ORDER BY cliente_denominacion ASC, fecha_orden ASC)
-            ORDER BY cliente_denominacion ASC, fecha_orden ASC ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente)
+            ORDER BY cliente_denominacion ASC, fecha_orden ASC ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente, tuple(DICT_FACT_INVALIDAS[global_sociedad]), DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente)
 
         query_info = FacturaVenta.objects.raw(sql)
 
