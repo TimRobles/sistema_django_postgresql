@@ -27,12 +27,14 @@
     </table>
 </div>
 <br>
+{% if permiso_compras %}
 <h4>Condiciones:</h4>
 <p>
     {% if contexto_comprobante_compra_pi.condiciones %}
     {{ contexto_comprobante_compra_pi.condiciones }}
     {% endif %}
 </p>
+{% endif %}
 <br>
 <h3>Materiales</h3>
 <div class="table-responsive">
@@ -44,6 +46,7 @@
                 <th>Unidad</th>
                 <th>Tipo IGV</th>
                 <th class="text-end">Cantidad</th>
+                {% if permiso_compras %}
                 <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
                 <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
                 <th class="text-nowrap">Prec. Final<br>con IGV</th>
@@ -51,6 +54,7 @@
                 <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -62,6 +66,7 @@
                     <td>{{ material.material.unidad_base }}</td>
                     <td>{{ material.get_tipo_igv_display }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    {% if permiso_compras %}
                     <td class="text-end text-nowrap">{{ material.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ material.precio_unitario_con_igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
@@ -69,9 +74,11 @@
                     <td class="text-end text-nowrap">{{ material.sub_total|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ material.igv|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ material.total|redondear|intcomma }}</td>
+                    {% endif %}
                 </tr>
             {% endfor %}    
         </tbody>
+        {% if permiso_compras %}
         <tfoot>
             {% if totales.descuento_global %}
             <tr>
@@ -150,9 +157,11 @@
             </tr>
             {% endif %}
         </tfoot>
+        {% endif %}
     </table>
 </div>
 <br>
+{% if permiso_compras %}
 <h3>
     Archivos
     <button data-form-url="{% url 'comprobante_compra_app:archivo_comprobante_compra_pi_crear' contexto_comprobante_compra_pi.slug %}"
@@ -187,3 +196,4 @@
         </tbody>
     </table>
 </div>
+{% endif %}
