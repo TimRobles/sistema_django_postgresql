@@ -88,3 +88,88 @@ class NotaIngresoMuestraDetalle(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
+
+
+class DevolucionMuestra(models.Model):
+    ESTADOS_PRESTAMO_MATERIALES = (
+        (1, 'EN PROCESO'),
+        (2, 'FINALIZADO SIN CONFIRMAR'),
+        (3, 'CONFIRMADO'),
+        (4, 'ANULADO'),
+        (5, 'CONCLUIDO'),
+    )
+    numero_prestamo = models.IntegerField('Número Prestamo', blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    interlocutor_cliente = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT,blank=True, null=True, related_name='DevolucionMuestra_interlocutor_cliente')
+    fecha_prestamo = models.DateField('Fecha Prestamo', auto_now=False, auto_now_add=False)
+    comentario = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS_PRESTAMO_MATERIALES, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionMuestra_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionMuestra_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Solicitud Prestamo Materiales'
+        verbose_name_plural = 'Solicitudes Prestamo Materiales'
+        ordering = ['numero_prestamo',]
+
+    @property
+    def cotizacion_venta(self):
+        return self
+
+    @property
+    def fecha(self):
+        return self.fecha_prestamo
+
+    def __str__(self):
+        return "%s - %s" % (numeroXn(self.numero_prestamo, 6), self.cliente)
+
+class DevolucionMuestraDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #Material
+    id_registro = models.IntegerField(blank=True, null=True)
+    cantidad_prestamo = models.DecimalField('Cantidad Prestamo', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    observacion = models.TextField(blank=True, null=True)
+    solicitud_prestamo_materiales = models.ForeignKey(DevolucionMuestra, blank=True, null=True, on_delete=models.CASCADE, related_name='DevolucionMuestraDetalle_solicitud_prestamo_materiales')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionMuestraDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionMuestraDetalle_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Solicitud Prestamo Materiales Detalle'
+        verbose_name_plural = 'Solicitudes Prestamo Materiales Detalle'
+        ordering = ['item',]
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def cantidad_salida(self):
+        total = Decimal('0.00')
+        try:
+            for detalle in self.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3):
+                if detalle.producto == self.producto:
+                    total += detalle.cantidad_salida
+        except:
+            pass
+        return total
+
+    @property
+    def pendiente(self):
+        return self.cantidad_prestamo - self.cantidad_salida
+
+    @property
+    def unidad(self):
+        return self.producto.unidad_base
+
+    def __str__(self):
+        return "%s - %s" % (self.item, self.producto)
