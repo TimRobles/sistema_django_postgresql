@@ -249,18 +249,20 @@ def actualizarTipoCambioSunat():
         if created or not obj.tipo_cambio_venta:
             respuesta = consulta_sunat_tipo_cambio(fecha)
             print(respuesta)
-            print(respuesta['venta'])
-            print(respuesta['compra'])
-            venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
-            compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))
-            print(venta, type(venta))
-            print(compra, type(compra))
-            sleep(2)
-            obj.tipo_cambio_venta = venta
-            obj.tipo_cambio_compra = compra
-            obj.created_by_id = 1
-            obj.updated_by_id = 1
-            obj.save()
-    
+            try:
+                print(respuesta['venta'])
+                print(respuesta['compra'])
+                venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
+                compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))
+                print(venta, type(venta))
+                print(compra, type(compra))
+                sleep(2)
+                obj.tipo_cambio_venta = venta
+                obj.tipo_cambio_compra = compra
+                obj.created_by_id = 1
+                obj.updated_by_id = 1
+                obj.save()
+            except Exception as e:
+                print(e)
 
 # from applications.datos_globales.funciones import actualizarTipoCambioSunat
