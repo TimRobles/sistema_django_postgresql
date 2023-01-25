@@ -3696,9 +3696,8 @@ class ReporteRotacion(TemplateView):
             hoja.freeze_panes = 'A2'
             ajustarColumnasSheet(hoja)
             return wb
-
-        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
-        abreviatura = query_sociedad.abreviatura
+            
+        abreviatura = "MPL-MCA"
         wb=reporte_rotacion()
         nombre_archivo = "Reporte Rotacion - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
