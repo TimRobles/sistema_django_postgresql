@@ -239,26 +239,21 @@ def consultarGuia(tipo_de_comprobante, serie, numero):
         return None
 
 
-def actualizarTipoCambioSunat():
-    for tipo_cambio in TipoCambio.objects.all():
-        fecha = tipo_cambio.fecha
-        print(tipo_cambio, fecha)
-        obj, created = TipoCambioSunat.objects.get_or_create(
-            fecha = fecha,
-        )
-        if created or not obj.tipo_cambio_venta:
-            respuesta = consulta_sunat_tipo_cambio(fecha)
-            print(respuesta)
-            sleep(2)
-            try:
-                venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
-                compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))
-                obj.tipo_cambio_venta = venta
-                obj.tipo_cambio_compra = compra
-                obj.created_by_id = 1
-                obj.updated_by_id = 1
-                obj.save()
-            except Exception as e:
-                print(e)
-
-# from applications.datos_globales.funciones import actualizarTipoCambioSunat
+def actualizarTipoCambioSunat(fecha: date, request):
+    obj, created = TipoCambioSunat.objects.get_or_create(
+        fecha = fecha,
+    )
+    if created or not obj.tipo_cambio_venta:
+        respuesta = consulta_sunat_tipo_cambio(fecha)
+        print(respuesta)
+        sleep(2)
+        try:
+            venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
+            compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))
+            obj.tipo_cambio_venta = venta
+            obj.tipo_cambio_compra = compra
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
+        except Exception as e:
+            print(e)

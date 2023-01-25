@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
+from applications.datos_globales.funciones import actualizarTipoCambioSunat
 from applications.importaciones import *
 from django import forms
 from applications.datos_globales.models import (
@@ -155,6 +156,7 @@ class TipoCambioCreateView(PermissionRequiredMixin, BSModalCreateView):
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
+        actualizarTipoCambioSunat(form.instance.fecha, self.request)
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -174,6 +176,7 @@ class TipoCambioUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
+        actualizarTipoCambioSunat(form.instance.fecha, self.request)
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
