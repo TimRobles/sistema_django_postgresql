@@ -24,13 +24,13 @@ def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
 
         data.append(fila)  
 
-    t=Table(data, style=[('GRID',(0,0),(-1,-2),0.5,colors.black),
+    t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-2),0.5,colors.black),
                         ('GRID',(-8,-2),(-7,-1),0.5,colors.black),
                         ('BOX',(0,0),(-1,-2),1,colors.black),
                         ('BOX',(0,0),(-1,0),1,colors.black),
                         ('BOX',(-8,-1),(-7,-1),1,colors.black), #Inicio(x,y), Fin(x+1,y+1),grosor,color
+                        ('BACKGROUND',(-7, 0),(-7,-1),colors.HexColor("#CDCDCD")),
                         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),
-                        # ('BACKGROUND',(-4,-1),(-7,-6),colors.HexColor("#CDCDCD")),
                         ('VALIGN',(0,0),(-1,-1),'TOP'),
                         ('ALIGN',(0,0),(-1,-1),'CENTER')])
     t._argW[0]=cmToPx(1.8)
@@ -137,7 +137,7 @@ def dataCobranza(TablaEncabezado, TablaDatos, fuenteBase, color):
 
         data.append(fila)  
 
-    t=Table(data, style=[('GRID',(0,0),(-1,-1),0.5,colors.black),
+    t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-1),0.5,colors.black),
                         ('BOX',(0,0),(-1,-1),1,colors.black),
                         ('BOX',(0,0),(-1,0),1,colors.black),
                         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),

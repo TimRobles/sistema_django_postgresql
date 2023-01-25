@@ -45,7 +45,7 @@
     <a href="{% url 'reportes_app:reporte_facturas_pendientes' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Facturas Pendientes</span></a>
 </h3>
 <h3>
-    <a href="{% url 'reportes_app:reporte_depositos_cuentas_bancarias' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Deposito Cuentas Bancarias</span></a>
+    <a href="{% url 'reportes_app:reporte_depositos_cuentas_bancarias' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Depósito Cuentas Bancarias</span></a>
 </h3>
 <h3>
     <a href="{% url 'reportes_app:reporte_clientes_productos' %}?{{ contexto_filtros }}"><span class="badge bg-primary">Clientes vs Productos</span></a>
@@ -55,6 +55,9 @@
 </h3>
 <h3>
     <a href="{% url 'reportes_app:reporte_cobranza' %}?{{ contexto_filtros }}" target="_blank"><span class="badge bg-primary">Cobranza</span></a>
+</h3>
+<h3>
+    <a href="{% url 'reportes_app:reporte_rotacion' %}?{{ contexto_filtros }}" target="_blank"><span class="badge bg-primary">Rotación</span></a>
 </h3>
 {% endblock contenido %}
     

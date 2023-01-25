@@ -14,6 +14,7 @@ from applications.datos_globales.models import CuentaBancariaSociedad
 from applications.sociedad.models import Sociedad
 from applications.cobranza.models import Nota, Pago
 from applications.nota.models import NotaCredito
+from applications.material.models import Material
 from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
 
@@ -23,6 +24,8 @@ from applications.reportes.funciones import*
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.pdf import*
 from applications.reportes.pdf import generarReporteCobranza, generarReporteDeudas
+from applications.movimiento_almacen.models import MovimientosAlmacen
+from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
 
 
 class ReportesView(FormView):
@@ -849,7 +852,8 @@ class ReporteVentasFacturadas(TemplateView):
                             fila[10] = ''
                     if float(dias) > float(0) and fila[7]=='PENDIENTE':
                         fila[7] = 'VENCIDO'
-                    fila[13] = dict_pagos[fila[0]+'|'+fila[1]+'|'+fila[2]]
+                    if fila[0]+'|'+fila[1]+'|'+fila[2] in dict_pagos:
+                        fila[13] = dict_pagos[fila[0]+'|'+fila[1]+'|'+fila[2]]
                     if fila[2] + '|' + fila[1] in dict_cobranza_nota:
                         fila[5] += float(dict_cobranza_nota[fila[2] + '|' + fila[1]])
                         fila[6] = fila[4] - fila[5]
@@ -979,6 +983,19 @@ class ReporteVentasFacturadas(TemplateView):
                 list_temp.append(fila)
                 count += 1
             list_general.append(list_temp)
+
+            # MES/AÑO MONTO FACTURADO CERO
+            i = 0
+            for list_resumen_anual in list_general:
+                if i != 0:
+                    now_year = list_resumen_anual[-1][0].split(' - ')[1]
+                    past_year = list_general[i-1][-1][0].split(' - ')[1]
+                    diff_years = int(now_year) - int(past_year)
+                    while diff_years > 1:
+                        name_year_faltante = 'ENERO - ' + str(int(past_year) + diff_years - 1)
+                        list_general.insert(i, [[name_year_faltante, 0.0]])
+                        diff_years -= 1
+                i += 1
 
             list_resumen_anuales = []
             for list_anual in list_general:
@@ -3300,3 +3317,391 @@ class ReporteCobranza(TemplateView):
         # while True:
         #     schedule.run_pending()
         #     time.sleep(1)
+
+class ReporteRotacion(TemplateView):
+    def get(self,request, *args,**kwargs):
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
+
+        def consulta_rotacion():
+            sql_descrip = ''' SELECT
+                mm.id AS id,
+                mm.id AS id_producto,
+                mm.id AS cod_mat,
+                mf.nombre AS familia_material,
+                mm.descripcion_corta,
+                mm.descripcion_venta
+                FROM material_material mm
+                LEFT JOIN material_subfamilia msf
+                    ON mm.subfamilia_id=msf.id
+                LEFT JOIN material_familia mf
+                    ON mf.id=msf.familia_id
+                ORDER BY mf.nombre, mm.descripcion_corta, mm.descripcion_venta ; '''
+            query_info = Material.objects.raw(sql_descrip)
+            
+            info_descrip = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.id_producto)
+                lista_datos.append(dato_fila.cod_mat)
+                lista_datos.append(dato_fila.familia_material)
+                lista_datos.append(dato_fila.descripcion_corta)
+                lista_datos.append(dato_fila.descripcion_venta)
+                info_descrip.append(lista_datos)
+
+            dict_descrip = {}
+            for fila in info_descrip:
+                list_temp = []
+                list_temp.extend([fila[1], fila[2], fila[3], fila[4]])
+                dict_descrip[fila[0]] = list_temp
+
+
+            sql_stock = ''' SELECT
+                MAX(mam.id) AS id,
+                mm.id AS id_producto,
+                mm.descripcion_corta,
+                SUM(ROUND(cantidad, 3) * signo_factor_multiplicador) AS stock
+                FROM movimiento_almacen_movimientosalmacen mam
+                LEFT JOIN material_material mm
+                    ON mm.id=mam.id_registro_producto
+                WHERE content_type_producto_id='%s' AND tipo_movimiento_id!='26'
+                GROUP BY mm.id
+                ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'])
+            query_info = MovimientosAlmacen.objects.raw(sql_stock)
+            
+            info_stock = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.id_producto)
+                lista_datos.append(dato_fila.descripcion_corta)
+                lista_datos.append(dato_fila.stock)
+                info_stock.append(lista_datos)
+
+            dict_stock = {}
+            for fila in info_stock:
+                dict_stock[fila[0]] = fila[2]
+
+            sql_pedidos = ''' SELECT
+                MAX(ccpid.id) AS id,
+                MAX(mm.id) AS id_producto,
+                MAX(mm.descripcion_corta) AS nombre_producto,
+                ROUND(MAX(ccpid.precio_final_con_igv),2) AS precio_pedido,
+                to_char(MAX(ccpi.fecha_comprobante), 'DD/MM/YYYY') AS fecha_pedido,
+                MAX(ccpi.fecha_comprobante) AS fecha_orden
+                FROM comprobante_compra_comprobantecomprapidetalle ccpid
+                LEFT JOIN orden_compra_ordencompradetalle ocod
+                    ON ocod.id=ccpid.orden_compra_detalle_id
+                LEFT JOIN comprobante_compra_comprobantecomprapi ccpi
+                    ON ccpi.id=ccpid.comprobante_compra_id
+                LEFT JOIN material_material mm
+                    ON mm.id=ocod.id_registro AND ocod.content_type_id='%s'
+                GROUP BY mm.id
+                ORDER BY fecha_orden DESC ; ''' %(DICT_CONTENT_TYPE['material | material'])
+            query_info = ComprobanteCompraPIDetalle.objects.raw(sql_pedidos)
+            
+            info_pedidos = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.id_producto)
+                lista_datos.append(dato_fila.nombre_producto)
+                lista_datos.append(dato_fila.precio_pedido)
+                lista_datos.append(dato_fila.fecha_pedido)
+                lista_datos.append(dato_fila.fecha_orden)
+                info_pedidos.append(lista_datos)
+
+            dict_precios, dict_fecha_pedido = {}, {}
+            list_mat_pedidos = []
+            for fila in info_pedidos:
+                dict_precios[fila[0]] = fila[2]
+                if fila[3]:
+                    dict_fecha_pedido[fila[0]] = fila[3]
+                if fila[0] not in list_mat_pedidos:
+                    list_mat_pedidos.append(fila[0])
+
+            # select date_sub('2018-01-01', interval -1 day);
+            sql_rotacion_6ultimos = ''' SELECT
+                MAX(cvfd.id) AS id,
+                MAX(mm.id) AS id_producto,
+                CONCAT(CAST(ROUND(SUM(cvfd.cantidad),2) AS TEXT), ' / ', CAST(ROUND(SUM(cvfd.cantidad)/6,2) AS TEXT)) AS venta_6_meses,
+                MAX(mf.nombre) as familia_nombre,
+                MAX(mm.descripcion_corta) AS nombre_material
+                FROM comprobante_venta_facturaventadetalle cvfd
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cvf.id=cvfd.factura_venta_id
+                LEFT JOIN material_material mm
+                    ON cvfd.id_registro=mm.id AND content_type_id='%s'
+                LEFT JOIN material_subfamilia msf
+                    ON mm.subfamilia_id=msf.id
+                LEFT JOIN material_familia mf
+                    ON mf.id=msf.familia_id
+                WHERE cvfd.created_at >= CURRENT_DATE - INTERVAL '6 months' AND cvf.estado = '4'
+                GROUP BY mm.id
+                ORDER BY familia_nombre;''' %(DICT_CONTENT_TYPE['material | material'])
+            query_info = FacturaVentaDetalle.objects.raw(sql_rotacion_6ultimos)
+            
+            info_rotacion_6ultimos = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.id_producto)
+                lista_datos.append(dato_fila.venta_6_meses)
+                lista_datos.append(dato_fila.familia_nombre)
+                lista_datos.append(dato_fila.nombre_material)
+                info_rotacion_6ultimos.append(lista_datos)
+
+            dict_6ultimos = {}
+            for fila in info_rotacion_6ultimos:
+                dict_6ultimos[fila[0]] = fila[1]
+
+            sql_rotacion = ''' SELECT
+                MAX(cvfd.id) AS id,
+                mm.id AS id_producto,
+                mm.id AS cod_mat,
+                MAX(mf.nombre) AS familia_nombre,
+                MAX(mm.descripcion_corta) AS nombre_material_breve,
+                MAX(mm.descripcion_venta) AS nombre_material_venta,
+                '' AS precio,
+                '' AS stock,
+                ROUND(SUM(cvfd.cantidad),3) AS venta_total,
+                ROUND(SUM(cvfd.cantidad) / CAST(
+                        CASE WHEN
+                            EXTRACT(year FROM AGE(CURRENT_DATE, MIN(cvfd.created_at)))*12 + EXTRACT(month FROM AGE(CURRENT_DATE, MIN(cvfd.created_at))) != 0
+                        THEN
+                            EXTRACT(year FROM AGE(CURRENT_DATE, MIN(cvfd.created_at)))*12 + EXTRACT(month FROM AGE(CURRENT_DATE, MIN(cvfd.created_at)))
+                        ELSE
+                            SUM(cvfd.cantidad)
+                        END
+                    AS NUMERIC) ,3) AS venta_mensual,
+                '' AS venta_6_meses,
+                '' AS venta_ultimo_ingreso,
+                '' AS tiempo_duracion,
+                '' AS pedido,
+                '' AS sugerencia
+                FROM comprobante_venta_facturaventadetalle cvfd
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cvf.id=cvfd.factura_venta_id
+                LEFT JOIN material_material mm
+                    ON cvfd.id_registro=mm.id AND content_type_id='%s'
+                LEFT JOIN material_subfamilia msf
+                    ON mm.subfamilia_id=msf.id
+                LEFT JOIN material_familia mf
+                    ON mf.id=msf.familia_id
+                WHERE cvf.estado = '4'
+                GROUP BY mm.id
+                ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ; ''' %(DICT_CONTENT_TYPE['material | material'])
+            query_info = FacturaVentaDetalle.objects.raw(sql_rotacion)
+            
+            info_rotacion = []
+            for dato_fila in query_info:
+                lista_datos = []
+                lista_datos.append(dato_fila.id_producto)
+                lista_datos.append(dato_fila.cod_mat)
+                lista_datos.append(dato_fila.familia_nombre)
+                lista_datos.append(dato_fila.nombre_material_breve)
+                lista_datos.append(dato_fila.nombre_material_venta)
+                lista_datos.append(dato_fila.precio)
+                lista_datos.append(dato_fila.stock)
+                lista_datos.append(dato_fila.venta_total)
+                lista_datos.append(dato_fila.venta_mensual)
+                lista_datos.append(dato_fila.venta_6_meses)
+                lista_datos.append(dato_fila.venta_ultimo_ingreso)
+                lista_datos.append(dato_fila.tiempo_duracion)
+                lista_datos.append(dato_fila.pedido)
+                lista_datos.append(dato_fila.sugerencia)
+                info_rotacion.append(lista_datos)
+
+            list_general = []
+            for fila in info_rotacion:
+                if fila[0]!='163': # servicio de activacion
+                    list_temp = []
+                    if fila[0] not in dict_fecha_pedido:
+                        list_temp.extend(['2000-01-01', fila[0]])
+                    else:
+                        list_temp.extend([dict_fecha_pedido[fila[0]], fila[0]])
+                    list_general.append(list_temp)
+
+            def funcion_temporal(list_temp):
+                fecha_pedido = list_temp[0]
+                id_producto = list_temp[1]
+                sql = ''' SELECT
+                    MAX(cvfd.id) AS id,
+                    mm.id AS id_producto,
+                    mm.id AS cod_mat,
+                    MAX(mf.nombre) AS familia_nombre,
+                    MAX(mm.descripcion_corta) AS nombre_material_breve,
+                    MAX(mm.descripcion_venta) AS nombre_material_venta,
+                    CONCAT(CAST(ROUND(SUM(cvfd.cantidad),3) AS TEXT), ' / ',
+                        CAST(ROUND(SUM(cvfd.cantidad) / CAST(
+                                CASE WHEN
+                                    EXTRACT(year FROM AGE(CURRENT_DATE, CAST('%s' AS DATE)))*12 + EXTRACT(month FROM AGE(CURRENT_DATE, CAST('%s' AS DATE))) != 0
+                                THEN
+                                    EXTRACT(year FROM AGE(CURRENT_DATE, CAST('%s' AS DATE)))*12 + EXTRACT(month FROM AGE(CURRENT_DATE, CAST('%s' AS DATE)))
+                                ELSE
+                                    SUM(cvfd.cantidad)
+                                END
+                            AS NUMERIC) ,2) AS TEXT) ) AS venta_desde_ultimo_pedido
+                    FROM comprobante_venta_facturaventadetalle cvfd
+                    LEFT JOIN comprobante_venta_facturaventa cvf
+                        ON cvf.id=cvfd.factura_venta_id
+                    LEFT JOIN material_material mm
+                        ON cvfd.id_registro=mm.id AND content_type_id='%s'
+                    LEFT JOIN material_subfamilia msf
+                        ON mm.subfamilia_id=msf.id
+                    LEFT JOIN material_familia mf
+                        ON mf.id=msf.familia_id
+                    WHERE mm.id='%s' AND cvfd.created_at>=CAST('%s' AS DATE) AND cvf.estado = '4'
+                    GROUP BY mm.id
+                    ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ''' %(fecha_pedido, fecha_pedido, fecha_pedido, fecha_pedido, DICT_CONTENT_TYPE['material | material'], id_producto, fecha_pedido)
+                return '(' + sql + ')\n'
+                # CONCAT(SUM(df.Cantidad), ' / ', ROUND(SUM(df.Cantidad)/(TIMESTAMPDIFF(DAY, '%s', CURDATE())/30),2))
+
+            sql_general = ''
+            for lista in list_general:
+                if list_general.index(lista) == 0:
+                    sql_general = funcion_temporal(lista)
+                else:
+                    sql_general += 'UNION\n' + funcion_temporal(lista)
+            if sql_general != '':
+                sql_general += 'ORDER BY 3,4,5 ASC'
+
+                query_info = FacturaVentaDetalle.objects.raw(sql_general)
+            
+                info = []
+                for dato_fila in query_info:
+                    lista_datos = []
+                    lista_datos.append(dato_fila.id_producto)
+                    lista_datos.append(dato_fila.cod_mat)
+                    lista_datos.append(dato_fila.familia_nombre)
+                    lista_datos.append(dato_fila.nombre_material_breve)
+                    lista_datos.append(dato_fila.nombre_material_venta)
+                    lista_datos.append(dato_fila.venta_desde_ultimo_pedido)
+                    info.append(lista_datos)
+
+                print(info)
+                dict_venta_ultimo_ingreso = {}
+                for fila in info:
+                    dict_venta_ultimo_ingreso[fila[0]] = fila[5]
+
+
+            print(100*'-')
+            list_temp = []
+            list_mat_vendidos = []
+            for fila in info_rotacion:
+                if fila[0] != '163': # Servicio de Activación
+                    try:
+                        fila[5] = float(dict_precios[fila[0]])
+                    except:
+                        pass
+                else:
+                    fila[5] = float('0.00')
+                if fila[0] in dict_stock: # Servicio de Activación
+                    try:
+                        fila[6] = dict_stock[fila[0]]
+                    except:
+                        pass
+                else:
+                    fila[6] = '0.00'
+                if fila[0] in dict_6ultimos:
+                    fila[9] = dict_6ultimos[fila[0]]
+                else:
+                    fila[9] = '0.00 / 0.00'
+                if fila[0] in dict_venta_ultimo_ingreso:
+                    fila[10] = dict_venta_ultimo_ingreso[fila[0]]
+                else:
+                    list_temp.append(fila[0])
+                    fila[10] = '0.00 / 0.00'
+                promedio_1 = fila[9][fila[9].find(' / ')+3:]
+                try:
+                    promedio_2 = fila[10][fila[10].find(' / ')+3:]
+                except:
+                    promedio_2 = '0.000'
+                if float(promedio_2) >= float(promedio_1):
+                    try:
+                        cant_meses = float(fila[6]) / float(promedio_2)
+                    except ZeroDivisionError:
+                        cant_meses = 0
+                    fila[12] = formatearDecimal(str(round(float(promedio_2)*5,0)),'2')
+                else:
+                    try:
+                        cant_meses = float(fila[6]) / float(promedio_1)
+                    except ZeroDivisionError:
+                        cant_meses = 0
+                    fila[12] = formatearDecimal(str(round(float(promedio_1)*5,0)),'2')
+                fila[11] = formatearDecimal(str(cant_meses),'2') + ' mes(es)'
+                if cant_meses >= 5:
+                    fila[13] = 'NO TRAER'
+                else:
+                    fila[13] = 'EVALUAR'
+                if fila[0] not in list_mat_vendidos:
+                    list_mat_vendidos.append(fila[0])
+                # print(fila)
+
+            print('NO SE TIENE VENTAS DESDE SU ÚLTIMO INGRESO DE LOS PRODUCTOS:',list_temp)
+
+
+            list_productos_no_vendidos = []
+            for mat in list_mat_pedidos:
+                if mat not in list_mat_vendidos and mat != None:
+                    print('PRODUCTO NO VENDIDO DESDE SU LLEGADA:',mat)
+                    list_temp = []
+                    stock_actual = '0.00' if mat not in dict_stock else dict_stock[mat]
+                    list_temp.extend([mat, dict_descrip[mat][0], dict_descrip[mat][1], dict_descrip[mat][2], dict_descrip[mat][3], float(dict_precios[mat]), stock_actual, '0.00', '0.00', '0.00 / 0.00', '0.00 / 0.00', ' - ', '0.00', 'NO SE VENDIÓ'])
+                    list_productos_no_vendidos.append(list_temp)
+
+            info = info_rotacion + list_productos_no_vendidos
+            info_ordenado = sorted(info, key=lambda x: x[2])
+            return info_ordenado
+
+        def reporte_rotacion():
+            wb = Workbook()
+            hoja = wb.active
+            hoja.append(('ID MAT.', 'COD. MATERIAL', 'FAMILIA', 'NOMBRE', 'DESCRIPCIÓN', 'PRECIO', 'STOCK', 'VENTA TOTAL', 'VENTAS MENSUALES DEL TOTAL', 'VENTA DESDE ÚLTIMOS 6 MESES (total/promedio)', 'VENTA DESDE ULTIMO INGRESO (total/promedio)', 'TIEMPO DURACION (APROX.)', 'PEDIDO PARA 5 MESES', 'SUGERENCIA'))
+            
+            color_relleno = rellenoSociedad(global_sociedad)
+
+            col_range = hoja.max_column  # get max columns in the worksheet
+            # cabecera de la tabla
+            for col in range(1, col_range + 1):
+                cell_header = hoja.cell(1, col)
+                cell_header.fill = color_relleno
+                cell_header.font = NEGRITA
+
+            info = consulta_rotacion()
+            for producto in info:
+                hoja.append(producto) # Crea la fila del encabezado con los títulos
+
+            # A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13
+            for row in hoja.rows:
+                for col in range(hoja.max_column):
+                    row[col].border = BORDE_DELGADO
+                    # if 8 <= col <=11:
+                    if col == 5:
+                        row[col].alignment = ALINEACION_DERECHA
+                        row[col].number_format = FORMATO_DOLAR
+                    elif 6 <= col <= 8 or col == 11 or col == 12:
+                        row[col].alignment = ALINEACION_DERECHA
+                    elif 9 <= col <= 10:
+                        row[col].alignment = ALINEACION_CENTRO
+                    elif col == 13:
+                        if row[col].value == 'EVALUAR':
+                            row[col].font =  COLOR_AZUL
+                        if row[col].value == 'NO SE VENDIÓ':
+                            row[col].font =  COLOR_ROJO
+                    #     row[col].number_format = self.formato_soles
+                    # elif col == 15:
+                    #     if row[col].value != 'LINK':
+                    #         row[col].hyperlink =  row[col].value
+                    #         row[col].font =  COLOR_AZUL
+            hoja.freeze_panes = 'A2'
+            ajustarColumnasSheet(hoja)
+            return wb
+            
+        abreviatura = "MPL-MCA"
+        wb=reporte_rotacion()
+        nombre_archivo = "Reporte Rotacion - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename ={0}".format(nombre_archivo)
+        respuesta['content-disposition']= content
+        wb.save(respuesta)
+        return respuesta

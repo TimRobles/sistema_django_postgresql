@@ -114,3 +114,13 @@ def formatoFechaTexto(fecha):
     año = fecha.year
     fecha_texto = "{} de {} del {}".format(dia, mes, año)
     return fecha_texto
+
+def formatearDecimal(str, nro):
+    try:
+        decimal = float(str)
+        decimalRound = round(decimal,int(nro))
+        cantDecimales = "{:,." + nro + "f}"
+        decimalStr = cantDecimales.format(decimalRound)
+        return decimalStr
+    except:
+        ""
