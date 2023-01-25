@@ -543,8 +543,8 @@ class TipoCambio(models.Model):
 
 class TipoCambioSunat(models.Model):
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
-    tipo_cambio_venta = models.DecimalField('Tipo de Cambio Venta', max_digits=4, decimal_places=3)
-    tipo_cambio_compra = models.DecimalField('Tipo de Cambio Compra', max_digits=4, decimal_places=3)
+    tipo_cambio_venta = models.DecimalField('Tipo de Cambio Venta', max_digits=4, decimal_places=3, blank=True, null=True)
+    tipo_cambio_compra = models.DecimalField('Tipo de Cambio Compra', max_digits=4, decimal_places=3, blank=True, null=True)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoCambioSunat_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)

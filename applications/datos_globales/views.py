@@ -8,6 +8,7 @@ from applications.datos_globales.models import (
     Distrito, 
     Departamento, 
     TipoCambio,
+    TipoCambioSunat,
     )
 from applications.datos_globales.forms import TipoCambioForm
 
@@ -75,6 +76,24 @@ def DistritoJsonView(request):
                 'nombre' : dato.__str__(),
                 })
         return JsonResponse(data, safe=False)
+
+class TipoCambioSunatView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('datos_globales.view_tipocambio')
+    template_name = "datos_globales/tipo_cambio_sunat/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(TipoCambioSunatView, self).get_context_data(**kwargs)
+        tipo_cambio = TipoCambioSunat.objects.all()
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(tipo_cambio) > objectsxpage:
+            paginator = Paginator(tipo_cambio, objectsxpage)
+            page_number = self.request.GET.get('page')
+            tipo_cambio = paginator.get_page(page_number)
+
+        context['contexto_tipo_cambio'] = tipo_cambio
+        context['contexto_pagina'] = tipo_cambio
+        return context
 
 class TipoCambioListView(PermissionRequiredMixin, TemplateView):
     permission_required = ('datos_globales.view_tipocambio')

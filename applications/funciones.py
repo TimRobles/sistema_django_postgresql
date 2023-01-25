@@ -99,6 +99,23 @@ def consulta_dni2(dni):
 #  "apellidoMaterno": "MENDOZA"
 #}
 
+def consulta_sunat_tipo_cambio(fecha: date):
+    token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
+    url = "https://api.apis.net.pe/v1/tipo-cambio-sunat?fecha="
+    headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
+    r = requests.get(f"{url}{fecha.year}-{numeroXn(fecha.month, 2)}-{numeroXn(fecha.day, 2)}", headers=headers)
+    data = r.json()
+
+    return data
+
+# {
+# 'compra': 3.808,
+# 'venta': 3.82,
+# 'origen': 'SUNAT',
+# 'moneda': 'USD',
+# 'fecha': '2023-01-03'
+# }
+
 def validar_texto(texto):
     lista = texto.split(" ")
     for palabra in lista:

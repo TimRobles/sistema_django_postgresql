@@ -20,4 +20,6 @@ urlpatterns = [
     path('tipo-cambio/registrar/', views.TipoCambioCreateView.as_view(), name='tipo_cambio_registrar'),
     path('tipo-cambio/actualizar/<pk>/', views.TipoCambioUpdateView.as_view(), name='tipo_cambio_actualizar'),
     path('tipo-cambio/baja/<pk>/', views.TipoCambioDeleteView.as_view(), name='tipo_cambio_eliminar'),
+    
+    path('tipo-cambio-sunat/', views.TipoCambioSunatView.as_view(), name='tipo_cambio_sunat_inicio'),
 ]

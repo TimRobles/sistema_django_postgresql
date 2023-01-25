@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.almacenes.models import Almacen
 from applications.calidad.models import FallaMaterial
+from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.funciones import numeroXn
 from applications.muestra.managers import NotaIngresoMuestraManager
 from applications.nota_ingreso.models import NotaIngresoDetalle
@@ -91,21 +92,21 @@ class NotaIngresoMuestraDetalle(models.Model):
 
 
 class DevolucionMuestra(models.Model):
-    ESTADOS_PRESTAMO_MATERIALES = (
+    ESTADOS_DEVOLUCION_MATERIALES = (
         (1, 'EN PROCESO'),
         (2, 'FINALIZADO SIN CONFIRMAR'),
         (3, 'CONFIRMADO'),
         (4, 'ANULADO'),
         (5, 'CONCLUIDO'),
     )
-    numero_prestamo = models.IntegerField('Número Prestamo', blank=True, null=True)
+    numero_devolucion = models.IntegerField('Número Devolución', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     interlocutor_cliente = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT,blank=True, null=True, related_name='DevolucionMuestra_interlocutor_cliente')
-    fecha_prestamo = models.DateField('Fecha Prestamo', auto_now=False, auto_now_add=False)
+    fecha_devolucion = models.DateField('Fecha Devolución', auto_now=False, auto_now_add=False)
     comentario = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
-    estado = models.IntegerField(choices=ESTADOS_PRESTAMO_MATERIALES, default=1)
+    estado = models.IntegerField(choices=ESTADOS_DEVOLUCION_MATERIALES, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionMuestra_created_by', editable=False)
@@ -114,9 +115,9 @@ class DevolucionMuestra(models.Model):
 
     class Meta:
 
-        verbose_name = 'Solicitud Prestamo Materiales'
-        verbose_name_plural = 'Solicitudes Prestamo Materiales'
-        ordering = ['numero_prestamo',]
+        verbose_name = 'Solicitud Devolución Materiales'
+        verbose_name_plural = 'Solicitudes Devolución Materiales'
+        ordering = ['numero_devolucion',]
 
     @property
     def cotizacion_venta(self):
@@ -124,18 +125,18 @@ class DevolucionMuestra(models.Model):
 
     @property
     def fecha(self):
-        return self.fecha_prestamo
+        return self.fecha_devolucion
 
     def __str__(self):
-        return "%s - %s" % (numeroXn(self.numero_prestamo, 6), self.cliente)
+        return "%s - %s" % (numeroXn(self.numero_devolucion, 6), self.cliente)
 
 class DevolucionMuestraDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #Material
     id_registro = models.IntegerField(blank=True, null=True)
-    cantidad_prestamo = models.DecimalField('Cantidad Prestamo', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    cantidad_devolucion = models.DecimalField('Cantidad Devolución', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     observacion = models.TextField(blank=True, null=True)
-    solicitud_prestamo_materiales = models.ForeignKey(DevolucionMuestra, blank=True, null=True, on_delete=models.CASCADE, related_name='DevolucionMuestraDetalle_solicitud_prestamo_materiales')
+    solicitud_devolucion_materiales = models.ForeignKey(DevolucionMuestra, blank=True, null=True, on_delete=models.CASCADE, related_name='DevolucionMuestraDetalle_solicitud_devolucion_materiales')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionMuestraDetalle_created_by', editable=False)
@@ -144,8 +145,8 @@ class DevolucionMuestraDetalle(models.Model):
 
     class Meta:
 
-        verbose_name = 'Solicitud Prestamo Materiales Detalle'
-        verbose_name_plural = 'Solicitudes Prestamo Materiales Detalle'
+        verbose_name = 'Solicitud Devolución Materiales Detalle'
+        verbose_name_plural = 'Solicitudes Devolución Materiales Detalle'
         ordering = ['item',]
 
     @property
@@ -156,7 +157,7 @@ class DevolucionMuestraDetalle(models.Model):
     def cantidad_salida(self):
         total = Decimal('0.00')
         try:
-            for detalle in self.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.exclude(nota_salida__estado=3):
+            for detalle in self.NotaSalidaDetalle_solicitud_devolucion_materiales_detalle.exclude(nota_salida__estado=3):
                 if detalle.producto == self.producto:
                     total += detalle.cantidad_salida
         except:
@@ -165,7 +166,7 @@ class DevolucionMuestraDetalle(models.Model):
 
     @property
     def pendiente(self):
-        return self.cantidad_prestamo - self.cantidad_salida
+        return self.cantidad_devolucion - self.cantidad_salida
 
     @property
     def unidad(self):

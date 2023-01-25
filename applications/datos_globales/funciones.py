@@ -1,7 +1,13 @@
+from datetime import date
+from decimal import Decimal
+from django.contrib.auth import get_user_model
 import json
 import io
+from time import sleep
+from django.db import models
+from applications.datos_globales.models import TipoCambio, TipoCambioSunat
 
-from applications.funciones import numero_espacio, numero_guion
+from applications.funciones import consulta_sunat_tipo_cambio, numero_espacio, numero_guion
 
 def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, fecha_de_vencimiento, moneda, tipo_de_cambio, porcentaje_de_igv, descuento_global, total_descuento, total_anticipo, total_gravada, total_inafecta, total_exonerada, total_igv, total_gratuita, total_otros_cargos, total, percepcion_tipo, percepcion_base_imponible, total_percepcion, total_incluido_percepcion, total_impuestos_bolsas, detraccion, observaciones, documento_que_se_modifica_tipo, documento_que_se_modifica_serie, documento_que_se_modifica_numero, tipo_de_nota_de_credito, tipo_de_nota_de_debito, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, condiciones_de_pago, medio_de_pago, placa_vehiculo, orden_compra_servicio, formato_de_pdf, generado_por_contingencia, productos, guias, cuotas):
     try:
@@ -231,3 +237,30 @@ def consultarGuia(tipo_de_comprobante, serie, numero):
         print(e)
         print("**************************************************")
         return None
+
+
+def actualizarTipoCambioSunat():
+    for tipo_cambio in TipoCambio.objects.all():
+        fecha = tipo_cambio.fecha
+        print(tipo_cambio, fecha)
+        obj, created = TipoCambioSunat.objects.get_or_create(
+            fecha = fecha,
+        )
+        if created or not obj.tipo_cambio_venta:
+            respuesta = consulta_sunat_tipo_cambio(fecha)
+            print(respuesta)
+            print(respuesta['venta'])
+            print(respuesta['compra'])
+            venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
+            compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))
+            print(venta, type(venta))
+            print(compra, type(compra))
+            sleep(2)
+            obj.tipo_cambio_venta = venta
+            obj.tipo_cambio_compra = compra
+            obj.created_by_id = 1
+            obj.updated_by_id = 1
+            obj.save()
+    
+
+# from applications.datos_globales.funciones import actualizarTipoCambioSunat

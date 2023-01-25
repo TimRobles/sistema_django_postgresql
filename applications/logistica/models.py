@@ -114,7 +114,6 @@ class DocumentoPrestamoMateriales(models.Model):
         return str(self.documento)
 
 
-
 class NotaSalida(models.Model):
     ESTADOS_NOTA_SALIDA = (
         (1, 'EN PROCESO'),
@@ -138,10 +137,6 @@ class NotaSalida(models.Model):
         verbose_name = 'Nota de Salida'
         verbose_name_plural = 'Notas de Salida'
         ordering = ['-numero_salida',]
-
-    @property
-    def content_type(self):
-        return ContentType.objects.get_for_model(self)
 
     @property
     def pendiente(self):
@@ -273,6 +268,24 @@ class NotaSalidaDetalle(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
+
+
+class NotaSalidaDocumento(models.Model):
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #Confirmacion / SolicitudPrestamo / DevolucionMuestra / DevolucionGarantia
+    id_registro = models.IntegerField(blank=True, null=True)
+    nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE, related_name='NotaSalidaDocumento_nota_salida')
+
+    class Meta:
+        verbose_name = 'Nota Salida Documento'
+        verbose_name_plural = 'Nota Salida Documentos'
+
+    @property
+    def documento(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    def __str__(self):
+        return f"{self.documento} - {self.nota_salida}"
+
 
 
 class ValidarSerieNotaSalidaDetalle(models.Model):
