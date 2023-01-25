@@ -93,6 +93,7 @@ class TipoCambioSunatView(PermissionRequiredMixin, TemplateView):
 
         context['contexto_tipo_cambio'] = tipo_cambio
         context['contexto_pagina'] = tipo_cambio
+        context['contexto_filtro'] = '?'
         return context
 
 class TipoCambioListView(PermissionRequiredMixin, TemplateView):
@@ -111,6 +112,7 @@ class TipoCambioListView(PermissionRequiredMixin, TemplateView):
 
         context['contexto_tipo_cambio'] = tipo_cambio
         context['contexto_pagina'] = tipo_cambio
+        context['contexto_filtro'] = '?'
         return context
     
 
@@ -129,6 +131,7 @@ def TipoCambioTabla(request):
 
         context['contexto_tipo_cambio'] = tipo_cambio
         context['contexto_pagina'] = tipo_cambio
+        context['contexto_filtro'] = '?'
 
         data['table'] = render_to_string(
             template,
