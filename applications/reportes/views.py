@@ -100,13 +100,12 @@ class ReporteContador(TemplateView):
                     ON cvf.id=nnc.id_registro_documento
                 LEFT JOIN datos_globales_seriescomprobante dgsc2
                     ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cvf.serie_comprobante_id
-                LEFT JOIN nota_notacreditodetalle nncd
+                LEFT JOIN nota_notacreditodetalle nncdd
                     ON nnc.id=nncd.nota_credito_id
                 LEFT JOIN material_material mm
                     ON nncd.content_type_id='%s' AND mm.id=nncd.id_registro
                 WHERE nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
                 GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota ;''' %(DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
-
             query_info = NotaCredito.objects.raw(sql)
             
             info = []
@@ -238,7 +237,6 @@ class ReporteContador(TemplateView):
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)
                 ORDER BY fecha_emision_comprobante ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
-
             query_info = FacturaVenta.objects.raw(sql)
 
             info = []
@@ -406,7 +404,6 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cc.id=nnc.cliente_id
                 WHERE nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
                 GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota ; ''' %(DICT_CONTENT_TYPE['nota | notacredito'], global_sociedad, global_fecha_inicio, global_fecha_fin)
-
             query_info = NotaCredito.objects.raw(sql)
             
             info = []
@@ -624,7 +621,6 @@ class ReporteVentasFacturadas(TemplateView):
                 WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s' AND cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
-
             query_info_letras = FacturaVenta.objects.raw(sql_letras)
 
             info = []
@@ -1221,7 +1217,6 @@ class ReporteFacturasPendientes(TemplateView):
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY cliente_denominacion ASC, letras ASC)
                 ORDER BY cliente_denominacion ASC, letras ASC ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'],DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
-            
             query_info = FacturaVenta.objects.raw(sql_letras)
 
             info = []
@@ -2161,7 +2156,6 @@ class ReporteClientesProductos(TemplateView):
                 GROUP BY cvb.cliente_id, cvbd.content_type_id, cvbd.id_registro
                 ORDER BY 3, 5)
                 ORDER BY 3, 5 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
-
             query_info = FacturaVentaDetalle.objects.raw(sql)
             
             info = []
@@ -2234,7 +2228,6 @@ class ReporteClientesProductos(TemplateView):
                 GROUP BY cvbd.content_type_id, cvbd.id_registro, cvb.cliente_id
                 ORDER BY 3, 5)
                 ORDER BY 3, 5 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
-
             query_info = FacturaVentaDetalle.objects.raw(sql)
             
             info = []
@@ -2591,7 +2584,6 @@ class ReporteDeudas(TemplateView):
                 ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
             WHERE cvb.estado='4'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'])
-
         query_productos = FacturaVenta.objects.raw(sql_productos)
         
         info = []
@@ -2666,8 +2658,7 @@ class ReporteDeudas(TemplateView):
             WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND cd.id IS NOT NULL AND cvb.estado='4'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
             ORDER BY cliente_denominacion ASC, letras ASC)
-            ORDER BY cliente_denominacion ASC, letras ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
-                                                                
+            ORDER BY cliente_denominacion ASC, letras ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)                                                               
         query_letras = FacturaVenta.objects.raw(sql_letras)
 
         info = []
@@ -2853,7 +2844,6 @@ class ReporteDeudas(TemplateView):
                 ) END) = 'PENDIENTE'
             ORDER BY cliente_denominacion ASC, fecha_orden ASC)
             ORDER BY cliente_denominacion ASC, fecha_orden ASC ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente, tuple(DICT_FACT_INVALIDAS[global_sociedad]), DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente)
-
         query_info = FacturaVenta.objects.raw(sql)
 
         list_general = []
@@ -3001,7 +2991,6 @@ class ReporteDeudas(TemplateView):
             LEFT JOIN sociedad_sociedad ss
                 ON ss.id=dgcb.sociedad_id
             WHERE dgcb.sociedad_id='%s' AND dgcb.estado='1' AND dgcb.efectivo=False''' %(global_sociedad)
-
         query_info_cuentas = CuentaBancariaSociedad.objects.raw(sql_cuentas_bancarias)
 
         info_cuentas = []
@@ -3696,10 +3685,140 @@ class ReporteRotacion(TemplateView):
             hoja.freeze_panes = 'A2'
             ajustarColumnasSheet(hoja)
             return wb
-            
+
         abreviatura = "MPL-MCA"
         wb=reporte_rotacion()
         nombre_archivo = "Reporte Rotacion - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename ={0}".format(nombre_archivo)
+        respuesta['content-disposition']= content
+        wb.save(respuesta)
+        return respuesta
+
+class ReporteResumenStockProductos(TemplateView):
+    def get(self,request, *args,**kwargs):
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
+
+        def generar_reporte():
+
+            sql_stock_productos = ''' SELECT
+                MAX(mam.id) AS id,
+                mm.id,
+                mm.descripcion_corta,
+                ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_disponible,
+                ROUND(SUM(CASE WHEN (mats.codigo='5') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_sin_qa,
+                ROUND(SUM(CASE WHEN (mats.codigo='6') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_por_qa,
+                ROUND(SUM(CASE WHEN (mats.codigo NOT IN (3,5,6)) THEN mam.cantidad*mam.signo_factor_multiplicador ELSE (0.00) END),3) AS stock_otros,
+                ROUND(SUM(mam.cantidad*mam.signo_factor_multiplicador),3) as total_stock
+                FROM movimiento_almacen_movimientosalmacen mam
+                LEFT JOIN material_material mm
+                    ON mm.id=mam.id_registro_producto AND mam.content_type_producto_id='%s'
+                LEFT JOIN movimiento_almacen_tipostock mats
+                    ON mam.tipo_stock_id=mats.id
+                WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
+                    8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+                GROUP BY mm.id
+                ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
+            query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
+
+            info = []
+
+            print('******************************')
+            print(info)
+            print('******************************')
+            for fila in query_info:
+                lista_datos = []
+                lista_datos.append(fila.id)
+                lista_datos.append(fila.descripcion_corta)
+                lista_datos.append(fila.stock_disponible)
+                lista_datos.append(fila.stock_sin_qa)
+                lista_datos.append(fila.stock_por_qa)
+                lista_datos.append(fila.stock_otros)
+                lista_datos.append(fila.total_stock)
+                info.append(lista_datos)
+
+            list_encabezado = [
+                'COD. MAT.',
+                'DESCRIPCIÓN',
+                'ALMACÉN #1',
+                'ALMACÉN #2',
+                'ALMACÉN #3',
+                'ALMACÉN #4',
+                'ALMACÉN #5',
+                'SUMA CONTEO',
+                'DISPONIBLE',
+                'BLOQ. SIN QA',
+                'BLOQ. POR QA',
+                'BLOQ. DESG.',
+                'SUMATORIA',
+                'DIFERENCIA',
+                ]
+
+            color_relleno = rellenoSociedad(global_sociedad)
+
+            wb = Workbook()
+            hoja = wb.active
+            hoja.append(tuple(list_encabezado))
+
+            col_range = hoja.max_column  # get max columns in the worksheet
+            # cabecera de la tabla
+            for col in range(1, col_range + 1):
+                if col == 8 or col == 13:
+                    # color_celda_cabecera = PatternFill(start_color='8C4966', end_color='8C4966', fill_type='solid')
+                    color_celda_cabecera = PatternFill(start_color='C0C0C0', end_color='C0C0C0', fill_type='solid')
+                elif col == 14:
+                    color_celda_cabecera = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
+                else:
+                    color_celda_cabecera = color_relleno
+                cell_header = hoja.cell(1, col)
+                cell_header.fill = color_celda_cabecera
+                cell_header.font = NEGRITA
+            # if info == []:
+            #     return False
+            for bloque in info:
+                for fila in bloque:
+                    fila[2] = float(fila[2])
+                    fila[3] = float(fila[3])
+                    fila[4] = float(fila[4])
+                    fila[5] = float(fila[5])
+                    fila[6] = float(fila[6])
+                    nueva_fila = []
+                    nueva_fila.extend([
+                        fila[0],
+                        fila[1],
+                        '',     # ALMACEN 1
+                        '',     # ALMACEN 2
+                        '',     # ALMACEN 3
+                        '',     # ALMACEN 4
+                        '',     # ALMACEN 5
+                        '',     # SUMA CONTEO
+                        fila[2],
+                        fila[3],
+                        fila[4],
+                        fila[5],
+                        fila[6],
+                        '',     # DIFERENCIA
+                        ])
+                    hoja.append(nueva_fila)
+
+            for row in hoja.rows:
+                for col in range(hoja.max_column):
+                    row[col].border = BORDE_DELGADO
+                    if col >= 2:
+                        row[col].number_format = FORMATO_NUMERO
+
+            hoja.freeze_panes = 'C2'
+            ajustarColumnasSheet(hoja)
+            return wb
+    
+    
+        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
+        abreviatura = query_sociedad.abreviatura
+        wb=generar_reporte()
+        nombre_archivo = "Reporte Resumen Stock Productos - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
