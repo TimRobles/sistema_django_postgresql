@@ -164,13 +164,13 @@ def dataResumenStockProductos(TablaEncabezado, TablaDatos, fuenteBase, color):
     
     for dato in TablaDatos:
         fila = []
-        fila.append(parrafoIzquierda(dato[0], fuenteBase, 7))
-        fila.append(parrafoCentro(dato[1], fuenteBase, 7))
-        fila.append(parrafoCentro(dato[2], fuenteBase, 7))
+        fila.append(parrafoCentro(dato[0], fuenteBase, 7))
+        fila.append(parrafoIzquierda(dato[1], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[2], fuenteBase, 7))
         fila.append(parrafoDerecha(dato[3], fuenteBase, 7))
         fila.append(parrafoDerecha(dato[4], fuenteBase, 7))
-        fila.append(parrafoCentro(dato[5], fuenteBase, 7))
-        fila.append(parrafoCentro(dato[6], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[5], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[6], fuenteBase, 7))
         data.append(fila)  
 
     t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-1),0.5,colors.black),
@@ -228,7 +228,7 @@ def generarReporteResumenStockProductos(titulo, vertical, logo, pie_pagina, Text
     data_tabla = dataResumenStockProductos(TablaEncabezado, TablaDatos, fuenteBase, color)
     elementos = []
     # elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
-    elementos.append(vacio(1.0))
+    elementos.append(vacio(2.0))
     elementos.append(data_tabla)
     
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
