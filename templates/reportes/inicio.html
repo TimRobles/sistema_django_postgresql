@@ -60,7 +60,10 @@
     <a href="{% url 'reportes_app:reporte_rotacion' %}?{{ contexto_filtros }}" target="_blank"><span class="badge bg-primary">Rotación</span></a>
 </h3>
 <h3>
-    <a href="{% url 'reportes_app:reporte_resumen_stock_productos' %}?{{ contexto_filtros }}" target="_blank"><span class="badge bg-primary">Resumen Stock Productos Excel</span></a>
+    <a href="{% url 'reportes_app:reporte_resumen_stock_productos_excel' %}?{{ contexto_filtros }}" target="_blank"><span class="badge bg-primary">Resumen Stock Productos Excel</span></a>
+</h3>
+<h3>
+    <a href="{% url 'reportes_app:reporte_resumen_stock_productos_pdf' %}?{{ contexto_filtros }}" target="_blank"><span class="badge bg-primary">Resumen Stock Productos PDF</span></a>
 </h3>
 {% endblock contenido %}
     
