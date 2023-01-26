@@ -3780,31 +3780,32 @@ class ReporteResumenStockProductosExcel(TemplateView):
                 cell_header.font = NEGRITA
             # if info == []:
             #     return False
-            for bloque in info:
-                for fila in bloque:
-                    fila[2] = float(fila[2])
-                    fila[3] = float(fila[3])
-                    fila[4] = float(fila[4])
-                    fila[5] = float(fila[5])
-                    fila[6] = float(fila[6])
-                    nueva_fila = []
-                    nueva_fila.extend([
-                        fila[0],
-                        fila[1],
-                        '',     # ALMACEN 1
-                        '',     # ALMACEN 2
-                        '',     # ALMACEN 3
-                        '',     # ALMACEN 4
-                        '',     # ALMACEN 5
-                        '',     # SUMA CONTEO
-                        fila[2],
-                        fila[3],
-                        fila[4],
-                        fila[5],
-                        fila[6],
-                        '',     # DIFERENCIA
-                        ])
-                    hoja.append(nueva_fila)
+            # for bloque in info:
+            # for fila in bloque:
+            for fila in info:
+                fila[2] = float(fila[2])
+                fila[3] = float(fila[3])
+                fila[4] = float(fila[4])
+                fila[5] = float(fila[5])
+                fila[6] = float(fila[6])
+                nueva_fila = []
+                nueva_fila.extend([
+                    fila[0],
+                    fila[1],
+                    '',     # ALMACEN 1
+                    '',     # ALMACEN 2
+                    '',     # ALMACEN 3
+                    '',     # ALMACEN 4
+                    '',     # ALMACEN 5
+                    '',     # SUMA CONTEO
+                    fila[2],
+                    fila[3],
+                    fila[4],
+                    fila[5],
+                    fila[6],
+                    '',     # DIFERENCIA
+                    ])
+                hoja.append(nueva_fila)
 
             for row in hoja.rows:
                 for col in range(hoja.max_column):
