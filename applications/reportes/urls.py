@@ -14,4 +14,5 @@ urlpatterns = [
     path('reporte-deudas/', views.ReporteDeudas.as_view(), name='reporte_deudas'),
     path('reporte-cobranza/', views.ReporteCobranza.as_view(), name='reporte_cobranza'),
     path('reporte-rotacion/', views.ReporteRotacion.as_view(), name='reporte_rotacion'),
+    path('reporte-resumen-stock-productos/', views.ReporteResumenStockProductos.as_view(), name='reporte_resumen_stock_productos'),
  ]
