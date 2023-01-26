@@ -26,6 +26,18 @@
             data-keep-open="True">
             Registrar Serie y Falla
         </button>
+        <button class="update badge bg-primary"
+            data-form-url="{% url 'calidad_app:series_detalle_malo_sin_falla_registrar' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-table-url="{% url 'calidad_app:series_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-keep-open="True">
+            Registrar Solo Serie
+        </button>
+        <button class="update badge bg-primary"
+            data-form-url="{% url 'calidad_app:series_detalle_solo_falla_registrar' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-table-url="{% url 'calidad_app:series_detalle_tabla' contexto_nota_control_calidad_stock_detalle.id %}"
+            data-keep-open="True">
+            Registrar Solo Falla
+        </button>
     {% endif %}
     <a href="{% url 'calidad_app:nota_control_calidad_stock_detalle' contexto_nota_control_calidad_stock_detalle.nota_control_calidad_stock.id %}"><span class="badge bg-primary">Regresar</span></a>   
 </h3>

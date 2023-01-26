@@ -137,6 +137,34 @@ class NotaControlCalidadStockAgregarMaloCreateForm(BSModalForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+class NotaControlCalidadStockAgregarMaloSinFallaCreateForm(BSModalForm):
+    serie_base = forms.CharField(max_length=200, required=True)
+    class Meta:
+        fields=(
+            'serie_base',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaControlCalidadStockAgregarMaloCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class NotaControlCalidadStockActualizarFallasCreateForm(BSModalForm):
+    falla_material = forms.ModelChoiceField(queryset=None, required=True)
+    class Meta:
+        fields=(
+            'falla_material',
+            )
+
+    def __init__(self, *args, **kwargs):
+        falla_material = kwargs.pop('falla_material')
+        super(NotaControlCalidadStockActualizarFallasCreateForm, self).__init__(*args, **kwargs)
+        self.fields['falla_material'].queryset = falla_material
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class NotaControlCalidadStockAgregarMaloSinSerieCreateForm(BSModalModelForm):
     serie_base = forms.CharField(max_length=200, required=True)
     falla_material = forms.ModelChoiceField(queryset=None, required=True)

@@ -17,6 +17,8 @@ from applications.calidad.forms import(
     # NotaControlCalidadStockBuenoUpdateForm,
     NotaControlCalidadStockBuenoCreateForm,
     NotaControlCalidadStockAgregarMaloCreateForm,
+    NotaControlCalidadStockActualizarFallasCreateForm,
+    NotaControlCalidadStockAgregarMaloSinFallaCreateForm,
     NotaControlCalidadStockAgregarMaloSinSerieCreateForm,
     SerieBuscarForm,
 )
@@ -1039,6 +1041,126 @@ class NotaControlCalidadStockAgregarMaloCreateView(PermissionRequiredMixin, BSMo
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(NotaControlCalidadStockAgregarMaloCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Serie'
+        return context
+
+class NotaControlCalidadStockAgregarMaloSinFallaCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.add_seriecalidad')
+    template_name = "calidad/series/form_agregar.html"
+    form_class = NotaControlCalidadStockAgregarMaloSinFallaCreateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                material = nota_control_calidad_stock_detalle.material
+                content_type = material.content_type
+                id_registro = material.id
+                serie_base = form.cleaned_data.get('serie_base')
+                
+                buscar = SerieCalidad.objects.filter(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                estado = 1
+                if len(buscar) > 0:
+                    estado = 2
+
+                buscar2 = Serie.objects.filter(
+                    serie_base = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+
+                if len(buscar2) > 0:
+                    estado = 2
+                
+                serie = SerieCalidad.objects.create(
+                    serie = serie_base,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                    estado = estado,
+                    nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaControlCalidadStockAgregarMaloSinFallaCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Serie'
+        return context
+
+class NotaControlCalidadStockActualizarFallasCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.add_seriecalidad')
+    template_name = "calidad/series/form_agregar.html"
+    form_class = NotaControlCalidadStockActualizarFallasCreateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:series_detalle', kwargs={'pk':self.kwargs['nota_control_calidad_stock_detalle_id']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                material = nota_control_calidad_stock_detalle.material
+                content_type = material.content_type
+                id_registro = material.id
+                falla_material = form.cleaned_data.get('falla_material')
+                series = SerieCalidad.objects.filter(
+                    content_type = content_type,
+                    id_registro = id_registro,
+                    nota_control_calidad_stock_detalle = nota_control_calidad_stock_detalle,
+                )
+                for serie in series:
+                    serie.falla_material = falla_material
+                    serie.save()
+
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        nota_control_calidad_stock_detalle = NotaControlCalidadStockDetalle.objects.get(id = self.kwargs['nota_control_calidad_stock_detalle_id'])
+        material = nota_control_calidad_stock_detalle.material
+        
+        kwargs = super().get_form_kwargs()
+        kwargs['falla_material'] = material.subfamilia.FallaMaterial_sub_familia.filter(visible=True)
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaControlCalidadStockActualizarFallasCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Serie'
         return context

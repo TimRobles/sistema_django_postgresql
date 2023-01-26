@@ -70,7 +70,7 @@ LOCAL_APPS = (
     'applications.traslado_producto',
     'applications.nota',
     'applications.muestra',
-    'applications.reportes',
+    # 'applications.reportes',
 
 )
 
