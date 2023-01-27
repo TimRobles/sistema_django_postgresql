@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
 import applications
 from applications import material
+from applications import logistica
 from applications.rutas import ORDEN_COMPRA_CONFIRMACION
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
@@ -270,6 +271,18 @@ class ConfirmacionVenta(models.Model):
         ordering = [
             '-created_at',
             ]
+        
+    @property
+    def NotaSalidaDetalle_confirmacion_venta_detalle(self):
+        notas_salida_detalle = logistica.models.NotaSalidaDetalle.objects.filter(
+            content_type_detalle = ContentType.objects.get_for_model(self),
+            id_registro_detalle = self.id,
+        )
+        return notas_salida_detalle
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     @property
     def internacional_nacional(self):
@@ -342,6 +355,23 @@ class ConfirmacionVenta(models.Model):
         except:
             pass
         return guias
+
+    @property
+    def NotaSalida_confirmacion_venta(self):
+        print('NotaSalida_confirmacion_venta')
+        lista_nota_salida = []
+        notas_salida_documento = logistica.models.NotaSalidaDocumento.objects.filter(
+            content_type = self.content_type,
+            id_registro = self.id,
+        )
+        print(notas_salida_documento)
+        for nota_salida_documento in notas_salida_documento:
+            lista_nota_salida.append(nota_salida_documento.nota_salida.id)
+        print(lista_nota_salida)
+        notas_salida = logistica.models.NotaSalida.objects.filter(id__in=lista_nota_salida)
+        print(notas_salida)
+        return notas_salida
+
 
     def __str__(self):
         return "%s%s" % (self.sociedad.abreviatura, self.cotizacion_venta)

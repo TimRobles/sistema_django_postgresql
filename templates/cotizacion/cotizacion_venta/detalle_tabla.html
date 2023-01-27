@@ -148,6 +148,14 @@
                     </td>
                 </tr>
                 <tr>
+                    <th class="pe-2">Dirección:</th>
+                    <td>
+                        {% if cotizacion.cliente.direccion_fiscal %}
+                        {{ cotizacion.cliente.direccion_fiscal }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <th class="pe-2">Interlocutor:</th>
                     <td>
                         {% if cotizacion.cliente_interlocutor %}
