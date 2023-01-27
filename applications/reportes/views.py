@@ -3400,7 +3400,10 @@ class ReporteRotacion(TemplateView):
                 FROM movimiento_almacen_movimientosalmacen mam
                 LEFT JOIN material_material mm
                     ON mm.id=mam.id_registro_producto
-                WHERE content_type_producto_id='%s' AND tipo_movimiento_id!='26'
+                LEFT JOIN movimiento_almacen_tipostock mats
+                    ON mam.tipo_stock_id=mats.id
+                WHERE mam.content_type_producto_id='52' AND mats.codigo NOT IN (
+                    1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
                 GROUP BY mm.id
                 ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'])
             query_info = MovimientosAlmacen.objects.raw(sql_stock)
