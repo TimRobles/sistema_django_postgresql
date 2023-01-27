@@ -148,7 +148,8 @@ class ReporteContador(TemplateView):
                 FROM comprobante_venta_facturaventa cvf
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
-                WHERE cvf.estado='3' and cvf.sociedad_id='%s')
+                WHERE cvf.estado='3' and cvf.sociedad_id='%s'
+                GROUP BY cvf.sociedad_id, cvf.serie_comprobante_id, cvf.numero_factura)
                 UNION
                 (SELECT
                 MAX(cvb.id) as id,
@@ -156,12 +157,13 @@ class ReporteContador(TemplateView):
                 FROM comprobante_venta_boletaventa cvb
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
-                WHERE cvb.estado='3' and cvb.sociedad_id='%s') ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+                WHERE cvb.estado='3' and cvb.sociedad_id='%s'
+                GROUP BY cvb.sociedad_id, cvb.serie_comprobante_id, cvb.numero_boleta) ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
             query_info_anulados = FacturaVenta.objects.raw(sql_anuladas)
 
-            list_temp = []
             info_anulados = []
             for fila in query_info_anulados:
+                list_temp = []
                 list_temp.append(fila.nro_comprobante)
                 info_anulados.append(list_temp)  
 
@@ -458,7 +460,8 @@ class ReporteVentasFacturadas(TemplateView):
                 FROM comprobante_venta_facturaventa cvf
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
-                WHERE cvf.estado='3' and cvf.sociedad_id='%s')
+                WHERE cvf.estado='3' and cvf.sociedad_id='%s'
+                GROUP BY cvf.sociedad_id, cvf.serie_comprobante_id, cvf.numero_factura)
                 UNION
                 (SELECT
                 MAX(cvb.id) AS id,
@@ -466,18 +469,28 @@ class ReporteVentasFacturadas(TemplateView):
                 FROM comprobante_venta_boletaventa cvb
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
-                WHERE cvb.estado='3' and cvb.sociedad_id='%s') ; '''%(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+                WHERE cvb.estado='3' and cvb.sociedad_id='%s'
+                GROUP BY cvb.sociedad_id, cvb.serie_comprobante_id, cvb.numero_boleta) ; '''%(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
             query_info_anulados = FacturaVenta.objects.raw(sql_anuladas)
 
-            list_temp = []
             info_anulados = []
             for fila in query_info_anulados:
+                list_temp = []
                 list_temp.append(fila.nro_comprobante)
                 info_anulados.append(list_temp)  
 
             list_anulados = []
             for fact in info_anulados:
                 list_anulados.append(fact[0])
+            
+            
+            print(20*'*')
+            print(info_anulados)
+            print(20*'*')
+            print(20*'-')
+            print(list_anulados)
+            print(20*'-')
+
 
             sql_pagos = ''' (SELECT
                 MAX(cvf.id) AS id, 
