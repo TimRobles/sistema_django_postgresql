@@ -3307,6 +3307,38 @@ class ReporteCobranza(TemplateView):
         #     except Exception as e:
         #         print("No se pudo enviar el correo..")
         #         print(e)
+        
+        #  sid = transaction.savepoint()
+        # try:
+        #     if self.request.session['primero']:
+        #         orden = OrdenCompra.objects.get(slug=self.kwargs['slug'])            
+        #         correos_proveedor = form.cleaned_data['correos_proveedor']
+        #         correos_internos = form.cleaned_data['correos_internos']
+        #         self.request.session['primero'] = False
+
+        #         asunto = "Orden de Compra - %s" % (orden.id)
+        #         mensaje = '<p>Estimado,</p><p>Se le envia la Orden de Compra: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('orden_compra_app:orden_compra_pdf', kwargs={'slug':orden.slug}), 'Orden')
+        #         email_remitente = EMAIL_REMITENTE
+
+        #         correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
+        #         correo.attach_alternative(mensaje, "text/html")
+        #         print("Enviar correo")
+        #         try:
+        #             correo.send()
+        #             orden.estado = 2
+        #             orden.save()
+                    
+        #             messages.success(self.request, 'Correo enviado.')
+        #             self.request.session['primero'] = False
+        #         except Exception as e:
+        #             print(e)
+        #             messages.warning(self.request, 'Hubo un error al enviar el correo.')
+            
+        #     return super().form_valid(form)
+        # except Exception as ex:
+        #     transaction.savepoint_rollback(sid)
+        #     registrar_excepcion(self, ex, __file__)
+        # return HttpResponseRedirect(self.get_success_url())
 
 
         # # reporte_cobranza()
@@ -3732,7 +3764,7 @@ class ReporteResumenStockProductosExcel(TemplateView):
                 LEFT JOIN movimiento_almacen_tipostock mats
                     ON mam.tipo_stock_id=mats.id
                 WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
-                    8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+                    1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
                 GROUP BY mm.id
                 ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
             query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
@@ -3864,7 +3896,7 @@ class ReporteResumenStockProductosPDF(TemplateView):
             LEFT JOIN movimiento_almacen_tipostock mats
                 ON mam.tipo_stock_id=mats.id
             WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
-                8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+                1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
             GROUP BY mm.id
             ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
         query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
