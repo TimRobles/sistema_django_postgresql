@@ -204,21 +204,21 @@ class NotaSalida(models.Model):
     def fecha(self):
         return self.created_at.date()
 
-    # @property
-    # def confirmacion_venta(self):
-    #     consulta = self.NotaSalidaDocumento_nota_salida.all()
-    #     for documento in consulta:
-    #         if documento.content_type == ContentType.objects.get_for_model(ConfirmacionVenta):
-    #             return documento.documento
-    #     return None
+    @property
+    def confirmacion_venta(self):
+        consulta = self.NotaSalidaDocumento_nota_salida.all()
+        for documento in consulta:
+            if documento.content_type == ContentType.objects.get_for_model(ConfirmacionVenta):
+                return documento.documento
+        return None
 
-    # @property
-    # def solicitud_prestamo_materiales(self):
-    #     consulta = self.NotaSalidaDocumento_nota_salida.all()
-    #     for documento in consulta:
-    #         if documento.content_type == ContentType.objects.get_for_model(SolicitudPrestamoMateriales):
-    #             return documento.documento
-    #     return None
+    @property
+    def solicitud_prestamo_materiales(self):
+        consulta = self.NotaSalidaDocumento_nota_salida.all()
+        for documento in consulta:
+            if documento.content_type == ContentType.objects.get_for_model(SolicitudPrestamoMateriales):
+                return documento.documento
+        return None
 
     # @property
     # def devolucion_muestra(self):
@@ -334,17 +334,17 @@ class NotaSalidaDetalle(models.Model):
     def detalle(self):
         return self.content_type_detalle.get_object_for_this_type(id=self.id_registro_detalle)
 
-    # @property
-    # def confirmacion_venta_detalle(self):
-    #     if self.content_type_detalle == ContentType.objects.get_for_model(ConfirmacionVentaDetalle):
-    #         return self.detalle
-    #     return None
+    @property
+    def confirmacion_venta_detalle(self):
+        if self.content_type_detalle == ContentType.objects.get_for_model(ConfirmacionVentaDetalle):
+            return self.detalle
+        return None
 
-    # @property
-    # def solicitud_prestamo_materiales_detalle(self):
-    #     if self.content_type_detalle == ContentType.objects.get_for_model(SolicitudPrestamoMaterialesDetalle):
-    #         return self.detalle
-    #     return None
+    @property
+    def solicitud_prestamo_materiales_detalle(self):
+        if self.content_type_detalle == ContentType.objects.get_for_model(SolicitudPrestamoMaterialesDetalle):
+            return self.detalle
+        return None
 
     @property
     def producto(self):

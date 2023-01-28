@@ -68,8 +68,8 @@ class DocumentoPrestamoMaterialesAdmin(admin.ModelAdmin):
 class NotaSalidaAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        # 'confirmacion_venta',
-        # 'solicitud_prestamo_materiales',
+        'confirmacion_venta',
+        'solicitud_prestamo_materiales',
         'numero_salida',
         'observacion_adicional',
         'motivo_anulacion',
@@ -90,8 +90,8 @@ class NotaSalidaDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'item',
-        # 'confirmacion_venta_detalle',
-        # 'solicitud_prestamo_materiales_detalle',
+        'confirmacion_venta_detalle',
+        'solicitud_prestamo_materiales_detalle',
         'sede',
         'almacen',
         'cantidad_salida',
