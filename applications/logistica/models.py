@@ -310,8 +310,8 @@ class NotaSalida(models.Model):
 
 class NotaSalidaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_confirmacion_venta_detalle')
-    solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
+    # confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_confirmacion_venta_detalle')
+    # solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
     content_type_detalle = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #ConfirmacionDetalle / SolicitudPrestamoDetalle / DevolucionMuestraDetalle / DevolucionGarantiaDetalle
     id_registro_detalle = models.IntegerField(blank=True, null=True)
     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
