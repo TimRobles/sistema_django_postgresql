@@ -167,8 +167,8 @@ class NotaSalida(models.Model):
         (3, 'ANULADO'),
     )
 
-    # confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_confirmacion_venta')
-    # solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalida_solicitud_prestamo_materiales')
+    confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_confirmacion_venta')
+    solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalida_solicitud_prestamo_materiales')
     numero_salida = models.IntegerField('Número Salida', blank=True, null=True)
     observacion_adicional = models.TextField('Observación Adicional', blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
@@ -204,21 +204,21 @@ class NotaSalida(models.Model):
     def fecha(self):
         return self.created_at.date()
 
-    @property
-    def confirmacion_venta(self):
-        consulta = self.NotaSalidaDocumento_nota_salida.all()
-        for documento in consulta:
-            if documento.content_type == ContentType.objects.get_for_model(ConfirmacionVenta):
-                return documento.documento
-        return None
+    # @property
+    # def confirmacion_venta(self):
+    #     consulta = self.NotaSalidaDocumento_nota_salida.all()
+    #     for documento in consulta:
+    #         if documento.content_type == ContentType.objects.get_for_model(ConfirmacionVenta):
+    #             return documento.documento
+    #     return None
 
-    @property
-    def solicitud_prestamo_materiales(self):
-        consulta = self.NotaSalidaDocumento_nota_salida.all()
-        for documento in consulta:
-            if documento.content_type == ContentType.objects.get_for_model(SolicitudPrestamoMateriales):
-                return documento.documento
-        return None
+    # @property
+    # def solicitud_prestamo_materiales(self):
+    #     consulta = self.NotaSalidaDocumento_nota_salida.all()
+    #     for documento in consulta:
+    #         if documento.content_type == ContentType.objects.get_for_model(SolicitudPrestamoMateriales):
+    #             return documento.documento
+    #     return None
 
     # @property
     # def devolucion_muestra(self):
@@ -310,8 +310,8 @@ class NotaSalida(models.Model):
 
 class NotaSalidaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    # confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_confirmacion_venta_detalle')
-    # solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
+    confirmacion_venta_detalle = models.ForeignKey(ConfirmacionVentaDetalle, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalidaDetalle_confirmacion_venta_detalle')
+    solicitud_prestamo_materiales_detalle = models.ForeignKey(SolicitudPrestamoMaterialesDetalle, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalidaDetalle_solicitud_prestamo_materiales_detalle')
     content_type_detalle = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #ConfirmacionDetalle / SolicitudPrestamoDetalle / DevolucionMuestraDetalle / DevolucionGarantiaDetalle
     id_registro_detalle = models.IntegerField(blank=True, null=True)
     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
@@ -334,17 +334,17 @@ class NotaSalidaDetalle(models.Model):
     def detalle(self):
         return self.content_type_detalle.get_object_for_this_type(id=self.id_registro_detalle)
 
-    @property
-    def confirmacion_venta_detalle(self):
-        if self.content_type_detalle == ContentType.objects.get_for_model(ConfirmacionVentaDetalle):
-            return self.detalle
-        return None
+    # @property
+    # def confirmacion_venta_detalle(self):
+    #     if self.content_type_detalle == ContentType.objects.get_for_model(ConfirmacionVentaDetalle):
+    #         return self.detalle
+    #     return None
 
-    @property
-    def solicitud_prestamo_materiales_detalle(self):
-        if self.content_type_detalle == ContentType.objects.get_for_model(SolicitudPrestamoMaterialesDetalle):
-            return self.detalle
-        return None
+    # @property
+    # def solicitud_prestamo_materiales_detalle(self):
+    #     if self.content_type_detalle == ContentType.objects.get_for_model(SolicitudPrestamoMaterialesDetalle):
+    #         return self.detalle
+    #     return None
 
     @property
     def producto(self):
