@@ -350,18 +350,14 @@ class ConfirmacionVenta(models.Model):
 
     @property
     def NotaSalida_confirmacion_venta(self):
-        print('NotaSalida_confirmacion_venta')
         lista_nota_salida = []
         notas_salida_documento = logistica.models.NotaSalidaDocumento.objects.filter(
             content_type = self.content_type,
             id_registro = self.id,
         )
-        print(notas_salida_documento)
         for nota_salida_documento in notas_salida_documento:
             lista_nota_salida.append(nota_salida_documento.nota_salida.id)
-        print(lista_nota_salida)
         notas_salida = logistica.models.NotaSalida.objects.filter(id__in=lista_nota_salida)
-        print(notas_salida)
         return notas_salida
 
 
@@ -371,7 +367,7 @@ class ConfirmacionVenta(models.Model):
 
 class ConfirmacionVentaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad_confirmada = models.DecimalField('Cantidad confirmada', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))

@@ -1,9 +1,9 @@
 #como antes del pull (campos normales, metodos comentados, admin comentado)
 git pull
 
-python3 manage.py migrate logistica 0040
+python3 manage.py migrate --database prod logistica 0040
 
-python3 manage.py shell
+python3 manage.py shell --settings sistema_django_postgresql.settings.prod
 
 from applications.logistica.models import NotaSalida, NotaSalidaDocumento
 from django.contrib.contenttypes.models import ContentType
@@ -32,11 +32,11 @@ exit()
 #comentar campos de NotaSalida
 git pull
 
-python3 manage.py migrate logistica 0041
-python3 manage.py migrate logistica 0042
-python3 manage.py migrate logistica 0043
+python3 manage.py migrate --database prod logistica 0041
+python3 manage.py migrate --database prod logistica 0042
+python3 manage.py migrate --database prod logistica 0043
 
-python3 manage.py shell
+python3 manage.py shell --settings sistema_django_postgresql.settings.prod
 
 from applications.logistica.models import NotaSalidaDetalle, SolicitudPrestamoMaterialesDetalle
 from applications.cotizacion.models import ConfirmacionVentaDetalle
@@ -55,7 +55,7 @@ exit()
 #comentar campos de NotaSalidaDetalle
 git pull
 
-python3 manage.py migrate logistica 0044
+python3 manage.py migrate --database prod logistica 0044
 
 #descomentar Metodos y admin
 git pull
