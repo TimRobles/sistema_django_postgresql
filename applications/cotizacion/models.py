@@ -273,14 +273,6 @@ class ConfirmacionVenta(models.Model):
             ]
         
     @property
-    def NotaSalidaDetalle_confirmacion_venta_detalle(self):
-        notas_salida_detalle = logistica.models.NotaSalidaDetalle.objects.filter(
-            content_type_detalle = ContentType.objects.get_for_model(self),
-            id_registro_detalle = self.id,
-        )
-        return notas_salida_detalle
-
-    @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
 
@@ -408,6 +400,14 @@ class ConfirmacionVentaDetalle(models.Model):
     @property
     def producto(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def NotaSalidaDetalle_confirmacion_venta_detalle(self):
+        notas_salida_detalle = logistica.models.NotaSalidaDetalle.objects.filter(
+            content_type_detalle = ContentType.objects.get_for_model(self),
+            id_registro_detalle = self.id,
+        )
+        return notas_salida_detalle
 
     @property
     def cantidad(self):
