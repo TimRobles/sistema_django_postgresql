@@ -167,8 +167,8 @@ class NotaSalida(models.Model):
         (3, 'ANULADO'),
     )
 
-    confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_confirmacion_venta')
-    solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalida_solicitud_prestamo_materiales')
+    # confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_confirmacion_venta')
+    # solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalida_solicitud_prestamo_materiales')
     numero_salida = models.IntegerField('Número Salida', blank=True, null=True)
     observacion_adicional = models.TextField('Observación Adicional', blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
