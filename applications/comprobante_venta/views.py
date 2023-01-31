@@ -416,7 +416,7 @@ class FacturaVentaAnticipoCrearView(PermissionRequiredMixin, BSModalDeleteView):
         
             FacturaVentaDetalle.objects.create(
                 item=1,
-                unidad=Unidad.objects.get(unidad_sunat='ZZ'),
+                unidad=Unidad.objects.get(unidad_sunat='NIU'),
                 descripcion_documento="DETALLE DEL PRIMER ANTICIPO",
                 cantidad=1,
                 precio_unitario_sin_igv=self.object.total_gravada,
