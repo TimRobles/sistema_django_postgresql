@@ -545,7 +545,7 @@ class FacturaVentaAnticipoRegularizarCrearView(PermissionRequiredMixin, BSModalD
 
             FacturaVentaDetalle.objects.create(
                 item=contador + 1,
-                unidad=Unidad.objects.get(unidad_sunat='ZZ'),
+                unidad=Unidad.objects.get(unidad_sunat='NIU'),
                 descripcion_documento="FACTURA ANTICIPADA %s-%s" % (factura_anticipada.serie_comprobante.serie, numeroXn(factura_anticipada.numero_factura, 6)),
                 cantidad=1,
                 precio_unitario_sin_igv=factura_anticipada.total_gravada,
