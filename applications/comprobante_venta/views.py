@@ -1004,7 +1004,8 @@ class FacturaVentaObservacionUpdateView(PermissionRequiredMixin, BSModalUpdateVi
 
     def get_context_data(self, **kwargs):
         context = super(FacturaVentaObservacionUpdateView, self).get_context_data(**kwargs)
-        context['titulo'] = "Actualizar Observaciones"
+        context['titulo'] = "Observaciones"
+        context['accion'] = "Actualizar"
         return context
 
 
