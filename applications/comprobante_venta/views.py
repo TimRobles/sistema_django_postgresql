@@ -7,7 +7,7 @@ from urllib import request
 from django.shortcuts import render
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import eliminarDeuda, generarDeuda
-from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaBuscarForm, BoletaVentaSerieForm, DescargarComprobantesForm, FacturaVentaAnularForm, FacturaVentaBuscarForm, FacturaVentaDetalleForm, FacturaVentaSerieForm
+from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaBuscarForm, BoletaVentaSerieForm, DescargarComprobantesForm, FacturaVentaAnularForm, FacturaVentaBuscarForm, FacturaVentaDetalleForm, FacturaVentaObservacionForm, FacturaVentaSerieForm
 from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, consultar_documento, factura_nubefact
 from applications.cotizacion.models import ConfirmacionVenta
 from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
@@ -987,6 +987,25 @@ class FacturaVentaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
         context['item'] = self.get_object()
         return context
 
+
+class FacturaVentaObservacionUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_venta.change_facturaventa')
+    model = FacturaVenta
+    template_name = "includes/formulario generico.html"
+    form_class = FacturaVentaObservacionForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_venta_app:factura_venta_detalle', kwargs={'id_factura_venta':self.kwargs['pk']})
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturaVentaObservacionUpdateView, self).get_context_data(**kwargs)
+        context['titulo'] = "Actualizar Observaciones"
+        return context
 
 
 class FacturaVentaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):

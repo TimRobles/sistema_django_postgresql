@@ -20,6 +20,7 @@ urlpatterns = [
     path('factura-venta/guardar/<pk>/', views.FacturaVentaGuardarView.as_view(), name='factura_venta_guardar'),
     path('factura-venta/anular/<pk>/', views.FacturaVentaAnularView.as_view(), name='factura_venta_anular'),
     path('factura-venta/eliminar/<pk>/', views.FacturaVentaEliminarView.as_view(), name='factura_venta_eliminar'),
+    path('factura-venta/observacion/<pk>/', views.FacturaVentaObservacionUpdateView.as_view(), name='factura_venta_observacion'),
 
     path('factura-venta/nubefact/enviar/<pk>/', views.FacturaVentaNubeFactEnviarView.as_view(), name='factura_venta_nubefact_enviar'),
     path('factura-venta/nubefact/anular/<pk>/', views.FacturaVentaNubeFactAnularView.as_view(), name='factura_venta_nubefact_anular'),

@@ -145,6 +145,19 @@ class FacturaVentaDetalleForm(BSModalModelForm):
             pass
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+            
+
+class FacturaVentaObservacionForm(BSModalModelForm):
+    class Meta:
+        model = FacturaVenta
+        fields = (
+            'observaciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(FacturaVentaObservacionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
     
 class DescargarComprobantesForm(forms.Form):
@@ -176,3 +189,4 @@ class DescargarComprobantesForm(forms.Form):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
     
+
