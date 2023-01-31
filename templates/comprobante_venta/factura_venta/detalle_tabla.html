@@ -20,7 +20,7 @@
     {% if factura.estado == 1 %}
     <div class="col-auto">
         <button data-form-url="{% url 'comprobante_venta_app:factura_venta_observacion' factura.id %}"
-            class="delete btn btn-danger">
+            class="delete btn btn-primary">
             Observaciones
         </button>
     </div>
