@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Reportes Panel
+{% endblock titulo %}
+
+{% block contenido %}
+<h1>Panel de Reportes</h1>
+<br>
+
+<div>
+    <a href="{% url 'reportes_panel_app:reportes_panel_marcasventa' %}" class="btn btn-primary">Reporte Marca Ventas</a>
+</div>
+
+<br>
+{% endblock contenido %}
