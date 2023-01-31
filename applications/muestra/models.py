@@ -101,10 +101,9 @@ class DevolucionMuestra(models.Model):
     )
     numero_devolucion = models.IntegerField('Número Devolución', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    interlocutor_cliente = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT,blank=True, null=True, related_name='DevolucionMuestra_interlocutor_cliente')
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     fecha_devolucion = models.DateField('Fecha Devolución', auto_now=False, auto_now_add=False)
-    comentario = models.TextField(blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS_DEVOLUCION_MATERIALES, default=1)
 
@@ -115,8 +114,8 @@ class DevolucionMuestra(models.Model):
 
     class Meta:
 
-        verbose_name = 'Solicitud Devolución Materiales'
-        verbose_name_plural = 'Solicitudes Devolución Materiales'
+        verbose_name = 'Devolución Muestras'
+        verbose_name_plural = 'Devolución Muestras'
         ordering = ['numero_devolucion',]
 
     @property
@@ -145,8 +144,8 @@ class DevolucionMuestraDetalle(models.Model):
 
     class Meta:
 
-        verbose_name = 'Solicitud Devolución Materiales Detalle'
-        verbose_name_plural = 'Solicitudes Devolución Materiales Detalle'
+        verbose_name = 'Devolución Muestras Detalle'
+        verbose_name_plural = 'Devolución Muestras Detalle'
         ordering = ['item',]
 
     @property
@@ -154,19 +153,8 @@ class DevolucionMuestraDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     @property
-    def cantidad_salida(self):
-        total = Decimal('0.00')
-        try:
-            for detalle in self.NotaSalidaDetalle_solicitud_devolucion_materiales_detalle.exclude(nota_salida__estado=3):
-                if detalle.producto == self.producto:
-                    total += detalle.cantidad_salida
-        except:
-            pass
-        return total
-
-    @property
-    def pendiente(self):
-        return self.cantidad_devolucion - self.cantidad_salida
+    def cantidad(self):
+        return self.cantidad_devolucion
 
     @property
     def unidad(self):

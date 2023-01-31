@@ -1,0 +1,61 @@
+#como antes del pull (campos normales, metodos comentados, admin comentado)
+git pull
+
+python3 manage.py migrate --database prod logistica 0040
+
+python3 manage.py shell --settings sistema_django_postgresql.settings.prod
+
+from applications.logistica.models import NotaSalida, NotaSalidaDocumento
+from django.contrib.contenttypes.models import ContentType
+for nota in NotaSalida.objects.all():
+    if nota.confirmacion_venta:
+        NotaSalidaDocumento.objects.get_or_create(
+            content_type=nota.confirmacion_venta.content_type,
+            id_registro=nota.confirmacion_venta.id,
+            nota_salida=nota,
+            created_by=nota.created_by,
+            updated_by=nota.updated_by,
+        )
+    if nota.solicitud_prestamo_materiales:
+        NotaSalidaDocumento.objects.get_or_create(
+            content_type=nota.solicitud_prestamo_materiales.content_type,
+            id_registro=nota.solicitud_prestamo_materiales.id,
+            nota_salida=nota,
+            created_by=nota.created_by,
+            updated_by=nota.updated_by,
+        )
+
+NotaSalidaDocumento.objects.all()
+
+exit()
+
+#comentar campos de NotaSalida
+git pull
+
+python3 manage.py migrate --database prod logistica 0041
+python3 manage.py migrate --database prod logistica 0042
+python3 manage.py migrate --database prod logistica 0043
+
+python3 manage.py shell --settings sistema_django_postgresql.settings.prod
+
+from applications.logistica.models import NotaSalidaDetalle, SolicitudPrestamoMaterialesDetalle
+from applications.cotizacion.models import ConfirmacionVentaDetalle
+from django.contrib.contenttypes.models import ContentType
+for detalle in NotaSalidaDetalle.objects.all():
+    if detalle.confirmacion_venta_detalle:
+        detalle.content_type_detalle=ContentType.objects.get_for_model(ConfirmacionVentaDetalle)
+        detalle.id_registro_detalle=detalle.confirmacion_venta_detalle.id
+    elif detalle.solicitud_prestamo_materiales_detalle:
+        detalle.content_type_detalle=ContentType.objects.get_for_model(SolicitudPrestamoMaterialesDetalle)
+        detalle.id_registro_detalle=detalle.solicitud_prestamo_materiales_detalle.id
+    detalle.save()
+
+exit()
+
+#comentar campos de NotaSalidaDetalle
+git pull
+
+python3 manage.py migrate --database prod logistica 0044
+
+#descomentar Metodos y admin
+git pull

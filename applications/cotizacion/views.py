@@ -9,7 +9,7 @@ from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 from applications.datos_globales.models import CuentaBancariaSociedad, Moneda, TipoCambio
-from applications.logistica.models import NotaSalida
+from applications.logistica.models import NotaSalida, NotaSalidaDocumento
 from applications.material.funciones import calidad, en_camino, observacion, reservado, stock, stock_disponible, stock_vendible, vendible
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.cotizacion.pdf import generarCotizacionVenta
@@ -3151,9 +3151,15 @@ class ConfirmacionNotaSalidaView(PermissionRequiredMixin, BSModalDeleteView):
                 confirmacion_venta = self.get_object()
                 nota_salida = NotaSalida.objects.create(
                     numero_salida=item + 1,
-                    confirmacion_venta=confirmacion_venta,
                     observacion_adicional=confirmacion_venta.observacion_adicional,
                     motivo_anulacion="",
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                NotaSalidaDocumento.objects.create(
+                    content_type=confirmacion_venta.content_type,
+                    id_registro=confirmacion_venta.id,
+                    nota_salida=nota_salida,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )

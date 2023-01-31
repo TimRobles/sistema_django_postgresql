@@ -114,20 +114,20 @@
         {% endif %}
         
         {% if permiso_logistica %}
-        <div class="col-auto">
-            <button data-form-url="{% url 'cotizacion_app:confirmacion_nota_salida' confirmacion.id %}"
-                class="delete btn btn-primary">
-                Generar Nota de Salida
-            </button>
-        </div>
-        
-        {% if confirmacion.NotaSalida_confirmacion_venta.all %}
-        <div class="col-auto">
-            <a href="{% url 'logistica_app:nota_salida_confirmacion' confirmacion.id %}" class="delete btn btn-primary">
-                Ver Notas de Salida
-            </a>
-        </div>
-        {% endif %}
+            <div class="col-auto">
+                <button data-form-url="{% url 'cotizacion_app:confirmacion_nota_salida' confirmacion.id %}"
+                    class="delete btn btn-primary">
+                    Generar Nota de Salida
+                </button>
+            </div>
+            
+            {% if confirmacion.NotaSalida_confirmacion_venta.all %}
+            <div class="col-auto">
+                <a href="{% url 'logistica_app:nota_salida_confirmacion' confirmacion.id %}" class="delete btn btn-primary">
+                    Ver Notas de Salida
+                </a>
+            </div>
+            {% endif %}
 
         {% endif %}
     </div>

@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
 import applications
 from applications import material
+from applications import logistica
 from applications.rutas import ORDEN_COMPRA_CONFIRMACION
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Moneda, TipoCambio
@@ -270,6 +271,10 @@ class ConfirmacionVenta(models.Model):
         ordering = [
             '-created_at',
             ]
+        
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     @property
     def internacional_nacional(self):
@@ -343,13 +348,26 @@ class ConfirmacionVenta(models.Model):
             pass
         return guias
 
+    @property
+    def NotaSalida_confirmacion_venta(self):
+        lista_nota_salida = []
+        notas_salida_documento = logistica.models.NotaSalidaDocumento.objects.filter(
+            content_type = self.content_type,
+            id_registro = self.id,
+        )
+        for nota_salida_documento in notas_salida_documento:
+            lista_nota_salida.append(nota_salida_documento.nota_salida.id)
+        notas_salida = logistica.models.NotaSalida.objects.filter(id__in=lista_nota_salida)
+        return notas_salida
+
+
     def __str__(self):
         return "%s%s" % (self.sociedad.abreviatura, self.cotizacion_venta)
 
 
 class ConfirmacionVentaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad_confirmada = models.DecimalField('Cantidad confirmada', max_digits=22, decimal_places=10)
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))
@@ -378,6 +396,14 @@ class ConfirmacionVentaDetalle(models.Model):
     @property
     def producto(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def NotaSalidaDetalle_confirmacion_venta_detalle(self):
+        notas_salida_detalle = logistica.models.NotaSalidaDetalle.objects.filter(
+            content_type_detalle = ContentType.objects.get_for_model(self),
+            id_registro_detalle = self.id,
+        )
+        return notas_salida_detalle
 
     @property
     def cantidad(self):

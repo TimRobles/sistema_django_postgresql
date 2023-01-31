@@ -1,11 +1,11 @@
 from django import forms
 from decimal import Decimal
 from django.core.paginator import Paginator
-from applications.cotizacion.models import ConfirmacionVentaDetalle
+from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaDetalle, confirmacion_venta_detalle_post_save
 from applications.importaciones import *
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
-from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, \
+from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, NotaSalidaDocumento, \
     SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieNotaSalidaDetalle
 from applications.logistica.forms import DespachoAnularForm, DespachoBuscarForm, DespachoForm, DocumentoPrestamoMaterialesForm, \
     NotaSalidaAnularForm, NotaSalidaBuscarForm, NotaSalidaDetalleForm, NotaSalidaDetalleSeriesForm, NotaSalidaDetalleUpdateForm, SolicitudPrestamoMaterialesDetalleForm, \
@@ -536,9 +536,15 @@ class SolicitudPrestamoMaterialesGenerarNotaSalidaView(PermissionRequiredMixin, 
                 prestamo = self.get_object()
                 nota_salida = NotaSalida.objects.create(
                     numero_salida=item + 1,
-                    solicitud_prestamo_materiales=prestamo,
                     observacion_adicional="",
                     motivo_anulacion="",
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                NotaSalidaDocumento.objects.create(
+                    content_type=prestamo.content_type,
+                    id_registro=prestamo.id,
+                    nota_salida=nota_salida,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
@@ -601,13 +607,27 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
         context = super(NotaSalidaListView,self).get_context_data(**kwargs)
         nota_salida = NotaSalida.objects.all()
         if 'id_solicitud_prestamo' in self.kwargs:
+            lista_nota_salida = []
+            notas_salida_documento = NotaSalidaDocumento.objects.filter(
+                content_type = ContentType.objects.get_for_model(SolicitudPrestamoMateriales),
+                id_registro = self.kwargs['id_solicitud_prestamo'],
+            )
+            for nota_salida_documento in notas_salida_documento:
+                lista_nota_salida.append(nota_salida_documento.nota_salida.id)
             nota_salida = nota_salida.filter(
-                solicitud_prestamo_materiales__id=self.kwargs['id_solicitud_prestamo'],
+                id__in=lista_nota_salida,
             )
 
         if 'id_confirmacion' in self.kwargs:
+            lista_nota_salida = []
+            notas_salida_documento = NotaSalidaDocumento.objects.filter(
+                content_type = ContentType.objects.get_for_model(ConfirmacionVenta),
+                id_registro = self.kwargs['id_confirmacion'],
+            )
+            for nota_salida_documento in notas_salida_documento:
+                lista_nota_salida.append(nota_salida_documento.nota_salida.id)
             nota_salida = nota_salida.filter(
-                confirmacion_venta__id=self.kwargs['id_confirmacion'],
+                id__in=lista_nota_salida,
             )
 
         filtro_sociedad = self.request.GET.get('sociedad')
@@ -660,8 +680,27 @@ def NotaSalidaTabla(request, **kwargs):
         context = {}
         nota_salida = NotaSalida.objects.all()
         if 'id_solicitud_prestamo' in kwargs:
+            lista_nota_salida = []
+            notas_salida_documento = NotaSalidaDocumento.objects.filter(
+                content_type = ContentType.objects.get_for_model(SolicitudPrestamoMateriales),
+                id_registro = kwargs['id_solicitud_prestamo'],
+            )
+            for nota_salida_documento in notas_salida_documento:
+                lista_nota_salida.append(nota_salida_documento.nota_salida.id)
             nota_salida = nota_salida.filter(
-                solicitud_prestamo_materiales__id=kwargs['id_solicitud_prestamo'],
+                id__in=lista_nota_salida,
+            )
+
+        if 'id_confirmacion' in kwargs:
+            lista_nota_salida = []
+            notas_salida_documento = NotaSalidaDocumento.objects.filter(
+                content_type = ContentType.objects.get_for_model(ConfirmacionVenta),
+                id_registro = kwargs['id_confirmacion'],
+            )
+            for nota_salida_documento in notas_salida_documento:
+                lista_nota_salida.append(nota_salida_documento.nota_salida.id)
+            nota_salida = nota_salida.filter(
+                id__in=lista_nota_salida,
             )
 
         filtro_sociedad = request.GET.get('sociedad')
@@ -1066,23 +1105,15 @@ class NotaSalidaDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
                 item = len(nota_salida.NotaSalidaDetalle_nota_salida.all())
                 material = form.cleaned_data.get('material')
 
-                if nota_salida.solicitud_prestamo_materiales:
-                    nota_salida_detalle = NotaSalidaDetalle.objects.create(
-                        solicitud_prestamo_materiales_detalle=material,
-                        nota_salida=nota_salida,
-                        item=item + 1,
-                        created_by=self.request.user,
-                        updated_by=self.request.user,
-                    )
-                else:
-                    nota_salida_detalle = NotaSalidaDetalle.objects.create(
-                        confirmacion_venta_detalle=material,
-                        nota_salida=nota_salida,
-                        item=item + 1,
-                        created_by=self.request.user,
-                        updated_by=self.request.user,
-                    )
-
+                nota_salida_detalle = NotaSalidaDetalle.objects.create(
+                    content_type_detalle=ContentType.objects.get_for_model(material),
+                    id_registro_detalle=material.id,
+                    nota_salida=nota_salida,
+                    item=item + 1,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                
                 self.request.session['primero'] = False
             return super().form_valid(form)
         except Exception as ex:
@@ -1342,7 +1373,7 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                     for dato in lista:
                         material = dato.solicitud_prestamo_materiales_detalle
                         cantidad_notas_salida = material.NotaSalidaDetalle_solicitud_prestamo_materiales_detalle.all().exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
-                        cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_despachada'))['cantidad_despachada__sum']
+                        cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).exclude(despacho__estado=3).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_despachada'))['cantidad_despachada__sum']
                         cantidad_despachada = cantidad_notas_salida
                         if cantidad_despachos:
                             cantidad_despachada = cantidad_notas_salida - cantidad_despachos
@@ -1368,7 +1399,7 @@ class NotaSalidaGenerarDespachoView(PermissionRequiredMixin, BSModalDeleteView):
                     for dato in lista:
                         material = dato.confirmacion_venta_detalle
                         cantidad_notas_salida = material.NotaSalidaDetalle_confirmacion_venta_detalle.all().exclude(nota_salida__estado=3).aggregate(Sum('cantidad_salida'))['cantidad_salida__sum']
-                        cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_despachada'))['cantidad_despachada__sum']
+                        cantidad_despachos = DespachoDetalle.objects.filter(despacho__nota_salida__id__in=lista_nota_salida).exclude(despacho__estado=3).filter(content_type=material.content_type, id_registro=material.id_registro).aggregate(Sum('cantidad_despachada'))['cantidad_despachada__sum']
                         cantidad_despachada = cantidad_notas_salida
                         if cantidad_despachos:
                             cantidad_despachada = cantidad_notas_salida - cantidad_despachos
@@ -1642,13 +1673,15 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                                 serie.serie_movimiento_almacen.add(movimiento_uno)
                                 serie.serie_movimiento_almacen.add(movimiento_dos)
 
-                if self.object.nota_salida.confirmacion_venta:
-                    if self.object.nota_salida.confirmacion_venta.estado == 2:
-                        self.object.nota_salida.confirmacion_venta.estado = 4
-                    elif self.object.nota_salida.confirmacion_venta.estado == 1:
-                        self.object.nota_salida.confirmacion_venta.estado = 5
-                    registro_guardar(self.object.nota_salida.confirmacion_venta, self.request)
-                    self.object.nota_salida.confirmacion_venta.save()
+                confirmacion_venta = self.object.nota_salida.confirmacion_venta
+                if confirmacion_venta:
+                    if not confirmacion_venta.pendiente_despachar:
+                        if confirmacion_venta.estado == 2:
+                            confirmacion_venta.estado = 4
+                        elif confirmacion_venta.estado == 1:
+                            confirmacion_venta.estado = 5
+                        registro_guardar(confirmacion_venta, self.request)
+                        confirmacion_venta.save()
                 self.object.estado = 2
                 registro_guardar(self.object, self.request)
                 self.object.save()
@@ -1687,13 +1720,6 @@ class DespachoFinalizarSinGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
-            if self.object.nota_salida.confirmacion_venta:
-                if self.object.nota_salida.confirmacion_venta.estado == 2:
-                    self.object.nota_salida.confirmacion_venta.estado = 4
-                elif self.object.nota_salida.confirmacion_venta.estado == 1:
-                    self.object.nota_salida.confirmacion_venta.estado = 5
-                registro_guardar(self.object.nota_salida.confirmacion_venta, self.request)
-                self.object.nota_salida.confirmacion_venta.save()
             self.object.estado = 4
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -1735,7 +1761,10 @@ class DespachoAnularView(PermissionRequiredMixin, BSModalUpdateView):
                 registro_guardar(form.instance, self.request)
 
                 detalles = form.instance.detalles
-                movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                if self.object.nota_salida.solicitud_prestamo_materiales:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                else:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
 
                 for detalle in detalles:
                     movimiento_uno = MovimientosAlmacen.objects.get(
@@ -1765,6 +1794,16 @@ class DespachoAnularView(PermissionRequiredMixin, BSModalUpdateView):
                     )
                     movimiento_dos.delete()
                     movimiento_uno.delete()
+
+                confirmacion_venta = form.instance.nota_salida.confirmacion_venta
+                if confirmacion_venta:
+                    if confirmacion_venta.estado == 4:
+                        confirmacion_venta.estado = 2
+                    elif confirmacion_venta.estado == 5:
+                        confirmacion_venta.estado = 1
+                    registro_guardar(confirmacion_venta, self.request)
+                    confirmacion_venta.save()
+                messages.success(self.request, MENSAJE_ANULAR__DESPACHO)
                 self.request.session['primero'] = False
             return super().form_valid(form)
         except Exception as ex:
