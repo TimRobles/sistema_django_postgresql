@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from applications.importaciones import *
-from applications.reportes_panel.forms import ReportesPanelFiltrosForm
+from applications.reportes_panel.forms import ReportesPanelFiltrosForm, ReporteProductoClienteVentasFiltrosForm
 from applications.material.forms import Material
+from applications.comprobante_venta.models import FacturaVentaDetalle, FacturaVenta
 from applications.reportes.funciones import *
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Alignment
@@ -11,7 +12,7 @@ from openpyxl.chart import Reference, Series,LineChart
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.plotarea import DataTable
 
-def mostrar_info_tabla(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin):
+def consultar_marca_ventas(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin):
     sql_base = '''SELECT
             MAX(mm.id) as id,
             MAX(mm.descripcion_corta) as material_texto,
@@ -131,42 +132,6 @@ def mostrar_info_tabla(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtr
     return list_info
 
 
-class MarcaVentasListView(ListView):
-    model = Material
-    template_name = "reportes_panel/marca_ventas/inicio.html"
-    context_object_name = 'contexto_marca_ventas'
-    # def get_queryset(self):
-    #     consulta = super().get_queryset()
-    #     return consulta.filter(mostrar=1)
-
-    def get_context_data(self, **kwargs):
-        context = super(MarcaVentasListView, self).get_context_data(**kwargs)
-        query_active = True
-        if query_active:
-            sql = ''' SELECT 
-                    MAX(mm.id) AS id,
-                    MAX(mm.descripcion_corta) AS material_texto,
-                    ROUND(SUM(cvfd.cantidad),2) AS venta_total,
-                    MIN(cvf.fecha_emision) AS primera_venta,
-                    MAX(cvf.fecha_emision) AS ultima_venta,
-                    COUNT(cvf.id) AS nro_ventas
-                FROM material_material mm
-                LEFT JOIN comprobante_venta_facturaventadetalle cvfd
-                    ON cvfd.content_type_id='52' AND mm.id=cvfd.id_registro
-                LEFT JOIN comprobante_venta_facturaventa cvf
-                    ON cvf.id=cvfd.factura_venta_id
-                WHERE (cvf.estado='4' or cvf.estado is NULL) AND mm.marca_id='15'
-                GROUP BY mm.id
-                ORDER BY mm.descripcion_corta; '''
-            query_context = Material.objects.raw(sql)
-            context['contexto_marca_ventas'] = query_context
-        
-        else:
-            query_context = Material.objects.all()
-            context['contexto_marca_ventas'] = query_context
-        return context
-
-
 class ReportesMarcaVentasView(FormView):
     template_name = "reportes_panel/marca_ventas/inicio.html"
     form_class = ReportesPanelFiltrosForm
@@ -178,7 +143,6 @@ class ReportesMarcaVentasView(FormView):
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
         kwargs['filtro_fecha_fin'] = self.request.GET.get('fecha_fin')
-        # kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         global global_sociedad, global_fecha_inicio, global_fecha_fin, global_marca
         global_marca = self.request.GET.get('marca')
         global_sociedad = self.request.GET.get('sociedad')
@@ -193,24 +157,18 @@ class ReportesMarcaVentasView(FormView):
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_fecha_inicio = self.request.GET.get('fecha_inicio')
         filtro_fecha_fin = self.request.GET.get('fecha_fin')
-        # filtro_cliente = self.request.GET.get('cliente')
         contexto_filtros.append(f"filtro_marca={filtro_marca}")
         contexto_filtros.append(f"filtro_sociedad={filtro_sociedad}")
         contexto_filtros.append(f"filtro_fecha_inicio={filtro_fecha_inicio}")
         contexto_filtros.append(f"filtro_fecha_fin={filtro_fecha_fin}")
-        # contexto_filtros.append(f"filtro_cliente={filtro_cliente}")
         context["contexto_filtros"] = "&".join(contexto_filtros)
-        context['contexto_marca_ventas'] = mostrar_info_tabla(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin)
+        context['contexto_marca_ventas'] = consultar_marca_ventas(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin)
         return context
 
 
 class ReportesPanelTemplateView(TemplateView):
     template_name = "reportes_panel/inicio.html"
     
-
-# class MarcaVentasListView(PermissionRequiredMixin, ListView):
-    # permission_required = ('material.view_marca')
-
 
 class ReporteExcelMarcaVentas(TemplateView):
 
@@ -235,7 +193,7 @@ class ReporteExcelMarcaVentas(TemplateView):
                 cell_header.fill = color_relleno
                 cell_header.font = NEGRITA
 
-            info = mostrar_info_tabla(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin)
+            info = consultar_marca_ventas(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin)
             for producto in info:
                 hoja.append(producto)
 
@@ -258,3 +216,96 @@ class ReporteExcelMarcaVentas(TemplateView):
         respuesta['content-disposition']= content
         wb.save(respuesta)
         return respuesta
+
+
+def consultar_productocliente_ventas(filtro_sociedad, filtro_producto, filtro_cliente):
+    if filtro_sociedad and filtro_producto and filtro_cliente:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4') & Q(factura_venta__sociedad_id=filtro_sociedad) & Q(factura_venta__cliente_id=filtro_cliente) & Q(content_type_id='52') & Q(id_registro=filtro_producto)).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total'), id_cliente=Max('factura_venta__cliente_id')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')
+    elif filtro_sociedad and filtro_producto:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4') & Q(factura_venta__sociedad_id=filtro_sociedad) & Q(content_type_id='52') & Q(id_registro=filtro_producto)).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total'), id_cliente=Max('factura_venta__cliente_id')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')
+    elif filtro_sociedad and filtro_cliente:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4') & Q(factura_venta__sociedad_id=filtro_sociedad) & Q(factura_venta__cliente_id=filtro_cliente)).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')            
+    elif filtro_cliente and filtro_producto:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4') & Q(factura_venta__cliente_id=filtro_cliente) & Q(content_type_id='52') & Q(id_registro=filtro_producto)).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total'), id_cliente=Max('factura_venta__cliente_id')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')
+    elif filtro_sociedad:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4') & Q(factura_venta__sociedad_id=filtro_sociedad)).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')
+    elif filtro_producto:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4') & Q(content_type_id='52') & Q(id_registro=filtro_producto)).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total'), id_cliente=Max('factura_venta__cliente_id')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')
+    elif filtro_cliente:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4') & Q(factura_venta__cliente_id=filtro_cliente)).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')   
+    else:
+        info = FacturaVentaDetalle.objects.filter(Q(factura_venta__estado='4')).values_list(
+                'factura_venta__cliente__razon_social',
+                'factura_venta__cliente__numero_documento',
+                ).annotate(ultima_fecha_venta=Max('factura_venta__fecha_emision'), nro_compras=Count('factura_venta'), total_compra=Sum('total')).order_by('-total_compra','-nro_compras','factura_venta__cliente__razon_social')
+    return info
+
+
+class ProductoClienteVentasView(FormView):
+    template_name = "reportes_panel/producto_cliente_ventas/inicio.html"
+    form_class = ReporteProductoClienteVentasFiltrosForm
+    success_url = '.' 
+
+    def get_form_kwargs(self):
+        kwargs = super(ProductoClienteVentasView, self).get_form_kwargs()
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_producto'] = self.request.GET.get('producto')
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(ProductoClienteVentasView, self).get_context_data(**kwargs)
+        contexto_filtros = []
+        filtro_producto = self.request.GET.get('producto')
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_cliente = self.request.GET.get('cliente')
+        contexto_filtros.append(f"filtro_producto={filtro_producto}")
+        contexto_filtros.append(f"filtro_sociedad={filtro_sociedad}")
+        contexto_filtros.append(f"filtro_cliente={filtro_cliente}")
+        context["contexto_filtros"] = "&".join(contexto_filtros)
+        context['contexto_productocliente_ventas'] = consultar_productocliente_ventas(filtro_sociedad, filtro_producto, filtro_cliente)
+        return context
+
+
+class ProductoClienteVentasDetalle(DetailView):
+    model = Cliente
+    template_name = 'reportes_panel/producto_cliente_ventas/detalle_inicio.html'
+    context_object_name = 'contexto_datos_cliente'
+
+    def get_context_data(self, **kwargs):
+        cliente = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(ProductoClienteVentasDetalle, self).get_context_data(**kwargs)
+        filtro_producto = self.request.GET.get('filtro_producto')
+        filtro_sociedad = self.request.GET.get('filtro_sociedad')
+
+        Q_filtro_estado = Q(factura_venta__estado='4')
+        Q_filtro_cliente = Q(factura_venta__cliente=cliente)
+        Q_filtro_producto = Q(content_type_id='52') & Q(id_registro=filtro_producto)
+        Q_filtro_sociedad = Q(factura_venta__sociedad_id=filtro_sociedad)
+
+        if filtro_sociedad:
+            context['contexto_detalle_ventas_productocliente'] = FacturaVentaDetalle.objects.filter(Q_filtro_estado & Q_filtro_cliente & Q_filtro_producto & Q_filtro_sociedad)
+        else:
+            context['contexto_detalle_ventas_productocliente'] = FacturaVentaDetalle.objects.filter(Q_filtro_estado & Q_filtro_cliente & Q_filtro_producto)
+        return context

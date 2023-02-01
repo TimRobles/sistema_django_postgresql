@@ -1,0 +1,36 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-justify text-nowrap">#</th>
+            <th class="text-justify text-nowrap">Razón Social</th>
+            <th class="text-justify text-nowrap">RUC</th>
+            <th class="text-center text-nowrap">Última Venta</th>
+            <th class="text-center text-nowrap">Nro. Ventas</th>
+            <th class="text-center text-nowrap">Monto Total Venta</th>
+            <th class="text-center text-nowrap">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fila in contexto_productocliente_ventas %}
+            <td>{{ forloop.counter }}</td>
+            {% for dato in fila  %}
+                {% if forloop.counter == 3 or forloop.counter == 4 %}
+                    <td class="text-end text-nowrap">{{ dato }}</td>
+                {% elif forloop.counter == 5 %}
+                    <td class="text-end text-nowrap">{{ dato }}</td>                
+                {% elif forloop.counter == 6 %}
+                    <td class="text-center text-nowrap">
+                        <a href="{% url 'reportes_panel_app:reportes_panel_productoclienteventas_detalle' dato %}?{{ contexto_filtros }}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    </td>    
+                {% else %}
+                    <td class="text-justify text-nowrap">{{ dato }}</td>
+                {% endif %}               
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

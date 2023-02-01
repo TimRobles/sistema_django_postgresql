@@ -1,0 +1,46 @@
+{% load humanize %}
+<div class="table-responsive">
+    <table>
+        <tbody>
+            <tr>
+                <td><b>Cliente</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_datos_cliente.razon_social }}</td>
+            </tr>
+            <tr>
+                <td><b>Correo(s)</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_datos_cliente.correos }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<p></p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-justify text-nowrap">#</th>
+            <th class="text-justify text-nowrap">Fecha Emisión</th>
+            <th class="text-justify text-nowrap">Comprobante</th>
+            <th class="text-justify text-nowrap">Descripción</th>
+            <th class="text-center text-nowrap">Cantidad</th>
+            <th class="text-center text-nowrap">Precio Final</th>
+            <th class="text-center text-nowrap">Monto Facturado</th>
+            <th class="text-justify text-nowrap">Interlocutor</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fila in contexto_detalle_ventas_productocliente %}
+            <td>{{ forloop.counter }}</td>
+            <td class="text-end text-nowrap">{{ fila.factura_venta.fecha_emision|date:'d/m/Y' }}</td>
+            <td>{{ fila.factura_venta.descripcion }}</td>
+            <td>{{ fila.producto }}</td>
+            <td class="text-end text-nowrap">{{ fila.cantidad|floatformat:"2"|intcomma }}</td>
+            <td class="text-end text-nowrap">{{ fila.precio_final_con_igv|floatformat:"2"|intcomma }}</td>
+            <td class="text-end text-nowrap">{{ fila.total|floatformat:"2"|intcomma }}</td>
+            <td>{{ fila.factura_venta.cliente_interlocutor.nombre_completo }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

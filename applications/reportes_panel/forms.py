@@ -1,8 +1,8 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalModelForm
 from applications.sociedad.models import Sociedad
-from applications.material.models import Marca
-# from applications.clientes.models import Cliente
+from applications.material.models import Marca, Material
+from applications.clientes.models import Cliente
 
 class ReportesPanelFiltrosForm(forms.Form):
     marca = forms.ModelChoiceField(queryset=Marca.objects.all())
@@ -42,5 +42,25 @@ class ReportesPanelFiltrosForm(forms.Form):
         self.fields['fecha_fin'].initial = filtro_fecha_fin
         # self.fields['cliente'].initial = filtro_cliente
         # self.fields['cliente'].required = False
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteProductoClienteVentasFiltrosForm(forms.Form):
+    producto = forms.ModelChoiceField(queryset=Material.objects.all())
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_producto = kwargs.pop('filtro_producto')
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        super(ReporteProductoClienteVentasFiltrosForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['sociedad'].required = False
+        self.fields['producto'].initial = filtro_producto
+        self.fields['producto'].required = False
+        self.fields['cliente'].initial = filtro_cliente
+        self.fields['cliente'].required = False
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
