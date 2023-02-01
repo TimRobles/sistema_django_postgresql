@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Ventas por Productos y Clientes
+{% endblock titulo %}   
+
+{% block contenido %}
+    <h2>Detalle de Ventas Facturadas por Productos y Clientes</h2>
+    <input class="btn btn-danger" type=button value="Retornar" onClick="javascript:history.go(-1);">
+    <!-- <a href=" {% url 'reportes_panel_app:reportes_panel_productoclienteventas' %} " class="btn btn-success">Nueva Consulta</a>   -->
+    <br></br>
+    <div class="table-responsive" id="table">
+        {% include 'reportes_panel/producto_cliente_ventas/detalle_inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
+        
