@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, NotaSalidaDocumento, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, ValidarSerieNotaSalidaDetalle
+from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, NotaSalida, NotaSalidaDetalle, NotaSalidaDocumento, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, ValidarSerieNotaSalidaDetalle
 
 class SolicitudPrestamoMaterialesAdmin(admin.ModelAdmin):
     list_display = (
@@ -199,3 +199,23 @@ class NotaSalidaDocumentoAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(ImagenesDespacho)
+class ImagenesDespachoAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'imagen',
+        'despacho',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+    

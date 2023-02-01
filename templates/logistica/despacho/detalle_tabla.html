@@ -86,3 +86,37 @@
         </tbody>
     </table>
 </div>
+
+<hr>
+
+<h3>Imágenes</h3>
+
+<button data-form-url="{% url 'logistica_app:despacho_imagen_agregar' contexto_despacho_detalle.id %}"
+    data-table-url="{% url 'logistica_app:despacho_detalle_tabla' contexto_despacho_detalle.id %}"
+    class="create btn btn-primary">
+    Agregar Imagen
+</button>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Imagen</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for imagen in contexto_despacho_detalle.ImagenesDespacho_despacho.all %}
+                <tr>
+                    <td><a href="{{ MEDIA_URL }}{{ imagen.imagen }}" target="_blank">{{ imagen.imagen|filename }}</a></td>
+                    <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'logistica_app:despacho_imagen_eliminar' imagen.id %}"
+                            class="delete btn btn-danger btn-sm">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

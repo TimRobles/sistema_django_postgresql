@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.db import models
 from django.conf import settings
+from django_resized import ResizedImageField
 from django.contrib.contenttypes.models import ContentType
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.funciones import numeroXn
@@ -513,3 +514,19 @@ class DespachoDetalle(models.Model):
 
     def __str__(self):
         return str(self.producto)
+
+
+class ImagenesDespacho(models.Model):
+    imagen = ResizedImageField(force_format="WEBP", quality=75, upload_to="img/imagenes-despacho/")
+    despacho = models.ForeignKey(Despacho, on_delete=models.CASCADE, related_name='ImagenesDespacho_despacho')
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ImagenesDespacho_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ImagenesDespacho_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Imagenes Despacho'
+        verbose_name_plural = 'Imagenes Despachos'
+
+    def __str__(self):
+        return str(self.imagen)

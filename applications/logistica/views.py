@@ -5,9 +5,9 @@ from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaD
 from applications.importaciones import *
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
-from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, NotaSalidaDocumento, \
+from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, NotaSalidaDocumento, \
     SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieNotaSalidaDetalle
-from applications.logistica.forms import DespachoAnularForm, DespachoBuscarForm, DespachoForm, DocumentoPrestamoMaterialesForm, \
+from applications.logistica.forms import DespachoAnularForm, DespachoBuscarForm, DespachoForm, DocumentoPrestamoMaterialesForm, ImagenesDespachoForm, \
     NotaSalidaAnularForm, NotaSalidaBuscarForm, NotaSalidaDetalleForm, NotaSalidaDetalleSeriesForm, NotaSalidaDetalleUpdateForm, SolicitudPrestamoMaterialesDetalleForm, \
     SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, \
     SolicitudPrestamoMaterialesAnularForm
@@ -1914,6 +1914,63 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion'] = "Generar"
         context['titulo'] = "Guía"
         context['dar_baja'] = "true"
+        return context
+
+
+class ImagenesDespachoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('logistica.change_despacho')
+    model = ImagenesDespacho
+    template_name = "includes/formulario generico.html"
+    form_class = ImagenesDespachoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:despacho_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                despacho = Despacho.objects.get(id=self.kwargs['id_despacho'])
+                form.instance.despacho = despacho
+                registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ImagenesDespachoCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Agregar"
+        context['titulo'] = "Imagen de Despacho"
+        return context
+
+
+class ImagenesDespachoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_despacho')
+    model = ImagenesDespacho
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk': self.get_object().despacho.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ImagenesDespachoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Imagen de Despacho"
+        context['item'] = self.object
         return context
 
 

@@ -3,7 +3,7 @@ from applications.material.funciones import stock, stock_disponible, stock_sede_
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, ImagenesDespacho, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from applications.sede.models import Sede
 from django import forms
 from django.contrib.contenttypes.models import ContentType
@@ -278,35 +278,19 @@ class DespachoAnularForm(BSModalModelForm):
         super(DespachoAnularForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+      
 
+class ImagenesDespachoForm(BSModalModelForm):
+    class Meta:
+        model = ImagenesDespacho
+        fields=(
+            'imagen',
+            )
 
-
-        # if self.request.session['primero']:
-        #     series = form.cleaned_data['serie']
-        #     nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
-        #     serie_no_encontrada = []
-        #     for serie in series.splitlines():
-        #         buscar = Serie.objects.filter(
-        #             serie_base=serie,
-        #             content_type=ContentType.objects.get_for_model(nota_salida_detalle.producto),
-        #             id_registro=nota_salida_detalle.producto.id,
-        #         )
-            
-        #         if len(buscar) == 0:
-        #             serie_no_encontrada.append(serie)
-        #     if len(serie_no_encontrada) > 0:
-        #         form.add_error('serie', "Serie no encontrada: %s" % ", ".join(serie_no_encontrada))
-        #         return super().form_invalid(form)
-
-        #     nota_salida_detalle = NotaSalidaDetalle.objects.get(id = self.kwargs['pk'])
-        #     obj, created = ValidadSerieNotaSalidaDetalle.objects.get_or_create(
-        #         nota_salida_detalle=nota_salida_detalle,
-        #         serie=serie,
-        #     )
-        #     if created:
-        #         obj.estado = 1
-        #     self.request.session['primero'] = False
-        # return super().form_valid(form)
+    def __init__(self, *args, **kwargs):
+        super(ImagenesDespachoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 
 class NotaSalidaBuscarForm(forms.Form):

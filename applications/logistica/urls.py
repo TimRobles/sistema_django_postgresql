@@ -40,6 +40,9 @@ urlDespacho = [
     path('despacho/detalle/<pk>/', views.DespachoDetailView.as_view(), name='despacho_detalle'),
     path('despacho/detalle-tabla/<pk>/', views.DespachoDetailTabla, name='despacho_detalle_tabla'),
     path('despacho/generar-guia/<pk>/', views.DespachoGenerarGuiaView.as_view(), name='despacho_generar_guia'),
+
+    path('despacho/imagen/agregar/<int:id_despacho>/', views.ImagenesDespachoCreateView.as_view(), name='despacho_imagen_agregar'),
+    path('despacho/imagen/eliminar/<pk>/', views.ImagenesDespachoDeleteView.as_view(), name='despacho_imagen_eliminar'),
 ]
 urlpatterns = [
     path('solicitud-prestamo-materiales/', views.SolicitudPrestamoMaterialesListView.as_view(), name='solicitud_prestamo_materiales_inicio'),
