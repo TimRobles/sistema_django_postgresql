@@ -504,7 +504,7 @@ class ReporteVentasFacturadas(TemplateView):
                             CONCAT(' ', dgm.simbolo, CAST(ROUND(cp.monto,2) AS TEXT)),
                         (CASE WHEN dgm.abreviatura='PEN'
                         THEN (
-                            CONCAT(' ($ ', CAST(ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) AS TEXT), ')')
+                            CONCAT(' ($ ', CAST(ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) AS TEXT), ')')
                         ) ELSE (
                             ''
                         ) END)
@@ -541,7 +541,7 @@ class ReporteVentasFacturadas(TemplateView):
                             CONCAT(' ', dgm.simbolo, CAST(ROUND(cp.monto,2) AS TEXT)),
                         (CASE WHEN dgm.abreviatura='PEN'
                         THEN (
-                            CONCAT(' ($ ', CAST(ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) AS TEXT), ')')
+                            CONCAT(' ($ ', CAST(ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) AS TEXT), ')')
                         ) ELSE (
                             ''
                         ) END)
@@ -801,9 +801,9 @@ class ReporteVentasFacturadas(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvf.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -845,9 +845,9 @@ class ReporteVentasFacturadas(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvb.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1412,9 +1412,9 @@ class ReporteFacturasPendientes(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvf.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1447,7 +1447,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cr.deuda_id=cd.id
                 WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-                HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1462,9 +1462,9 @@ class ReporteFacturasPendientes(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvb.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1497,7 +1497,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cr.deuda_id=cd.id
                 WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1719,13 +1719,13 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     ci.fecha AS fecha_orden,
                     to_char(ci.fecha, 'DD/MM/YYYY') AS fecha_operacion_bancaria,
                     ci.numero_operacion AS numero_operacion_bancaria,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(dgtcs.tipo_cambio_venta),2) END) AS monto_dolares,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(dgtcs.tipo_cambio_venta),2) ELSE MAX(ci.monto) END) AS monto_soles,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/dgtcs.tipo_cambio_venta,2) END) AS monto_dolares,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*dgtcs.tipo_cambio_venta,2) ELSE MAX(ci.monto) END) AS monto_soles,
                     STRING_AGG(cc.razon_social, '\n') AS empresas,
                     STRING_AGG(CONCAT('FACTURA: ', dgsc.serie, '-', cvf.numero_factura), '\n') AS documentos,
                     STRING_AGG(to_char(cvf.fecha_emision, 'DD/MM/YYYY'), '\n') AS fecha_documentos,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) END) AS TEXT), '\n') AS pago_dolares,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) END) AS TEXT), '\n') AS pago_dolares,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
                     FROM cobranza_pago cp
                     LEFT JOIN cobranza_ingreso ci
                         ON ci.id=cp.id_registro AND cp.content_type_id='%s'
@@ -1754,13 +1754,13 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     ci.fecha AS fecha_orden,
                     to_char(ci.fecha, 'DD/MM/YYYY') AS fecha_operacion_bancaria,
                     ci.numero_operacion AS numero_operacion_bancaria,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(dgtcs.tipo_cambio_venta),2) END) AS monto_dolares,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(dgtcs.tipo_cambio_venta),2) ELSE MAX(ci.monto) END) AS monto_soles,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/dgtcs.tipo_cambio_venta,2) END) AS monto_dolares,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*dgtcs.tipo_cambio_venta,2) ELSE MAX(ci.monto) END) AS monto_soles,
                     STRING_AGG(cc.razon_social, '\n') AS empresas,
                     STRING_AGG(CONCAT('BOLETA: ', dgsc.serie, '-', cvb.numero_boleta), '\n') AS documentos,
                     STRING_AGG(to_char(cvb.fecha_emision, 'DD/MM/YYYY'), '\n') AS fecha_documentos,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) END) AS TEXT), '\n') AS pago_dolares,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) END) AS TEXT), '\n') AS pago_dolares,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
                     FROM cobranza_pago cp
                     LEFT JOIN cobranza_ingreso ci
                         ON ci.id=cp.id_registro AND cp.content_type_id='%s'
@@ -2861,9 +2861,9 @@ class ReporteDeudas(TemplateView):
             CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
             MAX(cc.razon_social) AS cliente_denominacion,
             MAX(cvf.total) AS monto_facturado,
-            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-            MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-            (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+            MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+            (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -2897,7 +2897,7 @@ class ReporteDeudas(TemplateView):
                 ON cr.deuda_id=cd.id
             WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL AND cc.id = '%s'
             GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-            HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -2911,9 +2911,9 @@ class ReporteDeudas(TemplateView):
             CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
             MAX(cc.razon_social) AS cliente_denominacion,
             MAX(cvb.total) AS monto_facturado,
-            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-            MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-            (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+            MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+            (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -2947,7 +2947,7 @@ class ReporteDeudas(TemplateView):
                 ON cr.deuda_id=cd.id
             WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL AND cc.id = '%s'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-            HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -3220,7 +3220,7 @@ class ReporteCobranza(TemplateView):
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cvf.total) AS monto_facturado,
-                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
                 to_char(MAX(cvf.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
                 CURRENT_DATE - MAX(cvf.fecha_vencimiento) AS dias_para_vencer,
                 (CASE WHEN (CURRENT_DATE - MAX(cvf.fecha_vencimiento))>0 THEN 'VENCIDO' ELSE 'PENDIENTE' END) AS estado_vencimiento,
@@ -3246,7 +3246,7 @@ class ReporteCobranza(TemplateView):
                     ON cr.deuda_id=cd.id
                 WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-                HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -3260,7 +3260,7 @@ class ReporteCobranza(TemplateView):
                 to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cvb.total) AS monto_facturado,
-                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
                 to_char(MAX(cvb.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
                 CURRENT_DATE - MAX(cvb.fecha_vencimiento) AS dias_para_vencer,
                 (CASE WHEN (CURRENT_DATE - MAX(cvb.fecha_vencimiento))>0 THEN 'VENCIDO' ELSE 'PENDIENTE' END) AS estado_vencimiento,
@@ -3286,7 +3286,7 @@ class ReporteCobranza(TemplateView):
                     ON cr.deuda_id=cd.id
                 WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/dgtcs.tipo_cambio_venta,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
