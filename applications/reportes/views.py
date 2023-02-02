@@ -193,7 +193,7 @@ class ReporteContador(TemplateView):
                 ROUND(MAX(dgtc.tipo_cambio_venta), 2) AS tipo_cambio_fact,
                 ROUND((SUM(cvfd.total)-ROUND((MAX(cvf.descuento_global)*1.18),2))*MAX(dgtc.tipo_cambio_venta),2) AS total_soles,
                 '' AS observaciones,
-                MAX(cvf.nubefact) AS link_nubefact
+                (CASE WHEN MAX(cvf.nubefact) IS NOT NULL THEN MAX(cvf.nubefact) ELSE MAX(dgnr.respuesta->>'enlace') END) AS link_nubefact
                 FROM comprobante_venta_facturaventa cvf
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
@@ -204,7 +204,9 @@ class ReporteContador(TemplateView):
                 LEFT JOIN material_material mm
                     ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
                 LEFT JOIN datos_globales_tipocambiosunat dgtc
-                    ON dgtc.id=cvf.tipo_cambio_id
+                    ON dgtc.fecha=cvf.fecha_emision
+                LEFT JOIN datos_globales_nubefactrespuesta dgnr
+                    ON dgnr.content_type_id='%s' AND dgnr.id_registro=cvf.id AND dgnr.error=False
                 WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura)
                 UNION
@@ -225,7 +227,7 @@ class ReporteContador(TemplateView):
                 ROUND(MAX(dgtc.tipo_cambio_venta), 2) AS tipo_cambio_fact,
                 ROUND((SUM(cvbd.total)-ROUND((MAX(cvb.descuento_global)*1.18),2))*MAX(dgtc.tipo_cambio_venta),2) as total_soles,
                 '' AS observaciones,
-                MAX(cvb.nubefact)
+                (CASE WHEN MAX(cvb.nubefact) IS NOT NULL THEN MAX(cvb.nubefact) ELSE MAX(dgnr.respuesta->>'enlace') END) AS link_nubefact
                 FROM comprobante_venta_boletaventa cvb
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
@@ -236,10 +238,12 @@ class ReporteContador(TemplateView):
                 LEFT JOIN material_material mm
                     ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
                 LEFT JOIN datos_globales_tipocambiosunat dgtc
-                    ON dgtc.id=cvb.tipo_cambio_id
+                    ON dgtc.fecha=cvb.fecha_emision
+                LEFT JOIN datos_globales_nubefactrespuesta dgnr
+                    ON dgnr.content_type_id='%s' AND dgnr.id_registro=cvb.id AND dgnr.error=False
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)
-                ORDER BY fecha_emision_comprobante ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_emision_comprobante ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info = FacturaVenta.objects.raw(sql)
 
             info = []
