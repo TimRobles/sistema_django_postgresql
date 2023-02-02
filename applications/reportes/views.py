@@ -26,6 +26,7 @@ from applications.pdf import*
 from applications.reportes.pdf import generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
+from django.core.mail import EmailMultiAlternatives
 
 
 class ReportesView(FormView):
@@ -202,7 +203,7 @@ class ReporteContador(TemplateView):
                     ON cvf.id=cvfd.factura_venta_id
                 LEFT JOIN material_material mm
                     ON cvfd.content_type_id='%s' AND mm.id=cvfd.id_registro
-                LEFT JOIN datos_globales_tipocambio dgtc
+                LEFT JOIN datos_globales_tipocambiosunat dgtc
                     ON dgtc.id=cvf.tipo_cambio_id
                 WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura)
@@ -234,7 +235,7 @@ class ReporteContador(TemplateView):
                     ON cvb.id=cvbd.boleta_venta_id
                 LEFT JOIN material_material mm
                     ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
-                LEFT JOIN datos_globales_tipocambio dgtc
+                LEFT JOIN datos_globales_tipocambiosunat dgtc
                     ON dgtc.id=cvb.tipo_cambio_id
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)
@@ -503,7 +504,7 @@ class ReporteVentasFacturadas(TemplateView):
                             CONCAT(' ', dgm.simbolo, CAST(ROUND(cp.monto,2) AS TEXT)),
                         (CASE WHEN dgm.abreviatura='PEN'
                         THEN (
-                            CONCAT(' ($ ', CAST(ROUND(cp.monto/cp.tipo_cambio,2) AS TEXT), ')')
+                            CONCAT(' ($ ', CAST(ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) AS TEXT), ')')
                         ) ELSE (
                             ''
                         ) END)
@@ -519,6 +520,8 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
                 LEFT JOIN cobranza_ingreso ci
                     ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
                 LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
@@ -538,7 +541,7 @@ class ReporteVentasFacturadas(TemplateView):
                             CONCAT(' ', dgm.simbolo, CAST(ROUND(cp.monto,2) AS TEXT)),
                         (CASE WHEN dgm.abreviatura='PEN'
                         THEN (
-                            CONCAT(' ($ ', CAST(ROUND(cp.monto/cp.tipo_cambio,2) AS TEXT), ')')
+                            CONCAT(' ($ ', CAST(ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) AS TEXT), ')')
                         ) ELSE (
                             ''
                         ) END)
@@ -554,6 +557,8 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
                 LEFT JOIN cobranza_ingreso ci
                     ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
                 LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
@@ -716,9 +721,9 @@ class ReporteVentasFacturadas(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvf.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -742,6 +747,8 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
                 LEFT JOIN cobranza_ingreso ci
                     ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
                 LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
@@ -767,9 +774,9 @@ class ReporteVentasFacturadas(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvb.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -793,6 +800,8 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
                 LEFT JOIN cobranza_ingreso ci
                     ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
                 LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
@@ -1326,9 +1335,9 @@ class ReporteFacturasPendientes(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvf.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1351,6 +1360,8 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
                 LEFT JOIN cobranza_ingreso ci
                     ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
                 LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
@@ -1359,7 +1370,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cr.deuda_id=cd.id
                 WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-                HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1374,9 +1385,9 @@ class ReporteFacturasPendientes(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvb.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1399,6 +1410,8 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
                 LEFT JOIN cobranza_ingreso ci
                     ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
                 LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                     ON dgcb.id=ci.cuenta_bancaria_id
                 LEFT JOIN datos_globales_moneda dgm
@@ -1407,7 +1420,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON cr.deuda_id=cd.id
                 WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
                     ) ELSE (
@@ -1629,16 +1642,18 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     ci.fecha AS fecha_orden,
                     to_char(ci.fecha, 'DD/MM/YYYY') AS fecha_operacion_bancaria,
                     ci.numero_operacion AS numero_operacion_bancaria,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(ci.tipo_cambio),2) END) AS monto_dolares,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(ci.tipo_cambio),2) ELSE MAX(ci.monto) END) AS monto_soles,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(dgtcs.tipo_cambio_venta),2) END) AS monto_dolares,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(dgtcs.tipo_cambio_venta),2) ELSE MAX(ci.monto) END) AS monto_soles,
                     STRING_AGG(cc.razon_social, '\n') AS empresas,
                     STRING_AGG(CONCAT('FACTURA: ', dgsc.serie, '-', cvf.numero_factura), '\n') AS documentos,
                     STRING_AGG(to_char(cvf.fecha_emision, 'DD/MM/YYYY'), '\n') AS fecha_documentos,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/cp.tipo_cambio,2) END) AS TEXT), '\n') AS pago_dolares,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*cp.tipo_cambio,2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) END) AS TEXT), '\n') AS pago_dolares,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
                     FROM cobranza_pago cp
                     LEFT JOIN cobranza_ingreso ci
                         ON ci.id=cp.id_registro AND cp.content_type_id='%s'
+                    LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                        ON ci.fecha=dgtcs.fecha
                     LEFT JOIN datos_globales_cuentabancariasociedad dgcbs
                         ON dgcbs.id=ci.cuenta_bancaria_id AND dgcbs.estado='1' AND dgcbs.efectivo=False
                     LEFT JOIN datos_globales_moneda dgm
@@ -1662,16 +1677,18 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     ci.fecha AS fecha_orden,
                     to_char(ci.fecha, 'DD/MM/YYYY') AS fecha_operacion_bancaria,
                     ci.numero_operacion AS numero_operacion_bancaria,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(ci.tipo_cambio),2) END) AS monto_dolares,
-                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(ci.tipo_cambio),2) ELSE MAX(ci.monto) END) AS monto_soles,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN MAX(ci.monto) ELSE ROUND(MAX(ci.monto)/MAX(dgtcs.tipo_cambio_venta),2) END) AS monto_dolares,
+                    (CASE WHEN MAX(dgm.abreviatura)='USD' THEN ROUND(MAX(ci.monto)*MAX(dgtcs.tipo_cambio_venta),2) ELSE MAX(ci.monto) END) AS monto_soles,
                     STRING_AGG(cc.razon_social, '\n') AS empresas,
                     STRING_AGG(CONCAT('BOLETA: ', dgsc.serie, '-', cvb.numero_boleta), '\n') AS documentos,
                     STRING_AGG(to_char(cvb.fecha_emision, 'DD/MM/YYYY'), '\n') AS fecha_documentos,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/cp.tipo_cambio,2) END) AS TEXT), '\n') AS pago_dolares,
-                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*cp.tipo_cambio,2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN cp.monto ELSE ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) END) AS TEXT), '\n') AS pago_dolares,
+                    STRING_AGG(CAST((CASE WHEN dgm.abreviatura='USD' THEN ROUND(cp.monto*MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) AS TEXT), '\n') AS pago_soles
                     FROM cobranza_pago cp
                     LEFT JOIN cobranza_ingreso ci
                         ON ci.id=cp.id_registro AND cp.content_type_id='%s'
+                    LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                        ON ci.fecha=dgtcs.fecha
                     LEFT JOIN datos_globales_cuentabancariasociedad dgcbs
                         ON dgcbs.id=ci.cuenta_bancaria_id AND dgcbs.estado='1' AND dgcbs.efectivo=False
                     LEFT JOIN datos_globales_moneda dgm
@@ -2767,9 +2784,9 @@ class ReporteDeudas(TemplateView):
             CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
             MAX(cc.razon_social) AS cliente_denominacion,
             MAX(cvf.total) AS monto_facturado,
-            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-            MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-            (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+            MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+            (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -2793,6 +2810,8 @@ class ReporteDeudas(TemplateView):
                 ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
             LEFT JOIN cobranza_ingreso ci
                 ON ci.id=cp.id_registro
+            LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                ON ci.fecha=dgtcs.fecha
             LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                 ON dgcb.id=ci.cuenta_bancaria_id
             LEFT JOIN datos_globales_moneda dgm
@@ -2801,7 +2820,7 @@ class ReporteDeudas(TemplateView):
                 ON cr.deuda_id=cd.id
             WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL AND cc.id = '%s'
             GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-            HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -2815,9 +2834,9 @@ class ReporteDeudas(TemplateView):
             CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
             MAX(cc.razon_social) AS cliente_denominacion,
             MAX(cvb.total) AS monto_facturado,
-            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-            MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
-            (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
+            MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+            (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -2841,6 +2860,8 @@ class ReporteDeudas(TemplateView):
                 ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
             LEFT JOIN cobranza_ingreso ci
                 ON ci.id=cp.id_registro
+            LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                ON ci.fecha=dgtcs.fecha
             LEFT JOIN datos_globales_cuentabancariasociedad dgcb
                 ON dgcb.id=ci.cuenta_bancaria_id
             LEFT JOIN datos_globales_moneda dgm
@@ -2849,7 +2870,7 @@ class ReporteDeudas(TemplateView):
                 ON cr.deuda_id=cd.id
             WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL AND cc.id = '%s'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-            HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+            HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                 THEN (
                     'CANCELADO'
                 ) ELSE (
@@ -2942,6 +2963,8 @@ class ReporteDeudas(TemplateView):
         pie_pagina = objeto_sociedad.pie_pagina
         list_texto = []
         # texto = '''Lima, %s''' % str(fecha_texto) + '\n''\n' + '''SR. ''' + DICT_CLIENTE[global_cliente] + '\n' + '''Estimado cliente, se le remite la deuda actualizada al día de hoy <strong>%s</strong>, cuyos detalles son los siguientes:''' % (str(fecha_hoy))
+        text = Paragraph('''<para align=center><strong>%s</strong></para>''' %("REPORTE DE DEUDAS"), styleSheet["ComicNeue-Bold-14"])
+        list_texto.append(text)
         text = '''Lima, %s''' % str(fecha_texto) + '\n''\n'
         list_texto.append(text)
         text = Paragraph('''<b>SR. ''' + DICT_CLIENTE[global_cliente] + '''</b>''')
@@ -3052,305 +3075,259 @@ class ReporteCobranza(TemplateView):
         #         ],
         # }
 
-        # def consulta_cobranza():
+        def generar_reporte_cobranza(id_sociedad):
 
-        sql_cobranza_nota = ''' (SELECT
-            MAX(cn.id) AS id,
-            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
-            SUM(cn.monto) as monto_nota_credito, 
-            MAX(cc.razon_social) AS cliente_denominacion,
-            'FACTURA' AS tipo_comprobante
-            FROM cobranza_nota cn
-            LEFT JOIN cobranza_pago cp
-                ON cp.id_registro=cn.id AND cp.content_type_id='%s'
-            LEFT JOIN cobranza_deuda cd
-                ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
-            LEFT JOIN comprobante_venta_facturaventa cvf
-                ON cd.id_registro=cvf.id
-            LEFT JOIN datos_globales_seriescomprobante dgsc
-                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
-            LEFT JOIN clientes_cliente cc
-                ON cc.id=cvf.cliente_id
-            LEFT JOIN datos_globales_moneda dgm
-                ON dgm.id=cn.moneda_id
-            WHERE cvf.sociedad_id='%s'
-            GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-            ORDER BY 4)
-            UNION
-            (SELECT
-            MAX(cn.id) AS id,
-            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
-            SUM(cn.monto) as monto_nota_credito,
-            MAX(cc.razon_social) AS cliente_denominacion,
-            'BOLETA' AS tipo_comprobante
-            FROM cobranza_nota cn
-            LEFT JOIN cobranza_pago cp
-                ON cp.id_registro=cn.id AND cp.content_type_id='%s'
-            LEFT JOIN cobranza_deuda cd
-                ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
-            LEFT JOIN comprobante_venta_boletaventa cvb
-                ON cd.id_registro=cvb.id
-            LEFT JOIN datos_globales_seriescomprobante dgsc
-                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
-            LEFT JOIN clientes_cliente cc
-                ON cc.id=cvb.cliente_id
-            LEFT JOIN datos_globales_moneda dgm
-                ON dgm.id=cn.moneda_id
-            WHERE cvb.sociedad_id='%s'
-            GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-            ORDER BY 4) ; ''' %(DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
-        query_info = Nota.objects.raw(sql_cobranza_nota)
+            sql_cobranza_nota = ''' (SELECT
+                MAX(cn.id) AS id,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+                SUM(cn.monto) as monto_nota_credito, 
+                MAX(cc.razon_social) AS cliente_denominacion,
+                'FACTURA' AS tipo_comprobante
+                FROM cobranza_nota cn
+                LEFT JOIN cobranza_pago cp
+                    ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_deuda cd
+                    ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+                LEFT JOIN comprobante_venta_facturaventa cvf
+                    ON cd.id_registro=cvf.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=cn.moneda_id
+                WHERE cvf.sociedad_id='%s'
+                GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+                ORDER BY 4)
+                UNION
+                (SELECT
+                MAX(cn.id) AS id,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+                SUM(cn.monto) as monto_nota_credito,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                'BOLETA' AS tipo_comprobante
+                FROM cobranza_nota cn
+                LEFT JOIN cobranza_pago cp
+                    ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_deuda cd
+                    ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+                LEFT JOIN comprobante_venta_boletaventa cvb
+                    ON cd.id_registro=cvb.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=cn.moneda_id
+                WHERE cvb.sociedad_id='%s'
+                GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+                ORDER BY 4) ; ''' %(DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+            query_info = Nota.objects.raw(sql_cobranza_nota)
 
-        info_cobranza_nota = []
-        for fila in query_info:
-            lista_datos = []
-            lista_datos.append(fila.nro_comprobante)
-            lista_datos.append(fila.monto_nota_credito)
-            lista_datos.append(fila.cliente_denominacion)
-            lista_datos.append(fila.tipo_comprobante)
-            info_cobranza_nota.append(lista_datos)
+            info_cobranza_nota = []
+            for fila in query_info:
+                lista_datos = []
+                lista_datos.append(fila.nro_comprobante)
+                lista_datos.append(fila.monto_nota_credito)
+                lista_datos.append(fila.cliente_denominacion)
+                lista_datos.append(fila.tipo_comprobante)
+                info_cobranza_nota.append(lista_datos)
 
-        dict_cobranza_nota = {}
-        for fila in info_cobranza_nota:
-            dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
+            dict_cobranza_nota = {}
+            for fila in info_cobranza_nota:
+                dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
 
-        sql = '''(SELECT
-            MAX(cvf.id) AS id,
-            MAX(cc.razon_social) AS cliente_denominacion,
-            to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
-            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
-            MAX(cvf.total) AS monto_facturado,
-            MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
-            to_char(MAX(cvf.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
-            CURRENT_DATE - MAX(cvf.fecha_vencimiento) AS dias_para_vencer,
-            (CASE WHEN (CURRENT_DATE - MAX(cvf.fecha_vencimiento))>0 THEN 'VENCIDO' ELSE 'PENDIENTE' END) AS estado_vencimiento,
-            'FACTURA' AS tipo_comprobante
-            FROM comprobante_venta_facturaventa cvf
-            LEFT JOIN datos_globales_seriescomprobante dgsc
-                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
-            LEFT JOIN clientes_cliente cc
-                ON cc.id=cvf.cliente_id
-            LEFT JOIN cobranza_deuda cd
-                ON cd.content_type_id='%s' AND cd.id_registro=cvf.id
-            LEFT JOIN cobranza_pago cp
-                ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
-            LEFT JOIN cobranza_ingreso ci
-                ON ci.id=cp.id_registro
-            LEFT JOIN datos_globales_cuentabancariasociedad dgcb
-                ON dgcb.id=ci.cuenta_bancaria_id
-            LEFT JOIN datos_globales_moneda dgm
-                ON dgm.id=dgcb.moneda_id
-            LEFT JOIN cobranza_redondeo cr
-                ON cr.deuda_id=cd.id
-            WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL
-            GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
-            HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
-                THEN (
-                    'CANCELADO'
-                ) ELSE (
-                    'PENDIENTE'
-                ) END) = 'PENDIENTE'
-            ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC)
-            UNION
-            SELECT
-            MAX(cvb.id) AS id,
-            MAX(cc.razon_social) AS cliente_denominacion,
-            to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
-            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
-            MAX(cvb.total) AS monto_facturado,
-            MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
-            to_char(MAX(cvb.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
-            CURRENT_DATE - MAX(cvb.fecha_vencimiento) AS dias_para_vencer,
-            (CASE WHEN (CURRENT_DATE - MAX(cvb.fecha_vencimiento))>0 THEN 'VENCIDO' ELSE 'PENDIENTE' END) AS estado_vencimiento,
-            'BOLETA' AS tipo_comprobante
-            FROM comprobante_venta_boletaventa cvb
-            LEFT JOIN datos_globales_seriescomprobante dgsc
-                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
-            LEFT JOIN clientes_cliente cc
-                ON cc.id=cvb.cliente_id
-            LEFT JOIN cobranza_deuda cd
-                ON cd.content_type_id='%s' AND cd.id_registro=cvb.id
-            LEFT JOIN cobranza_pago cp
-                ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
-            LEFT JOIN cobranza_ingreso ci
-                ON ci.id=cp.id_registro
-            LEFT JOIN datos_globales_cuentabancariasociedad dgcb
-                ON dgcb.id=ci.cuenta_bancaria_id
-            LEFT JOIN datos_globales_moneda dgm
-                ON dgm.id=dgcb.moneda_id
-            LEFT JOIN cobranza_redondeo cr
-                ON cr.deuda_id=cd.id
-            WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL
-            GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-            HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
-                THEN (
-                    'CANCELADO'
-                ) ELSE (
-                    'PENDIENTE'
-                ) END) = 'PENDIENTE'
-            ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
-        query_info = FacturaVenta.objects.raw(sql)
+            sql = '''(SELECT
+                MAX(cvf.id) AS id,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+                MAX(cvf.total) AS monto_facturado,
+                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                to_char(MAX(cvf.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
+                CURRENT_DATE - MAX(cvf.fecha_vencimiento) AS dias_para_vencer,
+                (CASE WHEN (CURRENT_DATE - MAX(cvf.fecha_vencimiento))>0 THEN 'VENCIDO' ELSE 'PENDIENTE' END) AS estado_vencimiento,
+                'FACTURA' AS tipo_comprobante
+                FROM comprobante_venta_facturaventa cvf
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN cobranza_deuda cd
+                    ON cd.content_type_id='%s' AND cd.id_registro=cvf.id
+                LEFT JOIN cobranza_pago cp
+                    ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_ingreso ci
+                    ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
+                LEFT JOIN datos_globales_cuentabancariasociedad dgcb
+                    ON dgcb.id=ci.cuenta_bancaria_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=dgcb.moneda_id
+                LEFT JOIN cobranza_redondeo cr
+                    ON cr.deuda_id=cd.id
+                WHERE cvf.sociedad_id='%s' AND cvf.estado='4' AND cd.id IS NOT NULL
+                GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+                HAVING (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                    THEN (
+                        'CANCELADO'
+                    ) ELSE (
+                        'PENDIENTE'
+                    ) END) = 'PENDIENTE'
+                ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC)
+                UNION
+                SELECT
+                MAX(cvb.id) AS id,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+                MAX(cvb.total) AS monto_facturado,
+                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                to_char(MAX(cvb.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
+                CURRENT_DATE - MAX(cvb.fecha_vencimiento) AS dias_para_vencer,
+                (CASE WHEN (CURRENT_DATE - MAX(cvb.fecha_vencimiento))>0 THEN 'VENCIDO' ELSE 'PENDIENTE' END) AS estado_vencimiento,
+                'BOLETA' AS tipo_comprobante
+                FROM comprobante_venta_boletaventa cvb
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN cobranza_deuda cd
+                    ON cd.content_type_id='%s' AND cd.id_registro=cvb.id
+                LEFT JOIN cobranza_pago cp
+                    ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
+                LEFT JOIN cobranza_ingreso ci
+                    ON ci.id=cp.id_registro
+                LEFT JOIN datos_globales_tipocambiosunat dgtcs
+                    ON ci.fecha=dgtcs.fecha
+                LEFT JOIN datos_globales_cuentabancariasociedad dgcb
+                    ON dgcb.id=ci.cuenta_bancaria_id
+                LEFT JOIN datos_globales_moneda dgm
+                    ON dgm.id=dgcb.moneda_id
+                LEFT JOIN cobranza_redondeo cr
+                    ON cr.deuda_id=cd.id
+                WHERE cvb.sociedad_id='%s' AND cvb.estado='4' AND cd.id IS NOT NULL
+                GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+                HAVING (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                    THEN (
+                        'CANCELADO'
+                    ) ELSE (
+                        'PENDIENTE'
+                    ) END) = 'PENDIENTE'
+                ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+            query_info = FacturaVenta.objects.raw(sql)
 
-        list_cobranza = []
-        for fila in query_info:
-            lista_datos = []
-            lista_datos.append(fila.cliente_denominacion)
-            lista_datos.append(fila.fecha_emision_comprobante)
-            lista_datos.append(fila.nro_comprobante)
-            lista_datos.append(fila.monto_facturado)
-            lista_datos.append(fila.monto_pendiente)
-            lista_datos.append(fila.fecha_vencimiento_comprobante)
-            lista_datos.append(fila.dias_para_vencer)
-            lista_datos.append(fila.estado_vencimiento)
-            lista_datos.append(fila.tipo_comprobante)
-            list_cobranza.append(lista_datos)
+            list_cobranza = []
+            for fila in query_info:
+                lista_datos = []
+                lista_datos.append(fila.cliente_denominacion)
+                lista_datos.append(fila.fecha_emision_comprobante)
+                lista_datos.append(fila.nro_comprobante)
+                lista_datos.append(fila.monto_facturado)
+                lista_datos.append(fila.monto_pendiente)
+                lista_datos.append(fila.fecha_vencimiento_comprobante)
+                lista_datos.append(fila.dias_para_vencer)
+                lista_datos.append(fila.estado_vencimiento)
+                lista_datos.append(fila.tipo_comprobante)
+                list_cobranza.append(lista_datos)
 
-        # if DICT_FACTURAS_SORTEO[cod_soc] == []:
-        #     sql_2 = ''' WHERE cf.Fecha_Emision != '0000-00-00' AND cf.Cod_Soc='%s' AND cf.Estado_Factura != '1'
-        #         GROUP BY cf.Cod_Soc, cf.Año, cf.Tipo_Comprobante, cf.Serie, cf.Nro_Facturacion, cob.Cod_Soc, cob.Año_Cot_Client, cob.Nro_Cot_Client
-        #         HAVING ROUND(SUM(cob.Monto_Saldo),2) > 0.00
-        #         ORDER BY mc.Razon_Social ASC ; ''' %(cod_soc)
-        # elif len(DICT_FACTURAS_SORTEO[cod_soc]) == 1:
-        #     sql_2 = ''' WHERE cf.Fecha_Emision != '0000-00-00' AND cf.Cod_Soc='%s' AND cf.Estado_Factura != '1' AND CONCAT(cf.Serie, '-', cf.Nro_Facturacion) != '%s'
-        #         GROUP BY cf.Cod_Soc, cf.Año, cf.Tipo_Comprobante, cf.Serie, cf.Nro_Facturacion, cob.Cod_Soc, cob.Año_Cot_Client, cob.Nro_Cot_Client
-        #         HAVING ROUND(SUM(cob.Monto_Saldo),2) > 0.00
-        #         ORDER BY mc.Razon_Social ASC ; ''' %(cod_soc, DICT_FACTURAS_SORTEO[cod_soc][0])
-        # else:
-        #     sql_2 = ''' WHERE cf.Fecha_Emision != '0000-00-00' AND cf.Cod_Soc='%s' AND cf.Estado_Factura != '1' AND CONCAT(cf.Serie, '-', cf.Nro_Facturacion) NOT IN %s
-        #         GROUP BY cf.Cod_Soc, cf.Año, cf.Tipo_Comprobante, cf.Serie, cf.Nro_Facturacion, cob.Cod_Soc, cob.Año_Cot_Client, cob.Nro_Cot_Client
-        #         HAVING ROUND(SUM(cob.Monto_Saldo),2) > 0.00
-        #         ORDER BY mc.Razon_Social ASC ; ''' %(cod_soc, tuple(DICT_FACTURAS_SORTEO[cod_soc]))
+            for fila in list_cobranza:
+                fila[3] = float(fila[3])
+                if fila[4] == None:
+                    fila[4] = fila[3]
+                fila[3] = float(fila[3])
+                fila[4] = float(fila[4])
 
-        # sql = sql_1 + sql_2
-        # list_cobranza = consultarSql(sql)
-        # # print(list_cobranza)
+                if fila[2] + '|' + fila[8] in dict_cobranza_nota:
+                    monto_nota_credito = float(dict_cobranza_nota[fila[2] + '|' + fila[8]])
+                    fila[4] = fila[4] - monto_nota_credito
+                
+            objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
 
-        #     return list_cobranza
+            fecha_hoy = datetime.now().strftime("%Y-%m-%d")
+            fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
 
-        # def generar_reporte_cobranza(global_sociedad):
-        #     list_general = consulta_cobranza()
+            color = DICT_SOCIEDAD[global_sociedad].color
+            #####
+            query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
+            abreviatura = query_sociedad.abreviatura
+            #####
+            titulo = "Reporte de Cobranza - " + abreviatura + " - " + FECHA_HOY
+            vertical = False
+            alinear = 'right'
+            logo = [[objeto_sociedad.logo.url, alinear]]
+            pie_pagina = objeto_sociedad.pie_pagina
+            list_texto = []
+            texto = Paragraph('''<para align=center><strong>%s</strong></para>''' %("REPORTE DE COBRANZA"), styleSheet["ComicNeue-Bold-14"])
+            list_texto.append(texto)
+            texto = '''Lima, %s''' % str(fecha_texto) + '\n''\n' + '''Facturas por cobrar en la semana: '''
+            list_texto.append(texto)
+            TablaEncabezado = [
+                'RAZÓN SOCIAL',
+                'FECHA',
+                'COMPROB.',
+                'TOTAL',
+                'PENDIENTE',
+                'VENCE',
+                'DIAS VENC.',
+                'ESTADO',
+                ]
 
-        for fila in list_cobranza:
-            fila[3] = float(fila[3])
-            if fila[4] == None:
-                fila[4] = fila[3]
-            fila[3] = float(fila[3])
-            fila[4] = float(fila[4])
+            TablaDatos = []
+            for lista in list_cobranza:
+                if lista[4] > float(0):
+                    fila = []
+                    fila.append(lista[0])
+                    fila.append(lista[1])
+                    fila.append(lista[2])
+                    fila.append(lista[3])
+                    fila.append(lista[4])
+                    fila.append(lista[5])
+                    fila.append(lista[6])
+                    fila.append(lista[7])
+                    TablaDatos.append(fila)
 
-            if fila[2] + '|' + fila[8] in dict_cobranza_nota:
-                monto_nota_credito = float(dict_cobranza_nota[fila[2] + '|' + fila[8]])
-                fila[4] = fila[4] - monto_nota_credito
+
+            buf = generarReporteCobranza(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)
+
+            respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+            respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
             
-        objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
+            return respuesta
 
-        fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-        fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
+        def reporte_cobranza():
+            archivo_1 = generar_reporte_cobranza(id_sociedad = '2')
+            archivo_2 = generar_reporte_cobranza(id_sociedad = '1')
+            try:
+                list_archivos = []
+                # nombre_archivo_1 = "Reporte_Cobranza_MC_" + str(date.today()) + '.pdf'
+                # nombre_archivo_2 = "Reporte_Cobranza_MP_" + str(date.today()) + '.pdf'
+                list_archivos.extend([archivo_1, archivo_2])
+                print(list_archivos)
+                asunto = "Recordatorio - Facturas por cobrar"
+                mensaje = ""
+                email_remitente = EMAIL_REMITENTE
+                email_destinatario = ["ronny.oa.14@gmail.com",]
+                # email_destinatario = "sleiter512@gmail.com"
+                # email_destinatario = "rpaniura@multiplay.com.pe"
+                email_copia = ["ronny0992@gmail.com",]
 
-        color = DICT_SOCIEDAD[global_sociedad].color
-        #####
-        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
-        abreviatura = query_sociedad.abreviatura
-        #####
-        titulo = "Reporte de Cobranza - " + abreviatura + " - " + FECHA_HOY
-        vertical = False
-        alinear = 'right'
-        logo = [[objeto_sociedad.logo.url, alinear]]
-        pie_pagina = objeto_sociedad.pie_pagina
-        list_texto = []
-        texto = '''Lima, %s''' % str(fecha_texto) + '\n''\n' + '''Facturas por cobrar en la semana: '''
-        list_texto.append(texto)
-        TablaEncabezado = [
-            'RAZÓN SOCIAL',
-            'FECHA',
-            'COMPROB.',
-            'TOTAL',
-            'PENDIENTE',
-            'VENCE',
-            'DIAS VENC.',
-            'ESTADO',
-            ]
+                correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to = email_destinatario, cc = email_copia,)
+                correo.attach_alternative(mensaje, "text/html")
+                try:
+                    correo.send()
+                    messages.success(self.request, 'Correo enviado.')
+                except Exception as e:
+                    print(e)
+                    messages.warning(self.request, 'Hubo un error al enviar el correo.')
+            except Exception as e:
+                print("No se pudo enviar el correo..")
+                print(e)
 
-        TablaDatos = []
-        for lista in list_cobranza:
-            if lista[4] > float(0):
-                fila = []
-                fila.append(lista[0])
-                fila.append(lista[1])
-                fila.append(lista[2])
-                fila.append(lista[3])
-                fila.append(lista[4])
-                fila.append(lista[5])
-                fila.append(lista[6])
-                fila.append(lista[7])
-                TablaDatos.append(fila)
+        reporte_cobranza()
+        return generar_reporte_cobranza(global_sociedad)
 
-
-        buf = generarReporteCobranza(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)
-
-        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
-        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
-
-        return respuesta
-
-        # def reporte_cobranza():
-        #     archivo_1 = generar_reporte_cobranza('2')
-        #     archivo_2 = generar_reporte_cobranza('1')
-        #     try:
-        #         list_archivos = []
-        #         # nombre_archivo_1 = "Reporte_Cobranza_MC_" + str(date.today()) + '.pdf'
-        #         # nombre_archivo_2 = "Reporte_Cobranza_MP_" + str(date.today()) + '.pdf'
-        #         list_archivos.extend([archivo_1, archivo_2])
-        #         asunto = "Recordatorio - Facturas por cobrar"
-        #         # enviarCorreo("sleiter512@gmail.com", list_archivos, asunto, "")
-        #         enviarCorreo("rpaniura@multiplay.com.pe", list_archivos, asunto, "")
-        #         print('Correo enviado..')
-        #     except Exception as e:
-        #         print("No se pudo enviar el correo..")
-        #         print(e)
-        
-        #  sid = transaction.savepoint()
-        # try:
-        #     if self.request.session['primero']:
-        #         orden = OrdenCompra.objects.get(slug=self.kwargs['slug'])            
-        #         correos_proveedor = form.cleaned_data['correos_proveedor']
-        #         correos_internos = form.cleaned_data['correos_internos']
-        #         self.request.session['primero'] = False
-
-        #         asunto = "Orden de Compra - %s" % (orden.id)
-        #         mensaje = '<p>Estimado,</p><p>Se le envia la Orden de Compra: <a href="%s%s">%s</a></p>' % (self.request.META['HTTP_ORIGIN'], reverse_lazy('orden_compra_app:orden_compra_pdf', kwargs={'slug':orden.slug}), 'Orden')
-        #         email_remitente = EMAIL_REMITENTE
-
-        #         correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_proveedor, cc=correos_internos,)
-        #         correo.attach_alternative(mensaje, "text/html")
-        #         print("Enviar correo")
-        #         try:
-        #             correo.send()
-        #             orden.estado = 2
-        #             orden.save()
-                    
-        #             messages.success(self.request, 'Correo enviado.')
-        #             self.request.session['primero'] = False
-        #         except Exception as e:
-        #             print(e)
-        #             messages.warning(self.request, 'Hubo un error al enviar el correo.')
-            
-        #     return super().form_valid(form)
-        # except Exception as ex:
-        #     transaction.savepoint_rollback(sid)
-        #     registrar_excepcion(self, ex, __file__)
-        # return HttpResponseRedirect(self.get_success_url())
-
-
-        # # reporte_cobranza()
-        # # generar_reporte_cobranza('2000')
-
-        # # schedule.every(30).seconds.do(reporte_cobranza)
-        # # schedule.every(5).seconds.do(job)
-        # # schedule.every().day.at("10:00").do(reporte_cobranza)
-
-        # while True:
-        #     schedule.run_pending()
-        #     time.sleep(1)
 
 class ReporteRotacion(TemplateView):
     def get(self,request, *args,**kwargs):
@@ -3742,6 +3719,7 @@ class ReporteRotacion(TemplateView):
         respuesta['content-disposition']= content
         wb.save(respuesta)
         return respuesta
+
 
 class ReporteResumenStockProductosExcel(TemplateView):
     def get(self,request, *args,**kwargs):
