@@ -64,3 +64,19 @@ class ReporteProductoClienteVentasFiltrosForm(forms.Form):
         self.fields['cliente'].required = False
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteUbigeoVentasFiltrosForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
+    # producto = forms.ModelChoiceField(queryset=Material.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        # filtro_producto = kwargs.pop('filtro_producto')
+        super(ReporteUbigeoVentasFiltrosForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['sociedad'].required = False
+        # self.fields['producto'].initial = filtro_producto
+        # self.fields['producto'].required = False
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

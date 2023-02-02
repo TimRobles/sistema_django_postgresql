@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from applications.importaciones import *
-from applications.reportes_panel.forms import ReportesPanelFiltrosForm, ReporteProductoClienteVentasFiltrosForm
+from django.db.models.functions import Substr
+from applications.reportes_panel.forms import ReportesPanelFiltrosForm, ReporteProductoClienteVentasFiltrosForm, ReporteUbigeoVentasFiltrosForm
 from applications.material.forms import Material
 from applications.comprobante_venta.models import FacturaVentaDetalle, FacturaVenta
 from applications.reportes.funciones import *
@@ -11,6 +12,11 @@ from openpyxl.styles.borders import Border, Side
 from openpyxl.chart import Reference, Series,LineChart
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.plotarea import DataTable
+import pandas as pd
+import requests
+from plotly.offline import plot
+import plotly.express as px
+import plotly.graph_objects as go
 
 def consultar_marca_ventas(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin):
     sql_base = '''SELECT
@@ -309,3 +315,115 @@ class ProductoClienteVentasDetalle(DetailView):
         else:
             context['contexto_detalle_ventas_productocliente'] = FacturaVentaDetalle.objects.filter(Q_filtro_estado & Q_filtro_cliente & Q_filtro_producto)
         return context
+
+
+def consultar_ubigeo_ventas(filtro_sociedad):  
+    if filtro_sociedad:
+        filtro_sociedad_factura = ''' AND cvf.sociedad_id='%s' ''' %(filtro_sociedad)
+        filtro_sociedad_boleta = ''' AND cvb.sociedad_id='%s' ''' %(filtro_sociedad)
+    else:
+        filtro_sociedad_factura = ''
+        filtro_sociedad_boleta = ''
+    
+    sql = '''SELECT 
+            MAX(id) AS id, departamento_nombre, SUM(monto_total_facturado) AS monto_total_facturado 
+            FROM (
+                (SELECT 
+                        MAX(cvf.id) as id,
+                        dgdp.nombre AS departamento_nombre,
+                        '--'  AS provincia_nombre,
+                        '--'  AS distrito_nombre,
+                        SUM(cvf.total) AS monto_total_facturado
+                    FROM comprobante_venta_facturaventa cvf
+                    LEFT JOIN clientes_cliente cc
+                        ON cc.id=cvf.cliente_id
+                    LEFT JOIN datos_globales_departamento dgdp
+                        ON dgdp.codigo=SUBSTRING(cc.ubigeo,1,2)
+                    WHERE cvf.estado='4' AND dgdp.nombre IS NOT NULL %s
+                    GROUP BY dgdp.nombre
+                    ORDER BY monto_total_facturado DESC)
+                UNION
+                (SELECT 
+                        MAX(cvb.id) as id,
+                        dgdp.nombre AS departamento_nombre,
+                        '--'  AS provincia_nombre,
+                        '--'  AS distrito_nombre,
+                        SUM(cvb.total) AS monto_total_facturado
+                    FROM comprobante_venta_boletaventa cvb
+                    LEFT JOIN clientes_cliente cc
+                        ON cc.id=cvb.cliente_id
+                    LEFT JOIN datos_globales_departamento dgdp
+                        ON dgdp.codigo=SUBSTRING(cc.ubigeo,1,2)
+                    WHERE cvb.estado='4' AND dgdp.nombre IS NOT NULL %s
+                    GROUP BY dgdp.nombre
+                    ORDER BY monto_total_facturado DESC)) tabla_ventas
+        GROUP BY departamento_nombre
+        ORDER BY monto_total_facturado DESC ; ''' %(filtro_sociedad_factura, filtro_sociedad_boleta)
+    query_info = FacturaVenta.objects.raw(sql)
+    list_info = []
+    for fila in query_info:
+        list_temp = []
+        list_temp.extend([
+            fila.departamento_nombre,
+            # fila.provincia_nombre,
+            # fila.distrito_nombre,
+            fila.monto_total_facturado,
+            ])
+        list_info.append(list_temp)
+    
+    return list_info
+    # https://stackoverflow.com/questions/39291372/django-orm-join-without-foreign-keys-and-without-raw-queries
+
+
+class UbigeoVentasView(FormView):
+    template_name = "reportes_panel/ubigeo_ventas/inicio.html"
+    form_class = ReporteUbigeoVentasFiltrosForm
+    success_url = '.' 
+
+    def get_form_kwargs(self):
+        kwargs = super(UbigeoVentasView, self).get_form_kwargs()
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        # kwargs['filtro_producto'] = self.request.GET.get('producto')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(UbigeoVentasView, self).get_context_data(**kwargs)
+        contexto_filtros = []
+        filtro_sociedad = self.request.GET.get('sociedad')
+        # filtro_producto = self.request.GET.get('producto')
+        contexto_filtros.append(f"filtro_sociedad={filtro_sociedad}")
+        # contexto_filtros.append(f"filtro_producto={filtro_producto}")
+        context["contexto_filtros"] = "&".join(contexto_filtros)
+        data_ubigeo_ventas = consultar_ubigeo_ventas(filtro_sociedad)
+        context['contexto_ubigeo_ventas'] = data_ubigeo_ventas
+        list_encabezado = [['DEPARTAMENTO', 'INGRESOS']]
+        table_data = list_encabezado + data_ubigeo_ventas
+        df = pd.DataFrame(table_data[1:], columns=table_data[0])
+        try:
+            context['contexto_ubigeo_ventas_grafico'] = grafico_departamentos(df)
+        except:
+            context['contexto_ubigeo_ventas_grafico'] = None
+        return context
+
+
+def grafico_departamentos(df):
+    # url_git = "https://github.com/juaneladio/peru-geojson/blob/master/peru_departamental_simple.geojson"
+    url_datos = "https://raw.githubusercontent.com/juaneladio/peru-geojson/master/peru_departamental_simple.geojson"
+    departamentos = requests.get(url_datos).json()
+    # https://plotly.github.io/plotly.py-docs/generated/plotly.express.choropleth_mapbox.html
+    fig = px.choropleth_mapbox(
+        data_frame=df,
+        geojson=departamentos,
+        locations='DEPARTAMENTO',
+        featureidkey='properties.NOMBDEP',
+        hover_name='DEPARTAMENTO',
+        color='INGRESOS',
+        color_continuous_scale='solar', # Reds, magma, spectral # color_continuous_scale=px.colors.sequential.Plasma,
+        width=650,height=850,
+        center={"lat":-9.1900, "lon": -75.0152},
+        mapbox_style='carto-positron', # 'open-street-map', 'white-bg', 'carto-positron', 'carto-darkmatter', 'stamen- terrain', 'stamen-toner', 'stamen-watercolor'
+        zoom=4.5,
+        )
+    return plot(fig, auto_open=False, output_type='div')
+    # fig = go.Figure(fig)
+    # return fig.to_html(full_html=False)

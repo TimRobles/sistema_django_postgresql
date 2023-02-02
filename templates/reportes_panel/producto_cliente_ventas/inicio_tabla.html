@@ -1,3 +1,5 @@
+{% load humanize %}
+
 <table class="table">
     <thead>
         <tr>
@@ -17,7 +19,7 @@
                 {% if forloop.counter == 3 or forloop.counter == 4 %}
                     <td class="text-end text-nowrap">{{ dato }}</td>
                 {% elif forloop.counter == 5 %}
-                    <td class="text-end text-nowrap">{{ dato }}</td>                
+                    <td class="text-end text-nowrap">{{ dato|intcomma }}</td>                
                 {% elif forloop.counter == 6 %}
                     <td class="text-center text-nowrap">
                         <a href="{% url 'reportes_panel_app:reportes_panel_productoclienteventas_detalle' dato %}?{{ contexto_filtros }}"
