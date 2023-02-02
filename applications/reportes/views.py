@@ -714,6 +714,86 @@ class ReporteVentasFacturadas(TemplateView):
             for fila in info_cobranza_nota:
                 dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
 
+            # verificar esto..
+            sql_guias = '''(SELECT
+                MAX(cvf.id) AS id,
+                to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+                'FACTURA' AS tipo_comprobante,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+                STRING_AGG(
+                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias
+                FROM comprobante_venta_facturaventa cvf
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvf.cliente_id
+                LEFT JOIN logistica_notasalidadocumento lnsd
+                    ON lnsd.content_type_id='%s' AND lnsd.id_registro=cvf.confirmacion_id
+                LEFT JOIN logistica_notasalida lns
+                    ON lns.id=lnsd.nota_salida_id
+                LEFT JOIN logistica_despacho ld
+                    ON ld.nota_salida_id=lns.id
+                LEFT JOIN comprobante_despacho_guia cdg
+                    ON cdg.despacho_id=ld.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc2
+                    ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cdg.serie_comprobante_id
+                WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+                GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+                ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC)
+            UNION
+                (SELECT 
+                MAX(cvb.id) AS id,
+                to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+                'BOLETA' AS tipo_comprobante,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+                STRING_AGG(
+                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias
+                FROM comprobante_venta_boletaventa cvb
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=cvb.cliente_id
+                LEFT JOIN logistica_notasalidadocumento lnsd
+                    ON lnsd.content_type_id='%s' AND lnsd.id_registro=cvb.confirmacion_id
+                LEFT JOIN logistica_notasalida lns
+                    ON lns.id=lnsd.nota_salida_id
+                LEFT JOIN logistica_despacho ld
+                    ON ld.nota_salida_id=lns.id
+                LEFT JOIN comprobante_despacho_guia cdg
+                    ON cdg.despacho_id=ld.id
+                LEFT JOIN datos_globales_seriescomprobante dgsc2
+                    ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cdg.serie_comprobante_id
+                WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+                GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+                ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
+                    DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
+                    DICT_CONTENT_TYPE['cotizacion | confirmacionventa'], 
+                    DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                    global_sociedad, 
+                    global_fecha_inicio, 
+                    global_fecha_fin, 
+                    DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],
+                    DICT_CONTENT_TYPE['cotizacion | confirmacionventa'],  
+                    DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                    global_sociedad, 
+                    global_fecha_inicio, 
+                    global_fecha_fin
+                    )
+            query_info_guias = FacturaVenta.objects.raw(sql_guias)
+
+            info_guias = []
+            for fila in query_info_guias:
+                lista_datos = []
+                lista_datos.append(fila.fecha_emision_comprobante)
+                lista_datos.append(fila.tipo_comprobante)
+                lista_datos.append(fila.nro_comprobante)
+                lista_datos.append(fila.documento_guias)
+                info_guias.append(lista_datos)
+
+            dict_guias = {}
+            for fila in info_guias:
+                dict_guias[fila[0]+'|'+fila[1]+'|'+fila[2]] = fila[3]
+
             sql_facturas = ''' (SELECT 
                 MAX(cvf.id) AS id,
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
@@ -721,8 +801,8 @@ class ReporteVentasFacturadas(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvf.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
                 (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
@@ -732,8 +812,7 @@ class ReporteVentasFacturadas(TemplateView):
                 to_char(MAX(cvf.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
                 MAX(cvf.fecha_vencimiento) - MAX(cvf.fecha_emision) AS dias_credito,
                 MAX(cvf.fecha_vencimiento) AS dias_vencimiento,
-                STRING_AGG(
-                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias,
+                '' AS documento_guias,
                 '' AS letras,
                 '' AS pagos
                 FROM comprobante_venta_facturaventa cvf
@@ -755,14 +834,6 @@ class ReporteVentasFacturadas(TemplateView):
                     ON dgm.id=dgcb.moneda_id
                 LEFT JOIN cobranza_redondeo cr
                     ON cr.deuda_id=cd.id
-                LEFT JOIN logistica_notasalida lns
-                    ON lns.confirmacion_venta_id=cvf.confirmacion_id
-                LEFT JOIN logistica_despacho ld
-                    ON ld.nota_salida_id=lns.id
-                LEFT JOIN comprobante_despacho_guia cdg
-                    ON cdg.despacho_id=ld.id
-                LEFT JOIN datos_globales_seriescomprobante dgsc2
-                    ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cdg.serie_comprobante_id
                 WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
                 GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
                 ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC)
@@ -774,8 +845,8 @@ class ReporteVentasFacturadas(TemplateView):
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cvb.total) AS monto_facturado,
-                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_amortizado,
-                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - SUM(CASE WHEN cr.monto IS NOT NULL THEN (cr.monto) ELSE 0.00 END) AS monto_pendiente,
+                SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
+                MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
                 (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/MAX(dgtcs.tipo_cambio_venta),2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
                     THEN (
                         'CANCELADO'
@@ -785,8 +856,7 @@ class ReporteVentasFacturadas(TemplateView):
                 to_char(MAX(cvb.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
                 MAX(cvb.fecha_vencimiento) - MAX(cvb.fecha_emision) AS dias_credito,
                 MAX(cvb.fecha_vencimiento) AS dias_vencimiento,
-                STRING_AGG(
-                    DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias,
+                '' AS documento_guias,
                 '' AS letras,
                 '' AS pagos
                 FROM comprobante_venta_boletaventa cvb
@@ -808,17 +878,22 @@ class ReporteVentasFacturadas(TemplateView):
                     ON dgm.id=dgcb.moneda_id
                 LEFT JOIN cobranza_redondeo cr
                     ON cr.deuda_id=cd.id
-                LEFT JOIN logistica_notasalida lns
-                    ON lns.confirmacion_venta_id=cvb.confirmacion_id
-                LEFT JOIN logistica_despacho ld
-                    ON ld.nota_salida_id=lns.id
-                LEFT JOIN comprobante_despacho_guia cdg
-                    ON cdg.despacho_id=ld.id
-                LEFT JOIN datos_globales_seriescomprobante dgsc2
-                    ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cdg.serie_comprobante_id
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], DICT_CONTENT_TYPE['comprobante_despacho | guia'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], DICT_CONTENT_TYPE['comprobante_despacho | guia'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
+                    DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
+                    DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
+                    DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                    global_sociedad, 
+                    global_fecha_inicio, 
+                    global_fecha_fin, 
+                    DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
+                    DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
+                    DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                    global_sociedad, 
+                    global_fecha_inicio, 
+                    global_fecha_fin
+                    )
             query_info_facturas = FacturaVenta.objects.raw(sql_facturas)
             
             info_facturas = []
@@ -877,6 +952,8 @@ class ReporteVentasFacturadas(TemplateView):
                         fila[6] = fila[4] - fila[5]
                         if fila[6] <= float(0):
                             fila[7] = 'CANCELADO'
+                    if fila[0]+'|'+fila[1]+'|'+fila[2] in dict_guias:
+                        fila[11] = dict_guias[fila[0]+'|'+fila[1]+'|'+fila[2]]
                 else:
                     for i in range(13):
                         if i == 3:
