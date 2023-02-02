@@ -101,7 +101,7 @@ class ReporteContador(TemplateView):
                     ON cvf.id=nnc.id_registro_documento
                 LEFT JOIN datos_globales_seriescomprobante dgsc2
                     ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cvf.serie_comprobante_id
-                LEFT JOIN nota_notacreditodetalle nncdd
+                LEFT JOIN nota_notacreditodetalle nncd
                     ON nnc.id=nncd.nota_credito_id
                 LEFT JOIN material_material mm
                     ON nncd.content_type_id='%s' AND mm.id=nncd.id_registro
