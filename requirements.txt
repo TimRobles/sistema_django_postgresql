@@ -18,3 +18,5 @@ openpyxl
 django-import-export
 python-slugify
 django-resized
+pandas
+plotly==5.8.0

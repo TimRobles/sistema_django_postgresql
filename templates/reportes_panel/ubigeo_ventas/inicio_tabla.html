@@ -1,0 +1,26 @@
+{% load humanize %}
+
+<table class="table" >
+    <thead>
+        <tr>
+            <th class="text-justify text-nowrap">#</th>
+            <th class="text-justify text-nowrap">Departamento</th>
+            <!-- <th class="text-justify text-nowrap">Provincia</th> -->
+            <!-- <th class="text-center text-nowrap">Distrito</th> -->
+            <th class="text-center text-nowrap">Monto Total Venta</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fila in contexto_ubigeo_ventas %}
+            <td>{{ forloop.counter }}</td>
+            {% for dato in fila %}
+                {% if forloop.counter == 2 %}
+                    <td class="text-end text-nowrap">{{ dato|intcomma }}</td>    
+                {% else %}
+                    <td class="text-justify text-nowrap">{{ dato }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -195,13 +195,16 @@ def generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabez
     data_tabla = dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color)
     data_tabla_cuentas = dataCuentas(list_cuenta_dolares, list_cuenta_soles, fuenteBase, color)
     elementos = []
-    elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
-    elementos.append(Texto[1])
+    elementos.append(vacio(1))
+    elementos.append(Texto[0])
+    elementos.append(vacio(1))
+    elementos.append(parrafoIzquierda(Texto[1], fuenteBase, 10))
     elementos.append(Texto[2])
+    elementos.append(Texto[3])
     elementos.append(vacio(1))
     elementos.append(data_tabla)
     elementos.append(vacio(1.5))
-    elementos.append(Texto[3])
+    elementos.append(Texto[4])
     elementos.append(vacio(1.5))
     elementos.append(data_tabla_cuentas)
     
@@ -214,7 +217,10 @@ def generarReporteCobranza(titulo, vertical, logo, pie_pagina, Texto, TablaEncab
 
     data_tabla = dataCobranza(TablaEncabezado, TablaDatos, fuenteBase, color)
     elementos = []
-    elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
+    elementos.append(vacio(1.0))
+    elementos.append(Texto[0])
+    elementos.append(vacio(1.0))
+    elementos.append(parrafoIzquierda(Texto[1], fuenteBase, 10))
     elementos.append(vacio(1.0))
     elementos.append(data_tabla)
     
