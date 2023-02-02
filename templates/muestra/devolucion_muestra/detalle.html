@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Devolución de Muestra
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Devolución de Muestra</h3>
+    <div id="tabla">
+        {% include 'muestra/devolucion_muestra/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

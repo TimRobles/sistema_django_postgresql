@@ -244,6 +244,7 @@ class NotaSalidaDetalleSeriesForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             self.fields['cantidad_salida'].disabled = True
             self.fields['cantidad_ingresada'].disabled = True
+            
 
 class DespachoForm(BSModalModelForm):
     class Meta:

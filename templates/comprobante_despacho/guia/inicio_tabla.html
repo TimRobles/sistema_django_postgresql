@@ -27,6 +27,15 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
                 </a>
+                
+                {% if guia.estado == 1 %}
+                <button data-form-url="{% url 'comprobante_despacho_app:guia_eliminar' guia.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi-x-lg"></i>
+                </button>
+                {% endif %}
+                    
             </td>
         </tr>
             

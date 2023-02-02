@@ -5,6 +5,7 @@
             <th>Número de Comprobante</th>
             <th>Proveedor</th>
             <th>Interlocutor</th>
+            <th>Fecha Estimada de Llegada</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
 
@@ -18,6 +19,11 @@
             <td>{{ comprobante_compra_pi.numero_comprobante_compra }}</td>
             <td>{{ comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
             <td>{{ comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+            <td>
+                {% if comprobante_compra_pi.fecha_estimada_llegada %}
+                {{ comprobante_compra_pi.fecha_estimada_llegada|date:'d/m/Y' }}
+                {% endif %}    
+            </td>
             <td>{{ comprobante_compra_pi.get_estado_display}}</td>
             <td class="text-nowrap text-center">
                 <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle' comprobante_compra_pi.slug %}"

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Devolución de Muestras
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Devolución de Muestras</h3>
+
+    <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+    <button data-form-url="{% url 'muestra_app:devolucion_muestra_crear' %}"
+        class="delete btn btn-primary">
+        Generar Devolución
+    </button>
+    <div class="table-responsive" id="tabla">
+        {% include 'muestra/devolucion_muestra/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

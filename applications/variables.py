@@ -353,7 +353,9 @@ MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK = 'Operación exitosa: La Nota Contr
 MENSAJE_CONCLUIR_TRASPASO_STOCK = 'Operación exitosa: El Traspaso Stock fue concluido.'
 
 COLOR_DEFAULT = '#028A0F'
-PIE_DE_PAGINA_DEFAULT = 'GRUPO MULTIPLAY'
+PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY
+Celular: 974899069 / Teléfono: 2536767
+Dirección: CAL. RICARDO ANGULO 1226 URB. CORPAC, SAN ISIDRO-LIMA-LIMA / E-mail: info@multiplay.com.pe / Web: www.multiplay.com.pe'''
 
 EMAIL_REMITENTE = 'no-responder@multiplay.com.pe'
 

@@ -1,6 +1,6 @@
 from decimal import Decimal
 from applications.cobranza.models import DeudaProveedor
-from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, RecepcionComprobanteCompraPIForm
+from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, ComprobanteCompraPILlegadaForm, RecepcionComprobanteCompraPIForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
 from applications.funciones import igv, obtener_totales, registrar_excepcion, tipo_de_cambio
 from applications.home.templatetags.funciones_propias import filename
@@ -17,6 +17,9 @@ class ComprobanteCompraPIListView(PermissionRequiredMixin, ListView):
     template_name = "comprobante_compra/comprobante_compra_pi/inicio.html"
     context_object_name = 'contexto_comprobante_compra_pi'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.annotate(null_fecha_estimada_llegada=Count('fecha_estimada_llegada')).order_by('-null_fecha_estimada_llegada', '-fecha_estimada_llegada', '-fecha_comprobante')
 
 class ComprobanteCompraPIDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('comprobante_compra.view_comprobantecomprapi')
@@ -182,6 +185,24 @@ class ComprobanteCompraPIUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context = super(ComprobanteCompraPIUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Comprobante"
+        return context
+
+
+class ComprobanteCompraPILlegadaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_compra.change_comprobantecomprapi')
+    model = ComprobanteCompraPI
+    template_name = "includes/formulario generico.html"
+    form_class = ComprobanteCompraPILlegadaForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraPILlegadaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Fecha de Llegada"
         return context
 
 

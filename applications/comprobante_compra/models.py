@@ -21,6 +21,7 @@ class ComprobanteCompraPI(models.Model):
     orden_compra = models.OneToOneField(OrdenCompra, on_delete=models.PROTECT, related_name='ComprobanteCompraPI_orden_compra')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     fecha_comprobante = models.DateField('Fecha del Comprobante', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_estimada_llegada = models.DateField('Fecha Estimada de Llegada', auto_now=False, auto_now_add=False, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))

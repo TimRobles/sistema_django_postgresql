@@ -177,8 +177,9 @@ class GuiaDetalleView(PermissionRequiredMixin, TemplateView):
         context['materiales'] = materiales
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        if NubefactRespuesta.objects.respuesta(obj):
-            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        url_nubefact = NubefactRespuesta.objects.respuesta(obj)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
         if obj.nubefact:
             context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
@@ -202,8 +203,9 @@ def GuiaDetalleVerTabla(request, id_guia):
         context['materiales'] = materiales
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        if NubefactRespuesta.objects.respuesta(obj):
-            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        url_nubefact = NubefactRespuesta.objects.respuesta(obj)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
         if obj.nubefact:
             context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
@@ -222,16 +224,6 @@ class GuiaCrearView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/form generico.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # context = {}
-        # error_boleta = False
-        # context['titulo'] = 'Confirmación con Boleta'
-        # if self.get_object().nota_cliente.tipo_documento == '1':
-        #     error_boleta = True
-        
-        # if error_boleta:
-        #     context['texto'] = 'No se puede generar Guía desde una Boleta.'
-        #     return render(request, 'includes/modal sin permiso.html', context)
-        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -912,18 +904,30 @@ class GuiaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.request.session['id_despacho']})
+        if self.request.session['id_despacho']:
+            return reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk':self.request.session['id_despacho']})
+        return reverse_lazy('comprobante_despacho_app:guia_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        guia = self.get_object()
-        guia.despacho.estado = 2
-        guia.despacho.save()
-        return super().delete(request, *args, **kwargs)
+        sid = transaction.savepoint()
+        try:
+            guia = self.get_object()
+            if guia.despacho:
+                guia.despacho.estado = 2
+                guia.despacho.save()
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(GuiaEliminarView, self).get_context_data(**kwargs)
         obj = self.get_object()
-        self.request.session['id_despacho'] = obj.despacho.id
+        self.request.session['id_despacho'] = None
+        if obj.despacho:
+            self.request.session['id_despacho'] = obj.despacho.id
         context['accion'] = 'Eliminar'
         context['titulo'] = 'Guia'
         context['texto'] = '¿Seguro de eliminar la Guia?'

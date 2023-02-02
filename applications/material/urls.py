@@ -23,6 +23,8 @@ urlpatterns = [
     path('material/detalle/<pk>/', views.MaterialDetailView.as_view(), name='material_detalle'),
     path('material/detalle-tabla/<pk>/', views.MaterialDetailTabla, name='material_detalle_tabla'),
     path('material/info/<id_material>/', views.MaterialView, name='material_info'),
+    
+    path('precio-lista/', views.PrecioListaPdfView.as_view(), name='precio_lista'),
 
     path('componente/registrar/<int:material_id>/', views.ComponenteCreateView.as_view(), name='componente_registrar'),
     path('componente/actualizar/<pk>/', views.ComponenteUpdateView.as_view(), name='componente_actualizar'),
@@ -85,13 +87,15 @@ urlpatterns = [
     path('stock/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/', views.StockSociedadAlmacenView, name='stock'),
     
     path('stock/sede/<int:id_material>/<int:id_sociedad>/<int:id_sede>/', views.StockSedeView, name='stock_sede'),
+    path('stock/sede/<int:id_material>/<int:id_sociedad>/<int:id_sede>/<int:id_tipo_stock>/', views.StockSedeTipoStockView, name='stock_sede_tipo_stock'),
 
     path('stock/disponible/<int:id_material>/', views.StockDisponibleView, name='stock_disponible'),
     path('stock/disponible/<int:id_material>/<int:id_sociedad>/', views.StockDisponibleSociedadView, name='stock_disponible'),
     path('stock/disponible/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/', views.StockDisponibleSociedadAlmacenView, name='stock_disponible'),
     
     path('stock/disponible/sede/<int:id_material>/<int:id_sociedad>/<int:id_sede>/', views.StockSedeDisponibleView, name='stock_disponible_sede'),
-    path('stock/tipo_stock/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/<int:id_tipo_stock>/', views.StockSedeTipoStockView, name='stock_tipo_stock'),
+    
+    path('stock/tipo_stock/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/<int:id_tipo_stock>/', views.StockTipoStockView, name='stock_tipo_stock'),
 
     path('series/<pk>/', views.MaterialSeriesView.as_view(), name='series'),
 ]

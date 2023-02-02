@@ -26,6 +26,27 @@ class ComprobanteCompraPIForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class ComprobanteCompraPILlegadaForm(BSModalModelForm):
+    class Meta:
+        model = ComprobanteCompraPI
+        fields=(
+            'fecha_estimada_llegada',
+            )
+        widgets = {
+            'fecha_estimada_llegada' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ComprobanteCompraPILlegadaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class ArchivoComprobanteCompraPIForm(BSModalModelForm):
     class Meta:
         model = ArchivoComprobanteCompraPI

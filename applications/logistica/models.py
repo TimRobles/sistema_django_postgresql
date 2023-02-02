@@ -446,6 +446,7 @@ class ValidarSerieNotaSalidaDetalle(models.Model):
     def __str__(self):
         return "%s - %s" % (self.nota_salida_detalle , str(self.serie))
         
+        
 class Despacho(models.Model):
     ESTADOS_DESPACHO = (
     (1, 'EN PROCESO'),

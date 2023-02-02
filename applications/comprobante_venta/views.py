@@ -189,8 +189,9 @@ class FacturaVentaDetalleView(PermissionRequiredMixin, TemplateView):
         context['totales'] = obtener_totales(FacturaVenta.objects.get(id=self.kwargs['id_factura_venta']))
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        if NubefactRespuesta.objects.respuesta(obj):
-            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        url_nubefact = NubefactRespuesta.objects.respuesta(obj)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
         if obj.nubefact:
             context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
@@ -226,8 +227,9 @@ def FacturaVentaDetalleVerTabla(request, id_factura_venta):
         context['totales'] = obtener_totales(obj)
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        if NubefactRespuesta.objects.respuesta(obj):
-            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        url_nubefact = NubefactRespuesta.objects.respuesta(obj)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
         if obj.nubefact:
             context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
@@ -1216,8 +1218,9 @@ class BoletaVentaDetalleView(PermissionRequiredMixin, TemplateView):
         context['totales'] = obtener_totales(obj)
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        if NubefactRespuesta.objects.respuesta(obj):
-            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        url_nubefact = NubefactRespuesta.objects.respuesta(obj)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
         if obj.nubefact:
             context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)
@@ -1254,8 +1257,9 @@ def BoletaVentaDetalleVerTabla(request, id_boleta_venta):
         context['totales'] = obtener_totales(obj)
         if obj.serie_comprobante:
             context['nubefact_acceso'] = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj))
-        if NubefactRespuesta.objects.respuesta(obj):
-            context['url_nubefact'] = NubefactRespuesta.objects.respuesta(obj)
+        url_nubefact = NubefactRespuesta.objects.respuesta(obj)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
         if obj.nubefact:
             context['url_nubefact'] = obj.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(obj)

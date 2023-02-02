@@ -1,0 +1,62 @@
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>N° de Nota de Stock Inicial</th>
+            <th>Observaciones</th>
+            <th>Motivo de Anulación</th>
+            <th>Sociedad</th>  
+            <th>Sede</th>  
+            <th>Proveedor</th>  
+            <th>Usuario</th>  
+            <th>Estado</th>  
+            <th class="text-center">Acciones</th>      
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for devolucion_muestra in contexto_devolucion_muestra %}
+        <tr> 
+            <td>{{ devolucion_muestra.fecha_devolucion|date:'d/m/Y' }}</td>
+            <td>{{ devolucion_muestra.numero_devolucion|numeroXn:6 }}</td>
+            <td>
+                {% if devolucion_muestra.observaciones %}
+                    {{ devolucion_muestra.observaciones }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if devolucion_muestra.motivo_anulacion %}
+                    {{ devolucion_muestra.motivo_anulacion }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ devolucion_muestra.sociedad }}</td>
+            <td>{{ devolucion_muestra.sede }}</td>
+            <td>{{ devolucion_muestra.proveedor }}</td>
+            <td>{{ devolucion_muestra.created_by }}</td>
+            <td>{{ devolucion_muestra.get_estado_display}}</td>
+            <td class="text-nowrap text-center">
+                <a href="{% url 'muestra_app:devolucion_muestra_detalle' devolucion_muestra.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+                {% if forloop.last and devolucion_muestra.estado == 1 %}
+                <button data-form-url="{% url 'muestra_app:devolucion_muestra_eliminar' devolucion_muestra.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+

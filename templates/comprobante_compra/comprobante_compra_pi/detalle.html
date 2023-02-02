@@ -8,6 +8,11 @@
     <h3>Detalle Comprobante de Compra PI</h3>
     <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_lista' %}" class="btn btn-primary">Regresar</a>
     {% if permiso_compras %}
+        <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_actualizar_fecha_llegada' contexto_comprobante_compra_pi.slug %}"
+            data-table-url="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle_tabla' contexto_comprobante_compra_pi.slug %}"
+            class="update btn btn-primary">
+            Actualizar Fecha de Llegada
+        </button>
         {% if contexto_comprobante_compra_pi.estado == 0 %}
             <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_actualizar' contexto_comprobante_compra_pi.slug %}"
                 data-table-url="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle_tabla' contexto_comprobante_compra_pi.slug %}"

@@ -1,0 +1,24 @@
+{% extends 'includes/formulario generico.html' %}    
+{% load static %}
+
+{% block arriba %}
+<span id="sociedad">{{ sociedad_id }}</span>    
+<span id="sede">{{ sede_id }}</span>    
+<span id="tipo_stock">{{ tipo_stock_id }}</span>    
+{% endblock arriba %}
+    
+
+{% block js %}
+    <script src="{% static 'js/muestra/devolucion_muestra/form.js' %}"></script>
+    <script>
+        $(function () {
+
+            $("#id_producto").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+                
+            });
+    </script>
+{% endblock js %}

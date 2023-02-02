@@ -8,7 +8,9 @@ from django import forms
 from django.shortcuts import render
 from django.contrib.contenttypes.models import ContentType
 from applications.cotizacion.models import PrecioListaMaterial
-from applications.material.funciones import stock, stock_disponible, stock_sede, stock_sede_disponible, stock_sede_tipo_stock
+from applications.material.funciones import stock, stock_disponible, stock_sede, stock_sede_disponible, stock_sede_tipo_stock, stock_tipo_stock
+from applications.material.pdf import generarPrecioLista
+from applications.sociedad.models import Sociedad
 from ..recepcion_compra.models import RecepcionCompra
 from ..orden_compra.models import OrdenCompraDetalle
 from ..comprobante_compra.models import ComprobanteCompraCI, ComprobanteCompraPIDetalle, ComprobanteCompraPI
@@ -1647,6 +1649,14 @@ def StockSedeView(request, id_material, id_sociedad, id_sede):
             return HttpResponse("")
 
 
+def StockSedeTipoStockView(request, id_material, id_sociedad, id_sede, id_tipo_stock):
+    if request.method == 'GET':
+        try:
+            return HttpResponse(stock_sede_tipo_stock(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_sede, id_tipo_stock))
+        except:
+            return HttpResponse("")
+
+
 def StockDisponibleView(request, id_material):
     if request.method == 'GET':
         try:
@@ -1679,10 +1689,10 @@ def StockSedeDisponibleView(request, id_material, id_sociedad, id_sede):
             return HttpResponse("")
 
 
-def StockSedeTipoStockView(request, id_material, id_sociedad, id_almacen, id_tipo_stock):
+def StockTipoStockView(request, id_material, id_sociedad, id_almacen, id_tipo_stock):
     if request.method == 'GET':
         try:
-            return HttpResponse(stock_sede_tipo_stock(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_almacen, id_tipo_stock))
+            return HttpResponse(stock_tipo_stock(ContentType.objects.get_for_model(Material), id_material, id_sociedad, id_almacen, id_tipo_stock))
         except:
             return HttpResponse("")
 
@@ -1727,3 +1737,36 @@ class MaterialSeriesView(PermissionRequiredMixin, BSModalReadView):
         context['material'] = self.object
         context['series'] = series
         return context
+
+
+class PrecioListaPdfView(View):
+    def get(self, request, *args, **kwargs):
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        titulo = f'Precios de Lista {date.today().strftime("%d/%m/%Y")}'
+        vertical = False
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        fuenteBase = "ComicNeue"
+
+        EncabezadoDatos = []
+        EncabezadoDatos.append('DESCRIPCIÓN')
+        EncabezadoDatos.append('UNIDAD')
+        EncabezadoDatos.append('PRECIO DE LISTA')
+
+        TablaDatos = []
+        item = 1
+        for material in Material.objects.filter(mostrar=True):
+            fila = []
+            fila.append(material.descripcion_documento)
+            fila.append(material.unidad_base)
+            fila.append(material.precio_lista)
+            TablaDatos.append(fila)
+            
+        buf = generarPrecioLista(titulo, vertical, logo, pie_pagina, EncabezadoDatos, TablaDatos, color, fuenteBase)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta
