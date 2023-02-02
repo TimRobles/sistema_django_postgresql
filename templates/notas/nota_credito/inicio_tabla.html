@@ -1,0 +1,57 @@
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Fecha Emisión</th>
+            <th>Fecha Vencimiento</th>
+            <th>Cliente</th>
+            <th>Serie Comprobantes</th>
+            <th>N° de Nota de Crédito</th>
+            <th>Observaciones</th>
+            <th>Motivo de Anulación</th>
+            <th>Usuario</th>
+            <th>Estado</th>  
+            <th class="text-center">Acciones</th>      
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for nota_credito in contexto_nota_credito %}
+        <tr> 
+            <td class="fondo-personalizado" style="--color-fondo: {{ nota_credito.sociedad.color }};">{{ nota_credito.sociedad }}</td>
+            <td>{{ nota_credito.fecha_emision|date:'d/m/Y' }}</td>
+            <td>{{ nota_credito.fecha_vencimiento|date:'d/m/Y' }}</td>
+            <td>{{ nota_credito.cliente }}</td>
+            <td>{{ nota_credito.numero_nota|numeroXn:6 }}</td>
+            <td>{{ nota_credito.serie_comprobante }}</td>
+            <td>
+                {% if nota_credito.observaciones %}
+                    {{ nota_credito.observaciones }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if nota_credito.motivo_anulacion %}
+                    {{ nota_credito.motivo_anulacion }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ nota_credito.created_by}}</td>
+            <td>{{ nota_credito.get_estado_display}}</td>
+            <td class="text-nowrap text-center">
+                <a href="{% url 'nota_app:nota_credito_detalle' nota_credito.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>    
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+

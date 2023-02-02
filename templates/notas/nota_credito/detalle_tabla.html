@@ -1,0 +1,29 @@
+{% load humanize %}
+{% load funciones_propias %}
+<a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+
+
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Número de Ingreso</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_nota_credito.item }}</td>
+  
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h4>Observaciones:</h4>
+
+<br>
+<h3>Materiales</h3>
+
