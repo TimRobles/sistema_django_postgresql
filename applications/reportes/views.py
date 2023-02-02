@@ -1396,8 +1396,11 @@ class ReporteFacturasPendientes(TemplateView):
                 'F001-000233',
                 'F001-000245',
                 'F001-000298',
-            ]
-            list_fact_invalidas_mca = ['','']
+                ]
+            list_fact_invalidas_mca = [
+                'F001-002098',
+                'F001-002099',
+                ]
             DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
             DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
@@ -2782,8 +2785,11 @@ class ReporteDeudas(TemplateView):
             'F001-000233',
             'F001-000245',
             'F001-000298',
-        ]
-        list_fact_invalidas_mca = ['','']
+            ]
+        list_fact_invalidas_mca = [
+            'F001-002098',
+            'F001-002099',
+            ]
         DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
         DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
