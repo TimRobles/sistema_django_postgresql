@@ -9,4 +9,5 @@ urlpatterns = [
     path('reportes_panel_marcasventa_descargar/', views.ReporteExcelMarcaVentas.as_view(), name='reportes_panel_marcasventa_descargar'),
     path('reportes_panel_productoclienteventas/', views.ProductoClienteVentasView.as_view(), name='reportes_panel_productoclienteventas'),
     path('reportes_panel_productoclienteventas_detalle/<pk>', views.ProductoClienteVentasDetalle.as_view(), name='reportes_panel_productoclienteventas_detalle'),
+    path('reportes_panel_ubigeoventas/', views.UbigeoVentasView.as_view(), name='reportes_panel_ubigeoventas')
 ]

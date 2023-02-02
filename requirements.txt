@@ -17,3 +17,5 @@ reportlab
 openpyxl
 django-import-export
 python-slugify
+pandas
+plotly==5.8.0
