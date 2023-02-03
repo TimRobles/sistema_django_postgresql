@@ -1,5 +1,6 @@
 from applications.importaciones import *
 from applications.nota.models import NotaCredito, NotaCreditoDetalle
+from applications.funciones import numeroXn, registrar_excepcion
 
 
 class NotaCreditoView(TemplateView):
@@ -18,9 +19,10 @@ class NotaCreditoDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(NotaCreditoDetailView, self).get_context_data(**kwargs)
-        
+        # context['materiales'] = NotaCredito.objects.ver_detalle(self.get_object().id)
         return context
     
+
 
 def NotaCreditoDetailTabla(request, id):
     data = dict()
@@ -29,7 +31,8 @@ def NotaCreditoDetailTabla(request, id):
         context = {}
         nota_credito = NotaCredito.objects.get(id = id)
         context['contexto_nota_credito'] = nota_credito
-        context['materiales'] = NotaCredito.objects.ver_detalle(id)
+        # context['materiales'] = NotaCreditoDetalle.objects.ver_detalle(id)
+
 
         data['table'] = render_to_string(
             template,

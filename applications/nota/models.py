@@ -5,6 +5,8 @@ from applications.funciones import numeroXn, obtener_totales
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesComprobante, TipoCambio, Unidad
 from django.contrib.contenttypes.models import ContentType
+# from applications.nota.managers import NotaCreditoManager
+
 from django.conf import settings
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
@@ -59,9 +61,9 @@ class NotaCredito(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NotaCredito_updated_by', editable=False)
 
-    class Meta:
-        """Meta definition for NotaCredito."""
+    # object = NotaCreditoManager()
 
+    class Meta:
         verbose_name = 'Nota de Credito'
         verbose_name_plural = 'Notas de Credito'
 

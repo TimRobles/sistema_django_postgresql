@@ -5,6 +5,7 @@ from applications.nota.models import NotaCredito, NotaCreditoDetalle
 @admin.register(NotaCredito)
 class NotaCreditoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'serie_comprobante',
         'numero_nota',
         'cliente',
