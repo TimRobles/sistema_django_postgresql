@@ -3572,7 +3572,7 @@ class ReporteRotacion(TemplateView):
                     ON mm.subfamilia_id=msf.id
                 LEFT JOIN material_familia mf
                     ON mf.id=msf.familia_id
-                WHERE cvf.estado = '4'
+                WHERE cvf.estado = '4' AND mm.id IS NOT NULL
                 GROUP BY mm.id
                 ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ; ''' %(DICT_CONTENT_TYPE['material | material'])
             query_info = FacturaVentaDetalle.objects.raw(sql_rotacion)
@@ -3646,10 +3646,7 @@ class ReporteRotacion(TemplateView):
                 if list_general.index(lista) == 0:
                     sql_general = funcion_temporal(lista)
                 else:
-                    try:
-                        sql_general += 'UNION\n' + funcion_temporal(lista)
-                    except:
-                        pass
+                    sql_general += 'UNION\n' + funcion_temporal(lista)
             if sql_general != '':
                 sql_general += 'ORDER BY 3,4,5 ASC'
 
