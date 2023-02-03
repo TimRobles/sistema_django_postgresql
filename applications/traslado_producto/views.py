@@ -4,7 +4,7 @@ from applications.calidad.models import Serie
 from applications.datos_globales.models import Unidad
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
-from applications.material.funciones import stock, stock_sede_tipo_stock, tipo_stock
+from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 from applications.sociedad.models import Sociedad
@@ -304,7 +304,7 @@ class EnvioTrasladoProductoMaterialDetalleView(PermissionRequiredMixin, BSModalF
         tipo_stock = form.cleaned_data.get('tipo_stock')
         material = form.cleaned_data.get('material')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
-        stock_disponible = tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
+        stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
@@ -413,7 +413,7 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(PermissionRequiredMixi
         tipo_stock = form.cleaned_data.get('tipo_stock')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
         material = detalle.producto
-        stock_disponible = tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
+        stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),

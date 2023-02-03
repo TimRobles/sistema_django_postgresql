@@ -7,9 +7,21 @@
 
 {% block contenido %}
     <h3>Notas de Crédito </h3>
+    <a href="{{ regresar }}" class="btn btn-danger mb-3">Regresar</a>
 
-    <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'nota_app:nota_credito_inicio' %}">Limpiar</a>
+    </form>
+
+    {% include 'includes/paginador.html' %}
+    
     <div class="table-responsive" id="tabla">
         {% include 'notas/nota_credito/inicio_tabla.html' %}
     </div>
+
+    {% include 'includes/paginador inferior.html' %}
 {% endblock contenido %}
