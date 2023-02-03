@@ -3,6 +3,7 @@
         <tr>
             <th>Material</th>
             <th>Estado</th>
+            <th>Almacén</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -12,6 +13,7 @@
         <tr>
             <td>{{ serie.producto }}</td>
             <td>{{ serie.estado }}</td>
+            <td>{{ serie.almacen }}</td>
             <td class="text-center text-nowrap">
                 <a href="{% url 'calidad_app:serie_ver' serie.id %}" class="btn btn-success btn-sm">
                     <i class="bi bi-eye-fill"></i>
