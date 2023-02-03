@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Notas de Crédito 
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Notas de Crédito </h3>
+
+    <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+    <div class="table-responsive" id="tabla">
+        {% include 'notas/nota_credito/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
