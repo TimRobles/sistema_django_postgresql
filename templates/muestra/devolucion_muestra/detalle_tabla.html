@@ -75,7 +75,8 @@
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
-                <th>Cantidad</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-end">Series Registradas</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -85,6 +86,7 @@
                     <td>{{ material.item}}</td>
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
+                    <td class="text-end">{{ material.cantidad_devolucion|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.cantidad_devolucion|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_devolucion_muestra.estado == 1 %}
