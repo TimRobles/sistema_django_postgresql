@@ -40,11 +40,11 @@ class ReportesView(FormView):
         kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
         kwargs['filtro_fecha_fin'] = self.request.GET.get('fecha_fin')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
-        global global_sociedad, global_fecha_inicio, global_fecha_fin, global_cliente 
-        global_sociedad = self.request.GET.get('sociedad')
-        global_fecha_inicio = self.request.GET.get('fecha_inicio')
-        global_fecha_fin = self.request.GET.get('fecha_fin')
-        global_cliente = self.request.GET.get('cliente')
+        # global global_sociedad, global_fecha_inicio, global_fecha_fin, global_cliente 
+        # global_sociedad = self.request.GET.get('sociedad')
+        # global_fecha_inicio = self.request.GET.get('fecha_inicio')
+        # global_fecha_fin = self.request.GET.get('fecha_fin')
+        # global_cliente = self.request.GET.get('cliente')
         return kwargs
     
     def get_context_data(self, **kwargs):
