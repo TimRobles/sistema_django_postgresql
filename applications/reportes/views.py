@@ -178,6 +178,7 @@ class ReporteContador(TemplateView):
 
             sql = ''' (SELECT
                 MAX(cvf.id) AS id,
+                MAX(cvf.fecha_emision) AS fecha_orden,
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
                 'FACTURA' AS tipo_comprobante,
                 CONCAT(MAX(dgsc.serie), '-', MAX(lpad(CAST(cvf.numero_factura AS TEXT), 6, '0'))) AS nro_comprobante,
@@ -212,6 +213,7 @@ class ReporteContador(TemplateView):
                 UNION
                 (SELECT
                 MAX(cvb.id) as id,
+                MAX(cvb.fecha_emision) AS fecha_orden,
                 to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
                 'BOLETA' AS tipo_comprobante,
                 CONCAT(MAX(dgsc.serie), '-', MAX(lpad(CAST(cvb.numero_boleta AS TEXT), 6, '0'))) as nro_comprobante,
@@ -243,7 +245,7 @@ class ReporteContador(TemplateView):
                     ON dgnr.content_type_id='%s' AND dgnr.id_registro=cvb.id AND dgnr.error=False AND dgnr.id=(select max(id) from datos_globales_nubefactrespuesta  where content_type_id='%s' AND id_registro=dgnr.id_registro AND dgnr.error=False)
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)
-                ORDER BY fecha_emision_comprobante ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_orden, nro_comprobante  ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info = FacturaVenta.objects.raw(sql)
 
             info = []
