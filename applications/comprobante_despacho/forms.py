@@ -191,13 +191,26 @@ class GuiaClienteForm(BSModalModelForm):
     class Meta:
         model = Guia
         fields = (
+            'cliente',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(GuiaClienteForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class GuiaClienteInterlocutorForm(BSModalModelForm):
+    class Meta:
+        model = Guia
+        fields = (
             'cliente_interlocutor',
             )
 
     def __init__(self, *args, **kwargs):
         interlocutor_queryset = kwargs.pop('interlocutor_queryset')
         interlocutor = kwargs.pop('interlocutor')
-        super(GuiaClienteForm, self).__init__(*args, **kwargs)
+        super(GuiaClienteInterlocutorForm, self).__init__(*args, **kwargs)
         self.fields['cliente_interlocutor'].queryset = interlocutor_queryset
         self.fields['cliente_interlocutor'].initial = interlocutor
         for visible in self.visible_fields():

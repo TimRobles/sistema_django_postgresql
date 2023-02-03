@@ -10,6 +10,11 @@
         class="delete btn btn-primary" title="Observaciones">
         Observaciones
     </button>
+    {% else %}
+    <button data-form-url="{% url 'traslado_producto_app:envio_generar_guia' envio_traslado_producto.id %}"
+        class="delete btn btn-primary">
+        Generar Guia
+    </button>
     {% endif %}
     {% if envio_traslado_producto.RecepcionTrasladoProducto_envio_traslado_producto.all %}
     <a href="{% url 'traslado_producto_app:recepcion_inicio' %}" class="btn btn-primary">Ver Recepciones</a>

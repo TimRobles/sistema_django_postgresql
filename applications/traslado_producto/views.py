@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django import forms
 from applications.calidad.models import Serie
-from applications.datos_globales.models import Unidad
+from applications.comprobante_despacho.models import Guia, GuiaDetalle
+from applications.datos_globales.models import SeriesComprobante, Unidad
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.material.funciones import stock, ver_tipo_stock
@@ -482,6 +483,71 @@ class EnvioTrasladoProductoMaterialDeleteView(PermissionRequiredMixin, BSModalDe
         context['titulo'] = "Material"
         context['item'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
 
+        return context
+
+
+class EnvioTrasladoProductoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_despachodetalle')
+    model = EnvioTrasladoProducto
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['guia'].id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            detalles = self.object.EnvioTrasladoProductoDetalle_envio_traslado_producto.all()
+            serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
+            observaciones = []
+            observaciones.append('PRESENTACIÓN DE PRODUCTOS')
+            if self.object.observaciones:
+                observaciones.append(self.object.observaciones)
+
+            guia = Guia.objects.create(
+                sociedad=self.object.sociedad,
+                serie_comprobante=serie_comprobante,
+                motivo_traslado='13',
+                observaciones=" | ".join(observaciones),
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+
+            for detalle in detalles:
+                guia_detalle = GuiaDetalle.objects.create(
+                    item=detalle.item,
+                    content_type=detalle.content_type,
+                    id_registro=detalle.id_registro,
+                    guia=guia,
+                    cantidad=detalle.cantidad_envio,
+                    unidad=detalle.producto.unidad_base,
+                    descripcion_documento=detalle.producto.descripcion_venta,
+                    peso=detalle.producto.peso_unidad_base,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+            self.kwargs['guia'] = guia
+            self.request.session['primero'] = False
+            messages.success(request, MENSAJE_GENERAR_GUIA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(EnvioTrasladoProductoGenerarGuiaView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Guía"
+        context['dar_baja'] = "true"
+        context['item'] = self.get_object()
         return context
 
 
