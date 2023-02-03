@@ -3644,12 +3644,12 @@ class ReporteRotacion(TemplateView):
             sql_general = ''
             for lista in list_general:
                 if list_general.index(lista) == 0:
+                    sql_general = funcion_temporal(lista)
+                else:
                     try:
-                        sql_general = funcion_temporal(lista)
+                        sql_general += 'UNION\n' + funcion_temporal(lista)
                     except:
                         pass
-                else:
-                    sql_general += 'UNION\n' + funcion_temporal(lista)
             if sql_general != '':
                 sql_general += 'ORDER BY 3,4,5 ASC'
 
