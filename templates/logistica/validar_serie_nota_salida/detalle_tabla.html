@@ -22,6 +22,7 @@
                 <th>Nro. de Serie</th>         
                 <th>Estado</th>    
                 <th>Almacén</th>    
+                <th>Sociedad</th>    
                 <th class="text-center">Acciones</th>    
             </tr>
         </thead>
@@ -35,6 +36,7 @@
                     {% endif %}
                     <td>{{ validacion.serie.estado }}</td>
                     <td>{{ validacion.serie.almacen }}</td>
+                    <td>{{ validacion.serie.sociedad }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_nota_salida_detalle.nota_salida.estado == 1 %}
                             <button data-form-url="{% url 'logistica_app:validar_series_nota_salida_detalle_eliminar' validacion.id %}"
