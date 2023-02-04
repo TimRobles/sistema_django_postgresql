@@ -30,7 +30,7 @@
         </thead>
         <tbody>
             {% for validacion in contexto_series %}
-                <td class="fondo-personalizado"
+                <tr class="fondo-personalizado"
                 {% if validacion.serie.sociedad != contexto_nota_salida_detalle.nota_salida.sociedad or validacion.serie.almacen != contexto_nota_salida_detalle.almacen %}
                 style="--color-fondo: red;"
                 {% endif %}
