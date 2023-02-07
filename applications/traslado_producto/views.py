@@ -3,8 +3,9 @@ from django import forms
 from applications.calidad.models import Serie
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.datos_globales.models import SeriesComprobante, Unidad
-from applications.funciones import registrar_excepcion
+from applications.funciones import numeroXn, registrar_excepcion
 from applications.importaciones import *
+from applications.logistica.pdf import generarSeries
 from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
@@ -121,6 +122,52 @@ def EnvioTrasladoProductoVerTabla(request, id_envio_traslado_producto):
             request=request
         )
         return JsonResponse(data)
+
+
+class EnvioTrasladoProductoSeriesPdf(View):
+    def get(self, request, *args, **kwargs):
+        obj = EnvioTrasladoProducto.objects.get(id=self.kwargs['pk'])
+
+        color = obj.sociedad.color
+        titulo = 'SERIES DE EQUIPOS'
+        vertical = True
+        logo = [obj.sociedad.logo.url]
+        pie_pagina = obj.sociedad.pie_pagina
+
+        titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_envio_traslado, 6), obj.responsable)
+
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(obj, ContentType.objects.get_for_model(EnvioTrasladoProducto))
+        series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        
+        texto_cabecera = 'Series trasladadas:'
+        
+        series_final = {}
+        for serie in series_unicas:
+            if not serie.producto in series_final:
+                series_final[serie.producto] = []
+            series_final[serie.producto].append(serie.serie_base)
+
+        TablaEncabezado = ['DOCUMENTOS',
+                           'FECHA',
+                           'MOTIVO DEL TRASLADO',
+                           'OBSERVACIONES',
+                           ]
+
+        TablaDatos = []
+        TablaDatos.append(f"TRASLADO {numeroXn(obj.numero_envio_traslado, 6)} - {obj.responsable}")
+        TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
+        TablaDatos.append(obj.motivo_traslado)
+        TablaDatos.append(obj.observaciones)
+
+        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
+
+        return respuesta
 
 
 class  EnvioTrasladoProductoActualizarView(PermissionRequiredMixin, BSModalUpdateView):

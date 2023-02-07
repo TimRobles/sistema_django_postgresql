@@ -32,6 +32,7 @@ urlpatterns = urlSeries + [
     path('envio/eliminar-material/<pk>/', views.EnvioTrasladoProductoMaterialDeleteView.as_view(), name='envio_eliminar_material'),
     
     path('envio/generar-guia/<pk>/', views.EnvioTrasladoProductoGenerarGuiaView.as_view(), name='envio_generar_guia'),
+    path('envio/series/pdf/<pk>/', views.EnvioTrasladoProductoSeriesPdf.as_view(), name='envio_series_pdf'),
 
 
     path('recepcion/',views.RecepcionTrasladoProductoListView.as_view(), name='recepcion_inicio'),
