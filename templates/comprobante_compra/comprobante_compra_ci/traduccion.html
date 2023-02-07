@@ -46,6 +46,11 @@
                 <td>{{ material.material.compuesto_por }}</td>
                 <td>{{ material.material.es_componente }}</td>
             </tr>
+
+        {% else %}
+            <tr>
+                <td colspan="12">{{ material.item}}</td>
+            </tr>
         {% endif %}
 
         {% endfor %}    
