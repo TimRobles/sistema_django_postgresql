@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Guía
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'comprobante_despacho/guia/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

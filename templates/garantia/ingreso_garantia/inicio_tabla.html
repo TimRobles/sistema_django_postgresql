@@ -1,0 +1,45 @@
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Nro. Guía</th>
+            <th>Cliente</th>
+            <th>Fecha de Ingreso</th>
+            <th>Estado</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for guia in contexto_guia %}
+        <tr class="{% if guia.estado == 3 %}text-danger text-decoration-line-through{% endif %}">
+            <td class="fondo-personalizado" style="--color-fondo: {{ guia.sociedad.color }};">{{ guia.sociedad.abreviatura }}</td>
+            <td>{{ guia.serie_comprobante }}-{{ guia.numero_guia|numeroXn:6 }}</td>
+            <td>{{ guia.cliente }}</td>
+            <td>{{ guia.fecha_emision|date:'d/m/Y' }}</td>
+            <td>{{ guia.get_estado_display }}</td>
+            <td class="text-center">
+                <a href="{% url 'comprobante_despacho_app:guia_detalle' guia.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+                
+                {% if guia.estado == 1 %}
+                <button data-form-url="{% url 'comprobante_despacho_app:guia_eliminar' guia.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi-x-lg"></i>
+                </button>
+                {% endif %}
+                    
+            </td>
+        </tr>
+            
+        {% endfor %}
+            
+
+    </tbody>
+</table>

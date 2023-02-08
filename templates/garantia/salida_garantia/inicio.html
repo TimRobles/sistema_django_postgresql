@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Guía
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Guía</h3>
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'comprobante_despacho_app:guia_inicio' %}">Limpiar</a>
+    </form>
+    <br>
+    {% include 'includes/paginador.html' %}
+    <div class="table-responsive" id="tabla">
+        {% include 'comprobante_despacho/guia/inicio_tabla.html' %}
+    </div>
+    {% include 'includes/paginador inferior.html' %}
+{% endblock contenido %}
+
+{% block extrajs %}
+    <script>
+        $(function () {
+
+            $("#id_cliente").select2({
+                width: '100%',
+                matcher: buscar_select2
+            });
+            
+        });
+
+        function select_form() {
+            combos = document.getElementsByClassName('select2');
+            for (let index = 0; index < combos.length; index++) {
+                const element = combos[index];
+                element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control field-lineal');
+                element.className = element.className.replace('select2-container--default', 'form-control field-lineal');
+            }
+        }
+
+        setTimeout(() => {
+            select_form();
+        }, 500);
+    </script>
+{% endblock extrajs %}
