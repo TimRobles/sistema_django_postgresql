@@ -152,12 +152,20 @@ class DevolucionMuestraDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     @property
+    def control_serie(self):
+        return self.producto.control_serie
+
+    @property
     def cantidad(self):
         return self.cantidad_devolucion
 
     @property
     def unidad(self):
         return self.producto.unidad_base
+
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieDevolucionMuestraDetalle_devolucion_muestra_detalle.all())).quantize(Decimal('0.01'))
 
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)

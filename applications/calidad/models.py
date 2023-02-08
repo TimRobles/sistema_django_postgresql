@@ -111,6 +111,14 @@ class Serie(models.Model):
         else:
             return ""
 
+    @property
+    def cliente(self):
+        if self.serie_movimiento_almacen.all():
+            ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
+            if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO':
+                return self.serie_movimiento_almacen.latest('id').documento_proceso.cliente
+        return ""
+
     def __str__(self):
         return str(self.serie_base)
 
