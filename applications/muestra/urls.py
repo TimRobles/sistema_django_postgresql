@@ -4,6 +4,10 @@ from . import views
 app_name = 'muestra_app'
 
 urlpatterns = [
+    path('validar-series/devolucion-muestra/detalle/<pk>/', views.ValidarSeriesDevolucionMuestraDetailView.as_view(), name='validar_series_devolucion_muestra_detalle'),
+    path('validar-series/devolucion-muestra/detalle-tabla/<pk>/', views.ValidarSeriesDevolucionMuestraDetailTabla, name='validar_series_devolucion_muestra_detalle_tabla'),
+    path('validar-series-detalle/devolucion-muestra/eliminar/<pk>/', views.ValidarSeriesDevolucionMuestraDetalleDeleteView.as_view(), name='validar_series_devolucion_muestra_detalle_eliminar'),
+
     path('nota-ingreso-muestra/crear/', views.NotaIngresoMuestraCreateView.as_view(), name='nota_ingreso_muestra_crear'),
     path('nota-ingreso-muestra/eliminar/<pk>/', views.NotaIngresoMuestraEliminarView.as_view(), name='nota_ingreso_muestra_eliminar'),
     path('nota-ingreso-muestra/lista/', views.NotaIngresoMuestraListaView.as_view(), name='nota_ingreso_muestra_lista_total'),
@@ -29,4 +33,5 @@ urlpatterns = [
     path('devolucion-muestra/anular/<pk>/', views.DevolucionMuestraAnularView.as_view(), name='devolucion_muestra_anular'),
 
     path('devolucion-muestra/generar-guia/<pk>/', views.DevolucionMuestraGenerarGuiaView.as_view(), name='devolucion_muestra_generar_guia'),
+
 ]

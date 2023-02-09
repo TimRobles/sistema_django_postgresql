@@ -5,6 +5,7 @@ from applications.comprobante_compra.models import ComprobanteCompraPI, Comproba
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, tipo_de_cambio
 from applications.funciones import slug_aleatorio
 from applications.importaciones import *
+from applications.material.models import ProveedorMaterial
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.orden_compra.pdf import generarOrdenCompra, generarMotivoAnulacionOrdenCompra
 from django.core.mail import EmailMultiAlternatives
@@ -15,12 +16,11 @@ from django.core.mail import EmailMultiAlternatives
 from .models import (
     OrdenCompra,
     OrdenCompraDetalle,
-    OfertaProveedor,
-    OfertaProveedorDetalle
 )
 
 from .forms import (
     OrdenCompraForm,
+    OrdenCompraProveedorForm,
     OrdenCompraEnviarCorreoForm,
     OrdenCompraAnularForm,
     OrdenCompraDetalleUpdateForm,
@@ -47,6 +47,63 @@ def OrdenCompraTabla(request):
             request=request
         )
         return JsonResponse(data)
+
+class OrdenCompraCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('orden_compra.add_ordencompra')
+    model = OrdenCompra
+    form_class = OrdenCompraForm    
+    template_name = "includes/formulario generico.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.kwargs['slug']})
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            form.instance.estado = 5
+            form.instance.numero_orden_compra = form.instance.sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = form.instance.sociedad ))+1, 6)
+            form.instance.slug = slug_aleatorio(OrdenCompra)
+            registro_guardar(form.instance, self.request)
+                    
+            messages.success(self.request, MENSAJE_ANULAR_ORDEN_COMPRA)
+            self.kwargs['slug'] = form.instance.slug
+            self.request.session['primero'] = True
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(OrdenCompraCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Crear'
+        context['titulo'] = 'Orden de Compra'
+        return context
+
+class OrdenCompraProveedorView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('orden_compra.change_ordencompra')
+    model = OrdenCompra
+    form_class = OrdenCompraProveedorForm    
+    template_name = "orden_compra/orden_compra/proveedor.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().slug})
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenCompraProveedorView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Orden de Compra'
+        return context
 
 class OrdenCompraAnularView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('orden_compra.delete_ordencompra')
@@ -226,7 +283,7 @@ def OrdenCompraDetailTabla(request, slug):
         context = {}
         orden_compra = OrdenCompra.objects.get(slug = slug)
         context['contexto_orden_compra'] = orden_compra
-        context['orden_compra_detalle'] = OrdenCompraDetalle.objects.filter(orden_compra = orden_compra)
+        context['orden_compra_detalle'] = OrdenCompraDetalle.objects.ver_detalle(orden_compra)
         context['totales'] = obtener_totales(OrdenCompra.objects.get(slug=slug))
         context['ver_oferta'] = reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':orden_compra.oferta_proveedor.slug}) if orden_compra.oferta_proveedor else None
 
@@ -314,9 +371,20 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         context = {}
+        orden_compra = OrdenCompra.objects.get(slug=self.kwargs['slug'])      
+        error_proveedor = False
+        context['titulo'] = 'Error de guardar'
+        if not orden_compra.proveedor:
+            error_proveedor = True
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        if error_proveedor:
+            context['texto'] = 'Registrar un proveedor.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
         error_correo_proveedor = False
         context['titulo'] = 'Error de Envío'
-        proveedor = OrdenCompra.objects.get(slug=self.kwargs['slug']).oferta_proveedor.requerimiento_material.proveedor
+        proveedor = orden_compra.proveedor
         CORREOS_PROVEEDOR = []
         for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
             for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
@@ -324,11 +392,17 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
         if CORREOS_PROVEEDOR == []:
             error_correo_proveedor = True
 
+        error_tipo_igv = False
+        for detalle in orden_compra.OrdenCompraDetalle_orden_compra.all():
+            if not detalle.tipo_igv:
+                error_tipo_igv = True
+
         if error_correo_proveedor:
             context['texto'] = 'Registrar correos del proveedor'
             return render(request, 'includes/modal sin permiso.html', context)
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
+        if error_tipo_igv:
+            context['texto'] = 'Registrar los tipos de IGV de los materiales'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -371,7 +445,7 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
 
     def get_form_kwargs(self):
         kwargs = super(OrdenCompraEnviarCorreoView, self).get_form_kwargs()
-        kwargs['proveedor'] = OrdenCompra.objects.get(slug=self.kwargs['slug']).oferta_proveedor.requerimiento_material.proveedor 
+        kwargs['proveedor'] = OrdenCompra.objects.get(slug=self.kwargs['slug']).proveedor 
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -381,42 +455,89 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
         context['titulo']="Correos"
         return context
 
-class OfertaProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+class OrdenCompraProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('orden_compra.change_ordencompradetalle')
     model = OrdenCompraDetalle
     template_name = "orden_compra/orden_compra/actualizar.html"
     form_class = OrdenCompraDetalleUpdateForm
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_proveedor = False
+        context['titulo'] = 'Error de guardar'
+        if not self.get_object().orden_compra.proveedor:
+            error_proveedor = True
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_proveedor:
+            context['texto'] = 'Registrar un proveedor.'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().orden_compra.slug})
 
     def form_valid(self, form):
+        proveedor_material = ProveedorMaterial.objects.get(
+            content_type = form.instance.content_type,
+            id_registro = form.instance.id_registro,
+            proveedor = form.instance.orden_compra.proveedor,
+            estado_alta_baja = 1,
+        )
+        proveedor_material.name = form.cleaned_data.get('name')
+        proveedor_material.brand = form.cleaned_data.get('brand')
+        proveedor_material.description = form.cleaned_data.get('description')
+        registro_guardar(proveedor_material, self.request)
+        proveedor_material.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(OfertaProveedorDetalleUpdateView, self).get_context_data(**kwargs)
+        context = super(OrdenCompraProveedorDetalleUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Precios"
         context['material'] = self.object
         context['valor_igv'] = igv()
         return context
 
+class OrdenCompraProveedorDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('orden_compra.change_ordencompradetalle')
+    model = OrdenCompraDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().orden_compra.slug})
 
-class OfertaProveedorlDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
+    def get_context_data(self, **kwargs):
+        context = super(OrdenCompraProveedorDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Precios"
+        context['item'] = self.get_object()
+        return context
+
+
+class OrdenCompraProveedorlDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('orden_compra.add_ordencompradetalle')
     template_name = "orden_compra/orden_compra/form_material.html"
     form_class = OrdenCompraDetalleAgregarForm
-    success_url = reverse_lazy('orden_compra_app:orden_compra_detalle')
+    success_url = '.'
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_proveedor = False
+        context['titulo'] = 'Error de guardar'
+        orden_compra = OrdenCompra.objects.get(id = self.kwargs['pk'])
+        if not orden_compra.proveedor:
+            error_proveedor = True
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_proveedor:
+            context['texto'] = 'Registrar un proveedor.'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
@@ -438,8 +559,8 @@ class OfertaProveedorlDetalleCreateView(PermissionRequiredMixin, BSModalFormView
                 if created:
                     obj.item = item + 1
                     obj.cantidad = cantidad
-                # else:
-                    # obj.cantidad = obj.cantidad +cantidad 
+                else:
+                    obj.cantidad = obj.cantidad +cantidad 
 
                 registro_guardar(obj, self.request)
                 obj.save()
@@ -451,7 +572,7 @@ class OfertaProveedorlDetalleCreateView(PermissionRequiredMixin, BSModalFormView
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
-        context = super(OfertaProveedorlDetalleCreateView, self).get_context_data(**kwargs)
+        context = super(OrdenCompraProveedorlDetalleCreateView, self).get_context_data(**kwargs)
         context['titulo'] = 'Agregar Material '
         context['accion'] = 'Guardar'
         return context

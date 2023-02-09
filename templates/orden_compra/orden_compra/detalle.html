@@ -7,7 +7,7 @@
 
 {% block contenido %}
     <h3>Detalle Orden Compra
-        <button onclick="history.back()" class="create btn btn-primary">Regresar</button>
+        <a href="{% url 'orden_compra_app:orden_compra_inicio' %}"class="create btn btn-primary">Regresar</a>
     </h3>
 
 
@@ -18,8 +18,15 @@
     </button>
     {% endif %}
 
+    {% if contexto_orden_compra.estado == 5 %}
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_actualizar' contexto_orden_compra.slug %}"
+        class="delete btn btn-primary">
+        Proveedor
+    </button>
+    {% endif %}
 
-    {% if contexto_orden_compra.estado < 2  %}
+
+    {% if contexto_orden_compra.estado < 2 or contexto_orden_compra.estado == 5 %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_enviar_correo' contexto_orden_compra.slug %}"
         class="delete btn btn-primary">
         Enviar Correo
@@ -71,6 +78,7 @@
                 <tr>
                     <th>Fecha</th>
                     <th>N° Orden Compra</th>
+                    <th>Sociedad</th>
                     <th>Proveedor</th>
                     <th>Interlocutor</th>
                     <th>Estado</th>
@@ -81,6 +89,7 @@
                 <tr>
                     <td>{{ contexto_orden_compra.fecha_orden|date:'d/m/Y' }}</td>
                     <td>{{ contexto_orden_compra.numero_orden_compra }}</td>
+                    <td>{{ contexto_orden_compra.sociedad.abreviatura }}</td>
                     <td>{{ contexto_orden_compra.proveedor }}</td>
                     <td>{{ contexto_orden_compra.interlocutor }}</td>
                     <td>{{ contexto_orden_compra.get_estado_display }}</td>
@@ -99,12 +108,12 @@
     <br>
 
     <h3>Materiales</h3>
-    {% if contexto_orden_compra.estado == 0 %}
-    <button data-form-url="{% url 'orden_compra_app:orden_compra_agregar_material' contexto_orden_compra.id %}"
-    data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.slug %}"
-    class="create btn btn-primary">
-    Agregar Material
-    </button>
+    {% if contexto_orden_compra.estado == 0 or contexto_orden_compra.estado == 5 %}
+        <button data-form-url="{% url 'orden_compra_app:orden_compra_agregar_material' contexto_orden_compra.id %}"
+            data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.slug %}"
+            class="create btn btn-primary">
+            Agregar Material
+        </button>
     {% endif %}
 
 

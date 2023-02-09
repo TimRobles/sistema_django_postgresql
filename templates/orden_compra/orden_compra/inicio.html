@@ -6,7 +6,12 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Orden Compra
+    <h3>
+        Orden Compra
+        <button data-form-url="{% url 'orden_compra_app:orden_compra_crear' %}"
+            class="delete btn btn-primary">
+            Nueva Orden
+        </button>
     </h3>
 
     <div class="table-responsive" id="tabla">

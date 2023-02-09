@@ -261,11 +261,11 @@ def ver_proveedor(documento):
         proveedor = documento.requerimiento_material.proveedor
         interlocutor_proveedor = documento.requerimiento_material.interlocutor_proveedor
     elif hasattr(documento, 'ComprobanteCompraPIDetalle_comprobante_compra'):
-        proveedor = documento.orden_compra.oferta_proveedor.requerimiento_material.proveedor
-        interlocutor_proveedor = documento.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor
+        proveedor = documento.orden_compra.proveedor
+        interlocutor_proveedor = documento.orden_compra.interlocutor
     elif hasattr(documento, 'ComprobanteCompraCIDetalle_comprobante_compra'):
-        proveedor = documento.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.proveedor
-        interlocutor_proveedor = documento.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor
+        proveedor = documento.comprobante_compra_PI.orden_compra.proveedor
+        interlocutor_proveedor = documento.comprobante_compra_PI.orden_compra.interlocutor
     return proveedor, interlocutor_proveedor
 
 
@@ -288,6 +288,8 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         detalles = cabecera.FacturaVentaDetalle_factura_venta.all()
     elif hasattr(cabecera, 'BoletaVentaDetalle_boleta_venta'):
         detalles = cabecera.BoletaVentaDetalle_boleta_venta.all()
+    elif hasattr(cabecera, 'NotaCreditoDetalle_nota_credito'):
+        detalles = cabecera.NotaCreditoDetalle_nota_credito.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:

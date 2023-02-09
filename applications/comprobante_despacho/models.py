@@ -86,6 +86,8 @@ class Guia(models.Model):
                 observaciones.append(f"Contacto: {self.cliente_interlocutor.nombre_completo} {diccionario_tipo_documento(self.cliente_interlocutor.tipo_documento)}: {self.cliente_interlocutor.numero_documento}")
             else:
                 observaciones.append(f"Contacto: {self.cliente_interlocutor.nombre_completo}")
+        if self.observaciones:
+            observaciones.append(self.observaciones)
         if self.confirmacion:
             if self.confirmacion.facturas:
                 for factura in self.confirmacion.facturas:
@@ -94,8 +96,6 @@ class Guia(models.Model):
             if self.confirmacion.boletas:
                 for boleta in self.confirmacion.boletas:
                     observaciones.append(f"{boleta.get_tipo_comprobante_display()} {boleta.serie_comprobante}-{numeroXn(boleta.numero_boleta,6)}")
-        if self.observaciones:
-            observaciones.append(self.observaciones)
         return " | ".join(observaciones)
 
     @property

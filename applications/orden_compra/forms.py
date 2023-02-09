@@ -10,21 +10,38 @@ class OrdenCompraForm(BSModalModelForm):
     class Meta:
         model = OrdenCompra
         fields=(
+            'internacional_nacional',
+            'incoterms',
+            'sociedad',
+            'fecha_orden',
             'moneda',
-            'descuento_global',
-            'total_descuento',
-            'total_anticipo',
-            'total_gravada',
-            'total_exonerada',
-            'total_igv',
-            'total_gratuita',
-            'total_otros_cargos',
-            'total_isc',
-            'total',
+            'condiciones',
             )
+        widgets = {
+            'fecha_orden' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
 
     def __init__(self, *args, **kwargs):
         super(OrdenCompraForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class OrdenCompraProveedorForm(BSModalModelForm):
+    class Meta:
+        model = OrdenCompra
+        fields=(
+            'proveedor_temporal',
+            'interlocutor_temporal',
+            )
+        
+    def __init__(self, *args, **kwargs):
+        super(OrdenCompraProveedorForm, self).__init__(*args, **kwargs)   
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -126,7 +143,7 @@ class OrdenCompraDetalleUpdateForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(OrdenCompraDetalleUpdateForm, self).__init__(*args, **kwargs)
         proveedor = self.instance.orden_compra.proveedor
-        proveedor_material = ProveedorMaterial.objects.get(
+        proveedor_material, created = ProveedorMaterial.objects.get_or_create(
             content_type = self.instance.content_type,
             id_registro = self.instance.id_registro,
             proveedor = proveedor,
@@ -138,14 +155,12 @@ class OrdenCompraDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-        self.fields['name'].disabled = True
-        self.fields['brand'].disabled = True
-        self.fields['description'].disabled = True
-        self.fields['precio_unitario_sin_igv'].disabled = True
-        self.fields['descuento'].disabled = True
-        self.fields['sub_total'].disabled = True
-        self.fields['igv'].disabled = True
-        self.fields['total'].disabled = True
+        if proveedor_material.name:
+            self.fields['name'].disabled = True
+        if proveedor_material.brand:
+            self.fields['brand'].disabled = True
+        if proveedor_material.description:
+            self.fields['description'].disabled = True
 
 
 class OrdenCompraDetalleAgregarForm(BSModalForm):

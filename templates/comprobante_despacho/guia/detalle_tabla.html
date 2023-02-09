@@ -98,6 +98,15 @@
                         {{ guia.cliente.razon_social }}
                         {% endif %}   
                     </td>
+                    <td class="px-2" rowspan="2">
+                        {% if guia.estado == 1 or guia.estado == 6 %}
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_cliente' guia.id %}"
+                            data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
+                            class="update btn btn-primary text-nowrap">
+                            Seleccionar Cliente
+                        </button>
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">{{ guia.cliente.documento }}:</th>
@@ -121,7 +130,7 @@
                     </td>
                     <td>
                         {% if guia.estado == 1 or guia.estado == 6 %}
-                        <button data-form-url="{% url 'comprobante_despacho_app:guia_cliente' guia.id%}"
+                        <button data-form-url="{% url 'comprobante_despacho_app:guia_interlocutor_cliente' guia.id%}"
                             data-table-url="{% url 'comprobante_despacho_app:guia_detalle_tabla' guia.id %}"
                             class="update btn btn-primary" title="Seleccionar Interlocutor">
                             Interlocutor

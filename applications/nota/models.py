@@ -5,7 +5,7 @@ from applications.funciones import numeroXn, obtener_totales
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesComprobante, TipoCambio, Unidad
 from django.contrib.contenttypes.models import ContentType
-# from applications.nota.managers import NotaCreditoManager
+from applications.nota.managers import NotaCreditoManager
 
 from django.conf import settings
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
@@ -21,11 +21,8 @@ class NotaCredito(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='NotaCredito_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='NotaCredito_interlocutor', blank=True, null=True)
     fecha_emision = models.DateField('Fecha Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
-    fecha_vencimiento = models.DateField('Fecha Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, default=1)
     tipo_cambio = models.ForeignKey(TipoCambio, on_delete=models.PROTECT, related_name='NotaCredito_tipo_cambio')
-    tipo_venta = models.IntegerField('Tipo de Venta', choices=TIPO_VENTA, default=1)
-    condiciones_pago = models.CharField('Condiciones de Pago', max_length=250, blank=True, null=True, help_text='Factura a 30 días')
     descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=Decimal('0.00'))
@@ -61,7 +58,7 @@ class NotaCredito(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NotaCredito_updated_by', editable=False)
 
-    # object = NotaCreditoManager()
+    objects = NotaCreditoManager()
 
     class Meta:
         verbose_name = 'Nota de Credito'
@@ -135,7 +132,9 @@ class NotaCreditoDetalle(models.Model):
 
     @property
     def producto(self):
+        return None
         return self.content_type.get_object_for_this_type(id = self.id_registro)
+        
 
     def __str__(self):
         return str(self.id)

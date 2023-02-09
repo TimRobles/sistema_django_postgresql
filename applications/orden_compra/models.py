@@ -33,7 +33,7 @@ class OrdenCompra(models.Model):
     archivo = models.FileField('Archivo',upload_to = 'file/orden_compra/', max_length=100, blank=True, null=True)
     condiciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField(blank=True, null=True)
-    proveedor_temporal = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)
+    proveedor_temporal = models.ForeignKey(Proveedor, verbose_name='Proveedor', on_delete=models.CASCADE, blank=True, null=True)
     interlocutor_temporal = models.ForeignKey(InterlocutorProveedor, on_delete=models.CASCADE, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_ORDEN_COMPRA,default=1)
 
@@ -57,7 +57,10 @@ class OrdenCompra(models.Model):
         try:
             return self.oferta_proveedor.requerimiento_material.proveedor
         except:
-            return self.OrdenCompra_orden_compra_anterior.proveedor
+            try:
+                return self.OrdenCompra_orden_compra_anterior.proveedor
+            except:
+                return None
 
     @property
     def interlocutor(self):
@@ -66,7 +69,10 @@ class OrdenCompra(models.Model):
         try:
             return self.oferta_proveedor.requerimiento_material.interlocutor_proveedor
         except:
-            return self.OrdenCompra_orden_compra_anterior.interlocutor
+            try:
+                return self.OrdenCompra_orden_compra_anterior.interlocutor
+            except:
+                return None
 
     def __str__(self):
         return "%s %s" % (self.id, self.numero_orden_compra)
@@ -76,7 +82,7 @@ class OrdenCompraDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
     precio_unitario_con_igv = models.DecimalField('Precio unitario con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
     precio_final_con_igv = models.DecimalField('Precio final con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))

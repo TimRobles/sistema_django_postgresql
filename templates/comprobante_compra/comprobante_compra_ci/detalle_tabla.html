@@ -17,8 +17,8 @@
             <tr>
                 <td>{{ contexto_comprobante_compra_ci.fecha_comprobante|date:'d/m/Y' }}</td>
                 <td>{{ contexto_comprobante_compra_ci.numero_comprobante_compra }}</td>
-                <td>{{ contexto_comprobante_compra_ci.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
-                <td>{{ contexto_comprobante_compra_ci.comprobante_compra_PI.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+                <td>{{ contexto_comprobante_compra_ci.comprobante_compra_PI.orden_compra.proveedor }}</td>
+                <td>{{ contexto_comprobante_compra_ci.comprobante_compra_PI.orden_compra.interlocutor }}</td>
                 <td>{{ contexto_comprobante_compra_ci.sociedad }}</td>
                 <td><a href="{{ MEDIA_URL }}{{ contexto_comprobante_compra_ci.archivo }}" target="_blank">Ver Archivo</a></td>
                 <td>{{ contexto_comprobante_compra_ci.get_estado_display }}</td>

@@ -3,6 +3,7 @@
         <tr>
             <th>Fecha</th>
             <th>N° de Orden</th>
+            <th>Sociedad</th>
             <th>Proveedor</th>
             <th>Interlocutor</th>
             <th>Estado</th>  
@@ -23,6 +24,10 @@
             </td>
 
             <td>
+                {{ orden_compra.sociedad.abreviatura }}
+            </td> 
+
+            <td>
                 {{ orden_compra.proveedor }}
             </td> 
 
@@ -30,7 +35,7 @@
                 {{ orden_compra.interlocutor }}
             </td>
 
-            <td>{{ orden_compra.get_estado_display}}</td>
+            <td>{{ orden_compra.get_estado_display }}</td>
             
             <td class="text-nowrap">
                 <a href="{% url 'orden_compra_app:orden_compra_detalle' orden_compra.slug %}"

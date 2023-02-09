@@ -15,8 +15,11 @@ urlpatterns = [
     path('orden-compra/enviar-correo/<slug>/', views.OrdenCompraEnviarCorreoView.as_view(), name='orden_compra_enviar_correo'),
     path('orden-compra/pdf/<slug>/', views.OrdenCompraPdfView.as_view(), name='orden_compra_pdf'),
     path('orden-compra/nueva-version/<pk>/', views.OrdenCompraNuevaVersionView.as_view(), name='orden_compra_nueva_version'),
-    path('orden-compra/actualizar-material/<pk>/', views.OfertaProveedorDetalleUpdateView.as_view(), name='orden_compra_actualizar_material'),
-    path('orden-compra/agregar-material/<pk>/', views.OfertaProveedorlDetalleCreateView.as_view(), name='orden_compra_agregar_material'),
+    path('orden-compra/crear/', views.OrdenCompraCreateView.as_view(), name='orden_compra_crear'),
+    path('orden-compra/actualizar/<slug>/', views.OrdenCompraProveedorView.as_view(), name='orden_compra_actualizar'),
+    path('orden-compra/actualizar-material/<pk>/', views.OrdenCompraProveedorDetalleUpdateView.as_view(), name='orden_compra_actualizar_material'),
+    path('orden-compra/eliminar-material/<pk>/', views.OrdenCompraProveedorDetalleDeleteView.as_view(), name='orden_compra_eliminar_material'),
+    path('orden-compra/agregar-material/<pk>/', views.OrdenCompraProveedorlDetalleCreateView.as_view(), name='orden_compra_agregar_material'),
 
     path('orden-compra/generar-comprobante-compra-total/<slug>/', views.OrdenCompraGenerarComprobanteTotalView.as_view(), name='orden_compra_generar_comprobante_compra_total'),
  ]

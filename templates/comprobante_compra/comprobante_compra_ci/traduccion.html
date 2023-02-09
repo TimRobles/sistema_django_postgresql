@@ -12,10 +12,14 @@
     <thead>
         <tr>
             <th>Item</th>
-            <th>Unidad</th>
-            <th class="text-end">Cantidad</th>
             <th>Partida</th>
             <th>Traducción</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Estado</th>
+            <th class="text-end">Cantidad</th>
+            <th>Unidad</th>
+            <th>Origen</th>
             <th>Uso o función</th>
             <th>Compuesto por</th>
             <th>Es componente</th>
@@ -27,16 +31,25 @@
         {% if material.cantidad %}
             <tr>
                 <td>{{ material.item}}</td>
-                <td>{{ material.material.unidad_base }}</td>
-                <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
                 <td>{{ material.material.partida }}</td>
                 <td>
                     {{ material.descripcion }}
                     ({{ material.material.traduccion }})
                 </td>
+                <td>{{ material.material.marca }}</td>
+                <td>{{ material.material.modelo }}</td>
+                <td>NUEVO</td>
+                <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                <td>{{ material.material.unidad_base }}</td>
+                <td>CHINA</td>
                 <td>{{ material.material.uso_funcion }}</td>
                 <td>{{ material.material.compuesto_por }}</td>
                 <td>{{ material.material.es_componente }}</td>
+            </tr>
+
+        {% else %}
+            <tr>
+                <td colspan="12">{{ material.item}}</td>
             </tr>
         {% endif %}
 

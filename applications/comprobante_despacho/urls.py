@@ -24,8 +24,9 @@ urlpatterns = [
     path('guia/bultos/<pk>/', views.GuiaBultosView.as_view(), name='guia_bultos'),
     path('guia/conductor/<pk>/', views.GuiaConductorView.as_view(), name='guia_conductor'),
     path('guia/conductor/limpiar/<pk>/', views.GuiaConductorLimpiarView.as_view(), name='guia_conductor_limpiar'),
-    path('guia/cliente/<pk>/', views.GuiaClienteView.as_view(), name='guia_cliente'),
+    path('guia/interlocutor-cliente/<pk>/', views.GuiaClienteView.as_view(), name='guia_interlocutor_cliente'),
     path('guia/serie/<pk>/', views.GuiaSerieUpdateView.as_view(), name='guia_serie'),
+    path('guia/cliente/<pk>/', views.GuiaClienteUpdateView.as_view(), name='guia_cliente'),
     path('guia/eliminar/<pk>/', views.GuiaEliminarView.as_view(), name='guia_eliminar'),
     path('guia/cliente-interlocutor/<int:id_cliente>/', views.ClienteInterlocutorView, name='guia_cliente_interlocutor'),
     

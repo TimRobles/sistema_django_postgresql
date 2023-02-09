@@ -87,21 +87,28 @@
                     <td>{{ material.material.descripcion_venta }}</td>
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad_devolucion|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.cantidad_devolucion|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.series_validar|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_devolucion_muestra.estado == 1 %}
-                        <button data-form-url="{% url 'muestra_app:devolucion_muestra_actualizar_material' material.id %}"
-                            data-table-url="{% url 'muestra_app:devolucion_muestra_detalle_tabla' contexto_devolucion_muestra.id %}"
-                            data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        <button data-form-url="{% url 'muestra_app:devolucion_muestra_eliminar_material' material.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
+                            <button data-form-url="{% url 'muestra_app:devolucion_muestra_actualizar_material' material.id %}"
+                                data-table-url="{% url 'muestra_app:devolucion_muestra_detalle_tabla' contexto_devolucion_muestra.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'muestra_app:devolucion_muestra_eliminar_material' material.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            {% if material.producto.control_serie %}
+                                <a href="{% url 'muestra_app:validar_series_devolucion_muestra_detalle' material.id %}"
+                                    class="btn btn-dark btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                    <i class="bi bi-upc-scan"></i>
+                                </a>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
