@@ -30,7 +30,7 @@ class IngresoReclamoGarantia(models.Model):
         verbose_name_plural = 'Ingresos Reclamo Garantia'
 
     def __str__(self):
-        pass
+        return str(self.id)
 
 
 class IngresoReclamoGarantiaDetalle(models.Model):
@@ -54,7 +54,7 @@ class IngresoReclamoGarantiaDetalle(models.Model):
         verbose_name_plural = 'Ingresos Reclamo Garantia Detalle'
 
     def __str__(self):
-        pass
+        return str(self.id)
 
 
 
@@ -72,8 +72,7 @@ class ControlCalidadReclamoGarantia(models.Model):
         verbose_name_plural = 'Control Calidad Reclamos Garantia'
 
     def __str__(self):
-        pass
-
+        return str(self.id)
 
 class SalidaReclamoGarantia(models.Model):
 
@@ -87,4 +86,4 @@ class SalidaReclamoGarantia(models.Model):
         verbose_name_plural = 'Salida Reclamos Garantia'
 
     def __str__(self):
-        pass
+        return str(self.id)

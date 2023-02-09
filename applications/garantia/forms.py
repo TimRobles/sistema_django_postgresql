@@ -15,18 +15,17 @@ class IngresoGarantiaBuscarForm(forms.Form):
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
     estado = forms.ChoiceField(choices=((None, '-------------------'),) + ESTADOS_DOCUMENTO, required=False)
+    
+    class Meta:
+        fields = (
+            'fecha_ingreso',
+            'nro_ingreso_garantia',
+            'cliente',
+            'sociedad',
+            'estado',
+            )
 
     def __init__(self, *args, **kwargs):
-        filtro_fecha_ingreso = kwargs.pop('filtro_fecha_ingreso')
-        filtro_nro_ingreso_garantia = kwargs.pop('filtro_nro_ingreso_garantia')
-        filtro_cliente = kwargs.pop('filtro_cliente')
-        filtro_sociedad = kwargs.pop('filtro_sociedad')
-        filtro_estado = kwargs.pop('filtro_estado')
         super(IngresoGarantiaBuscarForm, self).__init__(*args, **kwargs)
-        self.fields['fecha_ingreso'].initial = filtro_fecha_ingreso
-        self.fields['numero_ingreso_garantia'].initial = filtro_nro_ingreso_garantia
-        self.fields['cliente'].initial = filtro_cliente
-        self.fields['sociedad'].initial = filtro_sociedad
-        self.fields['estado'].initial = filtro_estado
         for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control field-lineal'
+            visible.field.widget.attrs['class'] = 'form-control'
