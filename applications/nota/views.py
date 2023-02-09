@@ -1,8 +1,10 @@
+from decimal import Decimal
+from applications.datos_globales.models import NubefactRespuesta, TipoCambio
 from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.nota.forms import NotaCreditoBuscarForm
 from applications.nota.models import NotaCredito, NotaCreditoDetalle
-from applications.funciones import numeroXn, registrar_excepcion
+from applications.funciones import numeroXn, obtener_totales, registrar_excepcion, tipo_de_cambio
 
 
 class NotaCreditoView(FormView):
@@ -79,8 +81,26 @@ class NotaCreditoDetailView(DetailView):
     context_object_name = 'contexto_nota_credito'
 
     def get_context_data(self, **kwargs):
+        nota_credito = self.object
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        if nota_credito.tipo_cambio:
+            tipo_cambio = nota_credito.tipo_cambio.tipo_cambio_venta
+        else:
+            tipo_cambio = Decimal('1.00')
         context = super(NotaCreditoDetailView, self).get_context_data(**kwargs)
-        context['materiales'] = NotaCredito.objects.ver_detalle(self.get_object().id)
+        context['materiales'] = NotaCredito.objects.ver_detalle(nota_credito.id)
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        context['tipo_cambio'] = tipo_cambio
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales'] = obtener_totales(nota_credito)
+        if nota_credito.serie_comprobante:
+            context['nubefact_acceso'] = nota_credito.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(nota_credito.sociedad, ContentType.objects.get_for_model(nota_credito))
+        url_nubefact = NubefactRespuesta.objects.respuesta(nota_credito)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
+        if nota_credito.nubefact:
+            context['url_nubefact'] = nota_credito.nubefact
+        context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(nota_credito)
         return context
     
 
@@ -91,10 +111,24 @@ def NotaCreditoDetailTabla(request, id):
         template = 'notas/nota_credito/detalle_tabla.html'
         context = {}
         nota_credito = NotaCredito.objects.get(id = id)
-        context['contexto_nota_credito'] = nota_credito
-        # context['materiales'] = NotaCreditoDetalle.objects.ver_detalle(id)
-
-
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        if nota_credito.tipo_cambio:
+            tipo_cambio = nota_credito.tipo_cambio.tipo_cambio_venta
+        else:
+            tipo_cambio = Decimal('1.00')
+        context['matereriales'] = NotaCredito.objects.ver_detalle(nota_credito.id)
+        context['tipo_cambio_hoy'] = tipo_cambio_hoy
+        context['tipo_cambio'] = tipo_cambio
+        tipo_cambio = tipo_de_cambio(tipo_cambio, tipo_cambio_hoy)
+        context['totales'] = obtener_totales(nota_credito)
+        if nota_credito.serie_comprobante:
+            context['nubefact_acceso'] = nota_credito.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(nota_credito.sociedad, ContentType.objects.get_for_model(nota_credito))
+        url_nubefact = NubefactRespuesta.objects.respuesta(nota_credito)
+        if url_nubefact:
+            context['url_nubefact'] = url_nubefact
+        if nota_credito.nubefact:
+            context['url_nubefact'] = nota_credito.nubefact
+        context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(nota_credito)
         data['table'] = render_to_string(
             template,
             context,

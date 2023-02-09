@@ -17,8 +17,8 @@
         <tr>
             <td>{{ comprobante_compra_pi.fecha_comprobante|date:'d/m/Y' }}</td>
             <td>{{ comprobante_compra_pi.numero_comprobante_compra }}</td>
-            <td>{{ comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.proveedor }}</td>
-            <td>{{ comprobante_compra_pi.orden_compra.oferta_proveedor.requerimiento_material.interlocutor_proveedor }}</td>
+            <td>{{ comprobante_compra_pi.orden_compra.proveedor }}</td>
+            <td>{{ comprobante_compra_pi.orden_compra.interlocutor }}</td>
             <td>
                 {% if comprobante_compra_pi.fecha_estimada_llegada %}
                 {{ comprobante_compra_pi.fecha_estimada_llegada|date:'d/m/Y' }}
