@@ -397,7 +397,7 @@ class ReporteVentasFacturadas(TemplateView):
                 (SUM(nncd.total)*(-1)) AS amortizado,
                 '0.00' AS pendiente,
                 'PENDIENTE' AS estado,
-                to_char(MAX(nnc.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_nota,
+                to_char(MAX(nnc.fecha_emision), 'DD/MM/YYYY') AS fecha_vencimiento_nota,
                 '0.00' AS credito,
                 '' AS dias,
                 '' AS guia,
