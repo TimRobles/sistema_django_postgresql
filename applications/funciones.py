@@ -317,7 +317,13 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         descuento_global = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global
         otros_cargos = cabecera.CotizacionOtrosCargos_cotizacion_venta.get(sociedad=sociedad).otros_cargos
     else:
-        if hasattr(cabecera, 'otros_cargos'):
+        if sociedad and hasattr(cabecera, 'otros_cargos'):
+            print('Factura')
+            descuento_global_cotizacion = Decimal('0.00')
+            descuento_oferta = Decimal('0.00')
+            descuento_global = cabecera.descuento_global
+            otros_cargos = cabecera.otros_cargos
+        elif hasattr(cabecera, 'otros_cargos'):
             print('Primero')
             descuento_global_cotizacion = cabecera.descuento_global_cotizacion
             descuento_oferta = cabecera.descuento_oferta
