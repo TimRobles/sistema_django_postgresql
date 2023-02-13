@@ -63,6 +63,9 @@ class NotaCredito(models.Model):
     class Meta:
         verbose_name = 'Nota de Credito'
         verbose_name_plural = 'Notas de Credito'
+        ordering = [
+                '-created_at',
+                ]
 
     @property
     def documento(self):
@@ -79,7 +82,7 @@ class NotaCredito(models.Model):
 
 class NotaCreditoDetalle(models.Model):
     item = models.IntegerField()
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
     codigo_interno = models.CharField('Código Interno', max_length=250, blank=True, null=True)

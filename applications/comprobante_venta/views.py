@@ -1043,6 +1043,24 @@ class FacturaVentaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 
+def FacturaVentaJsonView(request):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        buscar = FacturaVenta.objects.filter(
+                estado=4,
+            ).filter(
+                Q(cliente__razon_social__unaccent__icontains=term) | 
+                Q(numero_factura=term)
+            )
+        for factura in buscar:
+            data.append({
+                'id' : factura.id,
+                'nombre' : factura.__str__(),
+                })
+        return JsonResponse(data, safe=False)
+
+
 ###########################################################################################
 
 class BoletaVentaListView(PermissionRequiredMixin, FormView):
@@ -1742,6 +1760,24 @@ class BoletaVentaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
         context['texto'] = '¿Seguro de eliminar la Boleta de Venta?'
         context['item'] = self.get_object()
         return context
+
+
+def BoletaVentaJsonView(request):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        buscar = BoletaVenta.objects.filter(
+                estado=4,
+            ).filter(
+                Q(cliente__razon_social__unaccent__icontains=term) | 
+                Q(numero_boleta=term)
+            )
+        for boleta in buscar:
+            data.append({
+                'id' : boleta.id,
+                'nombre' : boleta.__str__(),
+                })
+        return JsonResponse(data, safe=False)
 
 
 ###################################################################################################

@@ -668,7 +668,6 @@ class CotizacionOtrosCargosUpdateView(PermissionRequiredMixin, BSModalUpdateView
         form.instance.total_exonerada = respuesta['total_exonerada']
         form.instance.total_igv = respuesta['total_igv']
         form.instance.total_gratuita = respuesta['total_gratuita']
-        form.instance.otros_cargos = respuesta['total_otros_cargos']
         form.instance.total = respuesta['total']
         
         return super().form_valid(form)

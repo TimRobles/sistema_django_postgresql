@@ -400,3 +400,5 @@ ESTADOS_NOTA_CALIDAD_STOCK = (
 )
 
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
+
+CHOICE_VACIO = ((None, '-----------------'),)

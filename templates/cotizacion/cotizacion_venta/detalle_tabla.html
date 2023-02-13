@@ -497,6 +497,14 @@
                 <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global|redondear|intcomma }}</td>
                 <td colspan="4"></td>
             </tr>
+            <tr>
+                <td colspan="10" class="text-end">
+                    Descuento Por Items:
+                </td>
+                <td class="text-end text-nowrap">$ {{ totales.descuento_por_items|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_por_items|redondear|intcomma }}</td>
+                <td colspan="4"></td>
+            </tr>
             {% if totales.total_descuento %}
             <tr>
                 <td colspan="10" class="text-end">Descuento Total:</td>

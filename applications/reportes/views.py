@@ -382,6 +382,10 @@ class ReporteContador(TemplateView):
 class ReporteVentasFacturadas(TemplateView):
     def get(self,request, *args,**kwargs):
         global_sociedad = self.request.GET.get('filtro_sociedad')
+        print("*******************************")
+        print(global_sociedad)
+        print(type(global_sociedad))
+        print("*******************************")
         global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
         global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
         global_cliente = self.request.GET.get('filtro_cliente')

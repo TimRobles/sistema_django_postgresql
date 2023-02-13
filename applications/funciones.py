@@ -243,6 +243,7 @@ def calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descue
         respuesta['descuento_cotizacion'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
         respuesta['otros_cargos_cotizacion'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
     respuesta['total_descuento'] = (total_descuento * tipo_cambio).quantize(Decimal('0.01'))
+    respuesta['descuento_por_items'] = (respuesta['total_descuento'] - respuesta['descuento_global'])
     respuesta['total_descuento_con_igv'] = (total_descuento_con_igv * tipo_cambio).quantize(Decimal('0.01'))
     respuesta['total_anticipo'] = (total_anticipo * tipo_cambio).quantize(Decimal('0.01'))
     respuesta['total_gravada'] = (total_gravada * tipo_cambio).quantize(Decimal('0.01'))
@@ -318,8 +319,8 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
     else:
         if hasattr(cabecera, 'otros_cargos'):
             print('Primero')
-            descuento_global_cotizacion = Decimal('0.00')
-            descuento_oferta = Decimal('0.00')
+            descuento_global_cotizacion = cabecera.descuento_global_cotizacion
+            descuento_oferta = cabecera.descuento_oferta
             descuento_global = cabecera.descuento_global
             otros_cargos = cabecera.otros_cargos
         elif hasattr(cabecera, 'total_otros_cargos'):
@@ -343,6 +344,7 @@ def obtener_totales_soles(resultado, tipo_cambio, sociedad=None):
     respuesta['descuento_global_cotizacion'] = resultado['descuento_global_cotizacion'] * tipo_cambio
     respuesta['descuento_oferta'] = resultado['descuento_oferta'] * tipo_cambio
     respuesta['descuento_global'] = resultado['descuento_global'] * tipo_cambio
+    respuesta['descuento_por_items'] = (resultado['total_descuento'] - resultado['descuento_global']) * tipo_cambio
     respuesta['total_descuento'] = resultado['total_descuento'] * tipo_cambio
     respuesta['total_anticipo'] = resultado['total_anticipo'] * tipo_cambio
     respuesta['total_gravada'] = resultado['total_gravada'] * tipo_cambio

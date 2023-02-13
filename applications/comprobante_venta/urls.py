@@ -26,6 +26,8 @@ urlpatterns = [
     path('factura-venta/nubefact/anular/<pk>/', views.FacturaVentaNubeFactAnularView.as_view(), name='factura_venta_nubefact_anular'),
     path('factura-venta/nubefact/detalle/<pk>/', views.FacturaVentaNubefactRespuestaDetailView.as_view(), name='factura_venta_nubefact_detalle'),
     path('factura-venta/nubefact/consultar/<pk>/', views.FacturaVentaNubefactConsultarView.as_view(), name='factura_venta_nubefact_consultar'),
+    
+    path('factura-venta/json/', views.FacturaVentaJsonView, name='factura_venta_json'),
 
     path('boleta-venta/',views.BoletaVentaListView.as_view(),name='boleta_venta_inicio'),
     path('boleta-venta-tabla/',views.BoletaVentaTabla,name='boleta_venta_tabla'),
@@ -43,6 +45,8 @@ urlpatterns = [
     path('boleta-venta/nubefact/anular/<pk>/', views.BoletaVentaNubeFactAnularView.as_view(), name='boleta_venta_nubefact_anular'),
     path('boleta-venta/nubefact/detalle/<pk>/', views.BoletaVentaNubefactRespuestaDetailView.as_view(), name='boleta_venta_nubefact_detalle'),
     path('boleta-venta/nubefact/consultar/<pk>/', views.BoletaVentaNubefactConsultarView.as_view(), name='boleta_venta_nubefact_consultar'),
+    
+    path('boleta-venta/json/', views.BoletaVentaJsonView, name='boleta_venta_json'),
     
     path('descargar-comprobantes/', views.DescargarComprobantes.as_view(), name='descargar_comprobantes'),
 ]

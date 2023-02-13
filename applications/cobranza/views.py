@@ -268,7 +268,7 @@ def DeudaJsonView(request, sociedad_id):
         buscar = Deuda.objects.filter(
             sociedad__id=sociedad_id,
             ).filter(
-                Q(cliente__razon_social__icontains=term)
+                Q(cliente__razon_social__unaccent__icontains=term)
             )
         for deuda in buscar:
             if deuda.saldo > 0:
@@ -287,7 +287,7 @@ def IngresoJsonView(request, sociedad_id):
             cuenta_bancaria__sociedad__id=sociedad_id,
             es_pago=True,
             ).filter(
-                Q(monto__icontains=term) | Q(cuenta_bancaria__banco__razon_social__icontains=term)  | Q(cuenta_bancaria__banco__nombre_comercial__icontains=term)
+                Q(monto__unaccent__icontains=term) | Q(cuenta_bancaria__banco__razon_social__unaccent__icontains=term)  | Q(cuenta_bancaria__banco__nombre_comercial__unaccent__icontains=term)
             )
         for ingreso in buscar:
             if ingreso.saldo > 0:

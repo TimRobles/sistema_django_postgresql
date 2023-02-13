@@ -1,10 +1,11 @@
 from decimal import Decimal
-from applications.datos_globales.models import NubefactRespuesta, TipoCambio
+from applications.comprobante_venta.models import FacturaVenta
+from applications.datos_globales.models import DocumentoFisico, NubefactRespuesta, SeriesComprobante, TipoCambio
 from applications.importaciones import *
 from django.core.paginator import Paginator
-from applications.nota.forms import NotaCreditoBuscarForm
+from applications.nota.forms import NotaCreditoBuscarForm, NotaCreditoCrearForm
 from applications.nota.models import NotaCredito, NotaCreditoDetalle
-from applications.funciones import numeroXn, obtener_totales, registrar_excepcion, tipo_de_cambio
+from applications.funciones import numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
 
 class NotaCreditoView(FormView):
@@ -39,7 +40,7 @@ class NotaCreditoView(FormView):
             contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_numero_nota:
-            condicion = Q(numero_nota__icontains = filtro_numero_nota)
+            condicion = Q(numero_nota__unaccent__icontains = filtro_numero_nota)
             notas_credito = notas_credito.filter(condicion)
             contexto_filtro.append("numero_nota=" + filtro_cliente)
 
@@ -75,6 +76,70 @@ class NotaCreditoView(FormView):
         
         return context 
 
+
+def NotaCreditoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'notas/nota_credito/inicio_tabla.html'
+        context = {}
+        notas_credito = NotaCredito.objects.all()
+
+        filtro_cliente = request.GET.get('cliente')
+        filtro_numero_nota = request.GET.get('numero_nota')
+        filtro_sociedad = request.GET.get('sociedad')
+        filtro_fecha = request.GET.get('fecha')
+
+        contexto_filtro = []
+
+        if filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+
+        if filtro_numero_nota:
+            condicion = Q(numero_nota__unaccent__icontains = filtro_numero_nota)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("numero_nota=" + filtro_cliente)
+
+        if filtro_fecha:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("fecha=" + filtro_fecha)
+
+        if filtro_sociedad:
+            condicion = Q(sociedad__id = filtro_sociedad)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(notas_credito) > objectsxpage:
+            paginator = Paginator(notas_credito, objectsxpage)
+            page_number = request.GET.get('page')
+            notas_credito = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = notas_credito
+        context['contexto_nota_credito'] = notas_credito
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
 class NotaCreditoDetailView(DetailView):
     model = NotaCredito
     template_name = "notas/nota_credito/detalle.html"
@@ -102,7 +167,6 @@ class NotaCreditoDetailView(DetailView):
             context['url_nubefact'] = nota_credito.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(nota_credito)
         return context
-    
 
 
 def NotaCreditoDetailTabla(request, id):
@@ -135,3 +199,72 @@ def NotaCreditoDetailTabla(request, id):
             request=request
         )
         return JsonResponse(data)
+
+
+class NotaCreditoCreateView(BSModalFormView):
+    template_name = "notas/nota_credito/crear.html"
+    form_class = NotaCreditoCrearForm
+
+    def get_success_url(self):
+        return reverse_lazy('nota_app:nota_credito_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                factura_id = form.cleaned_data.get('factura')
+                boleta_id = form.cleaned_data.get('boleta')
+                if factura_id:
+                    factura = FacturaVenta.objects.get(id=factura_id)
+                    serie_comprobante = SeriesComprobante.objects.get(
+                        tipo_comprobante=ContentType.objects.get_for_model(NotaCredito),
+                        serie=factura.serie_comprobante.serie,
+                    )
+                    numero_nota = len(NotaCredito.objects.filter(sociedad=factura.sociedad, serie_comprobante=serie_comprobante,)) + 1
+                    nota_credito = NotaCredito.objects.create(
+                        sociedad=factura.sociedad,
+                        serie_comprobante=serie_comprobante,
+                        numero_nota=numero_nota,
+                        cliente=factura.cliente,
+                        cliente_interlocutor=factura.cliente_interlocutor,
+                        moneda=factura.moneda,
+                        tipo_cambio=factura.tipo_cambio,
+                        content_type_documento=DocumentoFisico.objects.get(modelo=ContentType.objects.get_for_model(FacturaVenta)),
+                        id_registro_documento=factura.id,
+                        slug=slug_aleatorio(NotaCredito),
+                    )
+                    for detalle in factura.detalles:
+                        nota_credito_detalle = NotaCreditoDetalle.objects.create(
+                            item=detalle.item,
+                            content_type=detalle.content_type,
+                            id_registro=detalle.id_registro,
+                            unidad=detalle.unidad,
+                            descripcion_documento=detalle.descripcion_documento,
+                            cantidad=detalle.cantidad,
+                            precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
+                            precio_unitario_con_igv=detalle.precio_unitario_con_igv,
+                            precio_final_con_igv=detalle.precio_final_con_igv,
+                            descuento=detalle.descuento,
+                            sub_total=detalle.sub_total,
+                            tipo_igv=detalle.tipo_igv,
+                            igv=detalle.igv,
+                            total=detalle.total,
+                            codigo_producto_sunat=detalle.codigo_producto_sunat,
+                            nota_credito=nota_credito,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaCreditoCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Seleccionar'
+        context['titulo'] = 'Serie'
+        return context

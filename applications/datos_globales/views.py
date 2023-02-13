@@ -68,7 +68,7 @@ def DistritoJsonView(request):
     if request.is_ajax():
         term = request.GET.get('term')
         buscar = Distrito.objects.all().filter(
-            Q(nombre__icontains=term) | Q(codigo__icontains=term)
+            Q(nombre__unaccent__icontains=term) | Q(codigo__unaccent__icontains=term)
             )
         data = []
         for dato in buscar:
