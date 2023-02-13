@@ -312,35 +312,34 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, anticipo_regularizacion)
         lista_resultados_linea.append(calculo)
     if sociedad and hasattr(cabecera, 'CotizacionDescuentoGlobal_cotizacion_venta'):
+        print('Confirmación')
         descuento_global_cotizacion = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global_cotizacion
         descuento_oferta = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_oferta
         descuento_global = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global
         otros_cargos = cabecera.CotizacionOtrosCargos_cotizacion_venta.get(sociedad=sociedad).otros_cargos
     else:
-        if sociedad and hasattr(cabecera, 'otros_cargos'):
-            print('Factura')
-            descuento_global_cotizacion = Decimal('0.00')
-            descuento_oferta = Decimal('0.00')
-            descuento_global = cabecera.descuento_global
-            otros_cargos = cabecera.otros_cargos
-        elif hasattr(cabecera, 'otros_cargos'):
-            print('Primero')
+        try:
             descuento_global_cotizacion = cabecera.descuento_global_cotizacion
             descuento_oferta = cabecera.descuento_oferta
             descuento_global = cabecera.descuento_global
             otros_cargos = cabecera.otros_cargos
-        elif hasattr(cabecera, 'total_otros_cargos'):
-            print('Segundo')
-            descuento_global_cotizacion = Decimal('0.00')
-            descuento_oferta = Decimal('0.00')
-            descuento_global = cabecera.descuento_global
-            otros_cargos = cabecera.total_otros_cargos
-        else:
-            print('Tercero')
-            descuento_global_cotizacion = Decimal('0.00')
-            descuento_oferta = Decimal('0.00')
-            descuento_global = Decimal('0.00')
-            otros_cargos = Decimal('0.00')
+        except:
+            try:
+                descuento_global_cotizacion = Decimal('0.00')
+                descuento_oferta = Decimal('0.00')
+                descuento_global = cabecera.descuento_global
+                otros_cargos = cabecera.otros_cargos
+            except:
+                try:
+                    descuento_global_cotizacion = Decimal('0.00')
+                    descuento_oferta = Decimal('0.00')
+                    descuento_global = cabecera.descuento_global
+                    otros_cargos = cabecera.total_otros_cargos
+                except:
+                    descuento_global_cotizacion = Decimal('0.00')
+                    descuento_oferta = Decimal('0.00')
+                    descuento_global = Decimal('0.00')
+                    otros_cargos = Decimal('0.00')
 
     return calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descuento_oferta, descuento_global, otros_cargos, valor_igv, tipo_cambio)
 
