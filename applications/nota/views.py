@@ -8,7 +8,8 @@ from applications.nota.models import NotaCredito, NotaCreditoDetalle
 from applications.funciones import numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
 
-class NotaCreditoView(FormView):
+class NotaCreditoView(PermissionRequiredMixin, FormView):
+    permission_required = ('nota.view_notacredito')
     template_name = "notas/nota_credito/inicio.html"
     form_class = NotaCreditoBuscarForm
     success_url = '.'
@@ -140,7 +141,8 @@ def NotaCreditoTabla(request):
         return JsonResponse(data)
 
 
-class NotaCreditoDetailView(DetailView):
+class NotaCreditoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('nota.view_notacredito')
     model = NotaCredito
     template_name = "notas/nota_credito/detalle.html"
     context_object_name = 'contexto_nota_credito'
@@ -201,7 +203,8 @@ def NotaCreditoDetailTabla(request, id):
         return JsonResponse(data)
 
 
-class NotaCreditoCreateView(BSModalFormView):
+class NotaCreditoCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota.add_notacredito')
     template_name = "notas/nota_credito/crear.html"
     form_class = NotaCreditoCrearForm
 
@@ -268,3 +271,15 @@ class NotaCreditoCreateView(BSModalFormView):
         context['accion'] = 'Seleccionar'
         context['titulo'] = 'Serie'
         return context
+
+
+class NotaCreditoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota.delete_notacredito')
+    model = NotaCredito
+    template_name = "includes/eliminar generico.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoDeleteView, self).get_context_data(**kwargs)
+        context['']
+        return context
+    
