@@ -1,4 +1,5 @@
 from decimal import Decimal
+from applications.clientes.models import Cliente
 from applications.comprobante_venta.models import FacturaVenta
 from applications.datos_globales.models import DocumentoFisico, NubefactRespuesta, SeriesComprobante, TipoCambio
 from applications.importaciones import *
@@ -224,7 +225,7 @@ class NotaCreditoCreateView(PermissionRequiredMixin, BSModalFormView):
                         tipo_comprobante=ContentType.objects.get_for_model(NotaCredito),
                         serie=factura.serie_comprobante.serie,
                     )
-                    numero_nota = len(NotaCredito.objects.filter(sociedad=factura.sociedad, serie_comprobante=serie_comprobante,)) + 1
+                    numero_nota = NotaCredito.objects.filter(sociedad=factura.sociedad, serie_comprobante=serie_comprobante,).aggregate(Max('numero_nota'))['numero_nota__max'] + 1
                     nota_credito = NotaCredito.objects.create(
                         sociedad=factura.sociedad,
                         serie_comprobante=serie_comprobante,
@@ -236,6 +237,8 @@ class NotaCreditoCreateView(PermissionRequiredMixin, BSModalFormView):
                         content_type_documento=DocumentoFisico.objects.get(modelo=ContentType.objects.get_for_model(FacturaVenta)),
                         id_registro_documento=factura.id,
                         slug=slug_aleatorio(NotaCredito),
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
                     )
                     for detalle in factura.detalles:
                         nota_credito_detalle = NotaCreditoDetalle.objects.create(
@@ -277,9 +280,57 @@ class NotaCreditoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('nota.delete_notacredito')
     model = NotaCredito
     template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('nota_app:nota_credito_inicio')
 
     def get_context_data(self, **kwargs):
         context = super(NotaCreditoDeleteView, self).get_context_data(**kwargs)
-        context['']
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Nota de Crédito'
+        context['item'] = self.get_object()
         return context
     
+
+class NotaCreditoDireccionView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('clientes.change_cliente')
+    model = Cliente
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_tipo_documento = False
+        context['titulo'] = 'Error de dirección'
+        if self.get_object().tipo_documento!='6':
+            error_tipo_documento = True
+
+        if error_tipo_documento:
+            context['texto'] = 'El cliente debe tener RUC.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['id_boleta']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            cliente = self.get_object()
+            consulta = cliente.consulta_direccion
+            cliente.direccion_fiscal = consulta['direccion']
+            cliente.ubigeo = consulta['ubigeo']
+            cliente.save()
+            messages.success(request, 'Operación exitosa: Dirección actualizada')
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoDireccionView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Dirección'
+        context['texto'] = f'Dirección anterior: {self.get_object().direccion_anterior}'
+        context['item'] = f'Nueva Dirección: {self.get_object().direccion_nueva}'
+        return context

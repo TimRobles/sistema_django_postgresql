@@ -9,7 +9,8 @@ urlNotaCredito = [
     path('nota-credito/detalle/<pk>/', views.NotaCreditoDetailView.as_view(), name='nota_credito_detalle'),
     path('nota-credito/detalle/tabla/<int:id>/', views.NotaCreditoDetailTabla, name='nota_credito_detalle_tabla'),
     path('nota_credito/crear/',views.NotaCreditoCreateView.as_view(),name='nota_credito_crear'),
-
+    path('nota_credito/eliminar/<pk>/',views.NotaCreditoDeleteView.as_view(),name='nota_credito_eliminar'),
+    path('nota-credito/direccion/<int:id_nota>/<pk>/', views.BoletaVentaDireccionView.as_view(), name='nota_credito_direccion'),
 ]
 
 
