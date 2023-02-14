@@ -193,7 +193,7 @@
                 <tr>
                     <th class="pe-2">N° Factura:</th>
                     <td class="text-nowrap">
-                        {{ factura.serie_comprobante }}
+                        {{ factura.serie_comprobante.serie }}
                         -
                         {% if factura.numero_factura %}
                         {{ factura.numero_factura|numeroXn:6 }}

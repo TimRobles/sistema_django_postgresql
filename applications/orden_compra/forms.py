@@ -120,9 +120,9 @@ class OrdenCompraAnularForm(BSModalModelForm):
 
 
 class OrdenCompraDetalleUpdateForm(BSModalModelForm):
-    name = forms.CharField(max_length=50)
-    brand = forms.CharField(max_length=50)
-    description = forms.CharField(max_length=50)
+    name = forms.CharField(max_length=200)
+    brand = forms.CharField(max_length=200)
+    description = forms.CharField(max_length=200)
     class Meta:
         model = OrdenCompraDetalle
         fields=(

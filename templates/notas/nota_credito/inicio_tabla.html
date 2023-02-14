@@ -24,7 +24,7 @@
             <td>{{ nota_credito.fecha_emision|date:'d/m/Y' }}</td>
             <td>{{ nota_credito.fecha_vencimiento|date:'d/m/Y' }}</td>
             <td>{{ nota_credito.cliente }}</td>
-            <td>{{ nota_credito.serie_comprobante }}</td>
+            <td>{{ nota_credito.serie_comprobante.serie }}</td>
             <td>{{ nota_credito.numero_nota|numeroXn:6 }}</td>
             <td>
                 {% if nota_credito.observaciones %}

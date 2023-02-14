@@ -64,15 +64,6 @@
         </div>
         {% endif %}
 
-        {% if not boleta.serie_comprobante %}
-        <div class="col-auto">
-            <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_eliminar' boleta.id %}"
-                class="delete btn btn-danger">
-                Anular en NubeFact
-            </button>
-        </div>
-        {% endif %}
-        
         {% if respuestas_nubefact %}
         <div class="col-auto">
             <button data-form-url="{% url 'comprobante_venta_app:boleta_venta_nubefact_detalle' boleta.id %}"
@@ -159,7 +150,7 @@
                 <tr>
                     <th class="pe-2">N° Boleta:</th>
                     <td>
-                        {{ boleta.serie_comprobante }}
+                        {{ boleta.serie_comprobante.serie }}
                         -
                         {% if boleta.numero_boleta %}
                         {{ boleta.numero_boleta|numeroXn:6 }}

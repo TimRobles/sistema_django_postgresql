@@ -308,7 +308,7 @@
                 <tr>
                     <th class="pe-2">N° Guia:</th>
                     <td class="text-nowrap">
-                        {{ guia.serie_comprobante }}
+                        {{ guia.serie_comprobante.serie }}
                         -
                         {% if guia.numero_guia %}
                         {{ guia.numero_guia|numeroXn:6 }}

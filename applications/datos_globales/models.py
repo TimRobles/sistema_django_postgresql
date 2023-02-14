@@ -657,7 +657,7 @@ class SeriesComprobante(models.Model):
         verbose_name_plural = 'Series Comprobantes'
 
     def __str__(self):
-        return self.serie
+        return f"{self.serie} - {self.tipo_comprobante}"
 
 
 class NubefactAcceso(models.Model):

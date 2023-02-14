@@ -17,7 +17,7 @@
         {% for guia in contexto_guia %}
         <tr class="{% if guia.estado == 3 %}text-danger text-decoration-line-through{% endif %}">
             <td class="fondo-personalizado" style="--color-fondo: {{ guia.sociedad.color }};">{{ guia.sociedad.abreviatura }}</td>
-            <td>{{ guia.serie_comprobante }}-{{ guia.numero_guia|numeroXn:6 }}</td>
+            <td>{{ guia.serie_comprobante.serie }}-{{ guia.numero_guia|numeroXn:6 }}</td>
             <td>{{ guia.cliente }}</td>
             <td>{{ guia.fecha_emision|date:'d/m/Y' }}</td>
             <td>{{ guia.get_estado_display }}</td>

@@ -1,12 +1,12 @@
 from decimal import Decimal
 from applications.clientes.models import Cliente
-from applications.comprobante_venta.models import FacturaVenta
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.datos_globales.models import DocumentoFisico, NubefactRespuesta, SeriesComprobante, TipoCambio
 from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.nota.forms import NotaCreditoBuscarForm, NotaCreditoCrearForm
 from applications.nota.models import NotaCredito, NotaCreditoDetalle
-from applications.funciones import numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
+from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
 
 class NotaCreditoView(PermissionRequiredMixin, FormView):
@@ -225,7 +225,10 @@ class NotaCreditoCreateView(PermissionRequiredMixin, BSModalFormView):
                         tipo_comprobante=ContentType.objects.get_for_model(NotaCredito),
                         serie=factura.serie_comprobante.serie,
                     )
-                    numero_nota = NotaCredito.objects.filter(sociedad=factura.sociedad, serie_comprobante=serie_comprobante,).aggregate(Max('numero_nota'))['numero_nota__max'] + 1
+                    numero_nota = 0
+                    if NotaCredito.objects.filter(sociedad=boleta.sociedad, serie_comprobante=serie_comprobante,):
+                        numero_nota = NotaCredito.objects.filter(sociedad=boleta.sociedad, serie_comprobante=serie_comprobante,).aggregate(Max('numero_nota'))['numero_nota__max']
+                    numero_nota = numero_nota + 1
                     nota_credito = NotaCredito.objects.create(
                         sociedad=factura.sociedad,
                         serie_comprobante=serie_comprobante,
@@ -241,6 +244,7 @@ class NotaCreditoCreateView(PermissionRequiredMixin, BSModalFormView):
                         updated_by=self.request.user,
                     )
                     for detalle in factura.detalles:
+                        calculo = calculos_linea(detalle.cantidad, detalle.precio_final_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
                         nota_credito_detalle = NotaCreditoDetalle.objects.create(
                             item=detalle.item,
                             content_type=detalle.content_type,
@@ -248,14 +252,61 @@ class NotaCreditoCreateView(PermissionRequiredMixin, BSModalFormView):
                             unidad=detalle.unidad,
                             descripcion_documento=detalle.descripcion_documento,
                             cantidad=detalle.cantidad,
-                            precio_unitario_sin_igv=detalle.precio_unitario_sin_igv,
-                            precio_unitario_con_igv=detalle.precio_unitario_con_igv,
+                            precio_unitario_sin_igv=calculo['precio_unitario_sin_igv'],
+                            precio_unitario_con_igv=detalle.precio_final_con_igv,
                             precio_final_con_igv=detalle.precio_final_con_igv,
-                            descuento=detalle.descuento,
-                            sub_total=detalle.sub_total,
-                            tipo_igv=detalle.tipo_igv,
-                            igv=detalle.igv,
-                            total=detalle.total,
+                            descuento=calculo['descuento'],
+                            sub_total=calculo['subtotal'],
+                            tipo_igv=calculo['tipo_igv'],
+                            igv=calculo['igv'],
+                            total=calculo['total'],
+                            codigo_producto_sunat=detalle.codigo_producto_sunat,
+                            nota_credito=nota_credito,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+
+                if boleta_id:
+                    boleta = BoletaVenta.objects.get(id=boleta_id)
+                    serie_comprobante = SeriesComprobante.objects.get(
+                        tipo_comprobante=ContentType.objects.get_for_model(NotaCredito),
+                        serie=boleta.serie_comprobante.serie,
+                    )
+                    numero_nota = 0
+                    if NotaCredito.objects.filter(sociedad=boleta.sociedad, serie_comprobante=serie_comprobante,):
+                        numero_nota = NotaCredito.objects.filter(sociedad=boleta.sociedad, serie_comprobante=serie_comprobante,).aggregate(Max('numero_nota'))['numero_nota__max']
+                    numero_nota = numero_nota + 1
+                    nota_credito = NotaCredito.objects.create(
+                        sociedad=boleta.sociedad,
+                        serie_comprobante=serie_comprobante,
+                        numero_nota=numero_nota,
+                        cliente=boleta.cliente,
+                        cliente_interlocutor=boleta.cliente_interlocutor,
+                        moneda=boleta.moneda,
+                        tipo_cambio=boleta.tipo_cambio,
+                        content_type_documento=DocumentoFisico.objects.get(modelo=ContentType.objects.get_for_model(BoletaVenta)),
+                        id_registro_documento=boleta.id,
+                        slug=slug_aleatorio(NotaCredito),
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                    for detalle in boleta.detalles:
+                        calculo = calculos_linea(detalle.cantidad, detalle.precio_final_con_igv, detalle.precio_final_con_igv, igv(), detalle.tipo_igv)
+                        nota_credito_detalle = NotaCreditoDetalle.objects.create(
+                            item=detalle.item,
+                            content_type=detalle.content_type,
+                            id_registro=detalle.id_registro,
+                            unidad=detalle.unidad,
+                            descripcion_documento=detalle.descripcion_documento,
+                            cantidad=detalle.cantidad,
+                            precio_unitario_sin_igv=calculo['precio_unitario_sin_igv'],
+                            precio_unitario_con_igv=detalle.precio_final_con_igv,
+                            precio_final_con_igv=detalle.precio_final_con_igv,
+                            descuento=calculo['descuento'],
+                            sub_total=calculo['subtotal'],
+                            tipo_igv=calculo['tipo_igv'],
+                            igv=calculo['igv'],
+                            total=calculo['total'],
                             codigo_producto_sunat=detalle.codigo_producto_sunat,
                             nota_credito=nota_credito,
                             created_by=self.request.user,
@@ -272,7 +323,7 @@ class NotaCreditoCreateView(PermissionRequiredMixin, BSModalFormView):
         self.request.session['primero'] = True
         context = super(NotaCreditoCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Seleccionar'
-        context['titulo'] = 'Serie'
+        context['titulo'] = 'Comprobante de Venta'
         return context
 
 
