@@ -1419,6 +1419,52 @@ class BoletaVentaSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion'] = 'Seleccionar'
         context['titulo'] = 'Serie'
         return context
+
+
+class BoletaVentaDireccionView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('clientes.change_cliente')
+    model = Cliente
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_tipo_documento = False
+        context['titulo'] = 'Error de dirección'
+        if self.get_object().tipo_documento!='6':
+            error_tipo_documento = True
+
+        if error_tipo_documento:
+            context['texto'] = 'El cliente debe tener RUC.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['id_boleta']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            cliente = self.get_object()
+            consulta = cliente.consulta_direccion
+            cliente.direccion_fiscal = consulta['direccion']
+            cliente.ubigeo = consulta['ubigeo']
+            cliente.save()
+            messages.success(request, 'Operación exitosa: Dirección actualizada')
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaDireccionView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Dirección'
+        context['texto'] = f'Dirección anterior: {self.get_object().direccion_anterior}'
+        context['item'] = f'Nueva Dirección: {self.get_object().direccion_nueva}'
+        return context
     
 
 class BoletaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):

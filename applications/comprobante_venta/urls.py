@@ -37,6 +37,7 @@ urlpatterns = [
 
     path('boleta-venta/crear/<pk>/', views.BoletaVentaCrearView.as_view(), name='boleta_venta_crear'),
     path('boleta-venta/serie/<pk>/', views.BoletaVentaSerieUpdateView.as_view(), name='boleta_venta_serie'),
+    path('boleta-venta/direccion/<int:id_boleta>/<pk>/', views.BoletaVentaDireccionView.as_view(), name='boleta_venta_direccion'),
     path('boleta-venta/guardar/<pk>/', views.BoletaVentaGuardarView.as_view(), name='boleta_venta_guardar'),
     path('boleta-venta/anular/<pk>/', views.BoletaVentaAnularView.as_view(), name='boleta_venta_anular'),
     path('boleta-venta/eliminar/<pk>/', views.BoletaVentaEliminarView.as_view(), name='boleta_venta_eliminar'),

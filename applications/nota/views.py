@@ -310,7 +310,7 @@ class NotaCreditoDireccionView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['id_boleta']})
+        return reverse_lazy('nota_app:nota_credito_detalle', kwargs={'pk':self.kwargs['id_nota']})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):

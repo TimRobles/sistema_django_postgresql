@@ -101,9 +101,9 @@ class FacturaVenta(models.Model):
 
     def __str__(self):
         if self.numero_factura:
-            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_factura, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s-%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_factura, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
         else:
-            return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
 
 
 class FacturaVentaDetalle(models.Model):
