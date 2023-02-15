@@ -1812,11 +1812,14 @@ def BoletaVentaJsonView(request):
     if request.is_ajax():
         term = request.GET.get('term')
         data = []
+        filtro_numero = Q(numero_boleta=term.split(' ')[0])
+        for palabra in term.split(' ')[1:]:
+            filtro_numero = filtro_numero | Q(numero_boleta=palabra)
         buscar = BoletaVenta.objects.filter(
                 estado=4,
             ).filter(
                 Q(cliente__razon_social__unaccent__icontains=term) | 
-                Q(numero_boleta=term)
+                filtro_numero
             )
         for boleta in buscar:
             data.append({
