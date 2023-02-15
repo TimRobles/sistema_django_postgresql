@@ -14,7 +14,7 @@ class IngresoReclamoGarantiaAdmin(admin.ModelAdmin):
         'cliente_interlocutor',
         'sociedad',
         'fecha_ingreso',
-        'observaciones',
+        'observacion',
         'encargado',
         'created_at',
         'created_by',

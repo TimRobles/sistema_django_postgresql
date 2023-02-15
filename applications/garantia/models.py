@@ -7,6 +7,7 @@ from applications.variables import ESTADOS
 from applications.sociedad.models import Sociedad
 from applications.calidad.models import Serie
 from applications.clientes.models import Cliente, InterlocutorCliente
+from applications.garantia.managers import IngresoReclamoGarantiaManager
 
 
 class IngresoReclamoGarantia(models.Model):
@@ -15,15 +16,15 @@ class IngresoReclamoGarantia(models.Model):
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='IngresoReclamoGarantia_interlocutor', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
     fecha_ingreso = models.DateField('Fecha Ingreso', auto_now=False, auto_now_add=False, blank=True, null=True)
-    observaciones = models.TextField(blank=True, null=True, max_length=1000)
+    observacion = models.TextField(blank=True, null=True, max_length=1000)
     encargado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)
-
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='IngresoReclamoGarantia_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='IngresoReclamoGarantia_updated_by', editable=False)
     
+    objects = IngresoReclamoGarantiaManager()
 
     class Meta:
         verbose_name = 'Ingreso Reclamo Garantia'
@@ -37,9 +38,9 @@ class IngresoReclamoGarantiaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True)
     id_registro = models.IntegerField(blank=True, null=True)
-    serie = models.ForeignKey(Serie, on_delete=models.PROTECT, related_name='IngresoReclamoGarantiaDetalle_serie')
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
-    precio_venta = models.DecimalField('Precio Venta', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    serie = models.ForeignKey(Serie, on_delete=models.PROTECT, related_name='IngresoReclamoGarantiaDetalle_serie',blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'),blank=True, null=True)
+    precio_venta = models.DecimalField('Precio Venta', max_digits=22, decimal_places=10, default=Decimal('0.00'),blank=True, null=True)
     ingreso_garantia = models.ForeignKey(IngresoReclamoGarantia, on_delete=models.CASCADE, related_name='IngresoReclamoGarantiaDetalle_ingreso_garantia', blank=True, null=True)
 
 
@@ -52,6 +53,13 @@ class IngresoReclamoGarantiaDetalle(models.Model):
     class Meta:
         verbose_name = 'Ingreso Reclamo Garantia Detalle'
         verbose_name_plural = 'Ingresos Reclamo Garantia Detalle'
+
+
+    @property
+    def producto(self):
+        return None
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+        
 
     def __str__(self):
         return str(self.id)

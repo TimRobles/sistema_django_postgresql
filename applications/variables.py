@@ -337,6 +337,7 @@ MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue 
 MENSAJE_GENERAR_FACTURA= 'Operación exitosa: La factura fue generada con éxito.'
 MENSAJE_GENERAR_BOLETA= 'Operación exitosa: La boleta fue generada con éxito.'
 MENSAJE_GENERAR_GUIA= 'Operación exitosa: La guía fue generada con éxito.'
+MENSAJE_INGRESO_RECLAMO_GARANTIA= 'Operación exitosa: El ingreso reclamo garantía fue generado con éxito.'
 
 MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
 MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'

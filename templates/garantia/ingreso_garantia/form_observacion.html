@@ -1,0 +1,19 @@
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+<form action="" method="post" id="formulario-sociedad" autocomplete="off">
+    {% csrf_token %}
+
+    
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" id="guardar_formulario">Guardar</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+    <span id="url_guardar" hidden>{{ url_guardar }}</span>
+    <span id="observaciones" hidden>{{ observaciones }}</span>
+</form>
+{% endblock content %}    
+
