@@ -4,6 +4,7 @@ from django.shortcuts import render
 from applications.importaciones import*
 from applications.logistica.pdf import generarSeries
 from applications.material.models import SubFamilia
+from applications.datos_globales.models import Unidad
 from applications.calidad.forms import(
     FallaMaterialForm,
     NotaControlCalidadStockAnularForm,
@@ -21,6 +22,11 @@ from applications.calidad.forms import(
     NotaControlCalidadStockAgregarMaloSinFallaCreateForm,
     NotaControlCalidadStockAgregarMaloSinSerieCreateForm,
     SerieBuscarForm,
+    SolicitudConsumoInternoForm,
+    SolicitudConsumoInternoDetalleForm,
+    AprobacionConsumoInternoForm,
+    SolicitudConsumoInternoRechazarForm,
+    SolicitudConsumoInternoDetalleSeriesForm,
 )
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.muestra.models import NotaIngresoMuestra
@@ -33,8 +39,17 @@ from .models import(
     FallaMaterial,
     HistorialEstadoSerie,
     SerieCalidad,
+    SolicitudConsumoInterno,
+    SolicitudConsumoInternoDetalle,
+    AprobacionConsumoInterno,
+    AprobacionConsumoInternoDetalle,
+    Almacen,
+    Sede,
+    Material,
+    ValidarSerieSolicitudConsumoInternoDetalle,
 )
 from applications.funciones import numeroXn, registrar_excepcion
+from django import forms
 
 class FallaMaterialTemplateView(PermissionRequiredMixin, TemplateView):
     permission_required = ('calidad.view_fallamaterial')
@@ -1518,3 +1533,625 @@ class SerieDetailView(PermissionRequiredMixin, DetailView):
         context['form'] = SerieBuscarForm(serie=None)
         return context
 
+
+class SolicitudConsumoInternoListView(ListView):
+    model = SolicitudConsumoInterno
+    template_name = "calidad/consumo/solicitud_consumo_interno/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudConsumoInternoListView,self).get_context_data(**kwargs)
+        solicitud_consumo_interno = SolicitudConsumoInterno.objects.all()
+        context['contexto_solicitud_consumo'] = solicitud_consumo_interno
+        return context
+
+
+def SolicitudConsumoInternoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/consumo/solicitud_consumo_interno/inicio_tabla.html'
+        context = {}
+        solicitud_consumo_interno = SolicitudConsumoInterno.objects.all()
+        context['contexto_solicitud_consumo'] = solicitud_consumo_interno
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class SolicitudConsumoInternoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('calidad.add_solicitudconsumointerno')
+    model = SolicitudConsumoInterno
+    template_name = "includes/formulario generico.html"
+    form_class = SolicitudConsumoInternoForm
+    success_url = reverse_lazy('calidad_app:solicitud_consumo_interno_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+            context = super(SolicitudConsumoInternoCreateView, self).get_context_data(**kwargs)
+            context['accion']="Registrar"
+            context['titulo']="Solicitud de Consumo Interno"
+            return context
+
+    def form_valid(self, form):
+        nro_solicitud_consumo_interno = len(SolicitudConsumoInterno.objects.all()) + 1
+        form.instance.numero_solicitud = numeroXn(nro_solicitud_consumo_interno, 6)
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+
+class SolicitudConsumoInternoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_solicitudconsumointerno')
+    model = SolicitudConsumoInterno
+    # template_name = "calidad/consumo/solicitud_consumo_interno/form.html"
+    template_name = "includes/formulario generico.html"
+    form_class = SolicitudConsumoInternoForm
+    success_url = reverse_lazy('calidad_app:solicitud_consumo_interno_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudConsumoInternoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Solicitud de Consumo Interno"
+        return context
+
+
+class SolicitudConsumoInternoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.change_solicitudconsumointerno')
+
+    model = SolicitudConsumoInterno
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('calidad_app:solicitud_consumo_interno_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_DAR_BAJA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudConsumoInternoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Dar Baja"
+        context['titulo'] = "Solicitud Consumo Interno"
+        context['dar_baja'] = "true"
+        context['item'] = 'Solicitud Nro ' + str(self.object.numero_solicitud) + ' / '+ str(self.object.fecha_solicitud) + ' / ' + str(self.object.solicitante)
+        return context
+
+
+class SolicitudConsumoInternoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.change_solicitudconsumointerno')
+    model = SolicitudConsumoInterno
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('calidad_app:solicitud_consumo_interno_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_series = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().SolicitudConsumoInternoDetalle_solicitud_consumo.all()
+        for detalle in detalles:
+            if detalle.series_validar != detalle.cantidad and detalle.material.control_serie:
+                error_series = True
+        
+        if error_series:
+            context['texto'] = 'La cantidad de series no coincide.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super().dispatch(request, *args, **kwargs)
+
+    def generar_aprobacion_consumo(self):
+        solicitud_consumo = SolicitudConsumoInterno.objects.get(id=self.get_object().id)
+        aprobacion_consumo = AprobacionConsumoInterno.objects.create(
+                numero_aprobacion=len(AprobacionConsumoInterno.objects.all()) + 1,
+                estado=1,
+                solicitud_consumo=solicitud_consumo,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+        query_solicitud_consumo = SolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo=solicitud_consumo)      
+        list_aprobacion_detalle = []
+        for fila_detalle in query_solicitud_consumo:
+            list_aprobacion_detalle.append(
+                AprobacionConsumoInternoDetalle(
+                    item = fila_detalle.item,
+                    material = fila_detalle.material,
+                    cantidad = fila_detalle.cantidad,
+                    sede = fila_detalle.sede,
+                    almacen = fila_detalle.almacen,
+                    aprobacion_consumo = aprobacion_consumo,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                    )    
+                )
+        AprobacionConsumoInternoDetalle.objects.bulk_create(list_aprobacion_detalle)
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            self.generar_aprobacion_consumo()
+            messages.success(request, MENSAJE_ACTUALIZACION)
+            # return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudConsumoInternoConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Solicitud Consumo Interno"
+        context['dar_baja'] = "true"
+        context['item'] = 'Solicitud Nro ' + str(self.object.numero_solicitud) + ' / '+ str(self.object.fecha_solicitud) + ' / ' + str(self.object.solicitante)
+        return context
+
+
+class SolicitudConsumoInternoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('calidad.view_solicitudconsumointerno')
+    model = SolicitudConsumoInterno
+    template_name = "calidad/consumo/solicitud_consumo_interno/detalle.html"
+    context_object_name = 'contexto_solicitud_consumo'
+
+    def get_context_data(self, **kwargs):
+        solicitud_consumo = SolicitudConsumoInterno.objects.get(id=self.kwargs['pk'])
+        context = super(SolicitudConsumoInternoDetailView, self).get_context_data(**kwargs)
+        context['contexto_solicitud_consumo'] = solicitud_consumo
+        context['contexto_solicitud_consumo_detalle'] = SolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo = solicitud_consumo)
+        return context
+
+
+def SolicitudConsumoInternoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/consumo/solicitud_consumo_interno/detalle_tabla.html'
+        context = {}
+        solicitud_consumo = SolicitudConsumoInterno.objects.get(id = pk)
+        context['contexto_solicitud_consumo'] = solicitud_consumo
+        context['contexto_solicitud_consumo_detalle'] = SolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo = solicitud_consumo)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class SolicitudConsumoInternoDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('calidad.add_solicitudconsumointernodetalle')
+    model = SolicitudConsumoInternoDetalle
+    template_name = "calidad/consumo/solicitud_consumo_interno/form.html"
+    form_class = SolicitudConsumoInternoDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:solicitud_consumo_interno_detalle', kwargs={'pk':self.kwargs['solicitud_consumo_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudConsumoInternoDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion']="Añadir"
+        context['titulo']="Detalle Solicitud de Consumo Interno"
+        return context
+
+    def form_valid(self, form):
+        solicitud_consumo = SolicitudConsumoInterno.objects.get(id=self.kwargs['solicitud_consumo_id'])
+        item = len(SolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo=solicitud_consumo)) + 1
+        form.instance.item = numeroXn(item, 6)
+        form.instance.solicitud_consumo = solicitud_consumo
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    # def get_form(self, *args, **kwargs):
+    #     form = super(SolicitudConsumoInternoDetalleCreateView, self).get_form(*args, **kwargs)
+    #     form.fields['almacen'].queryset = Almacen.filter(sede = self.kwargs['id_sede'])
+
+
+class SolicitudConsumoInternoDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_solicitudconsumointernodetalle')
+
+    model = SolicitudConsumoInternoDetalle
+    template_name = "calidad/consumo/solicitud_consumo_interno/form.html"
+    form_class = SolicitudConsumoInternoDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:solicitud_consumo_interno_detalle', kwargs={'pk':self.get_object().solicitud_consumo.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudConsumoInternoDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Detalle Solicitud de Consumo"
+        return context
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+
+class SolicitudConsumoInternoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_solicitudconsumointernodetalle')
+    model = SolicitudConsumoInternoDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():   
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:solicitud_consumo_interno_detalle', kwargs={'pk':self.get_object().solicitud_consumo.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            filas_detalle = SolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo=self.get_object().solicitud_consumo)
+            contador = 1
+            for fila in filas_detalle:
+                if fila == self.get_object():continue
+                fila.item = contador
+                fila.save()
+                contador += 1
+
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudConsumoInternoDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Item"
+        context['item'] = str(self.object.item) + ' - ' + self.object.material.descripcion_corta
+        return context
+
+
+class MaterialUnidad(forms.Form):
+    unidad = forms.ModelChoiceField(queryset=Unidad.objects.all(), required=False)
+
+def MaterialUnidadView(request, pk):
+    form = MaterialUnidad()
+    materiales = Material.objects.filter(id=pk)
+    print(20*'*.')
+    print(type(materiales[0].unidad_base))
+    print(20*'*.')
+    form.fields['unidad'].queryset = Unidad.objects.filter(nombre=materiales[0].unidad_base.nombre)
+    data = dict()
+    if request.method == 'GET':
+        template = 'includes/form.html'
+        context = {'form': form}
+
+        data['info'] = render_to_string(
+            template,
+            context,
+            request=request
+        ).replace('selected', 'selected=""')
+        return JsonResponse(data)
+
+
+class AprobacionConsumoInternoListView(ListView):
+    model = AprobacionConsumoInterno
+    template_name = "calidad/consumo/aprobacion_consumo_interno/inicio.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(AprobacionConsumoInternoListView,self).get_context_data(**kwargs)
+        aprobacion_consumo_interno = AprobacionConsumoInterno.objects.all()
+        context['contexto_aprobacion_consumo'] = aprobacion_consumo_interno
+        return context
+
+
+def AprobacionConsumoInternoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/consumo/aprobacion_consumo_interno/inicio_tabla.html'        
+        context = {}
+        aprobacion_consumo_interno = AprobacionConsumoInterno.objects.all()
+        context['contexto_aprobacion_consumo'] = aprobacion_consumo_interno
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class AprobacionConsumoInternoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('calidad.add_aprobacionconsumointerno')
+    model = AprobacionConsumoInterno
+    template_name = "includes/formulario generico.html"
+    form_class = AprobacionConsumoInternoForm
+    success_url = reverse_lazy('calidad_app:aprobacion_consumo_interno_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(AprobacionConsumoInternoCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Registrar'
+        context['titulo'] = 'Aprobación de Consumo Interno'
+        return context
+
+    def guardar_detalle_aprobacion_consumo(self, form, nro_aprobacion_consumo):
+        solicitud_consumo = form.instance.solicitud_consumo
+        query_solicitud_consumo = SolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo=solicitud_consumo)
+        list_aprobacion_detalle = []
+        for fila_detalle in query_solicitud_consumo:
+            list_aprobacion_detalle.append(
+                AprobacionConsumoInternoDetalle(
+                    item = fila_detalle.item,
+                    material = fila_detalle.material,
+                    cantidad = fila_detalle.cantidad,
+                    sede = fila_detalle.sede,
+                    almacen = fila_detalle.almacen,
+                    aprobacion_consumo = form.instance.id,
+                    )    
+                )
+        AprobacionConsumoInternoDetalle.objects.bulk_create(list_aprobacion_detalle)
+
+    def form_valid(self, form):
+        nro_aprobacion_consumo = len(AprobacionConsumoInterno.objects.all()) + 1
+        form.instance.numero_aprobacion = numeroXn(nro_aprobacion_consumo, 6)
+        registro_guardar(form.instance, self.request)
+        # self.guardar_detalle_aprobacion_consumo(form, nro_aprobacion_consumo)
+        return super().form_valid(form)
+
+
+class AprobacionConsumoInternoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad_app:change_aprobacionconsumointerno')
+    model = AprobacionConsumoInterno
+    template_name = "calidad/consumo/aprobacion_consumo_interno/actualizar.html"
+    form_class = AprobacionConsumoInternoForm
+    success_url = reverse_lazy('calidad_app:aprobacion_consumo_interno_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(AprobacionConsumoInternoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Aprobación de Consumo Interno'
+        return context
+    
+
+class AprobacionConsumoInternoDetailView(DetailView):
+    model = AprobacionConsumoInterno
+    template_name = "calidad/consumo/aprobacion_consumo_interno/detalle.html"
+    context_object_name = 'contexto_aprobacion_consumo'
+
+    def get_context_data(self, **kwargs):
+        aprobacion_consumo = AprobacionConsumoInterno.objects.get(id=self.kwargs['pk'])
+        context = super(AprobacionConsumoInternoDetailView, self).get_context_data(**kwargs)
+        context['contexto_aprobacion_consumo'] = aprobacion_consumo
+        context['contexto_aprobacion_consumo_detalle'] = AprobacionConsumoInternoDetalle.objects.filter(aprobacion_consumo = aprobacion_consumo)
+        return context
+
+
+def AprobacionConsumoInternoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/consumo/aprobacion_consumo_interno/detalle_tabla.html'
+        context = {}
+        aprobacion_consumo = AprobacionConsumoInterno.objects.get(id = pk)
+        context['contexto_aprobacion_consumo'] = aprobacion_consumo
+        context['contexto_aprobacion_consumo_detalle'] = AprobacionConsumoInternoDetalle.objects.filter(aprobacion_consumo = aprobacion_consumo)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class AprobacionConsumoInternoAprobarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.change_aprobacionconsumointerno')
+    model = AprobacionConsumoInterno
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('calidad_app:aprobacion_consumo_interno_inicio')
+
+    def actualizar_estado_solicitud(self):
+        aprobacion_consumo = SolicitudConsumoInterno.objects.get(id = self.object.solicitud_consumo.id)
+        aprobacion_consumo.estado = 6       # APROBAR SOLICITUD
+        aprobacion_consumo.save()
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            
+
+            self.object.estado = 2          # APROBADO
+            self.actualizar_estado_solicitud()
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_ACTUALIZACION)
+
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(AprobacionConsumoInternoAprobarView, self).get_context_data(**kwargs)
+        context['accion'] = "Aprobar"
+        context['titulo'] = "Solicitud de Consumo Interno"
+        context['dar_baja'] = "true"
+        context['item'] = 'Solicitud Nro ' + str(self.object.solicitud_consumo.numero_solicitud) + ' / '+ str(self.object.solicitud_consumo.fecha_solicitud) + ' / ' + str(self.object.solicitud_consumo.solicitante)
+        return context
+
+
+class AprobacionConsumoInternoRechazarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_aprobacionconsumointerno')
+    model = SolicitudConsumoInterno
+    template_name = "includes/formulario generico.html"
+    success_url = reverse_lazy('calidad_app:aprobacion_consumo_interno_inicio')
+    form_class = SolicitudConsumoInternoRechazarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(AprobacionConsumoInternoRechazarView, self).get_context_data(**kwargs)
+        context['accion'] = "Rechazar"
+        context['titulo'] = "Solicitud de Consumo Interno"
+        context['dar_baja'] = "true"
+        # context['item'] = 'Solicitud Nro ' + str(self.object.numero_solicitud) + ' / '+ str(self.object.fecha_solicitud) + ' / ' + str(self.object.solicitante)
+        return context
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            aprobacion_consumo = AprobacionConsumoInterno.objects.get(solicitud_consumo = form.instance)
+            aprobacion_consumo.estado = 3  # RECHAZADO
+            aprobacion_consumo.save()
+            form.instance.estado = 5       # RECHAZAR SOLICITUD
+            registro_guardar(form.instance, self.request)
+            messages.success(self.request, MENSAJE_ACTUALIZACION)
+            return super().form_valid(form)
+
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+
+
+
+class ValidarSeriesSolicitudConsumoDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('calidad.view_solicitudconsumointernodetalle')
+    template_name = "calidad/consumo/solicitud_consumo_interno/validar_serie/detalle.html"
+    form_class = SolicitudConsumoInternoDetalleSeriesForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        # if self.request.session['primero']:
+        serie = form.cleaned_data['serie']
+        solicitud_consumo_detalle = SolicitudConsumoInternoDetalle.objects.get(id = self.kwargs['pk'])
+        try:
+            buscar = Serie.objects.get(
+                serie_base=serie,
+                content_type=ContentType.objects.get_for_model(solicitud_consumo_detalle.material),
+                id_registro=solicitud_consumo_detalle.material.id,
+            )
+            buscar2 = ValidarSerieSolicitudConsumoInternoDetalle.objects.filter(serie = buscar)
+
+            if len(buscar2) != 0:
+                form.add_error('serie', "Serie ya ha sido registrada")
+                return super().form_invalid(form)
+
+            if buscar.estado != 'DISPONIBLE':
+                form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                return super().form_invalid(form)
+        except:
+            form.add_error('serie', "Serie no encontrada: %s" % serie)
+            return super().form_invalid(form)
+
+        obj, created = ValidarSerieSolicitudConsumoInternoDetalle.objects.get_or_create(
+            solicitud_consumo_detalle=solicitud_consumo_detalle,
+            serie=buscar,
+        )
+        if created:
+            obj.estado = 1
+        # self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        solicitud_consumo_detalle = SolicitudConsumoInternoDetalle.objects.get(id = self.kwargs['pk'])
+        cantidad = solicitud_consumo_detalle.cantidad
+        cantidad_ingresada = len(ValidarSerieSolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo_detalle=solicitud_consumo_detalle))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad'] = cantidad
+        kwargs['cantidad_ingresada'] = cantidad_ingresada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        # self.request.session['primero'] = True
+        solicitud_consumo_detalle = SolicitudConsumoInternoDetalle.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesSolicitudConsumoDetailView, self).get_context_data(**kwargs)
+        context['contexto_solicitud_consumo_detalle'] = solicitud_consumo_detalle
+        context['contexto_series'] = ValidarSerieSolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo_detalle = solicitud_consumo_detalle)
+        return context
+
+
+def ValidarSeriesSolicitudConsumoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/consumo/solicitud_consumo_interno/validar_serie/detalle_tabla.html'
+        context = {}
+        solicitud_consumo_detalle = SolicitudConsumoInternoDetalle.objects.get(id = pk)
+        context['contexto_solicitud_consumo_detalle'] = solicitud_consumo_detalle
+        context['contexto_series'] = ValidarSerieSolicitudConsumoInternoDetalle.objects.filter(solicitud_consumo_detalle = solicitud_consumo_detalle)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ValidarSeriesSolicitudConsumoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_validarseriesnotasalidadetalle')
+    model = ValidarSerieSolicitudConsumoInternoDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:solicitud_consumo_validar_series_detalle', kwargs={'pk': self.get_object().solicitud_consumo_detalle.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesSolicitudConsumoDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
+        return context

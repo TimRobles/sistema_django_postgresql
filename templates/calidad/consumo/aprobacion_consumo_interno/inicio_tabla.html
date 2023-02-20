@@ -1,0 +1,44 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. Aprobacion</th>
+            <th>Sociedad</th>
+            <th>Solicitud Consumo</th>
+            <th>Responsable</th>
+            <th>Fecha Doc. Aprobacion</th>
+            <th>Observacion</th>
+            <th>Motivo Rechazo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for fila_aprobacion in contexto_aprobacion_consumo  %}
+            <tr>
+                <td>{{ fila_aprobacion.numero_aprobacion }}</td>
+                <td>{{ fila_aprobacion.solicitud_consumo.sociedad }}</td>
+                <td>{{ fila_aprobacion.solicitud_consumo }}</td>
+                <td>{{ fila_aprobacion.responsable }}</td>
+                <td>{{ fila_aprobacion.fecha_aprobacion }}</td>
+                <td>{{ fila_aprobacion.observacion }}</td>
+                {% if not fila_aprobacion.solicitud_consumo.motivo_anulacion %}<td>-</td>{% else %} <td>{{ fila_aprobacion.solicitud_consumo.motivo_anulacion }}</td> {% endif %}
+                <td>{{ fila_aprobacion.get_estado_display }}</td>
+                <td>
+                    <button data-form-url="{% url 'calidad_app:aprobacion_consumo_interno_actualizar' fila_aprobacion.id %}"
+                        data-table-url="{% url 'calidad_app:aprobacion_consumo_interno_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <a href="{% url 'calidad_app:aprobacion_consumo_interno_detalle' fila_aprobacion.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a> 
+                </td>
+            </tr>
+        {% endfor %} 
+    </tbody>
+</table>

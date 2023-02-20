@@ -1,0 +1,27 @@
+{% load humanize %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Descripción</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+            <th>Sede</th>
+            <th>Almacén</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for fila_detalle_consumo in contexto_aprobacion_consumo_detalle %}
+            <tr>
+                <td>{{ fila_detalle_consumo.item }}</td>
+                <td>{{ fila_detalle_consumo.material }}</td>
+                <td class="text-end">{{ fila_detalle_consumo.cantidad|floatformat:"3"|intcomma }}</td>
+                <td>{{ fila_detalle_consumo.material.unidad_base.simbolo }}</td>
+                <td>{{ fila_detalle_consumo.sede }}</td>
+                <td>{{ fila_detalle_consumo.almacen.nombre }}</td>
+            </tr>
+        {% endfor %}
+            
+    </tbody>
+</table>

@@ -7,6 +7,8 @@ from applications.clientes.models import Cliente
 from applications.logistica.managers import SerieManager
 from applications.sociedad.models import Sociedad
 from applications.material.models import Material, SubFamilia
+from applications.sede.models import Sede
+from applications.almacenes.models import Almacen
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, SERIE_CONSULTA
@@ -261,3 +263,143 @@ class SerieConsulta(models.Model):
     def __str__(self):
         return str(self.serie_base)
 
+
+class SolicitudConsumoInterno(models.Model):
+    ESTADOS_SOLICITUD_CONSUMO = (
+        (1, 'BORRADOR'),
+        (2, 'EN PROCESO'),
+        (3, 'ANULADO'),
+        (4, 'POR APROBACIÓN'),
+        (5, 'RECHAZADO'),
+        (6, 'APROBADO'),
+    )
+    numero_solicitud = models.IntegerField('Número de Solicitud', blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.RESTRICT, blank=True, null=True)
+    fecha_solicitud = models.DateField('Fecha Solicitud', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_consumo = models.DateField('Fecha Consumo', auto_now=False, auto_now_add=False, blank=True, null=True)
+    observacion = models.TextField('Comentario', blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS_SOLICITUD_CONSUMO, default=1)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+    solicitante = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SolicitudConsumoInterno_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SolicitudConsumoInterno_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Solicitud Consumo Interno'
+        verbose_name_plural = 'Solicitudes Consumo Interno'
+        ordering = [
+            '-fecha_solicitud',
+            '-numero_solicitud',
+        ]
+
+    def __str__(self):
+        return str(self.numero_solicitud) + ' | '+ str(self.fecha_solicitud) + ' | ' + str(self.solicitante)
+
+
+class SolicitudConsumoInternoDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    cantidad = models.DecimalField('Cantidad Consumo', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    solicitud_consumo = models.ForeignKey(SolicitudConsumoInterno, on_delete=models.CASCADE, related_name='SolicitudConsumoInternoDetalle_solicitud_consumo')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SolicitudConsumoInternoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SolicitudConsumoInternoDetalle_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Solicitud Consumo Interno Detalle'
+        verbose_name_plural = 'Solicitudes Consumo Interno Detalles'
+        ordering = [
+            'solicitud_consumo',
+            'item',
+            ]
+
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieSolicitudConsumoInternoDetalle_solicitud_consumo_detalle.all())).quantize(Decimal('0.01'))
+
+    def __str__(self):
+        return str(self.solicitud_consumo) + ' | ' + str(self.item)
+
+
+class ValidarSerieSolicitudConsumoInternoDetalle(models.Model):
+    solicitud_consumo_detalle = models.ForeignKey(SolicitudConsumoInternoDetalle, on_delete=models.PROTECT, related_name='ValidarSerieSolicitudConsumoInternoDetalle_solicitud_consumo_detalle')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieSolicitudConsumoInternoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieSolicitudConsumoInternoDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Solicitud de Consumo Detalle'
+        verbose_name_plural = 'Validar Series Solicitudes de Consumo Detalle'
+        ordering = [
+            'created_at',
+            ]
+
+    def __str__(self):
+        return "%s - %s" % (self.solicitud_consumo_detalle , str(self.serie))
+        
+
+class AprobacionConsumoInterno(models.Model):
+    ESTADOS_APROBACION_CONSUMO = (
+        (1, 'BORRADOR'),
+        (2, 'APROBADO'),
+        (3, 'RECHAZADO'),
+        (4, 'ANULADO'),
+    )
+    numero_aprobacion = models.IntegerField('Número de aprobacion', blank=True, null=True)
+    solicitud_consumo = models.OneToOneField(SolicitudConsumoInterno, on_delete=models.CASCADE)
+    responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True)
+    fecha_aprobacion = models.DateField('Fecha aprobacion', auto_now=False, auto_now_add=False, blank=True, null=True)
+    observacion = models.TextField('Comentario', blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS_APROBACION_CONSUMO, default=1)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='AprobacionConsumoInterno_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='AprobacionConsumoInterno_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Aprobacion de Consumo Interno'
+        verbose_name_plural = 'Aprobaciones de Consumo Interno'
+        ordering = [
+            '-fecha_aprobacion',
+            '-numero_aprobacion'
+            ]
+
+    def __str__(self):
+        return str(self.numero_aprobacion) + ' | '+ str(self.fecha_aprobacion) + ' | ' + str(self.responsable)
+
+
+class AprobacionConsumoInternoDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    cantidad = models.DecimalField('Cantidad Consumo', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    aprobacion_consumo = models.ForeignKey(AprobacionConsumoInterno, on_delete=models.CASCADE, blank=True, null=True, related_name='AprobacionConsumoInternoDetalle_aprobacion_consumo')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='AprobacionConsumoInternoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='AprobacionConsumoInternoDetalle_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Aprobacion Consumo Interno Detalle'
+        verbose_name_plural = 'Aprobaciones Consumo Interno Detalles'
+        ordering = [
+            'aprobacion_consumo',
+            'item',
+            ]
+
+    def __str__(self):
+        return str(self.aprobacion_consumo) + ' | ' + str(self.item)

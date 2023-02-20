@@ -1,0 +1,56 @@
+{% load humanize %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Descripción</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+            <th>Sede</th>
+            <th>Almacén</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for fila_detalle_consumo in contexto_solicitud_consumo_detalle %}
+            <tr>
+                <td>{{ fila_detalle_consumo.item }}</td>
+                <td>{{ fila_detalle_consumo.material }}</td>
+                <td class="text-end">{{ fila_detalle_consumo.cantidad|floatformat:"3"|intcomma }}</td>
+                <td>{{ fila_detalle_consumo.material.unidad_base.simbolo }}</td>
+                <td>{{ fila_detalle_consumo.sede }}</td>
+                <td>{{ fila_detalle_consumo.almacen.nombre }}</td>
+                <td class="text-center">
+                    {% if contexto_solicitud_consumo.estado == 1 %}
+                        <button data-form-url="{% url 'calidad_app:solicitud_consumo_interno_detalle_actualizar' fila_detalle_consumo.id %}"
+                            data-table-url="{% url 'calidad_app:solicitud_consumo_interno_detalle_tabla' contexto_solicitud_consumo.id %}"
+                            data-keep-open="true"    
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' fila_detalle_consumo.material.id fila_detalle_consumo.material.content_type.id %}"
+                            class="read btn swatch-purple btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
+                            <i class="bi bi-box-seam"></i>
+                        </button>
+                        <button data-form-url="{% url 'calidad_app:solicitud_consumo_interno_detalle_eliminar' fila_detalle_consumo.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>                        
+                        {% if fila_detalle_consumo.material.control_serie %}
+                            <a href="{% url 'calidad_app:solicitud_consumo_validar_series_detalle' fila_detalle_consumo.id %}"
+                                class="btn btn-dark btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+            
+    </tbody>
+</table>
