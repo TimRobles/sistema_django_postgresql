@@ -27,6 +27,13 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
                 </a>    
+
+                <button data-form-url="{% url 'garantia_app:ingreso_garantia_eliminar' ingreso.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+
             </td>
         </tr>
             

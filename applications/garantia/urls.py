@@ -10,6 +10,8 @@ urlpatterns = [
     path('ingreso-garantia/ver/<int:id_ingreso>/', views.IngresoReclamoGarantiaVerView.as_view(), name='ingreso_garantia_ver'),
     path('ingreso-garantia/ver/tabla/<int:id_ingreso>/', views.IngresoReclamoGarantiaVerTabla, name='ingreso_garantia_ver_tabla'),
     
+    path('ingreso-garantia/eliminar/<pk>/', views.IngresoReclamoGarantiaDeleteView.as_view(), name='ingreso_garantia_eliminar'),
+
     path('ingreso-garantia/cliente/<pk>/', views.IngresoReclamoGarantiaClienteView.as_view(), name='ingreso_garantia_cliente'),
     path('ingreso-garantia/encargado/<pk>/', views.IngresoReclamoGarantiaEncargadoView.as_view(), name='ingreso_garantia_encargado'),
     path('ingreso-garantia/sociedad/<pk>/', views.IngresoReclamoGarantiaSociedadView.as_view(), name='ingreso_garantia_sociedad'),

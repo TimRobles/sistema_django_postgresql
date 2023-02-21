@@ -116,3 +116,4 @@ class IngresoReclamoGarantiaMaterialForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 0.001
+

@@ -72,7 +72,6 @@ class IngresoReclamoGarantiaListView(FormView):
         context['contexto_ingreso_garantia'] = ingreso_garantia
         return context
     
-
 def IngresoReclamoGarantiaCreateView(request):
     obj = IngresoReclamoGarantia.objects.create(
         encargado = request.user,
@@ -139,8 +138,7 @@ def IngresoReclamoGarantiaVerTabla(request, id_ingreso):
         )
         return JsonResponse(data)
 
-
-
+    
 class IngresoReclamoGarantiaClienteView(BSModalUpdateView):
     model = IngresoReclamoGarantia
     template_name = "garantia/ingreso_garantia/form_cliente.html"
@@ -236,6 +234,7 @@ class IngresoReclamoGarantiaMaterialView(BSModalFormView):
                 obj, created = IngresoReclamoGarantiaDetalle.objects.get_or_create(
                     content_type = ContentType.objects.get_for_model(material),
                     id_registro = material.id,
+                    estado = 1,
                     ingreso_garantia = ingreso,
                 )
 
@@ -260,4 +259,20 @@ class IngresoReclamoGarantiaMaterialView(BSModalFormView):
         context['titulo'] = 'Material'
         context['accion'] = 'Agregar'
         return context
+
+
+class IngresoReclamoGarantiaDeleteView(BSModalDeleteView):
+    model = IngresoReclamoGarantia
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('garantia_app:ingreso_garantia_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(IngresoReclamoGarantiaDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Ingreso Reclamo"
+        context['item'] = "Garantia - %s" % (self.object.cliente)
+        return context
+
+
+
 

@@ -148,6 +148,7 @@
                 <th style="min-width: 500px;">Material</th>
                 <th class="text-end">Cantidad</th>
                 <th class="text-end">Prec. Venta </th>
+                <th > Acciones </th>
             </tr>
         </thead>
         <tbody>
@@ -157,6 +158,9 @@
                     <td> {{ material.marca }} </td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ ingreso.moneda.simbolo }} {{ material.precio_venta|redondear:3|intcomma }}</td>
+                    <td>
+
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

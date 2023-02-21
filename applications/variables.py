@@ -309,6 +309,11 @@ ESTADOS_TRASLADO_PRODUCTO_DETALLE = (
     )
 
 
+ESTADOS_INGRESO_RECLAMO_GARANTIA = (
+    (1, 'EN PROCESO'),
+    (2, 'CONCLUIDO'),
+    )
+
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
