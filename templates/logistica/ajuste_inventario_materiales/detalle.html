@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Ajuste Inventario Materiales
+{% endblock titulo %}
+
+{% block contenido %}
+
+    <h3>Detalle Ajuste Inventario Materiales
+        {% if contexto_ajuste_inventario_materiales_detalle.estado == 1 %}
+            <button data-form-url="{% url 'logistica_app:ajuste_inventario_materiales_detalle_registrar' contexto_ajuste_inventario_materiales_detalle.id %}"
+                data-table-url="{% url 'logistica_app:ajuste_inventario_materiales_detalle_tabla' contexto_ajuste_inventario_materiales_detalle.id %}"
+                class="create badge bg-primary">
+                Agregar Material
+            </button>
+            <button data-form-url="{% url 'logistica_app:ajuste_inventario_materiales_concluir' contexto_ajuste_inventario_materiales_detalle.id %}"
+                data-table-url="{% url 'logistica_app:ajuste_inventario_materiales_inicio' %}"
+                class="delete badge bg-primary">
+                Concluir Ajuste Inventario
+            </button>
+        {% endif %}
+        <a href="{% url 'logistica_app:ajuste_inventario_materiales_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
+
+    <br>
+
+    <div id="tabla">
+        {% include 'logistica/ajuste_inventario_materiales/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

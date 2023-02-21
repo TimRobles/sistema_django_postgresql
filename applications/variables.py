@@ -352,6 +352,9 @@ MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK = 'Operación exitosa: La Nota Contr
 
 MENSAJE_CONCLUIR_TRASPASO_STOCK = 'Operación exitosa: El Traspaso Stock fue concluido.'
 
+MENSAJE_GENERAR_DOCUMENTO_AJUSTE_INVENTARIO = 'Operación exitosa: Inventario Materiales fue concluido. Documento de Ajuste de Inventario generado'
+MENSAJE_AJUSTE_INVENTARIO_MATERIALES = 'Operación exitosa: Ajuste Inventario Materiales fue concluido.'
+
 COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY
 Celular: 974899069 / Teléfono: 2536767

@@ -1,0 +1,39 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Almacen</th>
+                <th>Tipo Stock</th>
+                <th>Cantidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in ajuste_inventario_materiales_detalle %}
+            <tr>
+                <td>{{ material.item }}</td>
+                <td>{{ material.material }}</td>
+                <td>{{ material.material.unidad_base }}</td>
+                <td>{{ material.almacen }}</td>
+                <td>{{ material.tipo_stock }}</td>
+                <td>{{ material.cantidad|redondear|intcomma }}</td>
+                <td class="text-center text-nowrap">
+                    {% if contexto_ajuste_inventario_materiales_detalle.estado == 1 %}
+                        <button data-form-url="{% url 'logistica_app:ajuste_inventario_materiales_detalle_eliminar' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

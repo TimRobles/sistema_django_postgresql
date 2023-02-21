@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Ajuste Inventario Materiales
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Ajuste Inventario Materiales</h3>
+    <div class="table-responsive" id="tabla">
+        {% include 'logistica/ajuste_inventario_materiales/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

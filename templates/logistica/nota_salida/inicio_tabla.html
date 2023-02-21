@@ -36,12 +36,12 @@
                 <td>{{ nota_salida.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'logistica_app:nota_salida_actualizar' nota_salida.id %}"
-                    data-table-url="{% url 'logistica_app:nota_salida_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
-                    data-keep-open="true"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
+                        data-table-url="{% url 'logistica_app:nota_salida_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
                 {% if nota_salida.estado == 1 %}
                     {% endif %}
                     {% if nota_salida.estado == 2 %}

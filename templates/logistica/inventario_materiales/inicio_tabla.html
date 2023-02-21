@@ -1,0 +1,48 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Sede</th>
+            <th>Fecha Inventario</th>
+            <th>Hora Inventario</th>
+            <th>Responsable</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for inventario in contexto_inventario_materiales %}
+        <tr>
+            <td>{{ inventario.sociedad }}</td>
+            <td>{{ inventario.sede }}</td>
+            <td>{{ inventario.fecha_inventario|date:'d/m/Y' }}</td>
+            <td>{{ inventario.hora_inventario }}</td>
+            <td>
+                {% if inventario.responsable.first_name %}
+                {{ inventario.responsable.first_name }} {{ inventario.responsable.last_name }}
+                {% else %}
+                {{ inventario.responsable }}
+                {% endif %}
+            </td>
+            <td>{{ inventario.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                
+                {% if inventario.estado == 1 %} 
+                    <button data-form-url="{% url 'logistica_app:inventario_materiales_actualizar' inventario.id %}"
+                        data-table-url="{% url 'logistica_app:inventario_materiales_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                {% endif %}
+                <a href="{% url 'logistica_app:inventario_materiales_detalle' inventario.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
