@@ -54,12 +54,17 @@
                 <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.igv|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.total|redondear|intcomma }}</td>
                 <td class="text-center text-nowrap">
-                    {% if contexto_orden_compra.estado == 1 %}
+                    {% if contexto_orden_compra.estado == 1 or contexto_orden_compra.estado == 5 %}
                     <button data-form-url="{% url 'orden_compra_app:orden_compra_actualizar_material' detalle.id %}"
                         data-table-url="{% url 'orden_compra_app:orden_compra_detalle_tabla' contexto_orden_compra.slug %}"
                         class="delete btn btn-warning btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'orden_compra_app:orden_compra_eliminar_material' detalle.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
                     </button>
 
                     {% endif %}

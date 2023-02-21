@@ -75,3 +75,9 @@ def nombre_usuario(usuario):
         return usuario
     except:
         return usuario
+
+@register.filter
+def atributo(field):
+    return field.field.widget.attrs['class']
+    
+

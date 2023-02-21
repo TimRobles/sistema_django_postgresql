@@ -15,12 +15,15 @@ class MovimientoMaterialView(PermissionRequiredMixin, BSModalReadView):
         return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
+        content_type = self.get_object()
+        id_registro = self.kwargs['id_registro']
+        producto = content_type.model_class().objects.get(id=id_registro)
         movimientos, total = MovimientosAlmacen.objects.ver_movimientos(
-            self.get_object(),
-            self.kwargs['id_registro'],
+            content_type,
+            id_registro,
         )
         context = super(MovimientoMaterialView, self).get_context_data(**kwargs)
-        context['titulo'] = "Movimientos"
+        context['titulo'] = f"Movimientos - {producto}"
         context['movimientos'] = movimientos
         context['total'] = total
         return context
@@ -37,13 +40,16 @@ class StockMaterialView(PermissionRequiredMixin, BSModalReadView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        content_type = self.get_object()
+        id_registro = self.kwargs['id_registro']
+        producto = content_type.model_class().objects.get(id=id_registro)
         stocks, estados = MovimientosAlmacen.objects.ver_stock(
-            self.get_object(),
-            self.kwargs['id_registro'],
+            content_type,
+            id_registro,
             TipoStock.objects.all(),
         )
         context = super(StockMaterialView, self).get_context_data(**kwargs)
-        context['titulo'] = "Stock"
+        context['titulo'] = f"Stock - {producto}"
         context['stocks'] = stocks
         context['estados'] = estados
         return context

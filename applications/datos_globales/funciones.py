@@ -169,6 +169,7 @@ def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, c
         data["motivo_de_traslado"] = motivo_de_traslado
         data["peso_bruto_total"] = peso_bruto_total
         data["numero_de_bultos"] = numero_de_bultos
+        data["peso_bruto_unidad_de_medida"] = 'KGM'
         data["tipo_de_transporte"] = tipo_de_transporte
         data["fecha_de_inicio_de_traslado"] = fecha_de_inicio_de_traslado
         data["transportista_documento_tipo"] = transportista_documento_tipo

@@ -19,6 +19,7 @@ from .forms import(
     GuiaBultosForm,
     GuiaBuscarForm,
     GuiaClienteForm,
+    GuiaClienteInterlocutorForm,
     GuiaConductorForm,
     GuiaDestinoForm,
     GuiaDetallePesoForm,
@@ -375,6 +376,25 @@ class GuiaSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion'] = 'Seleccionar'
         context['titulo'] = 'Serie'
         return context
+        
+
+class GuiaClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('comprobante_despacho.change_guia')
+    model = Guia
+    template_name = "includes/formulario generico.html"
+    form_class = GuiaClienteForm
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(GuiaClienteUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Seleccionar'
+        context['titulo'] = 'Cliente'
+        return context
 
 
 class GuiaPartidaView(PermissionRequiredMixin, BSModalUpdateView):
@@ -606,7 +626,7 @@ class GuiaClienteView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('comprobante_despacho.change_guia')
     model = Guia
     template_name = "comprobante_despacho/guia/form_cliente.html"
-    form_class = GuiaClienteForm
+    form_class = GuiaClienteInterlocutorForm
     
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():

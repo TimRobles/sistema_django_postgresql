@@ -103,7 +103,7 @@
         <table>
             <tbody>
                 <tr>
-                    <th class="pe-2">Razón Social:</th>
+                    <th class="pe-2 text-nowrap">Razón Social:</th>
                     <td>{{ factura.cliente.razon_social }}</td>
                 </tr>
                 <tr>
@@ -193,7 +193,7 @@
                 <tr>
                     <th class="pe-2">N° Factura:</th>
                     <td class="text-nowrap">
-                        {{ factura.serie_comprobante }}
+                        {{ factura.serie_comprobante.serie }}
                         -
                         {% if factura.numero_factura %}
                         {{ factura.numero_factura|numeroXn:6 }}

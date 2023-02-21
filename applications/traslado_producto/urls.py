@@ -30,6 +30,9 @@ urlpatterns = urlSeries + [
     path('envio/agregar-material/<int:id_envio_traslado_producto>/', views.EnvioTrasladoProductoMaterialDetalleView.as_view(), name='envio_agregar_material'),
     path('envio/actualizar-material/<pk>/', views.EnvioTrasladoProductoActualizarMaterialDetalleView.as_view(), name='envio_actualizar_material'),
     path('envio/eliminar-material/<pk>/', views.EnvioTrasladoProductoMaterialDeleteView.as_view(), name='envio_eliminar_material'),
+    
+    path('envio/generar-guia/<pk>/', views.EnvioTrasladoProductoGenerarGuiaView.as_view(), name='envio_generar_guia'),
+    path('envio/series/pdf/<pk>/', views.EnvioTrasladoProductoSeriesPdf.as_view(), name='envio_series_pdf'),
 
 
     path('recepcion/',views.RecepcionTrasladoProductoListView.as_view(), name='recepcion_inicio'),

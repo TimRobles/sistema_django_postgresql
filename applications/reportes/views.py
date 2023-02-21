@@ -40,11 +40,11 @@ class ReportesView(FormView):
         kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
         kwargs['filtro_fecha_fin'] = self.request.GET.get('fecha_fin')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
-        global global_sociedad, global_fecha_inicio, global_fecha_fin, global_cliente 
-        global_sociedad = self.request.GET.get('sociedad')
-        global_fecha_inicio = self.request.GET.get('fecha_inicio')
-        global_fecha_fin = self.request.GET.get('fecha_fin')
-        global_cliente = self.request.GET.get('cliente')
+        # global global_sociedad, global_fecha_inicio, global_fecha_fin, global_cliente 
+        # global_sociedad = self.request.GET.get('sociedad')
+        # global_fecha_inicio = self.request.GET.get('fecha_inicio')
+        # global_fecha_fin = self.request.GET.get('fecha_fin')
+        # global_cliente = self.request.GET.get('cliente')
         return kwargs
     
     def get_context_data(self, **kwargs):
@@ -178,6 +178,7 @@ class ReporteContador(TemplateView):
 
             sql = ''' (SELECT
                 MAX(cvf.id) AS id,
+                MAX(cvf.fecha_emision) AS fecha_orden,
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
                 'FACTURA' AS tipo_comprobante,
                 CONCAT(MAX(dgsc.serie), '-', MAX(lpad(CAST(cvf.numero_factura AS TEXT), 6, '0'))) AS nro_comprobante,
@@ -212,6 +213,7 @@ class ReporteContador(TemplateView):
                 UNION
                 (SELECT
                 MAX(cvb.id) as id,
+                MAX(cvb.fecha_emision) AS fecha_orden,
                 to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
                 'BOLETA' AS tipo_comprobante,
                 CONCAT(MAX(dgsc.serie), '-', MAX(lpad(CAST(cvb.numero_boleta AS TEXT), 6, '0'))) as nro_comprobante,
@@ -243,7 +245,7 @@ class ReporteContador(TemplateView):
                     ON dgnr.content_type_id='%s' AND dgnr.id_registro=cvb.id AND dgnr.error=False AND dgnr.id=(select max(id) from datos_globales_nubefactrespuesta  where content_type_id='%s' AND id_registro=dgnr.id_registro AND dgnr.error=False)
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)
-                ORDER BY fecha_emision_comprobante ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_orden, nro_comprobante  ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info = FacturaVenta.objects.raw(sql)
 
             info = []
@@ -380,6 +382,10 @@ class ReporteContador(TemplateView):
 class ReporteVentasFacturadas(TemplateView):
     def get(self,request, *args,**kwargs):
         global_sociedad = self.request.GET.get('filtro_sociedad')
+        print("*******************************")
+        print(global_sociedad)
+        print(type(global_sociedad))
+        print("*******************************")
         global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
         global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
         global_cliente = self.request.GET.get('filtro_cliente')
@@ -395,7 +401,7 @@ class ReporteVentasFacturadas(TemplateView):
                 (SUM(nncd.total)*(-1)) AS amortizado,
                 '0.00' AS pendiente,
                 'PENDIENTE' AS estado,
-                to_char(MAX(nnc.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_nota,
+                to_char(MAX(nnc.fecha_emision), 'DD/MM/YYYY') AS fecha_vencimiento_nota,
                 '0.00' AS credito,
                 '' AS dias,
                 '' AS guia,
@@ -3572,7 +3578,7 @@ class ReporteRotacion(TemplateView):
                     ON mm.subfamilia_id=msf.id
                 LEFT JOIN material_familia mf
                     ON mf.id=msf.familia_id
-                WHERE cvf.estado = '4'
+                WHERE cvf.estado = '4' AND mm.id IS NOT NULL
                 GROUP BY mm.id
                 ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ; ''' %(DICT_CONTENT_TYPE['material | material'])
             query_info = FacturaVentaDetalle.objects.raw(sql_rotacion)

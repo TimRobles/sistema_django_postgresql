@@ -524,7 +524,7 @@ class ComprobanteCompraCITraduccionView(PermissionRequiredMixin, DetailView):
     
 
 class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('oferta_proveedor.change_comprobantecompraci')
+    permission_required = ('comprobante_compra.change_comprobantecompraci')
 
     model = ComprobanteCompraCIDetalle
     template_name = "oferta_proveedor/oferta_proveedor/actualizar.html"
@@ -552,7 +552,7 @@ class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdat
 
 
 class ComprobanteCompraCIFinalizarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('oferta_proveedor.change_comprobantecompraci')
+    permission_required = ('comprobante_compra.change_comprobantecompraci')
     model = ComprobanteCompraCI
     template_name = "includes/eliminar generico.html"
     context_object_name = 'contexto_comprobante_compra_ci'

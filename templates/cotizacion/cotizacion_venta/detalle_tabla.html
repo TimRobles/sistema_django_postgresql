@@ -126,7 +126,7 @@
         <table>
             <tbody>
                 <tr>
-                    <th class="pe-2">Razón Social:</th>
+                    <th class="pe-2 text-nowrap">Razón Social:</th>
                     <td>{{ cotizacion.cliente.razon_social }}</td>
                     <td class="ps-2" rowspan="4">
                         {% if cotizacion.estado < 3 %}
@@ -137,7 +137,6 @@
                         </button>
                         {% endif %}
                     </td>
-                    
                 </tr>
                 <tr>
                     <th class="pe-2">{{ cotizacion.cliente.documento }}:</th>
@@ -496,6 +495,14 @@
                 </td>
                 <td class="text-end text-nowrap">$ {{ totales.descuento_global|redondear|intcomma }}</td>
                 <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_global|redondear|intcomma }}</td>
+                <td colspan="4"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="text-end">
+                    Descuento Por Items:
+                </td>
+                <td class="text-end text-nowrap">$ {{ totales.descuento_por_items|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">S/ {{ totales_soles.descuento_por_items|redondear|intcomma }}</td>
                 <td colspan="4"></td>
             </tr>
             {% if totales.total_descuento %}

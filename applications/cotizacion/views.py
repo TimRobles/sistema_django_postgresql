@@ -668,7 +668,6 @@ class CotizacionOtrosCargosUpdateView(PermissionRequiredMixin, BSModalUpdateView
         form.instance.total_exonerada = respuesta['total_exonerada']
         form.instance.total_igv = respuesta['total_igv']
         form.instance.total_gratuita = respuesta['total_gratuita']
-        form.instance.otros_cargos = respuesta['total_otros_cargos']
         form.instance.total = respuesta['total']
         
         return super().form_valid(form)
@@ -1455,7 +1454,7 @@ class CotizacionVentaConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
                     observacion = cotizacion_observacion,
                     condiciones_pago = condiciones_pago,
                     tipo_venta = tipo_venta,
-                    descuento_global = self.object.descuento_global,
+                    descuento_global = self.object.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global,
                     otros_cargos = self.object.otros_cargos,
                     total = self.object.total,
                     created_by = self.request.user,
@@ -1645,6 +1644,7 @@ class CotizacionVentaConfirmarAnticipoView(PermissionRequiredMixin, BSModalDelet
                     tipo_cambio = TipoCambio.objects.filter(fecha=self.object.fecha).latest('created_at'),
                     moneda = self.object.moneda,
                     observacion = cotizacion_observacion,
+                    descuento_global = self.object.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global,
                     total = self.object.total,
                     sunat_transaction = 4,
                     created_by = self.request.user,

@@ -1,4 +1,7 @@
+{% load funciones_propias %}
+
 {% for field in form %}
+    {% if not 'ocultar' in field|atributo %}
     <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
         {% if field.help_text %}
         data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
@@ -15,4 +18,5 @@
     {% for error in field.errors %}
         <p class="text-danger mt-0 error-formulario">{{ error }}</p>
     {% endfor %}
+    {% endif %}
 {% endfor %}

@@ -1043,6 +1043,24 @@ class FacturaVentaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 
+def FacturaVentaJsonView(request):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        buscar = FacturaVenta.objects.filter(
+                estado=4,
+            ).filter(
+                Q(cliente__razon_social__unaccent__icontains=term) | 
+                Q(numero_factura=term)
+            )
+        for factura in buscar:
+            data.append({
+                'id' : factura.id,
+                'nombre' : factura.__str__(),
+                })
+        return JsonResponse(data, safe=False)
+
+
 ###########################################################################################
 
 class BoletaVentaListView(PermissionRequiredMixin, FormView):
@@ -1401,6 +1419,52 @@ class BoletaVentaSerieUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion'] = 'Seleccionar'
         context['titulo'] = 'Serie'
         return context
+
+
+class BoletaVentaDireccionView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('clientes.change_cliente')
+    model = Cliente
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_tipo_documento = False
+        context['titulo'] = 'Error de dirección'
+        if self.get_object().tipo_documento!='6':
+            error_tipo_documento = True
+
+        if error_tipo_documento:
+            context['texto'] = 'El cliente debe tener RUC.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('comprobante_venta_app:boleta_venta_detalle', kwargs={'id_boleta_venta':self.kwargs['id_boleta']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            cliente = self.get_object()
+            consulta = cliente.consulta_direccion
+            cliente.direccion_fiscal = consulta['direccion']
+            cliente.ubigeo = consulta['ubigeo']
+            cliente.save()
+            messages.success(request, 'Operación exitosa: Dirección actualizada')
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaVentaDireccionView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Dirección'
+        context['texto'] = f'Dirección anterior: {self.get_object().direccion_anterior}'
+        context['item'] = f'Nueva Dirección: {self.get_object().direccion_nueva}'
+        return context
     
 
 class BoletaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
@@ -1742,6 +1806,27 @@ class BoletaVentaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
         context['texto'] = '¿Seguro de eliminar la Boleta de Venta?'
         context['item'] = self.get_object()
         return context
+
+
+def BoletaVentaJsonView(request):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        filtro_numero = Q(numero_boleta=term.split(' ')[0])
+        for palabra in term.split(' ')[1:]:
+            filtro_numero = filtro_numero | Q(numero_boleta=palabra)
+        buscar = BoletaVenta.objects.filter(
+                estado=4,
+            ).filter(
+                Q(cliente__razon_social__unaccent__icontains=term) | 
+                filtro_numero
+            )
+        for boleta in buscar:
+            data.append({
+                'id' : boleta.id,
+                'nombre' : boleta.__str__(),
+                })
+        return JsonResponse(data, safe=False)
 
 
 ###################################################################################################

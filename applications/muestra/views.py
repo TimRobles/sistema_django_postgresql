@@ -686,8 +686,20 @@ class DevolucionMuestraGuardarView(PermissionRequiredMixin, BSModalUpdateView):
     form_class = DevolucionMuestraGuardarForm
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cantidad_series = False
+        context['titulo'] = 'Error de guardar'
+        detalles = self.get_object().DevolucionMuestraDetalle_devolucion_muestra.all()
+        for detalle in detalles:
+            if detalle.control_serie and detalle.series_validar != detalle.cantidad_devolucion:
+                error_cantidad_series = True
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_cantidad_series:
+            context['texto'] = 'Hay Series sin registrar.'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self, **kwargs):
@@ -699,6 +711,7 @@ class DevolucionMuestraGuardarView(PermissionRequiredMixin, BSModalUpdateView):
         try:
             detalles = form.instance.DevolucionMuestraDetalle_devolucion_muestra.all()
             movimiento_final = TipoMovimiento.objects.get(codigo=151) #Devolución de Muestra
+            estado_serie = EstadoSerie.objects.get(numero_estado=6)
             
             for detalle in detalles:
                 movimiento_uno = MovimientosAlmacen.objects.create(
@@ -716,6 +729,18 @@ class DevolucionMuestraGuardarView(PermissionRequiredMixin, BSModalUpdateView):
                     created_by = self.request.user,
                     updated_by = self.request.user,
                 )
+
+                for validar_serie in detalle.ValidarSerieDevolucionMuestraDetalle_devolucion_muestra_detalle.all():
+                    serie = validar_serie.serie
+                    serie.serie_movimiento_almacen.add(movimiento_uno)
+
+                    HistorialEstadoSerie.objects.create(
+                        serie = serie,
+                        estado_serie = estado_serie,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                    validar_serie.delete()
 
             form.instance.estado = 2
             registro_guardar(form.instance, self.request)
@@ -865,8 +890,8 @@ class DevolucionMuestraGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteVie
 
 
 class ValidarSeriesDevolucionMuestraDetailView(PermissionRequiredMixin, FormView):
-    permission_required = ('logistica.view_notasalidadetalle')
-    template_name = "logistica/validar_serie_nota_salida/detalle.html"
+    permission_required = ('muestra.view_devolucionmuestradetalle')
+    template_name = "muestra/validar_serie_devolucion_muestra/detalle.html"
     form_class = DevolucionMuestraDetalleSeriesForm
     success_url = '.'
 
@@ -923,7 +948,7 @@ class ValidarSeriesDevolucionMuestraDetailView(PermissionRequiredMixin, FormView
 def ValidarSeriesDevolucionMuestraDetailTabla(request, pk):
     data = dict()
     if request.method == 'GET':
-        template = 'logistica/validar_serie_nota_salida/detalle_tabla.html'
+        template = 'muestra/validar_serie_devolucion_muestra/detalle_tabla.html'
         context = {}
         devolucion_muestra_detalle = DevolucionMuestraDetalle.objects.get(id = pk)
         context['contexto_devolucion_muestra_detalle'] = devolucion_muestra_detalle
@@ -938,7 +963,7 @@ def ValidarSeriesDevolucionMuestraDetailTabla(request, pk):
 
 
 class ValidarSeriesDevolucionMuestraDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.delete_validarseriesnotasalidadetalle')
+    permission_required = ('muestra.delete_validarseriesdevolucionmuestradetalle')
     model = ValidarSerieDevolucionMuestraDetalle
     template_name = "includes/eliminar generico.html"
 
@@ -948,7 +973,7 @@ class ValidarSeriesDevolucionMuestraDetalleDeleteView(PermissionRequiredMixin, B
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('logistica_app:validar_series_detalle', kwargs={'pk': self.get_object().devolucion_muestra_detalle.id})
+        return reverse_lazy('muestra_app:validar_series_devolucion_muestra_detalle', kwargs={'pk': self.get_object().devolucion_muestra_detalle.id})
 
     def get_context_data(self, **kwargs):
         context = super(ValidarSeriesDevolucionMuestraDetalleDeleteView, self).get_context_data(**kwargs)

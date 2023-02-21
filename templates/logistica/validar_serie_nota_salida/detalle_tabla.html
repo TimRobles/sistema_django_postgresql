@@ -4,11 +4,13 @@
             <tbody>
                 <tr>
                     <th class="pe-2">Sociedad:</th>
-                    <td>{{ contexto_nota_salida_detalle.nota_salida.sociedad}}</td>
+                    <td>{{ contexto_nota_salida_detalle.nota_salida.sociedad }}</td>
+                    <th class="pe-2">Almacén:</th>
+                    <td>{{ contexto_nota_salida_detalle.almacen }}</td>
                     <th class="px-2">Cliente:</th>
                     <td>{{ contexto_nota_salida_detalle.nota_salida.cliente }}</td>
                     <th class="px-2">Producto:</th>
-                    <td>{{ contexto_nota_salida_detalle.producto}} </td>
+                    <td>{{ contexto_nota_salida_detalle.producto }} </td>
                 </tr>
             </tbody>
         </table>
@@ -22,12 +24,17 @@
                 <th>Nro. de Serie</th>         
                 <th>Estado</th>    
                 <th>Almacén</th>    
+                <th>Sociedad</th>    
                 <th class="text-center">Acciones</th>    
             </tr>
         </thead>
         <tbody>
             {% for validacion in contexto_series %}
-                <tr>
+                <tr class="fondo-personalizado"
+                {% if validacion.serie.sociedad != contexto_nota_salida_detalle.nota_salida.sociedad or validacion.serie.almacen != contexto_nota_salida_detalle.almacen %}
+                style="--color-fondo: red;"
+                {% endif %}
+                >
                     {% if validacion.serie %}
                     <td> 
                         {{ validacion.serie}} 
@@ -35,6 +42,7 @@
                     {% endif %}
                     <td>{{ validacion.serie.estado }}</td>
                     <td>{{ validacion.serie.almacen }}</td>
+                    <td>{{ validacion.serie.sociedad }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_nota_salida_detalle.nota_salida.estado == 1 %}
                             <button data-form-url="{% url 'logistica_app:validar_series_nota_salida_detalle_eliminar' validacion.id %}"

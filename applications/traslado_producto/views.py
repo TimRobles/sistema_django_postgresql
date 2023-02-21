@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django import forms
 from applications.calidad.models import Serie
-from applications.datos_globales.models import Unidad
-from applications.funciones import registrar_excepcion
+from applications.comprobante_despacho.models import Guia, GuiaDetalle
+from applications.datos_globales.models import SeriesComprobante, Unidad
+from applications.funciones import numeroXn, registrar_excepcion
 from applications.importaciones import *
-from applications.material.funciones import stock, stock_sede_tipo_stock, tipo_stock
+from applications.logistica.pdf import generarSeries
+from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 from applications.sociedad.models import Sociedad
@@ -120,6 +122,52 @@ def EnvioTrasladoProductoVerTabla(request, id_envio_traslado_producto):
             request=request
         )
         return JsonResponse(data)
+
+
+class EnvioTrasladoProductoSeriesPdf(View):
+    def get(self, request, *args, **kwargs):
+        obj = EnvioTrasladoProducto.objects.get(id=self.kwargs['pk'])
+
+        color = obj.sociedad.color
+        titulo = 'SERIES DE EQUIPOS'
+        vertical = True
+        logo = [obj.sociedad.logo.url]
+        pie_pagina = obj.sociedad.pie_pagina
+
+        titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_envio_traslado, 6), obj.responsable)
+
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(obj, ContentType.objects.get_for_model(EnvioTrasladoProducto))
+        series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        
+        texto_cabecera = 'Series trasladadas:'
+        
+        series_final = {}
+        for serie in series_unicas:
+            if not serie.producto in series_final:
+                series_final[serie.producto] = []
+            series_final[serie.producto].append(serie.serie_base)
+
+        TablaEncabezado = ['DOCUMENTOS',
+                           'FECHA',
+                           'MOTIVO DEL TRASLADO',
+                           'OBSERVACIONES',
+                           ]
+
+        TablaDatos = []
+        TablaDatos.append(f"TRASLADO {numeroXn(obj.numero_envio_traslado, 6)} - {obj.responsable}")
+        TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
+        TablaDatos.append(obj.motivo_traslado)
+        TablaDatos.append(obj.observaciones)
+
+        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
+
+        return respuesta
 
 
 class  EnvioTrasladoProductoActualizarView(PermissionRequiredMixin, BSModalUpdateView):
@@ -304,7 +352,7 @@ class EnvioTrasladoProductoMaterialDetalleView(PermissionRequiredMixin, BSModalF
         tipo_stock = form.cleaned_data.get('tipo_stock')
         material = form.cleaned_data.get('material')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
-        stock_disponible = tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
+        stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
@@ -413,7 +461,7 @@ class  EnvioTrasladoProductoActualizarMaterialDetalleView(PermissionRequiredMixi
         tipo_stock = form.cleaned_data.get('tipo_stock')
         cantidad_envio = form.cleaned_data.get('cantidad_envio')
         material = detalle.producto
-        stock_disponible = tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
+        stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(material), material.id, envio_traslado_producto.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
@@ -482,6 +530,71 @@ class EnvioTrasladoProductoMaterialDeleteView(PermissionRequiredMixin, BSModalDe
         context['titulo'] = "Material"
         context['item'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
 
+        return context
+
+
+class EnvioTrasladoProductoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_despachodetalle')
+    model = EnvioTrasladoProducto
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['guia'].id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            detalles = self.object.EnvioTrasladoProductoDetalle_envio_traslado_producto.all()
+            serie_comprobante = SeriesComprobante.objects.por_defecto(ContentType.objects.get_for_model(Guia))
+            observaciones = []
+            observaciones.append('PRESENTACIÓN DE PRODUCTOS')
+            if self.object.observaciones:
+                observaciones.append(self.object.observaciones)
+
+            guia = Guia.objects.create(
+                sociedad=self.object.sociedad,
+                serie_comprobante=serie_comprobante,
+                motivo_traslado='13',
+                observaciones=" | ".join(observaciones),
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+
+            for detalle in detalles:
+                guia_detalle = GuiaDetalle.objects.create(
+                    item=detalle.item,
+                    content_type=detalle.content_type,
+                    id_registro=detalle.id_registro,
+                    guia=guia,
+                    cantidad=detalle.cantidad_envio,
+                    unidad=detalle.producto.unidad_base,
+                    descripcion_documento=detalle.producto.descripcion_venta,
+                    peso=detalle.producto.peso_unidad_base,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+            self.kwargs['guia'] = guia
+            self.request.session['primero'] = False
+            messages.success(request, MENSAJE_GENERAR_GUIA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(EnvioTrasladoProductoGenerarGuiaView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Guía"
+        context['dar_baja'] = "true"
+        context['item'] = self.get_object()
         return context
 
 
