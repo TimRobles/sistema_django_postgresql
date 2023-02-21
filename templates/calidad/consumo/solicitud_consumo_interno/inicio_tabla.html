@@ -1,3 +1,4 @@
+{% load funciones_propias %}
 
 <table class="table">
     <thead>
@@ -19,7 +20,7 @@
             <tr>
                 
                 {% if  fila_solicitud.estado == 3%}
-                    <td><S>{{ fila_solicitud.numero_solicitud }}</S></td>
+                    <td><S>{{ fila_solicitud.numero_solicitud|numeroXn:6 }}</S></td>
                     <td><S>{{ fila_solicitud.sociedad }}</S></td>
                     <td><S>{{ fila_solicitud.fecha_solicitud }}</S></td>
                     <td><S>{{ fila_solicitud.observacion }}</S></td>
@@ -28,7 +29,7 @@
                     <td><S>{{ fila_solicitud.get_estado_display }}</S></td>
                     <td><S>{{ fila_solicitud.solicitante }}</S></td>    
                 {% else %}
-                    <td>{{ fila_solicitud.numero_solicitud }}</td>
+                    <td>{{ fila_solicitud.numero_solicitud|numeroXn:6 }}</td>
                     <td>{{ fila_solicitud.sociedad }}</td>
                     <td>{{ fila_solicitud.fecha_solicitud }}</td>
                     <td>{{ fila_solicitud.observacion }}</td>

@@ -2,10 +2,12 @@ from django import forms
 from applications.nota_ingreso.models import NotaIngreso
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Unidad
+from applications.material.funciones import stock, stock_disponible, stock_sede_disponible
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import FallaMaterial, HistorialEstadoSerie, NotaControlCalidadStock, NotaControlCalidadStockDetalle, Serie, SerieCalidad, SolicitudConsumoInterno, Sede, Almacen, Material, SolicitudConsumoInternoDetalle, AprobacionConsumoInterno
+from django.contrib.contenttypes.models import ContentType
 
 class NotaControlCalidadStockBuscarForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
@@ -280,17 +282,26 @@ class SolicitudConsumoInternoForm(BSModalModelForm):
 class SolicitudConsumoInternoDetalleForm(BSModalModelForm):
     sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1), required=False)
     unidad = forms.ModelChoiceField(queryset=Unidad.objects.all(), required=False, )
+    stock = forms.DecimalField(required=False, initial=0, max_digits=22, decimal_places=10, disabled=True)
     # unidad = forms.CharField(required=False)
     class Meta:
         model = SolicitudConsumoInternoDetalle
         # fields = '__all__'
         fields=(
             'material',
-            'cantidad',
             'unidad',
             'sede',
             'almacen',
+            'stock',
+            'cantidad',
             )
+
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     cantidad = cleaned_data.get('cantidad')
+    #     stock = cleaned_data.get('stock')
+    #     if cantidad > stock:
+    #         self.add_error('cantidad', 'Se ha sobrepasado la cantidad disponible')
 
     def clean_sede(self):
         sede = self.cleaned_data.get('sede')
@@ -305,24 +316,27 @@ class SolicitudConsumoInternoDetalleForm(BSModalModelForm):
         return material
 
     def __init__(self, *args, **kwargs):
+        self.id_sociedad = kwargs.pop('id_sociedad')
         super(SolicitudConsumoInternoDetalleForm, self).__init__(*args, **kwargs)
         self.fields['almacen'].queryset = Almacen.objects.none()
         self.fields['unidad'].queryset = Unidad.objects.none()
         self.fields['unidad'].widget.attrs['readonly'] = True
         # self.fields['unidad'].widget.attrs['disabled'] = 'disabled'
-        almacen = self.instance.almacen
-        if almacen:
-            sede = almacen.sede
-            self.fields['sede'].initial = sede
-            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
         try:
             material = self.instance.material
             if material:
                 unidad = material.unidad_base
                 self.fields['unidad'].initial = unidad
                 self.fields['unidad'].queryset = Unidad.objects.filter(nombre = material.unidad_base.nombre)
+                self.fields['stock'].initial = stock_disponible(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
         except Exception as e:
-            print(20*'*', e)
+            pass
+        almacen = self.instance.almacen
+        if almacen:
+            sede = almacen.sede
+            self.fields['sede'].initial = sede
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
+            self.fields['stock'].initial = stock_sede_disponible(ContentType.objects.get_for_model(material), material.id, self.id_sociedad, sede.id)
         
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

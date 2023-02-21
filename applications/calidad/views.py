@@ -1760,7 +1760,16 @@ class SolicitudConsumoInternoDetalleCreateView(PermissionRequiredMixin, BSModalC
         context = super(SolicitudConsumoInternoDetalleCreateView, self).get_context_data(**kwargs)
         context['accion']="Añadir"
         context['titulo']="Detalle Solicitud de Consumo Interno"
+        solicitud_consumo = SolicitudConsumoInterno.objects.get(id=self.kwargs['solicitud_consumo_id'])
+        context['id_sociedad'] = solicitud_consumo.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock_disponible', kwargs={'id_material':1})[:-2]
         return context
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(SolicitudConsumoInternoDetalleCreateView, self).get_form_kwargs(*args, **kwargs)
+        solicitud_consumo = SolicitudConsumoInterno.objects.get(id=self.kwargs['solicitud_consumo_id'])
+        kwargs['id_sociedad'] = solicitud_consumo.sociedad.id
+        return kwargs
 
     def form_valid(self, form):
         solicitud_consumo = SolicitudConsumoInterno.objects.get(id=self.kwargs['solicitud_consumo_id'])
@@ -1790,10 +1799,18 @@ class SolicitudConsumoInternoDetalleUpdateView(PermissionRequiredMixin, BSModalU
     def get_success_url(self, **kwargs):
         return reverse_lazy('calidad_app:solicitud_consumo_interno_detalle', kwargs={'pk':self.get_object().solicitud_consumo.id})
 
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(SolicitudConsumoInternoDetalleUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['id_sociedad'] = self.object.solicitud_consumo.sociedad.id
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super(SolicitudConsumoInternoDetalleUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Detalle Solicitud de Consumo"
+        context['id_sociedad'] = self.object.solicitud_consumo.sociedad.id
+        context['id_material'] = self.object.material.id
+        context['url_stock'] = reverse_lazy('material_app:stock_disponible', kwargs={'id_material':1})[:-2]
         return context
 
     def form_valid(self, form):
@@ -2002,7 +2019,52 @@ class AprobacionConsumoInternoAprobarView(PermissionRequiredMixin, BSModalDelete
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
-            
+
+            tipo_movimiento = TipoMovimiento.objects.get(codigo=152) #Consumo de Material
+
+            for detalle in self.object.AprobacionConsumoInternoDetalle_aprobacion_consumo.all():
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = tipo_movimiento,
+                    tipo_stock = tipo_movimiento.tipo_stock_inicial,
+                    signo_factor_multiplicador = -1,
+                    content_type_documento_proceso = detalle.aprobacion_consumo.content_type,
+                    id_registro_documento_proceso = detalle.aprobacion_consumo.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.sociedad,
+                    movimiento_anterior = None,
+                    created_by = request.user,
+                    updated_by = request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = tipo_movimiento,
+                    tipo_stock = tipo_movimiento.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = detalle.aprobacion_consumo.content_type,
+                    id_registro_documento_proceso = detalle.aprobacion_consumo.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    created_by = request.user,
+                    updated_by = request.user,
+                )
+
+                for serie in detalle.aprobacion_consumo.solicitud_consumo.SolicitudConsumoInternoDetalle_solicitud_consumo.get(item=detalle.item).ValidarSerieSolicitudConsumoInternoDetalle_solicitud_consumo_detalle.all():
+                    HistorialEstadoSerie.objects.create(
+                        serie=serie.serie,
+                        estado_serie=EstadoSerie.objects.get(numero_estado=10),
+                        falla_material=None,
+                        observacion=None,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                    serie.serie.serie_movimiento_almacen.add(movimiento_uno)
+                    serie.serie.serie_movimiento_almacen.add(movimiento_dos)
 
             self.object.estado = 2          # APROBADO
             self.actualizar_estado_solicitud()

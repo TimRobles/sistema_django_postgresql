@@ -1,4 +1,47 @@
 {% load humanize %}
+{% load funciones_propias %}
+
+<div class="table-responsive">
+    <table class="table">
+        <tbody>
+            <tr>
+                <td><b>Nro. Aprobación</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_aprobacion_consumo.numero_aprobacion|numeroXn:6 }}</td>
+                <td class="px-4"></td>
+                <td><b>Sociedad</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_aprobacion_consumo.solicitud_consumo.sociedad }}</td>
+                <td class="px-4"></td>
+                <td><b>Fecha Aprobación</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_aprobacion_consumo.fecha_aprobacion }}</td>
+                <td class="px-4"></td>
+                <td><b>Estado</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_aprobacion_consumo.get_estado_display }}</td>
+            </tr>
+            <tr>
+                <td><b>Responsable</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_aprobacion_consumo.responsable }}</td>
+                <td class="px-4"></td>
+                <td><b>Referencia</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_aprobacion_consumo.solicitud_consumo }}</td>
+                {% if contexto_aprobacion_consumo.solicitud_consumo.motivo_anulacion %}
+                    <td class="px-4"></td>
+                    <td><b>Motivo Rechazo</b></td>
+                    <td class="px-2">:</td>
+                    <td>{{ contexto_aprobacion_consumo.solicitud_consumo.motivo_anulacion }}</td>
+                {% endif %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<p></p>
+
 <table class="table">
     <thead>
         <tr>

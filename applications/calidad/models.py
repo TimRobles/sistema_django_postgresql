@@ -376,6 +376,14 @@ class AprobacionConsumoInterno(models.Model):
             '-numero_aprobacion'
             ]
 
+    @property
+    def fecha(self):
+        return self.fecha_aprobacion
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
     def __str__(self):
         return str(self.numero_aprobacion) + ' | '+ str(self.fecha_aprobacion) + ' | ' + str(self.responsable)
 
@@ -400,6 +408,10 @@ class AprobacionConsumoInternoDetalle(models.Model):
             'aprobacion_consumo',
             'item',
             ]
+
+    @property
+    def sociedad(self):
+        return self.aprobacion_consumo.solicitud_consumo.sociedad
 
     def __str__(self):
         return str(self.aprobacion_consumo) + ' | ' + str(self.item)
