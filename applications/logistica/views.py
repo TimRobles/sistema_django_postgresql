@@ -1619,8 +1619,12 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                     movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
                     movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
                 else:
-                    movimiento_inicial = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
-                    movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
+                    try:
+                        movimiento_inicial = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                        movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
+                    except:
+                        movimiento_inicial = TipoMovimiento.objects.get(codigo=130)  # Confirmación anticipada atendida
+                        movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
                     
                 for detalle in detalles:
                     movimiento_anterior = MovimientosAlmacen.objects.get(
