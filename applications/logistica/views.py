@@ -1618,13 +1618,12 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                 if self.object.nota_salida.solicitud_prestamo_materiales:
                     movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
                     movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                elif self.object.nota_salida.confirmacion_venta.cotizacion_venta.estado == 6:
+                    movimiento_inicial = TipoMovimiento.objects.get(codigo=130)  # Confirmación anticipada atendida
+                    movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
                 else:
-                    try:
-                        movimiento_inicial = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
-                        movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
-                    except:
-                        movimiento_inicial = TipoMovimiento.objects.get(codigo=130)  # Confirmación anticipada atendida
-                        movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
+                    movimiento_inicial = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                    movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
                     
                 for detalle in detalles:
                     movimiento_anterior = MovimientosAlmacen.objects.get(
