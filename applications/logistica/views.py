@@ -831,8 +831,8 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                             estado_serie = EstadoSerie.objects.get(numero_estado=3)
                         elif self.object.confirmacion_venta.cotizacion_venta.estado == 6: #Confirmado Anticipado
                             print('Confirmación Anticipada')
-                            movimiento_inicial = TipoMovimiento.objects.get(codigo=130)  # Confirmación anticipada atendida
-                            movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                            movimiento_inicial = TipoMovimiento.objects.get(codigo=129)  # Confirmación por venta anticipada
+                            movimiento_final = TipoMovimiento.objects.get(codigo=130)  # Confirmación anticipada atendida
                             documento_anterior = self.object.confirmacion_venta
                             estado_serie = EstadoSerie.objects.get(numero_estado=3)
 
