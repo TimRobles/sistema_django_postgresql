@@ -17,6 +17,7 @@ from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcio
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
+from applications.material.funciones import stock_tipo_stock
 from django.shortcuts import render
 
 class SolicitudPrestamoMaterialesListView(PermissionRequiredMixin, ListView):
@@ -2119,7 +2120,7 @@ class InventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDeleteVie
                     material=detalle.material,
                     almacen=detalle.almacen,
                     tipo_stock=detalle.tipo_stock,
-                    cantidad=detalle.cantidad,
+                    cantidad_contada=detalle.cantidad,
                     ajuste_inventario_materiales=ajuste_inventario_materiales,
                     created_by=self.request.user,
                     updated_by=self.request.user,
@@ -2433,13 +2434,19 @@ class AjusteInventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSMod
                 ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id=self.kwargs['ajuste_inventario_materiales_id'])
                 item = len(ajuste_inventario_materiales.AjusteInventarioMaterialesDetalle_ajuste_inventario_materiales.all())
                 material = form.cleaned_data.get('producto')
+                sociedad = ajuste_inventario_materiales.sociedad
 
                 ajuste_inventario_materiales_detalle = AjusteInventarioMaterialesDetalle.objects.create(
                     ajuste_inventario_materiales=ajuste_inventario_materiales,
                     material = material.material,
                     almacen = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).almacen,
                     tipo_stock = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).tipo_stock,
-                    cantidad = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).cantidad,
+                    cantidad_stock = stock_tipo_stock(ContentType.objects.get_for_model(material.material), 
+                        material.material.id, 
+                        sociedad, 
+                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).almacen, 
+                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).tipo_stock),
+                    cantidad_contada = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).cantidad,
                     item=item + 1,
                     created_by=self.request.user,
                     updated_by=self.request.user, 

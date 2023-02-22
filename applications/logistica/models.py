@@ -627,7 +627,8 @@ class AjusteInventarioMaterialesDetalle(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE,blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
     tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    cantidad_stock = models.DecimalField('Cantidad Stock', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    cantidad_contada = models.DecimalField('Cantidad Contada', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     ajuste_inventario_materiales = models.ForeignKey(AjusteInventarioMateriales, on_delete=models.CASCADE, related_name='AjusteInventarioMaterialesDetalle_ajuste_inventario_materiales')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

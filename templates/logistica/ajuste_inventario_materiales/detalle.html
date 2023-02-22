@@ -21,9 +21,36 @@
         {% endif %}
         <a href="{% url 'logistica_app:ajuste_inventario_materiales_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
-
     <br>
-
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sociedad</th>
+                    <th>Sede</th>
+                    <th>Fecha Ajuste Inventario</th>
+                    <th>Responsable</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ contexto_ajuste_inventario_materiales_detalle.sociedad }}</td>
+                    <td>{{ contexto_ajuste_inventario_materiales_detalle.sede }}</td>
+                    <td>{{ contexto_ajuste_inventario_materiales_detalle.fecha_ajuste_inventario|date:'d/m/Y' }}</td>
+                    <td>
+                        {% if contexto_ajuste_inventario_materiales_detalle.responsable %}
+                            {% if contexto_ajuste_inventario_materiales_detalle.responsable.first_name %}
+                                {{ contexto_ajuste_inventario_materiales_detalle.responsable.first_name }} {{ contexto_ajuste_inventario_materiales_detalle.responsable.last_name }}
+                            {% else %}
+                                {{ contexto_ajuste_inventario_materiales_detalle.responsable }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
     <div id="tabla">
         {% include 'logistica/ajuste_inventario_materiales/detalle_tabla.html' %}
     </div>
