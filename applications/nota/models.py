@@ -96,7 +96,12 @@ class NotaCreditoDetalle(models.Model):
     tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    anticipo_regularizacion = models.BooleanField(default=False)
+    anticipo_documento_serie = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
+    anticipo_documento_numero = models.IntegerField(blank=True, null=True)
     codigo_producto_sunat = models.CharField(max_length=8, blank=True)
+    tipo_de_isc = models.IntegerField(choices=TIPO_ISC_CHOICES, blank=True, null=True)
+    isc = models.DecimalField('ISC', max_digits=14, decimal_places=2, blank=True, null=True)
     nota_credito = models.ForeignKey(NotaCredito, on_delete=models.CASCADE, related_name='NotaCreditoDetalle_nota_credito')
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
