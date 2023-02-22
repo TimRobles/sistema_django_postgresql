@@ -87,7 +87,7 @@ def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, clie
             item["igv"] = numero_espacio(producto.igv)
             item["total"] = numero_espacio(producto.total)
             item["anticipo_regularizacion"] = producto.anticipo_regularizacion
-            item["anticipo_documento_serie"] = numero_espacio(producto.anticipo_documento_serie)
+            item["anticipo_documento_serie"] = numero_espacio(producto.anticipo_documento_serie.serie)
             item["anticipo_documento_numero"] = numero_espacio(producto.anticipo_documento_numero)
             
             data['items'].append(item)

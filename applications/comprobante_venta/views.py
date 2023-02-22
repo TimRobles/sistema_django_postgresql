@@ -558,7 +558,7 @@ class FacturaVentaAnticipoRegularizarCrearView(PermissionRequiredMixin, BSModalD
                 total=factura_anticipada.total,
                 codigo_producto_sunat='20000000',
                 anticipo_regularizacion = True,
-                anticipo_documento_serie = factura_anticipada.serie_comprobante.serie,
+                anticipo_documento_serie = factura_anticipada.serie_comprobante,
                 anticipo_documento_numero = factura_anticipada.numero_factura,
                 factura_venta=factura_venta,
                 created_by=self.request.user,
