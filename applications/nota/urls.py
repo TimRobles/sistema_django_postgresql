@@ -11,9 +11,20 @@ urlNotaCredito = [
     path('nota_credito/crear/',views.NotaCreditoCreateView.as_view(),name='nota_credito_crear'),
     path('nota_credito/eliminar/<pk>/',views.NotaCreditoDeleteView.as_view(),name='nota_credito_eliminar'),
     path('nota-credito/direccion/<int:id_nota>/<pk>/', views.NotaCreditoDireccionView.as_view(), name='nota_credito_direccion'),
+    path('nota-credito/serie/<pk>/', views.NotaCreditoSerieUpdateView.as_view(), name='nota_credito_serie'),
+    path('nota-credito/tipo/<pk>/', views.NotaCreditoTipoUpdateView.as_view(), name='nota_credito_tipo'),
+    path('nota-credito/guardar/<pk>/', views.NotaCreditoGuardarView.as_view(), name='nota_credito_guardar'),
+    path('nota-credito/observacion/<pk>/', views.NotaCreditoObservacionUpdateView.as_view(), name='nota_credito_observacion'),
+]
+
+urlNotaCreditoDetalle = [
+    path('nota-credito/agregar-material/<int:nota_id>/', views.NotaCreditoMaterialDetalleView.as_view(), name='nota_credito_agregar_material'),
+    path('nota-credito-detalle/actualizar/<pk>/', views.NotaCreditoDetalleUpdateView.as_view(), name='nota_credito_detalle_actualizar'),
+    path('nota-credito-detalle/actualizar/descripcion/<pk>/', views.NotaCreditoDescripcionUpdateView.as_view(), name='nota_credito_detalle_actualizar_descripcion'),
+    path('nota-credito-detalle/eliminar/<pk>/', views.NotaCreditoDetalleDeleteView.as_view(), name='nota_credito_detalle_eliminar'),
 ]
 
 
 urlpatterns = [
 
-] + urlNotaCredito
+] + urlNotaCredito + urlNotaCreditoDetalle

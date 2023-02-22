@@ -75,19 +75,19 @@ class NotaCredito(models.Model):
 
     def __str__(self):
         if self.numero_nota:
-            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_nota, 6), self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_nota, 6), self.cliente, self.moneda.simbolo, self.total)
         else:
-            return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.cliente, self.moneda.simbolo, self.total)
 
 
 class NotaCreditoDetalle(models.Model):
-    item = models.IntegerField()
+    item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
     codigo_interno = models.CharField('Código Interno', max_length=250, blank=True, null=True)
-    descripcion_documento = models.CharField('Descripción', max_length=250)
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10)
+    descripcion_documento = models.CharField('Descripción', max_length=250, blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))
     precio_unitario_con_igv = models.DecimalField('Precio unitario con IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))
     precio_final_con_igv = models.DecimalField('Precio final con IGV',max_digits=22, decimal_places=10, default=Decimal('0.00'))
@@ -96,12 +96,7 @@ class NotaCreditoDetalle(models.Model):
     tipo_igv = models.IntegerField('Tipo IGV',choices=TIPO_IGV_CHOICES, default=1)
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
-    anticipo_regularizacion = models.BooleanField(default=False)
-    anticipo_documento_serie = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
-    anticipo_documento_numero = models.IntegerField(blank=True, null=True)
     codigo_producto_sunat = models.CharField(max_length=8, blank=True)
-    tipo_de_isc = models.IntegerField(choices=TIPO_ISC_CHOICES, blank=True, null=True)
-    isc = models.DecimalField('ISC', max_digits=14, decimal_places=2, blank=True, null=True)
     nota_credito = models.ForeignKey(NotaCredito, on_delete=models.CASCADE, related_name='NotaCreditoDetalle_nota_credito')
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -135,8 +130,9 @@ class NotaCreditoDetalle(models.Model):
 
     @property
     def producto(self):
+        if self.content_type:
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
         return None
-        return self.content_type.get_object_for_this_type(id = self.id_registro)
         
 
     def __str__(self):

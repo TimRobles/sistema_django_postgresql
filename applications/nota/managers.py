@@ -7,3 +7,13 @@ class NotaCreditoManager(models.Manager):
         for dato in consulta:
             dato.material = dato.producto
         return consulta
+
+    def nuevo_numero(self, obj):
+        consulta = self.filter(
+            sociedad=obj.sociedad,
+            serie_comprobante=obj.serie_comprobante,
+            ).aggregate(models.Max('numero_nota'))
+        if consulta['numero_nota__max']:
+            return consulta['numero_nota__max'] + 1
+        else:
+            return 1

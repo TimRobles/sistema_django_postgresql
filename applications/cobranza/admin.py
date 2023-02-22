@@ -7,6 +7,7 @@ from .models import(
     Egreso,
     Ingreso,
     LineaCredito,
+    Nota,
     Pago,
     Redondeo,
     RedondeoProveedor,
@@ -349,6 +350,30 @@ class RedondeoProveedorAdmin(admin.ModelAdmin):
         'monto',
         'moneda',
         'tipo_cambio',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(Nota)
+class NotaAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'nota_credito',
+        'monto',
+        'moneda',
+        'fecha',
+        'tipo_cambio',
+        'sociedad',
+        'cliente',
         'created_at',
         'created_by',
         'updated_at',

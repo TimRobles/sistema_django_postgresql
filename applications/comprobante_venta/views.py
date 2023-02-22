@@ -558,7 +558,7 @@ class FacturaVentaAnticipoRegularizarCrearView(PermissionRequiredMixin, BSModalD
                 total=factura_anticipada.total,
                 codigo_producto_sunat='20000000',
                 anticipo_regularizacion = True,
-                anticipo_documento_serie = factura_anticipada.serie_comprobante,
+                anticipo_documento_serie = factura_anticipada.serie_comprobante.serie,
                 anticipo_documento_numero = factura_anticipada.numero_factura,
                 factura_venta=factura_venta,
                 created_by=self.request.user,
@@ -1047,12 +1047,28 @@ def FacturaVentaJsonView(request):
     if request.is_ajax():
         term = request.GET.get('term')
         data = []
+        filtro_razon_social = Q(cliente__razon_social__unaccent__icontains=term.split(' ')[0])
+        if term.split(' ')[0].isnumeric():
+            filtro_numero = Q(numero_factura=term.split(' ')[0])
+        else:
+            filtro_numero = False
+        filtro_serie = Q(serie_comprobante__serie=term.split(' ')[0])
+        for palabra in term.split(' ')[1:]:
+            filtro_razon_social = filtro_razon_social | Q(cliente__razon_social__unaccent__icontains=palabra)
+            if palabra.isnumeric():
+                if filtro_numero:
+                    filtro_numero = filtro_numero | Q(numero_factura=palabra)
+                else:
+                    filtro_numero = Q(numero_factura=palabra)
+            filtro_serie = filtro_serie | Q(serie_comprobante__serie=palabra)
         buscar = FacturaVenta.objects.filter(
                 estado=4,
             ).filter(
-                Q(cliente__razon_social__unaccent__icontains=term) | 
-                Q(numero_factura=term)
+                filtro_razon_social | filtro_serie
             )
+        if filtro_numero:
+            buscar = buscar.filter(filtro_numero)
+
         for factura in buscar:
             data.append({
                 'id' : factura.id,
@@ -1812,15 +1828,28 @@ def BoletaVentaJsonView(request):
     if request.is_ajax():
         term = request.GET.get('term')
         data = []
-        filtro_numero = Q(numero_boleta=term.split(' ')[0])
+        filtro_razon_social = Q(cliente__razon_social__unaccent__icontains=term.split(' ')[0])
+        if term.split(' ')[0].isnumeric():
+            filtro_numero = Q(numero_boleta=term.split(' ')[0])
+        else:
+            filtro_numero = False
+        filtro_serie = Q(serie_comprobante__serie=term.split(' ')[0])
         for palabra in term.split(' ')[1:]:
-            filtro_numero = filtro_numero | Q(numero_boleta=palabra)
+            filtro_razon_social = filtro_razon_social | Q(cliente__razon_social__unaccent__icontains=palabra)
+            if palabra.isnumeric():
+                if filtro_numero:
+                    filtro_numero = filtro_numero | Q(numero_factura=palabra)
+                else:
+                    filtro_numero = Q(numero_factura=palabra)
+            filtro_serie = filtro_serie | Q(serie_comprobante__serie=palabra)
         buscar = BoletaVenta.objects.filter(
                 estado=4,
             ).filter(
-                Q(cliente__razon_social__unaccent__icontains=term) | 
-                filtro_numero
+                filtro_razon_social | filtro_serie
             )
+        if filtro_numero:
+            buscar = buscar.filter(filtro_numero)
+
         for boleta in buscar:
             data.append({
                 'id' : boleta.id,

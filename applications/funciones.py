@@ -364,7 +364,9 @@ def obtener_totales_soles(resultado, tipo_cambio, sociedad=None):
 
 
 def numeroXn(numero, n):
-    return '0'*(n-len(str(numero))) + str(numero)
+    if numero:
+        return '0'*(n-len(str(numero))) + str(numero)
+    return ""
 
 
 def igv(fecha=date.today()):

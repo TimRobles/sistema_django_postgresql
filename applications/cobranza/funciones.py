@@ -98,3 +98,29 @@ def eliminarDeuda(documento):
         return True
     except:
         return False
+
+
+def generarNota(documento, request):
+    obj = cobranza.models.Nota.objects.create(
+        nota_credito = documento,
+        monto = documento.total,
+        moneda = documento.moneda,
+        fecha = date.today(),
+        tipo_cambio = tipo_de_cambio(),
+        sociedad = documento.sociedad,
+        cliente = documento.cliente,
+        created_by = request.user,
+        updated_by = request.user,
+        )
+
+
+def eliminarNota(documento):
+    try:
+        obj = cobranza.models.Nota.objects.get(
+            nota_credito = documento,
+            )
+        obj.delete()
+
+        return True
+    except:
+        return False
