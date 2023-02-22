@@ -44,7 +44,7 @@ $('#sortear').on('click', function (e) {
             xhr_nested.onload = function(){
                 if (this.status === 200) {
                     console.log(xhr_nested.responseText);
-                    tiempo = 10;
+                    tiempo = 6;
                     ruleta(nombre, tiempo*1, xhr_nested.responseText.split(" | ")[0], $datos);
                     sorteo(xhr_nested.responseText, tiempo+1)
                 }
