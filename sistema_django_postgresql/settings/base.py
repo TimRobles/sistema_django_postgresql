@@ -97,7 +97,8 @@ MIDDLEWARE = [
 ]
 
 CRONJOBS = [
-    ('40 12 * * *', 'applications.reportes.pdf.reporte_cobranza')
+    ('45 13 * * *', 'applications.reportes.pdf.reporte_cobranza', '>> /home/tim/Documents/github/sistema_django_postgresql/cronjob.log 2>&1'),
+    ('* * * * *', 'applications.reportes.cron.funcion_iterativa', '>> /home/tim/Documents/github/sistema_django_postgresql/cronjob_itera.log 2>&1'),
 ]
 
 ROOT_URLCONF = 'sistema_django_postgresql.urls'
