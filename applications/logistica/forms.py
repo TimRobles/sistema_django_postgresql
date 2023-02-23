@@ -3,10 +3,11 @@ from applications.material.funciones import stock, stock_disponible, stock_sede_
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.logistica.models import Despacho, DocumentoPrestamoMateriales, ImagenesDespacho, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from applications.sede.models import Sede
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth import get_user_model
 
 from applications.material.models import Material
 from applications.almacenes.models import Almacen
@@ -324,5 +325,85 @@ class DespachoBuscarForm(forms.Form):
         self.fields['sociedad'].initial = filtro_sociedad
         self.fields['cliente'].initial = filtro_cliente
         self.fields['estado'].initial = filtro_estado
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class InventarioMaterialesForm(BSModalModelForm):
+    class Meta:
+        model = InventarioMateriales
+        fields = (
+            'sociedad',
+            'sede',
+            'responsable',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(InventarioMaterialesForm, self).__init__(*args, **kwargs)
+        self.fields['responsable'].queryset = get_user_model().objects.exclude(first_name = "")
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class InventarioMaterialesUpdateForm(BSModalModelForm):
+    class Meta:
+        model = InventarioMateriales
+        fields = (
+            'responsable',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(InventarioMaterialesUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['responsable'].queryset = get_user_model().objects.exclude(first_name = "")
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class InventarioMaterialesDetalleForm(BSModalModelForm):
+    almacen = forms.ModelChoiceField(queryset=None)
+    class Meta:
+        model = InventarioMaterialesDetalle
+        fields = (
+            'material',
+            'almacen',
+            'tipo_stock',
+            'cantidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_almacenes = kwargs.pop('almacenes')
+        super(InventarioMaterialesDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['almacen'].queryset = lista_almacenes
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class AjusteInventarioMaterialesForm(BSModalModelForm):
+    class Meta:
+        model = AjusteInventarioMateriales
+        fields = (
+            'responsable',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(AjusteInventarioMaterialesForm, self).__init__(*args, **kwargs)
+        self.fields['responsable'].queryset = get_user_model().objects.exclude(first_name = "")
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class AjusteInventarioMaterialesDetalleForm(BSModalModelForm): 
+    producto = forms.ModelChoiceField(label='Material', queryset=None)
+
+    class Meta:
+        model = AjusteInventarioMaterialesDetalle
+        fields=(
+            'producto',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_materiales = kwargs.pop('materiales')
+        super(AjusteInventarioMaterialesDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['producto'].queryset = lista_materiales
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

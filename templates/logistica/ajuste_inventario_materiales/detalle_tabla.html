@@ -1,0 +1,70 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<!-- <div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ contexto_ajuste_inventario_materiales_detalle.sociedad }}</td>
+                    <th class="px-2">Sede:</th>
+                    <td>{{ contexto_ajuste_inventario_materiales_detalle.sede }}</td>
+                    <th class="px-2">Fecha Ajuste Inventario:</th>
+                    <td>{{ contexto_ajuste_inventario_materiales_detalle.fecha_ajuste_inventario|date:'d/m/Y' }}</td>
+                    <th class="px-2">Responsable:</th>
+                    <td>
+                        {% if contexto_ajuste_inventario_materiales_detalle.responsable %}
+                            {% if contexto_ajuste_inventario_materiales_detalle.responsable.first_name %}
+                                {{ contexto_ajuste_inventario_materiales_detalle.responsable.first_name }} {{ contexto_ajuste_inventario_materiales_detalle.responsable.last_name }}
+                            {% else %}
+                                {{ contexto_ajuste_inventario_materiales_detalle.responsable }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div> -->
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Almacen</th>
+                <th>Tipo Stock</th>
+                <th>Cant. Stock</th>
+                <th>Cant. Contada</th>
+                <th>Cant. Diferencia</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in ajuste_inventario_materiales_detalle %}
+            <tr>
+                <td>{{ material.item }}</td>
+                <td>{{ material.material }}</td>
+                <td>{{ material.material.unidad_base }}</td>
+                <td>{{ material.almacen }}</td>
+                <td>{{ material.tipo_stock }}</td>
+                <td>{{ material.cantidad_stock|redondear|intcomma }}</td>
+                <td>{{ material.cantidad_contada|redondear|intcomma }}</td>
+                <td>{{ material.cantidad_stock|diferencia:material.cantidad_contada|redondear|intcomma }}</td>
+                <td class="text-center text-nowrap">
+                    {% if contexto_ajuste_inventario_materiales_detalle.estado == 1 %}
+                        <button data-form-url="{% url 'logistica_app:ajuste_inventario_materiales_detalle_eliminar' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

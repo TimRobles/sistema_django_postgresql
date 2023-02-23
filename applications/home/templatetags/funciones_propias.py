@@ -82,4 +82,6 @@ def nombre_usuario(usuario):
 def atributo(field):
     return field.field.widget.attrs['class']
     
-
+@register.filter
+def diferencia(valor, dif):
+    return valor - dif

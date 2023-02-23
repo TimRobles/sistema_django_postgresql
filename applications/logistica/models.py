@@ -14,6 +14,9 @@ from applications.variables import ESTADOS
 from applications.almacenes.models import Almacen
 from applications.calidad.models import Serie
 from applications.sede.models import Sede
+from applications.material.models import Material
+from applications.movimiento_almacen.models import TipoStock
+from applications.usuario.models import DatosUsuario
 
 class SolicitudPrestamoMateriales(models.Model):
     ESTADOS_PRESTAMO_MATERIALES = (
@@ -531,3 +534,112 @@ class ImagenesDespacho(models.Model):
 
     def __str__(self):
         return str(self.imagen)
+
+
+class InventarioMateriales(models.Model):
+
+    ESTADOS_INVENTARIO = [
+        (1, 'EN PROCESO'),
+        (2, 'CONCLUIDO'),
+        ]
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    fecha_inventario = models.DateField('Fecha de Inventario', auto_now=False, auto_now_add=True, blank=True, null=True)
+    hora_inventario = models.TimeField('Hora de Inventario',  auto_now=False, auto_now_add=True)
+    responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioMateriales_responsable', verbose_name='Responsable')
+    estado = models.IntegerField('Estado', choices=ESTADOS_INVENTARIO, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioMateriales_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioMateriales_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Inventario Materiales'
+        verbose_name_plural = 'Inventarios Materiales'
+
+    def __str__(self):
+        return str(self.id)
+
+
+class InventarioMaterialesDetalle(models.Model):
+
+    item = models.IntegerField(blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE,blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    inventario_materiales = models.ForeignKey(InventarioMateriales, on_delete=models.CASCADE, related_name='InventarioMaterialesDetalle_inventario_materiales')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioMaterialesDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='InventarioMaterialesDetalle_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Inventario Materiales Detalle'
+        verbose_name_plural = 'Inventarios Materiales Detalle'
+        ordering = ['item',]
+
+    @property
+    def AjusteInventarioMaterialesDetalle_inventario_materiales_detalle(self):
+        ajuste_inventario_materiales_detalle = AjusteInventarioMaterialesDetalle.objects.filter(
+            material = self.material,
+        )
+        return ajuste_inventario_materiales_detalle
+
+    def __str__(self):
+        return str(self.material)
+
+
+class AjusteInventarioMateriales(models.Model):
+
+    ESTADOS_AJUSTE_INVENTARIO = [
+        (1, 'EN PROCESO'),
+        (2, 'CONCLUIDO'),
+        (3, 'ANULADO'),
+        ]
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE)
+    fecha_ajuste_inventario = models.DateField('Fecha de Inventario', auto_now=False, auto_now_add=True, blank=True, null=True)
+    hora_ajuste_inventario = models.TimeField('Hora de Inventario',  auto_now=False, auto_now_add=True)
+    responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AjusteInventarioMateriales_responsable', verbose_name='Responsable')
+    observacion = models.TextField(blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS_AJUSTE_INVENTARIO, default=1)
+    inventario_materiales = models.ForeignKey(InventarioMateriales, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AjusteInventarioMateriales_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AjusteInventarioMateriales_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Ajuste Inventario Materiales'
+        verbose_name_plural = 'Ajuste Inventarios Materiales'
+
+    def __str__(self):
+        return str(self.id)
+
+
+class AjusteInventarioMaterialesDetalle(models.Model):
+
+    item = models.IntegerField(blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE,blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
+    cantidad_stock = models.DecimalField('Cantidad Stock', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    cantidad_contada = models.DecimalField('Cantidad Contada', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    ajuste_inventario_materiales = models.ForeignKey(AjusteInventarioMateriales, on_delete=models.CASCADE, related_name='AjusteInventarioMaterialesDetalle_ajuste_inventario_materiales')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AjusteInventarioMaterialesDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AjusteInventarioMaterialesDetalle_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Ajuste Inventario Materiales Detalle'
+        verbose_name_plural = 'Ajuste Inventarios Materiales Detalle'
+        ordering = ['item',]
+
+    def __str__(self):
+        return str(self.material)
