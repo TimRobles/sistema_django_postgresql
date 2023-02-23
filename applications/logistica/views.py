@@ -5,9 +5,9 @@ from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaD
 from applications.importaciones import *
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
-from applications.logistica.models import Despacho, DespachoDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, NotaSalidaDocumento, \
+from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DespachoDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalidaDocumento, \
     SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieNotaSalidaDetalle
-from applications.logistica.forms import DespachoAnularForm, DespachoBuscarForm, DespachoForm, DocumentoPrestamoMaterialesForm, ImagenesDespachoForm, \
+from applications.logistica.forms import AjusteInventarioMaterialesDetalleForm, AjusteInventarioMaterialesForm, DespachoAnularForm, DespachoBuscarForm, DespachoForm, DocumentoPrestamoMaterialesForm, ImagenesDespachoForm, InventarioMaterialesForm, InventarioMaterialesDetalleForm, InventarioMaterialesUpdateForm, \
     NotaSalidaAnularForm, NotaSalidaBuscarForm, NotaSalidaDetalleForm, NotaSalidaDetalleSeriesForm, NotaSalidaDetalleUpdateForm, SolicitudPrestamoMaterialesDetalleForm, \
     SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, \
     SolicitudPrestamoMaterialesAnularForm
@@ -17,6 +17,8 @@ from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcio
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
+from applications.material.funciones import stock_tipo_stock
+from django.shortcuts import render
 
 class SolicitudPrestamoMaterialesListView(PermissionRequiredMixin, ListView):
     permission_required = ('logistica.view_solicitudprestamomateriales')
@@ -2027,3 +2029,482 @@ class NotaSalidaSeriesPdf(View):
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
 
         return respuesta
+
+
+class InventarioMaterialesListView(PermissionRequiredMixin, ListView):
+    permission_required = ('logistica.view_inventariomateriales')
+    model = InventarioMateriales
+    template_name = "logistica/inventario_materiales/inicio.html"
+    context_object_name = 'contexto_inventario_materiales'
+
+def InventarioMaterialesTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/inventario_materiales/inicio_tabla.html'
+        context = {}
+        context['contexto_inventario_materiales'] = InventarioMateriales.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class InventarioMaterialesCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('logistica.view_inventariomateriales')
+    model = InventarioMateriales
+    template_name = "includes/formulario generico.html"
+    form_class = InventarioMaterialesForm
+    success_url = reverse_lazy('logistica_app:inventario_materiales_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioMaterialesCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Inventario Materiales"
+        return context
+
+    def form_valid(self, form):
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+
+class InventarioMaterialesUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_inventariomateriales')
+    model = InventarioMateriales
+    template_name = "includes/formulario generico.html"
+    form_class = InventarioMaterialesUpdateForm
+    success_url = reverse_lazy('logistica_app:inventario_materiales_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioMaterialesUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Inventario"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        
+        return super().form_valid(form)
+
+
+class InventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_inventariomateriales')
+    model = InventarioMateriales
+    template_name = "logistica/inventario_materiales/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('logistica_app:ajuste_inventario_materiales_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.request.session['primero'] = True
+            self.object = self.get_object()
+            detalles = self.object.InventarioMaterialesDetalle_inventario_materiales.all()
+
+            ajuste_inventario_materiales = AjusteInventarioMateriales.objects.create(
+                sociedad=self.object.sociedad,
+                sede=self.object.sede,
+                observacion='',
+                estado='1',
+                inventario_materiales=self.object,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+
+            for detalle in detalles:
+                ajuste_inventario_materiales_detalle = AjusteInventarioMaterialesDetalle.objects.create(
+                    item=detalle.item,
+                    material=detalle.material,
+                    almacen=detalle.almacen,
+                    tipo_stock=detalle.tipo_stock,
+                    cantidad_contada=detalle.cantidad,
+                    ajuste_inventario_materiales=ajuste_inventario_materiales,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+            self.kwargs['ajuste_inventario_materiales'] = ajuste_inventario_materiales
+            self.request.session['primero'] = False
+            registro_guardar(self.object, self.request)
+            self.object.estado = 2
+            self.object.save()
+            messages.success(request, MENSAJE_GENERAR_DOCUMENTO_AJUSTE_INVENTARIO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(InventarioMaterialesConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Inventario Materiales"
+        context['dar_baja'] = "true"
+        return context
+
+
+class InventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('logistica.view_inventariomaterial')
+
+    model = InventarioMateriales
+    template_name = "logistica/inventario_materiales/detalle.html"
+    context_object_name = 'contexto_inventario_materiales_detalle'
+
+    def get_context_data(self, **kwargs):
+        inventario_materiales = InventarioMateriales.objects.get(id = self.kwargs['pk'])
+        context = super(InventarioMaterialesDetailView, self).get_context_data(**kwargs)
+        context['inventario_materiales_detalle'] = InventarioMaterialesDetalle.objects.filter(inventario_materiales = inventario_materiales)
+        return context
+
+
+def InventarioMaterialesDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/inventario_materiales/detalle_tabla.html'
+        context = {}
+        inventario_materiales = InventarioMateriales.objects.get(id = pk)
+        context['contexto_inventario_materiales_detalle'] = inventario_materiales
+        context['inventario_materiales_detalle'] = InventarioMaterialesDetalle.objects.filter(inventario_materiales = inventario_materiales)
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class InventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('logistica.view_inventariomaterialdetalle')
+    template_name = "logistica/inventario_materiales/form_material.html"
+    form_class = InventarioMaterialesDetalleForm
+    success_url = reverse_lazy('logistica_app:inventario_materiales_inicio')
+
+    def get_form_kwargs(self):
+        registro = InventarioMateriales.objects.get(id = self.kwargs['inventario_materiales_id'])
+        sede = registro.sede.id
+        almacenes = Almacen.objects.filter(sede__id = sede)
+
+        kwargs = super().get_form_kwargs()
+        kwargs['almacenes'] = almacenes
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                inventario_materiales = InventarioMateriales.objects.get(id=self.kwargs['inventario_materiales_id'])
+                item = len(InventarioMaterialesDetalle.objects.filter(inventario_materiales = inventario_materiales))
+
+                material = form.cleaned_data.get('material')
+                almacen = form.cleaned_data.get('almacen')
+                tipo_stock = form.cleaned_data.get('tipo_stock')
+                cantidad = form.cleaned_data.get('cantidad')
+
+                obj, created = InventarioMaterialesDetalle.objects.get_or_create(
+                    material = material,
+                    almacen = almacen,
+                    tipo_stock = tipo_stock,
+                    inventario_materiales = inventario_materiales,
+                )
+                
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(InventarioMaterialesDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Material"
+        return context
+
+
+class InventarioMaterialesDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_inventariomaterialdetalle')
+    model = InventarioMaterialesDetalle
+    template_name = "logistica/inventario_materiales/form_material.html"
+    form_class = InventarioMaterialesDetalleForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:inventario_materiales_detalle', kwargs={'pk':self.get_object().inventario_materiales_id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        registro = InventarioMateriales.objects.get(id = self.get_object().inventario_materiales_id)
+        sede = registro.sede.id
+        almacenes = Almacen.objects.filter(sede__id = sede)
+
+        kwargs = super().get_form_kwargs()
+        kwargs['almacenes'] = almacenes
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioMaterialesDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Material"
+        return context
+
+
+class InventarioMaterialesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_inventariomaterialdetalle')
+    model = InventarioMaterialesDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:inventario_materiales_detalle', kwargs={'pk': self.get_object().inventario_materiales_id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            materiales = InventarioMaterialesDetalle.objects.filter(inventario_materiales=self.get_object().inventario_materiales)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object(): continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(InventarioMaterialesDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+
+
+class AjusteInventarioMaterialesListView(PermissionRequiredMixin, ListView):
+    permission_required = ('logistica.view_ajusteinventariomateriales')
+    model = AjusteInventarioMateriales
+    template_name = "logistica/ajuste_inventario_materiales/inicio.html"
+    context_object_name = 'contexto_ajuste_inventario_materiales'
+
+def AjusteInventarioMaterialesTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/ajuste_inventario_materiales/inicio_tabla.html'
+        context = {}
+        context['contexto_ajuste_inventario_materiales'] = AjusteInventarioMateriales.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class AjusteInventarioMaterialesUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_ajusteinventariomateriales')
+    model = AjusteInventarioMateriales
+    template_name = "includes/formulario generico.html"
+    form_class = AjusteInventarioMaterialesForm
+    success_url = reverse_lazy('logistica_app:ajuste_inventario_materiales_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(AjusteInventarioMaterialesUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Ajuste Inventario"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        
+        return super().form_valid(form)
+
+
+class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_ajusteinventariomateriales')
+    model = AjusteInventarioMateriales
+    template_name = "logistica/ajuste_inventario_materiales/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('logistica_app:ajuste_inventario_materiales_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.request.session['primero'] = True
+            self.object = self.get_object()
+            self.request.session['primero'] = False
+            registro_guardar(self.object, self.request)
+            self.object.estado = 2
+            self.object.save()
+            messages.success(request, MENSAJE_AJUSTE_INVENTARIO_MATERIALES)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(AjusteInventarioMaterialesConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Ajuste Inventario Materiales"
+        context['dar_baja'] = "true"
+        return context
+
+
+class AjusteInventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('logistica.view_ajusteinventariomaterial')
+
+    model = AjusteInventarioMateriales
+    template_name = "logistica/ajuste_inventario_materiales/detalle.html"
+    context_object_name = 'contexto_ajuste_inventario_materiales_detalle'
+
+    def get_context_data(self, **kwargs):
+        ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id = self.kwargs['pk'])
+        context = super(AjusteInventarioMaterialesDetailView, self).get_context_data(**kwargs)
+        context['ajuste_inventario_materiales_detalle'] = AjusteInventarioMaterialesDetalle.objects.filter(ajuste_inventario_materiales = ajuste_inventario_materiales)
+        return context
+
+
+def AjusteInventarioMaterialesDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/ajuste_inventario_materiales/detalle_tabla.html'
+        context = {}
+        ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id = pk)
+        context['contexto_ajuste_inventario_materiales_detalle'] = ajuste_inventario_materiales
+        context['ajuste_inventario_materiales_detalle'] = AjusteInventarioMaterialesDetalle.objects.filter(ajuste_inventario_materiales = ajuste_inventario_materiales)
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class AjusteInventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('logistica.add_ajusteinventariomaterialdetalle')
+    template_name = "includes/formulario generico.html"
+    form_class = AjusteInventarioMaterialesDetalleForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:ajuste_inventario_materiales_detalle', kwargs={'pk': self.kwargs['ajuste_inventario_materiales_id']})
+
+    def get_form_kwargs(self):
+        ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id=self.kwargs['ajuste_inventario_materiales_id'])
+        inventario_materiales = ajuste_inventario_materiales.inventario_materiales.id
+        materiales = ajuste_inventario_materiales.AjusteInventarioMaterialesDetalle_ajuste_inventario_materiales.all()
+        lista_materiales = InventarioMaterialesDetalle.objects.filter(inventario_materiales__id=inventario_materiales)
+        for material in materiales:
+            lista_materiales = lista_materiales.exclude(material_id=material.material.id)
+        kwargs = super().get_form_kwargs()
+        kwargs['materiales'] = lista_materiales
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id=self.kwargs['ajuste_inventario_materiales_id'])
+                item = len(ajuste_inventario_materiales.AjusteInventarioMaterialesDetalle_ajuste_inventario_materiales.all())
+                material = form.cleaned_data.get('producto')
+                sociedad = ajuste_inventario_materiales.sociedad
+
+                ajuste_inventario_materiales_detalle = AjusteInventarioMaterialesDetalle.objects.create(
+                    ajuste_inventario_materiales=ajuste_inventario_materiales,
+                    material = material.material,
+                    almacen = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).almacen,
+                    tipo_stock = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).tipo_stock,
+                    cantidad_stock = stock_tipo_stock(ContentType.objects.get_for_model(material.material), 
+                        material.material.id, 
+                        sociedad, 
+                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).almacen, 
+                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).tipo_stock),
+                    cantidad_contada = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).cantidad,
+                    item=item + 1,
+                    created_by=self.request.user,
+                    updated_by=self.request.user, 
+                )
+                
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(AjusteInventarioMaterialesDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Material"
+        return context
+
+
+class AjusteInventarioMaterialesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_ajusteinventariomaterialdetalle')
+    model = AjusteInventarioMaterialesDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:ajuste_inventario_materiales_detalle', kwargs={'pk': self.get_object().ajuste_inventario_materiales_id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            materiales = AjusteInventarioMaterialesDetalle.objects.filter(ajuste_inventario_materiales=self.get_object().ajuste_inventario_materiales)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object(): continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(AjusteInventarioMaterialesDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context

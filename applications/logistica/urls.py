@@ -44,6 +44,32 @@ urlDespacho = [
     path('despacho/imagen/agregar/<int:id_despacho>/', views.ImagenesDespachoCreateView.as_view(), name='despacho_imagen_agregar'),
     path('despacho/imagen/eliminar/<pk>/', views.ImagenesDespachoDeleteView.as_view(), name='despacho_imagen_eliminar'),
 ]
+
+urlInventarioMateriales = [
+    path('inventario-materiales/', views.InventarioMaterialesListView.as_view(), name='inventario_materiales_inicio'),
+    path('inventario-materiales-tabla/', views.InventarioMaterialesTabla, name='inventario_materiales_tabla'),
+    path('inventario-materiales/registrar/', views.InventarioMaterialesCreateView.as_view(), name='inventario_materiales_registrar'),
+    path('inventario-materiales/actualizar/<pk>', views.InventarioMaterialesUpdateView.as_view(), name='inventario_materiales_actualizar'),
+    path('inventario-materiales/concluir/<pk>/', views.InventarioMaterialesConcluirView.as_view(), name='inventario_materiales_concluir'),
+    path('inventario-materiales/detalle/<pk>/', views.InventarioMaterialesDetailView.as_view(), name='inventario_materiales_detalle'),
+    path('inventario-materiales/detalle-tabla/<pk>/', views.InventarioMaterialesDetailTabla, name='inventario_materiales_detalle_tabla'),
+    path('inventario-materiales/detalle/registrar/<int:inventario_materiales_id>/', views.InventarioMaterialesDetalleCreateView.as_view(), name='inventario_materiales_detalle_registrar'),
+    path('inventario-materiales/detalle/actualizar/<pk>/', views.InventarioMaterialesDetalleUpdateView.as_view(), name='inventario_materiales_detalle_actualizar'),
+    path('inventario-materiales/detalle/eliminar/<pk>/', views.InventarioMaterialesDetalleDeleteView.as_view(), name='inventario_materiales_detalle_eliminar'),
+]
+
+urlAjusteInventarioMateriales = [
+    path('ajuste-inventario-materiales/', views.AjusteInventarioMaterialesListView.as_view(), name='ajuste_inventario_materiales_inicio'),
+    path('ajuste-inventario-materiales-tabla/', views.AjusteInventarioMaterialesTabla, name='ajuste_inventario_materiales_tabla'),
+    path('ajuste-inventario-materiales/actualizar/<pk>', views.AjusteInventarioMaterialesUpdateView.as_view(), name='ajuste_inventario_materiales_actualizar'),
+    path('ajuste-inventario-materiales/concluir/<pk>/', views.AjusteInventarioMaterialesConcluirView.as_view(), name='ajuste_inventario_materiales_concluir'),
+    path('ajuste-inventario-materiales/detalle/<pk>/', views.AjusteInventarioMaterialesDetailView.as_view(), name='ajuste_inventario_materiales_detalle'),
+    path('ajuste-inventario-materiales/detalle-tabla/<pk>/', views.AjusteInventarioMaterialesDetailTabla, name='ajuste_inventario_materiales_detalle_tabla'),
+    path('ajuste-inventario-materiales/detalle/registrar/<int:ajuste_inventario_materiales_id>/', views.AjusteInventarioMaterialesDetalleCreateView.as_view(), name='ajuste_inventario_materiales_detalle_registrar'),
+    # path('ajuste-inventario-materiales/detalle/actualizar/<pk>/', views.AjusteInventarioMaterialesDetalleUpdateView.as_view(), name='ajuste_inventario_materiales_detalle_actualizar'),
+    path('ajuste-inventario-materiales/detalle/eliminar/<pk>/', views.AjusteInventarioMaterialesDetalleDeleteView.as_view(), name='ajuste_inventario_materiales_detalle_eliminar'),
+]
+
 urlpatterns = [
     path('solicitud-prestamo-materiales/', views.SolicitudPrestamoMaterialesListView.as_view(), name='solicitud_prestamo_materiales_inicio'),
     path('solicitud-prestamo-materiales-tabla/', views.SolicitudPrestamoMaterialesTabla, name='solicitud_prestamo_materiales_tabla'),
@@ -62,4 +88,4 @@ urlpatterns = [
     path('solicitud-prestamo-materiales-detalle/archivo/eliminar/<pk>/', views.DocumentoSolicitudPrestamoMaterialesDeleteView.as_view(), name='solicitud_prestamo_materiales_documento_eliminar'),
     path('solicitud-prestamo-materiales-detalle/generar-nota-salida/<pk>/', views.SolicitudPrestamoMaterialesGenerarNotaSalidaView.as_view(), name='solicitud_prestamo__materiales_generar_nota_salida'),
     path('cliente-interlocutor/<str:id_interlocutor_cliente>/', views.ClienteView, name='cliente_interlocutor'),
-] + urlSeries + urlNotaSalida + urlDespacho
+] + urlSeries + urlNotaSalida + urlDespacho + urlInventarioMateriales + urlAjusteInventarioMateriales
