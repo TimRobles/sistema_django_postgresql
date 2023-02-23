@@ -1,0 +1,69 @@
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. de Solicitud</th>
+            <th>Sociedad</th>
+            <th>Fecha Solicitud</th>
+            <th>Comentario</th>
+            <th>Fecha Consumo</th>
+            <th>Motivo de Rechazo</th>
+            <th>Estado</th>
+            <th>Solicitante</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for fila_solicitud in contexto_solicitud_consumo  %}
+            <tr>
+                
+                {% if  fila_solicitud.estado == 3%}
+                    <td><S>{{ fila_solicitud.numero_solicitud|numeroXn:6 }}</S></td>
+                    <td><S>{{ fila_solicitud.sociedad }}</S></td>
+                    <td><S>{{ fila_solicitud.fecha_solicitud }}</S></td>
+                    <td><S>{{ fila_solicitud.observacion }}</S></td>
+                    <td><S>{{ fila_solicitud.fecha_consumo }}</S></td>
+                    {% if not fila_solicitud.motivo_anulacion %}<td>-</td>{% else %} <td>{{ fila_solicitud.motivo_anulacion }}</td> {% endif %}
+                    <td><S>{{ fila_solicitud.get_estado_display }}</S></td>
+                    <td><S>{{ fila_solicitud.solicitante }}</S></td>    
+                {% else %}
+                    <td>{{ fila_solicitud.numero_solicitud|numeroXn:6 }}</td>
+                    <td>{{ fila_solicitud.sociedad }}</td>
+                    <td>{{ fila_solicitud.fecha_solicitud }}</td>
+                    <td>{{ fila_solicitud.observacion }}</td>
+                    <td>{{ fila_solicitud.fecha_consumo }}</td>
+                    {% if not fila_solicitud.motivo_anulacion %}<td>-</td>{% else %} <td>{{ fila_solicitud.motivo_anulacion }}</td> {% endif %}
+                    <td>{{ fila_solicitud.get_estado_display }}</td>
+                    <td>{{ fila_solicitud.solicitante }}</td>
+                {% endif %}
+                    
+                <td class="text-center text-nowrap">
+                    <a href="{% url 'calidad_app:solicitud_consumo_interno_detalle' fila_solicitud.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a> 
+                    {% if fila_solicitud.estado == 1 %}
+                        <button data-form-url="{% url 'calidad_app:solicitud_consumo_interno_actualizar' fila_solicitud.id %}"
+                            data-table-url="{% url 'calidad_app:solicitud_consumo_interno_tabla' %}"
+                            data-keep-open="true"    
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'calidad_app:solicitud_consumo_interno_darbaja' fila_solicitud.id %}"   
+                            data-table-url="{% url 'calidad_app:solicitud_consumo_interno_tabla' %}"
+                            data-keep-open="true"    
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+            
+    </tbody>
+</table>

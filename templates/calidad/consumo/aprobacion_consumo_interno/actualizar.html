@@ -1,0 +1,17 @@
+{% extends 'includes/formulario generico.html' %}
+
+
+{% block js %}
+<script>
+    id_solicitud_consumo = $('#id_solicitud_consumo')[0];
+    id_solicitud_consumo.disabled = true;
+
+    function click_habilitar (valor) {
+        $('#id_solicitud_consumo')[0].disabled = valor;
+    };
+
+    $(document).on("click", ".btn-primary", function (e) {
+        click_habilitar(false);
+    });
+</script>
+{% endblock js %}
