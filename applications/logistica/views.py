@@ -811,7 +811,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
 
                     detalles = self.object.detalles
 
-                    disponible = TipoStock.objects.get(codigo=3)
+                    disponible = TipoStock.objects.get(codigo=3) #Disponible
                     if self.object.solicitud_prestamo_materiales:
                         print('Préstamo')
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
