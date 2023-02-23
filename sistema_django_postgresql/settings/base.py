@@ -81,6 +81,7 @@ THIRD_PARTY_APPS = (
     'widget_tweaks',
     'colorfield',
     'django_cleanup.apps.CleanupConfig',
+    'django_crontab',
 )
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
@@ -93,6 +94,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CRONJOBS = [
+    ('40 12 * * *', 'applications.reportes.pdf.reporte_cobranza')
 ]
 
 ROOT_URLCONF = 'sistema_django_postgresql.urls'
