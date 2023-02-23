@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block titulo %}
+    Detalle de Solicitud Consumo Interno
+{% endblock titulo %}
+    
+
+{% block contenido %}
+    <h3>Detalle de Solicitud Consumo Interno
+        {% if contexto_solicitud_consumo.estado == 1 %}    
+            <button class="create badge bg-primary "
+                data-form-url="{% url 'calidad_app:solicitud_consumo_interno_detalle_registrar' contexto_solicitud_consumo.id %}"
+                data-table-url="{% url 'calidad_app:solicitud_consumo_interno_detalle_tabla' contexto_solicitud_consumo.id %}">
+                Agregar Item
+            </button>
+            <button data-form-url="{% url 'calidad_app:solicitud_consumo_interno_concluir' contexto_solicitud_consumo.id %}"   
+                data-table-url="{% url 'calidad_app:solicitud_consumo_interno_inicio' %}"
+                data-keep-open="true"    
+                class="delete badge bg-primary "
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Concluir">
+                Concluir Solicitud
+            </button>
+        {% endif %}
+    </h3>
+    <a href="{% url 'calidad_app:solicitud_consumo_interno_inicio' %}" class="btn btn-danger">Regresar</a> 
+    <br></br>
+    <div class="table-responsive" id="tabla">
+        {% include 'calidad/consumo/solicitud_consumo_interno/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+    

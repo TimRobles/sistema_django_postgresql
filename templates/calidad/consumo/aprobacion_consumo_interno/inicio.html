@@ -1,0 +1,22 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Aprobación Consumo Interno
+{% endblock titulo %}
+    
+{% block contenido %}
+    <h3>Aprobación de Consumo Interno
+        <!-- <button class="create badge bg-primary"
+            data-form-url="{% url 'calidad_app:aprobacion_consumo_interno_registrar' %}"
+            data-table-url="{% url 'calidad_app:aprobacion_consumo_interno_tabla' %}">
+            Nueva Aprobacion
+        </button> -->
+    </h3>
+    <div class="table-responsive" id="tabla">
+        {% include 'calidad/consumo/aprobacion_consumo_interno/inicio_tabla.html' %}
+    </div>
+        
+{% endblock contenido %}
+    

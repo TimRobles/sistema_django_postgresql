@@ -820,15 +820,21 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                         estado_serie = EstadoSerie.objects.get(numero_estado=9)
                     else:
                         if self.object.confirmacion_venta.cotizacion_venta.estado == 4: #Confirmado con Reserva
-                            print('Confirmación')
+                            print('Confirmación Con Reserva')
                             movimiento_inicial = TipoMovimiento.objects.get(codigo=119)  # Confirmación de reserva por venta
                             movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
                             documento_anterior = self.object.confirmacion_venta
                             estado_serie = EstadoSerie.objects.get(numero_estado=3)
                         elif self.object.confirmacion_venta.cotizacion_venta.estado == 5: #Confirmado sin Reserva
-                            print('Confirmación')
+                            print('Confirmación Sin Reserva')
                             movimiento_inicial = TipoMovimiento.objects.get(codigo=120)  # Confirmado por venta
                             movimiento_final = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
+                            documento_anterior = self.object.confirmacion_venta
+                            estado_serie = EstadoSerie.objects.get(numero_estado=3)
+                        elif self.object.confirmacion_venta.cotizacion_venta.estado == 6: #Confirmado Anticipado
+                            print('Confirmación Anticipada')
+                            movimiento_inicial = TipoMovimiento.objects.get(codigo=129)  # Confirmación por venta anticipada
+                            movimiento_final = TipoMovimiento.objects.get(codigo=130)  # Confirmación anticipada atendida
                             documento_anterior = self.object.confirmacion_venta
                             estado_serie = EstadoSerie.objects.get(numero_estado=3)
 
@@ -1614,6 +1620,9 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
                 if self.object.nota_salida.solicitud_prestamo_materiales:
                     movimiento_inicial = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
                     movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                elif self.object.nota_salida.confirmacion_venta.cotizacion_venta.estado == 6:
+                    movimiento_inicial = TipoMovimiento.objects.get(codigo=130)  # Confirmación anticipada atendida
+                    movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta
                 else:
                     movimiento_inicial = TipoMovimiento.objects.get(codigo=121)  # Salida por venta
                     movimiento_final = TipoMovimiento.objects.get(codigo=122)  # Despacho por venta

@@ -65,7 +65,7 @@ class Guia(models.Model):
 
     @property
     def documento(self):
-        return "%s-%s" % (self.serie_comprobante, numeroXn(self.numero_guia, 6))
+        return "%s-%s" % (self.serie_comprobante.serie, numeroXn(self.numero_guia, 6))
 
     @property
     def detalles(self):
@@ -91,22 +91,22 @@ class Guia(models.Model):
         if self.confirmacion:
             if self.confirmacion.facturas:
                 for factura in self.confirmacion.facturas:
-                    observaciones.append(f"{factura.get_tipo_comprobante_display()} {factura.serie_comprobante}-{numeroXn(factura.numero_factura,6)}")
+                    observaciones.append(f"{factura.get_tipo_comprobante_display()} {factura.serie_comprobante.serie}-{numeroXn(factura.numero_factura,6)}")
         
             if self.confirmacion.boletas:
                 for boleta in self.confirmacion.boletas:
-                    observaciones.append(f"{boleta.get_tipo_comprobante_display()} {boleta.serie_comprobante}-{numeroXn(boleta.numero_boleta,6)}")
+                    observaciones.append(f"{boleta.get_tipo_comprobante_display()} {boleta.serie_comprobante.serie}-{numeroXn(boleta.numero_boleta,6)}")
         return " | ".join(observaciones)
 
     @property
     def descripcion(self):
-        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_guia, 6))
+        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_guia, 6))
 
     def __str__(self):
         if self.numero_guia:
-            return "%s %s-%s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_guia, self.cliente)
+            return "%s %s-%s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.numero_guia, self.cliente)
         else:
-            return "%s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente)
+            return "%s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.cliente)
 
 
 class GuiaDetalle(models.Model):

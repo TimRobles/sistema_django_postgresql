@@ -37,6 +37,45 @@ urlNotaControlCalidadStock = [
     path('nota-control-calidad-stock/series/pdf/<pk>/', views.NotaControlCalidadStockSeriesPdf.as_view(), name='nota_control_calidad_stock_series_pdf'),
 ]
 
+urlConsumoInterno = [
+
+    path('solicitud-consumo-interno/', views.SolicitudConsumoInternoListView.as_view(), name='solicitud_consumo_interno_inicio'),
+    path('solicitud-consumo-interno-tabla/', views.SolicitudConsumoInternoTabla, name='solicitud_consumo_interno_tabla'),
+    path('solicitud-consumo-interno/registrar/', views.SolicitudConsumoInternoCreateView.as_view(), name='solicitud_consumo_interno_registrar'),
+    path('solicitud-consumo-interno/actualizar/<pk>', views.SolicitudConsumoInternoUpdateView.as_view(), name='solicitud_consumo_interno_actualizar'),
+    path('solicitud-consumo-interno/dar-baja/<pk>/', views.SolicitudConsumoInternoDeleteView.as_view(), name='solicitud_consumo_interno_darbaja'),
+    path('solicitud-consumo-interno/concluir/<pk>/', views.SolicitudConsumoInternoConcluirView.as_view(), name='solicitud_consumo_interno_concluir'),
+    path('solicitud-consumo-interno/detalle/<pk>/', views.SolicitudConsumoInternoDetailView.as_view(), name='solicitud_consumo_interno_detalle'),
+    path('solicitud-consumo-interno/detalle-tabla/<pk>/', views.SolicitudConsumoInternoDetailTabla, name='solicitud_consumo_interno_detalle_tabla'),
+    path('solicitud-consumo-interno/detalle/registrar/<int:solicitud_consumo_id>/', views.SolicitudConsumoInternoDetalleCreateView.as_view(), name='solicitud_consumo_interno_detalle_registrar'),
+    path('solicitud-consumo-interno/detalle/actualizar/<pk>/', views.SolicitudConsumoInternoDetalleUpdateView.as_view(), name='solicitud_consumo_interno_detalle_actualizar'),
+    path('solicitud-consumo-interno/detalle/eliminar/<pk>/', views.SolicitudConsumoInternoDetalleDeleteView.as_view(), name='solicitud_consumo_interno_detalle_eliminar'),
+    # path('solicitud-consumo-interno/registrar/series/<pk>/', views.SolicitudConsumoInternoRegistrarSeriesView.as_view(), name='solicitud_consumo_interno_registrar_series'),
+    # path('solicitud-consumo-interno/series/pdf/<pk>/', views.SolicitudConsumoInternoSeriesPdf.as_view(), name='solicitud_consumo_interno_series_pdf'),
+    
+    path('solicitud-consumo-interno/material-unidad/<pk>/', views.MaterialUnidadView, name='material_unidad'),
+]
+
+urlConsumoInternoSeries = [
+
+    path('solicitud-consumo/validar-series/detalle/<pk>/', views.ValidarSeriesSolicitudConsumoDetailView.as_view(), name='solicitud_consumo_validar_series_detalle'),
+    path('solicitud-consumo/validar-series/detalle-tabla/<pk>/', views.ValidarSeriesSolicitudConsumoDetailTabla, name='solicitud_consumo_validar_series_detalle_tabla'),
+    path('solicitud-consumo/validar-series-detalle/eliminar/<pk>/', views.ValidarSeriesSolicitudConsumoDetalleDeleteView.as_view(), name='solicitud_consumo_validar_series_detalle_eliminar'),
+]
+
+urlAprobacionConsumoInterno = [
+    path('aprobacion-consumo-interno/', views.AprobacionConsumoInternoListView.as_view(), name='aprobacion_consumo_interno_inicio'),
+    path('aprobacion-consumo-interno-tabla/', views.AprobacionConsumoInternoTabla, name='aprobacion_consumo_interno_tabla'),
+    path('aprobacion-consumo-interno/registrar/', views.AprobacionConsumoInternoCreateView.as_view(), name='aprobacion_consumo_interno_registrar'),
+    path('aprobacion-consumo-interno/actualizar/<pk>', views.AprobacionConsumoInternoUpdateView.as_view(), name='aprobacion_consumo_interno_actualizar'),
+    path('aprobacion-consumo-interno/detalle/<pk>', views.AprobacionConsumoInternoDetailView.as_view(), name='aprobacion_consumo_interno_detalle'),
+    path('aprobacion-consumo-interno/detalle-tabla/<pk>/', views.AprobacionConsumoInternoDetailTabla, name='aprobacion_consumo_interno_detalle_tabla'),
+    path('aprobacion-consumo-interno/aprobar/<pk>/', views.AprobacionConsumoInternoAprobarView.as_view(), name='aprobacion_consumo_interno_aprobar'),
+    path('aprobacion-consumo-interno/rechazar/<pk>/', views.AprobacionConsumoInternoRechazarView.as_view(), name='aprobacion_consumo_interno_rechazar'),
+    # path('aprobacion-consumo-interno/dar-baja/<pk>/', views.AprobacionConsumoInternoDeleteView.as_view(), name='aprobacion_consumo_interno_darbaja'),
+]
+
+
 urlpatterns = [
 
     path('falla-material/',views.FallaMaterialTemplateView.as_view(),name='falla_material'),
@@ -46,4 +85,4 @@ urlpatterns = [
     path('falla-material/detalle/actualizar/<pk>/', views.FallaMaterialUpdateView.as_view(), name='falla_material_detalle_actualizar'),
     path('falla-material/detalle/modal/<pk>/', views.FallaMaterialModalDetailView.as_view(), name='falla_material_detalle_modal'),
     path('falla-material/detalle/eliminar/<pk>/', views.FallaMaterialDeleteView.as_view(), name='falla_material_detalle_eliminar'),
-] + urlNotaControlCalidadStock + urlSeries
+] + urlNotaControlCalidadStock + urlSeries + urlConsumoInterno + urlConsumoInternoSeries + urlAprobacionConsumoInterno

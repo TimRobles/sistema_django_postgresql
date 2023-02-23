@@ -5,6 +5,8 @@ from datetime import date, timedelta
 from phonenumber_field.modelfields import PhoneNumberField
 
 from applications.variables import TIPO_DOCUMENTO_CHOICES
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 
 # Create your models here.
@@ -74,6 +76,10 @@ class DatosUsuario(models.Model):
     @property
     def cuenta_regresiva(self):
         return (self.fecha_cumpleaños - date.today()).days
+
+    @property
+    def get_edad(self):
+        return relativedelta(datetime.now(), self.fecha_nacimiento + timedelta(1)).years + 1    
 
     def __str__(self):
         return str(self.usuario)+ " - " + str(self.numero_documento)

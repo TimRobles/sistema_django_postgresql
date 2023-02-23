@@ -78,7 +78,7 @@ class FacturaVenta(models.Model):
 
     @property
     def documento(self):
-        return "%s-%s" % (self.serie_comprobante, numeroXn(self.numero_factura, 6))
+        return "%s-%s" % (self.serie_comprobante.serie, numeroXn(self.numero_factura, 6))
 
     @property
     def detalles(self):
@@ -97,13 +97,13 @@ class FacturaVenta(models.Model):
 
     @property
     def descripcion(self):
-        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_factura, 6))
+        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_factura, 6))
 
     def __str__(self):
         if self.numero_factura:
-            return "%s %s-%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_factura, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s-%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.numero_factura, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
         else:
-            return "%s %s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
 
 
 class FacturaVentaDetalle(models.Model):
@@ -247,7 +247,7 @@ class BoletaVenta(models.Model):
 
     @property
     def documento(self):
-        return "%s-%s" % (self.serie_comprobante, numeroXn(self.numero_boleta, 6))
+        return "%s-%s" % (self.serie_comprobante.serie, numeroXn(self.numero_boleta, 6))
 
     @property
     def detalles(self):
@@ -266,13 +266,13 @@ class BoletaVenta(models.Model):
 
     @property
     def descripcion(self):
-        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, numeroXn(self.numero_boleta, 6))
+        return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_boleta, 6))
 
     def __str__(self):
         if self.numero_boleta:
-            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.numero_boleta, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.numero_boleta, self.cliente, self.moneda.simbolo, self.total)
         else:
-            return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante, self.cliente, self.moneda.simbolo, self.total)
+            return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.cliente, self.moneda.simbolo, self.total)
 
 class BoletaVentaDetalle(models.Model):
     item = models.IntegerField()

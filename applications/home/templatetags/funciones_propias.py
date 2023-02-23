@@ -40,7 +40,9 @@ def filename(value):
 
 @register.filter
 def numeroXn(numero, n):
-    return '0'*(n-len(str(numero))) + str(numero)
+    if numero:
+        return '0'*(n-len(str(numero))) + str(numero)
+    return ""
 
 @register.filter
 def get_enlace_nubefact(respuesta):

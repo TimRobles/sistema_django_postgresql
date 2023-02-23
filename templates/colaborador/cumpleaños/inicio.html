@@ -9,14 +9,24 @@
                 <th>Nombre Completo</th>
                 <th class="text-center">Fecha</th>
                 <th class="text-center">Cuenta Regresiva</th>
+                {% if request.user.is_superuser %}
+                <th class="text-center">Edad</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for usuario in usuarios %}
             <tr>
                 <td>{{ usuario.usuario.username }}</td>
+                {% if request.user.is_superuser %}
+                <td class="text-center">{{ usuario.fecha_nacimiento|date:"d F Y" }}</td>
+                {% else %}
                 <td class="text-center">{{ usuario.fecha_cumpleaños|date:"d F Y" }}</td>
+                {% endif %}
                 <td class="text-center">{{ usuario.cuenta_regresiva }} días</td>
+                {% if request.user.is_superuser %}
+                <td class="text-center">{{ usuario.get_edad }}</td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
