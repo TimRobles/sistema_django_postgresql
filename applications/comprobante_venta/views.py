@@ -1061,19 +1061,25 @@ def FacturaVentaJsonView(request):
                 else:
                     filtro_numero = Q(numero_factura=palabra)
             filtro_serie = filtro_serie | Q(serie_comprobante__serie=palabra)
-        buscar = FacturaVenta.objects.filter(
-                estado=4,
-            ).filter(
-                filtro_razon_social | filtro_serie
-            )
         if filtro_numero:
-            buscar = buscar.filter(filtro_numero)
-
+            buscar = FacturaVenta.objects.filter(
+                    estado=4,
+                ).filter(
+                    filtro_razon_social | filtro_serie | filtro_numero
+                )
+        else:
+            buscar = FacturaVenta.objects.filter(
+                    estado=4,
+                ).filter(
+                    filtro_razon_social | filtro_serie
+                )
+        
         for factura in buscar:
             data.append({
                 'id' : factura.id,
                 'nombre' : factura.__str__(),
                 })
+
         return JsonResponse(data, safe=False)
 
 
@@ -1842,14 +1848,19 @@ def BoletaVentaJsonView(request):
                 else:
                     filtro_numero = Q(numero_factura=palabra)
             filtro_serie = filtro_serie | Q(serie_comprobante__serie=palabra)
-        buscar = BoletaVenta.objects.filter(
-                estado=4,
-            ).filter(
-                filtro_razon_social | filtro_serie
-            )
         if filtro_numero:
-            buscar = buscar.filter(filtro_numero)
-
+            buscar = BoletaVenta.objects.filter(
+                    estado=4,
+                ).filter(
+                    filtro_razon_social | filtro_serie | filtro_numero
+                )
+        else:
+            buscar = BoletaVenta.objects.filter(
+                    estado=4,
+                ).filter(
+                    filtro_razon_social | filtro_serie
+                )
+            
         for boleta in buscar:
             data.append({
                 'id' : boleta.id,
