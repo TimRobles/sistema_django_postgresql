@@ -617,6 +617,14 @@ class AjusteInventarioMateriales(models.Model):
         verbose_name = 'Ajuste Inventario Materiales'
         verbose_name_plural = 'Ajuste Inventarios Materiales'
 
+    @property
+    def fecha(self):
+        return self.fecha_ajuste_inventario
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
     def __str__(self):
         return str(self.id)
 
