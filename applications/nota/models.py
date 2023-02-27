@@ -10,12 +10,13 @@ from applications.nota.managers import NotaCreditoManager
 from django.conf import settings
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
-from applications.variables import ESTADOS_DOCUMENTO, TIPO_COMPROBANTE, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_NOTA_CREDITO, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
+from applications.variables import ESTADOS_DOCUMENTO, SUNAT_TRANSACTION, TIPO_COMPROBANTE, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_NOTA_CREDITO, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
 
 # Create your models here.
 class NotaCredito(models.Model):
     tipo_comprobante = models.IntegerField('Tipo de Comprobante', choices=TIPO_COMPROBANTE, default=3)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    sunat_transaction = models.IntegerField(choices=SUNAT_TRANSACTION, default=1)
     serie_comprobante = models.ForeignKey(SeriesComprobante, on_delete=models.PROTECT, blank=True, null=True)
     numero_nota = models.IntegerField('Nro. Nota', blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='NotaCredito_cliente', blank=True, null=True)
@@ -72,6 +73,10 @@ class NotaCredito(models.Model):
         if self.content_type_documento and self.id_registro_documento:
             return self.content_type_documento.modelo.get_object_for_this_type(id=self.id_registro_documento)
         return None
+
+    @property
+    def detalles(self):
+        return self.NotaCreditoDetalle_nota_credito.all()
 
     def __str__(self):
         if self.numero_nota:

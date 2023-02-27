@@ -1,11 +1,12 @@
 from decimal import Decimal
 from applications.clientes.models import Cliente
-from applications.cobranza.funciones import generarNota
+from applications.cobranza.funciones import eliminarNota, generarNota
+from applications.comprobante_venta.funciones import anular_nubefact, consultar_documento, nota_credito_nubefact
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.datos_globales.models import DocumentoFisico, NubefactRespuesta, SeriesComprobante, TipoCambio
 from applications.importaciones import *
 from django.core.paginator import Paginator
-from applications.nota.forms import NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm
+from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm
 from applications.nota.models import NotaCredito, NotaCreditoDetalle
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
@@ -463,7 +464,7 @@ class NotaCreditoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             obj = self.get_object()
             if not obj.tipo_nota_credito in TIPO_NOTA_CREDITO_SIN_NADA:
                 generarNota(obj, self.request)
-            obj.fecha = date.today()
+            obj.fecha_emision = date.today()
             obj.estado = 2
             obj.numero_nota = NotaCredito.objects.nuevo_numero(obj)
             registro_guardar(obj, self.request)
@@ -478,6 +479,51 @@ class NotaCreditoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion'] = 'Guardar'
         context['titulo'] = 'Nota de Crédito'
         context['texto'] = '¿Seguro de guardar la Nota de Crédito?'
+        context['item'] = self.get_object()
+        return context
+
+
+class NotaCreditoAnularView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('comprobante_venta.change_facturaventa')
+    model = NotaCredito
+    template_name = "includes/form generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('nota_app:nota_credito_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            eliminar = eliminarNota(obj)
+            if eliminar:
+                messages.success(self.request, MENSAJE_ELIMINAR_DEUDA)
+            else:
+                messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
+            obj.estado = 3
+            if obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(obj.sociedad, ContentType.objects.get_for_model(obj)) == 'MANUAL':
+                obj.save()
+                return HttpResponseRedirect(self.get_success_url())
+
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoAnularView, self).get_context_data(**kwargs)
+        obj = self.get_object()
+        self.request.session['id_confirmacion'] = obj.confirmacion.id
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Factura de Venta'
+        context['texto'] = '¿Seguro de anular la Factura de Venta?'
         context['item'] = self.get_object()
         return context
 
@@ -500,6 +546,172 @@ class NotaCreditoObservacionUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         context = super(NotaCreditoObservacionUpdateView, self).get_context_data(**kwargs)
         context['titulo'] = "Observaciones"
         context['accion'] = "Actualizar"
+        return context
+
+
+class NotaCreditoNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaCredito
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_nubefact = False
+        error_codigo_sunat = False
+        context['titulo'] = 'Error de guardar'
+        if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+            error_nubefact = True
+        for detalle in self.get_object().NotaCreditoDetalle_nota_credito.all():
+            if not detalle.codigo_producto_sunat:
+                error_codigo_sunat = True
+
+        if error_nubefact:
+            context['texto'] = 'No hay una ruta para envío a NubeFact'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_codigo_sunat:
+            context['texto'] = 'Hay productos sin Código de Sunat'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('nota_app:nota_credito_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            respuesta = nota_credito_nubefact(obj, self.request.user)
+            if respuesta.error:
+                obj.estado = 6
+            elif respuesta.aceptado:
+                obj.estado = 4
+            else:
+                obj.estado = 5
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoNubeFactEnviarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Enviar'
+        context['titulo'] = 'Nota de Crédito a NubeFact'
+        context['texto'] = '¿Seguro de enviar la Nota de Crédito a NubeFact?'
+        context['item'] = self.get_object()
+        return context
+
+
+class NotaCreditoNubeFactAnularView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaCredito
+    template_name = "includes/formulario generico.html"
+    form_class = NotaCreditoAnularForm
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_fecha = False
+        context['titulo'] = 'Error de guardar'
+        if (date.today() - self.get_object().fecha_emision).days > 0:
+            error_fecha = True
+
+        if error_fecha:
+            context['texto'] = 'No se puede anular, realizar nota de crédito.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('nota_app:nota_credito_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            respuesta = anular_nubefact(form.instance, self.request.user)
+            if respuesta.error:
+                form.instance.estado = 6
+            else:
+                form.instance.estado = 3
+            registro_guardar(form.instance, self.request)
+            eliminar = eliminarNota(form.instance)
+            if eliminar:
+                messages.success(self.request, MENSAJE_ELIMINAR_DEUDA)
+            else:
+                messages.warning(self.request, MENSAJE_ERROR_ELIMINAR_DEUDA)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoNubeFactAnularView, self).get_context_data(**kwargs)
+        context['accion'] = 'Anular'
+        context['titulo'] = 'Nota de Crédito a NubeFact'
+        return context
+
+
+class NotaCreditoNubefactRespuestaDetailView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('nota.view_notacredito')
+    model = NotaCredito
+    template_name = "comprobante_venta/nubefact_respuesta.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoNubefactRespuestaDetailView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Movimientos Nubefact'
+        context['movimientos'] = NubefactRespuesta.objects.respuestas(self.get_object())
+        return context
+
+
+class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaCredito
+    template_name = "includes/form generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('nota_app:nota_credito_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            respuesta = consultar_documento(obj, self.request.user)
+            if respuesta.error:
+                obj.estado = 6
+            elif respuesta.aceptado:
+                obj.estado = 4
+            else:
+                obj.estado = 5
+            registro_guardar(obj, self.request)
+            obj.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoNubefactConsultarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Consultar'
+        context['titulo'] = 'Nota de Crédito a NubeFact'
+        context['texto'] = '¿Seguro de consultar la Nota de Crédito a NubeFact?'
+        context['item'] = self.get_object()
         return context
 
 

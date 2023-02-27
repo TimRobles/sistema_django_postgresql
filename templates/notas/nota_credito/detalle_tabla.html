@@ -26,7 +26,7 @@
 
     {% if contexto_nota_credito.estado == 2 %}
     <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_anular' contexto_nota_credito.id %}"
+        <button data-form-url="{% url 'nota_app:nota_credito_anular' contexto_nota_credito.id %}"
             class="delete btn btn-danger">
             Anular
         </button>
@@ -35,7 +35,7 @@
 
     {% if contexto_nota_credito.estado == 2 and nubefact_acceso == 'NUBEFACT' or contexto_nota_credito.estado == 6 %}
     <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_nubefact_enviar' contexto_nota_credito.id %}"
+        <button data-form-url="{% url 'nota_app:nota_credito_nubefact_enviar' contexto_nota_credito.id %}"
             class="delete btn btn-info">
             Enviar a NubeFact
         </button>
@@ -44,7 +44,7 @@
 
     {% if contexto_nota_credito.estado > 3 %}
     <div class="col-auto">
-        <button data-form-url="{% url 'comprobante_venta_app:factura_venta_nubefact_anular' contexto_nota_credito.id %}"
+        <button data-form-url="{% url 'nota_app:nota_credito_nubefact_anular' contexto_nota_credito.id %}"
             class="delete btn btn-danger">
             Anular en NubeFact
         </button>
@@ -70,7 +70,7 @@
         </div>
         {% endif %}
         
-        {% if not contexto_nota_credito.numero_factura or contexto_nota_credito.estado == 3 %}
+        {% if not contexto_nota_credito.numero_nota or contexto_nota_credito.estado == 3 %}
         <div class="col-auto">
             <button data-form-url="{% url 'nota_app:nota_credito_eliminar' contexto_nota_credito.id %}"
                 class="delete btn btn-danger">
@@ -81,13 +81,13 @@
 
         {% if respuestas_nubefact %}
         <div class="col-auto">
-            <button data-form-url="{% url 'comprobante_venta_app:factura_venta_nubefact_detalle' contexto_nota_credito.id %}"
+            <button data-form-url="{% url 'nota_app:nota_credito_nubefact_detalle' contexto_nota_credito.id %}"
                 class="read btn btn-info">
                 Movimientos NubeFact
             </button>
         </div>
         <div class="col-auto">
-            <button data-form-url="{% url 'comprobante_venta_app:factura_venta_nubefact_consultar' contexto_nota_credito.id %}"
+            <button data-form-url="{% url 'nota_app:nota_credito_nubefact_consultar' contexto_nota_credito.id %}"
                 class="delete btn btn-warning">
                 Consultar a NubeFact
             </button>

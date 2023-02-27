@@ -94,6 +94,19 @@ class NotaCreditoSerieForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class NotaCreditoAnularForm(BSModalModelForm):
+    class Meta:
+        model = NotaCredito
+        fields = (
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaCreditoAnularForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class NotaCreditoTipoForm(BSModalModelForm):
     class Meta:
         model = NotaCredito

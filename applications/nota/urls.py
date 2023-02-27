@@ -14,6 +14,11 @@ urlNotaCredito = [
     path('nota-credito/serie/<pk>/', views.NotaCreditoSerieUpdateView.as_view(), name='nota_credito_serie'),
     path('nota-credito/tipo/<pk>/', views.NotaCreditoTipoUpdateView.as_view(), name='nota_credito_tipo'),
     path('nota-credito/guardar/<pk>/', views.NotaCreditoGuardarView.as_view(), name='nota_credito_guardar'),
+    path('nota-credito/anular/<pk>/', views.NotaCreditoAnularView.as_view(), name='nota_credito_anular'),
+    path('nota-credito/nubefact/enviar/<pk>/', views.NotaCreditoNubeFactEnviarView.as_view(), name='nota_credito_nubefact_enviar'),
+    path('nota-credito/nubefact/anular/<pk>/', views.NotaCreditoNubeFactAnularView.as_view(), name='nota_credito_nubefact_anular'),
+    path('nota-credito/nubefact/detalle/<pk>/', views.NotaCreditoNubefactRespuestaDetailView.as_view(), name='nota_credito_nubefact_detalle'),
+    path('nota-credito/nubefact/consultar/<pk>/', views.NotaCreditoNubefactConsultarView.as_view(), name='nota_credito_nubefact_consultar'),
     path('nota-credito/observacion/<pk>/', views.NotaCreditoObservacionUpdateView.as_view(), name='nota_credito_observacion'),
 ]
 
