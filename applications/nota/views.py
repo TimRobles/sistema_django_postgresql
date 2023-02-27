@@ -614,14 +614,14 @@ class NotaCreditoNubeFactAnularView(PermissionRequiredMixin, BSModalUpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
-        error_fecha = False
-        context['titulo'] = 'Error de guardar'
-        if (date.today() - self.get_object().fecha_emision).days > 0:
-            error_fecha = True
+        # error_fecha = False
+        # context['titulo'] = 'Error de guardar'
+        # if (date.today() - self.get_object().fecha_emision).days > 0:
+        #     error_fecha = True
 
-        if error_fecha:
-            context['texto'] = 'No se puede anular, realizar nota de crédito.'
-            return render(request, 'includes/modal sin permiso.html', context)
+        # if error_fecha:
+        #     context['texto'] = 'No se puede anular, realizar nota de crédito.'
+        #     return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
