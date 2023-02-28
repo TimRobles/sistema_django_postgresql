@@ -8,7 +8,7 @@ from django.shortcuts import render
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import eliminarDeuda, generarDeuda
 from applications.comprobante_venta.forms import BoletaVentaAnularForm, BoletaVentaBuscarForm, BoletaVentaSerieForm, DescargarComprobantesForm, FacturaVentaAnularForm, FacturaVentaBuscarForm, FacturaVentaDetalleForm, FacturaVentaObservacionForm, FacturaVentaSerieForm
-from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, consultar_documento, factura_nubefact
+from applications.comprobante_venta.funciones import anular_nubefact, boleta_nubefact, consultar_anulacion, consultar_documento, factura_nubefact
 from applications.cotizacion.models import ConfirmacionVenta
 from applications.datos_globales.models import NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
 from applications.funciones import calculos_linea, consulta_ruc, get_datetime, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
@@ -914,24 +914,31 @@ class FacturaVentaNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVi
         try:
             obj = self.get_object()
             respuesta = consultar_documento(obj, self.request.user)
-            if respuesta.error:
-                obj.estado = 6
+            if respuesta.envio['operacion'] == 'consultar_anulacion':
+                obj.estado = 3
                 if obj.confirmacion.estado == 2:
                     obj.confirmacion.estado = 1
                 elif obj.confirmacion.estado == 4:
                     obj.confirmacion.estado = 5
-            elif respuesta.aceptado:
-                obj.estado = 4
-                if obj.confirmacion.estado == 1:
-                    obj.confirmacion.estado = 2
-                elif obj.confirmacion.estado == 5:
-                    obj.confirmacion.estado = 4
             else:
-                obj.estado = 5
-                if obj.confirmacion.estado == 2:
-                    obj.confirmacion.estado = 1
-                elif obj.confirmacion.estado == 4:
-                    obj.confirmacion.estado = 5
+                if respuesta.error:
+                    obj.estado = 6
+                    if obj.confirmacion.estado == 2:
+                        obj.confirmacion.estado = 1
+                    elif obj.confirmacion.estado == 4:
+                        obj.confirmacion.estado = 5
+                elif respuesta.aceptado:
+                    obj.estado = 4
+                    if obj.confirmacion.estado == 1:
+                        obj.confirmacion.estado = 2
+                    elif obj.confirmacion.estado == 5:
+                        obj.confirmacion.estado = 4
+                else:
+                    obj.estado = 5
+                    if obj.confirmacion.estado == 2:
+                        obj.confirmacion.estado = 1
+                    elif obj.confirmacion.estado == 4:
+                        obj.confirmacion.estado = 5
             registro_guardar(obj.confirmacion, self.request)
             obj.confirmacion.save()
             registro_guardar(obj, self.request)
