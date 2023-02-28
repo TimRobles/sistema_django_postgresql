@@ -693,12 +693,15 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
         try:
             obj = self.get_object()
             respuesta = consultar_documento(obj, self.request.user)
-            if respuesta.error:
-                obj.estado = 6
-            elif respuesta.aceptado:
-                obj.estado = 4
+            if respuesta.envio['operacion'] == 'consultar_anulacion':
+                obj.estado = 3
             else:
-                obj.estado = 5
+                if respuesta.error:
+                    obj.estado = 6
+                elif respuesta.aceptado:
+                    obj.estado = 4
+                else:
+                    obj.estado = 5
             registro_guardar(obj, self.request)
             obj.save()
         except Exception as ex:
