@@ -464,6 +464,7 @@ class NotaCreditoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             obj = self.get_object()
+            #Se necesita un documento anterior para generar el saldo a favor y el movimiento
             if not obj.tipo_nota_credito in TIPO_NOTA_CREDITO_SIN_NADA:
                 generarNota(obj, self.request)
             if obj.tipo_nota_credito in TIPO_NOTA_CREDITO_CON_DEVOLUCION:
