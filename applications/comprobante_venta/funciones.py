@@ -323,25 +323,26 @@ def anular_nubefact(obj, user):
 
 
 def consultar_documento(obj, user):
+    tipo_de_comprobante = obj.tipo_comprobante
+    serie = obj.serie_comprobante.serie
+    if hasattr(obj, 'numero_boleta'):
+        numero = obj.numero_boleta
+    elif hasattr(obj, 'numero_factura'):
+        numero = obj.numero_factura
+    elif hasattr(obj, 'numero_guia'):
+        numero = obj.numero_guia
+    elif hasattr(obj, 'numero_nota'):
+        numero = obj.numero_nota
+    data = funciones.consultarDocumento(tipo_de_comprobante, serie, numero)
+
+    acceso_nubefact = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.envio(obj.sociedad, ContentType.objects.get_for_model(obj))
+    ruta = acceso_nubefact.acceso.ruta
+    token = acceso_nubefact.acceso.token
+    respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
+    
     respuesta = consultar_anulacion(obj, user)
     try:
         if respuesta.respuesta['errors'] == 'Documento no existe':
-            tipo_de_comprobante = obj.tipo_comprobante
-            serie = obj.serie_comprobante.serie
-            if hasattr(obj, 'numero_boleta'):
-                numero = obj.numero_boleta
-            elif hasattr(obj, 'numero_factura'):
-                numero = obj.numero_factura
-            elif hasattr(obj, 'numero_guia'):
-                numero = obj.numero_guia
-            elif hasattr(obj, 'numero_nota'):
-                numero = obj.numero_nota
-            data = funciones.consultarDocumento(tipo_de_comprobante, serie, numero)
-
-            acceso_nubefact = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.envio(obj.sociedad, ContentType.objects.get_for_model(obj))
-            ruta = acceso_nubefact.acceso.ruta
-            token = acceso_nubefact.acceso.token
-            respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
             return respuesta_nubefact
     except:
         return respuesta
