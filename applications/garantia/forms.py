@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.sociedad.models import Sociedad
-from applications.variables import ESTADOS_DOCUMENTO
+from applications.variables import ESTADOS_DOCUMENTO,ESTADOS_CONTROL_RECLAMO_GARANTIA,ESTADOS_SALIDA_RECLAMO_GARANTIA
 from applications.garantia.models import IngresoReclamoGarantia, ControlCalidadReclamoGarantia, SalidaReclamoGarantia
 from applications.sede.models import Sede
 from applications.material.models import Material
@@ -117,3 +117,62 @@ class IngresoReclamoGarantiaMaterialForm(BSModalForm):
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 0.001
 
+
+######################### CONTROL RECLAMO GARANTÍA ##############################################
+
+
+class ControlCalidadReclamoGarantiaBuscarForm(forms.Form):
+    estado = forms.ChoiceField(choices=((None,'------------'),) + ESTADOS_CONTROL_RECLAMO_GARANTIA, required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        super(ControlCalidadReclamoGarantiaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['estado'].initial = filtro_estado
+        self.fields['cliente'].initial = filtro_cliente
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'
+
+
+class ControlCalidadReclamoGarantiaEncargadoForm(BSModalModelForm):
+    class Meta:
+        model = ControlCalidadReclamoGarantia
+        fields = (
+            'encargado',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ControlCalidadReclamoGarantiaEncargadoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+######################### SALIDA RECLAMO GARANTÍA ##############################################
+
+
+class SalidaReclamoGarantiaBuscarForm(forms.Form):
+    estado = forms.ChoiceField(choices=((None,'------------'),) + ESTADOS_SALIDA_RECLAMO_GARANTIA, required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        super(SalidaReclamoGarantiaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['estado'].initial = filtro_estado
+        self.fields['cliente'].initial = filtro_cliente
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'
+
+
+class SalidaReclamoGarantiaEncargadoForm(BSModalModelForm):
+    class Meta:
+        model = SalidaReclamoGarantia
+        fields = (
+            'encargado',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SalidaReclamoGarantiaEncargadoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

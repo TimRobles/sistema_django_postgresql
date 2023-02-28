@@ -141,7 +141,7 @@ class SalidaReclamoGarantiaDetalle(models.Model):
     serie = models.ForeignKey(Serie, on_delete=models.PROTECT, related_name='SalidaReclamoGarantiaDetalle_serie',blank=True, null=True)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'),blank=True, null=True)
     precio_venta = models.DecimalField('Precio Venta', max_digits=22, decimal_places=10, default=Decimal('0.00'),blank=True, null=True)
-    salida_garantia = models.ForeignKey(SalidaReclamoGarantia, on_delete=models.CASCADE, related_name='SalidaReclamoGarantiaDetalle_calidad_garantia', blank=True, null=True)
+    salida_garantia = models.ForeignKey(SalidaReclamoGarantia, on_delete=models.CASCADE, related_name='SalidaReclamoGarantiaDetalle_salida_garantia', blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SalidaReclamoGarantiaDetalle_created_by', editable=False)

@@ -5,6 +5,149 @@
 
 <div class="row mt-3">
     <div class="col-auto">
-        <a href="{% url 'comprobante_despacho_app:guia_inicio' %}" class="btn btn-primary">Regresar</a>
+        <a href="{% url 'garantia_app:salida_garantia_inicio'  control.id%}" class="btn btn-primary">Regresar</a>
     </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Razón Social:</th>
+                    <td>{{ salida.cliente.razon_social }}</td>
+                    <td class="ps-2" rowspan="4">
+
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ salida.cliente.documento }}:</th>
+                    <td>
+                        {% if salida.cliente.numero_documento %}
+                        {{ salida.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if salida.cliente_interlocutor %}
+                        {{ salida.cliente_interlocutor.nombre_completo }}   
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>
+                        {% if salida.cliente %}
+                        {{ salida.cliente.get_estado_sunat_display }} - {{ salida.cliente.get_condicion_sunat_display }}
+                        {% endif %}
+                    </td>
+                </tr>
+        
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Fecha Salida:</th>
+                    <td>{{ salida.fecha_salida|date:'d/m/Y' }}</td>
+                    <td class="px-2" rowspan="2"> 
+                </tr>
+
+                <tr>
+                    <th class="pe-2">N° Salida:</th>
+                    <td class="text-nowrap">
+                        {% if salida.nro_salida_garantia %}
+                        {{ salida.nro_salida_garantia|numeroXn:6 }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Estado Salida:</th>
+                    <td>{{ salida.get_estado_display }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Encargado:</th>
+                    <td>{{ salida.encargado }}</td>
+
+                    <td rowspan="2">
+                        {% if salida.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:salida_garantia_encargado' salida.id %}"
+                            data-table-url="{% url 'garantia_app:salida_garantia_ver_tabla' salida.id %}"
+                            class="update btn btn-primary">
+                            Encargado
+                        </button>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ salida.sociedad }}</td>
+                    <td rowspan="2">
+
+                    </td>
+                </tr>
  
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ salida.sociedad.color }};">OBSERVACIONES {{ salida.sociedad.razon_social }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if salida.observacion %}
+                        {{ salida.observacion|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-responsive mt-3">
+    <table class="table">
+        <thead class="fondo-personalizado" style="--color-fondo: {{ salida.sociedad.color }};">
+            <tr>
+                <th>Item</th>
+                <th style="min-width: 500px;">Material</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-end">Prec. Venta </th>
+                <th > Acciones </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td> {{ material.item }} </td>
+                    <td> {{ material.material }} </td>
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ salida.moneda.simbolo }} {{ material.precio_venta|redondear:3|intcomma }}</td>
+                    <td>
+
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+
+        </tfoot>
+    </table>
+</div>
+

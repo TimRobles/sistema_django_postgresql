@@ -25,11 +25,15 @@
                     <th class="pe-2">Razón Social:</th>
                     <td>{{ ingreso.cliente.razon_social }}</td>
                     <td class="ps-2" rowspan="4">
+
+                        {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_cliente' ingreso.id %}"
                             data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id %}"
                             class="update btn btn-primary" title="Seleccionar Cliente">
                             Seleccionar Cliente
                         </button>
+                        {% endif %}
+
                     </td>
                 </tr>
                 <tr>
@@ -69,7 +73,27 @@
                 <tr>
                     <th class="pe-2">Fecha Ingreso:</th>
                     <td>{{ ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+                    <td class="px-2" rowspan="2"> 
+                        {% if ingreso.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_guardar' ingreso.id %}"
+                            class="delete btn btn-primary">
+                            Guardar Ingreso
+                        </button>
+                        {% endif %}
 
+                        {% if ingreso.estado == 2 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_control' ingreso.id %}"
+                            class="delete btn btn-primary">
+                            Control Calidad
+                        </button>
+                        {% endif %}
+
+                        {% if ingreso.estado == 3 %}
+                        <div class="col-auto">
+                            <a href="{% url 'garantia_app:control_garantia_inicio' ingreso.id  %}" class="btn btn-primary">Notas Control Calidad</a>
+                        </div>
+                        {% endif %}
+                    </td>
                 </tr>
 
                 <tr>
@@ -88,22 +112,26 @@
                     <th class="pe-2">Encargado:</th>
                     <td>{{ ingreso.encargado }}</td>
                     <td rowspan="2">
+                        {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_encargado' ingreso.id %}"
                             data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
                             class="update btn btn-primary">
                             Encargado
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <th class="pe-2">Sociedad:</th>
                     <td>{{ ingreso.sociedad }}</td>
                     <td rowspan="2">
+                        {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_sociedad' ingreso.id %}"
                             data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
                             class="update btn btn-primary">
                             Sociedad
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
  
@@ -133,12 +161,14 @@
     </div>
 </div>
 
+{% if ingreso.estado == 1 %}
 <button data-form-url="{% url 'garantia_app:ingreso_garantia_agregar_material' ingreso.id %}"
     data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
     data-keep-open="True"
     class="update btn btn-primary" title="Agregar Material">
     Agregar Material
 </button>
+{% endif %}
 
 <div class="table-responsive mt-3">
     <table class="table">
@@ -155,7 +185,7 @@
             {% for material in materiales %}
                 <tr>
                     <td> {{ material.item }} </td>
-                    <td> {{ material.marca }} </td>
+                    <td> {{ material.material }} </td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ ingreso.moneda.simbolo }} {{ material.precio_venta|redondear:3|intcomma }}</td>
                     <td>
