@@ -78,6 +78,10 @@ class NotaCredito(models.Model):
     def detalles(self):
         return self.NotaCreditoDetalle_nota_credito.all()
 
+    @property
+    def fecha(self):
+        return self.fecha_emision
+
     def __str__(self):
         if self.numero_nota:
             return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_nota, 6), self.cliente, self.moneda.simbolo, self.total)
