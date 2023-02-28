@@ -1,4 +1,5 @@
 from decimal import Decimal
+from applications.almacenes.models import Almacen
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import eliminarNota, generarNota
 from applications.comprobante_venta.funciones import anular_nubefact, consultar_documento, nota_credito_nubefact
@@ -6,6 +7,7 @@ from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.datos_globales.models import DocumentoFisico, NubefactRespuesta, SeriesComprobante, TipoCambio
 from applications.importaciones import *
 from django.core.paginator import Paginator
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm
 from applications.nota.models import NotaCredito, NotaCreditoDetalle
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
@@ -464,6 +466,41 @@ class NotaCreditoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             obj = self.get_object()
             if not obj.tipo_nota_credito in TIPO_NOTA_CREDITO_SIN_NADA:
                 generarNota(obj, self.request)
+            if obj.tipo_nota_credito in TIPO_NOTA_CREDITO_CON_DEVOLUCION:
+                movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
+                for detalle in obj.detalles:
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.content_type,
+                        id_registro_producto = detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador = -1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
+                        id_registro_documento_proceso = obj.id,
+                        almacen = None,
+                        sociedad = obj.sociedad,
+                        movimiento_anterior = None,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.content_type,
+                        id_registro_producto = detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
+                        id_registro_documento_proceso = obj.id,
+                        almacen = Almacen.objects.get(id=1),
+                        sociedad = obj.sociedad,
+                        movimiento_anterior = movimiento_uno,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
             obj.fecha_emision = date.today()
             obj.estado = 2
             obj.numero_nota = NotaCredito.objects.nuevo_numero(obj)
