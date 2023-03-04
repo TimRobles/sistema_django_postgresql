@@ -13,7 +13,7 @@ urlpatterns = [
     path('deudores/detalle/<int:id_cliente>/',views.DeudaView.as_view(),name='deudores_detalle'),
     path('deudores/detalle/tabla/<int:id_cliente>/',views.DeudaTabla,name='deudores_detalle_tabla'),
     
-    path('deudores/nota/deuda/<int:id_cliente>/',views.DeudaNotaCreateView.as_view(),name='deudores_nota_deuda'),
+    path('deudores/nota/deuda/<int:id_cliente>/<int:id_deuda>/',views.DeudaNotaCreateView.as_view(),name='deudores_nota_deuda'),
     path('deudores/pagar/deuda/<int:id_cliente>/<int:id_deuda>/',views.DeudaPagarCreateView.as_view(),name='deudores_pagar_deuda'),
     path('deudores/cancelar/deuda/<int:id_cliente>/<pk>/',views.DeudaCancelarView.as_view(),name='deudores_cancelar_deuda'),
     path('deudores/eliminar/redondeo/<int:id_cliente>/<pk>/',views.RedondeoDeleteView.as_view(),name='deudores_eliminar_redondeo'),
