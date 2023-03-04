@@ -289,7 +289,7 @@ def NotaJsonView(request, cliente_id, sociedad_id):
             sociedad__id=sociedad_id,
             cliente__id=cliente_id,
             ).filter(
-                Q(monto__unaccent__icontains=term) | Q(nota_credito__unaccent__icontains=term)
+                Q(monto__unaccent__icontains=term)
             )
         for nota in buscar:
             if nota.saldo > 0:
