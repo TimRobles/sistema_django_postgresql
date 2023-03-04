@@ -289,7 +289,7 @@ def NotaJsonView(request, cliente_id, sociedad_id):
             sociedad__id=sociedad_id,
             cliente__id=cliente_id,
             ).filter(
-                Q(monto__unaccent__icontains=term) | Q(nota_credito__unaccent__icontains=term)
+                Q(monto=term) | Q(nota_credito__unaccent__icontains=term)
             )
         for nota in buscar:
             # if nota.saldo > 0:
@@ -308,7 +308,7 @@ def IngresoJsonView(request, sociedad_id):
             cuenta_bancaria__sociedad__id=sociedad_id,
             es_pago=True,
             ).filter(
-                Q(monto__unaccent__icontains=term) | Q(cuenta_bancaria__banco__razon_social__unaccent__icontains=term)  | Q(cuenta_bancaria__banco__nombre_comercial__unaccent__icontains=term)
+                Q(monto=term) | Q(cuenta_bancaria__banco__razon_social__unaccent__icontains=term)  | Q(cuenta_bancaria__banco__nombre_comercial__unaccent__icontains=term)
             )
         for ingreso in buscar:
             if ingreso.saldo > 0:
