@@ -7,6 +7,13 @@
     <div class="col-auto">
         <a href="{% url 'garantia_app:salida_garantia_inicio'  control.id%}" class="btn btn-primary">Regresar</a>
     </div>
+    <div class="col-auto">
+        <button data-form-url="{% url 'garantia_app:salida_garantia_observacion' salida.id %}"
+            data-table-url="{% url 'garantia_app:salida_garantia_ver_tabla' salida.id %}"
+            class="create btn btn-primary">
+            Observaciones
+        </button>
+    </div>
 </div>
 
 <div class="row mt-3">

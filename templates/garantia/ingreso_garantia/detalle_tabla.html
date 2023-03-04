@@ -189,7 +189,18 @@
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ ingreso.moneda.simbolo }} {{ material.precio_venta|redondear:3|intcomma }}</td>
                     <td>
-
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_editar_material' material.id %}"
+                            data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id %}"
+                            class="create btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_eliminar_material' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+        
                     </td>
                 </tr>
             {% endfor %}

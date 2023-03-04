@@ -118,6 +118,22 @@ class IngresoReclamoGarantiaMaterialForm(BSModalForm):
         self.fields['cantidad'].widget.attrs['step'] = 0.001
 
 
+class  IngresoReclamoGarantiaMaterialUpdateForm(BSModalModelForm):
+    class Meta:
+        model = IngresoReclamoGarantiaDetalle
+        fields=(
+            'cantidad',
+            'precio_venta',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(IngresoReclamoGarantiaMaterialUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
+
+
 ######################### CONTROL RECLAMO GARANTÍA ##############################################
 
 
@@ -144,6 +160,18 @@ class ControlCalidadReclamoGarantiaEncargadoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ControlCalidadReclamoGarantiaEncargadoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ControlCalidadReclamoGarantiaObservacionForm(BSModalModelForm):
+    class Meta:
+        model = ControlCalidadReclamoGarantia
+        fields = (
+            'observacion',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ControlCalidadReclamoGarantiaObservacionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -174,5 +202,19 @@ class SalidaReclamoGarantiaEncargadoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SalidaReclamoGarantiaEncargadoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+class SalidaReclamoGarantiaObservacionForm(BSModalModelForm):
+    class Meta:
+        model = SalidaReclamoGarantia
+        fields = (
+            'observacion',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(SalidaReclamoGarantiaObservacionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
