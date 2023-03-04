@@ -12,6 +12,7 @@ from .models import(
     Deuda,
     Ingreso,
     LineaCredito,
+    Nota,
     Pago,
     Redondeo,
 )
@@ -24,6 +25,7 @@ from .forms import(
     CuentaBancariaIngresoPagarForm,
     DepositosBuscarForm,
     DeudaBuscarForm,
+    DeudaNotaForm,
     DeudaPagarForm,
     LineaCreditoForm,
     ClienteBuscarForm,
@@ -279,6 +281,25 @@ def DeudaJsonView(request, sociedad_id):
         return JsonResponse(data, safe=False)
 
 
+def NotaJsonView(request, cliente_id, sociedad_id):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        buscar = Nota.objects.filter(
+            sociedad__id=sociedad_id,
+            cliente__id=cliente_id,
+            ).filter(
+                Q(monto__unaccent__icontains=term) | Q(nota_credito__unaccent__icontains=term)
+            )
+        for nota in buscar:
+            if nota.saldo > 0:
+                data.append({
+                    'id' : nota.id,
+                    'nombre' : nota.__str__(),
+                    })
+        return JsonResponse(data, safe=False)
+
+
 def IngresoJsonView(request, sociedad_id):
     if request.is_ajax():
         term = request.GET.get('term')
@@ -296,6 +317,68 @@ def IngresoJsonView(request, sociedad_id):
                     'nombre' : ingreso.__str__(),
                     })
         return JsonResponse(data, safe=False)
+
+
+class DeudaNotaCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('cobranza.add_pago')
+    template_name = "cobranza/deudas/form nota.html"
+    form_class = DeudaNotaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+                monto = form.cleaned_data.get('monto')
+                nota = form.cleaned_data.get('nota')
+                tipo_cambio = form.cleaned_data.get('tipo_cambio')
+                content_type = ContentType.objects.get_for_model(nota)
+                id_registro = nota.id
+                obj, created = Pago.objects.get_or_create(
+                    deuda = deuda,
+                    content_type = content_type,
+                    id_registro = id_registro,
+                )
+                if created:
+                    obj.monto = monto
+                else:
+                    obj.monto = obj.monto + monto
+                obj.tipo_cambio = tipo_cambio
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(deuda.fecha_deuda)
+        tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
+        kwargs['tipo_cambio'] = tipo_cambio
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        context = super(DeudaNotaCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Relacionar'
+        context['titulo'] = 'Nota con Deuda'
+        context['deuda'] = deuda
+        return context
     
 
 class DeudaPagarCreateView(PermissionRequiredMixin, BSModalFormView):

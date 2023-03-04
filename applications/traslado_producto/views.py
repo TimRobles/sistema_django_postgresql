@@ -357,6 +357,7 @@ class EnvioTrasladoProductoMaterialDetalleView(PermissionRequiredMixin, BSModalF
         buscar = EnvioTrasladoProductoDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(material),
             id_registro=material.id,
+            almacen_origen=almacen_origen,
             tipo_stock=tipo_stock,
             envio_traslado_producto=envio_traslado_producto,
         ).exclude(envio_traslado_producto__estado=4)

@@ -13,6 +13,7 @@ urlpatterns = [
     path('deudores/detalle/<int:id_cliente>/',views.DeudaView.as_view(),name='deudores_detalle'),
     path('deudores/detalle/tabla/<int:id_cliente>/',views.DeudaTabla,name='deudores_detalle_tabla'),
     
+    path('deudores/nota/deuda/<int:id_cliente>/',views.DeudaNotaCreateView.as_view(),name='deudores_nota_deuda'),
     path('deudores/pagar/deuda/<int:id_cliente>/<int:id_deuda>/',views.DeudaPagarCreateView.as_view(),name='deudores_pagar_deuda'),
     path('deudores/cancelar/deuda/<int:id_cliente>/<pk>/',views.DeudaCancelarView.as_view(),name='deudores_cancelar_deuda'),
     path('deudores/eliminar/redondeo/<int:id_cliente>/<pk>/',views.RedondeoDeleteView.as_view(),name='deudores_eliminar_redondeo'),
@@ -22,6 +23,7 @@ urlpatterns = [
     
     path('deuda-json/<int:sociedad_id>/', views.DeudaJsonView, name='deuda_json'),
     path('ingreso-json/<int:sociedad_id>/', views.IngresoJsonView, name='ingreso_json'),
+    path('nota-json/<int:cliente_id>/<int:sociedad_id>/', views.NotaJsonView, name='nota_json'),
 
     path('cuenta-bancaria/depositos/',views.DepositosView.as_view(),name='cuenta_bancaria_depositos_inicio'),
     path('cuenta-bancaria/depositos/tabla/',views.DepositosTabla,name='cuenta_bancaria_depositos_tabla'),

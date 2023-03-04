@@ -564,16 +564,21 @@ class OrdenCompraProveedorlDetalleCreateView(PermissionRequiredMixin, BSModalFor
 
                 registro_guardar(obj, self.request)
                 obj.save()
-                self.request.session['primero'] = False
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
-        self.request.session['primero'] = True
+        try:
+            if self.request.session['primero']:
+                self.request.session['primero'] = False
+            else:
+                self.request.session['primero'] = True
+        except:
+            self.request.session['primero'] = True
         context = super(OrdenCompraProveedorlDetalleCreateView, self).get_context_data(**kwargs)
-        context['titulo'] = 'Agregar Material '
+        context['titulo'] = 'Agregar Material'
         context['accion'] = 'Guardar'
         return context
 
