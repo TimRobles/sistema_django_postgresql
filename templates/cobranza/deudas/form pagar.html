@@ -21,15 +21,15 @@
     
 
 {% block js %}
-<script src="{% static 'js/cobranza/deudas/form nota.js' %}?{{ cache_bust }}"></script>
+<script src="{% static 'js/cobranza/deudas/form pagar.js' %}?{{ cache_bust }}"></script>
 <script>
     $(function () {
-        $("#id_nota").select2({
+        $("#id_ingresos").select2({
             width:'100%',
             dropdownParent: $(".modal-body"),
             matcher: buscar_select2,
             ajax: {
-                url: "{% url 'cobranza_app:nota_json' deuda.cliente.id deuda.sociedad.id %}",
+                url: "{% url 'cobranza_app:ingreso_json' deuda.sociedad.id %}",
                 dataType: 'json',
                 type: "GET",
                 processResults: function (data) {
