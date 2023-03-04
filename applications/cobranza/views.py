@@ -443,6 +443,45 @@ class DeudaPagarCreateView(PermissionRequiredMixin, BSModalFormView):
         return context
 
 
+class DeudaNotaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('cobranza.change_pago')
+    model = Pago
+    template_name = "cobranza/deudas/form nota.html"
+    form_class = DeudaNotaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('cobranza_app:deudores_detalle', kwargs={'id_cliente':self.kwargs['id_cliente']})
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
+        tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(deuda.fecha_deuda)
+        tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
+        kwargs['tipo_cambio'] = tipo_cambio
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
+        context = super(DeudaNotaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Relación Nota Deuda'
+        context['deuda'] = deuda
+        return context
+
+
 class DeudaPagarUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('cobranza.change_pago')
     model = Pago
@@ -466,27 +505,10 @@ class DeudaPagarUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         deuda = Deuda.objects.get(id=self.kwargs['id_deuda'])
-        # lista_ingresos = []
-        # for ingreso in Ingreso.objects.all():
-        #     if ingreso.saldo > 0:
-        #         lista_ingresos.append(ingreso.id)
-        # lista_ingresos.append(self.object.id_registro)
-        
-        # lista_notas = []
-        # for nota in Nota.objects.all():
-        #     if nota.saldo > 0:
-        #         lista_notas.append(nota.id)
-        # if self.object.content_type == ContentType.objects.get_for_model(Ingreso):
-        #    lista_ingresos.append(self.object.id_registro)
-        # else:
-        # lista_notas.append(self.object.id_registro)
-
         tipo_cambio_hoy = TipoCambio.objects.tipo_cambio_venta(date.today())
         tipo_cambio_ingreso = TipoCambio.objects.tipo_cambio_venta(deuda.fecha_deuda)
         tipo_cambio = tipo_de_cambio(tipo_cambio_ingreso, tipo_cambio_hoy)
         kwargs['tipo_cambio'] = tipo_cambio
-        # kwargs['lista_ingresos'] = lista_ingresos
-        # kwargs['lista_notas'] = lista_notas
         return kwargs
 
     def get_context_data(self, **kwargs):

@@ -19,6 +19,7 @@ urlpatterns = [
     path('deudores/eliminar/redondeo/<int:id_cliente>/<pk>/',views.RedondeoDeleteView.as_view(),name='deudores_eliminar_redondeo'),
     
     path('deudores/eliminar/pago/<int:id_cliente>/<pk>/',views.DeudaPagarDeleteView.as_view(),name='deudores_eliminar_pago'),
+    path('deudores/actualizar/nota/pago/<int:id_cliente>/<int:id_deuda>/<pk>/',views.DeudaNotaUpdateView.as_view(),name='deudores_actualizar_nota_pago'),
     path('deudores/actualizar/pago/<int:id_cliente>/<int:id_deuda>/<pk>/',views.DeudaPagarUpdateView.as_view(),name='deudores_actualizar_pago'),
     
     path('deuda-json/<int:sociedad_id>/', views.DeudaJsonView, name='deuda_json'),

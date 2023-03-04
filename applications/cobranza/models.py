@@ -297,6 +297,14 @@ class Deuda(models.Model):
         ordering = ['-fecha_deuda']
 
     @property
+    def tipo(self):
+        if self.content_type == ContentType.objects.get_for_model(Ingreso):
+            return 1
+        if self.content_type == ContentType.objects.get_for_model(Nota):
+            return 2
+        return None
+
+    @property
     def pagos(self):
         try:
             pagos = self.Pago_deuda.all()
