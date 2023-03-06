@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Control Calidad Garantía
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'garantia/control_calidad_garantia/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

@@ -1,0 +1,44 @@
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Nro. Salida</th>
+            <th>Cliente</th>
+            <th>Fecha de Salida</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>      
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for salida in contexto_salida_garantia %}
+       <tr>
+            <td class="fondo-personalizado" style="--color-fondo: {{ salida.sociedad.color }};">{{ salida.sociedad.abreviatura }}</td>
+            <td>{{ salida.nro_salida_garantia|numeroXn:6 }}</td>
+            <td>{{ salida.cliente }}</td>
+            <td>{{ salida.fecha_salida|date:'d/m/Y' }}</td>
+            <td>{{ salida.get_estado_display }}</td>
+            <td class="text-nowrap text-center">
+                <a href="{% url 'garantia_app:salida_garantia_ver' salida.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>    
+
+                <button data-form-url="{% url 'garantia_app:salida_garantia_eliminar' salida.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+
+            </td>
+        </tr>
+            
+        {% endfor %}
+            
+
+    </tbody>
+</table>

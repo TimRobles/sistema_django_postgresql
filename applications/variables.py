@@ -309,6 +309,24 @@ ESTADOS_TRASLADO_PRODUCTO_DETALLE = (
     )
 
 
+ESTADOS_INGRESO_RECLAMO_GARANTIA = (
+    (1, 'EN PROCESO'),
+    (2, 'PENDIENTE'),
+    (3, 'CONTROL'),
+    (4, 'ANULADO'),
+    (5, 'CONCLUIDO'),
+    )
+
+ESTADOS_CONTROL_RECLAMO_GARANTIA = (
+    (1, 'EN PROCESO'),
+    (2, 'CONCLUIDO'),
+    (3, 'SALIDA GARANTIA'),
+    )
+
+ESTADOS_SALIDA_RECLAMO_GARANTIA = (
+    (1, 'EN PROCESO'),
+    (2, 'CONCLUIDO'),
+    )
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
@@ -337,6 +355,9 @@ MENSAJE_ANULAR_CONFIRMAR_COTIZACION = 'Operación exitosa: La confirmación fue 
 MENSAJE_GENERAR_FACTURA= 'Operación exitosa: La factura fue generada con éxito.'
 MENSAJE_GENERAR_BOLETA= 'Operación exitosa: La boleta fue generada con éxito.'
 MENSAJE_GENERAR_GUIA= 'Operación exitosa: La guía fue generada con éxito.'
+MENSAJE_INGRESO_RECLAMO_GARANTIA= 'Operación exitosa: El ingreso reclamo garantía fue generado con éxito.'
+MENSAJE_CONTROL_RECLAMO_GARANTIA= 'Operación exitosa: La nota de control fue guardada con éxito.'
+MENSAJE_SALIDA_RECLAMO_GARANTIA= 'Operación exitosa: La salida del reclamo por garantía fue generada con éxito.'
 
 MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue finalizada.'
 MENSAJE_CONFIRMAR_SOLICITUD_PRESTAMO_MATERIALES = 'Operación exitosa: La Solicitud de Prestamo fue confirmada.'

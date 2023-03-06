@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Ingreso Reclamo Garantía
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Ingreso Reclamo Garantía
+        <a href="{% url 'garantia_app:ingreso_garantia_registrar' %}"
+        class="badge btn btn-primary" title="Nuevo Ingreso">
+        Nuevo Ingreso
+    </a>
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'garantia/ingreso_garantia/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}
+

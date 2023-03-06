@@ -72,7 +72,7 @@ LOCAL_APPS = (
     'applications.muestra',
     'applications.reportes',
     'applications.reportes_panel',
-
+    'applications.garantia',
 )
 
 THIRD_PARTY_APPS = (

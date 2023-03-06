@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Control Calidad Garantía
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3> Control Calidad Garantía </h3>
+    <div class="table-responsive" id="tabla">
+        {% include 'garantia/control_calidad_garantia/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
