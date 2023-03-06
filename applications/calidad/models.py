@@ -10,7 +10,7 @@ from applications.material.models import Material, SubFamilia
 from applications.sede.models import Sede
 from applications.almacenes.models import Almacen
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
-from applications.movimiento_almacen.models import MovimientosAlmacen
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, SERIE_CONSULTA
 
 class FallaMaterial(models.Model):
@@ -423,3 +423,123 @@ class AprobacionConsumoInternoDetalle(models.Model):
 
     def __str__(self):
         return str(self.aprobacion_consumo) + ' | ' + str(self.item)
+
+
+class TransformacionProductos(models.Model):
+
+    ESTADOS_TRANSFORMACION_PRODUCTOS = [
+        (1, 'EN PROCESO'),
+        (2, 'CONCLUIDO'),
+        ]
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
+    fecha_transformacion = models.DateField('Fecha de Transformación', auto_now=False, auto_now_add=True, blank=True, null=True)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
+    responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TransformacionProductos_responsable', verbose_name='Responsable')
+    observacion = models.TextField(blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS_TRANSFORMACION_PRODUCTOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TransformacionProductos_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='TransformacionProductos_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Transformación de Productos'
+        verbose_name_plural = 'Transformaciones de Productos'
+
+    def __str__(self):
+        return str(self.id)
+
+
+class EntradaTransformacionProductos(models.Model):
+
+    item = models.IntegerField(blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE,blank=True, null=True)
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    transformacion_productos = models.ForeignKey(TransformacionProductos, on_delete=models.CASCADE, related_name='EntradaTransformacionProductos_transformacion_productos')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='EntradaTransformacionProductos_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='EntradaTransformacionProductos_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Entrada Transformación de Productos'
+        verbose_name_plural = 'Entrada Transformaciones de Productos'
+        ordering = ['item',]
+
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieEntradaTransformacionProductos_entrada_transformacion_productos.all())).quantize(Decimal('0.01'))
+    
+    def __str__(self):
+        return str(self.material)
+
+
+class SalidaTransformacionProductos(models.Model):
+
+    item = models.IntegerField(blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE,blank=True, null=True)
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    transformacion_productos = models.ForeignKey(TransformacionProductos, on_delete=models.CASCADE, related_name='SalidaTransformacionProductos_transformacion_productos')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SalidaTransformacionProductos_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SalidaTransformacionProductos_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Salida Transformación de Productos'
+        verbose_name_plural = 'Salida Transformaciones de Productos'
+        ordering = ['item',]
+
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieSalidaTransformacionProductos_salida_transformacion_productos.all())).quantize(Decimal('0.01'))
+    
+    def __str__(self):
+        return str(self.material)
+    
+
+class ValidarSerieEntradaTransformacionProductos(models.Model):
+    entrada_transformacion_productos = models.ForeignKey(EntradaTransformacionProductos, on_delete=models.PROTECT, related_name='ValidarSerieEntradaTransformacionProductos_entrada_transformacion_productos')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieEntradaTransformacionProductos_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieEntradaTransformacionProductos_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Entrada Transformacion Productos'
+        verbose_name_plural = 'Validar Series Entradas Transformacion Productos'
+        ordering = [
+            'created_at',
+            ]
+
+    def __str__(self):
+        return "%s - %s" % (self.entrada_transformacion_productos , str(self.serie))
+    
+
+class ValidarSerieSalidaTransformacionProductos(models.Model):
+    salida_transformacion_productos = models.ForeignKey(SalidaTransformacionProductos, on_delete=models.PROTECT, related_name='ValidarSerieSalidaTransformacionProductos_salida_transformacion_productos')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieSalidaTransformacionProductos_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieSalidaTransformacionProductos_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Salida Transformacion Productos'
+        verbose_name_plural = 'Validar Series Salidas Transformacion Productos'
+        ordering = [
+            'created_at',
+            ]
+
+    def __str__(self):
+        return "%s - %s" % (self.salida_transformacion_productos , str(self.serie))

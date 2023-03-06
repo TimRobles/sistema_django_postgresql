@@ -6,6 +6,8 @@ from applications.logistica.pdf import generarSeries
 from applications.material.models import SubFamilia
 from applications.datos_globales.models import Unidad
 from applications.calidad.forms import(
+    EntradaTransformacionProductosForm,
+    EntradaTransformacionProductosSeriesForm,
     FallaMaterialForm,
     NotaControlCalidadStockAnularForm,
     NotaControlCalidadStockBuscarForm,
@@ -21,20 +23,26 @@ from applications.calidad.forms import(
     NotaControlCalidadStockActualizarFallasCreateForm,
     NotaControlCalidadStockAgregarMaloSinFallaCreateForm,
     NotaControlCalidadStockAgregarMaloSinSerieCreateForm,
+    SalidaTransformacionProductosForm,
+    SalidaTransformacionProductosSeriesForm,
     SerieBuscarForm,
     SolicitudConsumoInternoForm,
     SolicitudConsumoInternoDetalleForm,
     AprobacionConsumoInternoForm,
     SolicitudConsumoInternoRechazarForm,
     SolicitudConsumoInternoDetalleSeriesForm,
+    TransformacionProductosForm,
+    TransformacionProductosUpdateForm,
 )
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.muestra.models import NotaIngresoMuestra
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from .models import(
+    EntradaTransformacionProductos,
     EstadoSerie,
     NotaControlCalidadStock,
     NotaControlCalidadStockDetalle,
+    SalidaTransformacionProductos,
     Serie,
     FallaMaterial,
     HistorialEstadoSerie,
@@ -46,6 +54,9 @@ from .models import(
     Almacen,
     Sede,
     Material,
+    TransformacionProductos,
+    ValidarSerieEntradaTransformacionProductos,
+    ValidarSerieSalidaTransformacionProductos,
     ValidarSerieSolicitudConsumoInternoDetalle,
 )
 from applications.funciones import numeroXn, registrar_excepcion
@@ -2212,6 +2223,559 @@ class ValidarSeriesSolicitudConsumoDetalleDeleteView(PermissionRequiredMixin, BS
 
     def get_context_data(self, **kwargs):
         context = super(ValidarSeriesSolicitudConsumoDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
+        return context
+    
+
+class TransformacionProductosListView(PermissionRequiredMixin, ListView):
+    permission_required = ('calidad.view_transformacionproductos')
+    model = TransformacionProductos
+    template_name = "calidad/transformacion_productos/inicio.html"
+    context_object_name = 'contexto_transformacion_productos'
+
+def TransformacionProductosTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/transformacion_productos/inicio_tabla.html'
+        context = {}
+        context['contexto_transformacion_productos'] = TransformacionProductos.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class TransformacionProductosCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('calidad.view_transformacionproductos')
+    model = TransformacionProductos
+    template_name = "includes/formulario generico.html"
+    form_class = TransformacionProductosForm
+    success_url = reverse_lazy('calidad_app:transformacion_productos_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(TransformacionProductosCreateView, self).get_context_data(**kwargs)
+        context['accion']="Crear"
+        context['titulo']="Documento de Transformación"
+        return context
+
+    def form_valid(self, form):
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+
+class TransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_transformacionproductos')
+    model = TransformacionProductos
+    template_name = "includes/formulario generico.html"
+    form_class = TransformacionProductosUpdateForm
+    success_url = reverse_lazy('calidad_app:transformacion_productos_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(TransformacionProductosUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Documento de Transformación"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        
+        return super().form_valid(form)
+
+
+class TransformacionProductosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_transformacionproductos')
+    model = TransformacionProductos
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('calidad_app:transformacion_productos_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(TransformacionProductosDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Documento"
+        context['item'] = self.get_object().id
+        context['dar_baja'] = "true"
+        return context
+    
+
+class TransformacionProductosConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.change_transformacionproductos')
+    model = TransformacionProductos
+    template_name = "calidad/transformacion_productos/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('calidad_app:transformacion_productos_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_CONCLUIR_TRANSFORMACION_PRODUCTOS)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TransformacionProductosConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Transformación Productos"
+        context['dar_baja'] = "true"
+        return context
+
+
+class TransformacionProductosDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('calidad.view_transformacionproductos')
+
+    model = TransformacionProductos
+    template_name = "calidad/transformacion_productos/detalle.html"
+    context_object_name = 'contexto_transformacion_productos_detalle'
+
+    def get_context_data(self, **kwargs):
+        transformacion_productos = TransformacionProductos.objects.get(id = self.kwargs['pk'])
+        context = super(TransformacionProductosDetailView, self).get_context_data(**kwargs)
+        context['entrada_transformacion_productos'] = EntradaTransformacionProductos.objects.filter(transformacion_productos = transformacion_productos)
+        context['salida_transformacion_productos'] = SalidaTransformacionProductos.objects.filter(transformacion_productos = transformacion_productos)
+        return context
+
+
+def TransformacionProductosDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/transformacion_productos/detalle_tabla.html'
+        context = {}
+        transformacion_productos = TransformacionProductos.objects.get(id = pk)
+        context['contexto_transformacion_productos_detalle'] = transformacion_productos
+        context['entrada_transformacion_productos'] = EntradaTransformacionProductos.objects.filter(transformacion_productos = transformacion_productos)
+        context['salida_transformacion_productos'] = SalidaTransformacionProductos.objects.filter(transformacion_productos = transformacion_productos)
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class EntradaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.view_entradatransformacionproductos')
+    template_name = "calidad/transformacion_productos/form_material.html"
+    form_class = EntradaTransformacionProductosForm
+    success_url = reverse_lazy('calidad_app:transformacion_productos_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                transformacion_productos = TransformacionProductos.objects.get(id=self.kwargs['transformacion_productos_id'])
+                item = len(EntradaTransformacionProductos.objects.filter(transformacion_productos = transformacion_productos))
+
+                material = form.cleaned_data.get('material')
+                sede = form.cleaned_data.get('sede')
+                almacen = form.cleaned_data.get('almacen')
+                # tipo_stock = form.cleaned_data.get('tipo_stock')
+                cantidad = form.cleaned_data.get('cantidad')
+
+                obj, created = EntradaTransformacionProductos.objects.get_or_create(
+                    material = material,
+                    sede = sede,
+                    almacen = almacen,
+                    # tipo_stock = tipo_stock,
+                    transformacion_productos = transformacion_productos,
+                )
+                
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(EntradaTransformacionProductosCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Material"
+        context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        return context
+    
+
+class EntradaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_transformacionproductosdetalle')
+    model = EntradaTransformacionProductos
+    template_name = "calidad/transformacion_productos/form_material.html"
+    form_class = EntradaTransformacionProductosForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:transformacion_productos_detalle', kwargs={'pk':self.get_object().transformacion_productos_id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EntradaTransformacionProductosUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Material"
+        context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        return context
+
+
+class EntradaTransformacionProductosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_transformacionproductosdetalle')
+    model = EntradaTransformacionProductos
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:transformacion_productos_detalle', kwargs={'pk': self.get_object().transformacion_productos_id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            materiales = EntradaTransformacionProductos.objects.filter(transformacion_productos=self.get_object().transformacion_productos)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object(): continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(EntradaTransformacionProductosDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+    
+
+class ValidarSeriesEntradaTransformacionProductosDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('calidad.view_entradatransformacionproductos')
+    template_name = "calidad/transformacion_productos/validar_serie_entrada/detalle.html"
+    form_class = EntradaTransformacionProductosSeriesForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        # if self.request.session['primero']:
+        serie = form.cleaned_data['serie']
+        entrada_transformacion_productos = EntradaTransformacionProductos.objects.get(id = self.kwargs['pk'])
+        try:
+            buscar = Serie.objects.get(
+                serie_base=serie,
+                content_type=ContentType.objects.get_for_model(entrada_transformacion_productos.material),
+                id_registro=entrada_transformacion_productos.material.id,
+            )
+            buscar2 = ValidarSerieEntradaTransformacionProductos.objects.filter(serie = buscar)
+
+            if len(buscar2) != 0:
+                form.add_error('serie', "Serie ya ha sido registrada")
+                return super().form_invalid(form)
+
+            if buscar.estado != 'DISPONIBLE':
+                form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                return super().form_invalid(form)
+        except:
+            form.add_error('serie', "Serie no encontrada: %s" % serie)
+            return super().form_invalid(form)
+
+        obj, created = ValidarSerieEntradaTransformacionProductos.objects.get_or_create(
+            entrada_transformacion_productos=entrada_transformacion_productos,
+            serie=buscar,
+        )
+        if created:
+            obj.estado = 1
+        # self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        entrada_transformacion_productos = EntradaTransformacionProductos.objects.get(id = self.kwargs['pk'])
+        cantidad = entrada_transformacion_productos.cantidad
+        cantidad_ingresada = len(ValidarSerieEntradaTransformacionProductos.objects.filter(entrada_transformacion_productos=entrada_transformacion_productos))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad'] = cantidad
+        kwargs['cantidad_ingresada'] = cantidad_ingresada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        # self.request.session['primero'] = True
+        entrada_transformacion_productos = EntradaTransformacionProductos.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesEntradaTransformacionProductosDetailView, self).get_context_data(**kwargs)
+        context['contexto_entrada_transformacion_productos'] = entrada_transformacion_productos
+        context['contexto_series'] = ValidarSerieEntradaTransformacionProductos.objects.filter(entrada_transformacion_productos = entrada_transformacion_productos)
+        return context
+
+
+def ValidarSeriesEntradaTransformacionProductosDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/transformacion_productos/validar_serie_entrada/detalle_tabla.html'
+        context = {}
+        entrada_transformacion_productos = EntradaTransformacionProductos.objects.get(id = pk)
+        context['contexto_entrada_transformacion_productos'] = entrada_transformacion_productos
+        context['contexto_series'] = ValidarSerieEntradaTransformacionProductos.objects.filter(entrada_transformacion_productos = entrada_transformacion_productos)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ValidarSeriesEntradaTransformacionProductosDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_validarserieentradatransformacionproductos')
+    model = ValidarSerieEntradaTransformacionProductos
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:entrada_transformacion_productos_validar_series_detalle', kwargs={'pk': self.get_object().entrada_transformacion_productos.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesEntradaTransformacionProductosDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
+        return context
+    
+
+class SalidaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.view_salidatransformacionproductos')
+    template_name = "calidad/transformacion_productos/form_material.html"
+    form_class = SalidaTransformacionProductosForm
+    success_url = reverse_lazy('calidad_app:transformacion_productos_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                transformacion_productos = TransformacionProductos.objects.get(id=self.kwargs['transformacion_productos_id'])
+                item = len(SalidaTransformacionProductos.objects.filter(transformacion_productos = transformacion_productos))
+
+                material = form.cleaned_data.get('material')
+                sede = form.cleaned_data.get('sede')
+                almacen = form.cleaned_data.get('almacen')
+                # tipo_stock = form.cleaned_data.get('tipo_stock')
+                cantidad = form.cleaned_data.get('cantidad')
+
+                obj, created = SalidaTransformacionProductos.objects.get_or_create(
+                    material = material,
+                    sede = sede,
+                    almacen = almacen,
+                    # tipo_stock = tipo_stock,
+                    transformacion_productos = transformacion_productos,
+                )
+                
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(SalidaTransformacionProductosCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Material"
+        context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        return context
+    
+
+class SalidaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_transformacionproductosdetalle')
+    model = SalidaTransformacionProductos
+    template_name = "calidad/transformacion_productos/form_material.html"
+    form_class = SalidaTransformacionProductosForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:transformacion_productos_detalle', kwargs={'pk':self.get_object().transformacion_productos_id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SalidaTransformacionProductosUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Material"
+        context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        return context
+
+
+class SalidaTransformacionProductosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_transformacionproductosdetalle')
+    model = SalidaTransformacionProductos
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:transformacion_productos_detalle', kwargs={'pk': self.get_object().transformacion_productos_id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            materiales = SalidaTransformacionProductos.objects.filter(transformacion_productos=self.get_object().transformacion_productos)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object(): continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SalidaTransformacionProductosDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+    
+
+class ValidarSeriesSalidaTransformacionProductosDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('calidad.view_salidatransformacionproductos')
+    template_name = "calidad/transformacion_productos/validar_serie_salida/detalle.html"
+    form_class = SalidaTransformacionProductosSeriesForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        # if self.request.session['primero']:
+        serie = form.cleaned_data['serie']
+        salida_transformacion_productos = SalidaTransformacionProductos.objects.get(id = self.kwargs['pk'])
+        try:
+            buscar = Serie.objects.get(
+                serie_base=serie,
+                content_type=ContentType.objects.get_for_model(salida_transformacion_productos.material),
+                id_registro=salida_transformacion_productos.material.id,
+            )
+            buscar2 = ValidarSerieSalidaTransformacionProductos.objects.filter(serie = buscar)
+
+            if len(buscar2) != 0:
+                form.add_error('serie', "Serie ya ha sido registrada")
+                return super().form_invalid(form)
+
+            if buscar.estado != 'DISPONIBLE':
+                form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                return super().form_invalid(form)
+        except:
+            form.add_error('serie', "Serie no encontrada: %s" % serie)
+            return super().form_invalid(form)
+
+        obj, created = ValidarSerieSalidaTransformacionProductos.objects.get_or_create(
+            salida_transformacion_productos=salida_transformacion_productos,
+            serie=buscar,
+        )
+        if created:
+            obj.estado = 1
+        # self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        salida_transformacion_productos = SalidaTransformacionProductos.objects.get(id = self.kwargs['pk'])
+        cantidad = salida_transformacion_productos.cantidad
+        cantidad_ingresada = len(ValidarSerieSalidaTransformacionProductos.objects.filter(salida_transformacion_productos=salida_transformacion_productos))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad'] = cantidad
+        kwargs['cantidad_ingresada'] = cantidad_ingresada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        # self.request.session['primero'] = True
+        salida_transformacion_productos = SalidaTransformacionProductos.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesSalidaTransformacionProductosDetailView, self).get_context_data(**kwargs)
+        context['contexto_salida_transformacion_productos'] = salida_transformacion_productos
+        context['contexto_series'] = ValidarSerieSalidaTransformacionProductos.objects.filter(salida_transformacion_productos = salida_transformacion_productos)
+        return context
+
+
+def ValidarSeriesSalidaTransformacionProductosDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'calidad/transformacion_productos/validar_serie_salida/detalle_tabla.html'
+        context = {}
+        salida_transformacion_productos = SalidaTransformacionProductos.objects.get(id = pk)
+        context['contexto_salida_transformacion_productos'] = salida_transformacion_productos
+        context['contexto_series'] = ValidarSerieSalidaTransformacionProductos.objects.filter(salida_transformacion_productos = salida_transformacion_productos)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ValidarSeriesSalidaTransformacionProductosDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.delete_validarseriesalidatransformacionproductos')
+    model = ValidarSerieSalidaTransformacionProductos
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:salida_transformacion_productos_validar_series_detalle', kwargs={'pk': self.get_object().salida_transformacion_productos.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesSalidaTransformacionProductosDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Serie"
         context['item'] = self.get_object().serie

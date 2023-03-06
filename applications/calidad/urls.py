@@ -75,6 +75,31 @@ urlAprobacionConsumoInterno = [
     # path('aprobacion-consumo-interno/dar-baja/<pk>/', views.AprobacionConsumoInternoDeleteView.as_view(), name='aprobacion_consumo_interno_darbaja'),
 ]
 
+urlTransformacionProductos = [
+    path('transformacion-productos/', views.TransformacionProductosListView.as_view(), name='transformacion_productos_inicio'),
+    path('transformacion-productos-tabla/', views.TransformacionProductosTabla, name='transformacion_productos_tabla'),
+    path('transformacion-productos/registrar/', views.TransformacionProductosCreateView.as_view(), name='transformacion_productos_registrar'),
+    path('transformacion-productos/actualizar/<pk>', views.TransformacionProductosUpdateView.as_view(), name='transformacion_productos_actualizar'),
+    path('transformacion-productos/eliminar/<pk>', views.TransformacionProductosDeleteView.as_view(), name='transformacion_productos_eliminar'),
+    path('transformacion-productos/concluir/<pk>/', views.TransformacionProductosConcluirView.as_view(), name='transformacion_productos_concluir'),
+    path('transformacion-productos/detalle/<pk>', views.TransformacionProductosDetailView.as_view(), name='transformacion_productos_detalle'),
+    path('transformacion-productos/detalle-tabla/<pk>/', views.TransformacionProductosDetailTabla, name='transformacion_productos_detalle_tabla'),
+
+    path('entrada-transformacion-productos/registrar/<int:transformacion_productos_id>/', views.EntradaTransformacionProductosCreateView.as_view(), name='entrada_transformacion_productos_registrar'),
+    path('entrada-transformacion-productos/actualizar/<pk>/', views.EntradaTransformacionProductosUpdateView.as_view(), name='entrada_transformacion_productos_actualizar'),
+    path('entrada-transformacion-productos/eliminar/<pk>/', views.EntradaTransformacionProductosDeleteView.as_view(), name='entrada_transformacion_productos_eliminar'),
+    path('entrada-transformacion-productos/validar-series/detalle/<pk>/', views.ValidarSeriesEntradaTransformacionProductosDetailView.as_view(), name='entrada_transformacion_productos_validar_series_detalle'),
+    path('entrada-transformacion-productos/validar-series/detalle-tabla/<pk>/', views.ValidarSeriesEntradaTransformacionProductosDetailTabla, name='entrada_transformacion_productos_validar_series_detalle_tabla'),
+    path('entrada-transformacion-productos/validar-series/detalle/eliminar/<pk>/', views.ValidarSeriesEntradaTransformacionProductosDetalleDeleteView.as_view(), name='entrada_transformacion_productos_validar_series_detalle_eliminar'),
+
+    path('salida-transformacion-productos/registrar/<int:transformacion_productos_id>/', views.SalidaTransformacionProductosCreateView.as_view(), name='salida_transformacion_productos_registrar'),
+    path('salida-transformacion-productos/actualizar/<pk>/', views.SalidaTransformacionProductosUpdateView.as_view(), name='salida_transformacion_productos_actualizar'),
+    path('salida-transformacion-productos/eliminar/<pk>/', views.SalidaTransformacionProductosDeleteView.as_view(), name='salida_transformacion_productos_eliminar'),
+    path('salida-transformacion-productos/validar-series/detalle/<pk>/', views.ValidarSeriesSalidaTransformacionProductosDetailView.as_view(), name='salida_transformacion_productos_validar_series_detalle'),
+    path('salida-transformacion-productos/validar-series/detalle-tabla/<pk>/', views.ValidarSeriesSalidaTransformacionProductosDetailTabla, name='salida_transformacion_productos_validar_series_detalle_tabla'),
+    path('salida-transformacion-productos/validar-series/detalle/eliminar/<pk>/', views.ValidarSeriesSalidaTransformacionProductosDetalleDeleteView.as_view(), name='salida_transformacion_productos_validar_series_detalle_eliminar'),
+]
+
 
 urlpatterns = [
 
@@ -85,4 +110,4 @@ urlpatterns = [
     path('falla-material/detalle/actualizar/<pk>/', views.FallaMaterialUpdateView.as_view(), name='falla_material_detalle_actualizar'),
     path('falla-material/detalle/modal/<pk>/', views.FallaMaterialModalDetailView.as_view(), name='falla_material_detalle_modal'),
     path('falla-material/detalle/eliminar/<pk>/', views.FallaMaterialDeleteView.as_view(), name='falla_material_detalle_eliminar'),
-] + urlNotaControlCalidadStock + urlSeries + urlConsumoInterno + urlConsumoInternoSeries + urlAprobacionConsumoInterno
+] + urlNotaControlCalidadStock + urlSeries + urlConsumoInterno + urlConsumoInternoSeries + urlAprobacionConsumoInterno + urlTransformacionProductos

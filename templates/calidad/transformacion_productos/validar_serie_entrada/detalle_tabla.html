@@ -1,0 +1,41 @@
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nro. de Serie</th>         
+                <th>Estado</th>    
+                <th>Almacén</th>    
+                <th>Sociedad</th>    
+                <th class="text-center">Acciones</th>    
+            </tr>
+        </thead>
+        <tbody>
+            {% for validacion in contexto_series %}
+                <tr class="fondo-personalizado"
+                {% if validacion.serie.sociedad != contexto_entrada_transformacion_productos.transformacion_productos.sociedad or validacion.serie.almacen != contexto_entrada_transformacion_productos.almacen %}
+                style="--color-fondo: red;"
+                {% endif %}
+                >
+                    {% if validacion.serie %}
+                    <td> 
+                        {{ validacion.serie}} 
+                    </td>
+                    {% endif %}
+                    <td>{{ validacion.serie.estado }}</td>
+                    <td>{{ validacion.serie.almacen }}</td>
+                    <td>{{ validacion.serie.sociedad }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_entrada_transformacion_productos.transformacion_productos.estado == 1 %}
+                            <button data-form-url="{% url 'calidad_app:entrada_transformacion_productos_validar_series_detalle_eliminar' validacion.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+                           
+        </tbody>
+    </table>
+</div>
