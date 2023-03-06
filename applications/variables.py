@@ -328,6 +328,11 @@ ESTADOS_SALIDA_RECLAMO_GARANTIA = (
     (2, 'CONCLUIDO'),
     )
 
+TIPOS_COMISION = (
+    (1, 'MIXTA'),
+    (2, 'SOBRE FLUJO'),
+    )
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
