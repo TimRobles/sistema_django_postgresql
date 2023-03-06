@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Salida Garantía
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3> Salida Garantía </h3>
+    <div class="table-responsive" id="tabla">
+        {% include 'garantia/salida_garantia/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

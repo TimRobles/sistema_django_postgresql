@@ -72,7 +72,7 @@
         </div>
         {% endif %}
         
-        {% if not factura.numero_factura or factura.estado == 3 %}
+        {% if not factura.numero_factura or factura.estado == 3 and not url_nubefact %}
         <div class="col-auto">
             <button data-form-url="{% url 'comprobante_venta_app:factura_venta_eliminar' factura.id %}"
                 class="delete btn btn-danger">

@@ -474,10 +474,8 @@ def reporte_cobranza():
         asunto = "Recordatorio - Facturas por cobrar"
         mensaje = "Prueba"
         email_remitente = EMAIL_REMITENTE
-        email_destinatario = ["robles.tim@gmail.com",]
-        # email_destinatario = "sleiter512@gmail.com"
-        # email_destinatario = "rpaniura@multiplay.com.pe"
-        email_copia = ["trobles@multiplay.com.pe",]
+        email_destinatario = ["rpaniura@multiplay.com.pe",]
+        email_copia = ["trobles@multiplay.com.pe","dpaniura@multiplay.com.pe",]
 
         correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to = email_destinatario, cc = email_copia,)
         correo.attach(nombre_archivo_1, archivo_1.getvalue(), 'application/pdf')

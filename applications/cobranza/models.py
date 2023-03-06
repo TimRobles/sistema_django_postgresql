@@ -171,8 +171,7 @@ class Nota(models.Model):
 
     @property
     def url_detalle(self):
-        return reverse_lazy('home_app:home')
-        return reverse_lazy('cobranza_app:cuenta_bancaria_detalle', kwargs={'pk':self.cuenta_bancaria.id})
+        return reverse_lazy('nota_app:nota_credito_detalle', kwargs={'pk':self.nota_credito.id})
 
 
     def __str__(self):
@@ -295,6 +294,14 @@ class Deuda(models.Model):
         verbose_name = 'Deuda'
         verbose_name_plural = 'Deudas'
         ordering = ['-fecha_deuda']
+
+    @property
+    def tipo(self):
+        if self.content_type == ContentType.objects.get_for_model(Ingreso):
+            return 1
+        if self.content_type == ContentType.objects.get_for_model(Nota):
+            return 2
+        return None
 
     @property
     def pagos(self):

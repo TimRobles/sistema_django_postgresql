@@ -4,7 +4,7 @@ from applications.datos_globales.models import CuentaBancariaSociedad, Moneda
 from applications.funciones import tipo_de_cambio
 from applications.sociedad.models import Sociedad
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.cobranza.models import Deuda, Ingreso, LineaCredito, Pago
+from applications.cobranza.models import Deuda, Ingreso, LineaCredito, Nota, Pago
 
 class LineaCreditoForm(BSModalModelForm):
     class Meta:
@@ -136,6 +136,36 @@ class CuentaBancariaIngresoPagarForm(BSModalModelForm):
         except:
             self.fields['tipo_cambio'].initial = tipo_cambio
             self.fields['deuda'].queryset = Deuda.objects.none()
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DeudaNotaForm(BSModalModelForm):
+    nota = forms.ModelChoiceField(queryset=Nota.objects.none())
+    class Meta:
+        model = Pago
+        fields = (
+            'monto',
+            'nota',
+            'tipo_cambio',
+            )
+
+    def clean_monto(self):
+        monto = self.cleaned_data.get('monto')
+        self.fields['nota'].queryset = Nota.objects.all()
+    
+        return monto
+
+    def __init__(self, *args, **kwargs):
+        tipo_cambio = kwargs.pop('tipo_cambio')
+        super(DeudaNotaForm, self).__init__(*args, **kwargs)   
+        try:
+            nota = Nota.objects.get(id=self.instance.id_registro)
+            self.fields['nota'].queryset = Nota.objects.filter(id=nota.id)
+            self.fields['nota'].initial = nota
+        except:
+            self.fields['tipo_cambio'].initial = tipo_cambio
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

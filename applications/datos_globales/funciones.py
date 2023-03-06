@@ -244,6 +244,22 @@ def consultarGuia(tipo_de_comprobante, serie, numero):
         return None
 
 
+def consultarAnulacion(tipo_de_comprobante, serie, numero):
+    try:
+        data = {}
+        data['operacion'] = "consultar_anulacion"
+        data['tipo_de_comprobante'] = tipo_de_comprobante
+        data["serie"] = serie
+        data["numero"] = numero
+        return data
+
+    except Exception as e:
+        print("**************************************************")
+        print(e)
+        print("**************************************************")
+        return None
+
+
 def actualizarTipoCambioSunat(fecha: date, request):
     obj, created = TipoCambioSunat.objects.get_or_create(
         fecha = fecha,

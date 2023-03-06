@@ -100,6 +100,19 @@ def eliminarDeuda(documento):
         return False
 
 
+def eliminarNota(documento):
+    try:
+        obj = cobranza.models.Nota.objects.get(
+            content_type = ContentType.objects.get_for_model(documento),
+            id_registro = documento.id,
+            )
+        obj.delete()
+
+        return True
+    except:
+        return False
+
+
 def generarNota(documento, request):
     obj = cobranza.models.Nota.objects.create(
         nota_credito = documento,

@@ -1,0 +1,213 @@
+{% load humanize %}
+{% load funciones_propias %}
+<h3>Detalle Ingreso Reclamo Garantia</h3>
+
+<div class="row mt-3">
+    <div class="col-auto">
+        <a href="{% url 'garantia_app:ingreso_garantia_inicio' %}" class="btn btn-danger">Regresar</a>
+    </div>
+
+    <div class="col-auto">
+        <button data-form-url="{% url 'garantia_app:ingreso_garantia_observacion' ingreso.id %}"
+            data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id %}"
+            class="create btn btn-primary">
+            Observaciones
+        </button>
+    </div>
+</div>
+
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Razón Social:</th>
+                    <td>{{ ingreso.cliente.razon_social }}</td>
+                    <td class="ps-2" rowspan="4">
+
+                        {% if ingreso.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_cliente' ingreso.id %}"
+                            data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id %}"
+                            class="update btn btn-primary" title="Seleccionar Cliente">
+                            Seleccionar Cliente
+                        </button>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ ingreso.cliente.documento }}:</th>
+                    <td>
+                        {% if ingreso.cliente.numero_documento %}
+                        {{ ingreso.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if ingreso.cliente_interlocutor %}
+                        {{ ingreso.cliente_interlocutor.nombre_completo }}   
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>
+                        {% if ingreso.cliente %}
+                        {{ ingreso.cliente.get_estado_sunat_display }} - {{ ingreso.cliente.get_condicion_sunat_display }}
+                        {% endif %}
+                    </td>
+                </tr>
+        
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Fecha Ingreso:</th>
+                    <td>{{ ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+                    <td class="px-2" rowspan="2"> 
+                        {% if ingreso.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_guardar' ingreso.id %}"
+                            class="delete btn btn-primary">
+                            Guardar Ingreso
+                        </button>
+                        {% endif %}
+
+                        {% if ingreso.estado == 2 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_control' ingreso.id %}"
+                            class="delete btn btn-primary">
+                            Control Calidad
+                        </button>
+                        {% endif %}
+
+                        {% if ingreso.estado == 3 %}
+                        <div class="col-auto">
+                            <a href="{% url 'garantia_app:control_garantia_inicio' ingreso.id  %}" class="btn btn-primary">Notas Control Calidad</a>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="pe-2">N° Ingreso:</th>
+                    <td class="text-nowrap">
+                        {% if ingreso.nro_ingreso_garantia %}
+                        {{ ingreso.nro_ingreso_garantia|numeroXn:6 }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Estado Ingreso:</th>
+                    <td>{{ ingreso.get_estado_display }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Encargado:</th>
+                    <td>{{ ingreso.encargado }}</td>
+                    <td rowspan="2">
+                        {% if ingreso.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_encargado' ingreso.id %}"
+                            data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
+                            class="update btn btn-primary">
+                            Encargado
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ ingreso.sociedad }}</td>
+                    <td rowspan="2">
+                        {% if ingreso.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_sociedad' ingreso.id %}"
+                            data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
+                            class="update btn btn-primary">
+                            Sociedad
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+ 
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ ingreso.sociedad.color }};">OBSERVACIONES {{ ingreso.sociedad.razon_social }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if ingreso.observacion %}
+                        {{ ingreso.observacion|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if ingreso.estado == 1 %}
+<button data-form-url="{% url 'garantia_app:ingreso_garantia_agregar_material' ingreso.id %}"
+    data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
+    data-keep-open="True"
+    class="update btn btn-primary" title="Agregar Material">
+    Agregar Material
+</button>
+{% endif %}
+
+<div class="table-responsive mt-3">
+    <table class="table">
+        <thead class="fondo-personalizado" style="--color-fondo: {{ ingreso.sociedad.color }};">
+            <tr>
+                <th>Item</th>
+                <th style="min-width: 500px;">Material</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-end">Prec. Venta </th>
+                <th > Acciones </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td> {{ material.item }} </td>
+                    <td> {{ material.material }} </td>
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ ingreso.moneda.simbolo }} {{ material.precio_venta|redondear:3|intcomma }}</td>
+                    <td>
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_editar_material' material.id %}"
+                            data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id %}"
+                            class="create btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_eliminar_material' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+        
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+
+        </tfoot>
+    </table>
+</div>
+

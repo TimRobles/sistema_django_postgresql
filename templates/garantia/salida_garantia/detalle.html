@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Salida Garantía
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'garantia/salida_garantia/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

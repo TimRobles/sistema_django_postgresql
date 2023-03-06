@@ -1,0 +1,44 @@
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Nro. Ingreso</th>
+            <th>Cliente</th>
+            <th>Fecha de Ingreso</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>      
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for ingreso in contexto_ingreso_garantia %}
+       <tr>
+            <td class="fondo-personalizado" style="--color-fondo: {{ ingreso.sociedad.color }};">{{ ingreso.sociedad.abreviatura }}</td>
+            <td>{{ ingreso.nro_ingreso_garantia|numeroXn:6 }}</td>
+            <td>{{ ingreso.cliente }}</td>
+            <td>{{ ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+            <td>{{ ingreso.get_estado_display }}</td>
+            <td class="text-nowrap text-center">
+                <a href="{% url 'garantia_app:ingreso_garantia_ver' ingreso.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>    
+
+                <button data-form-url="{% url 'garantia_app:ingreso_garantia_eliminar' ingreso.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+
+            </td>
+        </tr>
+            
+        {% endfor %}
+            
+
+    </tbody>
+</table>

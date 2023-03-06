@@ -811,7 +811,7 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
 
                     detalles = self.object.detalles
 
-                    disponible = TipoStock.objects.get(codigo=3)
+                    disponible = TipoStock.objects.get(codigo=3) #Disponible
                     if self.object.solicitud_prestamo_materiales:
                         print('Préstamo')
                         movimiento_inicial = TipoMovimiento.objects.get(codigo=131)  # Confirmación por préstamo
@@ -2129,6 +2129,12 @@ class InventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDeleteVie
                     material=detalle.material,
                     almacen=detalle.almacen,
                     tipo_stock=detalle.tipo_stock,
+                    cantidad_stock=stock_tipo_stock(
+                        content_type=detalle.material.content_type,
+                        id_registro=detalle.material.id,
+                        id_sociedad=self.object.sociedad.id,
+                        id_almacen=detalle.almacen.id,
+                        id_tipo_stock=detalle.tipo_stock.id),
                     cantidad_contada=detalle.cantidad,
                     ajuste_inventario_materiales=ajuste_inventario_materiales,
                     created_by=self.request.user,
@@ -2368,7 +2374,63 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
             self.object = self.get_object()
             self.request.session['primero'] = False
             registro_guardar(self.object, self.request)
-            self.object.estado = 2
+         
+            tipo_stock_disponible = TipoStock.objects.get(codigo=3) # Disponible
+
+            for detalle in self.object.AjusteInventarioMaterialesDetalle_ajuste_inventario_materiales.all():
+                cantidad = detalle.cantidad_stock - detalle.cantidad_contada
+                if cantidad > 0:
+                    # AJUSTE POR INVENTARIO DISMINUIR STOCK
+                    if detalle.material.control_serie and tipo_stock_disponible == detalle.tipo_stock:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=154) # Correcion por Inventario, disminuir stock, c/Serie
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=153) # Correcion por Inventario, disminuir stock, s/Serie
+                    tipo_stock_inicial = detalle.tipo_stock
+                    tipo_stock_final = movimiento_final.tipo_stock_final
+                    signo_factor_multiplicador = -1
+                else:
+                    # AJUSTE POR INVENTARIO AUMENTAR STOCK
+                    if detalle.material.control_serie and tipo_stock_disponible == detalle.tipo_stock:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=157) # Correccion Inventario con Series, aumentar stock
+                        tipo_stock_final = movimiento_final.tipo_stock_final
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=156) #	Correcion por Inventario, aumentar stock, s/Serie
+                        tipo_stock_final = detalle.tipo_stock
+                    tipo_stock_inicial = movimiento_final.tipo_stock_inicial
+                    signo_factor_multiplicador = +1
+
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = cantidad,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = tipo_stock_inicial,
+                    signo_factor_multiplicador = signo_factor_multiplicador,
+                    content_type_documento_proceso = detalle.ajuste_inventario_materiales.content_type,
+                    id_registro_documento_proceso = detalle.ajuste_inventario_materiales.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.ajuste_inventario_materiales.sociedad,
+                    movimiento_anterior = None,
+                    created_by = request.user,
+                    updated_by = request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = cantidad,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = tipo_stock_final,
+                    signo_factor_multiplicador = -1*signo_factor_multiplicador,
+                    content_type_documento_proceso = detalle.ajuste_inventario_materiales.content_type,
+                    id_registro_documento_proceso = detalle.ajuste_inventario_materiales.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.ajuste_inventario_materiales.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    created_by = request.user,
+                    updated_by = request.user,
+                )            
+
+            self.object.estado = 2  # Concluir
             self.object.save()
             messages.success(request, MENSAJE_AJUSTE_INVENTARIO_MATERIALES)
         except Exception as ex:
@@ -2450,17 +2512,18 @@ class AjusteInventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSMod
                     material = material.material,
                     almacen = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).almacen,
                     tipo_stock = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).tipo_stock,
-                    cantidad_stock = stock_tipo_stock(ContentType.objects.get_for_model(material.material), 
+                    cantidad_stock = stock_tipo_stock(
+                        material.material.content_type, 
                         material.material.id, 
-                        sociedad, 
-                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).almacen, 
-                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).tipo_stock),
+                        sociedad.id,
+                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).almacen.id, 
+                        ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).tipo_stock.id),
                     cantidad_contada = ajuste_inventario_materiales.inventario_materiales.InventarioMaterialesDetalle_inventario_materiales.get(material=material.material).cantidad,
                     item=item + 1,
                     created_by=self.request.user,
                     updated_by=self.request.user, 
                 )
-                
+
                 self.request.session['primero'] = False
             return super().form_valid(form)
         except Exception as ex:

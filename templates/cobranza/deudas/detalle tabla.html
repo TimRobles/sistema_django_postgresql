@@ -69,12 +69,23 @@
                                                 {{ pago.ingreso_nota.moneda.simbolo }} {{ pago.monto|redondear|intcomma }}
                                             </td>
                                             <td class="text-center text-nowrap">
+                                                
+                                                {% if deuda.tipo == 1 %}
                                                 <button data-form-url="{% url 'cobranza_app:deudores_actualizar_pago' id_cliente deuda.id pago.id %}"
                                                     data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}{{ contexto_filtro }}{{ pagina_filtro }}"
                                                     class="create btn btn-warning btn-sm"
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                                                     <i class="bi bi-pencil-fill"></i>
                                                 </button>
+                                                {% else %}
+                                                <button data-form-url="{% url 'cobranza_app:deudores_actualizar_nota_pago' id_cliente deuda.id pago.id %}"
+                                                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                                                    class="create btn btn-warning btn-sm"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar Relación">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                {% endif %}
+
                                                 <button data-form-url="{% url 'cobranza_app:deudores_eliminar_pago' id_cliente pago.id %}"
                                                     class="delete btn btn-danger btn-sm"
                                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
@@ -151,6 +162,13 @@
             <td class="text-center">{{ deuda.fecha_vencimiento|date:'d/m/Y' }}</td>
             <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado }}</td>
             <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'cobranza_app:deudores_nota_deuda' id_cliente deuda.id %}"
+                    data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                    class="create btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Relacionar Nota con Deuda">
+                    <i class="bi bi-card-text"></i>
+                </button>
+                
                 <button data-form-url="{% url 'cobranza_app:deudores_pagar_deuda' id_cliente deuda.id %}"
                     data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     class="create btn btn-success btn-sm"

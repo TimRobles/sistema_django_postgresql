@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Ingreso Reclamo Garantía
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'garantia/ingreso_garantia/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

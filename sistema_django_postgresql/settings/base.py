@@ -72,7 +72,7 @@ LOCAL_APPS = (
     'applications.muestra',
     'applications.reportes',
     'applications.reportes_panel',
-
+    'applications.garantia',
 )
 
 THIRD_PARTY_APPS = (
@@ -97,8 +97,7 @@ MIDDLEWARE = [
 ]
 
 CRONJOBS = [
-    ('45 13 * * *', 'applications.reportes.pdf.reporte_cobranza', '>> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
-    ('* * * * *', 'applications.reportes.cron.funcion_iterativa', '>> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob_itera.log 2>&1'),
+    ('0 10 * * 1-6', 'applications.reportes.pdf.reporte_cobranza', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
 ]
 
 ROOT_URLCONF = 'sistema_django_postgresql.urls'
