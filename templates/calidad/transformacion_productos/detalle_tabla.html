@@ -1,0 +1,124 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Entrada Productos
+    {% if contexto_transformacion_productos_detalle.estado == 1 %}
+        <button data-form-url="{% url 'calidad_app:entrada_transformacion_productos_registrar' contexto_transformacion_productos_detalle.id %}"
+            data-table-url="{% url 'calidad_app:transformacion_productos_detalle_tabla' contexto_transformacion_productos_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar Material
+        </button>
+    {% endif %}
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Sede</th>
+                <th>Almacen</th>
+                <th>Cantidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in entrada_transformacion_productos %}
+            <tr>
+                <td>{{ producto.item }}</td>
+                <td>{{ producto.material }}</td>
+                <td>{{ producto.material.unidad_base }}</td>
+                <td>{{ producto.sede }}</td>
+                <td>{{ producto.almacen.nombre }}</td>
+                <td>{{ producto.cantidad|redondear|intcomma }}</td>
+                <td class="text-center text-nowrap">
+                    {% if contexto_transformacion_productos_detalle.estado == 1  %}
+                        <button data-form-url="{% url 'calidad_app:entrada_transformacion_productos_actualizar' producto.id %}"
+                            data-table-url="{% url 'calidad_app:transformacion_productos_detalle_tabla' contexto_transformacion_productos_detalle.id  %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'calidad_app:entrada_transformacion_productos_eliminar' producto.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                        {% if producto.material.control_serie %}
+                            <a href="{% url 'calidad_app:entrada_transformacion_productos_validar_series_detalle' producto.id %}"
+                                class="btn btn-dark btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>Salida Productos
+    {% if contexto_transformacion_productos_detalle.estado == 1 %}
+        <button data-form-url="{% url 'calidad_app:salida_transformacion_productos_registrar' contexto_transformacion_productos_detalle.id %}"
+            data-table-url="{% url 'calidad_app:transformacion_productos_detalle_tabla' contexto_transformacion_productos_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar Material
+        </button>
+    {% endif %}
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Sede</th>
+                <th>Almacen</th>
+                <th>Cantidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in salida_transformacion_productos %}
+            <tr>
+                <td>{{ producto.item }}</td>
+                <td>{{ producto.material }}</td>
+                <td>{{ producto.material.unidad_base }}</td>
+                <td>{{ producto.sede }}</td>
+                <td>{{ producto.almacen.nombre }}</td>
+                <td>{{ producto.cantidad|redondear|intcomma }}</td>
+                <td class="text-center text-nowrap">
+                    {% if contexto_transformacion_productos_detalle.estado == 1  %}
+                        <button data-form-url="{% url 'calidad_app:salida_transformacion_productos_actualizar' producto.id %}"
+                            data-table-url="{% url 'calidad_app:transformacion_productos_detalle_tabla' contexto_transformacion_productos_detalle.id  %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'calidad_app:salida_transformacion_productos_eliminar' producto.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                        {% if producto.material.control_serie %}
+                            <a href="{% url 'calidad_app:salida_transformacion_productos_validar_series_detalle' producto.id %}"
+                                class="btn btn-dark btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

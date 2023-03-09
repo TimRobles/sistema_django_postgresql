@@ -1,0 +1,53 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Fecha Transf.</th>
+            <th>Responsable</th>
+            <th>Tipo Stock</th>
+            <th>Observación</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for transformacion in contexto_transformacion_productos %}
+        <tr>
+            <td>{{ transformacion.sociedad }}</td>
+            <td>{{ transformacion.fecha_transformacion|date:'d/m/Y' }}</td>
+            <td>
+                {% if transformacion.responsable.first_name %}
+                {{ transformacion.responsable.first_name }} {{ transformacion.responsable.last_name }}
+                {% else %}
+                {{ transformacion.responsable }}
+                {% endif %}
+            </td>
+            <td>{{ transformacion.tipo_stock.descripcion }}</td>
+            <td>{{ transformacion.observacion }}</td>
+            <td>{{ transformacion.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                
+                {% if transformacion.estado == 1 %} 
+                    <button data-form-url="{% url 'calidad_app:transformacion_productos_actualizar' transformacion.id %}"
+                        data-table-url="{% url 'calidad_app:transformacion_productos_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'calidad_app:transformacion_productos_eliminar' transformacion.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                {% endif %}
+                <a href="{% url 'calidad_app:transformacion_productos_detalle' transformacion.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Transformacion Productos
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Transformación Productos
+        {% if contexto_transformacion_productos_detalle.estado == 1 %}
+            <button data-form-url="{% url 'calidad_app:transformacion_productos_concluir' contexto_transformacion_productos_detalle.id %}"
+                data-table-url="{% url 'calidad_app:transformacion_productos_inicio' %}"
+                class="delete badge bg-primary">
+                Concluir Transformación
+            </button>
+        {% endif %}
+        <a href="{% url 'calidad_app:transformacion_productos_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
+    <br>
+    <div id="tabla">
+        {% include 'calidad/transformacion_productos/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
