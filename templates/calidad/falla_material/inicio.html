@@ -12,6 +12,7 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th>Familia</th>
                     <th>Sub Familia</th>
                     <th class="text-center">Acciones</th>
                 </tr>
@@ -19,6 +20,7 @@
             <tbody>    
                 {% for subfamilia in contexto_subfamilias %}
                     <tr>
+                        <td>{{ subfamilia.familia.nombre }}</td>
                         <td>{{ subfamilia.nombre }}</td>
                         <td class="text-center text-nowrap">
                             <a href="{% url 'calidad_app:falla_material_detalle' subfamilia.id %}"

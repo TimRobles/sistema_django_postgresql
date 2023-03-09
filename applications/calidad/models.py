@@ -38,6 +38,11 @@ class SolucionMaterial(models.Model):
     comentario = models.TextField()
     visible = models.BooleanField()
 
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SolucionMaterial_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SolucionMaterial_updated_by', editable=False)
+
     class Meta:
         verbose_name = 'Solución Material'
         verbose_name_plural = 'Soluciones Materiales'
@@ -103,6 +108,13 @@ class Serie(models.Model):
     def estado(self):
         if self.HistorialEstadoSerie_serie.all():
             return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.descripcion
+        else:
+            return ""
+
+    @property
+    def numero_estado(self):
+        if self.HistorialEstadoSerie_serie.all():
+            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.numero_estado
         else:
             return ""
 
@@ -423,3 +435,97 @@ class AprobacionConsumoInternoDetalle(models.Model):
 
     def __str__(self):
         return str(self.aprobacion_consumo) + ' | ' + str(self.item)
+
+
+class ReparacionMaterial(models.Model):
+    ESTADOS_REPARACION_MATERIAL = (
+        (1, 'BORRADOR'),
+        (2, 'EN PROCESO'),
+        (3, 'CONCLUIDO'),
+        (4, 'ANULADO'),
+    )
+    numero_reparacion = models.IntegerField('Número de Reparación', blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.RESTRICT, blank=True, null=True)
+    fecha_reparacion_inicio = models.DateField('Fecha inicio de reparación', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_reparacion_fin = models.DateField('Fecha fin de reparacion', auto_now=False, auto_now_add=False, blank=True, null=True)
+    observacion = models.TextField('Comentario', blank=True, null=True)
+    tiempo_estimado = models.IntegerField('Tiempo estimado', default=0, blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS_REPARACION_MATERIAL, default=1)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+    responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReparacionMaterial_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReparacionMaterial_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Reparación de Material'
+        verbose_name_plural = 'Reparaciónes de Materiales'
+        ordering = [
+            '-fecha_reparacion_inicio',
+            '-numero_reparacion',
+        ]
+
+    @property
+    def fecha(self):
+        return self.fecha_reparacion_fin
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    def __str__(self):
+        return str(self.numero_reparacion) + ' | '+ str(self.fecha_reparacion_inicio) + ' | ' + str(self.responsable)
+
+
+class ReparacionMaterialDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    cantidad = models.DecimalField('Cantidad a reparar', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    reparacion = models.ForeignKey(ReparacionMaterial, on_delete=models.CASCADE, related_name='ReparacionMaterialDetalle_reparacion')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReparacionMaterialDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReparacionMaterialDetalle_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Reparación de Material Detalle'
+        verbose_name_plural = 'Reparaciónes de Materiales Detalles'
+        ordering = [
+            'reparacion',
+            'item',
+            ]
+    
+    @property
+    def series_validar(self):
+        return Decimal(len(self.ValidarSerieReparacionMaterialDetalle_reparacion_detalle.all())).quantize(Decimal('0.01'))
+
+    def __str__(self):
+        return str(self.reparacion) + ' | ' + str(self.item)
+
+
+class ValidarSerieReparacionMaterialDetalle(models.Model):
+    reparacion_detalle = models.ForeignKey(ReparacionMaterialDetalle, on_delete=models.PROTECT, related_name='ValidarSerieReparacionMaterialDetalle_reparacion_detalle')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+    solucion_material = models.ForeignKey(SolucionMaterial, on_delete=models.CASCADE, blank=True, null=True)
+    observacion = models.TextField('Observación', blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieReparacionMaterialDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieReparacionMaterialDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Reparación de Material Detalle'
+        verbose_name_plural = 'Validar Series Reparaciones de Materiales Detalles'
+        ordering = [
+            'created_at',
+            ]
+
+    def __str__(self):
+        return "%s - %s" % (self.reparacion_detalle , str(self.serie))
+        

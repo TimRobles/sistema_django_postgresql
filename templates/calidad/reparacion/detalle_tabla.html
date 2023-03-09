@@ -1,0 +1,100 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<!-- TABLA -->
+<div class="table-responsive">
+    <table class="table">
+        <tbody>
+            <tr>
+                <td><b>Nro. Reparación</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_reparacion_material.numero_reparacion|numeroXn:6 }}</td>
+                <td class="px-4"></td>
+                <td><b>Sociedad</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_reparacion_material.sociedad }}</td>
+                <td class="px-4"></td>
+                <td><b>Fecha Documento</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_reparacion_material.created_at }}</td>
+                <td class="px-4"></td>
+                <td><b>Estado</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_reparacion_material.get_estado_display }}</td>
+            </tr>
+            <tr>
+                <td><b>Responsable</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_reparacion_material.responsable }}</td>
+                <td class="px-4"></td>
+                <td><b>Comentario</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_reparacion_material.observacion }}</td>
+                {% if contexto_reparacion_material.motivo_anulacion %}
+                    <td class="px-4"></td>
+                    <td><b>Motivo Anulación</b></td>
+                    <td class="px-2">:</td>
+                    <td>{{ contexto_reparacion_material.motivo_anulacion }}</td>
+                {% endif %}
+            </tr>
+        </tbody>
+    </table>
+
+<p></p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Descripción</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+            <th>Cantidad Series</th>
+            <th>Sede</th>
+            <th>Almacén</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for fila_detalle in contexto_reparacion_material_detalle  %}
+        <tr>
+            <td> {{ fila_detalle.item }} </td>
+            <td> {{ fila_detalle.material }} </td>
+            <td class="text-end"> {{ fila_detalle.cantidad }} </td>
+            <td> {{ fila_detalle.material.unidad_base }} </td>
+            <td class="text-end"> {{ fila_detalle.series_validar }} </td>
+            <td> {{ fila_detalle.sede }} </td>
+            <td> {{ fila_detalle.almacen.nombre }} </td>
+            <td class="text-center text-nowrap">
+                
+                {% if fila_detalle.reparacion.estado == 1 %}
+                    <button data-form-url="{% url 'calidad_app:reparacion_material_detalle_actualizar' fila_detalle.id %}"
+                        data-table-url="{% url 'calidad_app:reparacion_material_detalle_tabla' contexto_reparacion_material.id %}"
+                        data-keep-open="true"    
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'calidad_app:reparacion_material_detalle_eliminar' fila_detalle.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' fila_detalle.material.id fila_detalle.material.content_type.id %}"
+                        class="read btn swatch-purple btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
+                        <i class="bi bi-box-seam"></i>
+                    </button>
+                {% endif %}
+                <a href="{% url 'calidad_app:reparacion_material_validar_series_detalle' fila_detalle.id %}"
+                    class="btn btn-dark btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                    <i class="bi bi-upc-scan"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+            
+    </tbody>
+</table>
