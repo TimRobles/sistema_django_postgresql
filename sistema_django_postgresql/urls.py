@@ -44,6 +44,7 @@ urlpatterns = [
     path('reportes-panel/', include('applications.reportes_panel.urls')),
     path('nota/', include('applications.nota.urls')),
     path('garantia/', include('applications.garantia.urls')),
+    path('contabilidad/', include('applications.contabilidad.urls')),
 ]
 
 urlpatterns += [url(r'^ftp/(?P<path>.*)', serve, {'document_root': settings.FTP_ROOT})]

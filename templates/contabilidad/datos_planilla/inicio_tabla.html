@@ -1,0 +1,55 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Sociedad</th>
+            <th>Fecha ingreso</th>
+            <th>Fecha baja</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for datosplanilla in contexto_datos_planilla %}
+        <tr>
+            <td>
+                {% if datosplanilla.usuario.first_name %}
+                {{ datosplanilla.usuario.first_name}} {{ datosplanilla.usuario.last_name}}
+                {% else %}
+                {{ datosplanilla.usuario }}
+                {% endif %}
+            </td>
+            <td>{{ datosplanilla.sociedad}}</td>
+       
+            </td>
+            <td>{{ datosplanilla.fecha_inicio|date:'d/m/Y' }}</td>
+            <td>{{ datosplanilla.fecha_baja|date:'d/m/Y' }}</td>
+
+            <td>
+                {% if datosplanilla.estado == 1 %} 
+                <button data-form-url="{% url 'contabilidad_app:datos_planilla_actualizar' datosplanilla.id %}"
+                    data-table-url="{% url 'contabilidad_app:datos_planilla_tabla' %}"
+                    data-modal="modal-xl"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                {% endif %}
+
+                {% if datosplanilla.estado == 1 %}                   
+                    <button data-form-url="{% url 'contabilidad_app:datos_planilla_baja' datosplanilla.id %}"
+                        data-table-url="{% url 'contabilidad_app:datos_planilla_tabla' %}"
+                        class="update btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                {% endif %}
+                        
+
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

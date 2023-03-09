@@ -24,9 +24,7 @@ class FondoPensiones(models.Model):
 
     def __str__(self):
 
-        return str(self.id)
-
-
+        return str(self.nombre)
 
 class ComisionFondoPensiones(models.Model):
     fondo_pensiones = models.ForeignKey(FondoPensiones, on_delete=models.PROTECT)  
@@ -48,23 +46,21 @@ class ComisionFondoPensiones(models.Model):
     def __str__(self):
         return str(self.id)
 
-
-
 class DatosPlanilla(models.Model):
-    fecha_inicio = models.DateField('Fecha Inicio', auto_now=False, auto_now_add=False)
-    fecha_baja = models.DateField('Fecha Baja', auto_now=False, auto_now_add=False)
-    sueldo_bruto = models.DecimalField('Sueldo Bruto', max_digits=7, decimal_places=2)
-    moneda = models.ForeignKey(Moneda, null=True,  on_delete=models.PROTECT)
-    movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuarios', on_delete=models.PROTECT, related_name='DatosPlanilla_suspension_cuarta')
+    fecha_inicio = models.DateField('Fecha Inicio', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_baja = models.DateField('Fecha Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
+    sueldo_bruto = models.DecimalField('Sueldo Bruto', max_digits=7, decimal_places=2, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT,  blank=True, null=True)
+    movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=Decimal('0.00'),  blank=True, null=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='DatosPlanilla_suspension_cuarta')
     planilla = models.BooleanField()
     suspension_cuarta = models.BooleanField('Suspención de 4ta categoria', default=False)
-    fondo_pensiones = models.ForeignKey(FondoPensiones, on_delete=models.PROTECT)  
-    tipo_comision = models.IntegerField(choices=TIPOS_COMISION, default=1)
+    fondo_pensiones = models.ForeignKey(FondoPensiones, on_delete=models.PROTECT, blank=True, null=True)  
+    tipo_comision = models.IntegerField(choices=TIPOS_COMISION, blank=True, null=True)
     asignacion_familiar = models.BooleanField()
-    area = models.ForeignKey(Area, null=True,  on_delete=models.PROTECT)
-    cargo = models.ForeignKey(Cargo, null=True,  on_delete=models.PROTECT)
-    sociedad = models.ForeignKey(Sociedad, null=True,  on_delete=models.PROTECT)
+    area = models.ForeignKey(Area, on_delete=models.PROTECT, blank=True, null=True)
+    cargo = models.ForeignKey(Cargo, on_delete=models.PROTECT, blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad,on_delete=models.PROTECT,  blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -77,9 +73,7 @@ class DatosPlanilla(models.Model):
         verbose_name_plural = 'Datos Planillas'
 
     def __str__(self):
-        return str(self.id)
-
-
+        return str(self.usuario)
 
 class EsSalud(models.Model):
     fecha_inicio = models.DateField('Fecha Inicio', auto_now=False, auto_now_add=False)
@@ -98,28 +92,27 @@ class EsSalud(models.Model):
     def __str__(self):
         return str(self.id)
 
-
 class BoletaPago(models.Model):
     datos_planilla = models.ForeignKey(DatosPlanilla, null=True,  on_delete=models.PROTECT)
-    year = models.IntegerField(default=datetime.date.today().year, validators=[MinValueValidator(2015), MaxValueValidator(datetime.date.today().year)])
-    month = models.IntegerField()
-    tipo = models.IntegerField()
-    haber_mensual = models.DecimalField('Haber Mensual', max_digits=7, decimal_places=2)
-    lic_con_goce_haber = models.DecimalField('Licencia con goce de haber', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    dominical = models.DecimalField('Dominical', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    asig_familiar = models.DecimalField('Asignación Familiar', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    vacaciones = models.DecimalField('Vacaciones', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    gratificacion = models.DecimalField('Gratificación', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    ley29351 = models.DecimalField('Ley29351', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    bonif_1mayo = models.DecimalField('Bonificación 1 Mayo', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    essalud = models.DecimalField('Essalud', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    aporte_obligatorio = models.DecimalField('Aporte Obligatorio', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    comision_porcentaje = models.DecimalField('Comisión Porcentaje', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    prima_seguro = models.DecimalField('Prima Seguro', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    impuesto_quinta = models.DecimalField('Impuesto de Quinta', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    neto_recibido = models.DecimalField('Neto Recibido', max_digits=7, decimal_places=2, default=Decimal('0.00'))
-    estado = models.IntegerField(choices=ESTADOS, default=1)
+    year = models.IntegerField(validators=[MinValueValidator(2015)], blank=True, null=True)
+    month = models.IntegerField(blank=True, null=True)
+    tipo = models.IntegerField(blank=True, null=True)
+    haber_mensual = models.DecimalField('Haber Mensual', max_digits=7, decimal_places=2, blank=True, null=True)
+    lic_con_goce_haber = models.DecimalField('Licencia con goce de haber', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    dominical = models.DecimalField('Dominical', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    asig_familiar = models.DecimalField('Asignación Familiar', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    vacaciones = models.DecimalField('Vacaciones', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    gratificacion = models.DecimalField('Gratificación', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    ley29351 = models.DecimalField('Ley29351', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    bonif_1mayo = models.DecimalField('Bonificación 1 Mayo', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    essalud = models.DecimalField('Essalud', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    aporte_obligatorio = models.DecimalField('Aporte Obligatorio', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    comision_porcentaje = models.DecimalField('Comisión Porcentaje', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    prima_seguro = models.DecimalField('Prima Seguro', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    impuesto_quinta = models.DecimalField('Impuesto de Quinta', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    neto_recibido = models.DecimalField('Neto Recibido', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='BoletaPago_created_by', editable=False)
@@ -132,8 +125,6 @@ class BoletaPago(models.Model):
 
     def __str__(self):
         return str(self.id)
-
-
 
 class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)

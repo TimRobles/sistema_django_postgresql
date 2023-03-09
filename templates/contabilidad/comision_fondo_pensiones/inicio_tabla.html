@@ -1,0 +1,39 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha Vigencia</th>
+            <th class="text-center">Fondo de Pensiones</th>
+            <th class="text-center">Aporte Obligatorio</th>
+            <th class="text-center">Comision Flujo</th>
+            <th class="text-center">Comision Flujo Mixta</th>
+            <th class="text-center">Prima Seguro</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for comision in contexto_comision %}
+        <tr>
+            <td>{{ comision.fecha_vigencia|date:'d/m/Y' }}</td>
+            <td class="text-center">{{ comision.fondo_pensiones }}</td>
+            <td class="text-center">{{ comision.aporte_obligatorio }}</td>
+            <td class="text-center">1 {{ comision.comision_flujo }} </td>
+            <td class="text-center">{{ comision.comision_flujo_mixta }} </td>
+            <td class="text-center">{{ comision.prima_seguro }} </td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'contabilidad_app:comision_actualizar' comision.id %}"
+                    data-table-url="{% url 'contabilidad_app:comision_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'contabilidad_app:comision_eliminar' comision.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
