@@ -119,6 +119,13 @@ class Serie(models.Model):
             return ""
 
     @property
+    def ultimo_movimiento(self):
+        if self.serie_movimiento_almacen.all():
+            return self.serie_movimiento_almacen.latest('created_at')
+        else:
+            return ""
+
+    @property
     def almacen(self):
         if self.serie_movimiento_almacen.all():
             return self.serie_movimiento_almacen.latest('id').almacen
