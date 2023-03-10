@@ -7,6 +7,7 @@
         <a href="{% url 'garantia_app:ingreso_garantia_inicio' %}" class="btn btn-danger">Regresar</a>
     </div>
 
+    {% if ingreso.estado == 1 %}
     <div class="col-auto">
         <button data-form-url="{% url 'garantia_app:ingreso_garantia_observacion' ingreso.id %}"
             data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id %}"
@@ -14,17 +15,18 @@
             Observaciones
         </button>
     </div>
+    {% endif %}
 </div>
 
 
 <div class="row mt-3">
     <div class="col-lg-6 table-responsive mb-3">
-        <table class="table">
+        <table>
             <tbody>
                 <tr>
                     <th class="pe-2">Razón Social:</th>
                     <td>{{ ingreso.cliente.razon_social }}</td>
-                    <td class="ps-2" rowspan="4">
+                    <td class="ps-2" rowspan="2">
 
                         {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_cliente' ingreso.id %}"
@@ -68,12 +70,12 @@
     </div>
 
     <div class="col-lg-6 table-responsive mb-3">
-        <table class="table">
+        <table>
             <tbody>
                 <tr>
                     <th class="pe-2">Fecha Ingreso:</th>
                     <td>{{ ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
-                    <td class="px-2" rowspan="2"> 
+                    <td class="ps-2" rowspan="2"> 
                         {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_guardar' ingreso.id %}"
                             class="delete btn btn-primary">
@@ -99,8 +101,8 @@
                 <tr>
                     <th class="pe-2">N° Ingreso:</th>
                     <td class="text-nowrap">
-                        {% if ingreso.nro_ingreso_garantia %}
-                        {{ ingreso.nro_ingreso_garantia|numeroXn:6 }}
+                        {% if ingreso.nro_ingreso_reclamo_garantia %}
+                        {{ ingreso.nro_ingreso_reclamo_garantia|numeroXn:6 }}
                         {% endif %}
                     </td>
                 </tr>
@@ -111,7 +113,7 @@
                 <tr>
                     <th class="pe-2">Encargado:</th>
                     <td>{{ ingreso.encargado }}</td>
-                    <td rowspan="2">
+                    <td class="ps-2">
                         {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_encargado' ingreso.id %}"
                             data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
@@ -124,7 +126,7 @@
                 <tr>
                     <th class="pe-2">Sociedad:</th>
                     <td>{{ ingreso.sociedad }}</td>
-                    <td rowspan="2">
+                    <td class="ps-2">
                         {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_sociedad' ingreso.id %}"
                             data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
@@ -165,9 +167,12 @@
 <button data-form-url="{% url 'garantia_app:ingreso_garantia_agregar_material' ingreso.id %}"
     data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
     data-keep-open="True"
-    class="update btn btn-primary" title="Agregar Material">
+    class="update btn btn-primary">
     Agregar Material
 </button>
+<a href="{% url 'garantia_app:serie_ingreso_garantia_ver' ingreso.id %}" class="update btn btn-primary">
+    Agregar Serie
+</a>
 {% endif %}
 
 <div class="table-responsive mt-3">
@@ -177,7 +182,7 @@
                 <th>Item</th>
                 <th style="min-width: 500px;">Material</th>
                 <th class="text-end">Cantidad</th>
-                <th class="text-end">Prec. Venta </th>
+                <th class="text-end">Series</th>
                 <th > Acciones </th>
             </tr>
         </thead>
@@ -187,8 +192,9 @@
                     <td> {{ material.item }} </td>
                     <td> {{ material.material }} </td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ ingreso.moneda.simbolo }} {{ material.precio_venta|redondear:3|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.series|redondear|intcomma }}</td>
                     <td>
+                        {% if ingreso.estado == 1 %}
                         <button data-form-url="{% url 'garantia_app:ingreso_garantia_editar_material' material.id %}"
                             data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id %}"
                             class="create btn btn-warning btn-sm"
@@ -200,7 +206,12 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                             <i class="bi bi-x-lg"></i>
                         </button>
-        
+                        
+                        <a href="{% url 'garantia_app:serie_ingreso_garantia_ver' ingreso.id material.id %}" class="update btn btn-primary">
+                            Agregar Serie
+                        </a>
+                            
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

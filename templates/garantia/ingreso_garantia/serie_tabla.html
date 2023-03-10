@@ -1,0 +1,34 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Serie</th>
+            <th>Material</th>
+            <th>Cliente</th>
+            <th>Documento</th>
+            <th>Almacén</th>
+            <th>Sociedad</th>
+            <th>Estado</th>
+            <th class="text-nowrap text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for serie in series %}
+        <tr>
+            <td>{{ serie.serie }}</td>
+            <td>{{ serie.ingreso_reclamo_garantia_detalle.producto }}</td>
+            <td>{{ serie.serie.cliente }}</td>
+            <td>{{ serie.serie.documento.nota_salida.documentos_venta.0 }}</td>
+            <td>{{ serie.serie.almacen }}</td>
+            <td>{{ serie.serie.sociedad }}</td>
+            <td>{{ serie.serie.estado }}</td>
+            <td class="text-nowrap text-center">
+                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_eliminar' serie.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

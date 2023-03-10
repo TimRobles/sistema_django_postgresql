@@ -569,30 +569,6 @@ class SolicitudPrestamoMaterialesGenerarNotaSalidaView(PermissionRequiredMixin, 
         return context
 
 
-class ClienteForm(forms.Form):
-    interlocutor_cliente = forms.ModelChoiceField(queryset=ClienteInterlocutor.objects.all(), required=False)
-
-
-def ClienteView(request, id_interlocutor_cliente):
-    form = ClienteForm()
-    lista = []
-    relaciones = ClienteInterlocutor.objects.filter(cliente=id_interlocutor_cliente)
-    for relacion in relaciones:
-        lista.append(relacion.interlocutor.id)
-    form.fields['interlocutor_cliente'].queryset = InterlocutorCliente.objects.filter(id__in=lista)
-    data = dict()
-    if request.method == 'GET':
-        template = 'includes/form.html'
-        context = {'form': form}
-
-        data['info'] = render_to_string(
-            template,
-            context,
-            request=request
-        ).replace('selected', 'selected=""')
-        return JsonResponse(data)
-
-
 class NotaSalidaListView(PermissionRequiredMixin, FormView):
     permission_required = ('logistica.view_notasalida')
     form_class = NotaSalidaBuscarForm

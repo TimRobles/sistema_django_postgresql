@@ -64,10 +64,10 @@ class EstadoSerie(models.Model):
 
 class Serie(models.Model):
     serie_base = models.CharField('Nro. Serie', max_length=200)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Material
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
-    nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE)
+    nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE, blank=True, null=True)
     serie_movimiento_almacen = models.ManyToManyField(MovimientosAlmacen, blank=True, related_name='Serie_serie_movimiento_almacen')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -119,6 +119,14 @@ class Serie(models.Model):
             ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
             if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO':
                 return self.serie_movimiento_almacen.latest('id').documento_proceso.cliente
+        return ""
+
+    @property
+    def documento(self):
+        if self.serie_movimiento_almacen.all():
+            ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
+            if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO':
+                return self.serie_movimiento_almacen.latest('id').documento_proceso
         return ""
 
     def __str__(self):

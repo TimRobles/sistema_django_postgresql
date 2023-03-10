@@ -955,26 +955,3 @@ class GuiaEliminarView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 
-class ClienteInterlocutorForm(forms.Form):
-    cliente_interlocutor = forms.ModelChoiceField(queryset = ClienteInterlocutor.objects.all(), required=False)
-
-def ClienteInterlocutorView(request, id_cliente):
-    form = ClienteInterlocutorForm()
-    lista = []
-    relaciones = ClienteInterlocutor.objects.filter(cliente = id_cliente)
-    for relacion in relaciones:
-        lista.append(relacion.interlocutor.id)
-
-    form.fields['cliente_interlocutor'].queryset = InterlocutorCliente.objects.filter(id__in = lista)
-    data = dict()
-    if request.method == 'GET':
-        template = 'includes/form.html'
-        context = {'form':form}
-
-        data['info'] = render_to_string(
-            template,
-            context,
-            request=request
-        ).replace('selected', 'selected=""')
-        return JsonResponse(data)
-

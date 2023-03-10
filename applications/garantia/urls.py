@@ -21,6 +21,9 @@ urlpatterns = [
     path('ingreso-garantia/editar-material/<pk>/', views.IngresoReclamoGarantiaMaterialUpdateView.as_view(), name='ingreso_garantia_editar_material'),
     path('ingreso-garantia/eliminar-material/<pk>/', views.IngresoReclamoGarantiaMaterialDeleteView.as_view(), name='ingreso_garantia_eliminar_material'),
 
+    path('serie-ingreso-garantia/ver/<int:id_ingreso>/', views.SerieIngresoReclamoGarantiaView.as_view(), name='serie_ingreso_garantia_ver'),
+    path('serie-ingreso-garantia/ver/<int:id_ingreso>/<int:id_ingreso_detalle>/', views.SerieIngresoReclamoGarantiaDetalleView.as_view(), name='serie_ingreso_garantia_ver'),
+    path('serie-ingreso-garantia/eliminar/<pk>/', views.SerieIngresoReclamoGarantiaMaterialDeleteView.as_view(), name='serie_ingreso_garantia_eliminar'),
 
     path('control-garantia/<int:id_ingreso>/',views.ControlCalidadReclamoGarantiaListView.as_view(),name='control_garantia_inicio'),
     path('control-garantia/ver/<int:id_control>/', views.ControlCalidadReclamoGarantiaVerView.as_view(), name='control_garantia_ver'),

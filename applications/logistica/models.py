@@ -284,6 +284,21 @@ class NotaSalida(models.Model):
         return documentos
 
     @property
+    def documentos_venta_objeto(self):
+        documentos = []
+        try:
+            for factura in self.confirmacion_venta.FacturaVenta_confirmacion.filter(estado=4):
+                documentos.append(factura)
+        except:
+            pass
+        try:
+            for boleta in self.confirmacion_venta.BoletaVenta_confirmacion.filter(models.Q(estado=4) | models.Q(estado=5)):
+                documentos.append(boleta)
+        except:
+            pass
+        return documentos
+
+    @property
     def documentos_despacho(self):
         guias = []
         try:

@@ -12,20 +12,20 @@ from applications.garantia.models import IngresoReclamoGarantia, IngresoReclamoG
 
 class IngresoReclamoGarantiaBuscarForm(forms.Form):
     fecha_ingreso = forms.DateField(required=False, widget=forms.DateInput(attrs ={'type':'date',},format = '%Y-%m-%d',))
-    nro_ingreso_garantia = forms.IntegerField(required=False)
+    nro_ingreso_reclamo_garantia = forms.IntegerField(required=False)
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
     
     def __init__(self, *args, **kwargs):
         filtro_fecha_ingreso = kwargs.pop('filtro_fecha_ingreso')
-        filtro_nro_ingreso_garantia = kwargs.pop('filtro_nro_ingreso_garantia')
+        filtro_nro_ingreso_reclamo_garantia = kwargs.pop('filtro_nro_ingreso_reclamo_garantia')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_sociedad = kwargs.pop('filtro_sociedad')
 
         super(IngresoReclamoGarantiaBuscarForm, self).__init__(*args, **kwargs)
 
         self.fields['fecha_ingreso'].initial = filtro_fecha_ingreso
-        self.fields['nro_ingreso_garantia'].initial = filtro_nro_ingreso_garantia
+        self.fields['nro_ingreso_reclamo_garantia'].initial = filtro_nro_ingreso_reclamo_garantia
         self.fields['cliente'].initial = filtro_cliente
         self.fields['sociedad'].initial = filtro_sociedad
 
@@ -101,13 +101,11 @@ class IngresoReclamoGarantiaObservacionForm(BSModalModelForm):
 class IngresoReclamoGarantiaMaterialForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=Material.objects.filter(mostrar=True))
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
-    precio_venta = forms.DecimalField(max_digits=22, decimal_places=10, required=False)
     class Meta:
         model = IngresoReclamoGarantiaDetalle
         fields=(
             'material',
             'cantidad',
-            'precio_venta',
             )
 
     def __init__(self, *args, **kwargs):
@@ -123,7 +121,6 @@ class  IngresoReclamoGarantiaMaterialUpdateForm(BSModalModelForm):
         model = IngresoReclamoGarantiaDetalle
         fields=(
             'cantidad',
-            'precio_venta',
             )
 
     def __init__(self, *args, **kwargs):
@@ -132,6 +129,21 @@ class  IngresoReclamoGarantiaMaterialUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 0.001
+
+
+class SerieIngresoReclamoGarantiaDetalleForm(forms.Form):
+    serie_base = forms.CharField(label='Nro. Serie', max_length=200, required=False)
+    class Meta:
+        fields=(
+            'serie_base',
+            )
+
+    def __init__(self, *args, **kwargs):
+        filtro_serie_base = kwargs.pop('filtro_serie_base')
+        super(SerieIngresoReclamoGarantiaDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['serie_base'].initial = filtro_serie_base
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 
 ######################### CONTROL RECLAMO GARANTÍA ##############################################
@@ -155,7 +167,7 @@ class ControlCalidadReclamoGarantiaEncargadoForm(BSModalModelForm):
     class Meta:
         model = ControlCalidadReclamoGarantia
         fields = (
-            'encargado',
+            'observacion',
             )
 
     def __init__(self, *args, **kwargs):
@@ -197,7 +209,7 @@ class SalidaReclamoGarantiaEncargadoForm(BSModalModelForm):
     class Meta:
         model = SalidaReclamoGarantia
         fields = (
-            'encargado',
+            'observacion',
             )
 
     def __init__(self, *args, **kwargs):

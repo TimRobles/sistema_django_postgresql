@@ -14,6 +14,7 @@ function seleccionar_interlocutor(id_cliente) {
             $interlocutor.innerHTML = xmlDoc.getElementById('id_cliente_interlocutor').innerHTML;
             console.log($interlocutor.innerHTML)
         }else{
+            $interlocutor.innerHTML = '<option value="" selected="">---------</option>';
             console.log('error')
         }
     }

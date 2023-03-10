@@ -28,7 +28,6 @@ urlpatterns = [
     path('guia/serie/<pk>/', views.GuiaSerieUpdateView.as_view(), name='guia_serie'),
     path('guia/cliente/<pk>/', views.GuiaClienteUpdateView.as_view(), name='guia_cliente'),
     path('guia/eliminar/<pk>/', views.GuiaEliminarView.as_view(), name='guia_eliminar'),
-    path('guia/cliente-interlocutor/<int:id_cliente>/', views.ClienteInterlocutorView, name='guia_cliente_interlocutor'),
     
     path('guia-detalle/peso/<pk>/', views.GuiaDetallePesoView.as_view(), name='guia_detalle_peso'),
     

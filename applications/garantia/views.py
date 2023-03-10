@@ -1,4 +1,5 @@
 from django import forms
+from applications.calidad.models import Serie
 from applications.importaciones import*
 from applications.funciones import registrar_excepcion, numeroXn
 
@@ -12,7 +13,7 @@ from .models import(
     ControlCalidadReclamoGarantia,
     ControlCalidadReclamoGarantiaDetalle,
     SalidaReclamoGarantia,
-    SalidaReclamoGarantiaDetalle,
+    SerieIngresoReclamoGarantiaDetalle,
 )
 from .forms import(
     IngresoReclamoGarantiaBuscarForm,
@@ -28,6 +29,7 @@ from .forms import(
     SalidaReclamoGarantiaBuscarForm,
     SalidaReclamoGarantiaEncargadoForm,
     SalidaReclamoGarantiaObservacionForm,
+    SerieIngresoReclamoGarantiaDetalleForm,
 )
 
 
@@ -39,46 +41,46 @@ class IngresoReclamoGarantiaListView(FormView):
     def get_form_kwargs(self):
         kwargs = super(IngresoReclamoGarantiaListView, self).get_form_kwargs()
         kwargs['filtro_fecha_ingreso'] = self.request.GET.get('fecha_ingreso')
-        kwargs['filtro_nro_ingreso_garantia'] = self.request.GET.get('nro_ingreso_garantia')
+        kwargs['filtro_nro_ingreso_reclamo_garantia'] = self.request.GET.get('nro_ingreso_reclamo_garantia')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(IngresoReclamoGarantiaListView, self).get_context_data(**kwargs)
-        ingreso_garantia = IngresoReclamoGarantia.objects.all()
+        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.all()
 
         filtro_fecha_ingreso = self.request.GET.get('fecha_ingreso')
-        filtro_nro_ingreso_garantia = self.request.GET.get('nro_ingreso_garantia')
+        filtro_nro_ingreso_reclamo_garantia = self.request.GET.get('nro_ingreso_reclamo_garantia')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_sociedad = self.request.GET.get('sociedad')
 
         contexto_filtro = []
         if filtro_fecha_ingreso:
             condicion = Q(fecha_ingreso = datetime.strptime(filtro_fecha_ingreso, "%Y-%m-%d").date())
-            ingreso_garantia = ingreso_garantia.filter(condicion)
+            ingreso_reclamo_garantia = ingreso_reclamo_garantia.filter(condicion)
             contexto_filtro.append("fecha_ingreso=" + filtro_fecha_ingreso)
 
-        if filtro_nro_ingreso_garantia:
-            condicion = Q(numero_nota__icontains = filtro_nro_ingreso_garantia)
-            ingreso_garantia = ingreso_garantia.filter(condicion)
-            contexto_filtro.append("nro_ingreso_garantia=" + filtro_nro_ingreso_garantia)
+        if filtro_nro_ingreso_reclamo_garantia:
+            condicion = Q(numero_nota__icontains = filtro_nro_ingreso_reclamo_garantia)
+            ingreso_reclamo_garantia = ingreso_reclamo_garantia.filter(condicion)
+            contexto_filtro.append("nro_ingreso_reclamo_garantia=" + filtro_nro_ingreso_reclamo_garantia)
 
         if filtro_cliente:
             condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
             for palabra in filtro_cliente.split(" ")[1:]:
                 condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
-            ingreso_garantia = ingreso_garantia.filter(condicion)
+            ingreso_reclamo_garantia = ingreso_reclamo_garantia.filter(condicion)
             contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_sociedad:
             condicion = Q(sociedad__id = filtro_sociedad)
-            ingreso_garantia = ingreso_garantia.filter(condicion)
+            ingreso_reclamo_garantia = ingreso_reclamo_garantia.filter(condicion)
             contexto_filtro.append("sociedad=" + filtro_sociedad)
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
-        context['contexto_ingreso_garantia'] = ingreso_garantia
+        context['contexto_ingreso_garantia'] = ingreso_reclamo_garantia
         return context
     
 def IngresoReclamoGarantiaCreateView(request):
@@ -97,16 +99,7 @@ class IngresoReclamoGarantiaVerView(TemplateView):
     def get_context_data(self, **kwargs):
         obj = IngresoReclamoGarantia.objects.get(id = kwargs['id_ingreso'])
     
-        materiales = None
-        try:
-            materiales = obj.IngresoReclamoGarantiaDetalle_ingreso_garantia.all()
-
-            for material in materiales:
-                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-
-        except:
-            pass
-        
+        materiales = IngresoReclamoGarantia.objects.ver_detalle(kwargs['id_ingreso'])
         sociedades = Sociedad.objects.filter(estado_sunat=1)
 
         context = super(IngresoReclamoGarantiaVerView, self).get_context_data(**kwargs)
@@ -122,16 +115,7 @@ def IngresoReclamoGarantiaVerTabla(request, id_ingreso):
         template = 'garantia/ingreso_garantia/detalle_tabla.html'
         obj = IngresoReclamoGarantia.objects.get(id=id_ingreso)
 
-        materiales = None
-        try:
-            materiales = obj.IngresoReclamoGarantiaDetalle_ingreso_garantia.all()
-
-            for material in materiales:
-                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-    
-        except:
-            pass
-
+        materiales = IngresoReclamoGarantia.objects.ver_detalle(id_ingreso)
         sociedades = Sociedad.objects.filter(estado_sunat=1)
 
         context = {}
@@ -233,7 +217,6 @@ class IngresoReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
         context['id_ingreso'] = self.object.id
         return context
 
-
 class IngresoReclamoGarantiaMaterialView(BSModalFormView):
     template_name = "garantia/ingreso_garantia/form_material.html"
     form_class = IngresoReclamoGarantiaMaterialForm
@@ -245,7 +228,7 @@ class IngresoReclamoGarantiaMaterialView(BSModalFormView):
         try:
             if self.request.session['primero']:
                 ingreso = IngresoReclamoGarantia.objects.get(id = self.kwargs['id_ingreso'])
-                item = len(IngresoReclamoGarantiaDetalle.objects.filter(ingreso_garantia = ingreso))
+                item = len(IngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia = ingreso))
 
                 material = form.cleaned_data.get('material')
                 cantidad = form.cleaned_data.get('cantidad')
@@ -253,12 +236,14 @@ class IngresoReclamoGarantiaMaterialView(BSModalFormView):
                 obj, created = IngresoReclamoGarantiaDetalle.objects.get_or_create(
                     content_type = ContentType.objects.get_for_model(material),
                     id_registro = material.id,
-                    ingreso_garantia = ingreso,
+                    ingreso_reclamo_garantia = ingreso,
                 )
 
                 if created:
                     obj.item = item + 1
-                    obj.cantidad = cantidad  
+                    obj.cantidad = cantidad
+                else:
+                    obj.cantidad = obj.cantidad + cantidad  
 
                 registro_guardar(obj, self.request)
                 obj.save()
@@ -308,9 +293,7 @@ class IngresoReclamoGarantiaMaterialDeleteView(BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.get_object().ingreso_garantia.id})
-
-
+        return reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.get_object().ingreso_reclamo_garantia.id})
 
     def get_context_data(self, **kwargs):
         context = super(IngresoReclamoGarantiaMaterialDeleteView, self).get_context_data(**kwargs)
@@ -319,11 +302,31 @@ class IngresoReclamoGarantiaMaterialDeleteView(BSModalDeleteView):
         context['item'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
         return context
 
-
-
-class IngresoReclamoGarantiaGuardarView(BSModalDeleteView):
+class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "garantia/ingreso_garantia/form_guardar.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_cliente = True
+        error_sociedad = True
+        context['titulo'] = 'Error de guardar'
+        if self.get_object().cliente and self.get_object().cliente_interlocutor:
+            error_cliente = False
+        if self.get_object().sociedad:
+            error_sociedad = False
+        
+        if error_cliente:
+            context['texto'] = 'Elegir un cliente.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_sociedad:
+            context['texto'] = 'Elegir una sociedad.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super(IngresoReclamoGarantiaGuardarView, self).dispatch(request, *args, **kwargs)
         
     def get_success_url(self, **kwargs):
         return reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.object.id})
@@ -334,8 +337,8 @@ class IngresoReclamoGarantiaGuardarView(BSModalDeleteView):
         try:
             self.object = self.get_object()
             self.object.estado = 2
-            nro_ingreso_garantia = IngresoReclamoGarantia.objects.all().aggregate(Count('nro_ingreso_garantia'))['nro_ingreso_garantia__count'] + 1
-            self.object.nro_ingreso_garantia = nro_ingreso_garantia
+            nro_ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.all().aggregate(Count('nro_ingreso_reclamo_garantia'))['nro_ingreso_reclamo_garantia__count'] + 1
+            self.object.nro_ingreso_reclamo_garantia = nro_ingreso_reclamo_garantia
             self.object.fecha_ingreso = datetime. now()
 
             registro_guardar(self.object, self.request)
@@ -366,10 +369,10 @@ class IngresoControlCalidadView(BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
-            detalles = self.object.IngresoReclamoGarantiaDetalle_ingreso_garantia.all()
+            detalles = self.object.IngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia.all()
    
             calidad_garantia = ControlCalidadReclamoGarantia.objects.create(
-                ingreso_garantia = self.object,
+                ingreso_reclamo_garantia = self.object,
                 cliente = self.object.cliente,
                 sociedad = self.object.sociedad,
                 created_by = self.request.user,
@@ -403,6 +406,229 @@ class IngresoControlCalidadView(BSModalDeleteView):
         context['titulo'] = "Calidad"
         context['texto'] = "¿Está seguro de generar el Control de Calidad?"
         # context['item'] = "Control %s - %s" % (numeroXn(self.object.nro_calidad_garantia, 6), self.object.cliente)
+        return context
+
+
+class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
+    template_name = 'garantia/ingreso_garantia/serie.html'
+    form_class = SerieIngresoReclamoGarantiaDetalleForm
+    success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_ingreso'])
+        error_cliente = True
+        error_sociedad = True
+        context['titulo'] = 'Error de guardar'
+        if ingreso_reclamo_garantia.cliente and ingreso_reclamo_garantia.cliente_interlocutor:
+            error_cliente = False
+        if ingreso_reclamo_garantia.sociedad:
+            error_sociedad = False
+        
+        if error_cliente:
+            context['texto'] = 'Elegir un cliente.'
+            return render(request, '403.html', context)
+        if error_sociedad:
+            context['texto'] = 'Elegir una sociedad.'
+            return render(request, '403.html', context)
+
+        if not self.has_permission():
+            return render(request, '403.html')
+        return super(SerieIngresoReclamoGarantiaView, self).dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        print('get_form_kwargs')
+        kwargs = super(SerieIngresoReclamoGarantiaView, self).get_form_kwargs()
+        if self.serie_encontrada == "Serie encontrada":
+            kwargs['filtro_serie_base'] = None
+        else:
+            kwargs['filtro_serie_base'] = self.request.GET.get('serie_base')
+        return kwargs
+    
+    def get(self, request, *args, **kwargs):
+        print("Get")
+        serie_base = self.request.GET.get('serie_base')
+        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_ingreso'])
+        self.serie_encontrada = ""
+        if serie_base:
+            try:
+                serie = Serie.objects.get(serie_base=serie_base)
+                item = len(IngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia = ingreso_reclamo_garantia))
+                ingreso_reclamo_garantia_detalle, created = IngresoReclamoGarantiaDetalle.objects.get_or_create(
+                    content_type = serie.content_type,
+                    id_registro = serie.id_registro,
+                    ingreso_reclamo_garantia = ingreso_reclamo_garantia,
+                )
+
+                if created:
+                    ingreso_reclamo_garantia_detalle.item = item + 1
+                    ingreso_reclamo_garantia_detalle.cantidad = 1
+                else:
+                    if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
+                        ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
+
+                registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
+                ingreso_reclamo_garantia_detalle.save()
+                documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+
+                if ingreso_reclamo_garantia.cliente == serie.cliente:
+                    if ingreso_reclamo_garantia.sociedad == serie.sociedad:
+                        SerieIngresoReclamoGarantiaDetalle.objects.create(
+                            ingreso_reclamo_garantia_detalle=ingreso_reclamo_garantia_detalle,
+                            serie=serie,
+                            content_type_documento=ContentType.objects.get_for_model(documento),
+                            id_registro_documento=documento.id,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        self.serie_encontrada = "Serie encontrada"
+                    else:
+                        self.serie_encontrada = "La serie pertenece a otra SOCIEDAD"
+                else:
+                    self.serie_encontrada = "La serie pertenece a otro CLIENTE"
+
+            except:
+                self.serie_encontrada = "No se encontró la serie"
+                print(serie_base)
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        print("get_context_data")
+        context = super(SerieIngresoReclamoGarantiaView, self).get_context_data(**kwargs)
+        context['serie_encontrada'] = self.serie_encontrada
+        context['series'] = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia__id=self.kwargs['id_ingreso'])
+        context['regresar'] = reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
+        return context
+
+
+class SerieIngresoReclamoGarantiaDetalleView(PermissionRequiredMixin, FormView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
+    template_name = 'garantia/ingreso_garantia/serie.html'
+    form_class = SerieIngresoReclamoGarantiaDetalleForm
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_ingreso'])
+        error_cliente = True
+        error_sociedad = True
+        context['titulo'] = 'Error de guardar'
+        if ingreso_reclamo_garantia.cliente and ingreso_reclamo_garantia.cliente_interlocutor:
+            error_cliente = False
+        if ingreso_reclamo_garantia.sociedad:
+            error_sociedad = False
+        
+        if error_cliente:
+            context['texto'] = 'Elegir un cliente.'
+            return render(request, '403.html', context)
+        if error_sociedad:
+            context['texto'] = 'Elegir una sociedad.'
+            return render(request, '403.html', context)
+
+        if not self.has_permission():
+            return render(request, '403.html')
+        return super(SerieIngresoReclamoGarantiaDetalleView, self).dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        print('get_form_kwargs')
+        kwargs = super(SerieIngresoReclamoGarantiaDetalleView, self).get_form_kwargs()
+        if self.serie_encontrada == "Serie ENCONTRADA" or self.serie_encontrada == "Serie CREADA":
+            kwargs['filtro_serie_base'] = None
+        else:
+            kwargs['filtro_serie_base'] = self.request.GET.get('serie_base')
+        return kwargs
+    
+    def get(self, request, *args, **kwargs):
+        print("Get")
+        serie_base = self.request.GET.get('serie_base')
+        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_ingreso'])
+        ingreso_reclamo_garantia_detalle = IngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_ingreso_detalle'])
+        self.serie_encontrada = ""
+        if serie_base:
+            try:
+                if ingreso_reclamo_garantia_detalle.producto.control_serie:
+                    serie = Serie.objects.get(serie_base=serie_base)
+                    documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                    content_type_documento = ContentType.objects.get_for_model(documento)
+                    id_registro_documento = documento.id
+                    cliente = serie.cliente
+                else:
+                    serie = Serie.objects.create(
+                        serie_base=serie_base,
+                        content_type=ingreso_reclamo_garantia_detalle.content_type,
+                        id_registro=ingreso_reclamo_garantia_detalle.id_registro,
+                        sociedad=ingreso_reclamo_garantia.sociedad,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,                        
+                        )
+                    content_type_documento = None
+                    id_registro_documento = None
+                    cliente = ingreso_reclamo_garantia.cliente
+                if ingreso_reclamo_garantia_detalle.producto == serie.producto:
+                    if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
+                        ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
+                        registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
+                        ingreso_reclamo_garantia_detalle.save()
+
+                    if ingreso_reclamo_garantia.cliente == cliente:
+                        if ingreso_reclamo_garantia.sociedad == serie.sociedad:
+                            SerieIngresoReclamoGarantiaDetalle.objects.create(
+                                ingreso_reclamo_garantia_detalle=ingreso_reclamo_garantia_detalle,
+                                serie=serie,
+                                content_type_documento=content_type_documento,
+                                id_registro_documento=id_registro_documento,
+                                created_by=self.request.user,
+                                updated_by=self.request.user,
+                            )
+                            if content_type_documento:
+                                self.serie_encontrada = "Serie ENCONTRADA"
+                            else:
+                                self.serie_encontrada = "Serie CREADA"
+                        else:
+                            self.serie_encontrada = "La serie pertenece a otra SOCIEDAD"
+                    else:
+                        self.serie_encontrada = "La serie pertenece a otro CLIENTE"
+                else:
+                    self.serie_encontrada = "La serie pertenece a otro PRODUCTO"
+
+            except Exception as e:
+                print(e)
+                self.serie_encontrada = "No se encontró la serie"
+                print(serie_base)
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        print("get_context_data")
+        context = super(SerieIngresoReclamoGarantiaDetalleView, self).get_context_data(**kwargs)
+        context['serie_encontrada'] = self.serie_encontrada
+        context['series'] = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__id=self.kwargs['id_ingreso_detalle'])
+        context['regresar'] = reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
+        return context
+    
+
+class SerieIngresoReclamoGarantiaMaterialDeleteView(BSModalDeleteView):
+    model = SerieIngresoReclamoGarantiaDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('garantia_app:serie_ingreso_garantia_ver', kwargs={'id_ingreso':self.get_object().ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.id})
+
+    def delete(self, request, *args, **kwargs):
+        serie_ingreso_reclamo_garantia_detalle = self.get_object()
+        if not serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.producto.control_serie:
+            id = serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.id
+            serie = serie_ingreso_reclamo_garantia_detalle.serie
+            serie.delete()
+            return HttpResponseRedirect(reverse_lazy('garantia_app:serie_ingreso_garantia_ver', kwargs={'id_ingreso':id}))
+        #Agregar eliminar serie en caso de producto sin serie
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(SerieIngresoReclamoGarantiaMaterialDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Material"
+        context['item'] = self.get_object()
         return context
 
 
@@ -551,16 +777,16 @@ class ControlSalidaGarantiaView(BSModalDeleteView):
                 updated_by = self.request.user,
             )
 
-            for detalle in detalles:
-                SalidaReclamoGarantiaDetalle.objects.create(
-                    item = detalle.item,
-                    content_type = detalle.content_type,
-                    id_registro = detalle.id_registro,
-                    cantidad = detalle.cantidad,
-                    salida_garantia = salida_garantia,
-                    created_by = self.request.user,
-                    updated_by = self.request.user,
-                )
+            # for detalle in detalles:
+            #     SalidaReclamoGarantiaDetalle.objects.create(
+            #         item = detalle.item,
+            #         content_type = detalle.content_type,
+            #         id_registro = detalle.id_registro,
+            #         cantidad = detalle.cantidad,
+            #         salida_garantia = salida_garantia,
+            #         created_by = self.request.user,
+            #         updated_by = self.request.user,
+            #     )
 
             self.object.estado = 3
             registro_guardar(self.object, self.request)
