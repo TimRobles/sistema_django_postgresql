@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block titulo %}
+    Detalle de Reparación de Material
+{% endblock titulo %}
+    
+
+{% block contenido %}
+    <h3>Detalle de Reparación de Material
+        
+        {% if contexto_reparacion_material.estado == 1 %}
+            <button class="create badge bg-primary "
+                data-form-url="{% url 'calidad_app:reparacion_material_detalle_registrar' contexto_reparacion_material.id %}"
+                data-table-url="{% url 'calidad_app:reparacion_material_detalle_tabla' contexto_reparacion_material.id %}">
+                Agregar Item
+            </button>
+            <button data-form-url="{% url 'calidad_app:reparacion_material_concluir' contexto_reparacion_material.id %}"   
+                data-table-url="{% url 'calidad_app:reparacion_material_inicio' %}"
+                data-keep-open="true"    
+                class="delete badge bg-primary "
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Concluir">
+                Concluir Reparación
+            </button>
+        {% endif %}
+    </h3>
+    <a href="{% url 'calidad_app:reparacion_material_inicio' %}" class="btn btn-danger">Regresar</a> 
+    <br></br>
+    <div class="table-responsive" id="tabla">
+        {% include 'calidad/reparacion/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+    

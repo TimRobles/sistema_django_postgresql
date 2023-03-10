@@ -75,8 +75,29 @@ urlAprobacionConsumoInterno = [
     # path('aprobacion-consumo-interno/dar-baja/<pk>/', views.AprobacionConsumoInternoDeleteView.as_view(), name='aprobacion_consumo_interno_darbaja'),
 ]
 
+urlReparacionMaterial = [
+    path('reparacion-material/', views.ReparacionMaterialListView.as_view(), name='reparacion_material_inicio'),
+    path('reparacion-material-tabla/', views.ReparacionMaterialTabla, name='reparacion_material_tabla'),
+    path('reparacion-material/registrar/', views.ReparacionMaterialCreateView.as_view(), name='reparacion_material_registrar'),
+    path('reparacion-material/actualizar/<pk>', views.ReparacionMaterialUpdateView.as_view(), name='reparacion_material_actualizar'),
+    # path('reparacion-material/dar-baja/<pk>/', views.ReparacionMaterialDeleteView.as_view(), name='reparacion_material_darbaja'),
+    path('reparacion-material/concluir/<pk>/', views.ReparacionMaterialConcluirView.as_view(), name='reparacion_material_concluir'),
+    path('reparacion-material/detalle/<pk>/', views.ReparacionMaterialDetailView.as_view(), name='reparacion_material_detalle'),
+    path('reparacion-material/detalle-tabla/<pk>/', views.ReparacionMaterialDetailTabla, name='reparacion_material_detalle_tabla'),
+    path('reparacion-material/detalle/registrar/<int:reparacion_id>/', views.ReparacionMaterialDetalleCreateView.as_view(), name='reparacion_material_detalle_registrar'),
+    path('reparacion-material/detalle/actualizar/<pk>/', views.ReparacionMaterialDetalleUpdateView.as_view(), name='reparacion_material_detalle_actualizar'),
+    path('reparacion-material/detalle/eliminar/<pk>/', views.ReparacionMaterialDetalleDeleteView.as_view(), name='reparacion_material_detalle_eliminar'),
+]
 
-urlpatterns = [
+urlReparacionMaterialSeries = [
+
+    path('reparacion-material/validar-series/detalle/<pk>/', views.ValidarSeriesReparacionMaterialDetailView.as_view(), name='reparacion_material_validar_series_detalle'),
+    path('reparacion-material/validar-series/detalle-tabla/<pk>/', views.ValidarSeriesReparacionMaterialDetailTabla, name='reparacion_material_validar_series_detalle_tabla'),
+    path('reparacion-material/validar-series-detalle/actualizar/<pk>/', views.ValidarSeriesReparacionMaterialDetalleUpdateView.as_view(), name='reparacion_material_validar_series_detalle_actualizar'),
+    path('reparacion-material/validar-series-detalle/eliminar/<pk>/', views.ValidarSeriesReparacionMaterialDetalleDeleteView.as_view(), name='reparacion_material_validar_series_detalle_eliminar'),
+]
+
+urlFallaMaterial = [
 
     path('falla-material/',views.FallaMaterialTemplateView.as_view(),name='falla_material'),
     path('falla-material/detalle/<pk>/', views.FallaMaterialDetailView.as_view(), name='falla_material_detalle'),
@@ -85,4 +106,43 @@ urlpatterns = [
     path('falla-material/detalle/actualizar/<pk>/', views.FallaMaterialUpdateView.as_view(), name='falla_material_detalle_actualizar'),
     path('falla-material/detalle/modal/<pk>/', views.FallaMaterialModalDetailView.as_view(), name='falla_material_detalle_modal'),
     path('falla-material/detalle/eliminar/<pk>/', views.FallaMaterialDeleteView.as_view(), name='falla_material_detalle_eliminar'),
-] + urlNotaControlCalidadStock + urlSeries + urlConsumoInterno + urlConsumoInternoSeries + urlAprobacionConsumoInterno
+]
+
+urlSolucionMaterial = [
+
+    # path('solucion-material/',views.SolucionMaterialTemplateView.as_view(),name='solucion_material'),
+    path('solucion-material/detalle/<pk>/', views.SolucionMaterialDetailView.as_view(), name='solucion_material_detalle'),
+    path('solucion-material/detalle-tabla/<pk>/', views.SolucionMaterialDetailTabla, name='solucion_material_detalle_tabla'),    
+    path('solucion-material/detalle/registrar/<int:falla_material_id>/', views.SolucionMaterialCreateView.as_view(), name='solucion_material_detalle_registrar'),
+    path('solucion-material/general/registrar/<int:subfamilia_id>/', views.SolucionMaterialGeneralCreateView.as_view(), name='solucion_material_general_registrar'),
+    path('solucion-material/detalle/actualizar/<pk>/', views.SolucionMaterialUpdateView.as_view(), name='solucion_material_detalle_actualizar'),
+    path('solucion-material/detalle/modal/<pk>/', views.SolucionMaterialModalDetailView.as_view(), name='solucion_material_detalle_modal'),
+    path('solucion-material/detalle/eliminar/<pk>/', views.SolucionMaterialDeleteView.as_view(), name='solucion_material_detalle_eliminar'),
+]
+
+urlTransformacionProductos = [
+    path('transformacion-productos/', views.TransformacionProductosListView.as_view(), name='transformacion_productos_inicio'),
+    path('transformacion-productos-tabla/', views.TransformacionProductosTabla, name='transformacion_productos_tabla'),
+    path('transformacion-productos/registrar/', views.TransformacionProductosCreateView.as_view(), name='transformacion_productos_registrar'),
+    path('transformacion-productos/actualizar/<pk>', views.TransformacionProductosUpdateView.as_view(), name='transformacion_productos_actualizar'),
+    path('transformacion-productos/eliminar/<pk>', views.TransformacionProductosDeleteView.as_view(), name='transformacion_productos_eliminar'),
+    path('transformacion-productos/concluir/<pk>/', views.TransformacionProductosConcluirView.as_view(), name='transformacion_productos_concluir'),
+    path('transformacion-productos/detalle/<pk>', views.TransformacionProductosDetailView.as_view(), name='transformacion_productos_detalle'),
+    path('transformacion-productos/detalle-tabla/<pk>/', views.TransformacionProductosDetailTabla, name='transformacion_productos_detalle_tabla'),
+
+    path('entrada-transformacion-productos/registrar/<int:transformacion_productos_id>/', views.EntradaTransformacionProductosCreateView.as_view(), name='entrada_transformacion_productos_registrar'),
+    path('entrada-transformacion-productos/actualizar/<pk>/', views.EntradaTransformacionProductosUpdateView.as_view(), name='entrada_transformacion_productos_actualizar'),
+    path('entrada-transformacion-productos/eliminar/<pk>/', views.EntradaTransformacionProductosDeleteView.as_view(), name='entrada_transformacion_productos_eliminar'),
+    path('entrada-transformacion-productos/validar-series/detalle/<pk>/', views.ValidarSeriesEntradaTransformacionProductosDetailView.as_view(), name='entrada_transformacion_productos_validar_series_detalle'),
+    path('entrada-transformacion-productos/validar-series/detalle-tabla/<pk>/', views.ValidarSeriesEntradaTransformacionProductosDetailTabla, name='entrada_transformacion_productos_validar_series_detalle_tabla'),
+    path('entrada-transformacion-productos/validar-series/detalle/eliminar/<pk>/', views.ValidarSeriesEntradaTransformacionProductosDetalleDeleteView.as_view(), name='entrada_transformacion_productos_validar_series_detalle_eliminar'),
+
+    path('salida-transformacion-productos/registrar/<int:transformacion_productos_id>/', views.SalidaTransformacionProductosCreateView.as_view(), name='salida_transformacion_productos_registrar'),
+    path('salida-transformacion-productos/actualizar/<pk>/', views.SalidaTransformacionProductosUpdateView.as_view(), name='salida_transformacion_productos_actualizar'),
+    path('salida-transformacion-productos/eliminar/<pk>/', views.SalidaTransformacionProductosDeleteView.as_view(), name='salida_transformacion_productos_eliminar'),
+    path('salida-transformacion-productos/validar-series/detalle/<pk>/', views.ValidarSeriesSalidaTransformacionProductosDetailView.as_view(), name='salida_transformacion_productos_validar_series_detalle'),
+    path('salida-transformacion-productos/validar-series/detalle-tabla/<pk>/', views.ValidarSeriesSalidaTransformacionProductosDetailTabla, name='salida_transformacion_productos_validar_series_detalle_tabla'),
+    path('salida-transformacion-productos/validar-series/detalle/eliminar/<pk>/', views.ValidarSeriesSalidaTransformacionProductosDetalleDeleteView.as_view(), name='salida_transformacion_productos_validar_series_detalle_eliminar'),
+]
+
+urlpatterns = urlFallaMaterial + urlNotaControlCalidadStock + urlSeries + urlConsumoInterno + urlConsumoInternoSeries + urlAprobacionConsumoInterno + urlReparacionMaterial + urlReparacionMaterialSeries + urlSolucionMaterial + urlTransformacionProductos

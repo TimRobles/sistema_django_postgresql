@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Transformación de Productos
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Transformación de Productos
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'calidad_app:transformacion_productos_registrar' %}"
+            data-table-url="{% url 'calidad_app:transformacion_productos_tabla' %}">
+            Registrar
+        </button>
+    </h3>
+    <br>
+    <div class="table-responsive" id="tabla">
+        {% include 'calidad/transformacion_productos/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

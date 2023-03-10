@@ -6,8 +6,29 @@ from applications.material.funciones import stock, stock_disponible, stock_sede_
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import FallaMaterial, HistorialEstadoSerie, NotaControlCalidadStock, NotaControlCalidadStockDetalle, Serie, SerieCalidad, SolicitudConsumoInterno, Sede, Almacen, Material, SolicitudConsumoInternoDetalle, AprobacionConsumoInterno
+from .models import (
+    FallaMaterial, 
+    HistorialEstadoSerie, 
+    NotaControlCalidadStock, 
+    NotaControlCalidadStockDetalle, 
+    ReparacionMaterial, 
+    ReparacionMaterialDetalle, 
+    Serie, 
+    SerieCalidad, 
+    SolicitudConsumoInterno, 
+    Sede, 
+    Almacen, 
+    Material, 
+    SolicitudConsumoInternoDetalle, 
+    AprobacionConsumoInterno, 
+    SolucionMaterial, 
+    ValidarSerieReparacionMaterialDetalle,
+    EntradaTransformacionProductos,
+    SalidaTransformacionProductos,
+    TransformacionProductos,
+    )
 from django.contrib.contenttypes.models import ContentType
+
 
 class NotaControlCalidadStockBuscarForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
@@ -405,4 +426,326 @@ class SolicitudConsumoInternoDetalleSeriesForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             self.fields['cantidad'].disabled = True
             self.fields['cantidad_ingresada'].disabled = True
+
+
+class ReparacionMaterialForm(BSModalModelForm):
+    horas = forms.IntegerField(label='Horas estimadas',min_value=0)
+    minutos = forms.IntegerField(label='Minutos estimados', max_value=59,min_value=0)
+    class Meta:
+        model = ReparacionMaterial
+        fields=(
+            'sociedad',
+            'responsable',
+            'fecha_reparacion_inicio',
+            'fecha_reparacion_fin',
+            'horas',
+            'minutos',
+            'observacion',
+            )
+        widgets = {
+            'fecha_reparacion_inicio' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            'fecha_reparacion_fin' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }    
+
+    def clean(self):
+        cleaned_data = super().clean()
+        horas = cleaned_data.get('horas')
+        minutos = cleaned_data.get('minutos')
+        tiempo_estimado = 60*horas + minutos
+        self.instance.tiempo_estimado = tiempo_estimado
+
+    def __init__(self, *args, **kwargs):
+        super(ReparacionMaterialForm, self).__init__(*args, **kwargs)
+        if self.instance.tiempo_estimado:
+            tiempo_estimado = self.instance.tiempo_estimado
+            self.fields['horas'].initial = tiempo_estimado // 60
+            self.fields['minutos'].initial = tiempo_estimado % 60
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReparacionMaterialDetalleForm(BSModalModelForm):
+    sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1), required=False)
+    unidad = forms.ModelChoiceField(queryset=Unidad.objects.all(), required=False, )
+    stock = forms.DecimalField(required=False, initial=0, max_digits=22, decimal_places=10, disabled=True)
+    # unidad = forms.CharField(required=False)
+    class Meta:
+        model = ReparacionMaterialDetalle
+        # fields = '__all__'
+        fields=(
+            'material',
+            'unidad',
+            'sede',
+            'almacen',
+            'stock',
+            'cantidad',
+            )
+
+    def clean_sede(self):
+        sede = self.cleaned_data.get('sede')
+        almacen = self.fields['almacen']
+        almacen.queryset = Almacen.objects.filter(sede = sede)
+        return sede
+    
+    def clean_material(self):
+        material = self.cleaned_data.get('material')
+        unidad = self.fields['unidad']
+        unidad.queryset = Unidad.objects.filter(nombre = material.unidad_base.nombre)
+        return material
+
+    def __init__(self, *args, **kwargs):
+        self.id_sociedad = kwargs.pop('id_sociedad')
+        super(ReparacionMaterialDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['almacen'].queryset = Almacen.objects.none()
+        self.fields['unidad'].queryset = Unidad.objects.none()
+        self.fields['unidad'].widget.attrs['readonly'] = True
+        # self.fields['unidad'].widget.attrs['disabled'] = 'disabled'
+        try:
+            material = self.instance.material
+            if material:
+                unidad = material.unidad_base
+                self.fields['unidad'].initial = unidad
+                self.fields['unidad'].queryset = Unidad.objects.filter(nombre = material.unidad_base.nombre)
+                self.fields['stock'].initial = stock_disponible(ContentType.objects.get_for_model(material), material.id, self.id_sociedad)
+        except Exception as e:
+            pass
+
+        almacen = self.instance.almacen
+        if almacen:
+            sede = almacen.sede
+            self.fields['sede'].initial = sede
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
+            self.fields['stock'].initial = stock_sede_disponible(ContentType.objects.get_for_model(material), material.id, self.id_sociedad, sede.id)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReparacionMaterialDetalleSeriesForm(BSModalModelForm):
+    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10, required=False)
+    serie = forms.CharField(required=False)
+    class Meta:
+        model = ReparacionMaterialDetalle
+
+        fields=(
+            'serie',
+            'cantidad',
+            'cantidad_ingresada',
+            # 'solucion_material',
+            # 'observacion',           
+            )
+
+    def __init__(self, *args, **kwargs):
+        cantidad = kwargs.pop('cantidad')
+        cantidad_ingresada = kwargs.pop('cantidad_ingresada')
+        super(ReparacionMaterialDetalleSeriesForm, self).__init__(*args, **kwargs)
+        self.fields['cantidad'].initial = cantidad
+        self.fields['cantidad_ingresada'].initial = cantidad_ingresada
+        if cantidad_ingresada == cantidad:
+            self.fields['serie'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['cantidad'].disabled = True
+            self.fields['cantidad_ingresada'].disabled = True
+
+class ReparacionMaterialDetalleSeriesActualizarForm(BSModalModelForm):
+    class Meta:
+        model = ValidarSerieReparacionMaterialDetalle
+        fields=(
+            'serie',
+            'solucion_material',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        self.subfamilia = kwargs.pop('subfamilia')
+        super(ReparacionMaterialDetalleSeriesActualizarForm, self).__init__(*args, **kwargs)
+        self.fields['serie'].disabled = True
+        self.fields['solucion_material'].queryset = SolucionMaterial.objects.filter(falla_material__sub_familia = self.subfamilia)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SolucionMaterialForm(BSModalModelForm):
+    class Meta:
+        model = SolucionMaterial
+        fields=(
+            'titulo',
+            'comentario',
+            'visible',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SolucionMaterialForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['visible'].widget.attrs['class'] = 'form-check-input'
+
+
+class SolucionMaterialGeneralForm(BSModalModelForm):
+    class Meta:
+        model = SolucionMaterial
+        fields=(
+            'falla_material',
+            'titulo',
+            'comentario',
+            'visible',
+            )
+
+    def __init__(self, *args, **kwargs):
+        self.subfamilia = kwargs.pop('subfamilia')
+        super(SolucionMaterialGeneralForm, self).__init__(*args, **kwargs)
+        self.fields['falla_material'].queryset = FallaMaterial.objects.filter(sub_familia = self.subfamilia)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['visible'].widget.attrs['class'] = 'form-check-input'
+
+
+class TransformacionProductosForm(BSModalModelForm):
+    class Meta:
+        model = TransformacionProductos
+        fields = (
+            'sociedad',
+            'tipo_stock',
+            'responsable',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(TransformacionProductosForm, self).__init__(*args, **kwargs)
+        self.fields['responsable'].queryset = get_user_model().objects.exclude(first_name = "")
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class TransformacionProductosUpdateForm(BSModalModelForm):
+    class Meta:
+        model = TransformacionProductos
+        fields = (
+            'responsable',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(TransformacionProductosUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['responsable'].queryset = get_user_model().objects.exclude(first_name = "")
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+    
+class EntradaTransformacionProductosForm(BSModalModelForm):
+    # sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
+    almacen = forms.ModelChoiceField(queryset=Almacen.objects.none())
+    class Meta:
+        model = EntradaTransformacionProductos
+        fields = (
+            'material',
+            'sede',
+            'almacen',
+            'cantidad',
+            )
+        
+    def clean_sede(self):
+        sede = self.cleaned_data.get('sede')
+        almacen = self.fields['almacen']
+        almacen.queryset = Almacen.objects.filter(sede = sede)    
+        return sede
+
+    def __init__(self, *args, **kwargs):
+        super(EntradaTransformacionProductosForm, self).__init__(*args, **kwargs)
+        almacen = self.instance.almacen
+        if almacen:
+            sede = almacen.sede
+            self.fields['sede'].initial = sede
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
+            self.fields['sede'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SalidaTransformacionProductosForm(BSModalModelForm):
+    # sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
+    almacen = forms.ModelChoiceField(queryset=Almacen.objects.none())
+    class Meta:
+        model = SalidaTransformacionProductos
+        fields = (
+            'material',
+            'sede',
+            'almacen',
+            'cantidad',
+            )
+        
+    def clean_sede(self):
+        sede = self.cleaned_data.get('sede')
+        almacen = self.fields['almacen']
+        almacen.queryset = Almacen.objects.filter(sede = sede)    
+        return sede
+
+    def __init__(self, *args, **kwargs):
+        super(SalidaTransformacionProductosForm, self).__init__(*args, **kwargs)
+        almacen = self.instance.almacen
+        if almacen:
+            sede = almacen.sede
+            self.fields['sede'].initial = sede
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = sede)
+            self.fields['sede'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class EntradaTransformacionProductosSeriesForm(BSModalModelForm):
+    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10, required=False)
+    serie = forms.CharField(required=False)
+    class Meta:
+        model = EntradaTransformacionProductos
+        fields=(
+            'serie',
+            'cantidad',
+            'cantidad_ingresada',
+            )
+
+    def __init__(self, *args, **kwargs):
+        cantidad = kwargs.pop('cantidad')
+        cantidad_ingresada = kwargs.pop('cantidad_ingresada')
+        super(EntradaTransformacionProductosSeriesForm, self).__init__(*args, **kwargs)
+        self.fields['cantidad'].initial = cantidad
+        self.fields['cantidad_ingresada'].initial = cantidad_ingresada
+        if cantidad_ingresada == cantidad:
+            self.fields['serie'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['cantidad'].disabled = True
+            self.fields['cantidad_ingresada'].disabled = True
             
+
+class SalidaTransformacionProductosSeriesForm(BSModalModelForm):
+    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10, required=False)
+    serie = forms.CharField(required=False)
+    class Meta:
+        model = SalidaTransformacionProductos
+        fields=(
+            'serie',
+            'cantidad',
+            'cantidad_ingresada',
+            )
+
+    def __init__(self, *args, **kwargs):
+        cantidad = kwargs.pop('cantidad')
+        cantidad_ingresada = kwargs.pop('cantidad_ingresada')
+        super(SalidaTransformacionProductosSeriesForm, self).__init__(*args, **kwargs)
+        self.fields['cantidad'].initial = cantidad
+        self.fields['cantidad_ingresada'].initial = cantidad_ingresada
+        if cantidad_ingresada == cantidad:
+            self.fields['serie'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['cantidad'].disabled = True
+            self.fields['cantidad_ingresada'].disabled = True

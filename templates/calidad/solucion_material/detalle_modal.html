@@ -1,0 +1,34 @@
+{% extends 'includes/modal generico.html' %}
+
+{% block content %}
+<h3>{{ contexto_subfamilia }}</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Falla</th>
+                <th>Título Solución</th>
+                <th>Comentario</th>
+                <th class="text-center">Visible</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila_solucion in contexto_soluciones_material %}
+                <tr>
+                    <td>{{ fila_solucion.falla_material.titulo }}</td>
+                    <td>{{ fila_solucion.titulo }}</td>
+                    <td>{{ fila_solucion.comentario }}</td>
+                    <td class="text-center">
+                        {% if  fila_solucion.visible %}
+                            Si 
+                        {% else %}
+                            No 
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}

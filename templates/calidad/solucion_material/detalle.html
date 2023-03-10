@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Soluciones por Falla de Material
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'calidad/solucion_material/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+

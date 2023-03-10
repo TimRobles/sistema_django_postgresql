@@ -1,0 +1,52 @@
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. de Reparación</th>
+            <th>Sociedad</th>
+            <th>Fecha inicio</th>
+            <th>Fecha fin</th>
+            <th>Observaciones</th>
+            <th>Tiempo estimado</th>
+            <th>Motivo de Anulación</th>
+            <th>Estado</th>
+            <th>Responsable</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for fila in contexto_reparacion_material  %}
+            <tr>
+                <td> {{ fila.numero_reparacion|numeroXn:6 }} </td>
+                <td> {{ fila.sociedad }} </td>
+                <td> {{ fila.fecha_reparacion_inicio }} </td>
+                <td> {{ fila.fecha_reparacion_fin }} </td>
+                <td> {{ fila.observacion }} </td>
+                <td> {{ fila.tiempo_estimado }}  minutos</td>
+                {% if fila.motivo_anulacion %} <td> {{ fila.motivo_anulacion }} </td> {% else %} <td></td> {% endif %}
+                <td> {{ fila.get_estado_display }} </td>
+                <td> {{ fila.responsable }} </td>
+                <td class="text-center text-nowrap">
+                    <a href="{% url 'calidad_app:reparacion_material_detalle' fila.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a> 
+                    
+                    {% if fila.estado == 1 %}
+                        <button data-form-url="{% url 'calidad_app:reparacion_material_actualizar' fila.id %}"
+                            data-table-url="{% url 'calidad_app:reparacion_material_tabla' %}"
+                            data-keep-open="true"    
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+            
+    </tbody>
+</table>

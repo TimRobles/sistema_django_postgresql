@@ -1,0 +1,54 @@
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nro. de Serie</th>         
+                <th>Estado</th>    
+                <th>Almacén</th>    
+                <th>Sociedad</th>    
+                <th>Falla</th>    
+                <th>Solución</th>    
+                <th>Observación</th>    
+                <th class="text-center">Acciones</th>    
+            </tr>
+        </thead>
+        <tbody>
+            {% for validacion in contexto_series %}
+                <tr class="fondo-personalizado"
+                {% if validacion.serie.sociedad != contexto_reparacion_material_detalle.reparacion.sociedad or validacion.serie.almacen != contexto_reparacion_material_detalle.almacen %}
+                style="--color-fondo: red;"
+                {% endif %}
+                >
+                    {% if validacion.serie %}
+                    <td> 
+                        {{ validacion.serie}} 
+                    </td>
+                    {% endif %}
+                    <td>{{ validacion.serie.estado }}</td>
+                    <td>{{ validacion.serie.almacen }}</td>
+                    <td>{{ validacion.serie.sociedad }}</td>
+                    <td>{{ validacion.solucion_material.falla_material }}</td>
+                    <td>{{ validacion.solucion_material }}</td>
+                    <td>{{ validacion.observacion }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_reparacion_material_detalle.reparacion.estado == 1 %}
+                            <button data-form-url="{% url 'calidad_app:reparacion_material_validar_series_detalle_actualizar' validacion.id %}"
+                                data-table-url="{% url 'calidad_app:reparacion_material_validar_series_detalle_tabla' contexto_reparacion_material_detalle.id %}"
+                                data-keep-open="true"    
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'calidad_app:reparacion_material_validar_series_detalle_eliminar' validacion.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+                           
+        </tbody>
+    </table>
+</div>

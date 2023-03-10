@@ -385,6 +385,7 @@ MENSAJE_CONCLUIR_TRASPASO_STOCK = 'Operación exitosa: El Traspaso Stock fue con
 
 MENSAJE_GENERAR_DOCUMENTO_AJUSTE_INVENTARIO = 'Operación exitosa: Inventario Materiales fue concluido. Documento de Ajuste de Inventario generado'
 MENSAJE_AJUSTE_INVENTARIO_MATERIALES = 'Operación exitosa: Ajuste Inventario Materiales fue concluido.'
+MENSAJE_CONCLUIR_TRANSFORMACION_PRODUCTOS = 'Operación exitosa: La Transformacion de productos fue concluido.'
 
 COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY
