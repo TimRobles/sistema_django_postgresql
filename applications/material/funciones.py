@@ -1,4 +1,5 @@
 from decimal import Decimal
+from applications.calidad.models import SalidaTransformacionProductos
 from applications.cotizacion.models import CotizacionObservacion
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from django.db import models
@@ -261,9 +262,16 @@ def observacion(cotizacion, sociedad):
     return busqueda.observacion
 
 def NotaIngresoDetalle_comprobante_compra_detalle(obj):
-    busqueda = NotaIngresoDetalle.objects.filter(
-        content_type = obj.content_type,
-        id_registro = obj.id_registro,
-        nota_ingreso__estado=2
-    ).aggregate(models.Sum('cantidad_conteo'))['cantidad_conteo__sum']
+    if hasattr(obj, 'cantidad_conteo'):
+        busqueda = NotaIngresoDetalle.objects.filter(
+            content_type = obj.content_type,
+            id_registro = obj.id_registro,
+            nota_ingreso__estado=2
+        ).aggregate(models.Sum('cantidad_conteo'))['cantidad_conteo__sum']
+    if hasattr(obj, 'cantidad'):
+        busqueda = SalidaTransformacionProductos.objects.filter(
+            content_type = obj.content_type,
+            id_registro = obj.id_registro,
+            transformacion_productos__estado=2
+        ).aggregate(models.Sum('cantidad'))['cantidad__sum']
     return busqueda

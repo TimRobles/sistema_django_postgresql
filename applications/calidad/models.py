@@ -278,7 +278,14 @@ class NotaControlCalidadStockDetalle(models.Model):
 
     @property
     def material(self):
-        return self.nota_ingreso_detalle.comprobante_compra_detalle.producto
+        return self.nota_ingreso_detalle.producto
+        
+    @property
+    def nota_ingreso_detalle(self):
+        try:
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
+        except:
+            return ""
         
     @property
     def control_serie(self):

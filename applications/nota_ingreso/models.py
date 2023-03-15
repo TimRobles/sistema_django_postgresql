@@ -73,6 +73,18 @@ class NotaIngresoDetalle(models.Model):
             'nota_ingreso',
             'item',
             ]
+    
+    @property
+    def cantidad(self):
+        return self.cantidad_conteo
+    
+    @property
+    def sociedad(self):
+        return self.comprobante_compra_detalle.sociedad
+    
+    @property
+    def producto(self):
+        return self.comprobante_compra_detalle.producto
 
     @property
     def comprobante_compra_detalle(self):
