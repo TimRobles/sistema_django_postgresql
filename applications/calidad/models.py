@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications.clientes.models import Cliente
+from applications.funciones import numeroXn
 from applications.logistica.managers import SerieManager
 from applications.sociedad.models import Sociedad
 from applications.material.models import Material, SubFamilia
@@ -12,6 +13,8 @@ from applications.almacenes.models import Almacen
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, SERIE_CONSULTA
+
+from django.db.models.signals import pre_delete, post_delete
 
 class FallaMaterial(models.Model):
     sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE, related_name='FallaMaterial_sub_familia')
@@ -331,7 +334,8 @@ class SolicitudConsumoInterno(models.Model):
         ]
 
     def __str__(self):
-        return str(self.numero_solicitud) + ' | '+ str(self.fecha_solicitud) + ' | ' + str(self.solicitante)
+        return "%s - %s - %s" % (self.fecha_solicitud.strftime('%d/%m/%Y'), numeroXn(self.numero_solicitud, 6), self.solicitante)
+        
 
 
 class SolicitudConsumoInternoDetalle(models.Model):
@@ -420,7 +424,8 @@ class AprobacionConsumoInterno(models.Model):
         return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return str(self.numero_aprobacion) + ' | '+ str(self.fecha_aprobacion) + ' | ' + str(self.responsable)
+        return "%s - %s - %s" % (self.fecha_aprobacion.strftime('%d/%m/%Y'), numeroXn(self.numero_aprobacion, 6), self.responsable)
+        
 
 
 class AprobacionConsumoInternoDetalle(models.Model):
@@ -491,7 +496,7 @@ class ReparacionMaterial(models.Model):
         return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return str(self.numero_reparacion) + ' | '+ str(self.fecha_reparacion_inicio) + ' | ' + str(self.responsable)
+        return "%s - %s - %s" % (self.fecha_reparacion_inicio.strftime('%d/%m/%Y'), numeroXn(self.numero_reparacion, 6), self.responsable)
 
 
 class ReparacionMaterialDetalle(models.Model):
@@ -546,11 +551,11 @@ class ValidarSerieReparacionMaterialDetalle(models.Model):
 
 
 class TransformacionProductos(models.Model):
-
     ESTADOS_TRANSFORMACION_PRODUCTOS = [
         (1, 'EN PROCESO'),
         (2, 'CONCLUIDO'),
         ]
+    numero_transformacion = models.IntegerField('Número de Transformación', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
     fecha_transformacion = models.DateField('Fecha de Transformación', auto_now=False, auto_now_add=True, blank=True, null=True)
     tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
@@ -566,9 +571,20 @@ class TransformacionProductos(models.Model):
     class Meta:
         verbose_name = 'Transformación de Productos'
         verbose_name_plural = 'Transformaciones de Productos'
+        ordering = [
+            '-numero_transformacion',
+        ]
+
+    @property
+    def fecha(self):
+        return self.fecha_transformacion
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return str(self.id)
+        return "%s - %s - %s" % (self.fecha_transformacion.strftime('%d/%m/%Y'), numeroXn(self.id, 6), self.responsable)
 
 
 class EntradaTransformacionProductos(models.Model):
@@ -663,3 +679,14 @@ class ValidarSerieSalidaTransformacionProductos(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.salida_transformacion_productos , str(self.serie))
+
+
+def eliminar_serie_post_delete(instance, *args, **kwargs):
+    try:
+        serie_eliminar = instance.serie
+        serie_eliminar.delete()
+    except Exception as ex:
+        print(ex)
+
+
+post_delete.connect(eliminar_serie_post_delete, sender=ValidarSerieSalidaTransformacionProductos)
