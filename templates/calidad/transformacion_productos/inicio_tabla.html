@@ -1,6 +1,10 @@
+{% load humanize %}
+{% load funciones_propias %}
+
 <table class="table">
     <thead>
         <tr>
+            <th>Nro. Documento</th>
             <th>Sociedad</th>
             <th>Fecha Transf.</th>
             <th>Responsable</th>
@@ -13,6 +17,7 @@
     <tbody>
         {% for transformacion in contexto_transformacion_productos %}
         <tr>
+            <td>{{ transformacion.numero_transformacion|numeroXn:6 }}</td>
             <td>{{ transformacion.sociedad }}</td>
             <td>{{ transformacion.fecha_transformacion|date:'d/m/Y' }}</td>
             <td>
