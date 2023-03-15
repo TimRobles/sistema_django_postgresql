@@ -25,6 +25,7 @@ from applications.calidad.forms import(
     NotaControlCalidadStockActualizarFallasCreateForm,
     NotaControlCalidadStockAgregarMaloSinFallaCreateForm,
     NotaControlCalidadStockAgregarMaloSinSerieCreateForm,
+    NotaControlCalidadStockTransformacionProductosForm,
     ReparacionMaterialDetalleSeriesActualizarForm,
     ReparacionMaterialDetalleSeriesForm,
     SalidaTransformacionProductosForm,
@@ -322,6 +323,7 @@ def NotaControlCalidadStockTabla(request):
         )
         return JsonResponse(data)
 
+
 class NotaControlCalidadStockCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('calidad.add_notacontrolcalidadstock')
     model = NotaControlCalidadStock
@@ -348,6 +350,35 @@ class NotaControlCalidadStockCreateView(PermissionRequiredMixin, BSModalCreateVi
         form.instance.id_registro = nota_ingreso_temp.id
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+
+class NotaControlCalidadStockTransformacionProductosCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('calidad.add_notacontrolcalidadstock')
+    model = NotaControlCalidadStock
+    template_name = "calidad/nota_control_calidad_stock/form.html"
+    form_class = NotaControlCalidadStockTransformacionProductosForm
+    success_url = reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaControlCalidadStockTransformacionProductosCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Nota Control Calidad Stock de Transformación"
+        return context
+
+    def form_valid(self, form):
+        nro_nota_control_calidad = len(NotaControlCalidadStock.objects.all()) + 1
+        form.instance.nro_nota_calidad = numeroXn(nro_nota_control_calidad, 6)
+        transformacion_productos_temp = form.cleaned_data.get('transformacion_productos_temp')
+        form.instance.content_type = ContentType.objects.get_for_model(transformacion_productos_temp)
+        form.instance.id_registro = transformacion_productos_temp.id
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
 
 class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.delete_notacontrolcalidadstock')
@@ -447,6 +478,7 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
         context['titulo'] = 'Nota Control Calidad Stock'
         return context
 
+# CORREGIR
 class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.delete_notacontrolcalidadstock')
     model = NotaControlCalidadStock
@@ -590,7 +622,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
         context['item'] = self.object.nro_nota_calidad
         return context
 
-
+# CORREGIR
 class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.delete_notacontrolcalidadstock')
     model = NotaControlCalidadStock
@@ -752,20 +784,26 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
                 nota_ingreso_detalle = form.cleaned_data.get('material')
                 cantidad_calidad = form.cleaned_data.get('cantidad_calidad')
                 inspeccion = form.cleaned_data.get('inspeccion')
-                
-                buscar = NotaControlCalidadStockDetalle.objects.filter(
-                    nota_ingreso_detalle=nota_ingreso_detalle,
-                ).exclude(nota_control_calidad_stock__estado=4)
-                
-                if buscar:
-                    contar = buscar.aggregate(Sum('cantidad_calidad'))['cantidad_calidad__sum']
-                else:
-                    contar = 0
 
-                
-                if nota_ingreso_detalle.cantidad_conteo < contar + cantidad_calidad:
-                    form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + cantidad_calidad))
-                    return super().form_invalid(form)
+                if hasattr(nota_ingreso_detalle, 'cantidad_conteo'):
+                    buscar = NotaControlCalidadStockDetalle.objects.filter(
+                        nota_ingreso_detalle=nota_ingreso_detalle,
+                    ).exclude(nota_control_calidad_stock__estado=4)
+                    
+                    if buscar:
+                        contar = buscar.aggregate(Sum('cantidad_calidad'))['cantidad_calidad__sum']
+                    else:
+                        contar = 0
+                    
+                    if nota_ingreso_detalle.cantidad_conteo < contar + cantidad_calidad:
+                        form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + cantidad_calidad))
+                        return super().form_invalid(form)
+                        
+                # if hasattr(nota_ingreso_detalle, 'cantidad'):
+                #     if nota_ingreso_detalle.cantidad < contar + cantidad_calidad:
+                #         form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad, contar + cantidad_calidad))
+                #         return super().form_invalid(form)
+
 
                 obj, created = NotaControlCalidadStockDetalle.objects.get_or_create(
                     nota_ingreso_detalle = nota_ingreso_detalle,
@@ -786,17 +824,26 @@ class NotaControlCalidadStockDetalleCreateView(PermissionRequiredMixin, BSModalF
                 return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
+            print('*************')
+            print(ex)
+            print('*************')
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
         nota_control_calidad = NotaControlCalidadStock.objects.get(id = self.kwargs['nota_control_calidad_stock_id'])
         nota_ingreso = nota_control_calidad.nota_ingreso
-        materiales = NotaIngresoDetalle.objects.filter(nota_ingreso = nota_ingreso)
+        
+        materiales = nota_ingreso.detalles
+        
         materiales_sin_calidad = []
         for material in materiales:
-            if not material.comprobante_compra_detalle.producto.control_calidad:
-                materiales_sin_calidad.append(material.id)
+            if hasattr(nota_ingreso, 'comprobante_compra_detalle'):
+                if not material.comprobante_compra_detalle.producto.control_calidad:
+                    materiales_sin_calidad.append(material.id)
+            if hasattr(nota_ingreso, 'material'):
+                if not material.material.control_calidad:
+                    materiales_sin_calidad.append(material.id)
         materiales = materiales.exclude(id__in = materiales_sin_calidad)
         inspeccion = None
         if nota_ingreso.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
@@ -850,9 +897,14 @@ class NotaControlCalidadStockDetalleUpdateView(PermissionRequiredMixin, BSModalU
         else:
             contar = 0
 
-        if nota_ingreso_detalle.cantidad_conteo < contar + form.instance.cantidad_calidad:
-            form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + form.instance.cantidad_calidad))
-            return super().form_invalid(form)
+        if hasattr(nota_ingreso_detalle, 'cantidad_conteo'):
+            if nota_ingreso_detalle.cantidad_conteo < contar + form.instance.cantidad_calidad:
+                form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad_conteo, contar + form.instance.cantidad_calidad))
+                return super().form_invalid(form)
+        if hasattr(nota_ingreso_detalle, 'cantidad'):
+            if nota_ingreso_detalle.cantidad < contar + form.instance.cantidad_calidad:
+                form.add_error('cantidad_calidad', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (nota_ingreso_detalle.cantidad, contar + form.instance.cantidad_calidad))
+                return super().form_invalid(form)
             
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)

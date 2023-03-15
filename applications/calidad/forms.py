@@ -77,6 +77,20 @@ class NotaControlCalidadStockForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class NotaControlCalidadStockTransformacionProductosForm(BSModalModelForm):
+    transformacion_productos_temp = forms.ModelChoiceField(queryset=TransformacionProductos.objects.filter(estado=2, tipo_stock__codigo=5))
+    class Meta:
+        model = NotaControlCalidadStock
+        fields=(
+            'transformacion_productos_temp',
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaControlCalidadStockTransformacionProductosForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class NotaControlCalidadStockAnularForm(BSModalModelForm):
     class Meta:
         model = NotaControlCalidadStock

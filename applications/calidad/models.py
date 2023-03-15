@@ -594,6 +594,10 @@ class TransformacionProductos(models.Model):
         return self.fecha_transformacion
 
     @property
+    def detalles(self):
+        return self.SalidaTransformacionProductos_transformacion_productos.all()
+        
+    @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
 
