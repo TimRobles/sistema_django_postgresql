@@ -66,7 +66,7 @@ class NotaControlCalidadStockForm(BSModalModelForm):
     class Meta:
         model = NotaControlCalidadStock
         fields=(
-            'nota_ingreso',
+            # 'nota_ingreso',
             'comentario',
             )
 
