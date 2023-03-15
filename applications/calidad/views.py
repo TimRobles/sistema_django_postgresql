@@ -341,6 +341,9 @@ class NotaControlCalidadStockCreateView(PermissionRequiredMixin, BSModalCreateVi
     def form_valid(self, form):
         nro_nota_control_calidad = len(NotaControlCalidadStock.objects.all()) + 1
         form.instance.nro_nota_calidad = numeroXn(nro_nota_control_calidad, 6)
+        nota_ingreso_temp = form.cleaned_data.get('nota_ingreso_temp')
+        form.instance.content_type = ContentType.objects.get_for_model(nota_ingreso_temp)
+        form.instance.id_registro = nota_ingreso_temp.id
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

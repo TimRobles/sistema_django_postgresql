@@ -207,7 +207,7 @@ class HistorialEstadoSerie(models.Model):
 
 class NotaControlCalidadStock(models.Model):
     nro_nota_calidad = models.CharField('Nro. Nota Calidad', max_length=50, blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #NotaIngreso
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #NotaIngreso / Transformacion SIN QA
     id_registro = models.IntegerField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
@@ -237,7 +237,10 @@ class NotaControlCalidadStock(models.Model):
 
     @property
     def nota_ingreso(self):
-        return self.content_type.get_object_for_this_type(id = self.id_registro)
+        try:
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
+        except:
+            return ""
 
     @property
     def documentos(self):

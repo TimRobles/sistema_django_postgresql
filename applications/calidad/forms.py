@@ -63,16 +63,16 @@ class FallaMaterialForm(BSModalModelForm):
         self.fields['visible'].widget.attrs['class'] = 'form-check-input'
 
 class NotaControlCalidadStockForm(BSModalModelForm):
+    nota_ingreso_temp = forms.ModelChoiceField(queryset=NotaIngreso.objects.filter(estado=2))
     class Meta:
         model = NotaControlCalidadStock
         fields=(
-            # 'nota_ingreso',
+            'nota_ingreso_temp',
             'comentario',
             )
 
     def __init__(self, *args, **kwargs):
         super(NotaControlCalidadStockForm, self).__init__(*args, **kwargs)
-        self.fields['nota_ingreso'].queryset = NotaIngreso.objects.filter(estado=2)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
