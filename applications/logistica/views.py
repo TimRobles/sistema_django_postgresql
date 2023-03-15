@@ -976,6 +976,7 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                         sociedad=form.instance.sociedad,
                     )
                     movimiento_dos = movimiento_tres.movimiento_anterior
+                    #Pendiente eliminar movimiento del historial Serie
 
                     movimiento_tres.delete()
                     movimiento_dos.delete()
