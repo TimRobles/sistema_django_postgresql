@@ -12,7 +12,7 @@
         <tbody>
             {% for validacion in contexto_series %}
                 <tr class="fondo-personalizado"
-                {% if validacion.serie.sociedad != contexto_salida_transformacion_productos.transformacion_productos.sociedad or validacion.serie.almacen != contexto_salida_transformacion_productos.almacen %}
+                {% if validacion.serie.sociedad != contexto_salida_transformacion_productos.transformacion_productos.sociedad %}
                 style="--color-fondo: red;"
                 {% endif %}
                 >
@@ -21,8 +21,8 @@
                         {{ validacion.serie}} 
                     </td>
                     {% endif %}
-                    <td>{{ validacion.serie.estado }}</td>
-                    <td>{{ validacion.serie.almacen }}</td>
+                    <td>{{ contexto_salida_transformacion_productos.transformacion_productos.tipo_stock }}</td>
+                    <td>{{ contexto_salida_transformacion_productos.almacen }}</td>
                     <td>{{ validacion.serie.sociedad }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_salida_transformacion_productos.transformacion_productos.estado == 1 %}

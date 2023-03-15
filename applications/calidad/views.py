@@ -1,8 +1,10 @@
+from decimal import Decimal
 from urllib import request
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.importaciones import*
 from applications.logistica.pdf import generarSeries
+from applications.material.funciones import stock_tipo_stock
 from applications.material.models import SubFamilia
 from applications.datos_globales.models import Unidad
 from applications.calidad.forms import(
@@ -40,7 +42,7 @@ from applications.calidad.forms import(
     TransformacionProductosForm,
     TransformacionProductosUpdateForm,
 )
-from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 from applications.muestra.models import NotaIngresoMuestra
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from .models import(
@@ -2880,10 +2882,10 @@ class TransformacionProductosCreateView(PermissionRequiredMixin, BSModalCreateVi
         return context
 
     def form_valid(self, form):
-
         form.instance.usuario = self.request.user
+        nro_transformacion = len(TransformacionProductos.objects.all()) + 1
+        form.instance.numero_transformacion = numeroXn(nro_transformacion, 6)
         registro_guardar(form.instance, self.request)
-
         return super().form_valid(form)
 
 
@@ -2903,7 +2905,6 @@ class TransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUpdateVi
     def form_valid(self, form):
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
-        
         return super().form_valid(form)
 
 
@@ -2937,6 +2938,41 @@ class TransformacionProductosConcluirView(PermissionRequiredMixin, BSModalDelete
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    def dispatch(self, request, *args, **kwargs):
+            context = {}
+            error_series_entrada = False
+            error_series_salida = False
+            context['titulo'] = 'Error de guardar'
+            detalles_entrada = self.get_object().EntradaTransformacionProductos_transformacion_productos.all()
+            for detalle in detalles_entrada:
+                if detalle.material.control_serie and detalle.transformacion_productos.tipo_stock.serie_registrada:
+                    if detalle.series_validar != detalle.cantidad:
+                        error_series_entrada = True
+            
+            detalles_salida = self.get_object().SalidaTransformacionProductos_transformacion_productos.all()
+            for detalle in detalles_salida:
+                if detalle.material.control_serie and detalle.transformacion_productos.tipo_stock.serie_registrada:
+                    if detalle.series_validar != detalle.cantidad:
+                        error_series_salida = True
+
+            if error_series_entrada: 
+                context['texto'] = 'La cantidad de series de ENTRADA no coincide.'
+                return render(request, 'includes/modal sin permiso.html', context)
+
+            if error_series_salida:
+                context['texto'] = 'La cantidad de series de SALIDA no coincide.'
+                return render(request, 'includes/modal sin permiso.html', context)
+
+            if len(detalles_entrada) == 0:
+                context['texto'] = 'Debe agregar al menos un item en la tabla de ENTRADA.'
+                return render(request, 'includes/modal sin permiso.html', context)
+            
+            if len(detalles_salida) == 0:
+                context['texto'] = 'Debe agregar al menos un item en la tabla de SALIDA.'
+                return render(request, 'includes/modal sin permiso.html', context)
+            
+            return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse_lazy('calidad_app:transformacion_productos_inicio')
 
@@ -2945,6 +2981,89 @@ class TransformacionProductosConcluirView(PermissionRequiredMixin, BSModalDelete
         sid = transaction.savepoint()
         try:
             self.object = self.get_object()
+
+            tipo_movimiento = TipoMovimiento.objects.get(codigo=161) # Transformación, material transformado
+            
+            ## TRANSFORMACION - ENTRADA DE MATERIALES
+            for detalle in self.object.EntradaTransformacionProductos_transformacion_productos.all():
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = tipo_movimiento,
+                    tipo_stock = self.object.tipo_stock,
+                    signo_factor_multiplicador = -1,
+                    content_type_documento_proceso = detalle.transformacion_productos.content_type,
+                    id_registro_documento_proceso = detalle.transformacion_productos.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.transformacion_productos.sociedad,
+                    movimiento_anterior = None,
+                    created_by = request.user,
+                    updated_by = request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = tipo_movimiento,
+                    tipo_stock = tipo_movimiento.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = detalle.transformacion_productos.content_type,
+                    id_registro_documento_proceso = detalle.transformacion_productos.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.transformacion_productos.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    created_by = request.user,
+                    updated_by = request.user,
+                )
+
+                for serie in detalle.ValidarSerieEntradaTransformacionProductos_entrada_transformacion_productos.all():
+                    HistorialEstadoSerie.objects.create(
+                        serie=serie.serie,
+                        estado_serie=EstadoSerie.objects.get(numero_estado=11), # Transformado
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                    serie.serie.serie_movimiento_almacen.add(movimiento_uno)
+                    serie.serie.serie_movimiento_almacen.add(movimiento_dos)        
+
+            ## TRANSFORMACION - SALIDA DE MATERIALES
+            if self.object.tipo_stock.codigo == 3: 
+                numero_estado = 1 # Disponible
+            elif self.object.tipo_stock.codigo == 6:
+                numero_estado = 2 # Con problemas
+            elif self.object.tipo_stock.codigo == 36:
+                numero_estado = 5 # Reparado
+            else:
+                numero_estado = 11 # Transformado
+
+            for detalle in self.object.SalidaTransformacionProductos_transformacion_productos.all():
+                movimiento_tres = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = tipo_movimiento,
+                    tipo_stock = self.object.tipo_stock,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = detalle.transformacion_productos.content_type,
+                    id_registro_documento_proceso = detalle.transformacion_productos.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.transformacion_productos.sociedad,
+                    movimiento_anterior = None,
+                    transformacion = True,
+                    created_by = request.user,
+                    updated_by = request.user,
+                )
+
+                for serie in detalle.ValidarSerieSalidaTransformacionProductos_salida_transformacion_productos.all():
+                    HistorialEstadoSerie.objects.create(
+                        serie=serie.serie,
+                        estado_serie=EstadoSerie.objects.get(numero_estado=numero_estado), # Depende del tipo de stock del documento
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                    serie.serie.serie_movimiento_almacen.add(movimiento_tres)                  
+
             self.object.estado = 2
             registro_guardar(self.object, self.request)
             self.object.save()
@@ -3012,8 +3131,12 @@ class EntradaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalF
                 material = form.cleaned_data.get('material')
                 sede = form.cleaned_data.get('sede')
                 almacen = form.cleaned_data.get('almacen')
-                # tipo_stock = form.cleaned_data.get('tipo_stock')
+                tipo_stock = form.cleaned_data.get('tipo_stock')
                 cantidad = form.cleaned_data.get('cantidad')
+
+                if Decimal(cantidad) > stock_tipo_stock(material.content_type, material.id, self.get_object().transformacion_productos.sociedad.id, almacen.id, tipo_stock.id):
+                    form.add_error('cantidad', "Se excedió la cantidad del stock")
+                    return super().form_invalid(form)
 
                 obj, created = EntradaTransformacionProductos.objects.get_or_create(
                     material = material,
@@ -3038,12 +3161,22 @@ class EntradaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalF
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.success_url)
 
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(EntradaTransformacionProductosCreateView, self).get_form_kwargs(*args, **kwargs)
+        transformacion_productos = TransformacionProductos.objects.get(id=self.kwargs['transformacion_productos_id'])
+        kwargs['tipo_stock'] = transformacion_productos.tipo_stock
+        kwargs['id_sociedad'] = transformacion_productos.sociedad.id
+        return kwargs
+
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(EntradaTransformacionProductosCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Material"
         context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        transformacion_productos = TransformacionProductos.objects.get(id=self.kwargs['transformacion_productos_id'])
+        context['sociedad'] = transformacion_productos.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
         return context
     
 
@@ -3057,14 +3190,31 @@ class EntradaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalU
         return reverse_lazy('calidad_app:transformacion_productos_detalle', kwargs={'pk':self.get_object().transformacion_productos_id})
 
     def form_valid(self, form):
+        cantidad = form.cleaned_data.get('cantidad')
+        material = form.cleaned_data.get('material')
+        almacen = form.cleaned_data.get('almacen')
+        tipo_stock = form.cleaned_data.get('tipo_stock')
+        if Decimal(cantidad) > stock_tipo_stock(material.content_type, material.id, self.get_object().transformacion_productos.sociedad.id, almacen.id, tipo_stock.id):
+            form.add_error('cantidad', "Se excedió la cantidad del stock")
+            return super().form_invalid(form)
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(EntradaTransformacionProductosUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['tipo_stock'] = self.object.transformacion_productos.tipo_stock
+        kwargs['id_sociedad'] = self.object.transformacion_productos.sociedad.id
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(EntradaTransformacionProductosUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Material"
         context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        transformacion_productos = TransformacionProductos.objects.get(id=self.get_object().transformacion_productos_id)
+        context['sociedad'] = transformacion_productos.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
         return context
 
 
@@ -3242,12 +3392,22 @@ class SalidaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalFo
             registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.success_url)
 
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(SalidaTransformacionProductosCreateView, self).get_form_kwargs(*args, **kwargs)
+        transformacion_productos = TransformacionProductos.objects.get(id=self.kwargs['transformacion_productos_id'])
+        kwargs['tipo_stock'] = transformacion_productos.tipo_stock
+        kwargs['id_sociedad'] = transformacion_productos.sociedad.id
+        return kwargs
+
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
         context = super(SalidaTransformacionProductosCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Material"
         context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        transformacion_productos = TransformacionProductos.objects.get(id=self.kwargs['transformacion_productos_id'])
+        context['sociedad'] = transformacion_productos.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
         return context
     
 
@@ -3264,11 +3424,20 @@ class SalidaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUp
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(SalidaTransformacionProductosUpdateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['tipo_stock'] = self.object.transformacion_productos.tipo_stock
+        kwargs['id_sociedad'] = self.object.transformacion_productos.sociedad.id
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super(SalidaTransformacionProductosUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Material"
         context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        transformacion_productos = TransformacionProductos.objects.get(id=self.get_object().transformacion_productos_id)
+        context['sociedad'] = transformacion_productos.sociedad.id
+        context['url_stock'] = reverse_lazy('material_app:stock', kwargs={'id_material':1})[:-2]
         return context
 
 
@@ -3317,27 +3486,37 @@ class ValidarSeriesSalidaTransformacionProductosDetailView(PermissionRequiredMix
         serie = form.cleaned_data['serie']
         salida_transformacion_productos = SalidaTransformacionProductos.objects.get(id = self.kwargs['pk'])
         try:
-            buscar = Serie.objects.get(
+            buscar = Serie.objects.filter(
                 serie_base=serie,
                 content_type=ContentType.objects.get_for_model(salida_transformacion_productos.material),
                 id_registro=salida_transformacion_productos.material.id,
             )
-            buscar2 = ValidarSerieSalidaTransformacionProductos.objects.filter(serie = buscar)
 
-            if len(buscar2) != 0:
+            if len(buscar) == 0:
+                nueva_serie = Serie.objects.create(
+                    serie_base=serie,
+                    content_type=salida_transformacion_productos.material.content_type,
+                    id_registro=salida_transformacion_productos.material.id,
+                    sociedad=salida_transformacion_productos.transformacion_productos.sociedad,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )    
+            else:
+                buscar2 = ValidarSerieSalidaTransformacionProductos.objects.filter(serie = buscar[0])
+                if len(buscar2) != 0:
+                    form.add_error('serie', "Serie ya ha sido ingresada")
+                    return super().form_invalid(form)
+                
                 form.add_error('serie', "Serie ya ha sido registrada")
                 return super().form_invalid(form)
 
-            if buscar.estado != 'DISPONIBLE':
-                form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
-                return super().form_invalid(form)
-        except:
-            form.add_error('serie', "Serie no encontrada: %s" % serie)
+        except Exception as e:
+            form.add_error('serie', "Ocurrió un problema con la serie: %s, %s" % (serie, e) )
             return super().form_invalid(form)
 
         obj, created = ValidarSerieSalidaTransformacionProductos.objects.get_or_create(
             salida_transformacion_productos=salida_transformacion_productos,
-            serie=buscar,
+            serie=nueva_serie,
         )
         if created:
             obj.estado = 1

@@ -67,6 +67,7 @@ class MovimientosAlmacen(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True)
     movimiento_anterior = models.ForeignKey('self', on_delete=models.PROTECT, blank=True, null=True, related_name='MovimientosAlmacen_movimiento_anterior')
     movimiento_reversion = models.BooleanField(default=False)
+    transformacion = models.BooleanField(default=False)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='MovimientosAlmacen_created_by', editable=False)

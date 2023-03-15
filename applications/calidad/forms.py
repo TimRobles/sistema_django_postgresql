@@ -1,8 +1,9 @@
 from django import forms
+from applications.movimiento_almacen.models import TipoStock
 from applications.nota_ingreso.models import NotaIngreso
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Unidad
-from applications.material.funciones import stock, stock_disponible, stock_sede_disponible
+from applications.material.funciones import stock, stock_disponible, stock_sede_disponible, stock_tipo_stock
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
@@ -644,12 +645,16 @@ class TransformacionProductosUpdateForm(BSModalModelForm):
 class EntradaTransformacionProductosForm(BSModalModelForm):
     # sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
     almacen = forms.ModelChoiceField(queryset=Almacen.objects.none())
+    tipo_stock = forms.ModelChoiceField(queryset=TipoStock.objects.none())
+    stock = forms.DecimalField(required=False, initial=0, max_digits=22, decimal_places=10, disabled=True)
     class Meta:
         model = EntradaTransformacionProductos
         fields = (
             'material',
+            'tipo_stock',
             'sede',
             'almacen',
+            'stock',
             'cantidad',
             )
         
@@ -660,7 +665,15 @@ class EntradaTransformacionProductosForm(BSModalModelForm):
         return sede
 
     def __init__(self, *args, **kwargs):
+        self.tipo_stock = kwargs.pop('tipo_stock')
+        self.id_sociedad = kwargs.pop('id_sociedad')
         super(EntradaTransformacionProductosForm, self).__init__(*args, **kwargs)
+        self.fields['tipo_stock'].queryset = TipoStock.objects.filter(id = self.tipo_stock.id)
+        self.fields['tipo_stock'].initial = self.tipo_stock
+        self.fields['tipo_stock'].disabled = True
+        material = self.instance.material
+        if material:
+            self.fields['stock'].initial = stock_tipo_stock(material.content_type, material.id, self.id_sociedad, self.instance.almacen.id, self.tipo_stock.id)
         almacen = self.instance.almacen
         if almacen:
             sede = almacen.sede
@@ -674,12 +687,16 @@ class EntradaTransformacionProductosForm(BSModalModelForm):
 class SalidaTransformacionProductosForm(BSModalModelForm):
     # sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
     almacen = forms.ModelChoiceField(queryset=Almacen.objects.none())
+    tipo_stock = forms.ModelChoiceField(queryset=TipoStock.objects.none())
+    stock = forms.DecimalField(required=False, initial=0, max_digits=22, decimal_places=10, disabled=True)
     class Meta:
         model = SalidaTransformacionProductos
         fields = (
             'material',
+            'tipo_stock',
             'sede',
             'almacen',
+            'stock',
             'cantidad',
             )
         
@@ -690,7 +707,15 @@ class SalidaTransformacionProductosForm(BSModalModelForm):
         return sede
 
     def __init__(self, *args, **kwargs):
+        self.tipo_stock = kwargs.pop('tipo_stock')
+        self.id_sociedad = kwargs.pop('id_sociedad')
         super(SalidaTransformacionProductosForm, self).__init__(*args, **kwargs)
+        self.fields['tipo_stock'].queryset = TipoStock.objects.filter(id = self.tipo_stock.id)
+        self.fields['tipo_stock'].initial = self.tipo_stock
+        self.fields['tipo_stock'].disabled = True
+        material = self.instance.material
+        if material:
+            self.fields['stock'].initial = stock_tipo_stock(material.content_type, material.id, self.id_sociedad, self.instance.almacen.id, self.tipo_stock.id)
         almacen = self.instance.almacen
         if almacen:
             sede = almacen.sede
