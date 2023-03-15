@@ -129,7 +129,9 @@ class NotaControlCalidadStockDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'item',
-        'nota_ingreso_detalle',
+        # 'nota_ingreso_detalle',
+        'content_type',
+        'id_registro',
         'cantidad_calidad',
         'inspeccion',
         'nota_control_calidad_stock',
