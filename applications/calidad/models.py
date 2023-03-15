@@ -261,6 +261,8 @@ class NotaControlCalidadStockDetalle(models.Model):
     ]
     item = models.IntegerField(blank=True, null=True)
     nota_ingreso_detalle = models.ForeignKey(NotaIngresoDetalle, on_delete=models.CASCADE, related_name='NotaControlCalidadStockDetalle_nota_ingreso_detalle')
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #NotaIngresoDetalle / SalidaTransformacionProducto
+    id_registro = models.IntegerField(blank=True, null=True)
     cantidad_calidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     inspeccion = models.IntegerField('Estado Inspección',choices=ESTADOS_INSPECCION, default=1)
     nota_control_calidad_stock = models.ForeignKey(NotaControlCalidadStock, on_delete=models.CASCADE, related_name='NotaControlCalidadStockDetalle_nota_control_calidad_stock')
