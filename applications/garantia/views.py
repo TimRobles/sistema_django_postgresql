@@ -863,12 +863,14 @@ class ControlCalidadReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
     form_class = ControlCalidadReclamoGarantiaObservacionForm
     success_url = '.'
 
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super(ControlCalidadReclamoGarantiaObservacionUpdateView, self).get_context_data(**kwargs)
-        
-        context['titulo'] = "Actualizar Observaciones"
-        context['observaciones'] = self.object.observacion
-        context['id_control'] = self.object.id
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Observaciones"
         return context
 
 

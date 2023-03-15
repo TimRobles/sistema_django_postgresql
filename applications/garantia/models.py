@@ -125,6 +125,14 @@ class ControlCalidadReclamoGarantia(models.Model):
     def cliente(self):
         return self.ingreso_reclamo_garantia.cliente
 
+    @property
+    def cliente_interlocutor(self):
+        return self.ingreso_reclamo_garantia.cliente_interlocutor
+
+    @property
+    def nro_calidad_garantia(self):
+        return self.ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia
+
     def __str__(self):
         return str(self.id)
 
