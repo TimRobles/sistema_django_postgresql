@@ -16,6 +16,14 @@
         </button>
     </div>
     {% endif %}
+
+    {% if ingreso.estado == 2 %}
+    <div class="col-auto">
+        <a href="{% url 'garantia_app:ingreso_garantia_pdf' ingreso.id %}" target="_blank" class="btn btn-danger">
+            Ver PDF
+        </a>
+    </div>
+    {% endif %}
 </div>
 
 
@@ -136,6 +144,19 @@
                         {% endif %}
                     </td>
                 </tr>
+                <tr>
+                    <th class="pe-2">Almacén:</th>
+                    <td>{{ ingreso.almacen }}</td>
+                    <td class="ps-2">
+                        {% if ingreso.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:ingreso_garantia_almacen' ingreso.id %}"
+                            data-table-url="{% url 'garantia_app:ingreso_garantia_ver_tabla' ingreso.id  %}"
+                            class="update btn btn-primary">
+                            Almacén
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
  
             </tbody>
         </table>
@@ -207,8 +228,8 @@
                             <i class="bi bi-x-lg"></i>
                         </button>
                         
-                        <a href="{% url 'garantia_app:serie_ingreso_garantia_ver' ingreso.id material.id %}" class="update btn btn-primary">
-                            Agregar Serie
+                        <a href="{% url 'garantia_app:serie_ingreso_garantia_ver' ingreso.id material.id %}" class="btn btn-dark btn-sm">
+                            <i class="bi bi-upc-scan"></i>
                         </a>
                             
                         {% endif %}

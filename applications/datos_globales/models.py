@@ -655,6 +655,9 @@ class SeriesComprobante(models.Model):
     class Meta:
         verbose_name = 'Series Comprobante'
         verbose_name_plural = 'Series Comprobantes'
+        ordering = [
+            '-created_at',
+        ]
 
     def __str__(self):
         return f"{self.serie} - {self.tipo_comprobante}"

@@ -85,6 +85,9 @@ class Serie(models.Model):
     class Meta:
         verbose_name = 'Serie'
         verbose_name_plural = 'Series'
+        ordering = [
+            '-created_at',
+        ]
 
     @property
     def producto(self):
@@ -173,7 +176,7 @@ class SerieCalidad(models.Model):
         verbose_name = 'Serie Calidad'
         verbose_name_plural = 'Series Calidad'
         ordering = [
-            'created_at',
+            '-created_at',
             ]
 
     def __str__(self):
@@ -205,6 +208,8 @@ class HistorialEstadoSerie(models.Model):
 class NotaControlCalidadStock(models.Model):
     nro_nota_calidad = models.CharField('Nro. Nota Calidad', max_length=50, blank=True, null=True)
     nota_ingreso = models.ForeignKey(NotaIngreso, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True)
+    id_registro = models.IntegerField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS_NOTA_CALIDAD_STOCK, default=1)
@@ -294,6 +299,9 @@ class SerieConsulta(models.Model):
     class Meta:
         verbose_name = 'Serie Consulta'
         verbose_name_plural = 'Series Consultas'
+        ordering = [
+            '-created_at'
+        ]
 
     def __str__(self):
         return str(self.serie_base)

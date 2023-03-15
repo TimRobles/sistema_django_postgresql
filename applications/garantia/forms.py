@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADOS_DOCUMENTO,ESTADOS_CONTROL_RECLAMO_GARANTIA,ESTADOS_SALIDA_RECLAMO_GARANTIA
-from applications.garantia.models import IngresoReclamoGarantia, ControlCalidadReclamoGarantia, SalidaReclamoGarantia
+from applications.garantia.models import IngresoReclamoGarantia, ControlCalidadReclamoGarantia, SalidaReclamoGarantia, SerieIngresoReclamoGarantiaDetalle
 from applications.sede.models import Sede
 from applications.material.models import Material
 from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
@@ -86,6 +86,19 @@ class IngresoReclamoGarantiaSociedadForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class IngresoReclamoGarantiaAlmacenForm(BSModalModelForm):
+    class Meta:
+        model = IngresoReclamoGarantia
+        fields = (
+            'almacen',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(IngresoReclamoGarantiaAlmacenForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class IngresoReclamoGarantiaObservacionForm(BSModalModelForm):
     class Meta:
         model = IngresoReclamoGarantia
@@ -142,6 +155,19 @@ class SerieIngresoReclamoGarantiaDetalleForm(forms.Form):
         filtro_serie_base = kwargs.pop('filtro_serie_base')
         super(SerieIngresoReclamoGarantiaDetalleForm, self).__init__(*args, **kwargs)
         self.fields['serie_base'].initial = filtro_serie_base
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SerieIngresoReclamoGarantiaComentarioForm(BSModalModelForm):
+    class Meta:
+        model = SerieIngresoReclamoGarantiaDetalle
+        fields=(
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SerieIngresoReclamoGarantiaComentarioForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

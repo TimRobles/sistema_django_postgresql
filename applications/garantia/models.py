@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications import datos_globales
+from applications.almacenes.models import Almacen
 from applications.variables import ESTADOS_INGRESO_RECLAMO_GARANTIA
 from applications.sociedad.models import Sociedad
 from applications.calidad.models import HistorialEstadoSerie, Serie
@@ -15,6 +16,7 @@ class IngresoReclamoGarantia(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='IngresoReclamoGarantia_cliente', blank=True, null=True)
     cliente_interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='IngresoReclamoGarantia_interlocutor', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
     fecha_ingreso = models.DateField('Fecha Ingreso', auto_now=False, auto_now_add=False, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True, max_length=1000)
     encargado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)
@@ -33,6 +35,10 @@ class IngresoReclamoGarantia(models.Model):
         ordering = [
             'fecha_ingreso',
             ]
+
+    @property
+    def detalles(self):
+        return self.IngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia.all()
 
     def __str__(self):
         return str(self.id)
@@ -84,6 +90,10 @@ class SerieIngresoReclamoGarantiaDetalle(models.Model):
     class Meta:
         verbose_name = 'Serie Ingreso Reclamo Garantia Detalle'
         verbose_name_plural = 'Serie Ingreso Reclamo Garantia Detalles'
+        ordering = [
+            'ingreso_reclamo_garantia_detalle',
+            '-created_at',
+        ]
 
     @property
     def documento(self):
@@ -106,6 +116,14 @@ class ControlCalidadReclamoGarantia(models.Model):
     class Meta:
         verbose_name = 'Control Calidad Reclamo Garantia'
         verbose_name_plural = 'Control Calidad Reclamos Garantia'
+
+    @property
+    def sociedad(self):
+        return self.ingreso_reclamo_garantia.sociedad
+
+    @property
+    def cliente(self):
+        return self.ingreso_reclamo_garantia.cliente
 
     def __str__(self):
         return str(self.id)
@@ -149,6 +167,9 @@ class SerieReclamoHistorial(models.Model):
     class Meta:
         verbose_name = 'Serie Reclamo Historial'
         verbose_name_plural = 'Serie Reclamo Historiales'
+        ordering = [
+            '-created_at',
+        ]
 
     def __str__(self):
         return str(self.id)
