@@ -236,6 +236,10 @@ class NotaControlCalidadStock(models.Model):
         return self.nota_ingreso.recepcion_compra.proveedor
 
     @property
+    def nota_ingreso(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    @property
     def documentos(self):
         documentos = []
         documentos.append(self.nota_ingreso.recepcion_compra.__str__())

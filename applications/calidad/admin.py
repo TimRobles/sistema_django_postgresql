@@ -106,7 +106,9 @@ class NotaControlCalidadStockAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'nro_nota_calidad',
-        # 'nota_ingreso',
+        'nota_ingreso',
+        'content_type',
+        'id_registro',
         'motivo_anulacion',
         'comentario',
         'estado',
