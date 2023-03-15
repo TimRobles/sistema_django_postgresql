@@ -26,6 +26,7 @@ urlNotaControlCalidadStock = [
     path('nota-control-calidad-stock/', views.NotaControlCalidadStockListView.as_view(), name='nota_control_calidad_stock_inicio'),
     path('nota-control-calidad-stock-tabla/', views.NotaControlCalidadStockTabla, name='nota_control_calidad_stock_tabla'),
     path('nota-control-calidad-stock/registrar/', views.NotaControlCalidadStockCreateView.as_view(), name='nota_control_calidad_stock_registrar'),
+    path('nota-control-calidad-stock/registrar-transformacion/', views.NotaControlCalidadStockTransformacionProductosCreateView.as_view(), name='nota_control_calidad_stock_registrar_transformacion'),
     path('nota-control-calidad-stock/anular/<pk>/', views.NotaControlCalidadStockDeleteView.as_view(), name='nota_control_calidad_stock_anular'),
     path('nota-control-calidad-stock/concluir/<pk>/', views.NotaControlCalidadStockConcluirView.as_view(), name='nota_control_calidad_stock_concluir'),
     path('nota-control-calidad-stock/registrar/series/<pk>/', views.NotaControlCalidadStockRegistrarSeriesView.as_view(), name='nota_control_calidad_stock_registrar_series'),

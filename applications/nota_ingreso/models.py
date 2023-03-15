@@ -38,6 +38,10 @@ class NotaIngreso(models.Model):
     @property
     def fecha(self):
         return self.fecha_ingreso
+
+    @property
+    def detalles(self):
+        return self.NotaIngresoDetalle_nota_ingreso.all()
     
     @property
     def recepcion_compra(self):
