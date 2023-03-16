@@ -1,10 +1,11 @@
 from decimal import Decimal
-from applications.calidad.models import SalidaTransformacionProductos
+from django.contrib.contenttypes.models import ContentType
 from applications.cotizacion.models import CotizacionObservacion
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from django.db import models
 
 from applications.nota_ingreso.models import NotaIngresoDetalle
+from applications.calidad.models import SalidaTransformacionProductos, TransformacionProductos
 from applications.sede.models import Sede
 
 def disponible(content_type, id_registro, id_sociedad, id_almacen=None):
@@ -262,16 +263,15 @@ def observacion(cotizacion, sociedad):
     return busqueda.observacion
 
 def NotaIngresoDetalle_comprobante_compra_detalle(obj):
-    if hasattr(obj, 'cantidad_conteo'):
+    if ContentType.objects.get_for_model(obj) == ContentType.objects.get_for_model(TransformacionProductos): #TransformacionProductos
+        busqueda = SalidaTransformacionProductos.objects.filter(
+            transformacion_productos=obj,
+            transformacion_productos__estado=2
+        ).aggregate(models.Sum('cantidad'))['cantidad__sum']
+    else: #ComprobanteCompraPIDetalle / NotaStockInicialDetalle / NotaIngresoMuestraDetalle
         busqueda = NotaIngresoDetalle.objects.filter(
             content_type = obj.content_type,
             id_registro = obj.id_registro,
             nota_ingreso__estado=2
         ).aggregate(models.Sum('cantidad_conteo'))['cantidad_conteo__sum']
-    if hasattr(obj, 'cantidad'):
-        busqueda = SalidaTransformacionProductos.objects.filter(
-            content_type = obj.content_type,
-            id_registro = obj.id_registro,
-            transformacion_productos__estado=2
-        ).aggregate(models.Sum('cantidad'))['cantidad__sum']
     return busqueda
