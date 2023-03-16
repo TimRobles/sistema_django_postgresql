@@ -702,6 +702,14 @@ class ValidarSerieSalidaTransformacionProductos(models.Model):
         ordering = [
             'created_at',
             ]
+    
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    @property
+    def id_registro(self):
+        return self.id
 
     def __str__(self):
         return "%s - %s" % (self.salida_transformacion_productos , str(self.serie))
