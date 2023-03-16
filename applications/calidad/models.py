@@ -660,6 +660,14 @@ class SalidaTransformacionProductos(models.Model):
         ordering = ['item',]
 
     @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    @property
+    def id_registro(self):
+        return self.id
+
+    @property
     def series_validar(self):
         return Decimal(len(self.ValidarSerieSalidaTransformacionProductos_salida_transformacion_productos.all())).quantize(Decimal('0.01'))
     
@@ -702,14 +710,6 @@ class ValidarSerieSalidaTransformacionProductos(models.Model):
         ordering = [
             'created_at',
             ]
-    
-    @property
-    def content_type(self):
-        return ContentType.objects.get_for_model(self)
-
-    @property
-    def id_registro(self):
-        return self.id
 
     def __str__(self):
         return "%s - %s" % (self.salida_transformacion_productos , str(self.serie))
