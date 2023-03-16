@@ -189,18 +189,6 @@ class ControlCalidadReclamoGarantiaBuscarForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
 
 
-class ControlCalidadReclamoGarantiaEncargadoForm(BSModalModelForm):
-    class Meta:
-        model = ControlCalidadReclamoGarantia
-        fields = (
-            'observacion',
-            )
-
-    def __init__(self, *args, **kwargs):
-        super(ControlCalidadReclamoGarantiaEncargadoForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
-
 class ControlCalidadReclamoGarantiaObservacionForm(BSModalModelForm):
     class Meta:
         model = ControlCalidadReclamoGarantia

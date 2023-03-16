@@ -17,7 +17,7 @@
     </div>
     {% endif %}
 
-    {% if ingreso.estado == 2 %}
+    {% if ingreso.estado != 1 %}
     <div class="col-auto">
         <a href="{% url 'garantia_app:ingreso_garantia_pdf' ingreso.id %}" target="_blank" class="btn btn-danger">
             Ver PDF
@@ -100,7 +100,7 @@
 
                         {% if ingreso.estado == 3 %}
                         <div class="col-auto">
-                            <a href="{% url 'garantia_app:control_garantia_inicio' ingreso.id  %}" class="btn btn-primary">Notas Control Calidad</a>
+                            <a href="{% url 'garantia_app:control_garantia_ver' ingreso.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia.id  %}" class="btn btn-primary">Nota de Control de Calidad</a>
                         </div>
                         {% endif %}
                     </td>
@@ -145,7 +145,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="pe-2">Almacén:</th>
+                    <th class="pe-2">Almacén Destino:</th>
                     <td>{{ ingreso.almacen }}</td>
                     <td class="ps-2">
                         {% if ingreso.estado == 1 %}

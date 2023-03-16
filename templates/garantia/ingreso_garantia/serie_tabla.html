@@ -46,9 +46,9 @@
                     {% else %}
                     data-table-url="{% url 'garantia_app:serie_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.id serie.ingreso_reclamo_garantia_detalle.id %}"
                     {% endif %}
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Editar">
-                    <i class="bi bi-pencil-fill"></i>
+                    class="update btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Comentario">
+                    <i class="bi bi-chat-dots"></i>
                 </button>
                 <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_eliminar' serie.id %}"
                     class="delete btn btn-danger btn-sm"

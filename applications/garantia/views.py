@@ -1,4 +1,5 @@
 from django import forms
+from django.core.paginator import Paginator
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
 from applications.garantia.pdf import generarIngresoReclamoGarantia
 from applications.importaciones import*
@@ -27,7 +28,6 @@ from .forms import(
     IngresoReclamoGarantiaMaterialForm,
     IngresoReclamoGarantiaMaterialUpdateForm,
     ControlCalidadReclamoGarantiaBuscarForm,
-    ControlCalidadReclamoGarantiaEncargadoForm,
     ControlCalidadReclamoGarantiaObservacionForm,
     SalidaReclamoGarantiaBuscarForm,
     SalidaReclamoGarantiaEncargadoForm,
@@ -325,15 +325,21 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
+        ingreso_reclamo_garantia = self.get_object()
         error_cliente = True
         error_sociedad = True
+        error_almacen = True
+        error_series = False
         context['titulo'] = 'Error de guardar'
-        if self.get_object().cliente and self.get_object().cliente_interlocutor:
+        if ingreso_reclamo_garantia.cliente and ingreso_reclamo_garantia.cliente_interlocutor:
             error_cliente = False
-        if self.get_object().sociedad:
+        if ingreso_reclamo_garantia.sociedad:
             error_sociedad = False
-        if self.get_object().almacen:
+        if ingreso_reclamo_garantia.almacen:
             error_almacen = False
+        for detalle in ingreso_reclamo_garantia.detalles:
+            if detalle.cantidad != detalle.series:
+                error_series = True
         
         if error_cliente:
             context['texto'] = 'Elegir un cliente.'
@@ -343,6 +349,9 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
             return render(request, 'includes/modal sin permiso.html', context)
         if error_almacen:
             context['texto'] = 'Elegir un almacen.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_series:
+            context['texto'] = 'Registrar las series.'
             return render(request, 'includes/modal sin permiso.html', context)
 
         if not self.has_permission():
@@ -526,7 +535,16 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                 ingreso_reclamo_garantia_detalle.save()
                 documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
 
-                if ingreso_reclamo_garantia.cliente == serie.cliente:
+                buscar = SerieIngresoReclamoGarantiaDetalle.objects.filter(
+                            ingreso_reclamo_garantia_detalle=ingreso_reclamo_garantia_detalle,
+                            serie=serie,
+                            content_type_documento=ContentType.objects.get_for_model(documento),
+                            id_registro_documento=documento.id,
+                        )
+
+                if len(buscar)>0:
+                    self.serie_encontrada = "La serie ya está registrada"
+                elif ingreso_reclamo_garantia.cliente == serie.cliente:
                     if ingreso_reclamo_garantia.sociedad == serie.sociedad:
                         SerieIngresoReclamoGarantiaDetalle.objects.create(
                             ingreso_reclamo_garantia_detalle=ingreso_reclamo_garantia_detalle,
@@ -782,15 +800,41 @@ class ControlCalidadReclamoGarantiaListView(FormView):
     def get_context_data(self, **kwargs):
         context = super(ControlCalidadReclamoGarantiaListView, self).get_context_data(**kwargs)
         contexto_control_garantia = ControlCalidadReclamoGarantia.objects.exclude(estado=3)
-        try:
-            contexto_control_garantia = contexto_control_garantia.filter(control_garantia__id = self.kwargs['id_control'])
-        except:
-            pass
-        
+
         filtro_estado = self.request.GET.get('estado')
         filtro_cliente = self.request.GET.get('cliente')
 
+        contexto_filtro = []
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            contexto_control_garantia = contexto_control_garantia.filter(condicion)
+            contexto_filtro.append("estado=" + filtro_estado)
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            contexto_control_garantia = contexto_control_garantia.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(contexto_control_garantia) > objectsxpage:
+            paginator = Paginator(contexto_control_garantia, objectsxpage)
+            page_number = self.request.GET.get('page')
+            contexto_control_garantia = paginator.get_page(page_number)
+
         context['contexto_control_garantia'] = contexto_control_garantia
+        context['contexto_pagina'] = contexto_control_garantia
+
         return context
 
 class ControlCalidadReclamoGarantiaVerView(TemplateView):
@@ -828,34 +872,6 @@ def ControlCalidadReclamoGarantiaVerTabla(request, id_control):
         )
         return JsonResponse(data)
 
-class ControlCalidadReclamoGarantiaDeleteView(BSModalDeleteView):
-    model = ControlCalidadReclamoGarantia
-    template_name = "includes/eliminar generico.html"
-    success_url = '.'
-
-    def get_context_data(self, **kwargs):
-        context = super(ControlCalidadReclamoGarantiaDeleteView, self).get_context_data(**kwargs)
-        context['accion'] = "Eliminar"
-        context['titulo'] = "Control Calidad Reclamo"
-        context['item'] = "Garantia - %s" % (self.object.cliente)
-        return context
-
-
-class ControlCalidadReclamoGarantiaEncargadoView(BSModalUpdateView):
-    model = ControlCalidadReclamoGarantia
-    template_name = "garantia/control_calidad_garantia/form_cliente.html"
-    form_class = ControlCalidadReclamoGarantiaEncargadoForm
-    success_url = '.'
-
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super(ControlCalidadReclamoGarantiaEncargadoView, self).get_context_data(**kwargs)
-        context['accion'] = "Elegir"
-        context['titulo'] = "Encargado"
-        return context
 
 class ControlCalidadReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
     model = ControlCalidadReclamoGarantia
@@ -874,9 +890,26 @@ class ControlCalidadReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
         return context
 
 
-class ControlSalidaGarantiaView(BSModalDeleteView):
+class ControlSalidaGarantiaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('garantia.change_controlcalidadreclamogarantia')
     model = ControlCalidadReclamoGarantia
     template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_solucionado = True
+        context['titulo'] = 'Error de guardar'
+        for detalle in self.get_object().ingreso_reclamo_garantia.detalles:
+            if detalle.revisados != detalle.cantidad:
+                error_solucionado = False
+        
+        if error_solucionado:
+            context['texto'] = 'Falta solucionar algunos productos.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super(ControlSalidaGarantiaView, self).dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('garantia_app:control_garantia_ver', kwargs={'id_control':self.object.id})
@@ -890,23 +923,10 @@ class ControlSalidaGarantiaView(BSModalDeleteView):
             detalles = self.object.ControlCalidadReclamoGarantiaDetalle_calidad_garantia.all()
 
             salida_garantia = SalidaReclamoGarantia.objects.create(
-                control_garantia = self.object,
-                cliente = self.object.cliente,
-                sociedad = self.object.sociedad,
+                control_calidad_reclamo_garantia = self.object,
                 created_by = self.request.user,
                 updated_by = self.request.user,
             )
-
-            # for detalle in detalles:
-            #     SalidaReclamoGarantiaDetalle.objects.create(
-            #         item = detalle.item,
-            #         content_type = detalle.content_type,
-            #         id_registro = detalle.id_registro,
-            #         cantidad = detalle.cantidad,
-            #         salida_garantia = salida_garantia,
-            #         created_by = self.request.user,
-            #         updated_by = self.request.user,
-            #     )
 
             self.object.estado = 3
             registro_guardar(self.object, self.request)
@@ -927,6 +947,36 @@ class ControlSalidaGarantiaView(BSModalDeleteView):
         return context
 
 
+class SerieControlCalidadReclamoGarantiaDetalleView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('garantia.change_controlcalidadreclamogarantia')
+    template_name = 'garantia/control_calidad_garantia/serie.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(SerieControlCalidadReclamoGarantiaDetalleView, self).get_context_data(**kwargs)
+        series = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__id=self.kwargs['id_ingreso_detalle'])
+        ingreso_reclamo_garantia_detalle = series[0].ingreso_reclamo_garantia_detalle
+        context['series'] = series
+        context['ingreso_reclamo_garantia_detalle'] = ingreso_reclamo_garantia_detalle
+        context['regresar'] = reverse_lazy('garantia_app:control_garantia_ver', kwargs={'id_control':ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia.id})
+        return context
+
+
+def SerieControlCalidadReclamoGarantiaTabla(request, **kwargs):
+    data = dict()
+    if request.method == 'GET':
+        template = 'garantia/control_calidad_garantia/serie_tabla.html'
+        context = {}
+        series = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__id=kwargs['id_ingreso_detalle'])
+        ingreso_reclamo_garantia_detalle = series[0].ingreso_reclamo_garantia_detalle
+        context['series'] = series
+        context['ingreso_reclamo_garantia_detalle'] = ingreso_reclamo_garantia_detalle
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
 
 
 ######################### SALIDA RECLAMO GARANTÍA ##############################################

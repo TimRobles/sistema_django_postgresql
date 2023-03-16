@@ -30,17 +30,14 @@ urlpatterns = [
     path('serie-ingreso-garantia/comentario/<pk>/', views.SerieIngresoReclamoGarantiaDetalleUpdateView.as_view(), name='serie_ingreso_garantia_comentario'),
     path('serie-ingreso-garantia/eliminar/<pk>/', views.SerieIngresoReclamoGarantiaMaterialDeleteView.as_view(), name='serie_ingreso_garantia_eliminar'),
 
-    path('control-garantia/<int:id_ingreso>/',views.ControlCalidadReclamoGarantiaListView.as_view(),name='control_garantia_inicio'),
-    path('control-garantia/ver/<int:id_control>/', views.ControlCalidadReclamoGarantiaVerView.as_view(), name='control_garantia_ver'),
-    path('control-garantia/ver/tabla/<int:id_control>/', views.ControlCalidadReclamoGarantiaVerTabla, name='control_garantia_ver_tabla'),
-
-    path('control-garantia/eliminar/<pk>/', views.ControlCalidadReclamoGarantiaDeleteView.as_view(), name='control_garantia_eliminar'),
-
-    path('control-garantia/encargado/<pk>/', views.ControlCalidadReclamoGarantiaEncargadoView.as_view(), name='control_garantia_encargado'),
-    path('control-garantia/observacion/<pk>/', views.ControlCalidadReclamoGarantiaObservacionUpdateView.as_view(), name='control_garantia_observacion'),
-    path('control-garantia/salida/<pk>/', views.ControlSalidaGarantiaView.as_view(), name='control_garantia_salida'),
-
-
+    path('control-ingreso-garantia/',views.ControlCalidadReclamoGarantiaListView.as_view(),name='control_garantia_inicio'),
+    path('control-ingreso-garantia/ver/<int:id_control>/', views.ControlCalidadReclamoGarantiaVerView.as_view(), name='control_garantia_ver'),
+    path('control-ingreso-garantia/ver/tabla/<int:id_control>/', views.ControlCalidadReclamoGarantiaVerTabla, name='control_garantia_ver_tabla'),
+    path('control-ingreso-garantia/observacion/<pk>/', views.ControlCalidadReclamoGarantiaObservacionUpdateView.as_view(), name='control_garantia_observacion'),
+    path('control-ingreso-garantia/salida/<pk>/', views.ControlSalidaGarantiaView.as_view(), name='control_garantia_salida'),
+    
+    path('serie-control-ingreso-garantia/ver/<int:id_ingreso_detalle>/', views.SerieControlCalidadReclamoGarantiaDetalleView.as_view(), name='serie_contro_ingreso_garantia_ver'),
+    path('serie-control-ingreso-garantia/tabla/<int:id_ingreso_detalle>/', views.SerieControlCalidadReclamoGarantiaTabla, name='serie_contro_ingreso_garantia_tabla'),
 
     path('salida-garantia/<int:id_control>/',views.SalidaReclamoGarantiaListView.as_view(),name='salida_garantia_inicio'),
     path('salida-garantia/ver/<int:id_salida>/', views.SalidaReclamoGarantiaVerView.as_view(), name='salida_garantia_ver'),

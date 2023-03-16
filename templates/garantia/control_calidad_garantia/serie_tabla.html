@@ -1,0 +1,73 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Serie</th>
+            <th>Material</th>
+            <th>Cliente</th>
+            <th>Documento</th>
+            <th>Almacén</th>
+            <th>Sociedad</th>
+            <th>Comentario</th>
+            <th>Estado</th>
+            <th class="text-nowrap text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for serie in series %}
+        <tr>
+            <td>{{ serie.serie }}</td>
+            <td>{{ serie.ingreso_reclamo_garantia_detalle.producto }}</td>
+            <td>{{ serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.cliente }}</td>
+            <td>{{ serie.documento }}</td>
+            <td>
+                {% if serie.serie.almacen %}
+                {{ serie.serie.almacen }}
+                {% endif %}
+            </td>
+            <td>{{ serie.serie.sociedad }}</td>
+            <td>
+                {% if serie.comentario %}
+                {{ serie.comentario }}
+                {% endif %}
+            </td>
+            <td>{{ serie.serie.estado }}</td>
+            <td class="text-nowrap text-center">
+                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_comentario' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Solución
+                </button>
+                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_comentario' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-danger btn-sm">
+                    Falla
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="9">
+                <div class="accordion" id="parent-{{ serie.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="accordion-{{ serie.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#target-{{ serie.id }}" aria-expanded="false" aria-controls="target-{{ serie.id }}">
+                                <strong>Historial de Serie {{ serie.serie }}</strong>
+                            </button>
+                        </h2>
+                        <div id="target-{{ serie.id }}" class="accordion-collapse collapse" aria-labelledby="accordion-{{ serie.id }}" data-bs-parent="#parent-{{ serie.id }}">
+                            <div class="accordion-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>                  
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

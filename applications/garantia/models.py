@@ -37,6 +37,10 @@ class IngresoReclamoGarantia(models.Model):
             ]
 
     @property
+    def fecha(self):
+        return self.fecha_ingreso
+
+    @property
     def detalles(self):
         return self.IngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia.all()
 
@@ -70,6 +74,10 @@ class IngresoReclamoGarantiaDetalle(models.Model):
     @property
     def series(self):
         return Decimal(len(self.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all())).quantize(Decimal('0.01'))
+
+    @property
+    def revisados(self):
+        return Decimal(len(ControlCalidadReclamoGarantiaDetalle.objects.filter(serie_ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia_detalle=self))).quantize(Decimal('0.01'))
         
     def __str__(self):
         return f"{self.item} - {self.producto}"
@@ -104,7 +112,7 @@ class SerieIngresoReclamoGarantiaDetalle(models.Model):
 
 
 class ControlCalidadReclamoGarantia(models.Model):
-    ingreso_reclamo_garantia = models.ForeignKey(IngresoReclamoGarantia, on_delete=models.CASCADE, related_name='ControlCalidadReclamoGarantia_ingreso_reclamo_garantia')
+    ingreso_reclamo_garantia = models.OneToOneField(IngresoReclamoGarantia, on_delete=models.CASCADE, related_name='ControlCalidadReclamoGarantia_ingreso_reclamo_garantia')
     observacion = models.TextField(blank=True, null=True, max_length=1000)
     estado = models.IntegerField('Estado', choices=ESTADOS_INGRESO_RECLAMO_GARANTIA, default=1)
   
@@ -144,8 +152,8 @@ class ControlCalidadReclamoGarantiaDetalle(models.Model):
         (3, 'DEVOLUCIÓN'),
     )
 
-    control_calidad_reclamo_garantia = models.ForeignKey(ControlCalidadReclamoGarantia, on_delete=models.CASCADE)
-    serie_ingreso_reclamo_garantia_detalle = models.ForeignKey(SerieIngresoReclamoGarantiaDetalle, on_delete=models.CASCADE)
+    control_calidad_reclamo_garantia = models.ForeignKey(ControlCalidadReclamoGarantia, on_delete=models.CASCADE, related_name='ControlCalidadReclamoGarantiaDetalle_control_calidad_reclamo_garantia')
+    serie_ingreso_reclamo_garantia_detalle = models.ForeignKey(SerieIngresoReclamoGarantiaDetalle, on_delete=models.CASCADE, related_name='ControlCalidadReclamoGarantiaDetalle_serie_ingreso_reclamo_garantia_detalle')
     serie_cambio = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
     tipo_analisis = models.IntegerField(choices=TIPO_ANALISIS, blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
@@ -164,7 +172,7 @@ class ControlCalidadReclamoGarantiaDetalle(models.Model):
 
 
 class SerieReclamoHistorial(models.Model):
-    serie_ingreso_reclamo_garantia_detalle = models.ForeignKey(SerieIngresoReclamoGarantiaDetalle, on_delete=models.CASCADE)
+    serie_ingreso_reclamo_garantia_detalle = models.ForeignKey(SerieIngresoReclamoGarantiaDetalle, on_delete=models.CASCADE, related_name='SerieReclamoHistorial_serie_ingreso_reclamo_garantia_detalle')
     historia_estado_serie = models.ForeignKey(HistorialEstadoSerie, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -184,7 +192,7 @@ class SerieReclamoHistorial(models.Model):
 
 
 class SalidaReclamoGarantia(models.Model):
-    control_calidad_reclamo_garantia = models.OneToOneField(ControlCalidadReclamoGarantia, on_delete=models.CASCADE)
+    control_calidad_reclamo_garantia = models.OneToOneField(ControlCalidadReclamoGarantia, on_delete=models.CASCADE, related_name='SalidaReclamoGarantia_control_calidad_reclamo_garantia')
     fecha_salida = models.DateField('Fecha Salida', auto_now=False, auto_now_add=False, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True, max_length=1000)
     estado = models.IntegerField('Estado', choices=ESTADOS_INGRESO_RECLAMO_GARANTIA, default=1)
