@@ -1271,7 +1271,7 @@ def ValidarSeriesNotaSalidaDetailTabla(request, pk):
 
 
 class ValidarSeriesNotaSalidaDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.delete_validarseriesnotasalidadetalle')
+    permission_required = ('logistica.delete_validarserienotasalidadetalle')
     model = ValidarSerieNotaSalidaDetalle
     template_name = "includes/eliminar generico.html"
 
