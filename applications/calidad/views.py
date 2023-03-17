@@ -2268,7 +2268,7 @@ def ValidarSeriesSolicitudConsumoDetailTabla(request, pk):
 
 
 class ValidarSeriesSolicitudConsumoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('calidad.delete_validarseriesnotasalidadetalle')
+    permission_required = ('calidad.delete_validarseriesolicitudconsumointernodetalle')
     model = ValidarSerieSolicitudConsumoInternoDetalle
     template_name = "includes/eliminar generico.html"
 

@@ -390,8 +390,8 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
                     sociedad=ingreso_reclamo_garantia.sociedad,
                     movimiento_anterior=None,
                     movimiento_reversion=False,
-                    created_at=self.request.user,
-                    updated_at=self.request.user,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
                 )
                 movimiento_dos = MovimientosAlmacen.objects.create(
                     content_type_producto=detalle.content_type,
@@ -406,8 +406,8 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
                     sociedad=ingreso_reclamo_garantia.sociedad,
                     movimiento_anterior=movimiento_uno,
                     movimiento_reversion=False,
-                    created_at=self.request.user,
-                    updated_at=self.request.user,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
                 )
                 #Movimiento de Estado
                 for serie in detalle.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all():
@@ -417,8 +417,8 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
                         falla_material=None,
                         solucion=None,
                         observacion=serie.comentario,
-                        created_at=self.request.user,
-                        updated_at=self.request.user,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
                     )
                     serie.serie.serie_movimiento_almacen.add(movimiento_uno)
                     serie.serie.serie_movimiento_almacen.add(movimiento_dos)
