@@ -236,7 +236,10 @@ class NotaControlCalidadStock(models.Model):
 
     @property
     def proveedor(self):
-        return self.nota_ingreso.recepcion_compra.proveedor
+        try:
+            return self.nota_ingreso.recepcion_compra.proveedor
+        except:
+            return ''
 
     @property
     def nota_ingreso(self):
@@ -248,7 +251,10 @@ class NotaControlCalidadStock(models.Model):
     @property
     def documentos(self):
         documentos = []
-        documentos.append(self.nota_ingreso.recepcion_compra.__str__())
+        try:
+            documentos.append(self.nota_ingreso.recepcion_compra.__str__())
+        except:
+            documentos.append(self.nota_ingreso.__str__())
         return documentos
 
     def __str__(self):
@@ -666,6 +672,14 @@ class SalidaTransformacionProductos(models.Model):
     @property
     def id_registro(self):
         return self.id
+
+    @property
+    def producto(self):
+        return self.material
+
+    @property
+    def sociedad(self):
+        return self.transformacion_productos.sociedad
 
     @property
     def series_validar(self):

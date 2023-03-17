@@ -424,7 +424,7 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
                         content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
                         id_registro_documento_proceso = form.instance.id,
                         almacen = detalle.nota_ingreso_detalle.almacen,
-                        sociedad = form.instance.nota_ingreso.recepcion_compra.sociedad,
+                        sociedad = form.instance.nota_ingreso.sociedad,
                     )
                     movimiento_uno = movimiento_dos.movimiento_anterior
                     
@@ -451,7 +451,7 @@ class NotaControlCalidadStockDeleteView(PermissionRequiredMixin, BSModalUpdateVi
                         content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
                         id_registro_documento_proceso = form.instance.id,
                         almacen = detalle.nota_ingreso_detalle.almacen,
-                        sociedad = form.instance.nota_ingreso.recepcion_compra.sociedad,
+                        sociedad = form.instance.nota_ingreso.sociedad,
                     )
                     movimiento_uno = movimiento_dos.movimiento_anterior
                     movimiento_anterior_dos = movimiento_uno.movimiento_anterior
@@ -521,6 +521,11 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                             else:
                                 movimiento_inicial = TipoMovimiento.objects.get(codigo=106) #Inspección, material bueno, sin registrar serie
                                 movimiento_final = TipoMovimiento.objects.get(codigo=108) #Registro de Serie
+
+                            tipo_stock = movimiento_inicial.tipo_stock_final
+                        # elif self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(TransformacionProductos):
+                        #     movimiento_inicial = TipoMovimiento.objects.get(codigo=161) #Transformación de productos
+                        #     tipo_stock = TipoStock.objects.get(codigo=5) #Bloq sin QA
                         else:
                             continue
                     else:
@@ -537,7 +542,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                         content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
                         id_registro_documento_proceso = self.object.id,
                         almacen = detalle.nota_ingreso_detalle.almacen,
-                        sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                        sociedad = self.object.nota_ingreso.sociedad,
                         movimiento_reversion = False,
                     )
 
@@ -551,7 +556,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                         content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
                         id_registro_documento_proceso = self.object.id,
                         almacen = movimiento_anterior.almacen,
-                        sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                        sociedad = self.object.nota_ingreso.sociedad,
                         movimiento_anterior = movimiento_anterior,
                         movimiento_reversion = False,
                         created_by = self.request.user,
@@ -567,7 +572,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                         content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
                         id_registro_documento_proceso = self.object.id,
                         almacen = movimiento_anterior.almacen,
-                        sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                        sociedad = self.object.nota_ingreso.sociedad,
                         movimiento_anterior = movimiento_uno,
                         movimiento_reversion = False,
                         created_by = self.request.user,
@@ -647,6 +652,12 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=147) #Ingreso por Muestra, c/QA
             else:
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
+
+            tipo_stock = movimiento_inicial.tipo_stock_final
+
+            if self.object.nota_ingreso.content_type == ContentType.objects.get_for_model(TransformacionProductos):
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=161) #Transformación de productos
+                tipo_stock = TipoStock.objects.get(codigo=5) #Bloq sin QA
             
             finalizar = True
             for detalle in detalles:
@@ -669,11 +680,11 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                     content_type_producto = ContentType.objects.get_for_model(detalle.nota_ingreso_detalle.producto),
                     id_registro_producto = detalle.nota_ingreso_detalle.producto.id,
                     tipo_movimiento = movimiento_inicial,
-                    tipo_stock = movimiento_inicial.tipo_stock_final,
+                    tipo_stock = tipo_stock,
                     signo_factor_multiplicador = +1,
                     content_type_documento_proceso = ContentType.objects.get_for_model(self.object.nota_ingreso),
                     id_registro_documento_proceso = self.object.nota_ingreso.id,
-                    sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                    sociedad = self.object.nota_ingreso.sociedad,
                     almacen = detalle.nota_ingreso_detalle.almacen,
                     movimiento_reversion = False,
                 )
@@ -688,7 +699,7 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                     content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
                     id_registro_documento_proceso = self.object.id,
                     almacen = movimiento_anterior.almacen,
-                    sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                    sociedad = self.object.nota_ingreso.sociedad,
                     movimiento_anterior = movimiento_anterior,
                     movimiento_reversion = False,
                     created_by = self.request.user,
@@ -704,7 +715,7 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                     content_type_documento_proceso = ContentType.objects.get_for_model(self.object),
                     id_registro_documento_proceso = self.object.id,
                     almacen = movimiento_anterior.almacen,
-                    sociedad = self.object.nota_ingreso.recepcion_compra.sociedad,
+                    sociedad = self.object.nota_ingreso.sociedad,
                     movimiento_anterior = movimiento_uno,
                     movimiento_reversion = False,
                     created_by = self.request.user,
