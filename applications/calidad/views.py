@@ -337,10 +337,10 @@ class NotaControlCalidadStockCreateView(PermissionRequiredMixin, BSModalCreateVi
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-            context = super(NotaControlCalidadStockCreateView, self).get_context_data(**kwargs)
-            context['accion']="Registrar"
-            context['titulo']="Nota Control Calidad Stock"
-            return context
+        context = super(NotaControlCalidadStockCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Nota Control Calidad Stock"
+        return context
 
     def form_valid(self, form):
         nro_nota_control_calidad = len(NotaControlCalidadStock.objects.all()) + 1

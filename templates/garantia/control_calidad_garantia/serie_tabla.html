@@ -1,4 +1,18 @@
 {% load funciones_propias %}
+<table>
+    <thead>
+        <tr>
+            <th class="pe-2">Material:</th>
+            <td>{{ ingreso_reclamo_garantia_detalle.producto }}</td>
+        </tr>
+        <tr>
+            <th class="pe-2">Cantidad:</th>
+            <td>{{ ingreso_reclamo_garantia_detalle.cantidad }}</td>
+            <th class="pe-2">Revisados:</th>
+            <td>{{ ingreso_reclamo_garantia_detalle.revisados }}</td>
+        </tr>
+    </thead>
+</table>
 
 <table class="table">
     <thead>
@@ -33,18 +47,21 @@
                 {% endif %}
             </td>
             <td>{{ serie.serie.estado }}</td>
+            
+            {% if serie.serie.estado != 'REPARADO' %}
             <td class="text-nowrap text-center">
-                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_comentario' serie.id %}"
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_solucion' serie.id %}"
                     data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
                     class="update btn btn-primary btn-sm">
                     Solución
                 </button>
-                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_comentario' serie.id %}"
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_falla' serie.id %}"
                     data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
                     class="update btn btn-danger btn-sm">
                     Falla
                 </button>
             </td>
+            {% endif %}
         </tr>
         <tr>
             <td colspan="9">
@@ -68,6 +85,7 @@
                                                 <th>Observación</th>
                                                 <th>Usuario</th>
                                                 <th>Fecha</th>
+                                                <th class="text-center text-nowrap">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -92,6 +110,33 @@
                                                 </td>
                                                 <td>{{ historia.updated_by|nombre_usuario }}</td>
                                                 <td>{{ historia.created_at|date:'d/m/Y H:i' }}</td>
+                                                <td class="text-center text-nowrap">
+                                                    {% if historia.SerieReclamoHistorial_historia_estado_serie and forloop.last %}
+                                                    
+                                                    {% if historia.falla_material %}
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_falla' historia.id %}"
+                                                        data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                                                        class="update btn btn-warning btn-sm" title="Editar">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </button>
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_eliminar_falla' serie.ingreso_reclamo_garantia_detalle.id historia.id %}"
+                                                        class="delete btn btn-danger btn-sm" title="Eliminar">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                    {% elif historia.solucion %}
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_solucion' serie.id historia.id %}"
+                                                        data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                                                        class="update btn btn-warning btn-sm" title="Editar">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </button>
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_eliminar_solucion' serie.ingreso_reclamo_garantia_detalle.id serie.id historia.id %}"
+                                                        class="delete btn btn-danger btn-sm" title="Eliminar">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                    
+                                                    {% endif %}
+                                                </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>

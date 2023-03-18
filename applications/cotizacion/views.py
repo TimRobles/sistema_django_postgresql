@@ -396,12 +396,15 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
     def dispatch(self, request, *args, **kwargs):
+        print('dispatch')
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
+        print('form_valid')
+        print(self.request.session['primero'])
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
@@ -478,10 +481,12 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
+        print('get_context_data')
         self.request.session['primero'] = True
+        print(self.request.session['primero'])
         context = super(CotizacionVentaMaterialDetalleView, self).get_context_data(**kwargs)
-        context['titulo'] = 'Material'
         context['accion'] = 'Agregar'
+        context['titulo'] = 'Material'
         return context
 
 
