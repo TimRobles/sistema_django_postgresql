@@ -105,7 +105,10 @@ class SerieIngresoReclamoGarantiaDetalle(models.Model):
 
     @property
     def documento(self):
-        return self.content_type_documento.get_object_for_this_type(id = self.id_registro_documento)
+        try:
+            return self.content_type_documento.get_object_for_this_type(id = self.id_registro_documento)
+        except:
+            return None
 
     def __str__(self):
         return f"{self.serie} - {self.ingreso_reclamo_garantia_detalle}"

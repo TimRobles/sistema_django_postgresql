@@ -2,6 +2,7 @@ from datetime import date
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from applications.calidad.models import FallaMaterial, HistorialEstadoSerie, SolucionMaterial
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADOS_DOCUMENTO,ESTADOS_CONTROL_RECLAMO_GARANTIA,ESTADOS_SALIDA_RECLAMO_GARANTIA
@@ -169,6 +170,26 @@ class SerieIngresoReclamoGarantiaComentarioForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SerieIngresoReclamoGarantiaComentarioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SerieIngresoReclamoGarantiaDocumentoForm(BSModalModelForm):
+    factura = forms.ModelChoiceField(queryset=FacturaVenta.objects.none(), required=False)
+    boleta = forms.ModelChoiceField(queryset=BoletaVenta.objects.none(), required=False)
+    class Meta:
+        model = SerieIngresoReclamoGarantiaDetalle
+        fields=(
+            'factura',
+            'boleta',
+            )
+
+    def __init__(self, *args, **kwargs):
+        facturas = kwargs.pop('facturas')
+        boletas = kwargs.pop('boletas')
+        super(SerieIngresoReclamoGarantiaDocumentoForm, self).__init__(*args, **kwargs)
+        self.fields['factura'].queryset = facturas
+        self.fields['boleta'].queryset = boletas
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

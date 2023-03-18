@@ -18,13 +18,13 @@
             <td>{{ serie.serie }}</td>
             <td>{{ serie.ingreso_reclamo_garantia_detalle.producto }}</td>
             <td>
-                {% if serie.serie.cliente %}
-                {{ serie.serie.cliente }}
+                {% if serie.documento %}
+                {{ serie.documento.cliente }}
                 {% endif %}
             </td>
             <td>
-                {% if serie.serie.documento %}
-                {{ serie.serie.documento.nota_salida.documentos_venta.0 }}
+                {% if serie.documento %}
+                {{ serie.documento }}
                 {% endif %}
             </td>
             <td>
@@ -40,6 +40,18 @@
             </td>
             <td>{{ serie.serie.estado }}</td>
             <td class="text-nowrap text-center">
+                {% if not serie.serie.producto.control_serie %}
+                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_documento' serie.id %}"
+                    {% if url_tabla %}
+                    data-table-url="{{ url_tabla }}"
+                    {% else %}
+                    data-table-url="{% url 'garantia_app:serie_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.id serie.ingreso_reclamo_garantia_detalle.id %}"
+                    {% endif %}
+                    class="update btn btn-primary btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Documento">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% endif %}
                 <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_comentario' serie.id %}"
                     {% if url_tabla %}
                     data-table-url="{{ url_tabla }}"

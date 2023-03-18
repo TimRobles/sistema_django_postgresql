@@ -1,6 +1,7 @@
 from django import forms
 from django.core.paginator import Paginator
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SolucionMaterial
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.garantia.pdf import generarIngresoReclamoGarantia
 from applications.importaciones import*
 from applications.funciones import fecha_en_letras, registrar_excepcion, numeroXn
@@ -39,6 +40,7 @@ from .forms import(
     SalidaReclamoGarantiaObservacionForm,
     SerieIngresoReclamoGarantiaComentarioForm,
     SerieIngresoReclamoGarantiaDetalleForm,
+    SerieIngresoReclamoGarantiaDocumentoForm,
 )
 
 
@@ -718,6 +720,49 @@ class SerieIngresoReclamoGarantiaDetalleUpdateView(BSModalUpdateView):
         context = super(SerieIngresoReclamoGarantiaDetalleUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Comentario"
+        return context
+
+
+class SerieIngresoReclamoGarantiaDetalleDocumentoUpdateView(BSModalUpdateView):
+    model = SerieIngresoReclamoGarantiaDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = SerieIngresoReclamoGarantiaDocumentoForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        #Pendiente Corregir
+        lista_facturas = [1,2,3,4,5,6]
+        lista_boletas = [1,2,3,4,5,6]
+        kwargs['facturas'] = FacturaVenta.objects.filter(id__in=lista_facturas)
+        kwargs['boletas'] = BoletaVenta.objects.filter(id__in=lista_boletas)
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            factura = form.cleaned_data.get('factura')
+            boleta = form.cleaned_data.get('boleta')
+            print(factura)
+            print(boleta)
+            if factura:
+                form.instance.content_type_documento = ContentType.objects.get_for_model(factura)
+                form.instance.id_registro_documento = factura.id
+            elif boleta:
+                form.instance.content_type_documento = ContentType.objects.get_for_model(boleta)
+                form.instance.id_registro_documento = boleta.id
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SerieIngresoReclamoGarantiaDetalleDocumentoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Documento"
         return context
     
 

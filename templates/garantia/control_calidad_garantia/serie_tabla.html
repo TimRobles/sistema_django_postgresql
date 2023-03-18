@@ -4,6 +4,9 @@
         <tr>
             <th class="pe-2">Material:</th>
             <td>{{ ingreso_reclamo_garantia_detalle.producto }}</td>
+            <td>
+                <a href="{% url 'calidad_app:falla_material_detalle' ingreso_reclamo_garantia_detalle.producto.subfamilia.id %}" target="_blank" class="btn btn-primary">Ver Fallas</a>
+            </td>
         </tr>
         <tr>
             <th class="pe-2">Cantidad:</th>

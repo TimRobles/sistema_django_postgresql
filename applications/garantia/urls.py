@@ -28,6 +28,7 @@ urlpatterns = [
     path('serie-ingreso-garantia/tabla/<int:id_ingreso>/', views.SerieIngresoReclamoGarantiaTabla, name='serie_ingreso_garantia_tabla'),
     path('serie-ingreso-garantia/tabla/<int:id_ingreso>/<int:id_ingreso_detalle>/', views.SerieIngresoReclamoGarantiaTabla, name='serie_ingreso_garantia_tabla'),
     path('serie-ingreso-garantia/comentario/<pk>/', views.SerieIngresoReclamoGarantiaDetalleUpdateView.as_view(), name='serie_ingreso_garantia_comentario'),
+    path('serie-ingreso-garantia/documento/<pk>/', views.SerieIngresoReclamoGarantiaDetalleDocumentoUpdateView.as_view(), name='serie_ingreso_garantia_documento'),
     path('serie-ingreso-garantia/eliminar/<pk>/', views.SerieIngresoReclamoGarantiaMaterialDeleteView.as_view(), name='serie_ingreso_garantia_eliminar'),
 
     path('control-ingreso-garantia/',views.ControlCalidadReclamoGarantiaListView.as_view(),name='control_garantia_inicio'),
