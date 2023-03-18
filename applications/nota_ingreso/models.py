@@ -47,10 +47,6 @@ class NotaIngreso(models.Model):
     def recepcion_compra(self):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
-    @property
-    def sociedad(self):
-        return self.recepcion_compra.sociedad
-
     def __str__(self):
         return "NOTA DE INGRESO %s%s - %s %s %s" % (self.sociedad.abreviatura, numeroXn(self.nro_nota_ingreso, 6), self.fecha_ingreso.strftime('%d/%m/%Y'), self.created_by, self.recepcion_compra)
 
