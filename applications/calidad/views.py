@@ -3189,7 +3189,7 @@ class EntradaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalF
                 tipo_stock = form.cleaned_data.get('tipo_stock')
                 cantidad = form.cleaned_data.get('cantidad')
 
-                if Decimal(cantidad) > stock_tipo_stock(material.content_type, material.id, self.get_object().transformacion_productos.sociedad.id, almacen.id, tipo_stock.id):
+                if Decimal(cantidad) > stock_tipo_stock(material.content_type, material.id, transformacion_productos.sociedad.id, almacen.id, tipo_stock.id):
                     form.add_error('cantidad', "Se excedió la cantidad del stock")
                     return super().form_invalid(form)
 
