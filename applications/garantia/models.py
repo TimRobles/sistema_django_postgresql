@@ -173,7 +173,7 @@ class ControlCalidadReclamoGarantiaDetalle(models.Model):
 
 class SerieReclamoHistorial(models.Model):
     serie_ingreso_reclamo_garantia_detalle = models.ForeignKey(SerieIngresoReclamoGarantiaDetalle, on_delete=models.CASCADE, related_name='SerieReclamoHistorial_serie_ingreso_reclamo_garantia_detalle')
-    historia_estado_serie = models.ForeignKey(HistorialEstadoSerie, on_delete=models.CASCADE)
+    historia_estado_serie = models.OneToOneField(HistorialEstadoSerie, on_delete=models.CASCADE, related_name='SerieReclamoHistorial_historia_estado_serie')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='SerieReclamoHistorial_created_by', editable=False)

@@ -38,6 +38,14 @@ urlpatterns = [
     
     path('serie-control-ingreso-garantia/ver/<int:id_ingreso_detalle>/', views.SerieControlCalidadReclamoGarantiaDetalleView.as_view(), name='serie_contro_ingreso_garantia_ver'),
     path('serie-control-ingreso-garantia/tabla/<int:id_ingreso_detalle>/', views.SerieControlCalidadReclamoGarantiaTabla, name='serie_contro_ingreso_garantia_tabla'),
+    
+    path('serie-control-ingreso-garantia/registrar-falla/<int:id_ingreso_detalle>/', views.RegistrarFallaCreateView.as_view(), name='serie_contro_ingreso_garantia_registrar_falla'),
+    path('serie-control-ingreso-garantia/actualizar-falla/<pk>/', views.RegistrarFallaUpdateView.as_view(), name='serie_contro_ingreso_garantia_actualizar_falla'),
+    path('serie-control-ingreso-garantia/eliminar-falla/<int:id_ingreso_detalle>/<pk>/', views.RegistrarFallaDeleteView.as_view(), name='serie_contro_ingreso_garantia_eliminar_falla'),
+
+    path('serie-control-ingreso-garantia/registrar-solucion/<int:id_ingreso_detalle>/', views.RegistrarSolucionCreateView.as_view(), name='serie_contro_ingreso_garantia_registrar_solucion'),
+    path('serie-control-ingreso-garantia/actualizar-solucion/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarSolucionUpdateView.as_view(), name='serie_contro_ingreso_garantia_actualizar_solucion'),
+    path('serie-control-ingreso-garantia/eliminar-solucion/<int:id_ingreso_detalle>/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarSolucionDeleteView.as_view(), name='serie_contro_ingreso_garantia_eliminar_solucion'),
 
     path('salida-garantia/<int:id_control>/',views.SalidaReclamoGarantiaListView.as_view(),name='salida_garantia_inicio'),
     path('salida-garantia/ver/<int:id_salida>/', views.SalidaReclamoGarantiaVerView.as_view(), name='salida_garantia_ver'),

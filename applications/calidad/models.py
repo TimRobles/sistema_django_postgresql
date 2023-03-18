@@ -206,7 +206,7 @@ class HistorialEstadoSerie(models.Model):
             ]
 
     def __str__(self):
-        return str(self.serie)
+        return f"{self.serie} - {self.estado_serie}"
 
 class NotaControlCalidadStock(models.Model):
     nro_nota_calidad = models.CharField('Nro. Nota Calidad', max_length=50, blank=True, null=True)
