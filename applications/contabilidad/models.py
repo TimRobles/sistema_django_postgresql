@@ -8,7 +8,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad
-from applications.variables import TIPOS_COMISION, ESTADOS
+from applications.variables import TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
 class FondoPensiones(models.Model):
     nombre = models.CharField('Nombre Fondo de Pensiones', max_length=50)
@@ -94,9 +94,9 @@ class EsSalud(models.Model):
 
 class BoletaPago(models.Model):
     datos_planilla = models.ForeignKey(DatosPlanilla, null=True,  on_delete=models.PROTECT)
-    year = models.IntegerField(validators=[MinValueValidator(2015)], blank=True, null=True)
-    month = models.IntegerField(blank=True, null=True)
-    tipo = models.IntegerField(blank=True, null=True)
+    year = models.IntegerField('Año', validators=[MinValueValidator(2015),MaxValueValidator(datetime.now().year)], default=datetime.now().year ,blank=True, null=True)
+    month = models.IntegerField('Mes',choices=MESES, blank=True, null=True)
+    tipo = models.IntegerField(choices=TIPO_PAGO_BOLETA, blank=True, null=True)
     haber_mensual = models.DecimalField('Haber Mensual', max_digits=7, decimal_places=2, blank=True, null=True)
     lic_con_goce_haber = models.DecimalField('Licencia con goce de haber', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     dominical = models.DecimalField('Dominical', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
@@ -122,34 +122,135 @@ class BoletaPago(models.Model):
     class Meta:
         verbose_name = 'Boleta de Pago'
         verbose_name_plural = 'Boletas de Pago'
+        ordering = ['-id',]
+
 
     def __str__(self):
-        return str(self.id)
+        return "%s - %s  - %s - %s" % (self.year, self.datos_planilla,self.get_tipo_display(), self.get_month_display()) 
 
 class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
     fecha_pagar = models.DateField('Fecha Pagar', auto_now=False, auto_now_add=False)
-    tipo_pago = models.IntegerField()
-    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
-    redondeo = models.DecimalField('Redondeo', max_digits=3, decimal_places=2, default=0)
-    monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0)
-    voucher = models.FileField('Voucher', upload_to=None, max_length=100)
-    fecha_pago = models.DateField('Fecha de Pago', auto_now=False, auto_now_add=False)
+    tipo_pago = models.IntegerField(choices=TIPO_PAGO_RECIBO, blank=True, null=True)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, blank=True, null=True)
+    redondeo = models.DecimalField('Redondeo', max_digits=3, decimal_places=2, default=0, blank=True, null=True)
+    monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0, blank=True, null=True)
+    voucher = models.FileField('Voucher', upload_to=None, max_length=100, blank=True, null=True)
+    fecha_pago = models.DateField('Fecha de Pago', auto_now=False, auto_now_add=False, blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
     id_registro = models.IntegerField(blank=True, null=True)   
-    estado = models.IntegerField(choices=ESTADOS, default=1)
+    estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboBoletaPago_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboBoletaPago_updated_by', editable=False)
     
-
     class Meta:
-
         verbose_name = 'Recibo Boleta Pago'
         verbose_name_plural = 'Recibos Boleta Pago'
+        ordering = ['-id',]
 
     def __str__(self):
         return str(self.id)
 
+
+class TipoServicio(models.Model):
+    nombre = models.CharField('Servicio', max_length=50)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoServicio_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TipoServicio_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Tipo Servicio'
+        verbose_name_plural = 'Tipos de Servicios'
+
+    def __str__(self):
+        return str(self.nombre)
+
+class Institucion(models.Model):
+    nombre = models.CharField('Institución', max_length=50)
+    url = models.URLField('URL', max_length=200, null=True, blank=True)
+    tipo_servicio = models.ManyToManyField(TipoServicio)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Institucion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Institucion_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Institucion'
+        verbose_name_plural = 'Instituciones'
+
+    def __str__(self):
+        return str(self.nombre)
+
+class MedioPago(models.Model):
+    nombre = models.CharField('Medio de Pago', max_length=50)
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='MedioPago_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='MedioPago_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Medio de Pago'
+        verbose_name_plural = 'Medios de Pago'
+
+    def __str__(self):
+        return str(self.nombre)
+
+
+class Servicio(models.Model):
+    institucion = models.ForeignKey(Institucion, null=True, blank=True, on_delete=models.PROTECT)
+    tipo_servicio = models.ForeignKey(TipoServicio, null=True,blank=True, on_delete=models.PROTECT)
+    numero_referencia = models.CharField('Número de referencia', max_length=50,blank=True, null=True)
+    titular_servicio = models.CharField('Titular del servicio', max_length=50,blank=True, null=True)
+    direccion = models.CharField('Dirección', max_length=255,null=True,blank=True)
+    alias = models.CharField('Alias', max_length=50,blank=True, null=True)
+    medio_pago = models.ManyToManyField(MedioPago)
+    estado = models.IntegerField(choices=ESTADOS,default=1)
+    sociedad = models.ForeignKey(Sociedad, null=True,blank=True, on_delete=models.PROTECT)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Servicio_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Servicio_updated_by', editable=False)
+
+
+    class Meta:
+        verbose_name = 'Servicio'
+        verbose_name_plural = 'Servicios'
+
+    def __str__(self):
+        return str(self.institucion)
+
+class ReciboServicio(models.Model):
+    servicio = models.ForeignKey(Servicio, blank=True, null=True, on_delete=models.PROTECT)
+    foto = models.FileField('Foto', blank=True, null=True)
+    fecha_emision = models.DateField('Fecha de Emision', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_vencimiento = models.DateField('Fecha de Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
+    mora = models.DecimalField('Mora', max_digits=3, decimal_places=2, default=0)
+    redondeo = models.DecimalField('Redondeo', max_digits=3, decimal_places=2, default=0)
+    monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0)
+    voucher = models.FileField('Voucher',blank=True, null=True)
+    fecha_pago = models.DateField('Fecha de Pago', null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
+    id_registro = models.IntegerField(blank=True, null=True)   
+    estado = models.IntegerField(choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboServicio_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboServicio_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Recibo de Servicio'
+        verbose_name_plural = 'Recibos de Servicios'
+
+    def __str__(self):
+        return str(self.servicio)

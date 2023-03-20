@@ -1,0 +1,28 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Institución</th>
+            <th>Url</th>
+            <th>Tipo de Servicio</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for institucion in contexto_institucion %}
+        <tr>
+            <td>{{ institucion.nombre }}</td>
+            <td>{{ institucion.url}}</td>
+            <td>
+                <button data-form-url="{% url 'contabilidad_app:institucion_actualizar' institucion.id %}"
+                    data-table-url="{% url 'contabilidad_app:institucion_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

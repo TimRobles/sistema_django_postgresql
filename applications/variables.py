@@ -333,6 +333,35 @@ TIPOS_COMISION = (
     (2, 'SOBRE FLUJO'),
     )
 
+TIPO_PAGO_BOLETA = (
+    (1, 'QUINCENA'),
+    (2, 'FIN DE MES'),
+    )
+
+TIPO_PAGO_RECIBO = (
+    (1, 'QUINCENA'),
+    (2, 'FIN DE MES'),
+    (3, 'GRATIFICACION'),
+    (4, 'VACACIONES'),
+    (5, 'LIQUIDACION'),
+    )
+
+MESES = (
+    (1, 'ENERO'),
+    (2, 'FEBRERO'),
+    (3, 'MARZO'),
+    (4, 'ABRIL'),
+    (5, 'MAYO'),
+    (6, 'JUNIO'),
+    (7, 'JULIO'),
+    (8, 'AGOSTO'),
+    (9, 'SETIEMBRE'),
+    (10, 'OCTUBRE'),
+    (11, 'NOVIEMBRE'),
+    (12, 'DICIEMBRE'),
+    )
+
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'

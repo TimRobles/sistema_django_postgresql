@@ -1,14 +1,13 @@
 {% extends 'base.html' %}
 
 {% block titulo %}
-    Boleta de Pago
+    Recibo de Servicio
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Boleta de Pago
-        <button data-form-url="{% url 'contabilidad_app:boleta_pago_registrar' %}"
-            data-table-url="{% url 'contabilidad_app:boleta_pago_tabla' %}"
-            data-modal="modal-xl"
+    <h3>Recibo de Servicio
+        <button data-form-url="{% url 'contabilidad_app:recibo_servicio_registrar' %}"
+            data-table-url="{% url 'contabilidad_app:recibo_servicio_tabla' %}"
             class="create badge bg-primary">
             Registrar 
         </button>
@@ -37,7 +36,7 @@
     </form>
 
     <div class="table-responsive" id="tabla">
-        {% include 'contabilidad/boleta_pago/inicio_tabla.html' %}
+        {% include 'contabilidad/recibo_servicio/inicio_tabla.html' %}
     </div>
     
 {% endblock contenido %}

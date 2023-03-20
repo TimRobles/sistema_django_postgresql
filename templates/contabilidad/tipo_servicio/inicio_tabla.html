@@ -1,0 +1,26 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tipo_servicio in contexto_tipo_servicio %}
+        <tr>
+            <td>{{ tipo_servicio.nombre }}</td>
+            <td>
+                <button data-form-url="{% url 'contabilidad_app:tipo_servicio_actualizar' tipo_servicio.id %}"
+                    data-table-url="{% url 'contabilidad_app:tipo_servicio_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -26,4 +26,34 @@ urlpatterns = [
     path('boleta-pago/registrar/', views.BoletaPagoCreateView.as_view(), name='boleta_pago_registrar'),
     path('boleta-pago/actualizar/<pk>/', views.BoletaPagoUpdateView.as_view(), name='boleta_pago_actualizar'),    
 
+    path('recibo-boleta-pago/', views.ReciboBoletaPagoListView.as_view(), name='recibo_boleta_pago_inicio'),
+    path('recibo-boleta-pago-tabla/', views.ReciboBoletaPagoTabla, name='recibo_boleta_pago_tabla'),
+    path('recibo-boleta-pago/registrar/', views.ReciboBoletaPagoCreateView.as_view(), name='recibo_boleta_pago_registrar'),
+    path('recibo-boleta-pago/actualizar/<pk>/', views.ReciboBoletaPagoUpdateView.as_view(), name='recibo_boleta_pago_actualizar'),    
+
+    path('servicio/', views.ServicioListView.as_view(), name='servicio_inicio'),
+    path('servicio-tabla/', views.ServicioTabla, name='servicio_tabla'),
+    path('servicio/registrar/', views.ServicioCreateView.as_view(), name='servicio_registrar'),
+    path('servicio/actualizar/<pk>/', views.ServicioUpdateView.as_view(), name='servicio_actualizar'),    
+
+    path('recibo-servicio/', views.ReciboServicioListView.as_view(), name='recibo_servicio_inicio'),
+    path('recibo-servicio-tabla/', views.ReciboServicioTabla, name='recibo_servicio_tabla'),
+    path('recibo-servicio/registrar/', views.ReciboServicioCreateView.as_view(), name='recibo_servicio_registrar'),
+    path('recibo-servicio/actualizar/<pk>/', views.ReciboServicioUpdateView.as_view(), name='recibo_servicio_actualizar'),    
+
+    path('tipo-servicio/', views.TipoServicioListView.as_view(), name='tipo_servicio_inicio'),
+    path('tipo-servicio-tabla/', views.TipoServicioTabla, name='tipo_servicio_tabla'),
+    path('tipo-servicio/registrar/', views.TipoServicioCreateView.as_view(), name='tipo_servicio_registrar'),
+    path('tipo-servicio/actualizar/<pk>/', views.TipoServicioUpdateView.as_view(), name='tipo_servicio_actualizar'),    
+
+    path('institucion/', views.InstitucionListView.as_view(), name='institucion_inicio'),
+    path('institucion-tabla/', views.InstitucionTabla, name='institucion_tabla'),
+    path('institucion/registrar/', views.InstitucionCreateView.as_view(), name='institucion_registrar'),
+    path('institucion/actualizar/<pk>/', views.InstitucionUpdateView.as_view(), name='institucion_actualizar'),    
+
+    path('medio-pago/', views.MedioPagoListView.as_view(), name='medio_pago_inicio'),
+    path('medio-pago-tabla/', views.MedioPagoTabla, name='medio_pago_tabla'),
+    path('medio-pago/registrar/', views.MedioPagoCreateView.as_view(), name='medio_pago_registrar'),
+    path('medio-pago/actualizar/<pk>/', views.MedioPagoUpdateView.as_view(), name='medio_pago_actualizar'),    
+
 ]

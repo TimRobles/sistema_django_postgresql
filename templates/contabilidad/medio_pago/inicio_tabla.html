@@ -1,0 +1,27 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Medio de Pago</th>
+        
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for medio_pago in contexto_medio_pago %}
+        <tr>
+            <td>{{ medio_pago.nombre }}</td>
+
+            <td>
+                <button data-form-url="{% url 'contabilidad_app:medio_pago_actualizar' medio_pago.id %}"
+                    data-table-url="{% url 'contabilidad_app:medio_pago_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

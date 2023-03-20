@@ -12,7 +12,14 @@ from .models import (
     ComisionFondoPensiones,
     DatosPlanilla,
     EsSalud,
-    BoletaPago)
+    BoletaPago,
+    ReciboBoletaPago,
+    Servicio,
+    ReciboServicio,
+    TipoServicio,
+    Institucion,
+    MedioPago,
+    )
 
 
 class ComisionFondoPensionesForm(BSModalModelForm):
@@ -139,6 +146,21 @@ class BoletaPagoForm(BSModalModelForm):
             'year',
             'month',
             'tipo',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(BoletaPagoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class BoletaPagoActualizarForm(BSModalModelForm):
+    class Meta:
+        model = BoletaPago
+        fields = (
+            'datos_planilla',
+            'year',
+            'month',
+            'tipo',
             'haber_mensual',
             'lic_con_goce_haber',
             'dominical',
@@ -157,6 +179,160 @@ class BoletaPagoForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
-        super(BoletaPagoForm, self).__init__(*args, **kwargs)
+        super(BoletaPagoActualizarForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReciboBoletaPagoForm(BSModalModelForm):
+    class Meta:
+        model = ReciboBoletaPago
+        fields = (
+            'boleta_pago',
+            'fecha_pagar',
+            'tipo_pago',
+            )
+        widgets = {
+            'fecha_pagar' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+    def __init__(self, *args, **kwargs):
+        super(ReciboBoletaPagoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ReciboBoletaPagoActualizarForm(BSModalModelForm):
+    class Meta:
+        model = ReciboBoletaPago
+        fields = (
+            'boleta_pago',
+            'fecha_pagar',
+            'tipo_pago',
+            'monto',
+            'redondeo',
+            'monto_pagado',
+            'voucher',
+            'fecha_pago',
+            'content_type',
+            'id_registro',
+            )
+        widgets = {
+            'fecha_pagar' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+    def __init__(self, *args, **kwargs):
+        super(ReciboBoletaPagoActualizarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ServicioForm(BSModalModelForm):
+    class Meta:
+        model = Servicio
+        fields = (
+            'institucion',
+            'tipo_servicio',
+            'numero_referencia',
+            'titular_servicio',
+            'direccion',
+            'alias',
+            'medio_pago',
+            'sociedad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ServicioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ReciboServicioForm(BSModalModelForm):
+    class Meta:
+        model = ReciboServicio
+        fields = (
+            'servicio',
+            'foto',
+            'fecha_emision',
+            'fecha_vencimiento',
+            'fecha_pago',
+            'monto',
+            'moneda',
+            )
+        widgets = {
+            'fecha_emision' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            'fecha_vencimiento' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+    def __init__(self, *args, **kwargs):
+        super(ReciboServicioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TipoServicioForm(BSModalModelForm):
+    class Meta:
+        model = TipoServicio
+        fields = (
+            'nombre',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(TipoServicioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class InstitucionForm(BSModalModelForm):
+    class Meta:
+        model = Institucion
+        fields = (
+            'nombre',
+            'url',
+            'tipo_servicio',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(InstitucionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class MedioPagoForm(BSModalModelForm):
+    class Meta:
+        model = MedioPago
+        fields = (
+            'nombre',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(MedioPagoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+

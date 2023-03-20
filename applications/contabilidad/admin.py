@@ -5,7 +5,12 @@ from .models import(
     DatosPlanilla,
     EsSalud,
     BoletaPago,
-    ReciboBoletaPago
+    ReciboBoletaPago,
+    TipoServicio,
+    Institucion,
+    MedioPago,
+    Servicio,
+    ReciboServicio,
 )
 
 
@@ -156,4 +161,110 @@ class ReciboBoletaPagoAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
-      
+
+
+@admin.register(TipoServicio)
+class TipoServicioAdmin(admin.ModelAdmin):
+    list_display = (
+        'nombre',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(Institucion)
+class InstitucionAdmin(admin.ModelAdmin):
+    list_display = (
+        'nombre',
+        'url',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(MedioPago)
+class MedioPagoAdmin(admin.ModelAdmin):
+    list_display = (
+        'nombre',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(Servicio)
+class ServicioAdmin(admin.ModelAdmin):
+    list_display = (
+        'institucion',
+        'tipo_servicio',
+        'numero_referencia',
+        'titular_servicio',
+        'direccion',
+        'alias',
+        'estado',
+        'sociedad',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(ReciboServicio)
+class ReciboServicioAdmin(admin.ModelAdmin):
+    list_display = (
+        'servicio',
+        'foto',
+        'fecha_emision',
+        'fecha_vencimiento',
+        'monto',
+        'moneda',
+        'mora',
+        'redondeo',
+        'monto_pagado',
+        'voucher',
+        'fecha_pago',
+        'content_type',
+        'id_registro',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+

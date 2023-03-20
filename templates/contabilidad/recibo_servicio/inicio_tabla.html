@@ -1,0 +1,37 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Servicio</th>
+            <th>Fecha Emision</th>
+            <th>Fecha Vencimiento</th>
+            <th>Monto</th>
+            <th>Fecha Pago</th>
+            <th>Estado</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recibo in contexto_recibo_servicio %}
+        <tr>
+            <td>{{ recibo.servicio }}</td>
+            <td>{{ recibo.fecha_emision|date:'d/m/Y'}}</td>
+            <td>{{ recibo.fecha_vencimiento|date:'d/m/Y'}}</td>
+            <td>{{ recibo.monto }}</td>
+            <td>{{ recibo.fecha_pago|date:'d/m/Y'}}</td>
+            <td>{{ recibo.get_estado_display}}</td>
+
+            <td>
+                <button data-form-url="{% url 'contabilidad_app:recibo_servicio_actualizar' recibo.id %}"
+                    data-table-url="{% url 'contabilidad_app:recibo_servicio_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
