@@ -37,7 +37,7 @@
             <td>{{ serie.serie }}</td>
             <td>{{ serie.ingreso_reclamo_garantia_detalle.producto }}</td>
             <td>{{ serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.cliente }}</td>
-            <td>{{ serie.documento }}</td>
+            <td class="text-nowrap">{{ serie.documento.descripcion }}</td>
             <td>
                 {% if serie.serie.almacen %}
                 {{ serie.serie.almacen }}

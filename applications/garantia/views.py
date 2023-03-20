@@ -1,7 +1,7 @@
 from django import forms
 from django.core.paginator import Paginator
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SolucionMaterial
-from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
+from applications.comprobante_venta.models import BoletaVenta, BoletaVentaDetalle, FacturaVenta, FacturaVentaDetalle
 from applications.garantia.pdf import generarIngresoReclamoGarantia
 from applications.importaciones import*
 from applications.funciones import fecha_en_letras, registrar_excepcion, numeroXn
@@ -731,9 +731,21 @@ class SerieIngresoReclamoGarantiaDetalleDocumentoUpdateView(BSModalUpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        #Pendiente Corregir
-        lista_facturas = [1,2,3,4,5,6]
-        lista_boletas = [1,2,3,4,5,6]
+        serie_ingreso_reclamo_garantia_detalle = self.get_object()
+        lista_facturas = []
+        for factura in FacturaVentaDetalle.objects.filter(
+            content_type=serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
+            id_registro=serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.id_registro,
+            factura_venta__cliente=serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.cliente,
+            ):
+            lista_facturas.append(factura.factura_venta.id)
+        lista_boletas = []
+        for boleta in BoletaVentaDetalle.objects.filter(
+            content_type=serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
+            id_registro=serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.id_registro,
+            boleta_venta__cliente=serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.cliente,
+            ):
+            lista_boletas.append(boleta.boleta_venta.id)
         kwargs['facturas'] = FacturaVenta.objects.filter(id__in=lista_facturas)
         kwargs['boletas'] = BoletaVenta.objects.filter(id__in=lista_boletas)
         return kwargs
