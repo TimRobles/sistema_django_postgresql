@@ -3189,6 +3189,20 @@ class EntradaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalF
                 tipo_stock = form.cleaned_data.get('tipo_stock')
                 cantidad = form.cleaned_data.get('cantidad')
 
+                mensaje = f"material: {material}"
+                messages.info(self.request, mensaje)
+                mensaje = f"sede: {sede}"
+                messages.info(self.request, mensaje)
+                mensaje = f"almacen: {almacen}"
+                messages.info(self.request, mensaje)
+                mensaje = f"tipo_stock: {tipo_stock}"
+                messages.info(self.request, mensaje)
+                mensaje = f"cantidad: {cantidad}"
+                messages.info(self.request, mensaje)
+
+                mensaje = f"{material} | {sede} | {almacen} | {tipo_stock} | {cantidad}"
+                messages.info(self.request, mensaje)
+
                 if Decimal(cantidad) > stock_tipo_stock(material.content_type, material.id, transformacion_productos.sociedad.id, almacen.id, tipo_stock.id):
                     form.add_error('cantidad', "Se excedió la cantidad del stock")
                     return super().form_invalid(form)
