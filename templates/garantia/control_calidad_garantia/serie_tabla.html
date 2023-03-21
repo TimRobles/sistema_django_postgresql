@@ -51,13 +51,35 @@
             </td>
             <td>{{ serie.serie.estado }}</td>
             
-            {% if serie.serie.estado != 'REPARADO' %}
+            {% if serie.serie.estado != 'REPARADO' and serie.serie.estado != 'POR CAMBIAR' %}
             <td class="text-nowrap text-center">
                 <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_solucion' serie.id %}"
                     data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
                     class="update btn btn-primary btn-sm">
                     Solución
                 </button>
+                
+                {% if serie.serie.producto.control_serie %}
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_cambio' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Cambiar
+                </button>
+                {% else %}
+                <!-- Sin serie -->
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_cambio_sin_serie' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Cambiar
+                </button>
+                {% endif %}
+
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_solucion' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Devolución
+                </button>
+
                 <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_falla' serie.id %}"
                     data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
                     class="update btn btn-danger btn-sm">
@@ -128,6 +150,16 @@
                                                     </button>
                                                     {% elif historia.solucion %}
                                                     <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_solucion' serie.id historia.id %}"
+                                                        data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                                                        class="update btn btn-warning btn-sm" title="Editar">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </button>
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_eliminar_solucion' serie.ingreso_reclamo_garantia_detalle.id serie.id historia.id %}"
+                                                        class="delete btn btn-danger btn-sm" title="Eliminar">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                    {% elif historia.estado_serie.descripcion == 'POR CAMBIAR' %}
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_cambio' serie.id historia.id %}"
                                                         data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
                                                         class="update btn btn-warning btn-sm" title="Editar">
                                                         <i class="bi bi-pencil-fill"></i>

@@ -298,6 +298,78 @@ class RegistrarSolucionUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class RegistrarCambiarCreateForm(BSModalForm):
+    serie_cambio = forms.CharField()
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'serie_cambio',
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrarCambiarCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarCambiarUpdateForm(BSModalModelForm):
+    serie_cambio = forms.CharField(disabled=True)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False, disabled=True)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'serie_cambio',
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        serie_cambio = kwargs.pop('serie_cambio')
+        comentario = kwargs.pop('comentario')
+        super(RegistrarCambiarUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['serie_cambio'].initial = serie_cambio
+        self.fields['comentario'].initial = comentario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarCambiarSinSerieCreateForm(BSModalForm):
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrarCambiarSinSerieCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarCambiarSinSerieUpdateForm(BSModalModelForm):
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        comentario = kwargs.pop('comentario')
+        super(RegistrarCambiarSinSerieUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['comentario'].initial = comentario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 ######################### SALIDA RECLAMO GARANTÍA ##############################################
 
 

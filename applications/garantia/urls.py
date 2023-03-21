@@ -48,6 +48,14 @@ urlpatterns = [
     path('serie-control-ingreso-garantia/actualizar-solucion/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarSolucionUpdateView.as_view(), name='serie_contro_ingreso_garantia_actualizar_solucion'),
     path('serie-control-ingreso-garantia/eliminar-solucion/<int:id_ingreso_detalle>/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarSolucionDeleteView.as_view(), name='serie_contro_ingreso_garantia_eliminar_solucion'),
 
+    path('serie-control-ingreso-garantia/registrar-cambio/<int:id_ingreso_detalle>/', views.RegistrarCambiarCreateView.as_view(), name='serie_contro_ingreso_garantia_registrar_cambio'),
+    path('serie-control-ingreso-garantia/actualizar-cambio/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarCambiarUpdateView.as_view(), name='serie_contro_ingreso_garantia_actualizar_cambio'),
+    path('serie-control-ingreso-garantia/eliminar-cambio/<int:id_ingreso_detalle>/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarCambiarDeleteView.as_view(), name='serie_contro_ingreso_garantia_eliminar_cambio'),
+
+    path('serie-control-ingreso-garantia/registrar-cambio-sin-serie/<int:id_ingreso_detalle>/', views.RegistrarCambiarSinSerieCreateView.as_view(), name='serie_contro_ingreso_garantia_registrar_cambio_sin_serie'),
+    path('serie-control-ingreso-garantia/actualizar-cambio-sin-serie/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarCambiarSinSerieUpdateView.as_view(), name='serie_contro_ingreso_garantia_actualizar_cambio_sin_serie'),
+    path('serie-control-ingreso-garantia/eliminar-cambio-sin-serie/<int:id_ingreso_detalle>/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarCambiarSinSerieDeleteView.as_view(), name='serie_contro_ingreso_garantia_eliminar_cambio_sin_serie'),
+
     path('salida-garantia/<int:id_control>/',views.SalidaReclamoGarantiaListView.as_view(),name='salida_garantia_inicio'),
     path('salida-garantia/ver/<int:id_salida>/', views.SalidaReclamoGarantiaVerView.as_view(), name='salida_garantia_ver'),
     path('salida-garantia/ver/tabla/<int:id_salida>/', views.SalidaReclamoGarantiaVerTabla, name='salida_garantia_ver_tabla'),
