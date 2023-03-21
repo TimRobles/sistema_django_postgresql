@@ -318,7 +318,7 @@ class RegistrarCambiarCreateForm(BSModalForm):
 
 class RegistrarCambiarUpdateForm(BSModalModelForm):
     serie_cambio = forms.CharField(disabled=True)
-    comentario = forms.CharField(widget=forms.Textarea(), required=False, disabled=True)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
     class Meta:
         model = HistorialEstadoSerie
         fields = (
@@ -365,6 +365,39 @@ class RegistrarCambiarSinSerieUpdateForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         comentario = kwargs.pop('comentario')
         super(RegistrarCambiarSinSerieUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['comentario'].initial = comentario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarDevolucionCreateForm(BSModalForm):
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrarDevolucionCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarDevolucionUpdateForm(BSModalModelForm):
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        comentario = kwargs.pop('comentario')
+        super(RegistrarDevolucionUpdateForm, self).__init__(*args, **kwargs)
         self.fields['comentario'].initial = comentario
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

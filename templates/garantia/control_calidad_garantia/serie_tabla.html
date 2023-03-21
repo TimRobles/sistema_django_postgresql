@@ -136,7 +136,7 @@
                                                 <td>{{ historia.updated_by|nombre_usuario }}</td>
                                                 <td>{{ historia.created_at|date:'d/m/Y H:i' }}</td>
                                                 <td class="text-center text-nowrap">
-                                                    {% if historia.SerieReclamoHistorial_historia_estado_serie and forloop.last %}
+                                                    {% if historia.SerieReclamoHistorial_historia_estado_serie and forloop.first %}
                                                     
                                                     {% if historia.falla_material %}
                                                     <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_falla' historia.id %}"

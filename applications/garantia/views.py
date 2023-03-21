@@ -35,6 +35,8 @@ from .forms import(
     RegistrarCambiarSinSerieCreateForm,
     RegistrarCambiarSinSerieUpdateForm,
     RegistrarCambiarUpdateForm,
+    RegistrarDevolucionCreateForm,
+    RegistrarDevolucionUpdateForm,
     RegistrarFallaCreateForm,
     RegistrarFallaUpdateForm,
     RegistrarSolucionCreateForm,
@@ -1247,6 +1249,14 @@ class RegistrarSolucionUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return kwargs
     
     def form_valid(self, form):
+        serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_serie_ingreso_detalle'])
+        control = ControlCalidadReclamoGarantiaDetalle.objects.get(
+            control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+            serie_ingreso_reclamo_garantia_detalle=serie,
+        )
+        comentario = form.cleaned_data.get('comentario')
+        control.comentario = comentario
+        control.save()
         registro_guardar(form.instance, self.request)
         self.request.session['primero'] = False
         return super().form_valid(form)
@@ -1310,7 +1320,7 @@ class RegistrarCambiarCreateView(PermissionRequiredMixin, BSModalFormView):
         try:
             if self.request.session['primero']:
                 serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_ingreso_detalle'])
-                estado_serie = EstadoSerie.objects.get(numero_estado=11) #POR CAMBIAR
+                estado_serie = EstadoSerie.objects.get(numero_estado=14) #POR CAMBIAR
                 estado_reservar_serie = EstadoSerie.objects.get(numero_estado=13) #RESERVADO POR CAMBIO
                 serie_buscar = form.cleaned_data.get('serie_cambio')
                 observacion = form.cleaned_data.get('observacion')
@@ -1400,6 +1410,14 @@ class RegistrarCambiarUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return kwargs
     
     def form_valid(self, form):
+        serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_serie_ingreso_detalle'])
+        control = ControlCalidadReclamoGarantiaDetalle.objects.get(
+            control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+            serie_ingreso_reclamo_garantia_detalle=serie,
+        )
+        comentario = form.cleaned_data.get('comentario')
+        control.comentario = comentario
+        control.save()
         registro_guardar(form.instance, self.request)
         self.request.session['primero'] = False
         return super().form_valid(form)
@@ -1469,7 +1487,7 @@ class RegistrarCambiarSinSerieCreateView(PermissionRequiredMixin, BSModalFormVie
         try:
             if self.request.session['primero']:
                 serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_ingreso_detalle'])
-                estado_serie = EstadoSerie.objects.get(numero_estado=11) #POR CAMBIAR
+                estado_serie = EstadoSerie.objects.get(numero_estado=14) #POR CAMBIAR
                 observacion = form.cleaned_data.get('observacion')
                 comentario = form.cleaned_data.get('comentario')
                 
@@ -1534,6 +1552,14 @@ class RegistrarCambiarSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdateV
         return kwargs
     
     def form_valid(self, form):
+        serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_serie_ingreso_detalle'])
+        control = ControlCalidadReclamoGarantiaDetalle.objects.get(
+            control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+            serie_ingreso_reclamo_garantia_detalle=serie,
+        )
+        comentario = form.cleaned_data.get('comentario')
+        control.comentario = comentario
+        control.save()
         registro_guardar(form.instance, self.request)
         self.request.session['primero'] = False
         return super().form_valid(form)
@@ -1571,6 +1597,133 @@ class RegistrarCambiarSinSerieDeleteView(BSModalDeleteView):
 
     def get_context_data(self, **kwargs):
         context = super(RegistrarCambiarSinSerieDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Cambio"
+        context['item'] = self.get_object()
+        return context
+
+
+class RegistrarDevolucionCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.add_historialestadoserie')
+    template_name = "includes/formulario generico.html"
+    form_class = RegistrarDevolucionCreateForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('garantia_app:control_garantia_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_ingreso_detalle'])
+                estado_serie = EstadoSerie.objects.get(numero_estado=12) #POR DEVOLVER
+                observacion = form.cleaned_data.get('observacion')
+                comentario = form.cleaned_data.get('comentario')
+                
+                ControlCalidadReclamoGarantiaDetalle.objects.create(
+                    control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+                    serie_ingreso_reclamo_garantia_detalle=serie,
+                    serie_cambio=None,
+                    tipo_analisis=3, #Devolución
+                    comentario=comentario,
+                )
+                historial_estado_serie = HistorialEstadoSerie.objects.create(
+                    serie = serie.serie,
+                    estado_serie = estado_serie,
+                    observacion=observacion,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                SerieReclamoHistorial.objects.create(
+                    serie_ingreso_reclamo_garantia_detalle = serie,
+                    historia_estado_serie = historial_estado_serie,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RegistrarDevolucionCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Cambio"
+        return context
+
+
+class RegistrarDevolucionUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_historialestadoserie')
+    model = HistorialEstadoSerie
+    template_name = "includes/formulario generico.html"
+    form_class = RegistrarDevolucionUpdateForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('garantia_app:control_garantia_inicio')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_serie_ingreso_detalle'])
+        control = ControlCalidadReclamoGarantiaDetalle.objects.get(
+            control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+            serie_ingreso_reclamo_garantia_detalle=serie,
+        )
+        kwargs['serie_cambio'] = control.serie_cambio
+        kwargs['comentario'] = control.comentario
+        return kwargs
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        self.request.session['primero'] = False
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RegistrarDevolucionUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Cambio"
+        return context
+
+
+class RegistrarDevolucionDeleteView(BSModalDeleteView):
+    model = HistorialEstadoSerie
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('garantia_app:serie_contro_ingreso_garantia_ver', kwargs={'id_ingreso_detalle':self.kwargs['id_ingreso_detalle']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_serie_ingreso_detalle'])
+            control = ControlCalidadReclamoGarantiaDetalle.objects.get(
+                control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+                serie_ingreso_reclamo_garantia_detalle=serie,
+            )
+            control.delete()
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(RegistrarDevolucionDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Cambio"
         context['item'] = self.get_object()

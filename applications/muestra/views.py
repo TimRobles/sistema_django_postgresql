@@ -711,7 +711,7 @@ class DevolucionMuestraGuardarView(PermissionRequiredMixin, BSModalUpdateView):
         try:
             detalles = form.instance.DevolucionMuestraDetalle_devolucion_muestra.all()
             movimiento_final = TipoMovimiento.objects.get(codigo=151) #Devolución de Muestra
-            estado_serie = EstadoSerie.objects.get(numero_estado=6)
+            estado_serie = EstadoSerie.objects.get(numero_estado=6) #DEVUELTO
             
             for detalle in detalles:
                 movimiento_uno = MovimientosAlmacen.objects.create(

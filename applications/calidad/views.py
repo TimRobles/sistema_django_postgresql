@@ -591,10 +591,10 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                         )
                         if serie_calidad.falla_material:
                             #Dañado
-                            estado_serie = EstadoSerie.objects.get(numero_estado=2)
+                            estado_serie = EstadoSerie.objects.get(numero_estado=2) #CON PROBLEMAS
                         else:
                             #Bueno
-                            estado_serie = EstadoSerie.objects.get(numero_estado=1)
+                            estado_serie = EstadoSerie.objects.get(numero_estado=1) #DISPONIBLE
 
                         HistorialEstadoSerie.objects.create(
                             serie=serie,
@@ -2138,7 +2138,7 @@ class AprobacionConsumoInternoAprobarView(PermissionRequiredMixin, BSModalDelete
                 for serie in detalle.aprobacion_consumo.solicitud_consumo.SolicitudConsumoInternoDetalle_solicitud_consumo.get(item=detalle.item).ValidarSerieSolicitudConsumoInternoDetalle_solicitud_consumo_detalle.all():
                     HistorialEstadoSerie.objects.create(
                         serie=serie.serie,
-                        estado_serie=EstadoSerie.objects.get(numero_estado=10),
+                        estado_serie=EstadoSerie.objects.get(numero_estado=10), #CONSUMIDO
                         falla_material=None,
                         observacion=None,
                         created_by=self.request.user,
@@ -3075,7 +3075,7 @@ class TransformacionProductosConcluirView(PermissionRequiredMixin, BSModalDelete
                 for serie in detalle.ValidarSerieEntradaTransformacionProductos_entrada_transformacion_productos.all():
                     HistorialEstadoSerie.objects.create(
                         serie=serie.serie,
-                        estado_serie=EstadoSerie.objects.get(numero_estado=11), # Transformado
+                        estado_serie=EstadoSerie.objects.get(numero_estado=11), #TRANSFORMADO
                         created_by=self.request.user,
                         updated_by=self.request.user,
                     )
@@ -3084,13 +3084,13 @@ class TransformacionProductosConcluirView(PermissionRequiredMixin, BSModalDelete
 
             ## TRANSFORMACION - SALIDA DE MATERIALES
             if self.object.tipo_stock.codigo == 3: 
-                numero_estado = 1 # Disponible
+                numero_estado = 1 #DISPONIBLE
             elif self.object.tipo_stock.codigo == 6:
-                numero_estado = 2 # Con problemas
+                numero_estado = 2 #CON PROBLEMAS
             elif self.object.tipo_stock.codigo == 36:
-                numero_estado = 5 # Reparado
+                numero_estado = 5 #REPARADO
             else:
-                numero_estado = 11 # Transformado
+                numero_estado = 11 #TRANSFORMADO
 
             for detalle in self.object.SalidaTransformacionProductos_transformacion_productos.all():
                 movimiento_tres = MovimientosAlmacen.objects.create(

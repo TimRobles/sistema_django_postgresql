@@ -66,6 +66,9 @@ class EstadoSerie(models.Model):
     class Meta:
         verbose_name = 'Estado Serie'
         verbose_name_plural = 'Estados Serie'
+        ordering = [
+            'numero_estado',
+        ]
 
     def __str__(self):
         return str(self.descripcion)
@@ -202,7 +205,7 @@ class HistorialEstadoSerie(models.Model):
         verbose_name = 'Historial Estado Serie'
         verbose_name_plural = 'Historial Estado Series'
         ordering = [
-            'created_at',
+            '-created_at',
             ]
 
     def __str__(self):
