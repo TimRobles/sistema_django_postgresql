@@ -1,0 +1,31 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha Inicio</th>
+            <th>Porcentaje</th>
+            <th>Ley 30334</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for essalud in contexto_essalud %}
+        <tr>
+            <td>{{ essalud.fecha_inicio|date:'d/m/Y' }}</td>
+            <td>{{ essalud.porcentaje}}</td>
+            <td>{{ essalud.ley30334}}</td>
+
+            <td>
+                <button data-form-url="{% url 'contabilidad_app:essalud_actualizar' essalud.id %}"
+                    data-table-url="{% url 'contabilidad_app:essalud_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,30 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block js %}
+    <script>
+        $(function () {
+
+            $("#id_institucion").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_tipo_servicio").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+            
+            $("#id_sociedad").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            });
+    </script>
+
+
+{% endblock js %}

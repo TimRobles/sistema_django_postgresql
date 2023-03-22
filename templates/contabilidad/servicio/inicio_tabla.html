@@ -1,0 +1,33 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Institución</th>
+            <th>Alias</th>
+            <th>Estado</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for servicio in contexto_servicio %}
+        <tr>
+            <td class="fondo-personalizado" style="--color-fondo: {{ servicio.sociedad.color }};">{{ servicio.sociedad.abreviatura }}</td>
+            <td>{{ servicio.institucion }}</td>
+            <td>{{ servicio.alias}}</td>
+            <td>{{ servicio.get_estado_display}}</td>
+
+            <td>
+                <button data-form-url="{% url 'contabilidad_app:servicio_actualizar' servicio.id %}"
+                    data-table-url="{% url 'contabilidad_app:servicio_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

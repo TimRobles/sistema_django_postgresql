@@ -81,8 +81,8 @@ class DatosContratoPlanillaCreateView(PermissionRequiredMixin,BSModalCreateView)
 
         ultima_fecha_baja = DatosContratoPlanilla.objects.filter(usuario = form.instance.usuario).exclude(fecha_baja=None)        
         if ultima_fecha_baja:
-            if ultima_fecha_baja.latest('fecha_baja').fecha_baja > form.instance.fecha_alta:
-                form.add_error('fecha_alta','La fecha de alta tiene que ser mayor a la ultima fecha de baja (%s)' % ultima_fecha_baja.latest('fecha_baja').fecha_baja.strftime("%d/%m/%Y"))
+            if ultima_fecha_baja.latest('fecha_baja').fecha_baja > form.instance.fecha_inicio:
+                form.add_error('fecha_inicio','La fecha de alta tiene que ser mayor a la ultima fecha de baja (%s)' % ultima_fecha_baja.latest('fecha_baja').fecha_baja.strftime("%d/%m/%Y"))
                 return super().form_invalid(form)
 
         registro_guardar(form.instance, self.request)
@@ -197,8 +197,8 @@ class DatosContratoHonorariosCreateView(PermissionRequiredMixin, BSModalCreateVi
 
         ultima_fecha_baja = DatosContratoHonorarios.objects.filter(usuario = form.instance.usuario).exclude(fecha_baja=None)        
         if ultima_fecha_baja:
-            if ultima_fecha_baja.latest('fecha_baja').fecha_baja > form.instance.fecha_alta:
-                form.add_error('fecha_alta','La fecha de alta tiene que ser mayor a la ultima fecha de baja (%s)' % ultima_fecha_baja.latest('fecha_baja').fecha_baja.strftime("%d/%m/%Y"))
+            if ultima_fecha_baja.latest('fecha_baja').fecha_baja > form.instance.fecha_inicio:
+                form.add_error('fecha_inicio','La fecha de alta tiene que ser mayor a la ultima fecha de baja (%s)' % ultima_fecha_baja.latest('fecha_baja').fecha_baja.strftime("%d/%m/%Y"))
                 return super().form_invalid(form)
 
         if not form.instance.suspension_cuarta:
