@@ -51,7 +51,7 @@
             </td>
             <td>{{ serie.serie.estado }}</td>
             
-            {% if serie.serie.estado != 'REPARADO' and serie.serie.estado != 'POR CAMBIAR' %}
+            {% if serie.serie.estado != 'REPARADO' and serie.serie.estado != 'POR CAMBIAR' and serie.serie.estado != 'POR DEVOLVER' %}
             <td class="text-nowrap text-center">
                 <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_solucion' serie.id %}"
                     data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
@@ -74,7 +74,7 @@
                 </button>
                 {% endif %}
 
-                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_solucion' serie.id %}"
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_devolucion' serie.id %}"
                     data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
                     class="update btn btn-primary btn-sm">
                     Devolución

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django import forms
 from django.core.paginator import Paginator
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SolucionMaterial
@@ -958,63 +959,6 @@ class ControlCalidadReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
         return context
 
 
-class ControlSalidaGarantiaView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('garantia.change_controlcalidadreclamogarantia')
-    model = ControlCalidadReclamoGarantia
-    template_name = "includes/form generico.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        context = {}
-        error_solucionado = True
-        context['titulo'] = 'Error de guardar'
-        for detalle in self.get_object().ingreso_reclamo_garantia.detalles:
-            if detalle.revisados != detalle.cantidad:
-                error_solucionado = False
-        
-        if error_solucionado:
-            context['texto'] = 'Falta solucionar algunos productos.'
-            return render(request, 'includes/modal sin permiso.html', context)
-        
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super(ControlSalidaGarantiaView, self).dispatch(request, *args, **kwargs)
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('garantia_app:control_garantia_ver', kwargs={'id_control':self.object.id})
-
-    @transaction.atomic
-    def delete(self, request, *args, **kwargs):
-        sid = transaction.savepoint()
-
-        try:
-            self.object = self.get_object()
-            detalles = self.object.ControlCalidadReclamoGarantiaDetalle_calidad_garantia.all()
-
-            salida_garantia = SalidaReclamoGarantia.objects.create(
-                control_calidad_reclamo_garantia = self.object,
-                created_by = self.request.user,
-                updated_by = self.request.user,
-            )
-
-            self.object.estado = 3
-            registro_guardar(self.object, self.request)
-            self.object.save()
-
-            messages.success(request, MENSAJE_SALIDA_RECLAMO_GARANTIA)
-        except Exception as ex:
-            transaction.savepoint_rollback(sid)
-            registrar_excepcion(self, ex, __file__)
-        return HttpResponseRedirect(self.get_success_url())
-
-    def get_context_data(self, **kwargs):
-        context = super(ControlSalidaGarantiaView, self).get_context_data(**kwargs)
-        context['accion'] = "Salida"
-        context['titulo'] = "Garantia"
-        context['texto'] = "¿Está seguro de generar la Salida de Garantia?"
-        # context['item'] = "Control %s - %s" % (numeroXn(self.object.nro_calidad_garantia, 6), self.object.cliente)
-        return context
-
-
 class SerieControlCalidadReclamoGarantiaDetalleView(PermissionRequiredMixin, TemplateView):
     permission_required = ('garantia.change_controlcalidadreclamogarantia')
     template_name = 'garantia/control_calidad_garantia/serie.html'
@@ -1729,6 +1673,63 @@ class RegistrarDevolucionDeleteView(BSModalDeleteView):
         context['item'] = self.get_object()
         return context
 
+
+class ControlSalidaGarantiaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('garantia.change_controlcalidadreclamogarantia')
+    model = ControlCalidadReclamoGarantia
+    template_name = "includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_solucionado = False
+        context['titulo'] = 'Error de guardar'
+        for detalle in self.get_object().ingreso_reclamo_garantia.detalles:
+            if detalle.revisados != detalle.cantidad:
+                error_solucionado = True
+        
+        if error_solucionado:
+            context['texto'] = 'Falta solucionar algunos productos.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super(ControlSalidaGarantiaView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('garantia_app:control_garantia_ver', kwargs={'id_control':self.object.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+
+        try:
+            self.object = self.get_object()
+
+            salida_garantia = SalidaReclamoGarantia.objects.create(
+                control_calidad_reclamo_garantia = self.object,
+                created_by = self.request.user,
+                updated_by = self.request.user,
+            )
+
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+
+            messages.success(request, MENSAJE_SALIDA_RECLAMO_GARANTIA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ControlSalidaGarantiaView, self).get_context_data(**kwargs)
+        context['accion'] = "Salida"
+        context['titulo'] = "Garantia"
+        context['texto'] = "¿Está seguro de generar la Salida de Garantia?"
+        # context['item'] = "Control %s - %s" % (numeroXn(self.object.nro_calidad_garantia, 6), self.object.cliente)
+        return context
+
+
 ######################### SALIDA RECLAMO GARANTÍA ##############################################
 
 
@@ -1775,7 +1776,7 @@ class SalidaReclamoGarantiaVerView(TemplateView):
 
         context = super(SalidaReclamoGarantiaVerView, self).get_context_data(**kwargs)
         context['salida'] = obj
-        context['control'] = obj.control_garantia
+        context['control'] = obj.control_calidad_reclamo_garantia
         context['materiales'] = materiales
     
         return context
@@ -1797,7 +1798,7 @@ def SalidaReclamoGarantiaVerTabla(request, id_salida):
 
         context = {}
         context['salida'] = obj
-        context['control'] = obj.control_garantia
+        context['control'] = obj.control_calidad_reclamo_garantia
         context['materiales'] = materiales
 
         data['table'] = render_to_string(

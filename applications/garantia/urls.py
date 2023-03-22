@@ -56,7 +56,11 @@ urlpatterns = [
     path('serie-control-ingreso-garantia/actualizar-cambio-sin-serie/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarCambiarSinSerieUpdateView.as_view(), name='serie_contro_ingreso_garantia_actualizar_cambio_sin_serie'),
     path('serie-control-ingreso-garantia/eliminar-cambio-sin-serie/<int:id_ingreso_detalle>/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarCambiarSinSerieDeleteView.as_view(), name='serie_contro_ingreso_garantia_eliminar_cambio_sin_serie'),
 
-    path('salida-garantia/<int:id_control>/',views.SalidaReclamoGarantiaListView.as_view(),name='salida_garantia_inicio'),
+    path('serie-control-ingreso-garantia/registrar-devolucion/<int:id_ingreso_detalle>/', views.RegistrarDevolucionCreateView.as_view(), name='serie_contro_ingreso_garantia_registrar_devolucion'),
+    path('serie-control-ingreso-garantia/actualizar-devolucion/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarDevolucionUpdateView.as_view(), name='serie_contro_ingreso_garantia_actualizar_devolucion'),
+    path('serie-control-ingreso-garantia/eliminar-devolucion/<int:id_ingreso_detalle>/<int:id_serie_ingreso_detalle>/<pk>/', views.RegistrarDevolucionDeleteView.as_view(), name='serie_contro_ingreso_garantia_eliminar_devolucion'),
+
+    path('salida-garantia/',views.SalidaReclamoGarantiaListView.as_view(),name='salida_garantia_inicio'),
     path('salida-garantia/ver/<int:id_salida>/', views.SalidaReclamoGarantiaVerView.as_view(), name='salida_garantia_ver'),
     path('salida-garantia/ver/tabla/<int:id_salida>/', views.SalidaReclamoGarantiaVerTabla, name='salida_garantia_ver_tabla'),
 

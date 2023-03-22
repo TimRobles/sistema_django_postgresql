@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 from reportlab.lib import colors
+from django_resized import ResizedImageField
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.cobranza.funciones import convertir_moneda
 from applications.cotizacion.models import CotizacionVenta
@@ -186,7 +187,7 @@ class Ingreso(models.Model):
     cuenta_origen = models.CharField('Cuenta de Origen', max_length=100, blank=True, null=True)
     comentario = models.CharField('Comentario', max_length=100, blank=True, null=True)
     comision = models.DecimalField('Comisión', max_digits=5, decimal_places=2, default=Decimal('0.00'))
-    voucher = models.FileField(upload_to=INGRESO_VOUCHER, max_length=100, blank=True, null=True)
+    voucher = ResizedImageField(force_format="WEBP", quality=75, upload_to=INGRESO_VOUCHER, blank=True, null=True)
     es_pago = models.BooleanField('Para pagar Deudas', default=False)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=3)
 
