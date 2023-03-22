@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
+from applications.contabilidad.funciones import calcular_datos_boleta
 
 from applications.importaciones import *
 
@@ -353,7 +354,7 @@ class BoletaPagoCreateView(BSModalCreateView):
         return context
 
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
+        calcular_datos_boleta(form.instance)
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

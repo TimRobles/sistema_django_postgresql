@@ -27,7 +27,7 @@ class FondoPensiones(models.Model):
         return str(self.nombre)
 
 class ComisionFondoPensiones(models.Model):
-    fondo_pensiones = models.ForeignKey(FondoPensiones, on_delete=models.PROTECT)  
+    fondo_pensiones = models.ForeignKey(FondoPensiones, on_delete=models.PROTECT, related_name='ComisionFondoPensiones_fondo_pensiones')
     fecha_vigencia = models.DateField('Fecha Vigencia', auto_now=False, auto_now_add=False)
     aporte_obligatorio = models.DecimalField('Aporte Obligatorio', max_digits=2, decimal_places=2)
     comision_flujo = models.DecimalField('Comision Flujo', max_digits=4, decimal_places=4)
@@ -137,7 +137,7 @@ class ReciboBoletaPago(models.Model):
     monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0, blank=True, null=True)
     voucher = models.FileField('Voucher', upload_to=None, max_length=100, blank=True, null=True)
     fecha_pago = models.DateField('Fecha de Pago', auto_now=False, auto_now_add=False, blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) #Cheque / Telecrédito / Caja Chica
     id_registro = models.IntegerField(blank=True, null=True)   
     estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
 

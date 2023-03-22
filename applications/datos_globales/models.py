@@ -578,7 +578,7 @@ class RemuneracionMinimaVital(models.Model):
         ]
 
     def __str__(self):     
-        return self.monto
+        return f'{self.fecha_inicio} - {self.monto}'
 
 
 class UnidadImpositivaTributaria(models.Model):
