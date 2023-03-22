@@ -74,6 +74,7 @@
                     <th>Solución</th>
                     <th>Observación</th>
                     <th>Usuario</th>
+                    <th>Fecha</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,6 +98,7 @@
                         {% endif %}
                     </td>
                     <td>{{ historia.updated_by|nombre_usuario }}</td>
+                    <td>{{ historia.created_at|date:'d/m/Y H:i' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -103,7 +103,7 @@ class EnvioTrasladoProductoDetalle(models.Model):
 
 
 class ValidarSerieEnvioTrasladoProductoDetalle(models.Model):
-    envio_traslado_producto_detalle = models.ForeignKey(EnvioTrasladoProductoDetalle, on_delete=models.PROTECT, related_name='ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle')
+    envio_traslado_producto_detalle = models.ForeignKey(EnvioTrasladoProductoDetalle, on_delete=models.CASCADE, related_name='ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle')
     serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -139,6 +139,7 @@ class RecepcionTrasladoProducto(models.Model):
     class Meta:
         verbose_name = 'Recepcion Traslado Producto'
         verbose_name_plural = 'Recepcion Traslado Productos'
+        ordering = ['-numero_recepcion_traslado']
 
     @property
     def fecha(self):

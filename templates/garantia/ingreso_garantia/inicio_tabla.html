@@ -17,7 +17,7 @@
         {% for ingreso in contexto_ingreso_garantia %}
        <tr>
             <td class="fondo-personalizado" style="--color-fondo: {{ ingreso.sociedad.color }};">{{ ingreso.sociedad.abreviatura }}</td>
-            <td>{{ ingreso.nro_ingreso_garantia|numeroXn:6 }}</td>
+            <td>{{ ingreso.nro_ingreso_reclamo_garantia|numeroXn:6 }}</td>
             <td>{{ ingreso.cliente }}</td>
             <td>{{ ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
             <td>{{ ingreso.get_estado_display }}</td>

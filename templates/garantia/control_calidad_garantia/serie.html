@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Series Control Reclamo Garantía Detalle
+{% endblock titulo %}
+
+{% block contenido %}
+<h3>Series Control Reclamo Garantía Detalle</h3>
+
+<a href="{% url 'garantia_app:control_garantia_ver' ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia.id %}" class="btn btn-danger">Regresar</a>
+
+<div id="tabla">
+    {% include 'garantia/control_calidad_garantia/serie_tabla.html' %}
+</div>
+{% endblock contenido %}

@@ -346,12 +346,15 @@
     {% endfor %}
 </div>
 
+
+{% if cotizacion.estado < 3 %}
 <button data-form-url="{% url 'cotizacion_app:cotizacion_venta_agregar_material' cotizacion.id %}"
     data-table-url="{% url 'cotizacion_app:cotizacion_venta_ver_tabla' cotizacion.id  %}"
     data-keep-open="True"
     class="update btn btn-primary" title="Agregar Material">
     Agregar Material
 </button>
+{% endif %}
 
 <div class="table-responsive mt-3">
     <table class="table">

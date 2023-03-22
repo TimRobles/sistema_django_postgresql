@@ -1,0 +1,36 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block abajo %}
+<span id="url_stock" hidden>{{ url_stock }}</span>
+<span id="id_sociedad" hidden>{{ id_sociedad }}</span>    
+<span id="id_material" hidden>{{ id_material }}</span>    
+{% endblock abajo %}
+
+{% block js %}
+    <script src="{% static 'js/calidad/reparacion/form_reparacion_material_detalle.js' %}?{{ cache_bust }}"></script>
+    
+    <script>
+        $(function () {
+
+            $("#id_material").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_sede").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_almacen").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+                
+            });
+    </script>
+{% endblock js %}

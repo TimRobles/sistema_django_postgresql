@@ -1,0 +1,188 @@
+{% load funciones_propias %}
+<table>
+    <thead>
+        <tr>
+            <th class="pe-2">Material:</th>
+            <td>{{ ingreso_reclamo_garantia_detalle.producto }}</td>
+            <td>
+                <a href="{% url 'calidad_app:falla_material_detalle' ingreso_reclamo_garantia_detalle.producto.subfamilia.id %}" target="_blank" class="btn btn-primary">Ver Fallas</a>
+            </td>
+        </tr>
+        <tr>
+            <th class="pe-2">Cantidad:</th>
+            <td>{{ ingreso_reclamo_garantia_detalle.cantidad }}</td>
+            <th class="pe-2">Revisados:</th>
+            <td>{{ ingreso_reclamo_garantia_detalle.revisados }}</td>
+        </tr>
+    </thead>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Serie</th>
+            <th>Material</th>
+            <th>Cliente</th>
+            <th>Documento</th>
+            <th>Almacén</th>
+            <th>Sociedad</th>
+            <th>Comentario</th>
+            <th>Estado</th>
+            <th class="text-nowrap text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for serie in series %}
+        <tr>
+            <td>{{ serie.serie }}</td>
+            <td>{{ serie.ingreso_reclamo_garantia_detalle.producto }}</td>
+            <td>{{ serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.cliente }}</td>
+            <td class="text-nowrap">{{ serie.documento.descripcion }}</td>
+            <td>
+                {% if serie.serie.almacen %}
+                {{ serie.serie.almacen }}
+                {% endif %}
+            </td>
+            <td>{{ serie.serie.sociedad }}</td>
+            <td>
+                {% if serie.comentario %}
+                {{ serie.comentario }}
+                {% endif %}
+            </td>
+            <td>{{ serie.serie.estado }}</td>
+            
+            {% if serie.serie.estado != 'REPARADO' and serie.serie.estado != 'POR CAMBIAR' %}
+            <td class="text-nowrap text-center">
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_solucion' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Solución
+                </button>
+                
+                {% if serie.serie.producto.control_serie %}
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_cambio' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Cambiar
+                </button>
+                {% else %}
+                <!-- Sin serie -->
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_cambio_sin_serie' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Cambiar
+                </button>
+                {% endif %}
+
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_solucion' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-primary btn-sm">
+                    Devolución
+                </button>
+
+                <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_registrar_falla' serie.id %}"
+                    data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                    class="update btn btn-danger btn-sm">
+                    Falla
+                </button>
+            </td>
+            {% endif %}
+        </tr>
+        <tr>
+            <td colspan="9">
+                <div class="accordion" id="parent-{{ serie.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="accordion-{{ serie.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#target-{{ serie.id }}" aria-expanded="false" aria-controls="target-{{ serie.id }}">
+                                <strong>Historial de Serie {{ serie.serie }}</strong>
+                            </button>
+                        </h2>
+                        <div id="target-{{ serie.id }}" class="accordion-collapse collapse" aria-labelledby="accordion-{{ serie.id }}" data-bs-parent="#parent-{{ serie.id }}">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Estado</th>
+                                                <th>Falla</th>
+                                                <th>Solución</th>
+                                                <th>Observación</th>
+                                                <th>Usuario</th>
+                                                <th>Fecha</th>
+                                                <th class="text-center text-nowrap">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for historia in serie.serie.HistorialEstadoSerie_serie.all %} 
+                                            <tr>
+                                                <td>{{ historia.id }}</td>
+                                                <td>{{ historia.estado_serie }}</td>
+                                                <td>
+                                                    {% if historia.falla_material %}
+                                                    {{ historia.falla_material }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if historia.solucion %}
+                                                    {{ historia.solucion }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if historia.observacion %}
+                                                    {{ historia.observacion }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ historia.updated_by|nombre_usuario }}</td>
+                                                <td>{{ historia.created_at|date:'d/m/Y H:i' }}</td>
+                                                <td class="text-center text-nowrap">
+                                                    {% if historia.SerieReclamoHistorial_historia_estado_serie and forloop.first %}
+                                                    
+                                                    {% if historia.falla_material %}
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_falla' historia.id %}"
+                                                        data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                                                        class="update btn btn-warning btn-sm" title="Editar">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </button>
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_eliminar_falla' serie.ingreso_reclamo_garantia_detalle.id historia.id %}"
+                                                        class="delete btn btn-danger btn-sm" title="Eliminar">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                    {% elif historia.solucion %}
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_solucion' serie.id historia.id %}"
+                                                        data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                                                        class="update btn btn-warning btn-sm" title="Editar">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </button>
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_eliminar_solucion' serie.ingreso_reclamo_garantia_detalle.id serie.id historia.id %}"
+                                                        class="delete btn btn-danger btn-sm" title="Eliminar">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                    {% elif historia.estado_serie.descripcion == 'POR CAMBIAR' %}
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_actualizar_cambio' serie.id historia.id %}"
+                                                        data-table-url="{% url 'garantia_app:serie_contro_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.id %}"
+                                                        class="update btn btn-warning btn-sm" title="Editar">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </button>
+                                                    <button data-form-url="{% url 'garantia_app:serie_contro_ingreso_garantia_eliminar_solucion' serie.ingreso_reclamo_garantia_detalle.id serie.id historia.id %}"
+                                                        class="delete btn btn-danger btn-sm" title="Eliminar">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                    
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>                  
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

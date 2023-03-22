@@ -1,0 +1,79 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Detalle Soluciones por Falla de Material
+    <button class="create badge bg-primary"
+        data-form-url="{% url 'calidad_app:solucion_material_detalle_registrar' contexto_falla_material.id %}"
+        data-table-url="{% url 'calidad_app:solucion_material_detalle_tabla' contexto_falla_material.id %}">
+        Registrar Solución
+    </button>
+    
+    <a href="{% url 'calidad_app:falla_material_detalle' contexto_falla_material.sub_familia.id %}" class="btn btn-danger">Regresar</a>
+</h3>
+
+<!-- TABLA -->
+<div class="table-responsive">
+    <table class="table">
+        <tbody>
+            <tr>
+                <td><b>Familia</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_falla_material.sub_familia.familia.nombre }}</td>
+                <td class="px-4"></td>
+                <td><b>Sub Familia</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_falla_material.sub_familia.nombre }}</td>
+                <td class="px-4"></td>
+                <td><b>Falla</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_falla_material.titulo }}</td>
+                <td class="px-4"></td>
+            </tr>            
+        </tbody>
+    </table>
+</div>
+
+<p></p>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Título de Solución</th>
+                <th>Comentario</th>
+                <th class="text-center">Visible</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for fila_solucion in contexto_soluciones_material %}
+                <tr>
+                    <td>{{ fila_solucion.titulo }}</td>
+                    <td>{{ fila_solucion.comentario }}</td>
+                    <td class="text-center">
+                        {% if  fila_solucion.visible %}
+                            Si 
+                        {% else %}
+                            No 
+                        {% endif %}
+                    </td>
+                    <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'calidad_app:solucion_material_detalle_actualizar' fila_solucion.id %}"
+                            data-table-url="{% url 'calidad_app:solucion_material_detalle_tabla' contexto_falla_material.id %}"
+                            data-keep-open="true"    
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'calidad_app:solucion_material_detalle_eliminar' fila_solucion.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>                   
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

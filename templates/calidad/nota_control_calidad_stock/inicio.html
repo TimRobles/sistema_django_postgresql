@@ -13,6 +13,12 @@
             data-table-url="{% url 'calidad_app:nota_control_calidad_stock_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
             data-modal="modal-xl">
             Registrar Nota
+        </button>        
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'calidad_app:nota_control_calidad_stock_registrar_transformacion' %}"
+            data-table-url="{% url 'calidad_app:nota_control_calidad_stock_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+            data-modal="modal-xl">
+            Registrar Transformacion
         </button>
     </h3>    
     <form action="" method="get" autocomplete="off">

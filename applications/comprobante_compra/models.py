@@ -74,6 +74,14 @@ class ComprobanteCompraPI(models.Model):
         return 'PI'
 
     @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    @property
+    def id_registro(self):
+        return self.id
+
+    @property
     def documento(self):
         return self.numero_comprobante_compra
         

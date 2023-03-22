@@ -1,25 +1,20 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
-{% block js %}
+{% block abajo %}
 
+{% endblock abajo %}
+
+{% block js %}    
     <script>
         $(function () {
 
-            $("#id_cliente").select2({
-                width: '100%',
-                dropdownParent: $(".modal-body"),
-                matcher: buscar_select2
-            });
-
-            $("#id_cliente_interlocutor").select2({
+            $("#id_solucion_material").select2({
                 width:'100%',
                 dropdownParent: $(".modal-body"),
                 matcher: buscar_select2
-
             });
-
+                
             });
     </script>
-
 {% endblock js %}

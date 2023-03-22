@@ -1,13 +1,18 @@
 from django.contrib import admin
 from .models import(
+    EntradaTransformacionProductos,
     EstadoSerie,
     NotaControlCalidadStock,
     NotaControlCalidadStockDetalle,
+    SalidaTransformacionProductos,
     Serie,
     FallaMaterial,
     HistorialEstadoSerie,
     SerieCalidad,
     SerieConsulta,
+    TransformacionProductos,
+    ValidarSerieEntradaTransformacionProductos,
+    ValidarSerieSalidaTransformacionProductos,
 )
 
 @admin.register(EstadoSerie)
@@ -102,6 +107,8 @@ class NotaControlCalidadStockAdmin(admin.ModelAdmin):
         'id',
         'nro_nota_calidad',
         'nota_ingreso',
+        'content_type',
+        'id_registro',
         'motivo_anulacion',
         'comentario',
         'estado',
@@ -122,7 +129,9 @@ class NotaControlCalidadStockDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'item',
-        'nota_ingreso_detalle',
+        # 'nota_ingreso_detalle',
+        'content_type',
+        'id_registro',
         'cantidad_calidad',
         'inspeccion',
         'nota_control_calidad_stock',
@@ -180,3 +189,110 @@ class SerieCalidadAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(TransformacionProductos)
+class TransformacionProductosAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'sociedad',
+        'fecha_transformacion',
+        'responsable',
+        'tipo_stock',
+        'observacion',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(EntradaTransformacionProductos)
+class EntradaTransformacionProductosAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'material',
+        'sede',
+        'almacen',
+        'cantidad',
+        'transformacion_productos',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(SalidaTransformacionProductos)
+class SalidaTransformacionProductosAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'material',
+        'sede',
+        'almacen',
+        'cantidad',
+        'transformacion_productos',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+# @admin.register(ValidarSerieEntradaTransformacionProductos)
+# class ValidarSerieEntradaTransformacionProductosAdmin(admin.ModelAdmin):
+#     list_display = (
+#         'id',
+#         'entrada_transformacion_productos',
+#         'serie',
+#         'created_at',
+#         'created_by',
+#         'updated_at',
+#         'updated_by',
+#     )
+
+#     def save_model(self, request, obj, form, change):
+#         if obj.created_by == None:
+#             obj.created_by = request.user
+#         obj.updated_by = request.user
+#         super().save_model(request, obj, form, change)
+
+
+# @admin.register(ValidarSerieSalidaTransformacionProductos)
+# class ValidarSerieSalidaTransformacionProductosAdmin(admin.ModelAdmin):
+#     list_display = (
+#         'id',
+#         'entrada_transformacion_productos',
+#         'serie',
+#         'created_at',
+#         'created_by',
+#         'updated_at',
+#         'updated_by',
+#     )
+
+#     def save_model(self, request, obj, form, change):
+#         if obj.created_by == None:
+#             obj.created_by = request.user
+#         obj.updated_by = request.user
+#         super().save_model(request, obj, form, change)
