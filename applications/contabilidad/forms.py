@@ -266,7 +266,6 @@ class ServicioForm(BSModalModelForm):
             'titular_servicio',
             'direccion',
             'alias',
-            'medio_pago',
             'sociedad',
             )
 
@@ -332,6 +331,7 @@ class InstitucionForm(BSModalModelForm):
             'nombre',
             'url',
             'tipo_servicio',
+            'medio_pago',
             )
 
     def __init__(self, *args, **kwargs):

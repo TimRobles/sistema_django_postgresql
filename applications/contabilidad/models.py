@@ -170,23 +170,6 @@ class TipoServicio(models.Model):
     def __str__(self):
         return str(self.nombre)
 
-class Institucion(models.Model):
-    nombre = models.CharField('Institución', max_length=50)
-    url = models.URLField('URL', max_length=200, null=True, blank=True)
-    tipo_servicio = models.ManyToManyField(TipoServicio)
-
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Institucion_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Institucion_updated_by', editable=False)
-
-    class Meta:
-        verbose_name = 'Institucion'
-        verbose_name_plural = 'Instituciones'
-
-    def __str__(self):
-        return str(self.nombre)
-
 class MedioPago(models.Model):
     nombre = models.CharField('Medio de Pago', max_length=50)
     
@@ -203,6 +186,25 @@ class MedioPago(models.Model):
         return str(self.nombre)
 
 
+class Institucion(models.Model):
+    nombre = models.CharField('Institución', max_length=50)
+    url = models.URLField('URL', max_length=200, null=True, blank=True)
+    tipo_servicio = models.ForeignKey(TipoServicio, on_delete=models.CASCADE)
+    medio_pago = models.ManyToManyField(MedioPago)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Institucion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Institucion_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Institucion'
+        verbose_name_plural = 'Instituciones'
+
+    def __str__(self):
+        return str(self.nombre)
+
+
 class Servicio(models.Model):
     institucion = models.ForeignKey(Institucion, null=True, blank=True, on_delete=models.PROTECT)
     tipo_servicio = models.ForeignKey(TipoServicio, null=True,blank=True, on_delete=models.PROTECT)
@@ -210,7 +212,6 @@ class Servicio(models.Model):
     titular_servicio = models.CharField('Titular del servicio', max_length=50,blank=True, null=True)
     direccion = models.CharField('Dirección', max_length=255,null=True,blank=True)
     alias = models.CharField('Alias', max_length=50,blank=True, null=True)
-    medio_pago = models.ManyToManyField(MedioPago)
     estado = models.IntegerField(choices=ESTADOS,default=1)
     sociedad = models.ForeignKey(Sociedad, null=True,blank=True, on_delete=models.PROTECT)
 
