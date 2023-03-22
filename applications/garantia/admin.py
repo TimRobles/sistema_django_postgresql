@@ -6,20 +6,22 @@ from .models import(
     ControlCalidadReclamoGarantia,
     ControlCalidadReclamoGarantiaDetalle,
     SalidaReclamoGarantia,
-    SalidaReclamoGarantiaDetalle,
+    SerieIngresoReclamoGarantiaDetalle,
+    SerieReclamoHistorial,
 )
 
 @admin.register(IngresoReclamoGarantia)
 class IngresoReclamoGarantiaAdmin(admin.ModelAdmin):
-    
     list_display = (
-        'nro_ingreso_garantia',
+        'id',
+        'nro_ingreso_reclamo_garantia',
         'cliente',
         'cliente_interlocutor',
         'sociedad',
         'fecha_ingreso',
         'observacion',
         'encargado',
+        'estado',
         'created_at',
         'created_by',
         'updated_at',
@@ -32,17 +34,38 @@ class IngresoReclamoGarantiaAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+
 @admin.register(IngresoReclamoGarantiaDetalle)
 class IngresoReclamoGarantiaDetalleAdmin(admin.ModelAdmin):
-
     list_display = (
+        'id',
         'item',
         'content_type',
         'id_registro',
-        'serie',
         'cantidad',
-        'precio_venta',
-        'ingreso_garantia',
+        'ingreso_reclamo_garantia',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(SerieIngresoReclamoGarantiaDetalle)
+class SerieIngresoReclamoGarantiaDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'ingreso_reclamo_garantia_detalle',
+        'serie',
+        'content_type_documento',
+        'id_registro_documento',
+        'comentario',
         'created_at',
         'created_by',
         'updated_at',
@@ -59,14 +82,9 @@ class IngresoReclamoGarantiaDetalleAdmin(admin.ModelAdmin):
 @admin.register(ControlCalidadReclamoGarantia)
 class ControlCalidadReclamoGarantiaAdmin(admin.ModelAdmin):
     list_display = (
-        'nro_calidad_garantia',
-        'ingreso_garantia',
-        'cliente',
-        'cliente_interlocutor',
-        'sociedad',
-        'fecha_control',
+        'id',
+        'ingreso_reclamo_garantia',
         'observacion',
-        'encargado',
         'estado',
         'created_at',
         'created_by',
@@ -80,16 +98,35 @@ class ControlCalidadReclamoGarantiaAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+
 @admin.register(ControlCalidadReclamoGarantiaDetalle)
 class ControlCalidadReclamoGarantiaDetalleAdmin(admin.ModelAdmin):
     list_display = (
-        'item',
-        'content_type',
-        'id_registro',
-        'serie',
-        'cantidad',
-        'precio_venta',
-        'calidad_garantia',
+        'id',
+        'control_calidad_reclamo_garantia',
+        'serie_ingreso_reclamo_garantia_detalle',
+        'serie_cambio',
+        'tipo_analisis',
+        'comentario',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(SerieReclamoHistorial)
+class SerieReclamoHistorialAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'serie_ingreso_reclamo_garantia_detalle',
+        'historia_estado_serie',
         'created_at',
         'created_by',
         'updated_at',
@@ -105,42 +142,12 @@ class ControlCalidadReclamoGarantiaDetalleAdmin(admin.ModelAdmin):
 
 @admin.register(SalidaReclamoGarantia)
 class SalidaReclamoGarantiaAdmin(admin.ModelAdmin):
-    '''Admin View for SalidaReclamoGarantia'''
-
     list_display = (
-        'nro_salida_garantia',
-        'control_garantia',
-        'cliente',
-        'cliente_interlocutor',
-        'sociedad',
+        'id',
+        'control_calidad_reclamo_garantia',
         'fecha_salida',
         'observacion',
-        'encargado',
         'estado',
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-    )
-
-    def save_model(self, request, obj, form, change):
-        if obj.created_by == None:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
-
-@admin.register(SalidaReclamoGarantiaDetalle)
-class SalidaReclamoGarantiaDetalleAdmin(admin.ModelAdmin):
-
-    list_display = (
-        'item',
-        'content_type',
-        'id_registro',
-        'serie',
-        'cantidad',
-        'precio_venta',
-        'salida_garantia',
         'created_at',
         'created_by',
         'updated_at',

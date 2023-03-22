@@ -139,6 +139,7 @@ class RecepcionTrasladoProducto(models.Model):
     class Meta:
         verbose_name = 'Recepcion Traslado Producto'
         verbose_name_plural = 'Recepcion Traslado Productos'
+        ordering = ['-numero_recepcion_traslado']
 
     @property
     def fecha(self):

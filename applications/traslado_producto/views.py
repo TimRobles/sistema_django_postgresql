@@ -626,8 +626,8 @@ class ValidarSeriesEnvioTrasladoProductoDetailView(PermissionRequiredMixin, Form
                     form.add_error('serie', "Serie ya ha sido registrada")
                     return super().form_invalid(form)
 
-                if buscar.estado != 'DISPONIBLE':
-                    form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                if buscar.ultimo_movimiento.tipo_stock != envio_traslado_producto_detalle.tipo_stock:
+                    form.add_error('serie', "La serie no corresponde al tipo de stock: %s" % buscar.ultimo_movimiento.tipo_stock)
                     return super().form_invalid(form)
             except:
                 form.add_error('serie', "Serie no encontrada: %s" % serie)

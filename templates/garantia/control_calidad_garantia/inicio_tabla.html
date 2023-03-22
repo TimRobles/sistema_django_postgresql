@@ -6,7 +6,6 @@
             <th>Sociedad</th>
             <th>Nro. Control</th>
             <th>Cliente</th>
-            <th>Fecha de Control</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>      
 
@@ -19,21 +18,13 @@
             <td class="fondo-personalizado" style="--color-fondo: {{ control.sociedad.color }};">{{ control.sociedad.abreviatura }}</td>
             <td>{{ control.nro_calidad_garantia|numeroXn:6 }}</td>
             <td>{{ control.cliente }}</td>
-            <td>{{ control.fecha_control|date:'d/m/Y' }}</td>
             <td>{{ control.get_estado_display }}</td>
             <td class="text-nowrap text-center">
                 <a href="{% url 'garantia_app:control_garantia_ver' control.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
-                </a>    
-
-
-                <button data-form-url="{% url 'garantia_app:control_garantia_eliminar' control.id %}"
-                    class="delete btn btn-danger btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                    <i class="bi bi-x-lg"></i>
-                </button>
+                </a>
             </td>
         </tr>
             

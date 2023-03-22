@@ -1,10 +1,12 @@
 from datetime import date
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from applications.calidad.models import FallaMaterial, HistorialEstadoSerie, SolucionMaterial
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADOS_DOCUMENTO,ESTADOS_CONTROL_RECLAMO_GARANTIA,ESTADOS_SALIDA_RECLAMO_GARANTIA
-from applications.garantia.models import IngresoReclamoGarantia, ControlCalidadReclamoGarantia, SalidaReclamoGarantia
+from applications.garantia.models import IngresoReclamoGarantia, ControlCalidadReclamoGarantia, SalidaReclamoGarantia, SerieIngresoReclamoGarantiaDetalle, SerieReclamoHistorial
 from applications.sede.models import Sede
 from applications.material.models import Material
 from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
@@ -12,20 +14,20 @@ from applications.garantia.models import IngresoReclamoGarantia, IngresoReclamoG
 
 class IngresoReclamoGarantiaBuscarForm(forms.Form):
     fecha_ingreso = forms.DateField(required=False, widget=forms.DateInput(attrs ={'type':'date',},format = '%Y-%m-%d',))
-    nro_ingreso_garantia = forms.IntegerField(required=False)
+    nro_ingreso_reclamo_garantia = forms.IntegerField(required=False)
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
     
     def __init__(self, *args, **kwargs):
         filtro_fecha_ingreso = kwargs.pop('filtro_fecha_ingreso')
-        filtro_nro_ingreso_garantia = kwargs.pop('filtro_nro_ingreso_garantia')
+        filtro_nro_ingreso_reclamo_garantia = kwargs.pop('filtro_nro_ingreso_reclamo_garantia')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_sociedad = kwargs.pop('filtro_sociedad')
 
         super(IngresoReclamoGarantiaBuscarForm, self).__init__(*args, **kwargs)
 
         self.fields['fecha_ingreso'].initial = filtro_fecha_ingreso
-        self.fields['nro_ingreso_garantia'].initial = filtro_nro_ingreso_garantia
+        self.fields['nro_ingreso_reclamo_garantia'].initial = filtro_nro_ingreso_reclamo_garantia
         self.fields['cliente'].initial = filtro_cliente
         self.fields['sociedad'].initial = filtro_sociedad
 
@@ -86,6 +88,19 @@ class IngresoReclamoGarantiaSociedadForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class IngresoReclamoGarantiaAlmacenForm(BSModalModelForm):
+    class Meta:
+        model = IngresoReclamoGarantia
+        fields = (
+            'almacen',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(IngresoReclamoGarantiaAlmacenForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class IngresoReclamoGarantiaObservacionForm(BSModalModelForm):
     class Meta:
         model = IngresoReclamoGarantia
@@ -101,13 +116,11 @@ class IngresoReclamoGarantiaObservacionForm(BSModalModelForm):
 class IngresoReclamoGarantiaMaterialForm(BSModalForm):
     material = forms.ModelChoiceField(queryset=Material.objects.filter(mostrar=True))
     cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
-    precio_venta = forms.DecimalField(max_digits=22, decimal_places=10, required=False)
     class Meta:
         model = IngresoReclamoGarantiaDetalle
         fields=(
             'material',
             'cantidad',
-            'precio_venta',
             )
 
     def __init__(self, *args, **kwargs):
@@ -123,7 +136,6 @@ class  IngresoReclamoGarantiaMaterialUpdateForm(BSModalModelForm):
         model = IngresoReclamoGarantiaDetalle
         fields=(
             'cantidad',
-            'precio_venta',
             )
 
     def __init__(self, *args, **kwargs):
@@ -132,6 +144,54 @@ class  IngresoReclamoGarantiaMaterialUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 0.001
+
+
+class SerieIngresoReclamoGarantiaDetalleForm(forms.Form):
+    serie_base = forms.CharField(label='Nro. Serie', max_length=200, required=False)
+    class Meta:
+        fields=(
+            'serie_base',
+            )
+
+    def __init__(self, *args, **kwargs):
+        filtro_serie_base = kwargs.pop('filtro_serie_base')
+        super(SerieIngresoReclamoGarantiaDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['serie_base'].initial = filtro_serie_base
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SerieIngresoReclamoGarantiaComentarioForm(BSModalModelForm):
+    class Meta:
+        model = SerieIngresoReclamoGarantiaDetalle
+        fields=(
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SerieIngresoReclamoGarantiaComentarioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class SerieIngresoReclamoGarantiaDocumentoForm(BSModalModelForm):
+    factura = forms.ModelChoiceField(queryset=FacturaVenta.objects.none(), required=False)
+    boleta = forms.ModelChoiceField(queryset=BoletaVenta.objects.none(), required=False)
+    class Meta:
+        model = SerieIngresoReclamoGarantiaDetalle
+        fields=(
+            'factura',
+            'boleta',
+            )
+
+    def __init__(self, *args, **kwargs):
+        facturas = kwargs.pop('facturas')
+        boletas = kwargs.pop('boletas')
+        super(SerieIngresoReclamoGarantiaDocumentoForm, self).__init__(*args, **kwargs)
+        self.fields['factura'].queryset = facturas
+        self.fields['boleta'].queryset = boletas
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 
 ######################### CONTROL RECLAMO GARANTÍA ##############################################
@@ -151,18 +211,6 @@ class ControlCalidadReclamoGarantiaBuscarForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
 
 
-class ControlCalidadReclamoGarantiaEncargadoForm(BSModalModelForm):
-    class Meta:
-        model = ControlCalidadReclamoGarantia
-        fields = (
-            'encargado',
-            )
-
-    def __init__(self, *args, **kwargs):
-        super(ControlCalidadReclamoGarantiaEncargadoForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
-
 class ControlCalidadReclamoGarantiaObservacionForm(BSModalModelForm):
     class Meta:
         model = ControlCalidadReclamoGarantia
@@ -172,6 +220,185 @@ class ControlCalidadReclamoGarantiaObservacionForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ControlCalidadReclamoGarantiaObservacionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarFallaCreateForm(BSModalForm):
+    falla_material = forms.ModelChoiceField(queryset=FallaMaterial.objects.all())
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'falla_material',
+            'observacion',
+        )
+
+    def __init__(self, *args, **kwargs):
+        fallas = kwargs.pop('fallas')
+        super(RegistrarFallaCreateForm, self).__init__(*args, **kwargs)
+        self.fields['falla_material'].queryset = fallas
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarFallaUpdateForm(BSModalModelForm):
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'falla_material',
+            'observacion',
+        )
+
+    def __init__(self, *args, **kwargs):
+        fallas = kwargs.pop('fallas')
+        super(RegistrarFallaUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['falla_material'].queryset = fallas
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarSolucionCreateForm(BSModalForm):
+    solucion = forms.ModelChoiceField(queryset=SolucionMaterial.objects.all())
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'solucion',
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        soluciones = kwargs.pop('soluciones')
+        super(RegistrarSolucionCreateForm, self).__init__(*args, **kwargs)
+        self.fields['solucion'].queryset = soluciones
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarSolucionUpdateForm(BSModalModelForm):
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'solucion',
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        soluciones = kwargs.pop('soluciones')
+        comentario = kwargs.pop('comentario')
+        super(RegistrarSolucionUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['solucion'].queryset = soluciones
+        self.fields['comentario'].initial = comentario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarCambiarCreateForm(BSModalForm):
+    serie_cambio = forms.CharField()
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'serie_cambio',
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrarCambiarCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarCambiarUpdateForm(BSModalModelForm):
+    serie_cambio = forms.CharField(disabled=True)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'serie_cambio',
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        serie_cambio = kwargs.pop('serie_cambio')
+        comentario = kwargs.pop('comentario')
+        super(RegistrarCambiarUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['serie_cambio'].initial = serie_cambio
+        self.fields['comentario'].initial = comentario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarCambiarSinSerieCreateForm(BSModalForm):
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrarCambiarSinSerieCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarCambiarSinSerieUpdateForm(BSModalModelForm):
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        comentario = kwargs.pop('comentario')
+        super(RegistrarCambiarSinSerieUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['comentario'].initial = comentario
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarDevolucionCreateForm(BSModalForm):
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrarDevolucionCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RegistrarDevolucionUpdateForm(BSModalModelForm):
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = HistorialEstadoSerie
+        fields = (
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        comentario = kwargs.pop('comentario')
+        super(RegistrarDevolucionUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['comentario'].initial = comentario
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -197,7 +424,7 @@ class SalidaReclamoGarantiaEncargadoForm(BSModalModelForm):
     class Meta:
         model = SalidaReclamoGarantia
         fields = (
-            'encargado',
+            'observacion',
             )
 
     def __init__(self, *args, **kwargs):

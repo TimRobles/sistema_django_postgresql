@@ -38,6 +38,10 @@ class NotaIngreso(models.Model):
     @property
     def fecha(self):
         return self.fecha_ingreso
+
+    @property
+    def detalles(self):
+        return self.NotaIngresoDetalle_nota_ingreso.all()
     
     @property
     def recepcion_compra(self):
@@ -69,6 +73,18 @@ class NotaIngresoDetalle(models.Model):
             'nota_ingreso',
             'item',
             ]
+    
+    @property
+    def cantidad(self):
+        return self.cantidad_conteo
+    
+    @property
+    def sociedad(self):
+        return self.comprobante_compra_detalle.sociedad
+    
+    @property
+    def producto(self):
+        return self.comprobante_compra_detalle.producto
 
     @property
     def comprobante_compra_detalle(self):

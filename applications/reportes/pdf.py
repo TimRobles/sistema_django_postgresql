@@ -471,11 +471,11 @@ def reporte_cobranza():
         nombre_archivo_2 = "Reporte_Cobranza_MP_" + str(date.today()) + '.pdf'
         archivo_1 = generar_reporte_cobranza(global_sociedad = '2', titulo=nombre_archivo_1)
         archivo_2 = generar_reporte_cobranza(global_sociedad = '1', titulo=nombre_archivo_2)
-        asunto = "Recordatorio - Facturas por cobrar"
-        mensaje = "Prueba"
+        asunto = "Recordatorio - Facturas por cobrar " + str(date.today())
+        mensaje = "Facturas pendientes por cobrar"
         email_remitente = EMAIL_REMITENTE
         email_destinatario = ["rpaniura@multiplay.com.pe",]
-        email_copia = ["trobles@multiplay.com.pe","dpaniura@multiplay.com.pe",]
+        email_copia = ["trobles@multiplay.com.pe","dprincipal@multiplay.com.pe",]
 
         correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to = email_destinatario, cc = email_copia,)
         correo.attach(nombre_archivo_1, archivo_1.getvalue(), 'application/pdf')

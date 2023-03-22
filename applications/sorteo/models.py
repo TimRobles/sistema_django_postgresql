@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.conf import settings
 from django.db import models
 
@@ -19,8 +20,8 @@ class Sorteo(models.Model):
 
     @property
     def participantes(self):
-        return len(self.Ticket_sorteo.all())
-
+        return Decimal(len(self.Ticket_sorteo.all())).quantize(Decimal('0.01'))
+        
     def __str__(self):
         return self.nombre_sorteo
 

@@ -5,7 +5,7 @@
 
 <div class="row mt-3">
     <div class="col-auto">
-        <a href="{% url 'garantia_app:control_garantia_inicio' ingreso.id%}" class="btn btn-primary">Regresar</a>
+        <a href="{% url 'garantia_app:control_garantia_inicio' %}" class="btn btn-danger">Regresar</a>
     </div>
     <div class="col-auto">
         <button data-form-url="{% url 'garantia_app:control_garantia_observacion' control.id %}"
@@ -13,6 +13,9 @@
             class="create btn btn-primary">
             Observaciones
         </button>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'garantia_app:ingreso_garantia_ver' control.ingreso_reclamo_garantia.id %}" class="btn btn-danger">Ingreso Garantía</a>
     </div>
 </div>
 
@@ -62,50 +65,30 @@
         <table class="table">
             <tbody>
                 <tr>
-                    <th class="pe-2">Fecha Control:</th>
-                    <td>{{ control.fecha_control|date:'d/m/Y' }}</td>
-                    <td class="px-2" rowspan="2"> 
-
-                        {% if control.estado == 1 %}
-                        <button data-form-url="{% url 'garantia_app:control_garantia_salida' control.id %}"
-                        class="delete btn btn-primary">
-                        Salida Garantia
-                    </button>
-                    {% endif %}
-
-                    {% if control.estado == 3 %}
-                    <div class="col-auto">
-                        <a href="{% url 'garantia_app:salida_garantia_inicio' control.id  %}" class="btn btn-primary">Salidas Control Calidad</a>
-                    </div>
-                    {% endif %}
-                    </td>   
-
-                </tr>
-
-                <tr>
                     <th class="pe-2">N° Control:</th>
                     <td class="text-nowrap">
-                        {% if control.nro_control_garantia %}
-                        {{ control.nro_control_garantia|numeroXn:6 }}
+                        {% if control.ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia %}
+                        {{ control.ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia|numeroXn:6 }}
                         {% endif %}
                     </td>
+                    <td class="px-2" rowspan="2"> 
+                        {% if control.estado == 1 %}
+                        <button data-form-url="{% url 'garantia_app:control_garantia_salida' control.id %}"
+                            class="delete btn btn-primary">
+                            Salida Garantia
+                        </button>
+                        {% endif %}
+    
+                        {% if control.estado == 3 %}
+                        <div class="col-auto">
+                            <a href="{% url 'garantia_app:salida_garantia_inicio' control.id  %}" class="btn btn-primary">Salidas Control Calidad</a>
+                        </div>
+                        {% endif %}
+                    </td>   
                 </tr>
                 <tr>
                     <th class="pe-2">Estado Control:</th>
                     <td>{{ control.get_estado_display }}</td>
-                </tr>
-                <tr>
-                    <th class="pe-2">Encargado:</th>
-                    <td>{{ control.encargado }}</td>
-                    <td rowspan="2">
-                        {% if control.estado == 1 %}
-                        <button data-form-url="{% url 'garantia_app:control_garantia_encargado' control.id %}"
-                            data-table-url="{% url 'garantia_app:control_garantia_ver_tabla' control.id %}"
-                            class="update btn btn-primary">
-                            Encargado
-                        </button>
-                        {% endif %}
-                    </td>
                 </tr>
                 <tr>
                     <th class="pe-2">Sociedad:</th>
@@ -148,8 +131,8 @@
                 <th>Item</th>
                 <th style="min-width: 500px;">Material</th>
                 <th class="text-end">Cantidad</th>
-                <th class="text-end">Prec. Venta </th>
-                <th > Acciones </th>
+                <th class="text-end">Solucionados</th>
+                <th class="text-center text-nowrap">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -158,9 +141,13 @@
                     <td> {{ material.item }} </td>
                     <td> {{ material.material }} </td>
                     <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ control.moneda.simbolo }} {{ material.precio_venta|redondear:3|intcomma }}</td>
-                    <td>
-
+                    <td class="text-end text-nowrap">{{ material.revisados|redondear|intcomma }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if control.estado == 1 %}
+                        <a href="{% url 'garantia_app:serie_contro_ingreso_garantia_ver' material.id %}" class="btn btn-success btn-sm">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

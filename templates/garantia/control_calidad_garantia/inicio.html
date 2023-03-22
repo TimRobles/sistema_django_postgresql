@@ -7,7 +7,17 @@
 
 {% block contenido %}
     <h3> Control Calidad Garantía </h3>
+
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+    
+    {% include 'includes/paginador.html' %}
     <div class="table-responsive" id="tabla">
         {% include 'garantia/control_calidad_garantia/inicio_tabla.html' %}
     </div>
+    {% include 'includes/paginador inferior.html' %}
 {% endblock contenido %}

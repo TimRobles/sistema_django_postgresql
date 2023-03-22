@@ -2,21 +2,39 @@
 {% load humanize %}
 
 <h3>Detalle Fallas por Sub Familia
-    <a href="{% url 'calidad_app:falla_material' %}"><span class="badge bg-primary">Regresar</span></a>
-    
     <button class="create badge bg-primary"
         data-form-url="{% url 'calidad_app:falla_material_detalle_registrar' contexto_subfamilia.id %}"
         data-table-url="{% url 'calidad_app:falla_material_detalle_tabla' contexto_subfamilia.id %}">
         Registrar Falla
     </button>
-    
+    <a href="{% url 'calidad_app:falla_material' %}"><span class="btn btn-danger">Regresar</span></a>
 </h3>
+
+<!-- TABLA -->
+<div class="table-responsive">
+    <table class="table">
+        <tbody>
+            <tr>
+                <td><b>Familia</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_subfamilia.familia.nombre }}</td>
+                <td class="px-4"></td>
+                <td><b>Sub Familia</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_subfamilia.nombre }}</td>
+                <td class="px-4"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<p></p>
 
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
-                <th>Título</th>
+                <th>Título de Falla</th>
                 <th>Comentario</th>
                 <th class="text-center">Visible</th>
                 <th class="text-center">Acciones</th>
@@ -48,6 +66,11 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                             <i class="bi bi-x-lg"></i>
                         </button>
+                        <a href="{% url 'calidad_app:solucion_material_detalle' falla.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle Soluciones">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
                     </td>                   
                 </tr>
             {% endfor %}

@@ -1,0 +1,74 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Serie</th>
+            <th>Material</th>
+            <th>Cliente</th>
+            <th>Documento</th>
+            <th>Almacén</th>
+            <th>Sociedad</th>
+            <th>Comentario</th>
+            <th>Estado</th>
+            <th class="text-nowrap text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for serie in series %}
+        <tr>
+            <td>{{ serie.serie }}</td>
+            <td>{{ serie.ingreso_reclamo_garantia_detalle.producto }}</td>
+            <td>
+                {% if serie.documento %}
+                {{ serie.documento.cliente }}
+                {% endif %}
+            </td>
+            <td class="text-nowrap">
+                {% if serie.documento %}
+                {{ serie.documento.descripcion }}
+                {% endif %}
+            </td>
+            <td>
+                {% if serie.serie.almacen %}
+                {{ serie.serie.almacen }}
+                {% endif %}
+            </td>
+            <td>{{ serie.serie.sociedad }}</td>
+            <td>
+                {% if serie.comentario %}
+                {{ serie.comentario }}
+                {% endif %}
+            </td>
+            <td>{{ serie.serie.estado }}</td>
+            <td class="text-nowrap text-center">
+                {% if not serie.serie.producto.control_serie %}
+                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_documento' serie.id %}"
+                    {% if url_tabla %}
+                    data-table-url="{{ url_tabla }}"
+                    {% else %}
+                    data-table-url="{% url 'garantia_app:serie_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.id serie.ingreso_reclamo_garantia_detalle.id %}"
+                    {% endif %}
+                    class="update btn btn-primary btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Documento">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% endif %}
+                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_comentario' serie.id %}"
+                    {% if url_tabla %}
+                    data-table-url="{{ url_tabla }}"
+                    {% else %}
+                    data-table-url="{% url 'garantia_app:serie_ingreso_garantia_tabla' serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.id serie.ingreso_reclamo_garantia_detalle.id %}"
+                    {% endif %}
+                    class="update btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Comentario">
+                    <i class="bi bi-chat-dots"></i>
+                </button>
+                <button data-form-url="{% url 'garantia_app:serie_ingreso_garantia_eliminar' serie.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
