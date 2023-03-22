@@ -11,6 +11,7 @@ from .models import(
     MedioPago,
     Servicio,
     ReciboServicio,
+    Telecredito,
 )
 
 
@@ -268,3 +269,29 @@ class ReciboServicioAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+@admin.register(Telecredito)
+class TelecreditoAdmin(admin.ModelAdmin):
+    list_display = (
+        'concepto',
+        'moneda',
+        'banco',
+        'numero',
+        'monto',
+        'fecha_emision',
+        'fecha_cobro',
+        'foto',
+        'monto_usado',
+        'usuario',
+        'sociedad',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)

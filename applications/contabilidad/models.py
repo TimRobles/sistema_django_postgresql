@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 
-from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad
+from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad, Banco
 from applications.variables import TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
 class FondoPensiones(models.Model):
@@ -52,7 +52,7 @@ class DatosPlanilla(models.Model):
     sueldo_bruto = models.DecimalField('Sueldo Bruto', max_digits=7, decimal_places=2, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT,  blank=True, null=True)
     movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=Decimal('0.00'),  blank=True, null=True)
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='DatosPlanilla_suspension_cuarta')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='DatosPlanilla_usuario')
     planilla = models.BooleanField()
     suspension_cuarta = models.BooleanField('Suspención de 4ta categoria', default=False)
     fondo_pensiones = models.ForeignKey(FondoPensiones, on_delete=models.PROTECT, blank=True, null=True)  
@@ -254,3 +254,30 @@ class ReciboServicio(models.Model):
 
     def __str__(self):
         return str(self.servicio)
+
+
+class Telecredito(models.Model):
+    concepto = models.CharField('Concepto', max_length=50)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT,  blank=True, null=True)
+    banco = models.ForeignKey(Banco, on_delete=models.PROTECT,  blank=True, null=True)
+    numero = models.CharField('Numero', max_length=50, blank=True, null=True)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
+    fecha_emision = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
+    fecha_cobro = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
+    foto = models.FileField('Foto', null=True)
+    monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='Telecredito_usuario')
+    sociedad = models.ForeignKey(Sociedad, null=True,blank=True, on_delete=models.PROTECT)
+    estado = models.IntegerField(choices=ESTADOS,default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Telecredito_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Telecredito_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Telecredito'
+        verbose_name_plural = 'Telecreditos'
+
+    def __str__(self):
+        return str(id)
