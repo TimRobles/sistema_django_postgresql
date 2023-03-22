@@ -1,0 +1,33 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Producto</th>
+                <th class="text-end">Cantidad</th>
+                <th>Unidad</th>
+                <th class="text-end">Precio Unitario</th>
+                <th class="text-end">Total</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in documentos %}
+            <tr>
+                <td>{{ producto.item }}</td>
+                <td>{{ producto.producto }}</td>
+                <td class="text-nowrap text-end">{{ producto.cantidad|intcomma }}</td>
+                <td>{{ producto.unidad }}</td>
+                <td class="text-nowrap text-end">{{ producto.precio_unitario|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ producto.total|intcomma }}</td>
+                <td class="text-nowrap text-center">
+
+                </td>
+            </tr>    
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

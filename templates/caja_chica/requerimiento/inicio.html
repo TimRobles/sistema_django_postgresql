@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Requerimiento
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Requerimiento
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'caja_chica_app:requerimiento_crear' %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_tabla' %}">
+            Nuevo
+        </button>
+    </h3>
+    <br>
+    <div class="table-responsive" id="tabla">
+        {% include 'caja_chica/requerimiento/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

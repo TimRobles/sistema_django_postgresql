@@ -1,0 +1,117 @@
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Monto Solicitado</th>
+                {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 %}
+                    <th>Monto Recibido</th>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.estado > 4 %}
+                    <th>Monto Usado</th>
+                    <th>Redondeo</th>
+                    <th>Vuelto</th>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.concepto_final %}
+                    <th>Concepto Final</th>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.estado == 6 %}
+                    <th>Rechazo de Rendición</th>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.estado == 4 %}
+                    <th>Motivo de Rechazo</th>
+                {% endif %}
+                <th>Estado</th>
+                <th>Pedir a</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_requerimiento_detalle.fecha|date:'d/m/Y' }}</td>
+                <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto|intcomma }}</td>
+                {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 %}
+                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} <span id="monto">{{ contexto_requerimiento_detalle.monto_final|intcomma }}</span></td>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.estado > 4 %}
+                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto_usado|intcomma }}</td>
+                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.redondeo|intcomma }}</td>
+                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.vuelto|intcomma }}</td>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.concepto_final %}
+                    <td>{{ contexto_requerimiento_detalle.concepto_final }}</td>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.estado == 6 %}
+                    <td>{{ contexto_requerimiento_detalle.rechazo_rendicion }}</td>
+                {% endif %}
+                {% if contexto_requerimiento_detalle.estado == 4 %}
+                    <td>{{ contexto_requerimiento_detalle.motivo_rechazo }}</td>
+                {% endif %}
+                <td>{{ contexto_requerimiento_detalle.get_estado_display }}</td>
+                <td>{{ contexto_requerimiento_detalle.usuario_pedido.first_name }} {{ contexto_requerimiento_detalle.usuario_pedido.last_name }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+{% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 %}
+    <h3> Documentos
+        {% if contexto_requerimiento_detalle.estado == 3 %}
+            <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_registrar' contexto_requerimiento_detalle.id %}"
+                data-table-url="{% url 'caja_chica_app:requerimiento_detalle' contexto_requerimiento_detalle.id %}"
+                class="delete badge bg-primary">
+                Registrar
+            </button>
+        {% endif %}
+    </h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Número</th>
+                    <th>Establecimiento</th>
+                    <th>Fecha</th>
+                    <th class="text-end">Monto Documento</th>
+                    <th class="text-end">Tipo de Cambio</th>
+                    <th class="text-end">Monto Requerimiento</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for documento in contexto_documentos %}
+                    <tr>
+                        <td>{{ documento.get_tipo_display }}</td>
+                        <td>{{ documento.numero }}</td>
+                        <td>{{ documento.establecimiento }}</td>
+                        <td>{{ documento.fecha|date:'d/m/Y' }}</td>
+                        <td class="text-end">{{ documento.moneda.simbolo }} {{ documento.total_documento|intcomma }}</td>
+                        <td class="text-end">{{ documento.tipo_cambio }}</td>
+                        <td class="text-end">{{ documento.requerimiento.moneda.simbolo }} {{ documento.total_requerimiento|intcomma }}</td>
+                        <td class="text-nowrap text-center">
+                            <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_actualizar' documento.id %}"
+                                data-table-url="{% url 'caja_chica_app:requerimiento_detalle' contexto_requerimiento_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_eliminar' documento.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <a href="{% url 'caja_chica_app:requerimiento_documento_detalle' documento.id %}"
+                                class="btn btn-info btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                        </td>
+                    </tr>    
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+    

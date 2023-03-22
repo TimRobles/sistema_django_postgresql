@@ -1,0 +1,50 @@
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th class="text-end">Monto Solicitado</th>
+            <th class="text-end">Monto Recibido</th>
+            <th class="text-end">Monto Usado</th>
+            <th class="text-end">Vuelto</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for requerimiento in contexto_requerimientos %}
+            <tr>
+                <td>{{ requerimiento.fecha|date:'d/m/Y' }} </td>
+                <td>{{ requerimiento.concepto }} | {{ requerimiento.usuario_pedido.username }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto_final|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto_usado|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.vuelto|intcomma }}</td>
+                <td>{{ requerimiento.get_estado_display }}</td>
+                <td class="text-nowrap text-center">
+                    {% if requerimiento.estado == 1 %}
+                        <button data-form-url="{% url 'caja_chica_app:requerimiento_actualizar' requerimiento.id %}"
+                            data-table-url="{% url 'caja_chica_app:requerimiento_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'caja_chica_app:requerimiento_eliminar' requerimiento.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+                    <a href="{% url 'caja_chica_app:requerimiento_detalle' requerimiento.id %}"
+                        class="btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

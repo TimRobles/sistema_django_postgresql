@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Documento
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'caja_chica/requerimiento/documento/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
