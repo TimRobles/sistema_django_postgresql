@@ -1707,7 +1707,10 @@ class ControlSalidaGarantiaView(PermissionRequiredMixin, BSModalDeleteView):
                 updated_by = self.request.user,
             )
 
-            self.object.estado = 3
+            self.object.estado = 5
+            self.object.ingreso_reclamo_garantia.estado = 5
+            registro_guardar(self.object.ingreso_reclamo_garantia, self.request)
+            self.object.ingreso_reclamo_garantia.save()
             registro_guardar(self.object, self.request)
             self.object.save()
 
@@ -1804,14 +1807,7 @@ def SalidaReclamoGarantiaVerTabla(request, id_salida):
         template = 'garantia/salida_garantia/detalle_tabla.html'
         obj = SalidaReclamoGarantia.objects.get(id=id_salida)
 
-        materiales = None
-        try:
-            materiales = obj.SalidaReclamoGarantiaDetalle_salida_garantia.all()
-
-            for material in materiales:
-                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-        except:
-            pass
+        materiales = IngresoReclamoGarantia.objects.ver_detalle(obj.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.id)
 
         context = {}
         context['salida'] = obj
@@ -1850,9 +1846,51 @@ class SalidaReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(SalidaReclamoGarantiaObservacionUpdateView, self).get_context_data(**kwargs)
-        context['titulo'] = "Actualizar Observaciones"
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Observaciones"
         context['observaciones'] = self.object.observacion
         context['id_control'] = self.object.id
+        return context
+
+class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
+    model = SalidaReclamoGarantia
+    template_name = "includes/eliminar generico.html"
+    success_url = '.'
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('garantia_app:salida_garantia_ver', kwargs={'id_salida':self.object.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+
+        try:
+            self.object = self.get_object()
+            self.object.fecha_salida = date.today()
+
+            #Generar salidas
+            
+            self.object.estado = 6
+            self.object.control_calidad_reclamo_garantia.estado = 6
+            registro_guardar(self.object.control_calidad_reclamo_garantia, self.request)
+            self.object.control_calidad_reclamo_garantia.save()
+            self.object.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.estado = 6
+            registro_guardar(self.object.control_calidad_reclamo_garantia.ingreso_reclamo_garantia, self.request)
+            self.object.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.save()
+            registro_guardar(self.object, self.request)
+            self.object.save()
+
+            messages.success(request, MENSAJE_SALIDA_RECLAMO_GARANTIA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SalidadReclamoGarantiaEntregarView, self).get_context_data(**kwargs)
+        context['accion'] = "Entregar"
+        context['titulo'] = "Salida Reclamo"
+        context['item'] = "Garantia - %s" % (self.object.cliente)
         return context
 
 
