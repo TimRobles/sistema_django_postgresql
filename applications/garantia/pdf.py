@@ -133,8 +133,11 @@ def dataCabeceraSalidaReclamoGarantia(Cabecera, fuenteBase):
     fila=[]
     fila.append(parrafoIzquierda('Nro. Salida', fuenteBase, 10, 'Bold'))
     fila.append(parrafoCentro(':', fuenteBase, 10, 'Bold'))
-    fila.append(parrafoIzquierda(Cabecera['nro_salida_reclamo_garantia'], fuenteBase, 10))
-    fila.append(parrafoDerecha('Lima, ' + Cabecera['fecha_salida'], fuenteBase, 10))
+    fila.append(parrafoIzquierda(Cabecera['nro_salida_garantia'], fuenteBase, 10))
+    if Cabecera['fecha_salida'] == 'SIN FECHA':
+        fila.append(parrafoDerecha('Lima, ' + Cabecera['fecha_salida'], fuenteBase, 10, 'Bold', 'red'))
+    else:
+        fila.append(parrafoDerecha('Lima, ' + Cabecera['fecha_salida'], fuenteBase, 10))
     fila.append('')
     fila.append('')
     data.append(fila)
@@ -204,7 +207,10 @@ def dataSalidaReclamoGarantia(series, fuenteBase, color):
         fila = []
         fila.append(parrafoCentro(dato.serie_ingreso_reclamo_garantia_detalle.serie.serie_base, fuenteBase))
         fila.append(parrafoCentro(dato.get_tipo_analisis_display(), fuenteBase))
-        fila.append(parrafoCentro(dato.comentario, fuenteBase))
+        if dato.serie_cambio:
+            fila.append(parrafoCentro(f"SERIE DE CAMBIO: {dato.serie_cambio}\n{dato.comentario}", fuenteBase))
+        else:
+            fila.append(parrafoCentro(dato.comentario, fuenteBase))
         data.append(fila)
 
     t_items=Table(
@@ -225,7 +231,7 @@ def generarSalidaReclamoGarantia(titulo, vertical, logo, pie_pagina, Cabecera, T
     data_cabecera = dataCabeceraSalidaReclamoGarantia(Cabecera, fuenteBase)
     
     elementos = []
-    elementos.append(parrafoCentro('INGRESO POR RECLAMO DE GARANTÍA', fuenteBase, 12, 'Bold'))
+    elementos.append(parrafoCentro('SALIDA POR RECLAMO DE GARANTÍA', fuenteBase, 12, 'Bold'))
     elementos.append(vacio())
     elementos.append(data_cabecera)
     

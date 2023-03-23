@@ -3,7 +3,7 @@ from django import forms
 from django.core.paginator import Paginator
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SolucionMaterial
 from applications.comprobante_venta.models import BoletaVenta, BoletaVentaDetalle, FacturaVenta, FacturaVentaDetalle
-from applications.garantia.pdf import generarIngresoReclamoGarantia
+from applications.garantia.pdf import generarIngresoReclamoGarantia, generarSalidaReclamoGarantia
 from applications.importaciones import*
 from applications.funciones import fecha_en_letras, registrar_excepcion, numeroXn
 
@@ -1856,10 +1856,10 @@ class SalidaReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
         return context
 
 
-class SalidadReclamoGarantiaPdfView(View):
+class SalidaReclamoGarantiaPdfView(View):
     def get(self, request, *args, **kwargs):
-        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_salida'])
-        sociedad = ingreso_reclamo_garantia.sociedad
+        salida_reclamo_garantia = SalidaReclamoGarantia.objects.get(id=self.kwargs['id_salida'])
+        sociedad = salida_reclamo_garantia.sociedad
         color = sociedad.color
         vertical = True
         alinear = 'right'
@@ -1867,27 +1867,27 @@ class SalidadReclamoGarantiaPdfView(View):
         pie_pagina = sociedad.pie_pagina
         fuenteBase = "ComicNeue"
 
-        titulo = 'Ingreso por Reclamo de Garantía %s%s %s' % (sociedad.abreviatura, numeroXn(ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia, 6), str(ingreso_reclamo_garantia.cliente.razon_social))
+        titulo = 'Salida por Reclamo de Garantía %s%s %s' % (sociedad.abreviatura, numeroXn(salida_reclamo_garantia.nro_salida_garantia, 6), str(salida_reclamo_garantia.cliente.razon_social))
 
         Cabecera = {}
-        Cabecera['nro_ingreso_reclamo_garantia'] = '%s%s' % (sociedad.abreviatura, numeroXn(ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia, 6))
-        Cabecera['fecha_ingreso'] = fecha_en_letras(ingreso_reclamo_garantia.fecha_ingreso)
-        Cabecera['razon_social'] = str(ingreso_reclamo_garantia.cliente)
-        Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[ingreso_reclamo_garantia.cliente.tipo_documento]
-        Cabecera['nro_documento'] = str(ingreso_reclamo_garantia.cliente.numero_documento)
-        Cabecera['direccion'] = str(ingreso_reclamo_garantia.cliente.direccion_fiscal)
-        Cabecera['interlocutor'] = str(ingreso_reclamo_garantia.cliente_interlocutor)
-        Cabecera['observacion'] = ingreso_reclamo_garantia.observacion
+        Cabecera['nro_salida_garantia'] = '%s%s' % (sociedad.abreviatura, numeroXn(salida_reclamo_garantia.nro_salida_garantia, 6))
+        Cabecera['fecha_salida'] = fecha_en_letras(salida_reclamo_garantia.fecha_salida)
+        Cabecera['razon_social'] = str(salida_reclamo_garantia.cliente)
+        Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[salida_reclamo_garantia.cliente.tipo_documento]
+        Cabecera['nro_documento'] = str(salida_reclamo_garantia.cliente.numero_documento)
+        Cabecera['direccion'] = str(salida_reclamo_garantia.cliente.direccion_fiscal)
+        Cabecera['interlocutor'] = str(salida_reclamo_garantia.cliente_interlocutor)
+        Cabecera['observacion'] = salida_reclamo_garantia.observacion
 
         TablaDatos = {}
-        for detalle in ingreso_reclamo_garantia.detalles:
+        for detalle in salida_reclamo_garantia.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.detalles:
             TablaDatos[detalle.producto] = []
-            for serie in detalle.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all():
-                TablaDatos[detalle.producto].append(serie.serie)
+            for serie in detalle.series_control:
+                TablaDatos[detalle.producto].append(serie)
 
         condiciones = CONDICIONES_GARANTIA
 
-        buf = generarIngresoReclamoGarantia(titulo, vertical, logo, pie_pagina, Cabecera, TablaDatos, condiciones, color, fuenteBase)
+        buf = generarSalidaReclamoGarantia(titulo, vertical, logo, pie_pagina, Cabecera, TablaDatos, condiciones, color, fuenteBase)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
