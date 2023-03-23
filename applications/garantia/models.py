@@ -76,6 +76,10 @@ class IngresoReclamoGarantiaDetalle(models.Model):
         return Decimal(len(self.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all())).quantize(Decimal('0.01'))
 
     @property
+    def series_ingreso(self):
+        return SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle=self)
+
+    @property
     def series_control(self):
         return ControlCalidadReclamoGarantiaDetalle.objects.filter(serie_ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia_detalle=self)
 

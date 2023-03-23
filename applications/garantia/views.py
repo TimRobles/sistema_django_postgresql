@@ -835,14 +835,10 @@ class IngresoReclamoGarantiaPdfView(View):
         TablaDatos = {}
         for detalle in ingreso_reclamo_garantia.detalles:
             TablaDatos[detalle.producto] = []
-            for serie in detalle.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all():
-                TablaDatos[detalle.producto].append(serie.serie)
+            for serie in detalle.series_ingreso:
+                TablaDatos[detalle.producto].append(serie)
 
-        condiciones = []
-        condiciones.append("Condición 1")
-        condiciones.append("Condición 2")
-        condiciones.append("Condición 3")
-        condiciones.append("Condición 4")
+        condiciones = CONDICIONES_GARANTIA
 
         buf = generarIngresoReclamoGarantia(titulo, vertical, logo, pie_pagina, Cabecera, TablaDatos, condiciones, color, fuenteBase)
 
@@ -1842,32 +1838,58 @@ class SalidadReclamoGarantiaDeleteView(BSModalDeleteView):
         return context
 
 
-class SalidaReclamoGarantiaEncargadoView(BSModalUpdateView):
-    model = SalidaReclamoGarantia
-    template_name = "garantia/salida_garantia/form_cliente.html"
-    form_class = SalidaReclamoGarantiaEncargadoForm
-    success_url = '.'
-
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super(SalidaReclamoGarantiaEncargadoView, self).get_context_data(**kwargs)
-        context['accion'] = "Elegir"
-        context['titulo'] = "Encargado"
-        return context
-
 class SalidaReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
     model = SalidaReclamoGarantia
     template_name = "includes/formulario generico.html"
     form_class = SalidaReclamoGarantiaObservacionForm
     success_url = '.'
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(SalidaReclamoGarantiaObservacionUpdateView, self).get_context_data(**kwargs)
-        
         context['titulo'] = "Actualizar Observaciones"
         context['observaciones'] = self.object.observacion
         context['id_control'] = self.object.id
         return context
+
+
+class SalidadReclamoGarantiaPdfView(View):
+    def get(self, request, *args, **kwargs):
+        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_salida'])
+        sociedad = ingreso_reclamo_garantia.sociedad
+        color = sociedad.color
+        vertical = True
+        alinear = 'right'
+        logo = [[sociedad.logo.url, alinear]]
+        pie_pagina = sociedad.pie_pagina
+        fuenteBase = "ComicNeue"
+
+        titulo = 'Ingreso por Reclamo de Garantía %s%s %s' % (sociedad.abreviatura, numeroXn(ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia, 6), str(ingreso_reclamo_garantia.cliente.razon_social))
+
+        Cabecera = {}
+        Cabecera['nro_ingreso_reclamo_garantia'] = '%s%s' % (sociedad.abreviatura, numeroXn(ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia, 6))
+        Cabecera['fecha_ingreso'] = fecha_en_letras(ingreso_reclamo_garantia.fecha_ingreso)
+        Cabecera['razon_social'] = str(ingreso_reclamo_garantia.cliente)
+        Cabecera['tipo_documento'] = DICCIONARIO_TIPO_DOCUMENTO_SUNAT[ingreso_reclamo_garantia.cliente.tipo_documento]
+        Cabecera['nro_documento'] = str(ingreso_reclamo_garantia.cliente.numero_documento)
+        Cabecera['direccion'] = str(ingreso_reclamo_garantia.cliente.direccion_fiscal)
+        Cabecera['interlocutor'] = str(ingreso_reclamo_garantia.cliente_interlocutor)
+        Cabecera['observacion'] = ingreso_reclamo_garantia.observacion
+
+        TablaDatos = {}
+        for detalle in ingreso_reclamo_garantia.detalles:
+            TablaDatos[detalle.producto] = []
+            for serie in detalle.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all():
+                TablaDatos[detalle.producto].append(serie.serie)
+
+        condiciones = CONDICIONES_GARANTIA
+
+        buf = generarIngresoReclamoGarantia(titulo, vertical, logo, pie_pagina, Cabecera, TablaDatos, condiciones, color, fuenteBase)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta

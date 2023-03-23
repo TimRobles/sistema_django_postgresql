@@ -347,7 +347,10 @@ class NotaSalidaDetalle(models.Model):
     class Meta:
         verbose_name = 'Nota de Salida Detalle'
         verbose_name_plural = 'Notas de Salida Detalle'
-        ordering = ['item',]
+        ordering = [
+            'nota_salida',
+            'item',
+            ]
 
     @property
     def detalle(self):
