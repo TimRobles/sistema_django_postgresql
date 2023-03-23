@@ -283,7 +283,10 @@ class NotaControlCalidadStockDetalle(models.Model):
     class Meta:
         verbose_name = 'Nota Control Calidad Stock Detalle'
         verbose_name_plural = 'Notas Control Calidad Stock Detalle'
-        ordering = ['item',]
+        ordering = [
+            'nota_control_calidad_stock',
+            'item',
+            ]
 
     @property
     def material(self):
@@ -639,7 +642,10 @@ class EntradaTransformacionProductos(models.Model):
     class Meta:
         verbose_name = 'Entrada Transformación de Productos'
         verbose_name_plural = 'Entrada Transformaciones de Productos'
-        ordering = ['item',]
+        ordering = [
+            'transformacion_productos',
+            'item',
+            ]
 
     @property
     def series_validar(self):
@@ -666,7 +672,10 @@ class SalidaTransformacionProductos(models.Model):
     class Meta:
         verbose_name = 'Salida Transformación de Productos'
         verbose_name_plural = 'Salida Transformaciones de Productos'
-        ordering = ['item',]
+        ordering = [
+            'transformacion_productos',
+            'item',
+            ]
 
     @property
     def content_type(self):

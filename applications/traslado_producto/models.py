@@ -84,7 +84,10 @@ class EnvioTrasladoProductoDetalle(models.Model):
     class Meta:
         verbose_name = 'Envio Traslado Producto Detalle '
         verbose_name_plural = 'Envios Traslado Productos Detalle'
-        ordering = ['item',]
+        ordering = [
+            'envio_traslado_producto',
+            'item',
+            ]
 
     @property
     def producto(self):

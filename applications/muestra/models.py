@@ -145,7 +145,10 @@ class DevolucionMuestraDetalle(models.Model):
 
         verbose_name = 'Devolución Muestras Detalle'
         verbose_name_plural = 'Devolución Muestras Detalle'
-        ordering = ['item',]
+        ordering = [
+            'devolucion_muestra',
+            'item',
+            ]
 
     @property
     def producto(self):
