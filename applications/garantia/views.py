@@ -868,7 +868,7 @@ class ControlCalidadReclamoGarantiaListView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(ControlCalidadReclamoGarantiaListView, self).get_context_data(**kwargs)
-        contexto_control_garantia = ControlCalidadReclamoGarantia.objects.exclude(estado=3)
+        contexto_control_garantia = ControlCalidadReclamoGarantia.objects.all()
 
         filtro_estado = self.request.GET.get('estado')
         filtro_cliente = self.request.GET.get('cliente')
@@ -1746,7 +1746,7 @@ class SalidaReclamoGarantiaListView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(SalidaReclamoGarantiaListView, self).get_context_data(**kwargs)
-        contexto_salida_garantia = SalidaReclamoGarantia.objects.exclude(estado=3)
+        contexto_salida_garantia = SalidaReclamoGarantia.objects.all()
         try:
             contexto_salida_garantia = contexto_salida_garantia.filter(salida_garantia__id = self.kwargs['id_salida'])
         except:
@@ -1755,7 +1755,36 @@ class SalidaReclamoGarantiaListView(FormView):
         filtro_estado = self.request.GET.get('estado')
         filtro_cliente = self.request.GET.get('cliente')
 
+        contexto_filtro = []
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            contexto_salida_garantia = contexto_salida_garantia.filter(condicion)
+            contexto_filtro.append("estado=" + filtro_estado)
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            contexto_salida_garantia = contexto_salida_garantia.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(contexto_salida_garantia) > objectsxpage:
+            paginator = Paginator(contexto_salida_garantia, objectsxpage)
+            page_number = self.request.GET.get('page')
+            contexto_salida_garantia = paginator.get_page(page_number)
+
         context['contexto_salida_garantia'] = contexto_salida_garantia
+        context['contexto_pagina'] = contexto_salida_garantia
         return context
 
 class SalidaReclamoGarantiaVerView(TemplateView):
@@ -1764,15 +1793,7 @@ class SalidaReclamoGarantiaVerView(TemplateView):
     def get_context_data(self, **kwargs):
         obj = SalidaReclamoGarantia.objects.get(id = kwargs['id_salida'])
 
-        materiales = None
-        try:
-            materiales = obj.SalidaReclamoGarantiaDetalle_salida_garantia.all()
-
-            for material in materiales:
-                material.material = material.content_type.get_object_for_this_type(id = material.id_registro)
-        except:
-            pass
-
+        materiales = IngresoReclamoGarantia.objects.ver_detalle(obj.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.id)
 
         context = super(SalidaReclamoGarantiaVerView, self).get_context_data(**kwargs)
         context['salida'] = obj

@@ -76,8 +76,24 @@ class IngresoReclamoGarantiaDetalle(models.Model):
         return Decimal(len(self.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all())).quantize(Decimal('0.01'))
 
     @property
+    def series_control(self):
+        return ControlCalidadReclamoGarantiaDetalle.objects.filter(serie_ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia_detalle=self)
+
+    @property
     def revisados(self):
         return Decimal(len(ControlCalidadReclamoGarantiaDetalle.objects.filter(serie_ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia_detalle=self))).quantize(Decimal('0.01'))
+
+    @property
+    def solucionados(self):
+        return Decimal(len(ControlCalidadReclamoGarantiaDetalle.objects.filter(serie_ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia_detalle=self, tipo_analisis=1))).quantize(Decimal('0.01'))
+
+    @property
+    def cambios(self):
+        return Decimal(len(ControlCalidadReclamoGarantiaDetalle.objects.filter(serie_ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia_detalle=self, tipo_analisis=2))).quantize(Decimal('0.01'))
+
+    @property
+    def devoluciones(self):
+        return Decimal(len(ControlCalidadReclamoGarantiaDetalle.objects.filter(serie_ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia_detalle=self, tipo_analisis=3))).quantize(Decimal('0.01'))
         
     def __str__(self):
         return f"{self.item} - {self.producto}"
@@ -208,6 +224,22 @@ class SalidaReclamoGarantia(models.Model):
     class Meta:
         verbose_name = 'Salida Reclamo Garantia'
         verbose_name_plural = 'Salida Reclamos Garantia'
+
+    @property
+    def sociedad(self):
+        return self.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.sociedad
+
+    @property
+    def cliente(self):
+        return self.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.cliente
+
+    @property
+    def cliente_interlocutor(self):
+        return self.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.cliente_interlocutor
+
+    @property
+    def nro_salida_garantia(self):
+        return self.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia
 
     def __str__(self):
         return str(self.id)

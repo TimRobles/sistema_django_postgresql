@@ -43,6 +43,7 @@ class ClienteListView(PermissionRequiredMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super(ClienteListView, self).get_form_kwargs()
         kwargs['filtro_razon_social'] = self.request.GET.get('razon_social')
+        kwargs['filtro_ruc'] = self.request.GET.get('ruc')
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -50,6 +51,7 @@ class ClienteListView(PermissionRequiredMixin, FormView):
         clientes = Cliente.objects.all()
         
         filtro_razon_social = self.request.GET.get('razon_social')
+        filtro_ruc = self.request.GET.get('ruc')
         
         contexto_filtro = []
 
@@ -59,6 +61,11 @@ class ClienteListView(PermissionRequiredMixin, FormView):
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes = clientes.filter(condicion)
             contexto_filtro.append(f"razon_social={filtro_razon_social}")
+
+        if filtro_ruc:
+            condicion = Q(numero_documento__icontains = filtro_ruc)
+            clientes = clientes.filter(condicion)
+            contexto_filtro.append(f"ruc={filtro_ruc}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -88,6 +95,7 @@ def ClienteTabla(request):
         clientes = Cliente.objects.all()
 
         filtro_razon_social = request.GET.get('razon_social')
+        filtro_ruc = request.GET.get('ruc')
 
         contexto_filtro = []
 
@@ -97,6 +105,11 @@ def ClienteTabla(request):
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes = clientes.filter(condicion)
             contexto_filtro.append(f"razon_social={filtro_razon_social}")
+
+        if filtro_ruc:
+            condicion = Q(numero_documento__icontains = filtro_ruc)
+            clientes = clientes.filter(condicion)
+            contexto_filtro.append(f"ruc={filtro_ruc}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 

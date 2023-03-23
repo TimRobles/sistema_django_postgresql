@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th>Razón Social</th>
-            <th>Nombre Comercial</th>
+            <th>RUC</th>
             <th>Dirección Fiscal</th>
             <th>Ubigeo</th>
             <th>Estado SUNAT</th>
@@ -14,11 +14,7 @@
         {% for cliente in contexto_pagina %}
         <tr>
             <td>{{ cliente.razon_social }}</td>
-            <td>
-                {% if cliente.nombre_comercial %}
-                    {{ cliente.nombre_comercial }}   
-                {% endif %}
-            </td>
+            <td>{{ cliente.numero_documento }}</td>
             <td>{{ cliente.direccion_fiscal }}</td>
             <td>{{ cliente.ubigeo }}</td>
             <td class="text-center">{{ cliente.get_estado_sunat_display }}</td>
