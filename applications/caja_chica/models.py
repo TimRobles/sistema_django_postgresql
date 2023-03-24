@@ -59,7 +59,7 @@ class RequerimientoVueltoExtra(models.Model):
     vuelto_extra = models.DecimalField('Vuelto en Moneda del Requerimiento', max_digits=7, decimal_places=2)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=6, decimal_places=4)
-    requerimiento = models.ForeignKey(Requerimiento, on_delete=models.CASCADE, related_name='requerimiento_vuelto_extra')
+    requerimiento = models.ForeignKey(Requerimiento, on_delete=models.CASCADE, related_name='RequerimientoVueltoExtra_requerimiento')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RequerimientoVueltoExtra_created_by', editable=False)
@@ -114,7 +114,7 @@ class RequerimientoDocumentoDetalle(models.Model):
     unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT)
     precio_unitario = models.DecimalField('Precio Unitario', max_digits=5, decimal_places=2)
     foto = models.ImageField('Foto de Producto', upload_to=REQUERIMIENTO_FOTO_PRODUCTO, height_field=None, width_field=None, max_length=None, blank=True, null = True)
-    documento_requerimiento = models.ForeignKey(RequerimientoDocumento, on_delete=models.CASCADE, related_name='documento_detalle')
+    documento_requerimiento = models.ForeignKey(RequerimientoDocumento, on_delete=models.CASCADE, related_name='RequerimientoDocumentoDetalle_documento_requerimiento')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RequerimientoDocumentoDetalle_created_by', editable=False)

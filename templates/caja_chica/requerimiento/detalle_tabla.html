@@ -91,7 +91,7 @@
                         <td class="text-end">{{ documento.requerimiento.moneda.simbolo }} {{ documento.total_requerimiento|intcomma }}</td>
                         <td class="text-nowrap text-center">
                             <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_actualizar' documento.id %}"
-                                data-table-url="{% url 'caja_chica_app:requerimiento_detalle' contexto_requerimiento_detalle.id %}"
+                                data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
                                 data-keep-open="true"
                                 class="update btn btn-warning btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">

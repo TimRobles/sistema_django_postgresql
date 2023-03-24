@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from applications.importaciones import*
 from applications.funciones import registrar_excepcion
-from .models import Requerimiento, RequerimientoDocumento, RequerimientoVueltoExtra
-from applications.caja_chica.forms import RequerimientoAprobarForm, RequerimientoDocumentoForm, RequerimientoForm, RequerimientoRechazarForm, RequerimientoRechazarRendicionForm
+from .models import Requerimiento, RequerimientoDocumento, RequerimientoDocumentoDetalle, RequerimientoVueltoExtra
+from applications.caja_chica.forms import RequerimientoAprobarForm, RequerimientoDocumentoDetalleForm, RequerimientoDocumentoForm, RequerimientoForm, RequerimientoRechazarForm, RequerimientoRechazarRendicionForm
 
 
 class RequerimientoListView(PermissionRequiredMixin, ListView):
@@ -472,7 +472,7 @@ class RequerimientoDocumentoUpdateView(PermissionRequiredMixin, BSModalUpdateVie
     form_class = RequerimientoDocumentoForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk':self.object.requerimiento.id})
+        return reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk': self.object.requerimiento.id})
 
     def get_form_kwargs(self):
         kwargs = super(RequerimientoDocumentoUpdateView, self).get_form_kwargs()
@@ -515,11 +515,12 @@ class RequerimientoDocumentoDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('caja_chica.view_RequerimientoDocumento')
     model = RequerimientoDocumento
     template_name = "caja_chica/requerimiento/documento/detalle.html"
-    context_object_name = 'contexto_documentos_detalle'
+    context_object_name = 'contexto_documento_detalle'
 
     def get_context_data(self, **kwargs):
-        documento = RequerimientoDocumento.objects.get(id = self.kwargs['pk'])
+        documento_requerimiento = RequerimientoDocumento.objects.get(id = self.kwargs['pk'])
         context = super(RequerimientoDocumentoDetailView, self).get_context_data(**kwargs)
+        context['contexto_item'] = RequerimientoDocumentoDetalle.objects.filter(documento_requerimiento = documento_requerimiento)
         return context
 
 
@@ -528,8 +529,9 @@ def RequerimientoDocumentoDetailTabla(request, pk):
     if request.method == 'GET':
         template = 'caja_chica/requerimiento/documento/detalle_tabla.html'
         context = {}
-        documento = RequerimientoDocumento.objects.get(id = pk)
-        context['contexto_documentos_detalle'] = documento
+        documento_requerimiento = RequerimientoDocumento.objects.get(id = pk)
+        context['contexto_documento_detalle'] = documento_requerimiento
+        context['contexto_item'] = RequerimientoDocumentoDetalle.objects.filter(documento_requerimiento = documento_requerimiento)
         
         data['table'] = render_to_string(
             template,
@@ -537,4 +539,99 @@ def RequerimientoDocumentoDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
+
+class RequerimientoDocumentoDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('caja_chica.view_requerimientodocumentodetalle')
+
+    model = RequerimientoDocumentoDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = RequerimientoDocumentoDetalleForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:requerimiento_documento_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    def get_form_kwargs(self):
+        kwargs = super(RequerimientoDocumentoDetalleCreateView, self).get_form_kwargs()
+        kwargs['producto'] = None
+        kwargs['cantidad'] = None
+        kwargs['unidad'] = None
+        kwargs['precio_unitario'] = None
+        kwargs['foto'] = None
+        return kwargs
+
+    def form_valid(self, form):
+        documento_requerimiento = RequerimientoDocumento.objects.get(id = self.kwargs['pk'])
+        form.instance.documento_requerimiento = documento_requerimiento
+        max_item = RequerimientoDocumentoDetalle.objects.filter(documento_requerimiento = documento_requerimiento).aggregate(Max('item'))['item__max']
+        if max_item:
+            form.instance.item = max_item + 1
+        else:
+            form.instance.item = 1
+        form.save()
+        return super(RequerimientoDocumentoDetalleCreateView, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RequerimientoDocumentoDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Crear"
+        context['titulo'] = "Item"
+        return context
+
+
+class RequerimientoDocumentoDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('caja_chica.view_requerimiento')
+
+    model = RequerimientoDocumentoDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = RequerimientoDocumentoDetalleForm
+
+    def get_success_url(self, **kwargs):
+        documento_detalle = RequerimientoDocumentoDetalle.objects.get(id = self.kwargs['pk'])
+        return reverse_lazy('caja_chica_app:requerimiento_documento_detalle', kwargs={'pk':documento_detalle.documento_requerimiento.id})
+
+    def get_form_kwargs(self):
+        kwargs = super(RequerimientoDocumentoDetalleUpdateView, self).get_form_kwargs()
+        documento_detalle = RequerimientoDocumentoDetalle.objects.get(id = self.kwargs['pk'])
+        kwargs['producto'] = documento_detalle.producto
+        kwargs['cantidad'] = documento_detalle.cantidad
+        kwargs['unidad'] = documento_detalle.unidad
+        kwargs['precio_unitario'] = documento_detalle.precio_unitario
+        kwargs['foto'] = documento_detalle.foto
+        return kwargs
+
+    def get_context_data(self, **kwargs):        
+        context = super(RequerimientoDocumentoDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Item"
+        return context
+
+
+class RequerimientoDocumentoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('caja_chica.view_requerimiento')
+
+    model = RequerimientoDocumentoDetalle
+    template_name = "includes/eliminar generico.html"
     
+    def get_success_url(self, **kwargs):
+        documento_detalle = RequerimientoDocumentoDetalle.objects.get(id = self.kwargs['pk'])
+        return reverse_lazy('caja_chica_app:requerimiento_documento_detalle', kwargs={'pk':documento_detalle.documento_requerimiento.id})
+
+    def delete(self, *args, **kwargs):
+        detalle = RequerimientoDocumentoDetalle.objects.get(id = self.kwargs['pk'])
+        documento_detalles = RequerimientoDocumentoDetalle.objects.filter(documento_requerimiento = detalle.documento_requerimiento).order_by('item')
+        i = 1
+        for detalle in documento_detalles:
+            if detalle == detalle: continue
+            detalle.item = i
+            i += 1
+            detalle.save()
+
+        return super(RequerimientoDocumentoDetalleDeleteView, self).delete(*args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(RequerimientoDocumentoDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Item"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context

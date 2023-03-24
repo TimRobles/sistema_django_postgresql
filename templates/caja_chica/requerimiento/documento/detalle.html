@@ -5,6 +5,15 @@
 {% endblock titulo %}
 
 {% block contenido %}
+    <h3>
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_detalle_crear' contexto_documento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_documento_detalle_tabla' contexto_documento_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar Item
+        </button>
+        <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+    </h3>
+    <br>
     <div id="tabla">
         {% include 'caja_chica/requerimiento/documento/detalle_tabla.html' %}
     </div>

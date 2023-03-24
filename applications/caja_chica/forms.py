@@ -151,3 +151,31 @@ class RequerimientoDocumentoForm(BSModalModelForm):
         self.fields['tipo_cambio'].required = False
         self.fields['total_requerimiento'].required = False
         self.fields['moneda_requerimiento'].disabled = True
+
+
+class RequerimientoDocumentoDetalleForm(BSModalModelForm):
+    class Meta:
+        model = RequerimientoDocumentoDetalle
+        exclude = (
+            'item', 
+            'documento_requerimiento',
+            )
+
+    def __init__(self, *args, **kwargs):
+        producto = kwargs.pop('producto')
+        cantidad = kwargs.pop('cantidad')
+        unidad = kwargs.pop('unidad')
+        precio_unitario = kwargs.pop('precio_unitario')
+        foto = kwargs.pop('foto')
+        super(RequerimientoDocumentoDetalleForm, self).__init__(*args, **kwargs)
+        if producto : self.fields['producto'].initial = producto
+        if cantidad : self.fields['cantidad'].initial = cantidad
+        if unidad : self.fields['unidad'].initial = unidad
+        if precio_unitario : self.fields['precio_unitario'].initial = precio_unitario
+        if foto : self.fields['foto'].initial = foto
+        
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].required = True
+        self.fields['foto'].required = False

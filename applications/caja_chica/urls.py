@@ -22,9 +22,13 @@ urlpatterns = [
     path('requerimiento/detalle/<pk>/', views.RequerimientoDetalleView.as_view(), name='requerimiento_detalle'),
     path('requerimiento/detalle-tabla/<pk>', views.RequerimientoDetalleTabla, name='requerimiento_detalle_tabla'),
 
-    path('requerimiento-documento/registrar/<int:requerimiento_id>/', views.RequerimientoDocumentoCreateView.as_view(), name='requerimiento_documento_registrar'),
-    path('requerimiento-documento/actualizar/<pk>/', views.RequerimientoDocumentoUpdateView.as_view(), name='requerimiento_documento_actualizar'),
-    path('requerimiento-documento/eliminar/<pk>/', views.RequerimientoDocumentoDeleteView.as_view(), name='requerimiento_documento_eliminar'),
-    path('requerimiento-documento/detalle/<pk>/', views.RequerimientoDocumentoDetailView.as_view(), name='requerimiento_documento_detalle'),
-    path('requerimiento-documento/detalle-tabla/<pk>/', views.RequerimientoDocumentoDetailTabla, name='requerimiento_documento_detalle_tabla'),
+    path('requerimiento/documento/registrar/<int:requerimiento_id>/', views.RequerimientoDocumentoCreateView.as_view(), name='requerimiento_documento_registrar'),
+    path('requerimiento/documento/actualizar/<pk>/', views.RequerimientoDocumentoUpdateView.as_view(), name='requerimiento_documento_actualizar'),
+    path('requerimiento/documento/eliminar/<pk>/', views.RequerimientoDocumentoDeleteView.as_view(), name='requerimiento_documento_eliminar'),
+    path('requerimiento/documento/detalle/<pk>/', views.RequerimientoDocumentoDetailView.as_view(), name='requerimiento_documento_detalle'),
+    path('requerimiento/documento/detalle-tabla/<pk>/', views.RequerimientoDocumentoDetailTabla, name='requerimiento_documento_detalle_tabla'),
+
+    path('requerimiento/documento/detalle/crear/<pk>/', views.RequerimientoDocumentoDetalleCreateView.as_view(), name='requerimiento_documento_detalle_crear'),
+    path('requerimiento/documento/detalle/actualizar/<pk>/', views.RequerimientoDocumentoDetalleUpdateView.as_view(), name='requerimiento_documento_detalle_actualizar'),
+    path('requerimiento/documento/detalle/eliminar/<pk>/', views.RequerimientoDocumentoDetalleDeleteView.as_view(), name='requerimiento_documento_detalle_eliminar'),
 ]
