@@ -25,11 +25,13 @@ urlpatterns = [
     path('boleta-pago-tabla/', views.BoletaPagoTabla, name='boleta_pago_tabla'),
     path('boleta-pago/registrar/', views.BoletaPagoCreateView.as_view(), name='boleta_pago_registrar'),
     path('boleta-pago/actualizar/<pk>/', views.BoletaPagoUpdateView.as_view(), name='boleta_pago_actualizar'),    
+    path('boleta-pago/eliminar/<pk>/', views.BoletaPagoDeleteView.as_view(), name='boleta_pago_eliminar'),    
 
     path('recibo-boleta-pago/', views.ReciboBoletaPagoListView.as_view(), name='recibo_boleta_pago_inicio'),
     path('recibo-boleta-pago-tabla/', views.ReciboBoletaPagoTabla, name='recibo_boleta_pago_tabla'),
     path('recibo-boleta-pago/registrar/', views.ReciboBoletaPagoCreateView.as_view(), name='recibo_boleta_pago_registrar'),
     path('recibo-boleta-pago/actualizar/<pk>/', views.ReciboBoletaPagoUpdateView.as_view(), name='recibo_boleta_pago_actualizar'),    
+    path('recibo-boleta-pago/eliminar/<pk>/', views.ReciboBoletaPagoDeleteView.as_view(), name='recibo_boleta_pago_eliminar'),    
 
     path('servicio/', views.ServicioListView.as_view(), name='servicio_inicio'),
     path('servicio-tabla/', views.ServicioTabla, name='servicio_tabla'),
@@ -40,6 +42,7 @@ urlpatterns = [
     path('recibo-servicio-tabla/', views.ReciboServicioTabla, name='recibo_servicio_tabla'),
     path('recibo-servicio/registrar/', views.ReciboServicioCreateView.as_view(), name='recibo_servicio_registrar'),
     path('recibo-servicio/actualizar/<pk>/', views.ReciboServicioUpdateView.as_view(), name='recibo_servicio_actualizar'),    
+    path('recibo-servicio/eliminar/<pk>/', views.ReciboServicioDeleteView.as_view(), name='recibo_servicio_eliminar'),    
 
     path('tipo-servicio/', views.TipoServicioListView.as_view(), name='tipo_servicio_inicio'),
     path('tipo-servicio-tabla/', views.TipoServicioTabla, name='tipo_servicio_tabla'),

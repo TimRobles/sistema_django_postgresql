@@ -126,7 +126,7 @@ class BoletaPago(models.Model):
 
 
     def __str__(self):
-        return "%s - %s  - %s - %s" % (self.year, self.datos_planilla,self.get_tipo_display(), self.get_month_display()) 
+        return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), self.datos_planilla ) 
 
 class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
@@ -152,7 +152,8 @@ class ReciboBoletaPago(models.Model):
         ordering = ['-id',]
 
     def __str__(self):
-        return str(self.id)
+        return "%s - %s  - %s - %s" % (self.boleta_pago.get_month_display(), self.boleta_pago.year, self.get_tipo_pago_display(), self.boleta_pago.datos_planilla ) 
+
 
 
 class TipoServicio(models.Model):
