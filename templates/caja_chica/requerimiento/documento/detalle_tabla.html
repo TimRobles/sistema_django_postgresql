@@ -1,0 +1,44 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Producto</th>
+                <th class="text-end">Cantidad</th>
+                <th>Unidad</th>
+                <th class="text-end">Precio Unitario</th>
+                <th class="text-end">Total</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in contexto_item %}
+            <tr>
+                <td>{{ producto.item }}</td>
+                <td>{{ producto.producto }}</td>
+                <td class="text-nowrap text-end">{{ producto.cantidad|intcomma }}</td>
+                <td>{{ producto.unidad }}</td>
+                <td class="text-nowrap text-end">{{ producto.precio_unitario|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ producto.total|intcomma }}</td>
+                <td class="text-nowrap text-center">
+                    <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_detalle_actualizar' producto.id %}"
+                        data-table-url="{% url 'caja_chica_app:requerimiento_documento_detalle_tabla' contexto_documento_detalle.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_detalle_eliminar' producto.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>    
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
