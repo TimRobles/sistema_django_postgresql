@@ -90,7 +90,10 @@ class SolicitudPrestamoMaterialesDetalle(models.Model):
 
         verbose_name = 'Solicitud Prestamo Materiales Detalle'
         verbose_name_plural = 'Solicitudes Prestamo Materiales Detalle'
-        ordering = ['item',]
+        ordering = [
+            'solicitud_prestamo_materiales',
+            'item',
+            ]
 
     @property
     def NotaSalidaDetalle_solicitud_prestamo_materiales_detalle(self):
@@ -347,7 +350,10 @@ class NotaSalidaDetalle(models.Model):
     class Meta:
         verbose_name = 'Nota de Salida Detalle'
         verbose_name_plural = 'Notas de Salida Detalle'
-        ordering = ['item',]
+        ordering = [
+            'nota_salida',
+            'item',
+            ]
 
     @property
     def detalle(self):
@@ -521,7 +527,10 @@ class DespachoDetalle(models.Model):
 
         verbose_name = 'Despacho Detalle'
         verbose_name_plural = 'Despachos Detalle'
-        ordering = ['item',]
+        ordering = [
+            'despacho',
+            'item',
+            ]
     
     @property
     def producto(self):
@@ -594,7 +603,10 @@ class InventarioMaterialesDetalle(models.Model):
     class Meta:
         verbose_name = 'Inventario Materiales Detalle'
         verbose_name_plural = 'Inventarios Materiales Detalle'
-        ordering = ['item',]
+        ordering = [
+            'inventario_materiales',
+            'item',
+            ]
 
     @property
     def AjusteInventarioMaterialesDetalle_inventario_materiales_detalle(self):
@@ -662,7 +674,10 @@ class AjusteInventarioMaterialesDetalle(models.Model):
     class Meta:
         verbose_name = 'Ajuste Inventario Materiales Detalle'
         verbose_name_plural = 'Ajuste Inventarios Materiales Detalle'
-        ordering = ['item',]
+        ordering = [
+            'ajuste_inventario_materiales',
+            'item',
+            ]
 
     def __str__(self):
         return str(self.material)

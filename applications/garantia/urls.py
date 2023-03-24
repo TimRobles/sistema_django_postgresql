@@ -65,8 +65,8 @@ urlpatterns = [
     path('salida-garantia/ver/tabla/<int:id_salida>/', views.SalidaReclamoGarantiaVerTabla, name='salida_garantia_ver_tabla'),
 
     path('salida-garantia/eliminar/<pk>/', views.SalidadReclamoGarantiaDeleteView.as_view(), name='salida_garantia_eliminar'),
-
-    path('salida-garantia/encargado/<pk>/', views.SalidaReclamoGarantiaEncargadoView.as_view(), name='salida_garantia_encargado'),
     path('salida-garantia/observacion/<pk>/', views.SalidaReclamoGarantiaObservacionUpdateView.as_view(), name='salida_garantia_observacion'),
+    path('salida-garantia/entregar/<pk>/', views.SalidadReclamoGarantiaEntregarView.as_view(), name='salida_garantia_entregar'),
+    path('salida-garantia/pdf/<int:id_salida>/', views.SalidaReclamoGarantiaPdfView.as_view(), name='salida_garantia_pdf'),
 
 ]

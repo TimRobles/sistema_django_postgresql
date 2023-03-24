@@ -410,10 +410,13 @@ def mes_en_letras(valor):
 
 
 def fecha_en_letras(fecha):
-    dia = fecha.day
-    mes = mes_en_letras(fecha.month).capitalize()
-    año = fecha.year
-    return '%i de %s de %i' % (dia, mes, año)
+    try:
+        dia = fecha.day
+        mes = mes_en_letras(fecha.month).capitalize()
+        año = fecha.year
+        return '%i de %s de %i' % (dia, mes, año)
+    except:
+        return "SIN FECHA"
 
 
 def numero_espacio(texto):

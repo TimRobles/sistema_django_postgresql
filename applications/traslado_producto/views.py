@@ -847,6 +847,18 @@ class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDelet
             movimiento_inicial = TipoMovimiento.objects.get(codigo=139)  # Salida por traslado
             movimiento_final = TipoMovimiento.objects.get(codigo=140)  # Recepción por traslado
             for detalle in self.object.RecepcionTrasladoProductoDetalle_recepcion_traslado_producto.all():
+                movimiento_cero = MovimientosAlmacen.objects.get(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.envio_traslado_producto_detalle.cantidad_envio,
+                    tipo_movimiento=movimiento_inicial,
+                    tipo_stock=detalle.envio_traslado_producto_detalle.tipo_stock,
+                    signo_factor_multiplicador=-1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object.envio_traslado_producto),
+                    id_registro_documento_proceso=self.object.envio_traslado_producto.id,
+                    almacen=detalle.envio_traslado_producto_detalle.almacen_origen,
+                    sociedad=self.object.sociedad,
+                )
                 movimiento_anterior = MovimientosAlmacen.objects.get(
                     content_type_producto=detalle.content_type,
                     id_registro_producto=detalle.id_registro,
@@ -857,6 +869,7 @@ class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDelet
                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object.envio_traslado_producto),
                     id_registro_documento_proceso=self.object.envio_traslado_producto.id,
                     sociedad=self.object.sociedad,
+                    movimiento_anterior=movimiento_cero,
                 )
                 movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto=detalle.content_type,

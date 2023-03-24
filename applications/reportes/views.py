@@ -2801,7 +2801,7 @@ class ReporteDeudas(TemplateView):
         sql = ''' (SELECT
             MAX(cn.id) AS id,
             CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
-            SUM(cn.monto) as monto_nota_credito,
+            SUM(cp.monto) as monto_nota_credito,
             MAX(cc.razon_social) AS cliente_denominacion,
             'FACTURA' AS tipo_comprobante
             FROM cobranza_nota cn
@@ -2824,7 +2824,7 @@ class ReporteDeudas(TemplateView):
             (SELECT
             MAX(cn.id) AS id,
             CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
-            SUM(cn.monto) as monto_nota_credito,
+            SUM(cp.monto) as monto_nota_credito,
             MAX(cc.razon_social) AS cliente_denominacion,
             'BOLETA' AS tipo_comprobante
             FROM cobranza_nota cn

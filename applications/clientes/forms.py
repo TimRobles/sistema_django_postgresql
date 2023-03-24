@@ -79,11 +79,14 @@ class ClienteForm(BSModalModelForm):
 
 class ClienteBuscarForm(forms.Form):
     razon_social = forms.CharField(label = 'Razón Social', max_length=100, required=False)
+    ruc = forms.CharField(label = 'Razón Social', max_length=100, required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
+        filtro_ruc = kwargs.pop('filtro_ruc')
         super(ClienteBuscarForm, self).__init__(*args, **kwargs)
         self.fields['razon_social'].initial = filtro_razon_social
+        self.fields['ruc'].initial = filtro_ruc
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
