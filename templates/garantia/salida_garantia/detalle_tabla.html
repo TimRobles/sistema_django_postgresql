@@ -169,6 +169,7 @@
                                 </h2>
                                 <div id="target-{{ serie.id }}" class="accordion-collapse collapse" aria-labelledby="accordion-{{ serie.id }}" data-bs-parent="#parent-{{ serie.id }}">
                                     <div class="accordion-body">
+                                        <h5 class="mt-3">{{ serie.serie_ingreso_reclamo_garantia_detalle.serie }}</h5>
                                         <div class="table-responsive">
                                             <table class="table">
                                                 <thead>
@@ -209,6 +210,50 @@
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        {% if serie.serie_cambio %}
+                                        <h5 class="mt-3">{{ serie.serie_cambio }}</h5>
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Estado</th>
+                                                        <th>Falla</th>
+                                                        <th>Solución</th>
+                                                        <th>Observación</th>
+                                                        <th>Usuario</th>
+                                                        <th>Fecha</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for historia in serie.serie_cambio.HistorialEstadoSerie_serie.all %} 
+                                                    <tr>
+                                                        <td>{{ historia.id }}</td>
+                                                        <td>{{ historia.estado_serie }}</td>
+                                                        <td>
+                                                            {% if historia.falla_material %}
+                                                            {{ historia.falla_material }}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if historia.solucion %}
+                                                            {{ historia.solucion }}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if historia.observacion %}
+                                                            {{ historia.observacion }}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>{{ historia.updated_by|nombre_usuario }}</td>
+                                                        <td>{{ historia.created_at|date:'d/m/Y H:i' }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

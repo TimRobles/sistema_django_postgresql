@@ -149,6 +149,10 @@ class ControlCalidadReclamoGarantia(models.Model):
         verbose_name_plural = 'Control Calidad Reclamos Garantia'
 
     @property
+    def fecha(self):
+        return self.ingreso_reclamo_garantia.fecha_ingreso
+
+    @property
     def sociedad(self):
         return self.ingreso_reclamo_garantia.sociedad
 
@@ -228,6 +232,10 @@ class SalidaReclamoGarantia(models.Model):
     class Meta:
         verbose_name = 'Salida Reclamo Garantia'
         verbose_name_plural = 'Salida Reclamos Garantia'
+
+    @property
+    def fecha(self):
+        return self.fecha_salida
 
     @property
     def sociedad(self):
