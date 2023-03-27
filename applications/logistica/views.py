@@ -1980,7 +1980,7 @@ class NotaSalidaSeriesPdf(View):
         if series:
             series_unicas = series.order_by('id_registro', 'serie_base').distinct()
         
-        texto_cabecera = 'La empresa MULTICABLE PERU SAC certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:'
+        texto_cabecera = '''La empresa '%s' certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:''' %(obj.sociedad.razon_social)
         
         series_final = {}
         for serie in series_unicas:
