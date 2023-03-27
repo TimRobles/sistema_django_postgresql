@@ -15,6 +15,7 @@ from .forms import(
     ReciboBoletaPagoActualizarForm,
     ServicioForm,
     ReciboServicioForm,
+    TelecreditoForm,
     TipoServicioForm,
     InstitucionForm,
     MedioPagoForm,
@@ -29,6 +30,7 @@ from .models import(
     ReciboBoletaPago,
     Servicio,
     ReciboServicio,
+    Telecredito,
     TipoServicio,
     Institucion,
     MedioPago,
@@ -881,3 +883,128 @@ class MedioPagoUpdateView(BSModalUpdateView):
         context['titulo'] = "Medio de Pago"
         return context
 
+
+#---------------------------------------------------------------------------------
+
+class TelecreditoListView(TemplateView):
+    template_name = "contabilidad/telecredito/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoListView, self).get_context_data(**kwargs)
+        telecredito = Telecredito.objects.all()
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(telecredito) > objectsxpage:
+            paginator = Paginator(telecredito, objectsxpage)
+            page_number = self.request.GET.get('page')
+            telecredito = paginator.get_page(page_number)
+
+        context['contexto_telecredito'] = telecredito
+        context['contexto_pagina'] = telecredito
+        context['contexto_filtro'] = '?'
+        return context
+
+
+def TelecreditoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'contabilidad/telecredito/inicio_tabla.html'
+        context = {}
+        telecredito = Telecredito.objects.all()
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(telecredito) > objectsxpage:
+            paginator = Paginator(telecredito, objectsxpage)
+            page_number = request.GET.get('page')
+            telecredito = paginator.get_page(page_number)
+
+        context['contexto_telecredito'] = telecredito
+        context['contexto_pagina'] = telecredito
+        context['contexto_filtro'] = '?'
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class TelecreditoCreateView(BSModalCreateView):
+    model = Telecredito
+    template_name = "includes/formulario generico.html"
+    form_class = TelecreditoForm
+    success_url = reverse_lazy('contabilidad_app:telecredito_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Telecrédito"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+
+class TelecreditoUpdateView(BSModalUpdateView):
+    model = Telecredito
+    template_name = "contabilidad/telecredito/form.html"
+    form_class = TelecreditoForm
+    success_url = reverse_lazy('contabilidad_app:telecredito_inicio')
+       
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Telecrédito"
+        return context
+
+
+class TelecreditoRecibosListView(TemplateView):
+    template_name = "contabilidad/telecredito/detalle.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRecibosListView, self).get_context_data(**kwargs)
+        telecredito_recibos = ReciboBoletaPago.objects.filter(
+            content_type=ContentType.objects.get_for_model(Telecredito), 
+            id_registro = self.kwargs['pk']
+            )
+        context['contexto_telecredito_recibos'] = telecredito_recibos
+        return context
+
+
+
+# class AjusteInventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
+#     permission_required = ('logistica.view_ajusteinventariomaterial')
+
+#     model = AjusteInventarioMateriales
+#     template_name = "logistica/ajuste_inventario_materiales/detalle.html"
+#     context_object_name = 'contexto_ajuste_inventario_materiales_detalle'
+
+#     def get_context_data(self, **kwargs):
+#         ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id = self.kwargs['pk'])
+#         context = super(AjusteInventarioMaterialesDetailView, self).get_context_data(**kwargs)
+#         context['ajuste_inventario_materiales_detalle'] = AjusteInventarioMaterialesDetalle.objects.filter(ajuste_inventario_materiales = ajuste_inventario_materiales)
+#         return context
+
+
+# def AjusteInventarioMaterialesDetailTabla(request, pk):
+#     data = dict()
+#     if request.method == 'GET':
+#         template = 'logistica/ajuste_inventario_materiales/detalle_tabla.html'
+#         context = {}
+#         ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id = pk)
+#         context['contexto_ajuste_inventario_materiales_detalle'] = ajuste_inventario_materiales
+#         context['ajuste_inventario_materiales_detalle'] = AjusteInventarioMaterialesDetalle.objects.filter(ajuste_inventario_materiales = ajuste_inventario_materiales)
+        
+#         data['table'] = render_to_string(
+#             template,
+#             context,
+#             request=request
+#         )
+#         return JsonResponse(data)

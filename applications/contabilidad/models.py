@@ -265,7 +265,7 @@ class Telecredito(models.Model):
     numero = models.CharField('Numero', max_length=50, blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
     fecha_emision = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
-    fecha_cobro = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
+    fecha_cobro = models.DateField('Fecha de Cobro', auto_now=False, auto_now_add=False, blank=True, null=True)
     foto = models.FileField('Foto', null=True)
     monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='Telecredito_usuario')
@@ -280,6 +280,10 @@ class Telecredito(models.Model):
     class Meta:
         verbose_name = 'Telecredito'
         verbose_name_plural = 'Telecreditos'
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     def __str__(self):
         return str(id)

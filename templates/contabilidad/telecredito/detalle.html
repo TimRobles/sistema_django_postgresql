@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Telecrédito - Recibos de Pagos
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'contabilidad/telecredito/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

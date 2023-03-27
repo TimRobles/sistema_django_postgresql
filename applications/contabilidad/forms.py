@@ -16,6 +16,7 @@ from .models import (
     ReciboBoletaPago,
     Servicio,
     ReciboServicio,
+    Telecredito,
     TipoServicio,
     Institucion,
     MedioPago,
@@ -326,6 +327,35 @@ class MedioPagoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(MedioPagoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TelecreditoForm(BSModalModelForm):
+    class Meta:
+        model = Telecredito
+        fields = (
+            'banco',
+            'concepto',
+            'numero',
+            'monto',
+            'moneda',
+            'fecha_emision',
+            'usuario',
+            'sociedad',
+            )
+
+        widgets = {
+            'fecha_emision' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(TelecreditoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

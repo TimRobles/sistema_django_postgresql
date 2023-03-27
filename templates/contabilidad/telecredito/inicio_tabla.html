@@ -1,0 +1,41 @@
+
+{% load funciones_propias %}
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Número</th>
+            <th>Usuario</th>
+            <th>Monto</th>
+            <th>Moneda</th>
+            <th>Fecha Emisión</th>
+        
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for telecredito in contexto_telecredito %}
+        <tr>
+            <td>{{ telecredito.sociedad }}</td>
+            <td>{{ telecredito.numero }}</td>
+            <td>{{ telecredito.usuario }}</td>
+            <td>{{ telecredito.monto|redondear|intcomma }}</td>
+            <td>{{ telecredito.moneda }}</td>
+            <td>{{ telecredito.fecha_emision }}</td>
+
+            <td>
+                <button data-form-url="{% url 'contabilidad_app:telecredito_actualizar' telecredito.id %}"
+                    data-table-url="{% url 'contabilidad_app:telecredito_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
