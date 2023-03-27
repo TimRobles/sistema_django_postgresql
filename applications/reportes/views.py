@@ -80,7 +80,7 @@ class ReporteContador(TemplateView):
                 MAX(cc.numero_documento) AS ruc,
                 CONCAT(MAX(dgsc2.serie), '-', MAX(lpad(CAST(cvf.numero_factura AS TEXT), 6, '0'))) AS factura_modifica,
                 '' AS obs,
-                STRING_AGG(CAST(nncd.cantidad AS TEXT), ' | ') AS cantidad,
+                STRING_AGG(CAST(ROUND(nncd.cantidad, 2) AS TEXT), ' | ') AS cantidad,
                 STRING_AGG(mm.descripcion_corta, ' | ') AS productos,
                 STRING_AGG(CAST(ROUND(nncd.precio_unitario_sin_igv, 2) AS TEXT), ' | ') AS precios,
                 MAX(nnc.descuento_global) AS dscto_global,
