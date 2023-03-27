@@ -66,9 +66,10 @@ RELLENO_MP = PatternFill(start_color='8FC6EA', end_color='8FC6EA', fill_type='so
 RELLENO_MP_MC = PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')
 
 def rellenoSociedad(id_sociedad):
-    if id_sociedad==True and id_sociedad != 'None':
-        color_sociedad = str(DICT_SOCIEDAD[id_sociedad].color)[1:]
-        return PatternFill(start_color=color_sociedad, end_color=color_sociedad, fill_type='solid')
+    if id_sociedad != 'None':
+        if id_sociedad:
+            color_sociedad = str(DICT_SOCIEDAD[id_sociedad].color)[1:]
+            return PatternFill(start_color=color_sociedad, end_color=color_sociedad, fill_type='solid')
     else:
         return PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')
 
