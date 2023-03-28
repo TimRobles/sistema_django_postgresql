@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from applications.importaciones import*
 from applications.funciones import registrar_excepcion
-from .models import Requerimiento, RequerimientoDocumento, RequerimientoDocumentoDetalle, RequerimientoVueltoExtra
-from applications.caja_chica.forms import RequerimientoAprobarForm, RequerimientoDocumentoDetalleForm, RequerimientoDocumentoForm, RequerimientoForm, RequerimientoRechazarForm, RequerimientoRechazarRendicionForm
+from .models import Requerimiento, RequerimientoDocumento, RequerimientoDocumentoDetalle, RequerimientoVueltoExtra, CajaChica
+from applications.caja_chica.forms import RequerimientoAprobarForm, RequerimientoDocumentoDetalleForm, RequerimientoDocumentoForm, RequerimientoForm, RequerimientoRechazarForm, RequerimientoRechazarRendicionForm, CajaChicaCrearForm
 
 
 class RequerimientoListView(PermissionRequiredMixin, ListView):
@@ -635,3 +635,72 @@ class RequerimientoDocumentoDetalleDeleteView(PermissionRequiredMixin, BSModalDe
         context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
+
+
+#__CajaChica___________________________________________________________________________
+
+class CajaChicaListView(ListView):
+    model = CajaChica
+    template_name = "caja_chica/caja_chica/inicio.html"
+    context_object_name = 'contexto_caja_chica'
+    
+
+def CajaChicaTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'caja_chica/caja_chica/inicio_tabla.html'
+        context = {}
+        context['contexto_caja_chica'] = CajaChica.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class CajaChicaCreateView(BSModalCreateView):
+    model = CajaChica
+    template_name = "includes/formulario generico.html"
+    form_class = CajaChicaCrearForm
+    success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaCreateView, self).get_context_data(**kwargs)
+        context['accion']="Crear"
+        context['titulo']="Caja Chica"
+        return context
+
+class CajaChicaUpdateView(BSModalUpdateView):
+    model = CajaChica
+    template_name = "includes/formulario generico.html"
+    form_class = CajaChicaCrearForm
+    success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo'] = "Caja Chica"
+        return context
+
+class CajaChicaDeleteView(BSModalDeleteView):
+    model = CajaChica
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo'] = "Caja Chica"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+    

@@ -31,4 +31,11 @@ urlpatterns = [
     path('requerimiento/documento/detalle/crear/<pk>/', views.RequerimientoDocumentoDetalleCreateView.as_view(), name='requerimiento_documento_detalle_crear'),
     path('requerimiento/documento/detalle/actualizar/<pk>/', views.RequerimientoDocumentoDetalleUpdateView.as_view(), name='requerimiento_documento_detalle_actualizar'),
     path('requerimiento/documento/detalle/eliminar/<pk>/', views.RequerimientoDocumentoDetalleDeleteView.as_view(), name='requerimiento_documento_detalle_eliminar'),
+
+    path('caja-chica/', views.CajaChicaListView.as_view(), name='caja_chica_inicio'),
+    path('caja-chica-tabla/', views.CajaChicaTabla, name='caja_chica_tabla'),
+    path('caja-chica/crear/', views.CajaChicaCreateView.as_view(), name='caja_chica_crear'),
+    path('caja-chica/actualizar/<pk>/', views.CajaChicaUpdateView.as_view(), name='caja_chica_actualizar'),
+    path('caja-chica/eliminar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_eliminar'),
+
 ]

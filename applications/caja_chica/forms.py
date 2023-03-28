@@ -179,3 +179,24 @@ class RequerimientoDocumentoDetalleForm(BSModalModelForm):
         for field in self.fields:
             self.fields[field].required = True
         self.fields['foto'].required = False
+
+
+class CajaChicaCrearForm(BSModalModelForm):
+    class Meta:
+        model = CajaChica
+        fields = (
+            'month', 
+            'usuario', 
+            'saldo_inicial', 
+            'moneda', 
+            'saldo_inicial_caja_chica', 
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CajaChicaCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['usuario'].required = True
+        self.fields['saldo_inicial_caja_chica'].required = False
+
+
