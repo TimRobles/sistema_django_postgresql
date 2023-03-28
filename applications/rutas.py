@@ -7,3 +7,5 @@ ARCHIVO_RECEPCION_COMPRA_ARCHIVO = 'file/recepcion compra/archivo recepcion comp
 FOTO_RECEPCION_COMPRA_FOTO = 'img/recepcion compra/foto recepcion compra/'
 ORDEN_COMPRA_CONFIRMACION = 'file/confirmacion_venta/orden_compra/'
 INGRESO_VOUCHER = 'img/ingreso/voucher/'
+REQUERIMIENTO_VOUCHER = 'file/caja_chica/requerimiento/documento/'
+REQUERIMIENTO_FOTO_PRODUCTO = 'img/caja chica/requerimiento/producto/'

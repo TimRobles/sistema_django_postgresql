@@ -12,7 +12,7 @@
         {% for recibo_boleta_pago in contexto_recibo_boleta_pago %}
         <tr>
             <td>{{ recibo_boleta_pago.fecha_pagar|date:'d/m/Y' }}</td>
-            <td>{{ recibo_boleta_pago.boleta_pago.datos_planilla.usuario.first_name}} {{ recibo_boleta_pago.boleta_pago.datos_planilla.usuario.last_name}} - {{ recibo_boleta_pago.boleta_pago.get_month_display }} - {{ recibo_boleta_pago.get_tipo_pago_display}}</td>
+            <td>{{ recibo_boleta_pago.boleta_pago.get_month_display }} - {{ recibo_boleta_pago.boleta_pago.year }} - {{ recibo_boleta_pago.get_tipo_pago_display}} - {{ recibo_boleta_pago.boleta_pago.datos_planilla.usuario.first_name}} {{ recibo_boleta_pago.boleta_pago.datos_planilla.usuario.last_name}} </td>
             <td>{{ recibo_boleta_pago.fecha_pago|date:'d/m/Y' }}</td>
             <td>{{ recibo_boleta_pago.created_by}}</td>
             <td>
@@ -23,6 +23,11 @@
                     data-modal="modal-xl"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'contabilidad_app:recibo_boleta_pago_eliminar' recibo_boleta_pago.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi-x-lg"></i>
                 </button>
             </td>
 

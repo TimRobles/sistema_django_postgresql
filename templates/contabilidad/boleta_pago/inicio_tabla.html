@@ -22,6 +22,13 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+
+                <button data-form-url="{% url 'contabilidad_app:boleta_pago_eliminar' boleta_pago.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi-x-lg"></i>
+                </button>                
+
             </td>
         </tr>
         {% endfor %}

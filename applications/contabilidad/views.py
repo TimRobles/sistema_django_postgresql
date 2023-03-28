@@ -365,38 +365,29 @@ class BoletaPagoUpdateView(BSModalUpdateView):
     form_class = BoletaPagoActualizarForm
     success_url = reverse_lazy('contabilidad_app:boleta_pago_inicio')
 
-    # def get_success_url(self, **kwargs):
-    #     return reverse_lazy('contabilidad_app:boleta_pago_inicio', kwargs={'pk': self.kwargs['boleta_id']})
-
-    # def form_valid(self, form):
-    #     registro_guardar(form.instance, self.request)
-    #     return super().form_valid(form)
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
     
-
-    def get_form_kwargs(self):
-        kwargs = super(BoletaPagoUpdateView, self).get_form_kwargs()
-        # essalud = EsSalud.objects.all() #Cuál es el filtro???????
-        # porcentaje = essalud.porcentaje
-        boleta = BoletaPago.objects.get(id=self.kwargs['pk'])
-        fondo = boleta.datos_planilla.fondo_pensiones.id
-        comision = ComisionFondoPensiones.objects.get(fondo_pensiones=fondo)
-        prima = comision.prima_seguro
-        aporte_obligatorio = comision.aporte_obligatorio
-        comision_flujo = comision.comision_flujo
-        comision_flujo_mixta = comision.comision_flujo_mixta
-        
-        kwargs['boleta'] = boleta
-        kwargs['prima'] = prima
-        kwargs['aporte_obligatorio'] = aporte_obligatorio
-        kwargs['comision_flujo'] = comision_flujo
-        kwargs['comision_flujo_mixta'] = comision_flujo_mixta
-
-        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(BoletaPagoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = 'Actualizar'
         context['titulo'] = 'Boleta de Pago'
+        return context
+
+class BoletaPagoDeleteView(BSModalDeleteView):
+    model = BoletaPago
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:boleta_pago_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(BoletaPagoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Boleta'
+        context['item'] = self.get_object()
         return context
 #---------------------------------------------------------------------------------
 
@@ -473,6 +464,20 @@ class ReciboBoletaPagoUpdateView(BSModalUpdateView):
         context = super(ReciboBoletaPagoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Recibo Boleta de Pago"
+        return context
+
+class ReciboBoletaPagoDeleteView(BSModalDeleteView):
+    model = ReciboBoletaPago
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:boleta_pago_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(ReciboBoletaPagoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Recibo'
+        context['item'] = self.get_object()
         return context
 
 #---------------------------------------------------------------------------------
@@ -627,6 +632,20 @@ class ReciboServicioUpdateView(BSModalUpdateView):
         context = super(ReciboServicioUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Recibo Servicio"
+        return context
+
+class ReciboServicioDeleteView(BSModalDeleteView):
+    model = ReciboServicio
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:recibo_servicio_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(ReciboServicioDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Recibo de Servicio'
+        context['item'] = self.get_object()
         return context
 
 

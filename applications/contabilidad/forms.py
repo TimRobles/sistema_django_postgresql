@@ -179,23 +179,7 @@ class BoletaPagoActualizarForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
-        boleta = kwargs.pop('boleta')
-        prima = kwargs.pop('prima')
-        aporte_obligatorio = kwargs.pop('aporte_obligatorio')
-        comision_flujo = kwargs.pop('comision_flujo')
-        comision_flujo_mixta = kwargs.pop('comision_flujo_mixta')
-        print('************************************')
-        print(prima)
-        print(aporte_obligatorio)
-        print(comision_flujo)
-        print(comision_flujo_mixta)
-        print('************************************')
-
         super(BoletaPagoActualizarForm, self).__init__(*args, **kwargs)
-        self.fields['prima_seguro'].initial = prima
-        self.fields['aporte_obligatorio'].initial = aporte_obligatorio
-        self.fields['comision_porcentaje'].initial = comision_flujo_mixta
-
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -229,12 +213,6 @@ class ReciboBoletaPagoActualizarForm(BSModalModelForm):
             'fecha_pagar',
             'tipo_pago',
             'monto',
-            'redondeo',
-            'monto_pagado',
-            'voucher',
-            'fecha_pago',
-            'content_type',
-            'id_registro',
             )
         widgets = {
             'fecha_pagar' : forms.DateInput(

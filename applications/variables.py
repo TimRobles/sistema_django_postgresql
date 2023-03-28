@@ -421,6 +421,13 @@ MENSAJE_CONCLUIR_TRASPASO_STOCK = 'Operación exitosa: El Traspaso Stock fue con
 MENSAJE_GENERAR_DOCUMENTO_AJUSTE_INVENTARIO = 'Operación exitosa: Inventario Materiales fue concluido. Documento de Ajuste de Inventario generado'
 MENSAJE_AJUSTE_INVENTARIO_MATERIALES = 'Operación exitosa: Ajuste Inventario Materiales fue concluido.'
 MENSAJE_CONCLUIR_TRANSFORMACION_PRODUCTOS = 'Operación exitosa: La Transformacion de productos fue concluido.'
+MENSAJE_SOLICITAR_REQUERIMIENTO = 'Operación exitosa: El Requerimiento fue Solicitado.'
+MENSAJE_EDITAR_REQUERIMIENTO = 'Operación exitosa: El Requerimiento paso a estado Borrador.'
+MENSAJE_RETROCEDER_REQUERIMIENTO = 'Operación exitosa: El Requerimiento paso a estado Solicitado.'
+MENSAJE_FINALIZAR_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición del Requerimiento finalizó.'
+MENSAJE_APROBAR_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición del Requerimiento fue aprobada.'
+MENSAJE_EDITAR_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición del Requerimiento paso a estado Requerimiento Aprobado.'
+MENSAJE_RETROCEDER_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición del Requerimiento paso a estado Revisar Rendición.'
 
 COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY
