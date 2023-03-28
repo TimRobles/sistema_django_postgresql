@@ -1,0 +1,50 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Concepto</th>
+            <th>Moneda</th>
+            <th>Monto Cheque</th>
+            <th>Usuario</th>
+            <th>Sociedad</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cheque in contexto_cheques %}
+        <tr>
+            <td>{{ cheque.concepto}}</td>
+            <td>{{ cheque.moneda}}</td>
+            <td>{{ cheque.monto_cheque}}</td>
+            <td>
+                {% if cheque.usuario.first_name %}
+                    {{ cheque.usuario.first_name}} {{ cheque.usuario.last_name}}
+                {% else %}
+                    {{ cheque.usuario }}
+                {% endif %}
+            </td>
+            <td>{{ cheque.sociedad}}</td>
+            <td>{{ cheque.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'contabilidad_app:cheque_actualizar' cheque.id %}"
+                    data-table-url="{% url 'contabilidad_app:cheque_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'contabilidad_app:cheque_eliminar' cheque.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>   
+                <a href="{% url 'contabilidad_app:cheque_detalle' cheque.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
