@@ -477,10 +477,3 @@ ESTADOS_NOTA_CALIDAD_STOCK = (
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
 
 CHOICE_VACIO = ((None, '-----------------'),)
-
-CONDICIONES_GARANTIA = [
-    "Condición 1",
-    "Condición 2",
-    "Condición 3",
-    "Condición 4",
-]

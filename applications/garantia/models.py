@@ -257,4 +257,18 @@ class SalidaReclamoGarantia(models.Model):
         return str(self.id)
 
 
+class CondicionesGarantia(models.Model):
+    condicion = models.CharField(max_length=500)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CondicionesGarantia_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CondicionesGarantia_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Condiciones Garantia'
+        verbose_name_plural = 'Condiciones Garantias'
+
+    def __str__(self):
+        return self.condicion
 
