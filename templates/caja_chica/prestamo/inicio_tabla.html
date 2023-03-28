@@ -1,0 +1,44 @@
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th class="text-end">Monto</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for prestamo in contexto_prestamo %}
+            <tr>
+                <td>{{ prestamo.created_at|date:'d/m/Y' }}</td>
+                <td>{{ prestamo.caja_origen }}</td>
+                <td>{{ prestamo.caja_destino }}</td>
+                <td class="text-nowrap text-end">{{ prestamo.monto }} </td>
+                <td>{{ prestamo.get_tipo_display }}</td>
+                <td>{{ prestamo.get_estado_display }}</td>
+                <td class="text-nowrap text-center">
+                    {% if prestamo.estado == 1 %}
+                        <button data-form-url="{% url 'caja_chica_app:prestamo_actualizar' prestamo.id %}"
+                            data-table-url="{% url 'caja_chica_app:prestamo_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'caja_chica_app:prestamo_eliminar' prestamo.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

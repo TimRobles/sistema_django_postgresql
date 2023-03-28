@@ -38,4 +38,10 @@ urlpatterns = [
     path('caja-chica/actualizar/<pk>/', views.CajaChicaUpdateView.as_view(), name='caja_chica_actualizar'),
     path('caja-chica/eliminar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_eliminar'),
 
+    path('prestamo/', views.CajaChicaPrestamoListView.as_view(), name='prestamo_inicio'),
+    path('prestamo-tabla/', views.CajaChicaPrestamoTabla, name='prestamo_tabla'),
+    path('prestamo/crear/', views.CajaChicaPrestamoCreateView.as_view(), name='prestamo_crear'),
+    path('prestamo/actualizar/<pk>/', views.CajaChicaPrestamoUpdateView.as_view(), name='prestamo_actualizar'),
+    path('prestamo/eliminar/<pk>/', views.CajaChicaPrestamoDeleteView.as_view(), name='prestamo_eliminar'),
+
 ]

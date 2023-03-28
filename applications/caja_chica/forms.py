@@ -200,3 +200,32 @@ class CajaChicaCrearForm(BSModalModelForm):
         self.fields['saldo_inicial_caja_chica'].required = False
 
 
+class CajaChicaPrestamoCrearForm(BSModalModelForm):
+    class Meta:
+        model = CajaChicaPrestamo
+        fields = (
+            'fecha', 
+            'caja_origen',
+            'caja_destino',
+            'monto',
+            'tipo',
+            'devolucion',
+            )
+        
+        widgets = {
+            'fecha': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CajaChicaPrestamoCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['devolucion'].required = False
+
+

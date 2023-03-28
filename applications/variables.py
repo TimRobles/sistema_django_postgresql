@@ -368,7 +368,7 @@ TIPO_PRESTAMO = (
 
 ESTADO_PRESTAMO = (
     (1, 'PRESTADO'),
-    (1, 'DEVUELTO'),
+    (2, 'DEVUELTO'),
     )
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
