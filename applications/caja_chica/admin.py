@@ -88,7 +88,102 @@ class RequerimientoDocumentoDetalleAdmin(admin.ModelAdmin):
         'updated_at',
         'updated_by',
         )
-    
+
+
+@admin.register(CajaChica)
+class CajaChicaAdmin(admin.ModelAdmin):
+    list_display = (
+        'saldo_inicial',
+        'moneda',
+        'saldo_inicial_caja_chica',
+        'year',
+        'month',
+        'ingresos',
+        'egresos',
+        'saldo_final',
+        'usuario',
+        'estado',
+        'created_at',
+        'created_by',  
+        'updated_at',  
+        'updated_by',  
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(CajaChicaSalida)
+class CajaChicaSalidaAdmin(admin.ModelAdmin):
+    list_display = (
+        'concepto',
+        'fecha',
+        'monto',
+        'caja_chica',
+        'usuario',
+        'created_at',
+        'created_by',  
+        'updated_at',  
+        'updated_by',  
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(ReciboCajaChica)
+class ReciboCajaChicaAdmin(admin.ModelAdmin):
+    list_display = (
+        'concepto',
+        'fecha',
+        'monto',
+        'moneda',
+        'redondeo',
+        'monto_pagado',
+        'fecha_pago',
+        'caja_chica',
+        'estado',
+        'created_at',
+        'created_by',  
+        'updated_at',  
+        'updated_by',  
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(CajaChicaPrestamo)
+class CajaChicaPrestamoAdmin(admin.ModelAdmin):
+    list_display = (
+        'fecha',
+        'caja_origen',
+        'caja_destino',
+        'monto',
+        'tipo',
+        'devolucion',
+        'estado',
+        'created_at',
+        'created_by',  
+        'updated_at',  
+        'updated_by',  
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+
+
 admin.site.register(Requerimiento, RequerimientoAdmin)
 admin.site.register(RequerimientoVueltoExtra, RequerimientoVueltoExtraAdmin)
 admin.site.register(RequerimientoDocumento, RequerimientoDocumentoAdmin)

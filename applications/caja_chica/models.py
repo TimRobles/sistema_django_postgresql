@@ -6,6 +6,11 @@ from applications.datos_globales.models import Moneda, Unidad
 from applications.sociedad.models import Sociedad
 from applications.rutas import REQUERIMIENTO_FOTO_PRODUCTO, REQUERIMIENTO_VOUCHER
 
+from datetime import datetime
+from django.core.validators import MaxValueValidator, MinValueValidator
+from applications.variables import MESES, ESTADOS, TIPO_PRESTAMO, ESTADO_PRESTAMO
+
+
 class Requerimiento(models.Model):
     ESTADO_CHOICES = (
         (1, 'BORRADOR'),
@@ -132,3 +137,94 @@ class RequerimientoDocumentoDetalle(models.Model):
         texto.append(self.producto)
         texto.append(str(self.documento_requerimiento.id))
         return " ".join(texto)
+
+
+class CajaChica(models.Model):
+    saldo_inicial = models.DecimalField('Saldo Inicial', max_digits=7, decimal_places=2)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
+    saldo_inicial_caja_chica = models.OneToOneField('self', on_delete=models.PROTECT, null=True)
+    year = models.IntegerField('Año', validators=[MinValueValidator(2015),MaxValueValidator(datetime.now().year)], default=datetime.now().year ,blank=True, null=True)
+    month = models.IntegerField('Mes',choices=MESES, blank=True, null=True)
+    ingresos = models.DecimalField('Ingresos', max_digits=7, decimal_places=2, default=0)
+    egresos = models.DecimalField('Egresos', max_digits=7, decimal_places=2, default=0)
+    saldo_final = models.DecimalField('Saldo Inicial', max_digits=5, decimal_places=2, default=0)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='CajaChica_usuario')
+    estado = models.IntegerField(choices=ESTADOS, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChica_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChica_updated_by', editable=False)
+    
+
+    class Meta:
+        verbose_name = 'Caja Chica'
+        verbose_name_plural = 'Cajas Chicas'
+
+    def __str__(self):
+        return "%s. %s  - %s - %s - %s" % (self.moneda.simbolo, self.saldo_inicial, self.get_month_display(), self.get_estado_display(), self.usuario.username ) 
+
+class CajaChicaSalida(models.Model):
+    concepto = models.CharField('Concepto Salida', max_length=50, null=True)
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
+    caja_chica = models.ForeignKey(CajaChica, on_delete=models.PROTECT, null=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='CajaChicaSalida_usuario')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChicaSalida_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChicaSalida_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Caja Chica Salida'
+        verbose_name_plural = 'Caja Chica Salidas'
+
+    def __str__(self):
+        return str(self.id)
+
+class CajaChicaPrestamo(models.Model):
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
+    caja_origen = models.ForeignKey(CajaChica, on_delete=models.PROTECT, related_name='CajaChicaPrestamo_caja_origen')
+    caja_destino = models.ForeignKey(CajaChica, on_delete=models.PROTECT, related_name='CajaChicaPrestamo_caja_destino')
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
+    tipo = models.IntegerField(choices=TIPO_PRESTAMO, default=1)    
+    devolucion = models.OneToOneField('self', on_delete=models.PROTECT, null=True)
+    estado = models.IntegerField(choices=ESTADO_PRESTAMO, default=1)    
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChicaPrestamo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChicaPrestamo_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Caja Chica Prestamo'
+        verbose_name_plural = 'Caja Chica Prestamos'
+
+    def __str__(self):
+        return str(self.id)
+
+class ReciboCajaChica(models.Model):
+    concepto = models.CharField('Concepto Salida', max_length=50, null=True)
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
+    redondeo = models.DecimalField('Redondeo', max_digits=3, decimal_places=2, default=0)
+    monto_pagado = models.DecimalField('Monto pagado', max_digits=7, decimal_places=2, default=0)
+    fecha_pago = models.DateField('Fecha de pago', auto_now=False, auto_now_add=False)
+    # cheque = models.ForeignKey(Cheque, on_delete=models.PROTECT)
+    caja_chica = models.ForeignKey(CajaChica, on_delete=models.PROTECT, null=True)
+    estado = models.IntegerField(choices=ESTADOS, default=1)    
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboCajaChica_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboCajaChica_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Recibo Caja Chica'
+        verbose_name_plural = 'Recibos Caja Chica'
+
+    def __str__(self):
+        return str(self.id)
+

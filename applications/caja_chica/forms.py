@@ -179,3 +179,89 @@ class RequerimientoDocumentoDetalleForm(BSModalModelForm):
         for field in self.fields:
             self.fields[field].required = True
         self.fields['foto'].required = False
+
+
+class CajaChicaCrearForm(BSModalModelForm):
+    class Meta:
+        model = CajaChica
+        fields = (
+            'month', 
+            'usuario', 
+            'saldo_inicial', 
+            'moneda', 
+            'saldo_inicial_caja_chica', 
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CajaChicaCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['usuario'].required = True
+        self.fields['saldo_inicial_caja_chica'].required = False
+
+
+class CajaChicaPrestamoCrearForm(BSModalModelForm):
+    class Meta:
+        model = CajaChicaPrestamo
+        fields = (
+            'fecha', 
+            'caja_origen',
+            'caja_destino',
+            'monto',
+            'tipo',
+            'devolucion',
+            )
+        
+        widgets = {
+            'fecha': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CajaChicaPrestamoCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['devolucion'].required = False
+
+
+
+class ReciboCajaChicaCrearForm(BSModalModelForm):
+    class Meta:
+        model = ReciboCajaChica
+        fields = (
+            'concepto',
+            'fecha',
+            'monto',
+            'moneda',
+            'redondeo',
+            'monto_pagado',
+            'fecha_pago',
+            'caja_chica',
+            )
+        
+        widgets = {
+            'fecha': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+            'fecha_pago': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ReciboCajaChicaCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

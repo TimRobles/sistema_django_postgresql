@@ -31,4 +31,23 @@ urlpatterns = [
     path('requerimiento/documento/detalle/crear/<pk>/', views.RequerimientoDocumentoDetalleCreateView.as_view(), name='requerimiento_documento_detalle_crear'),
     path('requerimiento/documento/detalle/actualizar/<pk>/', views.RequerimientoDocumentoDetalleUpdateView.as_view(), name='requerimiento_documento_detalle_actualizar'),
     path('requerimiento/documento/detalle/eliminar/<pk>/', views.RequerimientoDocumentoDetalleDeleteView.as_view(), name='requerimiento_documento_detalle_eliminar'),
+
+    path('caja-chica/', views.CajaChicaListView.as_view(), name='caja_chica_inicio'),
+    path('caja-chica-tabla/', views.CajaChicaTabla, name='caja_chica_tabla'),
+    path('caja-chica/crear/', views.CajaChicaCreateView.as_view(), name='caja_chica_crear'),
+    path('caja-chica/actualizar/<pk>/', views.CajaChicaUpdateView.as_view(), name='caja_chica_actualizar'),
+    path('caja-chica/eliminar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_eliminar'),
+
+    path('prestamo/', views.CajaChicaPrestamoListView.as_view(), name='prestamo_inicio'),
+    path('prestamo-tabla/', views.CajaChicaPrestamoTabla, name='prestamo_tabla'),
+    path('prestamo/crear/', views.CajaChicaPrestamoCreateView.as_view(), name='prestamo_crear'),
+    path('prestamo/actualizar/<pk>/', views.CajaChicaPrestamoUpdateView.as_view(), name='prestamo_actualizar'),
+    path('prestamo/eliminar/<pk>/', views.CajaChicaPrestamoDeleteView.as_view(), name='prestamo_eliminar'),
+
+    path('recibo/', views.ReciboCajaChicaListView.as_view(), name='recibo_inicio'),
+    path('recibo-tabla/', views.ReciboCajaChicaTabla, name='recibo_tabla'),
+    path('recibo/crear/', views.ReciboCajaChicaCreateView.as_view(), name='recibo_crear'),
+    path('recibo/actualizar/<pk>/', views.ReciboCajaChicaUpdateView.as_view(), name='recibo_actualizar'),
+    path('recibo/eliminar/<pk>/', views.ReciboCajaChicaDeleteView.as_view(), name='recibo_eliminar'),
+
 ]
