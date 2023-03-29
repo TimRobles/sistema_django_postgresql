@@ -44,4 +44,10 @@ urlpatterns = [
     path('prestamo/actualizar/<pk>/', views.CajaChicaPrestamoUpdateView.as_view(), name='prestamo_actualizar'),
     path('prestamo/eliminar/<pk>/', views.CajaChicaPrestamoDeleteView.as_view(), name='prestamo_eliminar'),
 
+    path('recibo/', views.ReciboCajaChicaListView.as_view(), name='recibo_inicio'),
+    path('recibo-tabla/', views.ReciboCajaChicaTabla, name='recibo_tabla'),
+    path('recibo/crear/', views.ReciboCajaChicaCreateView.as_view(), name='recibo_crear'),
+    path('recibo/actualizar/<pk>/', views.ReciboCajaChicaUpdateView.as_view(), name='recibo_actualizar'),
+    path('recibo/eliminar/<pk>/', views.ReciboCajaChicaDeleteView.as_view(), name='recibo_eliminar'),
+
 ]
