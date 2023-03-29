@@ -1,5 +1,8 @@
 from django.contrib import admin
 from .models import(
+    Cheque,
+    ChequeFisico,
+    ChequeVueltoExtra,
     FondoPensiones,
     ComisionFondoPensiones,
     DatosPlanilla,
@@ -284,6 +287,77 @@ class TelecreditoAdmin(admin.ModelAdmin):
         'usuario',
         'sociedad',
         'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(Cheque)
+class ChequeAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'concepto',
+        'moneda',
+        'monto_cheque',
+        'monto_usado',
+        'redondeo',
+        'vuelto',
+        'usuario',
+        'sociedad',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(ChequeFisico)
+class ChequeFisicoAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'banco',
+        'numero',
+        'responsable',
+        'monto',
+        'fecha_emision',
+        'fecha_cobro',
+        'foto',
+        'estado',
+        'cheque',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+    
+@admin.register(ChequeVueltoExtra)
+class ChequeVueltoExtraAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'vuelto_original',
+        'vuelto_extra',
+        'moneda',
+        'tipo_cambio',
+        'cheque',
         'created_at',
         'created_by',
         'updated_at',
