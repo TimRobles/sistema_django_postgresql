@@ -9,6 +9,7 @@ from applications.material.models import Material
 from applications.usuario.models import DatosUsuario
 from applications.sociedad.models import Sociedad
 from .models import (
+    Cheque,
     ComisionFondoPensiones,
     DatosPlanilla,
     EsSalud,
@@ -329,4 +330,28 @@ class MedioPagoForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class ChequeForm(BSModalModelForm):
+    class Meta:
+        model = Cheque
+        fields = (
+            'concepto',
+            'moneda',
+            'monto_cheque',
+            'usuario',
+            'sociedad',
+            )
 
+    def clean_monto(self):
+        monto_cheque = self.cleaned_data.get('monto_cheque')
+
+        if monto_cheque  <= 0:
+            self.add_error('monto_cheque', "El monto debe ser mayor a cero.")
+    
+        return monto_cheque
+
+    def __init__(self, *args, **kwargs):
+        super(ChequeForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].required = True

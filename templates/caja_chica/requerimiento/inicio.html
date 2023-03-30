@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load funciones_propias %}
 
 {% block titulo %}
-    Requerimiento
+    Requerimientos de {{ request.user|nombre_usuario }}
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Requerimiento
+    <h3>Requerimientos de {{ request.user|nombre_usuario }}
         <button class="create badge bg-primary"
             data-form-url="{% url 'caja_chica_app:requerimiento_crear' %}"
             data-table-url="{% url 'caja_chica_app:requerimiento_tabla' %}">

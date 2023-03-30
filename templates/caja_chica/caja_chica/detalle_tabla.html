@@ -1,0 +1,32 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Estado</th>
+            <th class="text-end">Ingreso</th>
+            <th class="text-end">Egreso</th>
+            <th class="text-end">Saldo</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movimiento in movimientos %}
+            <tr>
+                <td>{{ movimiento.0|date:'d/m/Y' }}</td>
+                <td>{{ movimiento.1 }}</td>
+                <td>{{ movimiento.2 }}</td>
+                <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ movimiento.3|redondear|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ movimiento.4|redondear|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ movimiento.5|redondear|intcomma }}</td>
+                <td class="text-nowrap text-center">
+                    {% if movimiento.estado == 1 %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

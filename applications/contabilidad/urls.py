@@ -52,11 +52,18 @@ urlpatterns = [
     path('institucion/', views.InstitucionListView.as_view(), name='institucion_inicio'),
     path('institucion-tabla/', views.InstitucionTabla, name='institucion_tabla'),
     path('institucion/registrar/', views.InstitucionCreateView.as_view(), name='institucion_registrar'),
-    path('institucion/actualizar/<pk>/', views.InstitucionUpdateView.as_view(), name='institucion_actualizar'),    
+    path('institucion/actualizar/<pk>/', views.InstitucionUpdateView.as_view(), name='institucion_actualizar'),   
 
     path('medio-pago/', views.MedioPagoListView.as_view(), name='medio_pago_inicio'),
     path('medio-pago-tabla/', views.MedioPagoTabla, name='medio_pago_tabla'),
     path('medio-pago/registrar/', views.MedioPagoCreateView.as_view(), name='medio_pago_registrar'),
-    path('medio-pago/actualizar/<pk>/', views.MedioPagoUpdateView.as_view(), name='medio_pago_actualizar'),    
+    path('medio-pago/actualizar/<pk>/', views.MedioPagoUpdateView.as_view(), name='medio_pago_actualizar'),
 
+    path('cheque/', views.ChequeListView.as_view(), name='cheque_inicio'),
+    path('cheque-tabla/', views.ChequeTabla, name='cheque_tabla'),
+    path('cheque/registrar/', views.ChequeCreateView.as_view(), name='cheque_registrar'),
+    path('cheque/actualizar/<pk>/', views.ChequeUpdateView.as_view(), name='cheque_actualizar'),
+    path('cheque/eliminar/<pk>/', views.ChequeDeleteView.as_view(), name='cheque_eliminar'),
+    path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
+    path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),
 ]

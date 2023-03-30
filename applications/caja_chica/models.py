@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -28,7 +29,7 @@ class Requerimiento(models.Model):
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=4, default=1)
     concepto = models.CharField('Concepto Inicial', max_length=255)
     motivo_rechazo = models.CharField('Motivo de Rechazo', max_length=50, blank=True, null=True)
-    dato_rechazado = models.CharField('Dato Rechazado', max_length=300, blank=True, null=True)
+    dato_rechazado = models.CharField('Detalle del rechazo', max_length=300, blank=True, null=True)
     monto_final = models.DecimalField('Monto Final', max_digits=7, decimal_places=2, default=0)
     concepto_final = models.CharField('Concepto Final', max_length=255, blank=True, null=True)
     fecha_entrega = models.DateField('Fecha de Entrega', null=True)
@@ -51,6 +52,22 @@ class Requerimiento(models.Model):
         verbose_name = 'Requerimiento'
         verbose_name_plural = 'Requerimientos'
         ordering = ['estado', 'fecha', 'created_at' ]
+
+    @property
+    def vuelto_extra(self):
+        if self.RequerimientoVueltoExtra_requerimiento.all():
+            return self.RequerimientoVueltoExtra_requerimiento.all().aggregate(models.Sum('vuelto_extra'))['vuelto_extra__sum']
+        return Decimal('0.00')
+
+    @property
+    def utilizado(self):
+        if self.RequerimientoDocumento_requerimiento.all():
+            return self.RequerimientoDocumento_requerimiento.all().aggregate(models.Sum('total_requerimiento'))['total_requerimiento__sum']
+        return Decimal('0.00')
+
+    @property
+    def caja_cheque(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     def __str__(self):
         if self.concepto_final:
@@ -96,7 +113,7 @@ class RequerimientoDocumento(models.Model):
     total_requerimiento = models.DecimalField('Total en Requerimiento', max_digits=7, decimal_places=2)
     voucher = models.FileField('Documento', upload_to=REQUERIMIENTO_VOUCHER, max_length=100, blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    requerimiento = models.ForeignKey(Requerimiento, on_delete=models.CASCADE)
+    requerimiento = models.ForeignKey(Requerimiento, on_delete=models.CASCADE, related_name='RequerimientoDocumento_requerimiento')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='RequerimientoDocumento_created_by', editable=False)
@@ -131,6 +148,10 @@ class RequerimientoDocumentoDetalle(models.Model):
         verbose_name_plural = 'Documento Requerimiento Detalles'
         ordering = ['item',]
 
+    @property
+    def total(self):
+        return self.cantidad * self.precio_unitario
+
     def __str__(self):
         texto = []
         texto.append(str(self.item))
@@ -143,8 +164,8 @@ class CajaChica(models.Model):
     saldo_inicial = models.DecimalField('Saldo Inicial', max_digits=7, decimal_places=2)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     saldo_inicial_caja_chica = models.OneToOneField('self', on_delete=models.PROTECT, null=True)
-    year = models.IntegerField('Año', validators=[MinValueValidator(2015),MaxValueValidator(datetime.now().year)], default=datetime.now().year ,blank=True, null=True)
     month = models.IntegerField('Mes',choices=MESES, blank=True, null=True)
+    year = models.IntegerField('Año', validators=[MinValueValidator(2015),MaxValueValidator(datetime.now().year)], default=datetime.now().year ,blank=True, null=True)
     ingresos = models.DecimalField('Ingresos', max_digits=7, decimal_places=2, default=0)
     egresos = models.DecimalField('Egresos', max_digits=7, decimal_places=2, default=0)
     saldo_final = models.DecimalField('Saldo Inicial', max_digits=5, decimal_places=2, default=0)
@@ -160,6 +181,10 @@ class CajaChica(models.Model):
     class Meta:
         verbose_name = 'Caja Chica'
         verbose_name_plural = 'Cajas Chicas'
+
+    @property
+    def periodo(self):
+        return f"{self.get_month_display()} {self.year}"
 
     def __str__(self):
         return "%s. %s  - %s - %s - %s" % (self.moneda.simbolo, self.saldo_inicial, self.get_month_display(), self.get_estado_display(), self.usuario.username ) 

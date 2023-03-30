@@ -160,8 +160,9 @@ TIPO_VENTA= (
     )
 
 ESTADOS = (
-    (1, 'ALTA'),
-    (2, 'BAJA'),
+    (1, 'ABIERTO'),
+    (2, 'CERRADO'),
+    (3, 'USADO'),
     )
 
 ESTADOS_DOCUMENTO = (
