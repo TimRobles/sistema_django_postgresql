@@ -19,10 +19,10 @@
             <tr>
                 <td>{{ producto.item }}</td>
                 <td>{{ producto.producto }}</td>
-                <td class="text-nowrap text-end">{{ producto.cantidad|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ producto.cantidad|redondear|intcomma }}</td>
                 <td>{{ producto.unidad }}</td>
-                <td class="text-nowrap text-end">{{ producto.precio_unitario|intcomma }}</td>
-                <td class="text-nowrap text-end">{{ producto.total|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ producto.precio_unitario|redondear|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ producto.total|redondear|intcomma }}</td>
                 <td class="text-nowrap text-center">
                     <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_detalle_actualizar' producto.id %}"
                         data-table-url="{% url 'caja_chica_app:requerimiento_documento_detalle_tabla' contexto_documento_detalle.id %}"
