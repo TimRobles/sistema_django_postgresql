@@ -1,6 +1,10 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
+from applications.sociedad.models import Sociedad
+from applications.proveedores.models import Proveedor
+from applications.material.models import Material
+
 from .models import ComprobanteCompraCIDetalle, ComprobanteCompraPI, ArchivoComprobanteCompraPI
 
 class ComprobanteCompraPIForm(BSModalModelForm):
@@ -122,3 +126,25 @@ class ComprobanteCompraCIDetalleUpdateForm(BSModalModelForm):
         super(ComprobanteCompraCIDetalleUpdateForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+#_______________________
+class ComprobanteCompraPIBuscarForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    proveedor = forms.ModelChoiceField(queryset= Proveedor.objects.all(), required=False)
+    material = forms.ModelChoiceField(queryset= Material.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_proveedor = kwargs.pop('filtro_proveedor')
+        filtro_material = kwargs.pop('filtro_material')
+
+        super(ComprobanteCompraPIBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['proveedor'].initial = filtro_proveedor
+        self.fields['material'].initial = filtro_material
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+#_______________________

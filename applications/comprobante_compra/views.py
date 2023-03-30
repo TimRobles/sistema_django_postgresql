@@ -1,6 +1,7 @@
 from decimal import Decimal
+from django.core.paginator import Paginator
 from applications.cobranza.models import DeudaProveedor
-from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, ComprobanteCompraPILlegadaForm, RecepcionComprobanteCompraPIForm
+from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, ComprobanteCompraPILlegadaForm, RecepcionComprobanteCompraPIForm, ComprobanteCompraPIBuscarForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
 from applications.funciones import igv, obtener_totales, registrar_excepcion, tipo_de_cambio
 from applications.home.templatetags.funciones_propias import filename
@@ -10,16 +11,145 @@ from applications.recepcion_compra.models import RecepcionCompra
 
 # Create your views here.
 
-class ComprobanteCompraPIListView(PermissionRequiredMixin, ListView):
+# class ComprobanteCompraPIListView(PermissionRequiredMixin, ListView):
+#     permission_required = ('comprobante_compra.view_comprobantecomprapi')
+
+#     model = ComprobanteCompraPI
+#     template_name = "comprobante_compra/comprobante_compra_pi/inicio.html"
+#     context_object_name = 'contexto_comprobante_compra_pi'
+
+#     def get_queryset(self):
+#         queryset = super().get_queryset()
+#         return queryset.annotate(null_fecha_estimada_llegada=Count('fecha_estimada_llegada')).order_by('-null_fecha_estimada_llegada', '-fecha_estimada_llegada', '-fecha_comprobante')
+
+#___________________________________________________________________________
+class ComprobanteCompraPIListView(PermissionRequiredMixin, FormView):
     permission_required = ('comprobante_compra.view_comprobantecomprapi')
-
-    model = ComprobanteCompraPI
+    form_class = ComprobanteCompraPIBuscarForm
     template_name = "comprobante_compra/comprobante_compra_pi/inicio.html"
-    context_object_name = 'contexto_comprobante_compra_pi'
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.annotate(null_fecha_estimada_llegada=Count('fecha_estimada_llegada')).order_by('-null_fecha_estimada_llegada', '-fecha_estimada_llegada', '-fecha_comprobante')
+    def get_form_kwargs(self):
+        kwargs = super(ComprobanteCompraPIListView, self).get_form_kwargs()
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_proveedor'] = self.request.GET.get('proveedor')
+        kwargs['filtro_material'] = self.request.GET.get('material')
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(ComprobanteCompraPIListView,self).get_context_data(**kwargs)
+        comprobante_compra_pi = ComprobanteCompraPI.objects.all()
+
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_proveedor = self.request.GET.get('proveedor')
+        filtro_material = self.request.GET.get('material')
+
+        contexto_filtro = []
+
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            comprobante_compra_pi = comprobante_compra_pi.filter(condicion)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+            
+        if filtro_proveedor:
+            comprobante_lista = []
+            for comprobante in comprobante_compra_pi:
+                if str(comprobante.proveedor.id) == filtro_proveedor:
+                    comprobante_lista.append(comprobante.id)
+            comprobante_compra_pi = comprobante_compra_pi.filter(id__in = comprobante_lista)
+            contexto_filtro.append(f"proveedor={filtro_proveedor}")
+
+        if filtro_material:
+            comprobante_lista = []
+            for comprobante in comprobante_compra_pi:
+                detalles = comprobante.detalle
+                for detalle in detalles:
+                    if str(detalle.producto.id) == filtro_material:
+                        comprobante_lista.append(comprobante.id)
+
+            comprobante_compra_pi = comprobante_compra_pi.filter(id__in = comprobante_lista)
+            contexto_filtro.append(f"material={filtro_material}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 10 objects per page.
+
+        if len(comprobante_compra_pi) > objectsxpage:
+            paginator = Paginator(comprobante_compra_pi, objectsxpage)
+            page_number = self.request.GET.get('page')
+            comprobante_compra_pi = paginator.get_page(page_number)
+
+        context['contexto_comprobante_compra_pi'] = comprobante_compra_pi   
+        context['contexto_pagina'] = comprobante_compra_pi
+
+        return context
+
+def ComprobanteCompraPITabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'comprobante_compra/comprobante_compra_pi/inicio_tabla.html'
+        context = {}
+        comprobante_compra_pi = ComprobanteCompraPI.objects.all()
+
+        filtro_sociedad = request.GET.get('sociedad')
+        filtro_proveedor = request.GET.get('proveedor')
+        filtro_material = request.GET.get('material')
+        
+        contexto_filtro = []
+
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad)
+            comprobante_compra_pi = comprobante_compra_pi.filter(condicion)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        if filtro_proveedor:
+            condicion = Q(proveedor = filtro_proveedor)
+            comprobante_compra_pi = comprobante_compra_pi.filter(condicion)
+            contexto_filtro.append(f"proveedor={filtro_proveedor}")
+
+        if filtro_material:
+            condicion = Q(material = filtro_material)
+            comprobante_compra_pi = comprobante_compra_pi.filter(condicion)
+            contexto_filtro.append(f"material={filtro_material}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage = 10 # Show 10 objects per page.
+
+        if len(comprobante_compra_pi) > objectsxpage:
+            paginator = Paginator(comprobante_compra_pi, objectsxpage)
+            page_number = request.GET.get('page')
+            comprobante_compra_pi = paginator.get_page(page_number)
+   
+        context['contexto_comprobante_compra_pi'] = comprobante_compra_pi
+        context['contexto_pagina'] = comprobante_compra_pi
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+#____________________________________________________________________________--
+
 
 class ComprobanteCompraPIDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('comprobante_compra.view_comprobantecomprapi')
