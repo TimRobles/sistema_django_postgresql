@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 
 {% block titulo %}
-    Detalle Documento
+    Detalle Documento {{ contexto_documento_detalle }}
 {% endblock titulo %}
 
 {% block contenido %}
+    <h3>Detalle Documento {{ contexto_documento_detalle }}</h3>
     <h3>
         <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_detalle_crear' contexto_documento_detalle.id %}"
             data-table-url="{% url 'caja_chica_app:requerimiento_documento_detalle_tabla' contexto_documento_detalle.id %}"

@@ -1,0 +1,42 @@
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th class="text-end">Monto</th>
+            <th>Fecha de Pago</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recibo in contexto_recibo %}
+            <tr>
+                <td>{{ recibo.fecha|date:'d/m/Y' }}</td>
+                <td>{{ recibo.concepto }}</td>
+                <td class="text-nowrap text-end">{{ recibo.monto }} </td>
+                <td>{{ recibo.fecha_pago|date:'d/m/Y' }}</td>
+                <td>{{ recibo.get_estado_display }}</td>
+                <td class="text-nowrap text-center">
+                    {% if recibo.estado == 1 %}
+                        <button data-form-url="{% url 'caja_chica_app:recibo_actualizar' recibo.id %}"
+                            data-table-url="{% url 'caja_chica_app:recibo_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'caja_chica_app:recibo_eliminar' recibo.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

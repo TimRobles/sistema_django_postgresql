@@ -3,9 +3,11 @@ from .import views
 
 app_name = 'caja_chica_app'
 
-urlpatterns = [
+url_requerimiento = [
     path('requerimiento/', views.RequerimientoListView.as_view(), name='requerimiento_inicio'),
     path('requerimiento-tabla/', views.RequerimientoTabla, name='requerimiento_tabla'),
+    path('requerimiento-recibido/', views.RequerimientoRecibidoListView.as_view(), name='requerimiento_recibido_inicio'),
+    path('requerimiento-recibido-tabla/', views.RequerimientoRecibidoTabla, name='requerimiento_recibido_tabla'),
     path('requerimiento/crear/', views.RequerimientoCreateView.as_view(), name='requerimiento_crear'),
     path('requerimiento/actualizar/<pk>/', views.RequerimientoUpdateView.as_view(), name='requerimiento_actualizar'),
     path('requerimiento/eliminar/<pk>/', views.RequerimientoDeleteView.as_view(), name='requerimiento_eliminar'),
@@ -22,6 +24,10 @@ urlpatterns = [
     path('requerimiento/detalle/<pk>/', views.RequerimientoDetalleView.as_view(), name='requerimiento_detalle'),
     path('requerimiento/detalle-tabla/<pk>', views.RequerimientoDetalleTabla, name='requerimiento_detalle_tabla'),
 
+    path('requerimiento/vuelto-extra/agregar/<int:requerimiento_id>/', views.RequerimientoVueltoExtraCreateView.as_view(), name='requerimiento_vuelto_extra_agregar'),
+    path('requerimiento/vuelto-extra/editar/<pk>/', views.RequerimientoVueltoExtraUpdateView.as_view(), name='requerimiento_vuelto_extra_editar'),
+    path('requerimiento/vuelto-extra/eliminar/<pk>/', views.RequerimientoVueltoExtraDeleteView.as_view(), name='requerimiento_vuelto_extra_eliminar'),
+
     path('requerimiento/documento/registrar/<int:requerimiento_id>/', views.RequerimientoDocumentoCreateView.as_view(), name='requerimiento_documento_registrar'),
     path('requerimiento/documento/actualizar/<pk>/', views.RequerimientoDocumentoUpdateView.as_view(), name='requerimiento_documento_actualizar'),
     path('requerimiento/documento/eliminar/<pk>/', views.RequerimientoDocumentoDeleteView.as_view(), name='requerimiento_documento_eliminar'),
@@ -32,3 +38,26 @@ urlpatterns = [
     path('requerimiento/documento/detalle/actualizar/<pk>/', views.RequerimientoDocumentoDetalleUpdateView.as_view(), name='requerimiento_documento_detalle_actualizar'),
     path('requerimiento/documento/detalle/eliminar/<pk>/', views.RequerimientoDocumentoDetalleDeleteView.as_view(), name='requerimiento_documento_detalle_eliminar'),
 ]
+
+url_caja_chica = [
+    path('caja-chica/', views.CajaChicaListView.as_view(), name='caja_chica_inicio'),
+    path('caja-chica-tabla/', views.CajaChicaTabla, name='caja_chica_tabla'),
+    path('caja-chica/crear/', views.CajaChicaCreateView.as_view(), name='caja_chica_crear'),
+    path('caja-chica/actualizar/<pk>/', views.CajaChicaUpdateView.as_view(), name='caja_chica_actualizar'),
+    path('caja-chica/eliminar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_eliminar'),
+    path('caja-chica/detalle/<pk>/', views.CajaChicaDetalleView.as_view(), name='caja_chica_detalle'),
+
+    path('prestamo/', views.CajaChicaPrestamoListView.as_view(), name='prestamo_inicio'),
+    path('prestamo-tabla/', views.CajaChicaPrestamoTabla, name='prestamo_tabla'),
+    path('prestamo/crear/', views.CajaChicaPrestamoCreateView.as_view(), name='prestamo_crear'),
+    path('prestamo/actualizar/<pk>/', views.CajaChicaPrestamoUpdateView.as_view(), name='prestamo_actualizar'),
+    path('prestamo/eliminar/<pk>/', views.CajaChicaPrestamoDeleteView.as_view(), name='prestamo_eliminar'),
+
+    path('recibo/', views.ReciboCajaChicaListView.as_view(), name='recibo_inicio'),
+    path('recibo-tabla/', views.ReciboCajaChicaTabla, name='recibo_tabla'),
+    path('recibo/crear/', views.ReciboCajaChicaCreateView.as_view(), name='recibo_crear'),
+    path('recibo/actualizar/<pk>/', views.ReciboCajaChicaUpdateView.as_view(), name='recibo_actualizar'),
+    path('recibo/eliminar/<pk>/', views.ReciboCajaChicaDeleteView.as_view(), name='recibo_eliminar'),
+]
+
+urlpatterns = url_requerimiento + url_caja_chica

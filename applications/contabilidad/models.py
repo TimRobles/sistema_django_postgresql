@@ -10,6 +10,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad, Banco
 from applications.variables import TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
+from applications.rutas import CONTABILIDAD_FOTO_CHEQUE
+
 class FondoPensiones(models.Model):
     nombre = models.CharField('Nombre Fondo de Pensiones', max_length=50)
 
@@ -287,3 +289,92 @@ class Telecredito(models.Model):
 
     def __str__(self):
         return str(id)
+
+
+class Cheque(models.Model):
+    ESTADO_CHEQUE = (
+        (1, 'ABIERTO'),
+        (2, 'SOLICITADO'),
+        (3, 'POR CERRAR'),
+        (4, 'CERRADO'),
+        )
+    
+    concepto = models.CharField('Concepto', max_length=50, default='Nuevo Cheque')
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
+    monto_cheque = models.DecimalField('Monto del cheque', max_digits=7, decimal_places=2, default=0)
+    monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
+    redondeo = models.DecimalField('Redondeo', max_digits=7, decimal_places=2, default=0)
+    vuelto = models.DecimalField('Vuelto', max_digits=7, decimal_places=2, default=0)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='Cheque_usuario', blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    estado = models.IntegerField('Estado', choices=ESTADO_CHEQUE, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Cheque_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Cheque_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Cheque'
+        verbose_name_plural = 'Cheques'
+        ordering = ['estado', 'concepto',]
+
+    def __str__(self):
+        if self.moneda:
+            return self.concepto + ' ' + self.usuario.username + ' ' + self.sociedad.razon_social + ' ' + self.get_estado_display() + ' ' + self.moneda.nombre
+        else:
+            return self.concepto + ' ' + self.usuario.username + ' ' + self.sociedad.razon_social + ' ' + self.get_estado_display()
+        
+
+class ChequeFisico(models.Model):
+    ESTADO_CHEQUE_FISICO = (
+        (1, 'ABIERTO'),
+        (2, 'SOLICITADO'),
+        (3, 'POR CERRAR'),
+        (4, 'CERRADO'),
+        )
+    
+    banco = models.ForeignKey(Banco, on_delete=models.PROTECT, blank=True, null=True)
+    numero = models.CharField('Número de cheque', max_length=50, blank=True, null=True)
+    responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+    monto = models.DecimalField('Monto del cheque', max_digits=7, decimal_places=2, default=0)
+    fecha_emision = models.DateField('Fecha de emisión del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_cobro = models.DateField('Fecha de cobro del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
+    foto = models.ImageField('Foto del cheque', upload_to=CONTABILIDAD_FOTO_CHEQUE, height_field=None, width_field=None, max_length=None, blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_CHEQUE_FISICO, default=1)
+    cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, related_name='ChequeFisico_cheque', blank=True, null=True)
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ChequeFisico_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ChequeFisico_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Cheque Fisico'
+        verbose_name_plural = 'Cheques Fisicos'
+
+    def __str__(self):
+        return str(self.cheque)
+
+
+class ChequeVueltoExtra(models.Model):
+    vuelto_original = models.DecimalField('Vuelto en Efectivo', max_digits=7, decimal_places=2)
+    vuelto_extra = models.DecimalField('Vuelto en Moneda del Cheque', max_digits=7, decimal_places=2)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
+    tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=6, decimal_places=4)
+    cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, related_name='ChequeVueltoExtra_cheque', blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ChequeVueltoExtra_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ChequeVueltoExtra_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Cheque Vuelto Extra'
+        verbose_name_plural = 'Cheque Vueltos Extras'
+
+    def __str__(self):
+        if self.cheque:
+            return str(self.cheque) + " " + self.moneda.simbolo + " " + str(self.vuelto_extra)
+        else:
+            return self.moneda.simbolo + " " + str(self.vuelto_extra)

@@ -7,6 +7,7 @@ from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 
 from .forms import(
+    ChequeForm,
     ComisionFondoPensionesForm,
     DatosPlanillaForm,
     DatosPlanillaDarBajaForm,
@@ -26,6 +27,7 @@ from .forms import(
 )
 
 from .models import(
+    Cheque,
     FondoPensiones,
     ComisionFondoPensiones,
     DatosPlanilla,
@@ -890,6 +892,110 @@ class MedioPagoUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
+class ChequeListView(PermissionRequiredMixin, ListView):
+    permission_required = ('contabilidad.view_cheque')
+
+    model = Cheque
+    template_name = "contabilidad/cheque/inicio.html"
+    context_object_name = 'contexto_cheques'
+    
+
+def ChequeTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'contabilidad/cheque/inicio_tabla.html'
+        context = {}
+        context['contexto_cheques'] = Cheque.objects.all()
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ChequeCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('contabilidad.add_cheque')
+    model = Cheque
+    template_name = "includes/formulario generico.html"
+    form_class = ChequeForm
+    success_url = reverse_lazy('contabilidad_app:cheque_inicio')
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeCreateView, self).get_context_data(**kwargs)
+        context['accion']="Crear"
+        context['titulo']="Cheque"
+        return context
+
+
+class ChequeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('contabilidad.change_cheque')
+    model = Cheque
+    template_name = "includes/formulario generico.html"
+    form_class = ChequeForm
+    success_url = reverse_lazy('contabilidad_app:cheque_inicio')
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(ChequeUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Cheque"
+        return context
+
+
+class ChequeDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.delete_cheque')
+    model = Cheque
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('contabilidad_app:cheque_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Cheque"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+    
+
+class ChequeDetalleView(PermissionRequiredMixin, DetailView):
+    permission_required = ('contabilidad.view_cheque')
+    model = Cheque
+    template_name = "contabilidad/cheque/detalle.html"
+    context_object_name = 'contexto_cheque_detalle'
+    
+    def get_context_data(self, **kwargs):
+        cheque = Cheque.objects.get(id = self.kwargs['pk'])
+        context = super(ChequeDetalleView, self).get_context_data(**kwargs)
+        return context
+
+
+def ChequeDetalleTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'contabilidad/cheque/detalle_tabla.html'
+        context = {}
+        cheque = Cheque.objects.get(id = pk)
+        context['contexto_cheque_detalle'] = cheque
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+#---------------------------------------------------------------------------------
+
 class TelecreditoListView(PermissionRequiredMixin, TemplateView):
     permission_required = ('contabilidad.view_telecredito')
     template_name = "contabilidad/telecredito/inicio.html"
@@ -926,14 +1032,12 @@ def TelecreditoTabla(request):
         context['contexto_telecredito'] = telecredito
         context['contexto_pagina'] = telecredito
         context['contexto_filtro'] = '?'
-
         data['table'] = render_to_string(
             template,
             context,
             request=request
         )
         return JsonResponse(data)
-
 
 class TelecreditoCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_telecredito')
@@ -964,12 +1068,12 @@ class TelecreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
-    
+
     def get_context_data(self, **kwargs):
         context = super(TelecreditoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Telecrédito"
-        return context
+        return context      
 
 
 class TelecreditoRecibosListView(PermissionRequiredMixin, TemplateView):

@@ -1,0 +1,6 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block js %}
+    <script src="{% static 'js/caja_chica/requerimiento/vuelto_extra.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}

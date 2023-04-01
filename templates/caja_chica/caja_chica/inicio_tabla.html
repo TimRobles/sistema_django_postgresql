@@ -1,0 +1,47 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Periodo</th>
+            <th>Encargado</th>
+            <th class="text-end">Saldo Inicial</th>
+            <th class="text-end">Saldo Final</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cajachica in contexto_caja_chica %}
+            <tr>
+                <td>{{ cajachica.periodo }}</td>
+                <td>{{ cajachica.usuario|nombre_usuario }}</td>
+                <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ cajachica.saldo_inicial|redondear|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ cajachica.saldo_final|redondear|intcomma }}</td>
+                <td>{{ cajachica.get_estado_display }}</td>
+                <td class="text-nowrap text-center">
+                    {% if cajachica.estado == 1 %}
+                        <button data-form-url="{% url 'caja_chica_app:caja_chica_actualizar' cajachica.id %}"
+                            data-table-url="{% url 'caja_chica_app:caja_chica_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'caja_chica_app:caja_chica_eliminar' cajachica.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        <a href="{% url 'caja_chica_app:caja_chica_detalle' cajachica.id %}"
+                        class="btn btn-info btn-sm">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    {% endif %}
+
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

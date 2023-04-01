@@ -13,6 +13,7 @@ from applications.sociedad.models import Sociedad
 
 
 from .models import(
+    CondicionesGarantia,
     IngresoReclamoGarantia,
     IngresoReclamoGarantiaDetalle,
     ControlCalidadReclamoGarantia,
@@ -49,6 +50,8 @@ from .forms import(
     SerieIngresoReclamoGarantiaDetalleForm,
     SerieIngresoReclamoGarantiaDocumentoForm,
 )
+
+CONDICIONES_GARANTIA = CondicionesGarantia.objects.values_list('condicion')
 
 
 class IngresoReclamoGarantiaListView(FormView):
@@ -2010,15 +2013,16 @@ class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
 
                     estado_serie_cambio = EstadoSerie.objects.get(numero_estado=3) #Vendido
                     movimiento_final_cambio = TipoMovimiento.objects.get(codigo=116) #Garantía, entrega del equipo
-                    HistorialEstadoSerie.objects.create(
-                        serie=control.serie_cambio,
-                        estado_serie=estado_serie_cambio,
-                        falla_material=None,
-                        solucion=None,
-                        observacion=None,
-                        created_by=self.request.user,
-                        updated_by=self.request.user,
-                    )
+                    if control.serie_cambio:
+                        HistorialEstadoSerie.objects.create(
+                            serie=control.serie_cambio,
+                            estado_serie=estado_serie_cambio,
+                            falla_material=None,
+                            solucion=None,
+                            observacion=None,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
                     movimiento_uno = MovimientosAlmacen.objects.create(
                         content_type_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
                         id_registro_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.id_registro,
@@ -2053,8 +2057,9 @@ class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
                         created_by=self.request.user,
                         updated_by=self.request.user,
                     )
-                    control.serie_cambio.serie_movimiento_almacen.add(movimiento_uno)
-                    control.serie_cambio.serie_movimiento_almacen.add(movimiento_dos)
+                    if control.serie_cambio:
+                        control.serie_cambio.serie_movimiento_almacen.add(movimiento_uno)
+                        control.serie_cambio.serie_movimiento_almacen.add(movimiento_dos)
 
                 elif control.tipo_analisis == 3: #DEVOLUCION
                     estado_serie = EstadoSerie.objects.get(numero_estado=3) #Vendido

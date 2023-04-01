@@ -1,18 +1,98 @@
 {% load humanize %}
-
+{% load funciones_propias %}
+<h3>
+    {% if contexto_requerimiento_detalle.estado == 1 %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_solicitar' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-success">
+            Solicitar
+        </button>
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_actualizar' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="update badge bg-warning">
+            Editar
+        </button>
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_eliminar' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-danger">
+            Eliminar
+        </button>
+    {% endif %}
+    {% if contexto_requerimiento_detalle.estado == 2 and contexto_requerimiento_detalle.usuario_pedido == request.user %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_aprobar' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="update badge bg-success">
+            Aprobar
+        </button>
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_rechazar' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-danger">
+            Rechazar
+        </button>
+    {% endif %}
+    {% if contexto_requerimiento_detalle.estado == 3 %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_finalizar_rendicion' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="update badge bg-success">
+            Finalizar Rendición
+        </button>
+    {% endif %}
+    {% if contexto_requerimiento_detalle.estado == 5 and contexto_requerimiento_detalle.usuario_pedido == request.user %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_aprobar_rendicion' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-success">
+            Aprobar Rendición
+        </button>
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_rechazar_rendicion' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-danger">
+            Rechazar Rendición
+        </button>
+    {% endif %}
+    {% if contexto_requerimiento_detalle.estado == 2 %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_editar' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-secondary">
+            Editar
+        </button>
+    {% endif %}
+    {% if contexto_requerimiento_detalle.estado == 3 or contexto_requerimiento_detalle.estado == 4 %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_retroceder' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-secondary">
+            Retroceder
+        </button>
+    {% endif %}
+    {% if contexto_requerimiento_detalle.estado == 5 or contexto_requerimiento_detalle.estado == 6 %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_editar_rendicion' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-secondary">
+            Editar Rendición
+        </button>
+    {% endif %}
+    {% if contexto_requerimiento_detalle.estado == 7 %}
+        <button data-form-url="{% url 'caja_chica_app:requerimiento_retroceder_rendicion' contexto_requerimiento_detalle.id %}"
+            data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+            class="delete badge bg-secondary">
+            Retroceder Rendición
+        </button>
+    {% endif %}
+    <a href="{% url 'caja_chica_app:requerimiento_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+<br>
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
                 <th>Fecha</th>
-                <th>Monto Solicitado</th>
+                <th class="text-end">Monto Solicitado</th>
                 {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 %}
-                    <th>Monto Recibido</th>
+                    <th class="text-end">Monto Recibido</th>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.estado > 4 %}
-                    <th>Monto Usado</th>
-                    <th>Redondeo</th>
-                    <th>Vuelto</th>
+                    <th class="text-end">Monto Usado</th>
+                    <th class="text-end">Redondeo</th>
+                    <th class="text-end">Vuelto Extra</th>
+                    <th class="text-end">Vuelto</th>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.concepto_final %}
                     <th>Concepto Final</th>
@@ -30,14 +110,15 @@
         <tbody>
             <tr>
                 <td>{{ contexto_requerimiento_detalle.fecha|date:'d/m/Y' }}</td>
-                <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto|intcomma }}</td>
+                <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto|redondear|intcomma }}</td>
                 {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 %}
-                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} <span id="monto">{{ contexto_requerimiento_detalle.monto_final|intcomma }}</span></td>
+                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} <span id="monto">{{ contexto_requerimiento_detalle.monto_final|redondear|intcomma }}</span></td>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.estado > 4 %}
-                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto_usado|intcomma }}</td>
-                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.redondeo|intcomma }}</td>
-                    <td>{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.vuelto|intcomma }}</td>
+                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto_usado|redondear|intcomma }}</td>
+                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.redondeo|redondear|intcomma }}</td>
+                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.vuelto_extra|redondear|intcomma }}</td>
+                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.vuelto|redondear|intcomma }}</td>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.concepto_final %}
                     <td>{{ contexto_requerimiento_detalle.concepto_final }}</td>
@@ -59,7 +140,7 @@
     <h3> Documentos
         {% if contexto_requerimiento_detalle.estado == 3 %}
             <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_registrar' contexto_requerimiento_detalle.id %}"
-                data-table-url="{% url 'caja_chica_app:requerimiento_detalle' contexto_requerimiento_detalle.id %}"
+                data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
                 class="delete badge bg-primary">
                 Registrar
             </button>
@@ -86,10 +167,11 @@
                         <td>{{ documento.numero }}</td>
                         <td>{{ documento.establecimiento }}</td>
                         <td>{{ documento.fecha|date:'d/m/Y' }}</td>
-                        <td class="text-end">{{ documento.moneda.simbolo }} {{ documento.total_documento|intcomma }}</td>
+                        <td class="text-end">{{ documento.moneda.simbolo }} {{ documento.total_documento|redondear|intcomma }}</td>
                         <td class="text-end">{{ documento.tipo_cambio }}</td>
-                        <td class="text-end">{{ documento.requerimiento.moneda.simbolo }} {{ documento.total_requerimiento|intcomma }}</td>
+                        <td class="text-end">{{ documento.requerimiento.moneda.simbolo }} {{ documento.total_requerimiento|redondear|intcomma }}</td>
                         <td class="text-nowrap text-center">
+                            {% if contexto_requerimiento_detalle.estado < 5 %}
                             <button data-form-url="{% url 'caja_chica_app:requerimiento_documento_actualizar' documento.id %}"
                                 data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
                                 data-keep-open="true"
@@ -107,6 +189,56 @@
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                                 <i class="bi bi-eye-fill"></i>
                             </a>
+                            {% endif %}
+                        </td>
+                    </tr>    
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+
+    <h3>Vueltos Extra
+        {% if contexto_requerimiento_detalle.estado == 3 %}
+            <button data-form-url="{% url 'caja_chica_app:requerimiento_vuelto_extra_agregar' contexto_requerimiento_detalle.id %}"
+                data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+                class="delete badge bg-primary">
+                Registrar
+            </button>
+        {% endif %}
+    </h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-end">Vuelto en Efectivo</th>
+                    <th class="text-end">Tipo de Cambio</th>
+                    <th class="text-end">Vuelto en el Requerimiento</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vuelto_extra in contexto_vuelto_extra %}
+                    <tr>
+                        <td class="text-end">{{ vuelto_extra.moneda.simbolo }} {{ vuelto_extra.vuelto_original|redondear|intcomma }}</td>
+                        <td class="text-end">{{ vuelto_extra.tipo_cambio }}</td>
+                        <td class="text-end">{{ vuelto_extra.requerimiento.moneda.simbolo }} {{ vuelto_extra.vuelto_extra|redondear|intcomma }}</td>
+                        <td class="text-nowrap text-center">
+                            {% if contexto_requerimiento_detalle.estado < 5 %}
+                            <button data-form-url="{% url 'caja_chica_app:requerimiento_vuelto_extra_editar' vuelto_extra.id %}"
+                                data-table-url="{% url 'caja_chica_app:requerimiento_detalle_tabla' contexto_requerimiento_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'caja_chica_app:requerimiento_vuelto_extra_eliminar' vuelto_extra.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            {% endif %}
                         </td>
                     </tr>    
                 {% endfor %}

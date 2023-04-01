@@ -6,7 +6,7 @@
         <tr>
             <th>Fecha</th>
             <th>Concepto</th>
-            <th>Pedido a</th>
+            <th>Solicitante</th>
             <th class="text-end">Monto Solicitado</th>
             <th class="text-end">Monto Recibido</th>
             <th class="text-end">Monto Usado</th>
@@ -20,7 +20,7 @@
             <tr>
                 <td>{{ requerimiento.fecha|date:'d/m/Y' }} </td>
                 <td>{{ requerimiento.concepto }}</td>
-                <td>{{ requerimiento.usuario_pedido|nombre_usuario }}</td>
+                <td>{{ requerimiento.usuario|nombre_usuario }}</td>
                 <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto|redondear|intcomma }}</td>
                 <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto_final|redondear|intcomma }}</td>
                 <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto_usado|redondear|intcomma }}</td>
@@ -29,7 +29,7 @@
                 <td class="text-nowrap text-center">
                     {% if requerimiento.estado == 1 %}
                         <button data-form-url="{% url 'caja_chica_app:requerimiento_actualizar' requerimiento.id %}"
-                            data-table-url="{% url 'caja_chica_app:requerimiento_tabla' %}"
+                            data-table-url="{% url 'caja_chica_app:requerimiento_recibido_tabla' %}"
                             data-keep-open="true"
                             class="update btn btn-warning btn-sm"
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">

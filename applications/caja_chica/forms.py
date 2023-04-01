@@ -23,23 +23,27 @@ class RequerimientoForm(BSModalModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        usuario_pedido = kwargs.pop('usuario_pedido')
         super(RequerimientoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['usuario_pedido'].required = True
+        self.fields['usuario_pedido'].queryset = usuario_pedido
 
 
 class RequerimientoAprobarForm(BSModalModelForm):
+    caja_cheque = forms.ChoiceField(label='Caja o Cheque', choices=[('0|0', '--------------------')], required=True)
+    monto_entregado = forms.DecimalField(required=False)
     class Meta:
         model = Requerimiento
         fields = (
+            'caja_cheque',
             'concepto_final',
             'fecha_entrega',
             'monto_final',
             'moneda',
-            'content_type',
-            'id_registro',
             'tipo_cambio',
+            'monto_entregado',
             )
 
         widgets = {
@@ -52,6 +56,14 @@ class RequerimientoAprobarForm(BSModalModelForm):
             ),
         }
 
+    def clean_caja_cheque(self):
+        caja_cheque = self.cleaned_data.get('caja_cheque')
+        
+        if caja_cheque == '0|0':
+            self.add_error('caja_cheque', 'Debe elegir una caja o un cheque.')
+    
+        return caja_cheque
+
     def clean_fecha_entrega(self):
         fecha_entrega = self.cleaned_data.get('fecha_entrega')
         
@@ -63,16 +75,17 @@ class RequerimientoAprobarForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         moneda = kwargs.pop('moneda')
         self.fecha = kwargs.pop('fecha')
+        caja = kwargs.pop('caja')
+        cheque = kwargs.pop('cheque')
         super(RequerimientoAprobarForm, self).__init__(*args, **kwargs)
         self.fields['moneda'].initial = moneda
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-        # for field in self.fields:
-        #     self.fields[field].required = True
         
         self.fields['moneda'].disabled = True
-        self.fields['monto_final'].required = False
-        self.fields['fecha_entrega'].required = False
+        self.fields['monto_final'].required = True
+        self.fields['fecha_entrega'].required = True
+        self.fields['caja_cheque'].choices = [('0|0', '--------------------'),] + caja + cheque
 
 
 class RequerimientoRechazarForm(BSModalModelForm):
@@ -91,6 +104,31 @@ class RequerimientoRechazarForm(BSModalModelForm):
             self.fields[field].required = True
 
 
+class RequerimientoFinalizarRendicionForm(BSModalModelForm):
+    vuelto_extra = forms.DecimalField(required=False)
+    utilizado = forms.DecimalField(required=False)
+    class Meta:
+        model = Requerimiento
+        fields = (
+            'monto_final',
+            'utilizado',
+            'redondeo',
+            'vuelto_extra',
+            'vuelto',
+            )
+
+    def __init__(self, *args, **kwargs):
+        utilizado = kwargs.pop('utilizado')
+        vuelto_extra = kwargs.pop('vuelto_extra')
+        super(RequerimientoFinalizarRendicionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].required = True
+        self.fields['utilizado'].initial = utilizado
+        self.fields['vuelto_extra'].initial = vuelto_extra
+
+
 class RequerimientoRechazarRendicionForm(BSModalModelForm):
     class Meta:
         model = Requerimiento
@@ -105,6 +143,28 @@ class RequerimientoRechazarRendicionForm(BSModalModelForm):
         for field in self.fields:
             self.fields[field].required = True
 
+
+class RequerimientoVueltoExtraForm(BSModalModelForm):
+    moneda_requerimiento = forms.ModelChoiceField(queryset=Moneda.objects.all())
+    class Meta:
+        model = RequerimientoVueltoExtra
+        fields = (
+            'vuelto_original', 
+            'moneda', 
+            'tipo_cambio', 
+            'vuelto_extra', 
+            'moneda_requerimiento', 
+            )
+
+    def __init__(self, *args, **kwargs):
+        moneda_requerimiento = kwargs.pop('moneda_requerimiento')
+        super(RequerimientoVueltoExtraForm, self).__init__(*args, **kwargs)
+        self.fields['moneda_requerimiento'].initial = moneda_requerimiento
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].required = True
+        
 
 class RequerimientoDocumentoForm(BSModalModelForm):
     moneda_requerimiento = forms.ModelChoiceField(queryset=Moneda.objects.all())
@@ -179,3 +239,92 @@ class RequerimientoDocumentoDetalleForm(BSModalModelForm):
         for field in self.fields:
             self.fields[field].required = True
         self.fields['foto'].required = False
+
+
+class CajaChicaCrearForm(BSModalModelForm):
+    class Meta:
+        model = CajaChica
+        fields = (
+            'month', 
+            'year', 
+            'saldo_inicial', 
+            'moneda', 
+            'saldo_inicial_caja_chica', 
+            )
+
+    def __init__(self, *args, **kwargs):
+        caja_chicas = kwargs.pop('caja_chicas')
+        super(CajaChicaCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['month'].required = True
+        self.fields['year'].required = True
+        self.fields['saldo_inicial_caja_chica'].required = False
+        self.fields['saldo_inicial_caja_chica'].queryset = caja_chicas
+
+
+class CajaChicaPrestamoCrearForm(BSModalModelForm):
+    class Meta:
+        model = CajaChicaPrestamo
+        fields = (
+            'fecha', 
+            'caja_origen',
+            'caja_destino',
+            'monto',
+            'tipo',
+            'devolucion',
+            )
+        
+        widgets = {
+            'fecha': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CajaChicaPrestamoCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['devolucion'].required = False
+
+
+
+class ReciboCajaChicaCrearForm(BSModalModelForm):
+    class Meta:
+        model = ReciboCajaChica
+        fields = (
+            'concepto',
+            'fecha',
+            'monto',
+            'moneda',
+            'redondeo',
+            'monto_pagado',
+            'fecha_pago',
+            'caja_chica',
+            )
+        
+        widgets = {
+            'fecha': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+            'fecha_pago': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ReciboCajaChicaCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

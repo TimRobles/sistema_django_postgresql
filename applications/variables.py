@@ -160,8 +160,9 @@ TIPO_VENTA= (
     )
 
 ESTADOS = (
-    (1, 'ALTA'),
-    (2, 'BAJA'),
+    (1, 'ABIERTO'),
+    (2, 'CERRADO'),
+    (3, 'USADO'),
     )
 
 ESTADOS_DOCUMENTO = (
@@ -362,6 +363,14 @@ MESES = (
     (12, 'DICIEMBRE'),
     )
 
+TIPO_PRESTAMO = (
+    (1, 'PRESTAMO'),
+    )
+
+ESTADO_PRESTAMO = (
+    (1, 'PRESTADO'),
+    (2, 'DEVUELTO'),
+    )
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
@@ -469,10 +478,3 @@ ESTADOS_NOTA_CALIDAD_STOCK = (
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
 
 CHOICE_VACIO = ((None, '-----------------'),)
-
-CONDICIONES_GARANTIA = [
-    "Condición 1",
-    "Condición 2",
-    "Condición 3",
-    "Condición 4",
-]

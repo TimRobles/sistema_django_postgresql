@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load funciones_propias %}
+
+{% block titulo %}
+    Requerimientos Recibidos por {{ request.user|nombre_usuario }}
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Requerimientos Recibidos por {{ request.user|nombre_usuario }}</h3>
+    <br>
+    <div class="table-responsive" id="tabla">
+        {% include 'caja_chica/requerimiento/recibido_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}
