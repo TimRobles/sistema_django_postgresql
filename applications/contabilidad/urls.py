@@ -3,7 +3,20 @@ from . import views
 
 app_name='contabilidad_app'
 
-urlpatterns = [
+urlTelecredito = [
+    path('telecredito/', views.TelecreditoListView.as_view(), name='telecredito_inicio'),
+    path('telecredito-tabla/', views.TelecreditoTabla, name='telecredito_tabla'),
+    path('telecredito/registrar/', views.TelecreditoCreateView.as_view(), name='telecredito_registrar'),
+    path('telecredito/actualizar/<pk>/', views.TelecreditoUpdateView.as_view(), name='telecredito_actualizar'),
+    # path('telecredito/eliminar/<pk>/', views.TelecreditoDeleteView.as_view(), name='telecredito_eliminar'),
+    path('telecredito/recibos/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_recibos_inicio'),
+    path('telecredito/recibos-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_recibos_tabla'),
+    path('telecredito/recibos/registrar/<pk>', views.TelecreditoRecibosCreateView.as_view() , name='telecredito_recibos_registrar'),
+    path('telecredito/recibos/eliminar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosDeleteView.as_view() , name='telecredito_recibos_eliminar'),
+    path('telecredito/recibos/actualizar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosUpdateView.as_view() , name='telecredito_recibos_actualizar'),
+]
+
+urlpatterns = urlTelecredito + [
     path('comision/', views.ComisionFondoPensionesListView.as_view(), name='comision_inicio'),
     path('comision-tabla/', views.ComisionFondoPensionesTabla, name='comision_tabla'),
     path('comision/registrar/', views.ComisionFondoPensionesCreateView.as_view(), name='comision_registrar'),

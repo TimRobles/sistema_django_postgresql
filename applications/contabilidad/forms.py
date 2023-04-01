@@ -16,6 +16,7 @@ from .models import (
     ReciboBoletaPago,
     Servicio,
     ReciboServicio,
+    Telecredito,
     TipoServicio,
     Institucion,
     MedioPago,
@@ -326,6 +327,74 @@ class MedioPagoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(MedioPagoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TelecreditoForm(BSModalModelForm):
+    class Meta:
+        model = Telecredito
+        fields = (
+            'banco',
+            'concepto',
+            'numero',
+            'fecha_emision',
+            'usuario',
+            'sociedad',
+            )
+
+        widgets = {
+            'fecha_emision' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(TelecreditoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TelecreditoReciboPagoForm(BSModalModelForm):
+    recibo_boleta_pago = forms.ModelChoiceField(queryset=ReciboBoletaPago.objects.filter(id_registro=None), required=True)
+    class Meta:
+        model = ReciboBoletaPago
+        fields = (
+            'recibo_boleta_pago',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(TelecreditoReciboPagoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TelecreditoReciboPagoUpdateForm(BSModalModelForm):
+    class Meta:
+        model = ReciboBoletaPago
+        fields = (
+            'monto_pagado',
+            'fecha_pago',
+            'voucher',
+            )
+
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    # 'required':'required',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(TelecreditoReciboPagoUpdateForm, self).__init__(*args, **kwargs)
+        # for field in self.fields:
+        #     self.fields[field].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
