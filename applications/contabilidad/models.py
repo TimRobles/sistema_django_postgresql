@@ -302,7 +302,6 @@ class Cheque(models.Model):
     redondeo = models.DecimalField('Redondeo', max_digits=7, decimal_places=2, default=0)
     vuelto = models.DecimalField('Vuelto', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='Cheque_usuario', blank=True, null=True)
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     estado = models.IntegerField('Estado', choices=ESTADO_CHEQUE, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -337,6 +336,7 @@ class ChequeFisico(models.Model):
     fecha_emision = models.DateField('Fecha de emisión del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_cobro = models.DateField('Fecha de cobro del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
     foto = models.ImageField('Foto del cheque', upload_to=CONTABILIDAD_FOTO_CHEQUE, height_field=None, width_field=None, max_length=None, blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     estado = models.IntegerField('Estado', choices=ESTADO_CHEQUE_FISICO, default=1)
     cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, related_name='ChequeFisico_cheque', blank=True, null=True)
     

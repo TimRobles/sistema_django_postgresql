@@ -144,6 +144,7 @@ class BoletaPagoAdmin(admin.ModelAdmin):
 @admin.register(ReciboBoletaPago)
 class ReciboBoletaPagoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'boleta_pago',
         'fecha_pagar',
         'tipo_pago',
@@ -310,7 +311,6 @@ class ChequeAdmin(admin.ModelAdmin):
         'redondeo',
         'vuelto',
         'usuario',
-        'sociedad',
         'estado',
         'created_at',
         'created_by',
@@ -335,6 +335,7 @@ class ChequeFisicoAdmin(admin.ModelAdmin):
         'fecha_emision',
         'fecha_cobro',
         'foto',
+        'sociedad',
         'estado',
         'cheque',
         'created_at',

@@ -6,8 +6,7 @@
 {% endblock titulo %}
     
 {% block contenido %}
-    <h3>{{ contexto_cheque_detalle.concepto }} | {{ contexto_cheque_detalle.usuario.username }}</h3>
-    <h3>
+    <h3>{{ contexto_cheque_detalle.concepto }} | {{ contexto_cheque_detalle.usuario.username }}
         <a href="{% url 'contabilidad_app:cheque_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
     <br>
