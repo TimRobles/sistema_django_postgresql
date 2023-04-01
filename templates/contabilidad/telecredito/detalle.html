@@ -2,10 +2,18 @@
 {% load static %}
 
 {% block titulo %}
-    Telecrédito - Recibos de Pagos
+    Telecrédito - Recibos de Pago
 {% endblock titulo %}
 
 {% block contenido %}
+    <h3>Recibos de Pago por Telecrédito
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'contabilidad_app:telecredito_recibos_registrar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}">    
+            Añadir Recibo Pago
+        </button>
+        <a href="{% url 'contabilidad_app:telecredito_inicio' %}"><span class="badge bg-danger">Regresar</span></a>
+    </h3>
     <div id="tabla">
         {% include 'contabilidad/telecredito/detalle_tabla.html' %}
     </div>

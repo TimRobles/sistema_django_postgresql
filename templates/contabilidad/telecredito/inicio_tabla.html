@@ -5,26 +5,32 @@
 <table class="table">
     <thead>
         <tr>
+            <th>#</th>
+            <th>Fecha Emisión</th>
             <th>Sociedad</th>
             <th>Número</th>
+            <th>Concepto</th>
+            <th>Banco</th>
             <th>Usuario</th>
+            <th>Fecha Cobro</th>
             <th>Monto</th>
-            <th>Moneda</th>
-            <th>Fecha Emisión</th>
-        
+            <th>Monto Usado</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
         {% for telecredito in contexto_telecredito %}
         <tr>
-            <td>{{ telecredito.sociedad }}</td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ telecredito.fecha_emision|date:'d/m/Y' }}</td>
+            <td class="fondo-personalizado" style="--color-fondo: {{ telecredito.sociedad.color }} ;">{{ telecredito.sociedad }}</td>
             <td>{{ telecredito.numero }}</td>
+            <td>{{ telecredito.concepto }}</td>
+            <td>{{ telecredito.banco }}</td>
             <td>{{ telecredito.usuario }}</td>
-            <td>{{ telecredito.monto|redondear|intcomma }}</td>
-            <td>{{ telecredito.moneda }}</td>
-            <td>{{ telecredito.fecha_emision }}</td>
-
+            <td>{% if telecredito.fecha_cobro %} {{ telecredito.fecha_cobro|date:'d/m/Y' }} {% endif %}</td>
+            <td>{{ telecredito.moneda.simbolo }} {{ telecredito.monto|redondear|intcomma }}</td>
+            <td>{{ telecredito.moneda.simbolo }} {{ telecredito.monto_usado|redondear|intcomma }}</td>
             <td>
                 <button data-form-url="{% url 'contabilidad_app:telecredito_actualizar' telecredito.id %}"
                     data-table-url="{% url 'contabilidad_app:telecredito_tabla' %}"
@@ -33,6 +39,11 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+                <a href="{% url 'contabilidad_app:telecredito_recibos_inicio' telecredito.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Recibos">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
             </td>
 
         </tr>

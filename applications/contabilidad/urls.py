@@ -10,6 +10,10 @@ urlTelecredito = [
     path('telecredito/actualizar/<pk>/', views.TelecreditoUpdateView.as_view(), name='telecredito_actualizar'),
     # path('telecredito/eliminar/<pk>/', views.TelecreditoDeleteView.as_view(), name='telecredito_eliminar'),
     path('telecredito/recibos/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_recibos_inicio'),
+    path('telecredito/recibos-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_recibos_tabla'),
+    path('telecredito/recibos/registrar/<pk>', views.TelecreditoRecibosCreateView.as_view() , name='telecredito_recibos_registrar'),
+    path('telecredito/recibos/eliminar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosDeleteView.as_view() , name='telecredito_recibos_eliminar'),
+    path('telecredito/recibos/actualizar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosUpdateView.as_view() , name='telecredito_recibos_actualizar'),
 ]
 
 urlpatterns = urlTelecredito + [

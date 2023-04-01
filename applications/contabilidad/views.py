@@ -1,6 +1,8 @@
+from re import template
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.contabilidad.funciones import calcular_datos_boleta
+from applications.funciones import registrar_excepcion
 
 from applications.importaciones import *
 
@@ -16,6 +18,8 @@ from .forms import(
     ServicioForm,
     ReciboServicioForm,
     TelecreditoForm,
+    TelecreditoReciboPagoForm,
+    TelecreditoReciboPagoUpdateForm,
     TipoServicioForm,
     InstitucionForm,
     MedioPagoForm,
@@ -886,7 +890,8 @@ class MedioPagoUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class TelecreditoListView(TemplateView):
+class TelecreditoListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_telecredito')
     template_name = "contabilidad/telecredito/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -930,7 +935,8 @@ def TelecreditoTabla(request):
         return JsonResponse(data)
 
 
-class TelecreditoCreateView(BSModalCreateView):
+class TelecreditoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('contabilidad.add_telecredito')
     model = Telecredito
     template_name = "includes/formulario generico.html"
     form_class = TelecreditoForm
@@ -948,7 +954,8 @@ class TelecreditoCreateView(BSModalCreateView):
         return super().form_valid(form)
 
 
-class TelecreditoUpdateView(BSModalUpdateView):
+class TelecreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('contabilidad.change_telecredito')
     model = Telecredito
     template_name = "contabilidad/telecredito/form.html"
     form_class = TelecreditoForm
@@ -965,7 +972,8 @@ class TelecreditoUpdateView(BSModalUpdateView):
         return context
 
 
-class TelecreditoRecibosListView(TemplateView):
+class TelecreditoRecibosListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_telecreditorecibo')
     template_name = "contabilidad/telecredito/detalle.html"
     
     def get_context_data(self, **kwargs):
@@ -974,37 +982,164 @@ class TelecreditoRecibosListView(TemplateView):
             content_type=ContentType.objects.get_for_model(Telecredito), 
             id_registro = self.kwargs['pk']
             )
+        telecredito = Telecredito.objects.get(id=self.kwargs['pk'])
         context['contexto_telecredito_recibos'] = telecredito_recibos
+        context['contexto_telecredito'] = telecredito
         return context
 
 
+def TelecreditoRecibosTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'contabilidad/telecredito/detalle_tabla.html'
+        context = {}
+        telecredito_recibos = ReciboBoletaPago.objects.filter(
+            content_type=ContentType.objects.get_for_model(Telecredito), 
+            id_registro = pk
+            )
+        telecredito = Telecredito.objects.get(id=pk)
+        context['contexto_telecredito_recibos'] = telecredito_recibos
+        context['contexto_telecredito'] = telecredito
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
 
-# class AjusteInventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
-#     permission_required = ('logistica.view_ajusteinventariomaterial')
 
-#     model = AjusteInventarioMateriales
-#     template_name = "logistica/ajuste_inventario_materiales/detalle.html"
-#     context_object_name = 'contexto_ajuste_inventario_materiales_detalle'
+class TelecreditoRecibosCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('contabilidad.add_telecreditorecibo')
+    template_name = 'contabilidad/telecredito/form_recibos.html'
+    form_class = TelecreditoReciboPagoForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['pk']})
 
-#     def get_context_data(self, **kwargs):
-#         ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id = self.kwargs['pk'])
-#         context = super(AjusteInventarioMaterialesDetailView, self).get_context_data(**kwargs)
-#         context['ajuste_inventario_materiales_detalle'] = AjusteInventarioMaterialesDetalle.objects.filter(ajuste_inventario_materiales = ajuste_inventario_materiales)
-#         return context
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                recibo_boleta_pago = form.cleaned_data.get('recibo_boleta_pago')
+                telecredito = Telecredito.objects.get(id=self.kwargs['pk'])
+                recibo_boleta_pago.content_type = telecredito.content_type
+                recibo_boleta_pago.id_registro = telecredito.id
+                registro_guardar(recibo_boleta_pago, self.request)
+                recibo_boleta_pago.save()
+
+                recibos_boletas_pagos = ReciboBoletaPago.objects.filter(
+                    content_type = telecredito.content_type, 
+                    id_registro = telecredito.id,
+                )
+                monto_solicitado = 0
+                if recibos_boletas_pagos:
+                    for recibos_boletas in recibos_boletas_pagos:
+                        monto_solicitado += recibos_boletas.monto
+                    telecredito.monto = monto_solicitado
+                    telecredito.save()
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(TelecreditoRecibosCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Añadir"
+        context['titulo'] = "Recibo Pago"
+        return context
+    
 
 
-# def AjusteInventarioMaterialesDetailTabla(request, pk):
-#     data = dict()
-#     if request.method == 'GET':
-#         template = 'logistica/ajuste_inventario_materiales/detalle_tabla.html'
-#         context = {}
-#         ajuste_inventario_materiales = AjusteInventarioMateriales.objects.get(id = pk)
-#         context['contexto_ajuste_inventario_materiales_detalle'] = ajuste_inventario_materiales
-#         context['ajuste_inventario_materiales_detalle'] = AjusteInventarioMaterialesDetalle.objects.filter(ajuste_inventario_materiales = ajuste_inventario_materiales)
-        
-#         data['table'] = render_to_string(
-#             template,
-#             context,
-#             request=request
-#         )
-#         return JsonResponse(data)
+class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.delete_telecreditorecibo')
+    model = ReciboBoletaPago
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():   
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            obj.content_type = None
+            obj.id_registro = None
+            obj.monto_pagado = 0
+            obj.fecha_pago = None
+            obj.voucher = None
+            obj.save()
+
+            telecredito = Telecredito.objects.get(id = self.kwargs['telecredito_id'])
+            recibos_boletas_pagos = ReciboBoletaPago.objects.filter(
+                content_type = telecredito.content_type, 
+                id_registro = telecredito.id,
+            )
+            monto_solicitado = 0
+            monto_pagado = 0
+            if recibos_boletas_pagos:
+                for recibos_boletas in recibos_boletas_pagos:
+                    monto_solicitado += recibos_boletas.monto
+                    monto_pagado += recibos_boletas.monto_pagado
+            telecredito.monto = monto_solicitado
+            telecredito.monto_usado = monto_pagado
+            telecredito.save()
+            # return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRecibosDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Remover"
+        context['titulo'] = "Recibo Boleta de Pago"
+        context['item'] = str(self.object)
+        return context
+
+
+class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('contabilidad.change_telecreditorecibo')
+    model = ReciboBoletaPago
+    template_name = 'includes/formulario generico.html'
+    form_class = TelecreditoReciboPagoUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRecibosUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Recibo de Boleta Pago"
+        return context
+
+    def form_valid(self, form):
+        telecredito = Telecredito.objects.get(id=self.kwargs['telecredito_id'])
+        recibos_boletas_pagos = ReciboBoletaPago.objects.filter(
+            content_type = telecredito.content_type,
+            id_registro = telecredito.id,
+            ).filter(
+                ~Q(id=form.instance.id)
+                )
+        monto_usado = 0
+        if recibos_boletas_pagos:
+            for recibo_pago in recibos_boletas_pagos:
+                monto_usado += recibo_pago.monto_pagado
+        telecredito.monto_usado = monto_usado + form.cleaned_data.get('monto_pagado')
+        telecredito.save()
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
