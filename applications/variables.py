@@ -437,6 +437,10 @@ MENSAJE_FINALIZAR_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición d
 MENSAJE_APROBAR_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición del Requerimiento fue aprobada.'
 MENSAJE_EDITAR_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición del Requerimiento paso a estado Requerimiento Aprobado.'
 MENSAJE_RETROCEDER_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición del Requerimiento paso a estado Revisar Rendición.'
+MENSAJE_REMOVER_RECIBO_BOLETA_PAGO = 'Operación exitosa: El Recibo de Boleta de Pago fue removido.'
+MENSAJE_REMOVER_RECIBO_SERVICIO = 'Operación exitosa: El Recibo de Servicio fue removido.'
+MENSAJE_REMOVER_REQUERIMIENTO = 'Operación exitosa: El Requerimiento fue removido.'
+
 
 COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY

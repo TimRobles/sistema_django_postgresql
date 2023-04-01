@@ -331,6 +331,7 @@ class MedioPagoForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
 class ChequeForm(BSModalModelForm):
     class Meta:
         model = Cheque
@@ -339,7 +340,6 @@ class ChequeForm(BSModalModelForm):
             'moneda',
             'monto_cheque',
             'usuario',
-            'sociedad',
             )
 
     def clean_monto(self):
@@ -356,6 +356,54 @@ class ChequeForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         for field in self.fields:
             self.fields[field].required = True
+
+
+class ReciboBoletaPagoAgregarForm(BSModalForm):
+    recibo_boleta_pago = forms.ModelChoiceField(queryset=None)
+
+    class Meta:
+        fields=(
+            'recibo_boleta_pago',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_recibos = kwargs.pop('recibos')
+        super(ReciboBoletaPagoAgregarForm, self).__init__(*args, **kwargs)
+        self.fields['recibo_boleta_pago'].queryset = lista_recibos
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReciboServicioAgregarForm(BSModalForm):
+    recibo_servicio = forms.ModelChoiceField(queryset=None)
+
+    class Meta:
+        fields=(
+            'recibo_servicio',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_recibos = kwargs.pop('recibos')
+        super(ReciboServicioAgregarForm, self).__init__(*args, **kwargs)
+        self.fields['recibo_servicio'].queryset = lista_recibos
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RequerimientoAgregarForm(BSModalForm):
+    requerimiento = forms.ModelChoiceField(queryset=None)
+
+    class Meta:
+        fields=(
+            'requerimiento',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_requerimientos = kwargs.pop('requerimientos')
+        super(RequerimientoAgregarForm, self).__init__(*args, **kwargs)
+        self.fields['requerimiento'].queryset = lista_requerimientos
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 
 class TelecreditoForm(BSModalModelForm):
@@ -424,4 +472,3 @@ class TelecreditoReciboPagoUpdateForm(BSModalModelForm):
         #     self.fields[field].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
