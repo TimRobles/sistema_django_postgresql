@@ -1125,3 +1125,5 @@ class ReciboCajaChicaDeleteView(BSModalDeleteView):
         context['dar_baja'] = "true"
         return context
 
+
+#__CajaChica_Requerimientos_____________

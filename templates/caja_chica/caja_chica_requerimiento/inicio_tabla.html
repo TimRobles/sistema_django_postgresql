@@ -1,0 +1,34 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Pedido a</th>
+            <th class="text-end">Monto Solicitado</th>
+            <th class="text-end">Monto Recibido</th>
+            <th class="text-end">Monto Usado</th>
+            <th class="text-end">Vuelto</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for requerimiento in caja_chica_requerimiento %}
+            <tr>
+                <td>{{ requerimiento.fecha|date:'d/m/Y' }} </td>
+                <td>{{ requerimiento.concepto }}</td>
+                <td>{{ requerimiento.usuario_pedido|nombre_usuario }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto|redondear|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto_final|redondear|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto_usado|redondear|intcomma }}</td>
+                <td class="text-nowrap text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.vuelto|redondear|intcomma }}</td>
+                <td>{{ requerimiento.get_estado_display }}</td>
+                <td class="text-nowrap text-center">
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
