@@ -5,7 +5,6 @@
             <th>Moneda</th>
             <th>Monto Cheque</th>
             <th>Usuario</th>
-            <th>Sociedad</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
         </tr>
@@ -23,7 +22,6 @@
                     {{ cheque.usuario }}
                 {% endif %}
             </td>
-            <td>{{ cheque.sociedad}}</td>
             <td>{{ cheque.get_estado_display }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'contabilidad_app:cheque_actualizar' cheque.id %}"

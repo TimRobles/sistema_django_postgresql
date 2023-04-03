@@ -1,0 +1,100 @@
+
+{% load funciones_propias %}
+{% load humanize %}
+
+<!-- TABLA -->
+<div class="table-responsive">
+    <table class="table">
+        <tbody>
+            <tr>
+                <td><b>Número</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_telecredito.numero }}</td>
+                <td class="px-4"></td>
+                <td><b>Sociedad</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_telecredito.sociedad }}</td>
+                <td class="px-4"></td>
+                <td><b>Banco</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_telecredito.banco }}</td>
+                <td class="px-4"></td>
+            </tr>
+            <tr>
+                <td><b>Fecha Emisión</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_telecredito.fecha_emision }}</td>
+                <td class="px-4"></td>
+                <td><b>Usuario</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_telecredito.usuario }}</td>
+                <td class="px-4"></td>
+                <td><b>Fecha de Cobro</b></td>
+                <td class="px-2">:</td>
+                <td>{% if contexto_telecredito.fecha_cobro %} {{ contexto_telecredito.fecha_cobro }} {% endif %} </td>
+                <td class="px-4"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Sociedad</th>
+                <th>Tipo Pago</th>
+                <th>Fecha Pagar</th>
+                <th>Usuario</th>
+                <th>Monto</th>
+                <th>Monto Pagado</th>
+                <th>Fecha Pago</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for telecredito_recibo in contexto_telecredito_recibos %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="fondo-personalizado" style="--color-fondo: {{ telecredito_recibo.boleta_pago.datos_planilla.sociedad.color }} ;">{{ telecredito_recibo.boleta_pago.datos_planilla.sociedad }}</td>
+                <td>{{ telecredito_recibo.get_tipo_pago_display }}</td>
+                <td>{{ telecredito_recibo.fecha_pagar }}</td>
+                <td>{{ telecredito_recibo.boleta_pago.datos_planilla.usuario }}</td>
+                <td class="text-end" >{{ telecredito_recibo.boleta_pago.datos_planilla.moneda.simbolo }} {{ telecredito_recibo.monto|redondear|intcomma }}</td>
+                <td class="text-end" >{{ telecredito_recibo.boleta_pago.datos_planilla.moneda.simbolo }} {{ telecredito_recibo.monto_pagado|redondear|intcomma }}</td>
+                <td>{% if telecredito_recibo.fecha_pago %} {{ telecredito_recibo.fecha_pago }} {% endif %}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'contabilidad_app:telecredito_recibos_actualizar' contexto_telecredito.id telecredito_recibo.id %}"
+                        data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'contabilidad_app:telecredito_recibos_eliminar' contexto_telecredito.id telecredito_recibo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Remover">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <th>Totales</th>
+                <td class="text-end"> {{ contexto_telecredito.moneda.simbolo }} {{ contexto_telecredito.monto }} </td>
+                <td class="text-end"> {{ contexto_telecredito.moneda.simbolo }} {{ contexto_telecredito.monto_usado }} </td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

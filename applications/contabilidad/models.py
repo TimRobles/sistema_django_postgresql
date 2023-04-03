@@ -267,7 +267,7 @@ class Telecredito(models.Model):
     numero = models.CharField('Numero', max_length=50, blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
     fecha_emision = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
-    fecha_cobro = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
+    fecha_cobro = models.DateField('Fecha de Cobro', auto_now=False, auto_now_add=False, blank=True, null=True)
     foto = models.FileField('Foto', null=True)
     monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='Telecredito_usuario')
@@ -282,6 +282,10 @@ class Telecredito(models.Model):
     class Meta:
         verbose_name = 'Telecredito'
         verbose_name_plural = 'Telecreditos'
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     def __str__(self):
         return str(id)
@@ -302,7 +306,6 @@ class Cheque(models.Model):
     redondeo = models.DecimalField('Redondeo', max_digits=7, decimal_places=2, default=0)
     vuelto = models.DecimalField('Vuelto', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='Cheque_usuario', blank=True, null=True)
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     estado = models.IntegerField('Estado', choices=ESTADO_CHEQUE, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -337,6 +340,7 @@ class ChequeFisico(models.Model):
     fecha_emision = models.DateField('Fecha de emisión del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_cobro = models.DateField('Fecha de cobro del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
     foto = models.ImageField('Foto del cheque', upload_to=CONTABILIDAD_FOTO_CHEQUE, height_field=None, width_field=None, max_length=None, blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     estado = models.IntegerField('Estado', choices=ESTADO_CHEQUE_FISICO, default=1)
     cheque = models.ForeignKey(Cheque, on_delete=models.CASCADE, related_name='ChequeFisico_cheque', blank=True, null=True)
     
