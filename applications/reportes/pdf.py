@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from applications.cobranza.models import Nota
 from applications.comprobante_venta.models import FacturaVenta
+from applications.funciones import registrar_excepcion_sin_user
 from applications.pdf import *
 from applications.reportes.funciones import DICT_CONTENT_TYPE, DICT_SOCIEDAD, FECHA_HOY, StrToDate, formatoFechaTexto
 from applications import reportes
@@ -483,8 +484,10 @@ def reporte_cobranza():
         correo.attach_alternative(mensaje, "text/html")
         try:
             correo.send()
-        except Exception as e:
-            print(e)
-    except Exception as e:
+        except Exception as ex:
+            print(ex)
+            registrar_excepcion_sin_user(ex, __file__)
+    except Exception as ex:
         print("No se pudo enviar el correo..")
-        print(e)
+        registrar_excepcion_sin_user(ex, __file__)
+        print(ex)

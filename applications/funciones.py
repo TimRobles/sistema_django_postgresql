@@ -451,6 +451,24 @@ def registrar_excepcion(self, ex, fname):
     messages.error(self.request, mensaje)
 
 
+def registrar_excepcion_interna(user, ex, fname):
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    mensaje = f"{fname} # {exc_tb.tb_lineno} {exc_type} {ex}"
+    Excepcion.objects.create(
+        texto=mensaje,
+        created_by=user,
+        updated_by=user,
+    )
+
+
+def registrar_excepcion_sin_user(ex, fname):
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    mensaje = f"{fname} # {exc_tb.tb_lineno} {exc_type} {ex}"
+    Excepcion.objects.create(
+        texto=mensaje,
+    )
+
+
 def obtener_atributos(objeto):
     diccionario = {}
     for att in dir(objeto):

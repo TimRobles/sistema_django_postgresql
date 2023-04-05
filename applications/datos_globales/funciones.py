@@ -7,7 +7,7 @@ from time import sleep
 from django.db import models
 from applications.datos_globales.models import TipoCambio, TipoCambioSunat
 
-from applications.funciones import consulta_sunat_tipo_cambio, numero_espacio, numero_guion
+from applications.funciones import consulta_sunat_tipo_cambio, numero_espacio, numero_guion, registrar_excepcion_interna, registrar_excepcion_sin_user
 
 def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, fecha_de_vencimiento, moneda, tipo_de_cambio, porcentaje_de_igv, descuento_global, total_descuento, total_anticipo, total_gravada, total_inafecta, total_exonerada, total_igv, total_gratuita, total_otros_cargos, total, percepcion_tipo, percepcion_base_imponible, total_percepcion, total_incluido_percepcion, total_impuestos_bolsas, detraccion, observaciones, documento_que_se_modifica_tipo, documento_que_se_modifica_serie, documento_que_se_modifica_numero, tipo_de_nota_de_credito, tipo_de_nota_de_debito, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, condiciones_de_pago, medio_de_pago, placa_vehiculo, orden_compra_servicio, formato_de_pdf, generado_por_contingencia, productos, guias, cuotas):
     try:
@@ -117,10 +117,11 @@ def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, clie
         
         return data
 
-    except Exception as e:
+    except Exception as ex:
         print("**************************************************")
-        print(e)
+        print(ex)
         print("**************************************************")
+        registrar_excepcion_sin_user(ex, __file__)
         return None
 
 
@@ -135,10 +136,11 @@ def anularDocumento(tipo_de_comprobante, serie, numero, motivo):
         
         return data
 
-    except Exception as e:
+    except Exception as ex:
         print("**************************************************")
-        print(e)
+        print(ex)
         print("**************************************************")
+        registrar_excepcion_sin_user(ex, __file__)
         return None
 
 
@@ -205,10 +207,11 @@ def generarGuia(tipo_de_comprobante, serie, numero, cliente_tipo_de_documento, c
         
         return data
 
-    except Exception as e:
+    except Exception as ex:
         print("**************************************************")
-        print(e)
+        print(ex)
         print("**************************************************")
+        registrar_excepcion_sin_user(ex, __file__)
         return None
 
 
@@ -221,10 +224,11 @@ def consultarDocumento(tipo_de_comprobante, serie, numero):
         data["numero"] = numero
         return data
 
-    except Exception as e:
+    except Exception as ex:
         print("**************************************************")
-        print(e)
+        print(ex)
         print("**************************************************")
+        registrar_excepcion_sin_user(ex, __file__)
         return None
         
 
@@ -237,10 +241,11 @@ def consultarGuia(tipo_de_comprobante, serie, numero):
         data["numero"] = numero
         return data
 
-    except Exception as e:
+    except Exception as ex:
         print("**************************************************")
-        print(e)
+        print(ex)
         print("**************************************************")
+        registrar_excepcion_sin_user(ex, __file__)
         return None
 
 
@@ -253,10 +258,11 @@ def consultarAnulacion(tipo_de_comprobante, serie, numero):
         data["numero"] = numero
         return data
 
-    except Exception as e:
+    except Exception as ex:
         print("**************************************************")
-        print(e)
+        print(ex)
         print("**************************************************")
+        registrar_excepcion_sin_user(ex, __file__)
         return None
 
 
@@ -276,5 +282,6 @@ def actualizarTipoCambioSunat(fecha: date, request):
             obj.created_by = request.user
             obj.updated_by = request.user
             obj.save()
-        except Exception as e:
-            print(e)
+        except Exception as ex:
+            print(ex)
+            registrar_excepcion_sin_user(ex, __file__)

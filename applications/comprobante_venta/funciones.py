@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 import requests, json
 from applications.datos_globales.models import NubefactRespuesta
 
-from applications.funciones import igv, numero_cero, numero_espacio, numero_guion
+from applications.funciones import igv, numero_cero, numero_espacio, numero_guion, registrar_excepcion, registrar_excepcion_interna
 from applications.home.templatetags.funciones_propias import diccionario_tipo_documento
 from applications.importaciones import registro_guardar_user
 
@@ -37,8 +37,9 @@ def subir_nubefact(obj, data, ruta, token, user):
         obj_nubefact.save()
         return obj_nubefact
 
-    except Exception as e:
-        print(e)
+    except Exception as ex:
+        print(ex)
+        registrar_excepcion_interna(user, ex, __file__)
         return None
 
 
@@ -171,10 +172,11 @@ def factura_nubefact(obj, user):
         token = acceso_nubefact.acceso.token
         respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
         return respuesta_nubefact
-    except Exception as e:
+    except Exception as ex:
         print("**************************")
-        print(e)
+        print(ex)
         print("**************************")
+        registrar_excepcion_interna(user, ex, __file__)
         return None
 
 
@@ -228,10 +230,11 @@ def guia_nubefact(obj, user):
         token = acceso_nubefact.acceso.token
         respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
         return respuesta_nubefact
-    except Exception as e:
+    except Exception as ex:
         print("**************************")
-        print(e)
+        print(ex)
         print("**************************")
+        registrar_excepcion_interna(user, ex, __file__)
         return None
 
 
@@ -294,10 +297,11 @@ def nota_credito_nubefact(obj, user):
         token = acceso_nubefact.acceso.token
         respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
         return respuesta_nubefact
-    except Exception as e:
+    except Exception as ex:
         print("**************************")
-        print(e)
+        print(ex)
         print("**************************")
+        registrar_excepcion_interna(user, ex, __file__)
         return None
 
 
