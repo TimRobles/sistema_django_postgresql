@@ -40,6 +40,7 @@ def subir_nubefact(obj, data, ruta, token, user):
     except Exception as ex:
         print(ex)
         registrar_excepcion_interna(user, ex, __file__)
+        registrar_excepcion_interna(user, ex, __file__)
         return None
 
 

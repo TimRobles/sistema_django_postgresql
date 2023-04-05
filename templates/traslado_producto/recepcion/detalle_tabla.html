@@ -103,12 +103,14 @@
     </div>
 </div>
 
+{% if recepcion_traslado_producto.estado == 1 %}
 <button data-form-url="{% url 'traslado_producto_app:recepcion_agregar_material' recepcion_traslado_producto.id %}"
 data-table-url="{% url 'traslado_producto_app:recepcion_ver_tabla' recepcion_traslado_producto.id  %}"
 data-keep-open="True"
 class="update btn btn-primary" title="Agregar Material">
 Agregar Material
 </button>
+{% endif %}
 
 <div class="table-responsive">
     <table class="table">

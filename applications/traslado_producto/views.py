@@ -832,8 +832,18 @@ class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDelet
     template_name = "traslado_producto/recepcion/form_guardar.html"
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        context['titulo'] = 'Error de guardar'
+        error_productos = True
+        recepcion = self.get_object()
+        if recepcion.RecepcionTrasladoProductoDetalle_recepcion_traslado_producto.all():
+            error_productos = False
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_productos:
+            context['texto'] = 'No hay productos.'
+            return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
