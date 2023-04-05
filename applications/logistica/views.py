@@ -617,7 +617,7 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
         if filtro_sociedad:
             lista_notas = []
             for nota in nota_salida:
-                if nota.sociedad == filtro_sociedad:
+                if str(nota.sociedad.id) == filtro_sociedad:
                     lista_notas.append(nota.id)
             nota_salida = nota_salida.filter(id__in = lista_notas)
             contexto_filtro.append(f"sociedad={filtro_sociedad}")
@@ -625,7 +625,7 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
         if filtro_cliente:
             lista_notas = []
             for nota in nota_salida:
-                if nota.cliente == filtro_cliente:
+                if str(nota.cliente.id) == filtro_cliente:
                     lista_notas.append(nota.id)
             nota_salida = nota_salida.filter(id__in = lista_notas)
             contexto_filtro.append(f"cliente={filtro_cliente}")
@@ -696,7 +696,7 @@ def NotaSalidaTabla(request, **kwargs):
         if filtro_sociedad:
             lista_notas = []
             for nota in nota_salida:
-                if nota.sociedad == filtro_sociedad:
+                if str(nota.sociedad.id) == filtro_sociedad:
                     lista_notas.append(nota.id)
             nota_salida = nota_salida.filter(id__in = lista_notas)
             contexto_filtro.append(f"sociedad={filtro_sociedad}")
@@ -704,7 +704,7 @@ def NotaSalidaTabla(request, **kwargs):
         if filtro_cliente:
             lista_notas = []
             for nota in nota_salida:
-                if nota.cliente == filtro_cliente:
+                if str(nota.cliente.id) == filtro_cliente:
                     lista_notas.append(nota.id)
             nota_salida = nota_salida.filter(id__in = lista_notas)
             contexto_filtro.append(f"cliente={filtro_cliente}")
