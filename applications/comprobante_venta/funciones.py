@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 import requests, json
 from applications.datos_globales.models import NubefactRespuesta
 
-from applications.funciones import igv, numero_cero, numero_espacio, numero_guion, registrar_excepcion, registrar_excepcion_interna
+from applications.funciones import igv, numero_cero, numero_espacio, numero_guion, registrar_excepcion, registrar_excepcion_interna, registrar_excepcion_sin_user
 from applications.home.templatetags.funciones_propias import diccionario_tipo_documento
 from applications.importaciones import registro_guardar_user
 
@@ -301,7 +301,7 @@ def nota_credito_nubefact(obj, user):
         print("**************************")
         print(ex)
         print("**************************")
-        registrar_excepcion_interna(user, ex, __file__)
+        registrar_excepcion_sin_user(ex, __file__)
         return None
 
 
