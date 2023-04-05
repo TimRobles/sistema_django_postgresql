@@ -615,13 +615,19 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
         contexto_filtro = []
 
         if filtro_sociedad:
-            condicion = Q(confirmacion_venta__sociedad = filtro_sociedad) | Q(solicitud_prestamo_materiales__sociedad = filtro_sociedad)
-            nota_salida = nota_salida.filter(condicion)
+            lista_notas = []
+            for nota in nota_salida:
+                if nota.sociedad == filtro_sociedad:
+                    lista_notas.append(nota.id)
+            nota_salida = nota_salida.filter(id__in = lista_notas)
             contexto_filtro.append(f"sociedad={filtro_sociedad}")
 
         if filtro_cliente:
-            condicion = Q(confirmacion_venta__cliente = filtro_cliente) | Q(solicitud_prestamo_materiales__cliente = filtro_cliente)
-            nota_salida = nota_salida.filter(condicion)
+            lista_notas = []
+            for nota in nota_salida:
+                if nota.cliente == filtro_cliente:
+                    lista_notas.append(nota.id)
+            nota_salida = nota_salida.filter(id__in = lista_notas)
             contexto_filtro.append(f"cliente={filtro_cliente}")
 
         if filtro_estado:
