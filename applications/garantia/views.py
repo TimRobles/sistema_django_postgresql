@@ -394,40 +394,43 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
             movimiento_final = TipoMovimiento.objects.get(codigo=128) #Ingreso por reclamo de garantía
             estado_serie = EstadoSerie.objects.get(numero_estado=6) #DEVUELTO
             for detalle in ingreso_reclamo_garantia.detalles:
-                movimiento_uno = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador=-1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(ingreso_reclamo_garantia),
-                    id_registro_documento_proceso=ingreso_reclamo_garantia.id,
-                    almacen=None,
-                    sociedad=ingreso_reclamo_garantia.sociedad,
-                    movimiento_anterior=None,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
-                movimiento_dos = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador=+1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(ingreso_reclamo_garantia),
-                    id_registro_documento_proceso=ingreso_reclamo_garantia.id,
-                    almacen=ingreso_reclamo_garantia.almacen,
-                    sociedad=ingreso_reclamo_garantia.sociedad,
-                    movimiento_anterior=movimiento_uno,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
                 #Movimiento de Estado
                 for serie in detalle.SerieIngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia_detalle.all():
+                    almacen = None
+                    if serie.serie.almacen:
+                        almacen = serie.serie.almacen
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=1,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador=-1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(ingreso_reclamo_garantia),
+                        id_registro_documento_proceso=ingreso_reclamo_garantia.id,
+                        almacen=almacen,
+                        sociedad=ingreso_reclamo_garantia.sociedad,
+                        movimiento_anterior=None,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=1,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(ingreso_reclamo_garantia),
+                        id_registro_documento_proceso=ingreso_reclamo_garantia.id,
+                        almacen=ingreso_reclamo_garantia.almacen,
+                        sociedad=ingreso_reclamo_garantia.sociedad,
+                        movimiento_anterior=movimiento_uno,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
                     HistorialEstadoSerie.objects.create(
                         serie=serie.serie,
                         estado_serie=estado_serie,
@@ -439,7 +442,7 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
                     )
                     serie.serie.serie_movimiento_almacen.add(movimiento_uno)
                     serie.serie.serie_movimiento_almacen.add(movimiento_dos)
-                messages.success(request, MENSAJE_INGRESO_RECLAMO_GARANTIA)
+            messages.success(request, MENSAJE_INGRESO_RECLAMO_GARANTIA)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)

@@ -98,9 +98,12 @@
                         </button>
                         {% endif %}
 
-                        {% if ingreso.estado == 3 %}
+                        {% if ingreso.estado > 2 %}
                         <div class="col-auto">
-                            <a href="{% url 'garantia_app:control_garantia_ver' ingreso.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia.id  %}" class="btn btn-primary">Nota de Control de Calidad</a>
+                            <a href="{% url 'garantia_app:control_garantia_ver' ingreso.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia.id  %}"
+                            class="btn btn-primary">
+                                Nota de Control de Calidad
+                            </a>
                         </div>
                         {% endif %}
                     </td>
