@@ -13,6 +13,7 @@
     <thead>
         <tr>
             <th>Fecha Recepción</th>
+            <th>N° Envío </th>
             <th>N° Recepción </th>
             <th>Sede Destino</th>
             <th>Responsable</th>
@@ -29,6 +30,11 @@
             <td>
                 {% if recepcion_traslado_producto.numero_recepcion_traslado %}
                 {{recepcion_traslado_producto.numero_recepcion_traslado|numeroXn:6 }}
+                {% endif %}
+            </td>
+            <td>
+                {% if recepcion_traslado_producto.envio_traslado_producto.numero_envio_traslado %}
+                {{recepcion_traslado_producto.envio_traslado_producto.numero_envio_traslado|numeroXn:6 }}
                 {% endif %}
             </td>
             <td>
