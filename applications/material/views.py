@@ -1770,3 +1770,40 @@ class PrecioListaPdfView(View):
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
         return respuesta
+
+
+class PrecioListaStockPdfView(View):
+    def get(self, request, *args, **kwargs):
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        titulo = f'Precios de Lista {date.today().strftime("%d/%m/%Y")}'
+        vertical = False
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        fuenteBase = "ComicNeue"
+
+        EncabezadoDatos = []
+        # EncabezadoDatos.append('ITEM')
+        EncabezadoDatos.append('DESCRIPCIÓN')
+        EncabezadoDatos.append('UNIDAD')
+        EncabezadoDatos.append('PRECIO DE LISTA')
+
+        TablaDatos = []
+        item = 1
+        for material in Material.objects.filter(mostrar=True):
+            if material.stock > 0:
+                fila = []
+                # fila.append(item)
+                fila.append(material.descripcion_documento)
+                fila.append(material.unidad_base)
+                fila.append(material.precio_lista)
+                TablaDatos.append(fila)
+                # item += 1
+            
+        buf = generarPrecioLista(titulo, vertical, logo, pie_pagina, EncabezadoDatos, TablaDatos, color, fuenteBase)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta

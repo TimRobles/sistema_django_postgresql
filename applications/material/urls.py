@@ -25,6 +25,7 @@ urlpatterns = [
     path('material/info/<id_material>/', views.MaterialView, name='material_info'),
     
     path('precio-lista/', views.PrecioListaPdfView.as_view(), name='precio_lista'),
+    path('precio-lista-stock/', views.PrecioListaStockPdfView.as_view(), name='precio_lista_stock'),
 
     path('componente/registrar/<int:material_id>/', views.ComponenteCreateView.as_view(), name='componente_registrar'),
     path('componente/actualizar/<pk>/', views.ComponenteUpdateView.as_view(), name='componente_actualizar'),
