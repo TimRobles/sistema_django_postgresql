@@ -131,6 +131,11 @@ class BoletaPago(models.Model):
         return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), self.datos_planilla ) 
 
 class ReciboBoletaPago(models.Model):
+    ESTADOS_RECIBO_BOLETA_PAGO = (
+        (1, 'BORRADOR'),
+        (2, 'PENDIENTE'),
+        (3, 'PAGADO'),
+        )
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
     fecha_pagar = models.DateField('Fecha Pagar', auto_now=False, auto_now_add=False)
     tipo_pago = models.IntegerField(choices=TIPO_PAGO_RECIBO, blank=True, null=True)
@@ -141,7 +146,7 @@ class ReciboBoletaPago(models.Model):
     fecha_pago = models.DateField('Fecha de Pago', auto_now=False, auto_now_add=False, blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) #Cheque / Telecrédito / Caja Chica
     id_registro = models.IntegerField(blank=True, null=True)   
-    estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS_RECIBO_BOLETA_PAGO, default=1, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboBoletaPago_created_by', editable=False)
@@ -261,6 +266,12 @@ class ReciboServicio(models.Model):
 
 
 class Telecredito(models.Model):
+    ESTADOS_TELECREDITO = (
+        (1, 'BORRADOR'),
+        (2, 'SOLICITADO'),
+        (3, 'RECEPCIONADO'),
+        (4, 'PAGADO'),
+        )
     concepto = models.CharField('Concepto', max_length=50)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT,  blank=True, null=True)
     banco = models.ForeignKey(Banco, on_delete=models.PROTECT,  blank=True, null=True)
@@ -268,11 +279,11 @@ class Telecredito(models.Model):
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
     fecha_emision = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
     fecha_cobro = models.DateField('Fecha de Cobro', auto_now=False, auto_now_add=False, blank=True, null=True)
-    foto = models.FileField('Foto', null=True)
+    foto = models.FileField('Foto', blank=True, null=True)
     monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='Telecredito_usuario')
     sociedad = models.ForeignKey(Sociedad, null=True,blank=True, on_delete=models.PROTECT)
-    estado = models.IntegerField(choices=ESTADOS,default=1)
+    estado = models.IntegerField(choices=ESTADOS_TELECREDITO,default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Telecredito_created_by', editable=False)
@@ -282,13 +293,14 @@ class Telecredito(models.Model):
     class Meta:
         verbose_name = 'Telecredito'
         verbose_name_plural = 'Telecreditos'
+        ordering = ['-id',]
 
     @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return str(id)
+        return str(self.id) + ' - ' + self.concepto
 
 
 class Cheque(models.Model):

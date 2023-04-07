@@ -2,6 +2,7 @@ from re import template
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.contabilidad.funciones import calcular_datos_boleta
+from applications.contabilidad.pdf import generarTelecreditoReciboBoletaPago
 from applications.funciones import registrar_excepcion
 
 from applications.importaciones import *
@@ -1403,6 +1404,7 @@ class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
             obj.monto_pagado = 0
             obj.fecha_pago = None
             obj.voucher = None
+            obj.estado = 1
             obj.save()
 
             telecredito = Telecredito.objects.get(id = self.kwargs['telecredito_id'])
@@ -1454,6 +1456,8 @@ class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
     def form_valid(self, form):
+        if form.instance.monto <= form.cleaned_data.get('monto_pagado'):
+            form.instance.estado = 3    # PAGADO
         telecredito = Telecredito.objects.get(id=self.kwargs['telecredito_id'])
         recibos_boletas_pagos = ReciboBoletaPago.objects.filter(
             content_type = telecredito.content_type,
@@ -1469,3 +1473,139 @@ class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         telecredito.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+
+class TelecreditoSolicitarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2 # SOLICITADO
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_ACTUALIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoSolicitarView, self).get_context_data(**kwargs)
+        context['accion'] = "Solicitar"
+        context['titulo'] = "Telecrédito"
+        context['dar_baja'] = "true"
+        context['item'] = self.object
+        return context
+
+
+class TelecreditoRecibirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3 #    RECIBIDO
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_ACTUALIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRecibirView, self).get_context_data(**kwargs)
+        context['accion'] = "Recibir"
+        context['titulo'] = "Telecrédito"
+        context['dar_baja'] = "true"
+        context['item'] = self.object
+        return context
+
+
+class TelecreditoReciboPagarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecreditorecibo')
+    model = ReciboBoletaPago
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3 #    PAGADO
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_ACTUALIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoReciboPagarView, self).get_context_data(**kwargs)
+        context['accion'] = "Pagar"
+        context['titulo'] = "Recibo"
+        context['dar_baja'] = "true"
+        context['item'] = self.object
+        return context
+
+
+class TelecreditoRecibosPdfView(View):
+    # def get_success_url(self, **kwargs):
+    #     return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+
+    def get(self, request, *args, **kwargs):
+        telecredito = Telecredito.objects.get(id = self.kwargs['pk'])
+        color = telecredito.sociedad.color
+        titulo = f'Telecrédito - Recibos Boletas de Pago - {date.today().strftime("%d/%m/%Y")}'
+        vertical = False
+        logo = [telecredito.sociedad.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        fuenteBase = "ComicNeue"
+
+        EncabezadoDatos = []
+        EncabezadoDatos.append('#')
+        EncabezadoDatos.append('BOLETA DE PAGO')
+        EncabezadoDatos.append('FECHA A PAGAR')
+        EncabezadoDatos.append('MONTO A PAGAR')
+       
+        recibos_boletas_pagos = ReciboBoletaPago.objects.filter(
+            content_type = telecredito.content_type, 
+            id_registro = telecredito.id,
+        )
+
+        TablaDatos = []
+        item = 1
+        for recibo_boleta_pago in recibos_boletas_pagos:
+            fila = []
+            fila.append(item)
+            fila.append(recibo_boleta_pago)
+            fila.append(recibo_boleta_pago.fecha_pagar)
+            fila.append(str(recibo_boleta_pago.boleta_pago.datos_planilla.moneda.simbolo) + ' ' + str(recibo_boleta_pago.monto))
+            TablaDatos.append(fila)
+            item += 1
+            
+        buf = generarTelecreditoReciboBoletaPago(titulo, vertical, logo, pie_pagina, EncabezadoDatos, TablaDatos, color, fuenteBase)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta
