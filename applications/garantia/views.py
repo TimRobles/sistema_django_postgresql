@@ -501,23 +501,6 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
     success_url = '.'
     
     def dispatch(self, request, *args, **kwargs):
-        context = {}
-        ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_ingreso'])
-        error_cliente = True
-        error_sociedad = True
-        context['titulo'] = 'Error de guardar'
-        if ingreso_reclamo_garantia.cliente and ingreso_reclamo_garantia.cliente_interlocutor:
-            error_cliente = False
-        if ingreso_reclamo_garantia.sociedad:
-            error_sociedad = False
-        
-        if error_cliente:
-            context['texto'] = 'Elegir un cliente.'
-            return render(request, '403.html', context)
-        if error_sociedad:
-            context['texto'] = 'Elegir una sociedad.'
-            return render(request, '403.html', context)
-
         if not self.has_permission():
             return render(request, '403.html')
         return super(SerieIngresoReclamoGarantiaView, self).dispatch(request, *args, **kwargs)
@@ -544,15 +527,15 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                     ingreso_reclamo_garantia = ingreso_reclamo_garantia,
                 )
 
-                if created:
-                    ingreso_reclamo_garantia_detalle.item = item + 1
-                    ingreso_reclamo_garantia_detalle.cantidad = 1
-                else:
-                    if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
-                        ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
+                if not ingreso_reclamo_garantia.cliente:
+                    ingreso_reclamo_garantia.cliente = serie.cliente
+                    ingreso_reclamo_garantia.save()
+                if not ingreso_reclamo_garantia.sociedad:
+                    ingreso_reclamo_garantia.sociedad = serie.sociedad
+                    ingreso_reclamo_garantia.save()
 
-                registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
-                ingreso_reclamo_garantia_detalle.save()
+
+                
                 documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
 
                 buscar = SerieIngresoReclamoGarantiaDetalle.objects.filter(
@@ -575,6 +558,14 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                             updated_by=self.request.user,
                         )
                         self.serie_encontrada = "Serie encontrada"
+                        if created:
+                            ingreso_reclamo_garantia_detalle.item = item + 1
+                            ingreso_reclamo_garantia_detalle.cantidad = 1
+                        else:
+                            if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
+                                ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
+                        registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
+                        ingreso_reclamo_garantia_detalle.save()
                     else:
                         self.serie_encontrada = "La serie pertenece a otra SOCIEDAD"
                 else:
@@ -605,7 +596,7 @@ class SerieIngresoReclamoGarantiaDetalleView(PermissionRequiredMixin, FormView):
         error_cliente = True
         error_sociedad = True
         context['titulo'] = 'Error de guardar'
-        if ingreso_reclamo_garantia.cliente and ingreso_reclamo_garantia.cliente_interlocutor:
+        if ingreso_reclamo_garantia.cliente:
             error_cliente = False
         if ingreso_reclamo_garantia.sociedad:
             error_sociedad = False
