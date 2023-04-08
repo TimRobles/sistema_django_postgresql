@@ -279,9 +279,9 @@ def nota_credito_nubefact(obj, user):
         observaciones = obj.observaciones
         documento_que_se_modifica_tipo = obj.documento.tipo_comprobante
         documento_que_se_modifica_serie = obj.documento.serie_comprobante.serie
-        if hasattr(obj, 'numero_boleta'):
+        if hasattr(obj.documento, 'numero_boleta'):
             documento_que_se_modifica_numero = obj.documento.numero_boleta
-        elif hasattr(obj, 'numero_factura'):
+        elif hasattr(obj.documento, 'numero_factura'):
             documento_que_se_modifica_numero = obj.documento.numero_factura
         tipo_de_nota_de_credito = obj.tipo_nota_credito
         tipo_de_nota_de_debito = ''
