@@ -621,6 +621,7 @@ class NotaCreditoNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             obj = self.get_object()
+            print(obj)
             respuesta = nota_credito_nubefact(obj, self.request.user)
             if respuesta.error:
                 obj.estado = 6

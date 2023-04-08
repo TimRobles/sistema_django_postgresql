@@ -9,6 +9,9 @@ from applications.importaciones import registro_guardar_user
 
 def subir_nubefact(obj, data, ruta, token, user):
     try:
+        print("///////////////////////////////////////////")
+        print(obj)
+        print(data)
         obj_nubefact = NubefactRespuesta.objects.create(
             content_type = ContentType.objects.get_for_model(obj),
             id_registro = obj.id,
@@ -16,9 +19,11 @@ def subir_nubefact(obj, data, ruta, token, user):
             created_by = user,
             updated_by = user,
         )
+        print(obj_nubefact)
         headers = {"Authorization" : token, 'content-type': 'application/json'}
         r = requests.post(url=ruta, data=json.dumps(data), headers=headers)
         respuesta = r.json()
+        print("///////////////////////////////////////////")
         try:
             if respuesta['aceptada_por_sunat']:
                 aceptado = True
@@ -274,7 +279,10 @@ def nota_credito_nubefact(obj, user):
         observaciones = obj.observaciones
         documento_que_se_modifica_tipo = obj.documento.tipo_comprobante
         documento_que_se_modifica_serie = obj.documento.serie_comprobante.serie
-        documento_que_se_modifica_numero = obj.documento.numero_factura
+        if hasattr(obj, 'numero_boleta'):
+            documento_que_se_modifica_numero = obj.documento.numero_boleta
+        elif hasattr(obj, 'numero_factura'):
+            documento_que_se_modifica_numero = obj.documento.numero_factura
         tipo_de_nota_de_credito = obj.tipo_nota_credito
         tipo_de_nota_de_debito = ''
         enviar_automaticamente_a_la_sunat = True
@@ -292,10 +300,14 @@ def nota_credito_nubefact(obj, user):
         formato_de_pdf = 'A4'
         productos = obj.detalles
         data = funciones.generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, fecha_de_vencimiento, moneda, tipo_de_cambio, porcentaje_de_igv, descuento_global, total_descuento, total_anticipo, total_gravada, total_inafecta, total_exonerada, total_igv, total_gratuita, total_otros_cargos, total, percepcion_tipo, percepcion_base_imponible, total_percepcion, total_incluido_percepcion, total_impuestos_bolsas, detraccion, observaciones, documento_que_se_modifica_tipo, documento_que_se_modifica_serie, documento_que_se_modifica_numero, tipo_de_nota_de_credito, tipo_de_nota_de_debito, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, condiciones_de_pago, medio_de_pago, placa_vehiculo, orden_compra_servicio, formato_de_pdf, generado_por_contingencia, productos, guias, cuotas)
+        print("**********************************************")
+        print(data)
 
         acceso_nubefact = obj.serie_comprobante.NubefactSerieAcceso_serie_comprobante.envio(obj.sociedad, ContentType.objects.get_for_model(obj))
         ruta = acceso_nubefact.acceso.ruta
         token = acceso_nubefact.acceso.token
+        print(obj, data, ruta, token, user)
+        print("**********************************************")
         respuesta_nubefact = subir_nubefact(obj, data, ruta, token, user)
         return respuesta_nubefact
     except Exception as ex:
