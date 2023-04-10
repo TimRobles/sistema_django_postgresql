@@ -5,7 +5,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th>#</th>
             <th>Fecha Emisión</th>
             <th>Sociedad</th>
             <th>Número</th>
@@ -22,10 +21,9 @@
     <tbody>
         {% for telecredito in contexto_telecredito %}
         <tr>
-            <td>{{ forloop.counter }}</td>
             <td>{{ telecredito.fecha_emision|date:'d/m/Y' }}</td>
             <td class="fondo-personalizado" style="--color-fondo: {{ telecredito.sociedad.color }} ;">{{ telecredito.sociedad }}</td>
-            <td>{{ telecredito.numero }}</td>
+            {% if telecredito.numero %} <td> {{ telecredito.numero }} </td> {% else %} <td> </td> {% endif %}
             <td>{{ telecredito.concepto }}</td>
             <td>{{ telecredito.banco }}</td>
             <td>{{ telecredito.usuario }}</td>

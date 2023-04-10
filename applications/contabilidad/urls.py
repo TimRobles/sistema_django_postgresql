@@ -12,6 +12,7 @@ urlTelecredito = [
     path('telecredito/solicitar/<pk>/', views.TelecreditoSolicitarView.as_view(), name='telecredito_solicitar'),
     path('telecredito/recibir/<pk>/', views.TelecreditoRecibirView.as_view(), name='telecredito_recibir'),
     path('telecredito/pdf/<pk>/', views.TelecreditoRecibosPdfView.as_view(), name='telecredito_pdf'),
+    path('telecredito/pagar/<pk>/', views.TelecreditoPagarView.as_view(), name='telecredito_pagar'),
 
     path('telecredito/recibos/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_recibos_inicio'),
     path('telecredito/recibos-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_recibos_tabla'),

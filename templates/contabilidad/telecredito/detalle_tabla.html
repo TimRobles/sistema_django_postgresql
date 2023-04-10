@@ -9,7 +9,7 @@
             <tr>
                 <td><b>Número</b></td>
                 <td class="px-2">:</td>
-                <td>{{ contexto_telecredito.numero }}</td>
+                <td> {% if contexto_telecredito.numero %}{{ contexto_telecredito.numero }}{% endif %}</td>
                 <td class="px-4"></td>
                 <td><b>Sociedad</b></td>
                 <td class="px-2">:</td>
@@ -23,7 +23,7 @@
             <tr>
                 <td><b>Fecha Emisión</b></td>
                 <td class="px-2">:</td>
-                <td>{{ contexto_telecredito.fecha_emision }}</td>
+                <td> {% if contexto_telecredito.fecha_emision %}{{ contexto_telecredito.fecha_emision }}{% endif %}</td>
                 <td class="px-4"></td>
                 <td><b>Usuario</b></td>
                 <td class="px-2">:</td>

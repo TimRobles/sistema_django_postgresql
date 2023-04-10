@@ -277,7 +277,7 @@ class Telecredito(models.Model):
     banco = models.ForeignKey(Banco, on_delete=models.PROTECT,  blank=True, null=True)
     numero = models.CharField('Numero', max_length=50, blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
-    fecha_emision = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
+    fecha_emision = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_cobro = models.DateField('Fecha de Cobro', auto_now=False, auto_now_add=False, blank=True, null=True)
     foto = models.FileField('Foto', blank=True, null=True)
     monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)

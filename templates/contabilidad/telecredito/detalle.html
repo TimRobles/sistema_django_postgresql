@@ -29,6 +29,12 @@
                     Generar PDF 
                 </span>
             </a>
+        {% elif contexto_telecredito.estado == 3 %}       
+            <button data-form-url="{% url 'contabilidad_app:telecredito_pagar' contexto_telecredito.id %}"
+                data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}"
+                class="delete badge bg-success">
+                Pagar Telecrédito
+            </button>
         {% endif %}
         <a href="{% url 'contabilidad_app:telecredito_inicio' %}"><span class="badge bg-danger">Regresar</span></a>
     </h3>

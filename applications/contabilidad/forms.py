@@ -411,10 +411,10 @@ class TelecreditoForm(BSModalModelForm):
         model = Telecredito
         fields = (
             'banco',
+            'moneda',
             'concepto',
             'numero',
             'fecha_emision',
-            'usuario',
             'sociedad',
             )
 
@@ -431,6 +431,8 @@ class TelecreditoForm(BSModalModelForm):
         super(TelecreditoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['fecha_emision'].required = False
+        self.fields['moneda'].required = True
 
 
 class TelecreditoReciboPagoForm(BSModalModelForm):

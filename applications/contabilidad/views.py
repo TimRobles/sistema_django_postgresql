@@ -1276,7 +1276,7 @@ class TelecreditoCreateView(PermissionRequiredMixin, BSModalCreateView):
         return context
 
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
+        form.instance.usuario = self.request.user        
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -1609,3 +1609,59 @@ class TelecreditoRecibosPdfView(View):
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
         return respuesta
+
+
+class TelecreditoPagarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['pk']})
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_estado_recibo = False
+        context['titulo'] = 'Error de guardar'
+
+        telecredito = self.get_object()
+        recibos_boletas_pagos = ReciboBoletaPago.objects.filter(
+            content_type = telecredito.content_type,
+            id_registro = telecredito.id,
+        )
+
+        for recibo in recibos_boletas_pagos:
+            if recibo.estado != 3:
+                error_estado_recibo = True
+                break
+        
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+
+        if error_estado_recibo:
+            context['texto'] = 'Hay un recibo sin pagar.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
+        return super(TelecreditoPagarView, self).dispatch(request, *args, **kwargs)
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4      #  PAGADO
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_ACTUALIZACION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoPagarView, self).get_context_data(**kwargs)
+        context['accion'] = "Pagar"
+        context['titulo'] = "Telecrédito"
+        context['dar_baja'] = "true"
+        context['item'] = self.object
+        return context
