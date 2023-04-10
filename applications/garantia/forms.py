@@ -293,6 +293,7 @@ class RegistrarSolucionUpdateForm(BSModalModelForm):
         comentario = kwargs.pop('comentario')
         super(RegistrarSolucionUpdateForm, self).__init__(*args, **kwargs)
         self.fields['solucion'].queryset = soluciones
+        self.fields['solucion'].required = True
         self.fields['comentario'].initial = comentario
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

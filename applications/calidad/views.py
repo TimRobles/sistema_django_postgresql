@@ -58,6 +58,7 @@ from .models import(
     FallaMaterial,
     HistorialEstadoSerie,
     SerieCalidad,
+    SerieConsulta,
     SolicitudConsumoInterno,
     SolicitudConsumoInternoDetalle,
     AprobacionConsumoInterno,
@@ -1599,6 +1600,9 @@ class SerieBuscarView(PermissionRequiredMixin, FormView):
         if serie:
             buscar_serie = Serie.objects.filter(serie_base = serie.upper())
             context['buscar_serie'] = buscar_serie
+            buscar_serie_antigua = SerieConsulta.objects.filter(serie_base = serie.upper())
+            print(buscar_serie_antigua)
+            context['buscar_serie_antigua'] = buscar_serie_antigua
         
         return context
 
@@ -2717,6 +2721,15 @@ class ReparacionMaterialConcluirView(PermissionRequiredMixin, BSModalDeleteView)
                         falla_material=serie.solucion_material.falla_material,
                         solucion=serie.solucion_material,
                         observacion=serie.observacion,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                    HistorialEstadoSerie.objects.create(
+                        serie=serie.serie,
+                        estado_serie=EstadoSerie.objects.get(numero_estado=1), # DISPONIBLE
+                        falla_material=None,
+                        solucion=None,
+                        observacion=None,
                         created_by=self.request.user,
                         updated_by=self.request.user,
                     )

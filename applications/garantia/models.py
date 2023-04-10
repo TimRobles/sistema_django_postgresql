@@ -77,7 +77,7 @@ class IngresoReclamoGarantiaDetalle(models.Model):
 
     @property
     def series_ingreso(self):
-        return SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle=self)
+        return SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle=self).order_by('created_at')
 
     @property
     def series_control(self):
@@ -129,6 +129,13 @@ class SerieIngresoReclamoGarantiaDetalle(models.Model):
             return self.content_type_documento.get_object_for_this_type(id = self.id_registro_documento)
         except:
             return None
+
+    @property
+    def control(self):
+        return ControlCalidadReclamoGarantiaDetalle.objects.get(
+            control_calidad_reclamo_garantia=self.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+            serie_ingreso_reclamo_garantia_detalle=self,
+        )
 
     def __str__(self):
         return f"{self.serie} - {self.ingreso_reclamo_garantia_detalle}"

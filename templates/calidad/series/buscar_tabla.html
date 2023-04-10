@@ -1,3 +1,5 @@
+{% if buscar_serie %}
+<h3>Serie Nueva</h3>
 <table class="table">
     <thead>
         <tr>
@@ -27,3 +29,40 @@
         {% endfor %}
     </tbody>
 </table>
+{% endif %}
+
+
+{% if buscar_serie_antigua %}
+<h3 style="color: red;">Serie Antigua</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Material</th>
+            <th>Estado</th>
+            <th>Documento</th>
+            <th>Fecha</th>
+            <th>Sociedad</th>
+            <th>Cliente</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for serie in buscar_serie_antigua %}
+        <tr>
+            <td>{{ serie.material }}</td>
+            <td>{{ serie.get_estado_display }}</td>
+            <td>{{ serie.documento }}</td>
+            <td>{{ serie.documento.fecha|date:'d/m/Y' }}</td>
+            <td>{{ serie.sociedad }}</td>
+            <td>{{ serie.cliente }}</td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'calidad_app:serie_ver' serie.id %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}

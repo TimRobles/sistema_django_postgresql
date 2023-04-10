@@ -26,7 +26,8 @@
             <th>Documento</th>
             <th>Almacén</th>
             <th>Sociedad</th>
-            <th>Comentario</th>
+            <th>Comentario del Cliente</th>
+            <th>Comentario para el Cliente</th>
             <th>Estado</th>
             <th class="text-nowrap text-center">Acciones</th>
         </tr>
@@ -47,6 +48,11 @@
             <td>
                 {% if serie.comentario %}
                 {{ serie.comentario }}
+                {% endif %}
+            </td>
+            <td>
+                {% if serie.control %}
+                {{ serie.control.comentario }}
                 {% endif %}
             </td>
             <td>{{ serie.serie.estado }}</td>
@@ -89,7 +95,7 @@
             {% endif %}
         </tr>
         <tr>
-            <td colspan="9">
+            <td colspan="10">
                 <div class="accordion" id="parent-{{ serie.id }}">
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="accordion-{{ serie.id }}">

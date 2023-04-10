@@ -1172,16 +1172,15 @@ class RegistrarSolucionUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        soluciones = []
-        for solucion in self.get_object().serie.producto.subfamilia.FallaMaterial_sub_familia.filter(visible=True):
-            soluciones.append(solucion.id)
+        fallas = []
+        for falla in self.get_object().serie.producto.subfamilia.FallaMaterial_sub_familia.filter(visible=True):
+            fallas.append(falla.id)
         serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_serie_ingreso_detalle'])
         control = ControlCalidadReclamoGarantiaDetalle.objects.get(
             control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
             serie_ingreso_reclamo_garantia_detalle=serie,
         )
-        print(control)
-        kwargs['soluciones'] = SolucionMaterial.objects.filter(id__in=soluciones)
+        kwargs['soluciones'] = SolucionMaterial.objects.filter(falla_material__id__in=fallas, visible=True)
         kwargs['comentario'] = control.comentario
         return kwargs
     
@@ -1222,7 +1221,11 @@ class RegistrarSolucionDeleteView(BSModalDeleteView):
                 control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
                 serie_ingreso_reclamo_garantia_detalle=serie,
             )
-            print(control)
+            print("**********************************")
+            print(control.serie_cambio.ultimo_estado)
+            print("**********************************")
+            control.serie_cambio.ultimo_estado.delete()
+            print(int('a'))
             control.delete()
             return super().delete(request, *args, **kwargs)
         except Exception as ex:

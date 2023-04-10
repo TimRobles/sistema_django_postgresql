@@ -19,7 +19,7 @@ from django.db.models.signals import pre_delete, post_delete
 class FallaMaterial(models.Model):
     sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE, related_name='FallaMaterial_sub_familia')
     titulo = models.CharField('Titulo', max_length=50)
-    comentario = models.TextField()
+    comentario = models.TextField(blank=True)
     visible = models.BooleanField()
   
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -38,7 +38,7 @@ class FallaMaterial(models.Model):
 class SolucionMaterial(models.Model):
     falla_material = models.ForeignKey(FallaMaterial, on_delete=models.CASCADE, related_name='SolucionMaterial_falla_material')
     titulo = models.CharField('Titulo', max_length=50)
-    comentario = models.TextField()
+    comentario = models.TextField(blank=True)
     visible = models.BooleanField()
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -124,6 +124,13 @@ class Serie(models.Model):
     def numero_estado(self):
         if self.HistorialEstadoSerie_serie.all():
             return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.numero_estado
+        else:
+            return ""
+
+    @property
+    def ultimo_estado(self):
+        if self.HistorialEstadoSerie_serie.all():
+            return self.HistorialEstadoSerie_serie.latest('created_at')
         else:
             return ""
 
@@ -334,6 +341,10 @@ class SerieConsulta(models.Model):
 
     def __str__(self):
         return str(self.serie_base)
+
+    @property
+    def documento(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
 
 
 class SolicitudConsumoInterno(models.Model):
