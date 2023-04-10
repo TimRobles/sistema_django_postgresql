@@ -1,6 +1,7 @@
 from datetime import date
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from applications.almacenes.models import Almacen
 from applications.calidad.models import FallaMaterial, HistorialEstadoSerie, SolucionMaterial
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
@@ -339,11 +340,13 @@ class RegistrarCambiarUpdateForm(BSModalModelForm):
 
 
 class RegistrarCambiarSinSerieCreateForm(BSModalForm):
+    almacen = forms.ModelChoiceField(queryset=Almacen.objects.all())
     observacion = forms.CharField(widget=forms.Textarea(), required=False)
     comentario = forms.CharField(widget=forms.Textarea(), required=False)
     class Meta:
         model = SerieReclamoHistorial
         fields = (
+            'almacen',
             'observacion',
             'comentario',
         )
@@ -355,18 +358,22 @@ class RegistrarCambiarSinSerieCreateForm(BSModalForm):
 
 
 class RegistrarCambiarSinSerieUpdateForm(BSModalModelForm):
+    almacen = forms.ModelChoiceField(queryset=Almacen.objects.all())
     comentario = forms.CharField(widget=forms.Textarea(), required=False)
     class Meta:
         model = HistorialEstadoSerie
         fields = (
+            'almacen',
             'observacion',
             'comentario',
         )
 
     def __init__(self, *args, **kwargs):
         comentario = kwargs.pop('comentario')
+        almacen = kwargs.pop('almacen')
         super(RegistrarCambiarSinSerieUpdateForm, self).__init__(*args, **kwargs)
         self.fields['comentario'].initial = comentario
+        self.fields['almacen'].initial = almacen
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

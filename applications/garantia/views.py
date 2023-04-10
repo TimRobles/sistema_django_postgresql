@@ -1221,11 +1221,7 @@ class RegistrarSolucionDeleteView(BSModalDeleteView):
                 control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
                 serie_ingreso_reclamo_garantia_detalle=serie,
             )
-            print("**********************************")
-            print(control.serie_cambio.ultimo_estado)
-            print("**********************************")
             control.serie_cambio.ultimo_estado.delete()
-            print(int('a'))
             control.delete()
             return super().delete(request, *args, **kwargs)
         except Exception as ex:
@@ -1430,6 +1426,7 @@ class RegistrarCambiarSinSerieCreateView(PermissionRequiredMixin, BSModalFormVie
                 estado_serie = EstadoSerie.objects.get(numero_estado=14) #POR CAMBIAR
                 observacion = form.cleaned_data.get('observacion')
                 comentario = form.cleaned_data.get('comentario')
+                almacen = form.cleaned_data.get('almacen')
                 
                 ControlCalidadReclamoGarantiaDetalle.objects.create(
                     control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
@@ -1437,6 +1434,7 @@ class RegistrarCambiarSinSerieCreateView(PermissionRequiredMixin, BSModalFormVie
                     serie_cambio=None,
                     tipo_analisis=2, #Cambio
                     comentario=comentario,
+                    almacen=almacen,
                 )
                 historial_estado_serie = HistorialEstadoSerie.objects.create(
                     serie = serie.serie,
@@ -1489,6 +1487,7 @@ class RegistrarCambiarSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdateV
         )
         kwargs['serie_cambio'] = control.serie_cambio
         kwargs['comentario'] = control.comentario
+        kwargs['almacen'] = control.almacen
         return kwargs
     
     def form_valid(self, form):
@@ -1498,7 +1497,9 @@ class RegistrarCambiarSinSerieUpdateView(PermissionRequiredMixin, BSModalUpdateV
             serie_ingreso_reclamo_garantia_detalle=serie,
         )
         comentario = form.cleaned_data.get('comentario')
+        almacen = form.cleaned_data.get('almacen')
         control.comentario = comentario
+        control.almacen = almacen
         control.save()
         registro_guardar(form.instance, self.request)
         self.request.session['primero'] = False
@@ -1704,6 +1705,10 @@ class ControlSalidaGarantiaView(PermissionRequiredMixin, BSModalDeleteView):
             #Generar salidas
             for control in self.object.ControlCalidadReclamoGarantiaDetalle_control_calidad_reclamo_garantia.all():
                 if control.tipo_analisis == 2: #CAMBIO
+                    if control.serie_cambio:
+                        almacen = control.serie_cambio.almacen
+                    else:
+                        almacen = control.almacen
                     movimiento_final_cambio = TipoMovimiento.objects.get(codigo=115) #Garantía, equipo de cambio
                     movimiento_uno = MovimientosAlmacen.objects.create(
                         content_type_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
@@ -1714,7 +1719,7 @@ class ControlSalidaGarantiaView(PermissionRequiredMixin, BSModalDeleteView):
                         signo_factor_multiplicador=-1,
                         content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                         id_registro_documento_proceso=self.object.id,
-                        almacen=None,
+                        almacen=almacen,
                         sociedad=self.object.sociedad,
                         movimiento_anterior=None,
                         movimiento_reversion=False,
@@ -1731,7 +1736,7 @@ class ControlSalidaGarantiaView(PermissionRequiredMixin, BSModalDeleteView):
                         signo_factor_multiplicador=+1,
                         content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                         id_registro_documento_proceso=self.object.id,
-                        almacen=None,
+                        almacen=almacen,
                         sociedad=self.object.sociedad,
                         movimiento_anterior=movimiento_uno,
                         movimiento_reversion=False,

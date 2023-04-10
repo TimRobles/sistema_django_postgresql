@@ -191,6 +191,7 @@ class ControlCalidadReclamoGarantiaDetalle(models.Model):
     serie_cambio = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
     tipo_analisis = models.IntegerField(choices=TIPO_ANALISIS, blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ControlCalidadReclamoGarantiaDetalle_created_by', editable=False)
