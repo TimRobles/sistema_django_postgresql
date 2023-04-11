@@ -46,6 +46,10 @@ url_caja_chica = [
     path('caja-chica/actualizar/<pk>/', views.CajaChicaUpdateView.as_view(), name='caja_chica_actualizar'),
     path('caja-chica/eliminar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_eliminar'),
     path('caja-chica/detalle/<pk>/', views.CajaChicaDetalleView.as_view(), name='caja_chica_detalle'),
+    path('caja-chica/detalle-tabla/<pk>/', views.CajaChicaDetalleTabla, name='caja_chica_detalle_tabla'),
+
+    path('caja-chica/recibo/<pk>/', views.CajaChicaReciboCreateView.as_view(), name='caja_chica_recibo'),
+    path('caja-chica/recibo/eliminar/<pk>/', views.CajaChicaReciboDeleteView.as_view(), name='caja_chica_recibo_eliminar'),
 
     path('prestamo/', views.CajaChicaPrestamoListView.as_view(), name='prestamo_inicio'),
     path('prestamo-tabla/', views.CajaChicaPrestamoTabla, name='prestamo_tabla'),

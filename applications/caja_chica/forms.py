@@ -301,9 +301,6 @@ class ReciboCajaChicaCrearForm(BSModalModelForm):
             'fecha',
             'monto',
             'moneda',
-            'redondeo',
-            'monto_pagado',
-            'fecha_pago',
             'caja_chica',
             )
         
@@ -315,7 +312,28 @@ class ReciboCajaChicaCrearForm(BSModalModelForm):
                     'class': 'input-group-field',
                 }
             ),
-            'fecha_pago': forms.DateInput(
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ReciboCajaChicaCrearForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+
+class CajaChicaReciboCrearForm(BSModalModelForm):
+    class Meta:
+        model = ReciboCajaChica
+        fields = (
+            'concepto',
+            'fecha',
+            'monto',
+            'moneda',
+            )
+        
+        widgets = {
+            'fecha': forms.DateInput(
                 format='%Y-%m-%d',
                 attrs = {
                     'type': 'date',
@@ -325,6 +343,6 @@ class ReciboCajaChicaCrearForm(BSModalModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ReciboCajaChicaCrearForm, self).__init__(*args, **kwargs)
+        super(CajaChicaReciboCrearForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

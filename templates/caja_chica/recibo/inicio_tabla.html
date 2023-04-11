@@ -3,6 +3,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Caja</th>
             <th>Fecha</th>
             <th>Concepto</th>
             <th class="text-end">Monto</th>
@@ -14,6 +15,7 @@
     <tbody>
         {% for recibo in contexto_recibo %}
             <tr>
+                <td>{{ recibo.caja_chica.get_estado_display }} - {{ recibo.caja_chica.get_month_display }} - {{ recibo.caja_chica.usuario.username }}</td>
                 <td>{{ recibo.fecha|date:'d/m/Y' }}</td>
                 <td>{{ recibo.concepto }}</td>
                 <td class="text-nowrap text-end">{{ recibo.monto }} </td>
