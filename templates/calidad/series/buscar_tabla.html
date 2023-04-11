@@ -53,7 +53,11 @@
             <td>{{ serie.material }}</td>
             <td>{{ serie.get_estado_display }}</td>
             <td>{{ serie.documento }}</td>
-            <td>{{ serie.documento.fecha|date:'d/m/Y' }}</td>
+            <td>
+                {% if serie.documento %}
+                {{ serie.documento.fecha|date:'d/m/Y' }}
+                {% endif %}
+            </td>
             <td>{{ serie.sociedad }}</td>
             <td>{{ serie.cliente }}</td>
             <td class="text-center text-nowrap">

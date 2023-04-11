@@ -344,7 +344,10 @@ class SerieConsulta(models.Model):
 
     @property
     def documento(self):
-        return self.content_type.get_object_for_this_type(id = self.id_registro)
+        if self.content_type:
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
+        else:
+            return ""
 
 
 class SolicitudConsumoInterno(models.Model):
