@@ -233,7 +233,7 @@ class Servicio(models.Model):
 
 class ReciboServicio(models.Model):
     servicio = models.ForeignKey(Servicio, blank=True, null=True, on_delete=models.PROTECT)
-    foto = models.FileField('Foto', blank=True, null=True)
+    foto = models.FileField('Documento Recibo', blank=True, null=True)
     fecha_emision = models.DateField('Fecha de Emision', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_vencimiento = models.DateField('Fecha de Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, blank=True, null=True)
@@ -318,25 +318,29 @@ class Cheque(models.Model):
         verbose_name_plural = 'Cheques'
         ordering = ['estado', 'concepto',]
 
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
     def __str__(self):
         if self.moneda:
-            return self.concepto + ' ' + self.usuario.username + ' ' + self.sociedad.razon_social + ' ' + self.get_estado_display() + ' ' + self.moneda.nombre
+            return self.concepto + ' ' + self.usuario.username + ' ' + self.get_estado_display() + ' ' + self.moneda.nombre
         else:
-            return self.concepto + ' ' + self.usuario.username + ' ' + self.sociedad.razon_social + ' ' + self.get_estado_display()
+            return self.concepto + ' ' + self.usuario.username + ' ' + self.get_estado_display()
         
 
 class ChequeFisico(models.Model):
     ESTADO_CHEQUE_FISICO = (
-        (1, 'ABIERTO'),
-        (2, 'SOLICITADO'),
-        (3, 'POR CERRAR'),
-        (4, 'CERRADO'),
+        (1, 'PENDIENTE'),
+        (2, 'COBRADO'),
         )
     
     banco = models.ForeignKey(Banco, on_delete=models.PROTECT, blank=True, null=True)
     numero = models.CharField('Número de cheque', max_length=50, blank=True, null=True)
     responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
     monto = models.DecimalField('Monto del cheque', max_digits=7, decimal_places=2, default=0)
+    comision = models.DecimalField('Comision', max_digits=4, decimal_places=4, default=0)
+    monto_recibido = models.DecimalField('Monto Recibido', max_digits=7, decimal_places=2, default=0)
     fecha_emision = models.DateField('Fecha de emisión del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_cobro = models.DateField('Fecha de cobro del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
     foto = models.ImageField('Foto del cheque', upload_to=CONTABILIDAD_FOTO_CHEQUE, height_field=None, width_field=None, max_length=None, blank=True, null=True)

@@ -452,6 +452,7 @@ MENSAJE_RETROCEDER_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición 
 MENSAJE_REMOVER_RECIBO_BOLETA_PAGO = 'Operación exitosa: El Recibo de Boleta de Pago fue removido.'
 MENSAJE_REMOVER_RECIBO_SERVICIO = 'Operación exitosa: El Recibo de Servicio fue removido.'
 MENSAJE_REMOVER_REQUERIMIENTO = 'Operación exitosa: El Requerimiento fue removido.'
+MENSAJE_CONCLUIR_CHEQUE_FISICO = 'Operación exitosa: El Cheque Fisico fue concluido con éxito.'
 
 
 COLOR_DEFAULT = '#028A0F'

@@ -16,7 +16,34 @@ urlTelecredito = [
     path('telecredito/recibos/actualizar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosUpdateView.as_view() , name='telecredito_recibos_actualizar'),
 ]
 
-urlpatterns = urlTelecredito + [
+urlCheque = [
+    path('cheque/', views.ChequeListView.as_view(), name='cheque_inicio'),
+    path('cheque-tabla/', views.ChequeTabla, name='cheque_tabla'),
+    path('cheque/registrar/', views.ChequeCreateView.as_view(), name='cheque_registrar'),
+    path('cheque/actualizar/<pk>/', views.ChequeUpdateView.as_view(), name='cheque_actualizar'),
+    path('cheque/eliminar/<pk>/', views.ChequeDeleteView.as_view(), name='cheque_eliminar'),
+
+    path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
+    path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),
+
+    path('cheque/detalle/recibo-boleta-pago/agregar/<int:cheque_id>/', views.ChequeReciboBoletaPagoAgregarView.as_view(), name='cheque_recibo_boleta_pago_agregar'),
+    path('cheque/detalle/recibo-boleta-pago/remover/<int:cheque_id>/<pk>/', views.ChequeReciboBoletaPagoRemoverView.as_view(), name='cheque_recibo_boleta_pago_remover'),
+    path('cheque/detalle/recibo-boleta-pago/actualizar/<int:cheque_id>/<pk>', views.ChequeReciboBoletaPagoUpdateView.as_view() , name='cheque_recibo_boleta_pago_actualizar'),
+
+    path('cheque/detalle/recibo-servicio/agregar/<int:cheque_id>/', views.ChequeReciboServicioAgregarView.as_view(), name='cheque_recibo_servicio_agregar'),
+    path('cheque/detalle/recibo-servicio/actualizar/<int:cheque_id>/<pk>', views.ChequeReciboServicioUpdateView.as_view() , name='cheque_recibo_servicio_actualizar'),
+    path('cheque/detalle/recibo-servicio/remover/<int:cheque_id>/<pk>/', views.ChequeReciboServicioRemoverView.as_view(), name='cheque_recibo_servicio_remover'),
+
+    # path('cheque/detalle/requerimiento/agregar/<int:cheque_id>/', views.ChequeRequerimientoAgregarView.as_view(), name='cheque_requerimiento_agregar'),
+    # path('cheque/detalle/requerimiento/remover/<int:cheque_id>/<pk>/', views.ChequeRequerimientoRemoverView.as_view(), name='cheque_requerimiento_remover'),
+
+    path('cheque/detalle/cheque-fisico/registrar/<int:cheque_id>/', views.ChequeFisicoCreateView.as_view(), name='cheque_fisico_registrar'),
+    path('cheque/detalle/cheque-fisico/actualizar/<pk>/', views.ChequeFisicoUpdateView.as_view(), name='cheque_fisico_actualizar'),
+    path('cheque/detalle/cheque-fisico/eliminar/<pk>/', views.ChequeFisicoDeleteView.as_view(), name='cheque_fisico_eliminar'),
+]
+
+
+urlpatterns = urlTelecredito + urlCheque +[
     path('comision/', views.ComisionFondoPensionesListView.as_view(), name='comision_inicio'),
     path('comision-tabla/', views.ComisionFondoPensionesTabla, name='comision_tabla'),
     path('comision/registrar/', views.ComisionFondoPensionesCreateView.as_view(), name='comision_registrar'),
@@ -71,21 +98,4 @@ urlpatterns = urlTelecredito + [
     path('medio-pago-tabla/', views.MedioPagoTabla, name='medio_pago_tabla'),
     path('medio-pago/registrar/', views.MedioPagoCreateView.as_view(), name='medio_pago_registrar'),
     path('medio-pago/actualizar/<pk>/', views.MedioPagoUpdateView.as_view(), name='medio_pago_actualizar'),
-
-    path('cheque/', views.ChequeListView.as_view(), name='cheque_inicio'),
-    path('cheque-tabla/', views.ChequeTabla, name='cheque_tabla'),
-    path('cheque/registrar/', views.ChequeCreateView.as_view(), name='cheque_registrar'),
-    path('cheque/actualizar/<pk>/', views.ChequeUpdateView.as_view(), name='cheque_actualizar'),
-    path('cheque/eliminar/<pk>/', views.ChequeDeleteView.as_view(), name='cheque_eliminar'),
-
-    path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
-    path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),
-
-    path('cheque/detalle/recibo-boleta-pago/agregar/<int:cheque_id>/', views.ReciboBoletaPagoAgregarView.as_view(), name='cheque_recibo_boleta_pago_agregar'),
-    path('cheque/detalle/recibo-boleta-pago/remover/<int:cheque_id>/<pk>/', views.ReciboBoletaPagoRemoverView.as_view(), name='cheque_recibo_boleta_pago_remover'),    
-    path('cheque/detalle/recibo-servicio/agregar/<int:cheque_id>/', views.ReciboServicioAgregarView.as_view(), name='cheque_recibo_servicio_agregar'),
-    path('cheque/detalle/recibo-servicio/remover/<int:cheque_id>/<pk>/', views.ReciboServicioRemoverView.as_view(), name='cheque_recibo_servicio_remover'),
-    path('cheque/detalle/requerimiento/agregar/<int:cheque_id>/', views.RequerimientoAgregarView.as_view(), name='cheque_requerimiento_agregar'),
-    path('cheque/detalle/requerimiento/remover/<int:cheque_id>/<pk>/', views.RequerimientoRemoverView.as_view(), name='cheque_requerimiento_remover'),
-
 ]
