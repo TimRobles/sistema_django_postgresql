@@ -2,9 +2,30 @@ from decimal import Decimal
 from django.shortcuts import render
 from applications.importaciones import*
 from applications.funciones import registrar_excepcion
-from .models import Requerimiento, RequerimientoDocumento, RequerimientoDocumentoDetalle, RequerimientoVueltoExtra, CajaChica, CajaChicaPrestamo, ReciboCajaChica
-from applications.caja_chica.forms import RequerimientoAprobarForm, RequerimientoDocumentoDetalleForm, RequerimientoDocumentoForm, RequerimientoFinalizarRendicionForm, RequerimientoForm, RequerimientoRechazarForm, RequerimientoRechazarRendicionForm, CajaChicaCrearForm, CajaChicaPrestamoCrearForm,ReciboCajaChicaCrearForm, RequerimientoVueltoExtraForm
+from applications.contabilidad.models import ReciboServicio
 
+from .models import (
+    Requerimiento, 
+    RequerimientoDocumento, 
+    RequerimientoDocumentoDetalle,
+    RequerimientoVueltoExtra,
+    CajaChica, 
+    CajaChicaPrestamo, 
+    ReciboCajaChica)
+
+from applications.caja_chica.forms import (
+    RequerimientoAprobarForm, 
+    RequerimientoDocumentoDetalleForm, 
+    RequerimientoDocumentoForm, 
+    RequerimientoFinalizarRendicionForm,
+    RequerimientoForm,
+    RequerimientoRechazarForm,
+    RequerimientoRechazarRendicionForm,
+    CajaChicaCrearForm,
+    CajaChicaPrestamoCrearForm,
+    ReciboCajaChicaCrearForm,
+    RequerimientoVueltoExtraForm,
+    CajaChicaReciboCrearForm,)
 
 class RequerimientoListView(PermissionRequiredMixin, ListView):
     permission_required = ('caja_chica.view_requerimiento')
@@ -507,9 +528,13 @@ class RequerimientoDetalleView(PermissionRequiredMixin, DetailView):
     
     def get_context_data(self, **kwargs):
         requerimiento = Requerimiento.objects.get(id = self.kwargs['pk'])
+        # caja = CajaChica.objects.get(id = requerimiento.id_registro)
+        usuario_pedido = requerimiento.usuario_pedido
         context = super(RequerimientoDetalleView, self).get_context_data(**kwargs)
         context['contexto_documentos'] = RequerimientoDocumento.objects.filter(requerimiento = requerimiento)
         context['contexto_vuelto_extra'] = RequerimientoVueltoExtra.objects.filter(requerimiento = requerimiento)
+        context['usuario_pedido'] = usuario_pedido
+
         return context
 
 
@@ -519,10 +544,12 @@ def RequerimientoDetalleTabla(request, pk):
         template = 'caja_chica/requerimiento/detalle_tabla.html'
         context = {}
         requerimiento = Requerimiento.objects.get(id = pk)
+        # caja = CajaChica.objects.get(id = requerimiento.id_registro)
+        usuario_pedido = requerimiento.usuario_pedido
         context['contexto_requerimiento_detalle'] = requerimiento
         context['contexto_documentos'] = RequerimientoDocumento.objects.filter(requerimiento = requerimiento)
         context['contexto_vuelto_extra'] = RequerimientoVueltoExtra.objects.filter(requerimiento = requerimiento)
-
+        context['usuario_pedido'] = usuario_pedido
         data['table'] = render_to_string(
             template,
             context,
@@ -703,6 +730,7 @@ class RequerimientoDocumentoDetailView(PermissionRequiredMixin, DetailView):
         documento_requerimiento = RequerimientoDocumento.objects.get(id = self.kwargs['pk'])
         context = super(RequerimientoDocumentoDetailView, self).get_context_data(**kwargs)
         context['contexto_item'] = RequerimientoDocumentoDetalle.objects.filter(documento_requerimiento = documento_requerimiento)
+
         return context
 
 
@@ -714,7 +742,7 @@ def RequerimientoDocumentoDetailTabla(request, pk):
         documento_requerimiento = RequerimientoDocumento.objects.get(id = pk)
         context['contexto_documento_detalle'] = documento_requerimiento
         context['contexto_item'] = RequerimientoDocumentoDetalle.objects.filter(documento_requerimiento = documento_requerimiento)
-        
+
         data['table'] = render_to_string(
             template,
             context,
@@ -930,6 +958,7 @@ class CajaChicaDetalleView(PermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         caja_chica = self.get_object()
+        caja_chica_pk = CajaChica.objects.get(id = self.kwargs['pk'])
         context = super(CajaChicaDetalleView, self).get_context_data(**kwargs)
         movimientos = []
         
@@ -951,9 +980,7 @@ class CajaChicaDetalleView(PermissionRequiredMixin, DetailView):
 
         #Requerimientos
         for requerimiento in Requerimiento.objects.filter(content_type=ContentType.objects.get_for_model(caja_chica), id_registro=caja_chica.id,):
-            print(requerimiento)
-            print(requerimiento.estado)
-            print(requerimiento.monto_final)
+
             fecha = requerimiento.fecha
             concepto = requerimiento.concepto
             estado = requerimiento.get_estado_display()
@@ -988,9 +1015,62 @@ class CajaChicaDetalleView(PermissionRequiredMixin, DetailView):
             movimiento[5] = saldo_acumulado
 
         context['movimientos'] = movimientos
-
+        context['recibos'] =  ReciboCajaChica.objects.filter(caja_chica=caja_chica_pk)
+        # context['recibo_servicios'] = ReciboServicio.objects.filter(caja_chica=caja_chica_pk)
         return context
 
+def CajaChicaDetalleTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        cajachica = CajaChica.objects.get(id = pk)
+        template = 'caja_chica/caja_chica/inicio_tabla.html'
+        context = {}
+        context['recibos'] =  ReciboCajaChica.objects.filter(caja_chica=cajachica)
+        # context['recibo_servicios'] = ReciboServicio.objects.filter(caja_chica=cajachica)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class CajaChicaReciboCreateView(BSModalCreateView):
+    model = ReciboCajaChica
+    template_name = "includes/formulario generico.html"
+    form_class = CajaChicaReciboCrearForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        form.instance.caja_chica = CajaChica.objects.get(id = self.kwargs['pk'])
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaReciboCreateView, self).get_context_data(**kwargs)
+        context['accion']="Recibo"
+        context['titulo']="Caja Chica"
+        return context
+
+
+class CajaChicaReciboDeleteView(BSModalDeleteView):
+    model = ReciboCajaChica
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaReciboDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo'] = "Recibo Caja Chica"
+        context['item'] = self.get_object().concepto +' - '+str(self.get_object().moneda.simbolo) +' '+ str(self.get_object().monto)
+        context['dar_baja'] = "true"
+        return context
 
 #__CajaChicaPrestamo_____________________________________________________________________
 class CajaChicaPrestamoListView(ListView):
@@ -998,7 +1078,6 @@ class CajaChicaPrestamoListView(ListView):
     template_name = "caja_chica/prestamo/inicio.html"
     context_object_name = 'contexto_prestamo'
     
-
 def CajaChicaPrestamoTabla(request):
     data = dict()
     if request.method == 'GET':
@@ -1063,8 +1142,7 @@ class CajaChicaPrestamoDeleteView(BSModalDeleteView):
 class ReciboCajaChicaListView(ListView):
     model = ReciboCajaChica
     template_name = "caja_chica/recibo/inicio.html"
-    context_object_name = 'contexto_recibo'
-    
+    context_object_name = 'contexto_recibo'    
 
 def ReciboCajaChicaTabla(request):
     data = dict()
@@ -1125,3 +1203,33 @@ class ReciboCajaChicaDeleteView(BSModalDeleteView):
         context['dar_baja'] = "true"
         return context
 
+
+#__CajaChica_Requerimientos_____________
+class CajaChicaRequerimientoView(DetailView):
+    model = CajaChica
+    template_name = "caja_chica/caja_chica_requerimiento/inicio.html"
+    context_object_name = 'contexto_caja_detalle'
+
+    def get_context_data(self, **kwargs):
+        caja = CajaChica.objects.get(id = self.kwargs['pk'])
+        context = super(CajaChicaRequerimientoView, self).get_context_data(**kwargs)
+        # context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(caja), id_registro = caja.id)
+        context['contexto_usuario_pedido'] = Requerimiento.objects.filter(usuario_pedido = caja.usuario)
+
+        return context
+
+def CajaChicaRequerimientoTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'caja_chica/caja_chica_requerimiento/inicio_tabla.html'
+        context = {}
+        caja = CajaChica.objects.get(id = pk)
+        # context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(caja), id_registro = caja.id)
+        context['contexto_usuario_pedido'] = Requerimiento.objects.filter(usuario_pedido = caja.usuario)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
