@@ -10,6 +10,7 @@ from applications.usuario.models import DatosUsuario
 from applications.sociedad.models import Sociedad
 from .models import (
     Cheque,
+    ChequeFisico,
     ComisionFondoPensiones,
     DatosPlanilla,
     EsSalud,
@@ -262,7 +263,6 @@ class ReciboServicioForm(BSModalModelForm):
             'foto',
             'fecha_emision',
             'fecha_vencimiento',
-            'fecha_pago',
             'monto',
             'moneda',
             )
@@ -274,12 +274,6 @@ class ReciboServicioForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 ),
             'fecha_vencimiento' : forms.DateInput(
-                attrs ={
-                    'type':'date',
-                    },
-                format = '%Y-%m-%d',
-                ),
-            'fecha_pago' : forms.DateInput(
                 attrs ={
                     'type':'date',
                     },
@@ -358,7 +352,7 @@ class ChequeForm(BSModalModelForm):
             self.fields[field].required = True
 
 
-class ReciboBoletaPagoAgregarForm(BSModalForm):
+class ChequeReciboBoletaPagoAgregarForm(BSModalForm):
     recibo_boleta_pago = forms.ModelChoiceField(queryset=None)
 
     class Meta:
@@ -368,13 +362,40 @@ class ReciboBoletaPagoAgregarForm(BSModalForm):
 
     def __init__(self, *args, **kwargs):
         lista_recibos = kwargs.pop('recibos')
-        super(ReciboBoletaPagoAgregarForm, self).__init__(*args, **kwargs)
+        super(ChequeReciboBoletaPagoAgregarForm, self).__init__(*args, **kwargs)
         self.fields['recibo_boleta_pago'].queryset = lista_recibos
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            
+
+class ChequeReciboBoletaPagoUpdateForm(BSModalModelForm):
+    class Meta:
+        model = ReciboBoletaPago
+        fields = (
+            'monto_pagado',
+            'fecha_pago',
+            'voucher',
+            )
+
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    # 'required':'required',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ChequeReciboBoletaPagoUpdateForm, self).__init__(*args, **kwargs)
+        # for field in self.fields:
+        #     self.fields[field].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-class ReciboServicioAgregarForm(BSModalForm):
+class ChequeReciboServicioAgregarForm(BSModalForm):
     recibo_servicio = forms.ModelChoiceField(queryset=None)
 
     class Meta:
@@ -384,26 +405,105 @@ class ReciboServicioAgregarForm(BSModalForm):
 
     def __init__(self, *args, **kwargs):
         lista_recibos = kwargs.pop('recibos')
-        super(ReciboServicioAgregarForm, self).__init__(*args, **kwargs)
+        super(ChequeReciboServicioAgregarForm, self).__init__(*args, **kwargs)
         self.fields['recibo_servicio'].queryset = lista_recibos
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-class RequerimientoAgregarForm(BSModalForm):
-    requerimiento = forms.ModelChoiceField(queryset=None)
+class ChequeReciboServicioUpdateForm(BSModalModelForm):
+    class Meta:
+        model = ReciboServicio
+        fields = (
+            'monto_pagado',
+            'fecha_pago',
+            'voucher',
+            )
+
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    # 'required':'required',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ChequeReciboServicioUpdateForm, self).__init__(*args, **kwargs)
+        # for field in self.fields:
+        #     self.fields[field].required = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ChequeReciboCajaChicaAgregarForm(BSModalForm):
+    recibo_caja_chica = forms.ModelChoiceField(queryset=None)
 
     class Meta:
         fields=(
-            'requerimiento',
+            'recibo_caja_chica',
             )
 
     def __init__(self, *args, **kwargs):
-        lista_requerimientos = kwargs.pop('requerimientos')
-        super(RequerimientoAgregarForm, self).__init__(*args, **kwargs)
-        self.fields['requerimiento'].queryset = lista_requerimientos
+        lista_recibos = kwargs.pop('recibos')
+        super(ChequeReciboCajaChicaAgregarForm, self).__init__(*args, **kwargs)
+        self.fields['recibo_caja_chica'].queryset = lista_recibos
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+# class ChequeRequerimientoAgregarForm(BSModalForm):
+#     requerimiento = forms.ModelChoiceField(queryset=None)
+
+#     class Meta:
+#         fields=(
+#             'requerimiento',
+#             )
+
+#     def __init__(self, *args, **kwargs):
+#         lista_requerimientos = kwargs.pop('requerimientos')
+#         super(ChequeRequerimientoAgregarForm, self).__init__(*args, **kwargs)
+#         self.fields['requerimiento'].queryset = lista_requerimientos
+#         for visible in self.visible_fields():
+#             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ChequeFisicoForm(BSModalModelForm):
+    class Meta:
+        model = ChequeFisico
+        fields = (
+            'banco',
+            'numero',
+            'responsable',
+            'monto',
+            'fecha_emision',
+            'foto',
+            'sociedad',
+            )
+        widgets = {
+            'fecha_emision' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    # 'required':'required',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            # 'fecha_cobro' : forms.DateInput(
+            #     attrs ={
+            #         'type':'date',
+            #         # 'required':'required',
+            #         },
+            #     format = '%Y-%m-%d',
+            #     ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ChequeFisicoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
 
 
 class TelecreditoForm(BSModalModelForm):
