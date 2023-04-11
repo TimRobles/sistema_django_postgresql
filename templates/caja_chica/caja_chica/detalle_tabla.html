@@ -1,6 +1,43 @@
 {% load humanize %}
 {% load funciones_propias %}
 
+<h3>Recibos Caja Chica</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Estado</th>
+            <th class="text-end">Monto</th>
+            <th>Fecha de Pago</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recibo in recibos %}
+            <tr>
+                <td>{{ recibo.fecha|date:'d/m/Y' }}</td>
+                <td>{{ recibo.concepto }}</td>
+                <td>{{ recibo.get_estado_display }}</td>
+                <td class="text-nowrap text-end">{{ recibo.monto }} </td>
+                <td>{{ recibo.fecha_pago|date:'d/m/Y' }}</td>
+                <td class="text-nowrap text-center">
+                    <button data-form-url="{% url 'caja_chica_app:caja_chica_recibo_eliminar' recibo.caja_chica.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>                    
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
+<h3>Movimientos de Caja Chica</h3>
+
 <table class="table">
     <thead>
         <tr>

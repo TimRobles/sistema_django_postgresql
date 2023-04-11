@@ -160,9 +160,8 @@ TIPO_VENTA= (
     )
 
 ESTADOS = (
-    (1, 'ABIERTO'),
-    (2, 'CERRADO'),
-    (3, 'USADO'),
+    (1, 'ALTA'),
+    (2, 'BAJA'),
     )
 
 ESTADOS_DOCUMENTO = (
@@ -367,10 +366,23 @@ TIPO_PRESTAMO = (
     (1, 'PRESTAMO'),
     )
 
-ESTADO_PRESTAMO = (
+ESTADO_PRESTAMO_CAJA_CHICA = (
     (1, 'PRESTADO'),
     (2, 'DEVUELTO'),
     )
+
+ESTADO_CAJA_CHICA = (
+        (1, 'ABIERTO'),
+        (2, 'CERRADO'),
+        (3, 'USADO'),
+    )
+
+ESTADO_RECIBO_CAJA_CHICA = (
+        (1, 'BORRADOR'),
+        (2, 'PENDIENTE'),
+        (3, 'PAGADO'),
+    )
+
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
@@ -440,6 +452,7 @@ MENSAJE_RETROCEDER_RENDICION_REQUERIMIENTO = 'Operación exitosa: La rendición 
 MENSAJE_REMOVER_RECIBO_BOLETA_PAGO = 'Operación exitosa: El Recibo de Boleta de Pago fue removido.'
 MENSAJE_REMOVER_RECIBO_SERVICIO = 'Operación exitosa: El Recibo de Servicio fue removido.'
 MENSAJE_REMOVER_REQUERIMIENTO = 'Operación exitosa: El Requerimiento fue removido.'
+MENSAJE_CONCLUIR_CHEQUE_FISICO = 'Operación exitosa: El Cheque Fisico fue concluido con éxito.'
 
 
 COLOR_DEFAULT = '#028A0F'

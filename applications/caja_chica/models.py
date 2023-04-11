@@ -5,11 +5,12 @@ from django.contrib.contenttypes.models import ContentType
 
 from applications.datos_globales.models import Moneda, Unidad
 from applications.sociedad.models import Sociedad
+from applications.contabilidad.models import Cheque
 from applications.rutas import REQUERIMIENTO_FOTO_PRODUCTO, REQUERIMIENTO_VOUCHER
 
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
-from applications.variables import MESES, ESTADOS, TIPO_PRESTAMO, ESTADO_PRESTAMO
+from applications.variables import MESES, TIPO_PRESTAMO, ESTADO_PRESTAMO_CAJA_CHICA, ESTADO_CAJA_CHICA, ESTADO_RECIBO_CAJA_CHICA
 
 
 class Requerimiento(models.Model):
@@ -170,7 +171,7 @@ class CajaChica(models.Model):
     egresos = models.DecimalField('Egresos', max_digits=7, decimal_places=2, default=0)
     saldo_final = models.DecimalField('Saldo Inicial', max_digits=5, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='CajaChica_usuario')
-    estado = models.IntegerField(choices=ESTADOS, default=1)
+    estado = models.IntegerField(choices=ESTADO_CAJA_CHICA, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChica_created_by', editable=False)
@@ -215,7 +216,7 @@ class CajaChicaPrestamo(models.Model):
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
     tipo = models.IntegerField(choices=TIPO_PRESTAMO, default=1)    
     devolucion = models.OneToOneField('self', on_delete=models.PROTECT, null=True)
-    estado = models.IntegerField(choices=ESTADO_PRESTAMO, default=1)    
+    estado = models.IntegerField(choices=ESTADO_PRESTAMO_CAJA_CHICA, default=1)    
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='CajaChicaPrestamo_created_by', editable=False)
@@ -230,16 +231,16 @@ class CajaChicaPrestamo(models.Model):
         return str(self.id)
 
 class ReciboCajaChica(models.Model):
-    concepto = models.CharField('Concepto Salida', max_length=50, null=True)
+    concepto = models.CharField('Concepto', max_length=50, null=True)
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     redondeo = models.DecimalField('Redondeo', max_digits=3, decimal_places=2, default=0)
     monto_pagado = models.DecimalField('Monto pagado', max_digits=7, decimal_places=2, default=0)
-    fecha_pago = models.DateField('Fecha de pago', auto_now=False, auto_now_add=False)
-    # cheque = models.ForeignKey(Cheque, on_delete=models.PROTECT)
+    fecha_pago = models.DateField('Fecha de pago', auto_now=False, auto_now_add=False,blank=True, null=True)
+    cheque = models.ForeignKey(Cheque, on_delete=models.PROTECT, null=True)
     caja_chica = models.ForeignKey(CajaChica, on_delete=models.PROTECT, null=True)
-    estado = models.IntegerField(choices=ESTADOS, default=1)    
+    estado = models.IntegerField(choices=ESTADO_RECIBO_CAJA_CHICA, default=1)    
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboCajaChica_created_by', editable=False)

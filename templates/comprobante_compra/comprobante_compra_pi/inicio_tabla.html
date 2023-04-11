@@ -1,6 +1,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Sociedad</th>
             <th>Fecha</th>
             <th>Número de Comprobante</th>
             <th>Proveedor</th>
@@ -15,6 +16,7 @@
     <tbody>
         {% for comprobante_compra_pi in contexto_comprobante_compra_pi %}
         <tr>
+            <td class="fondo-personalizado" style="--color-fondo: {{ comprobante_compra_pi.sociedad.color }};">{{ comprobante_compra_pi.sociedad.abreviatura }}</td>
             <td>{{ comprobante_compra_pi.fecha_comprobante|date:'d/m/Y' }}</td>
             <td>{{ comprobante_compra_pi.numero_comprobante_compra }}</td>
             <td>{{ comprobante_compra_pi.orden_compra.proveedor }}</td>

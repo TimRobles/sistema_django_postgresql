@@ -4,8 +4,10 @@ from . import views
 app_name = 'comprobante_compra_app'
 
 urlpatterns = [
-
     path('comprobante-compra-pi/lista/', views.ComprobanteCompraPIListView.as_view(), name='comprobante_compra_pi_lista'),
+    path('comprobante-compra-pi-tabla/', views.ComprobanteCompraPITabla, name='comprobante_compra_pi_tabla'),
+    
+    # path('comprobante-compra-pi/lista/', views.ComprobanteCompraPIListView.as_view(), name='comprobante_compra_pi_lista'),
     path('comprobante-compra-pi/detalle/<slug>/', views.ComprobanteCompraPIDetailView.as_view(), name='comprobante_compra_pi_detalle'),
     path('comprobante-compra-pi/detalle/tabla/<slug>/', views.ComprobanteCompraPIDetailTabla, name='comprobante_compra_pi_detalle_tabla'),
     path('comprobante-compra-pi/traduccion/<slug>/', views.ComprobanteCompraPITraduccionView.as_view(), name='comprobante_compra_pi_traduccion'),

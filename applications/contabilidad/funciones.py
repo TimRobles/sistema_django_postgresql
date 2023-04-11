@@ -1,7 +1,10 @@
 from decimal import Decimal
-from applications.contabilidad.models import EsSalud
+from django.db import models
+from applications.importaciones import *
+from applications.contabilidad.models import EsSalud, ReciboBoletaPago, ReciboServicio
 
 from applications.datos_globales.models import RemuneracionMinimaVital
+from applications.caja_chica.models import Requerimiento
 
 
 def calcular_datos_boleta(obj):
@@ -34,3 +37,27 @@ def calcular_datos_boleta(obj):
     
     obj.impuesto_quinta = Decimal('0.00')
     obj.neto_recibido = obj.haber_mensual + obj.lic_con_goce_haber + obj.dominical + obj.movilidad + obj.asig_familiar + obj.vacaciones + obj.gratificacion + obj.ley29351 + obj.bonif_1mayo - (obj.aporte_obligatorio + obj.comision_porcentaje + obj.prima_seguro)
+
+
+def calculo_montos(obj):
+    totales_parciales = {}
+    cheque = obj
+    recibo_boleta = ReciboBoletaPago.objects.filter(
+                    content_type = ContentType.objects.get_for_model(cheque),
+                    id_registro = cheque.id,
+                    )
+    totales_parciales['total_boleta'] = recibo_boleta.aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+
+    recibo_servicio = ReciboServicio.objects.filter(
+                    content_type = ContentType.objects.get_for_model(cheque),
+                    id_registro = cheque.id,
+                    )
+    totales_parciales['total_servicio'] = recibo_servicio.aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+
+    requerimiento = Requerimiento.objects.filter(
+                    content_type = ContentType.objects.get_for_model(cheque),
+                    id_registro = cheque.id,
+                    )
+    totales_parciales['total_requerimiento'] = requerimiento.aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+
+    return totales_parciales
