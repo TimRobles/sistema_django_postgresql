@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django import forms
 from django.core.paginator import Paginator
-from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SolucionMaterial
+from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SerieConsulta, SolucionMaterial
 from applications.comprobante_venta.models import BoletaVenta, BoletaVentaDetalle, FacturaVenta, FacturaVentaDetalle
 from applications.garantia.pdf import generarIngresoReclamoGarantia, generarSalidaReclamoGarantia
 from applications.importaciones import*
@@ -520,6 +520,8 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
         if serie_base:
             try:
                 serie = Serie.objects.get(serie_base=serie_base)
+                print("************************************")
+                print(serie)
                 item = len(IngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia = ingreso_reclamo_garantia))
                 ingreso_reclamo_garantia_detalle, created = IngresoReclamoGarantiaDetalle.objects.get_or_create(
                     content_type = serie.content_type,
@@ -535,8 +537,11 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                     ingreso_reclamo_garantia.save()
 
 
-                
-                documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                print(serie.documento)
+                if hasattr(serie.documento, 'nota_salida'):
+                    documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                else:
+                    documento = serie.documento
 
                 buscar = SerieIngresoReclamoGarantiaDetalle.objects.filter(
                             ingreso_reclamo_garantia_detalle=ingreso_reclamo_garantia_detalle,
@@ -544,7 +549,8 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                             content_type_documento=ContentType.objects.get_for_model(documento),
                             id_registro_documento=documento.id,
                         )
-
+                print(buscar)
+                print("************************************")
                 if len(buscar)>0:
                     self.serie_encontrada = "La serie ya está registrada"
                 elif ingreso_reclamo_garantia.cliente == serie.cliente:
@@ -572,7 +578,11 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                     self.serie_encontrada = "La serie pertenece a otro CLIENTE"
 
             except:
-                self.serie_encontrada = "No se encontró la serie"
+                try:
+                    serie = SerieConsulta.objects.get(serie_base=serie_base)
+                    self.serie_encontrada = "Serie antigua"
+                except:
+                    self.serie_encontrada = "No se encontró la serie"
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load funciones_propias %}
 
 {% block titulo %}
     Series Ingreso Reclamo Garantía Detalle
@@ -15,6 +16,15 @@
     </button>
     <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
     {{ serie_encontrada }}
+    
+    {% if serie_encontrada == 'Serie antigua' %}
+    <a href="{% url 'calidad_app:serie_buscar' %}?serie={{request.GET|get_diccionario:'serie_base'}}"
+    target="_blank"
+    class="btn btn-info">
+        Buscar Serie
+    </a>
+    {% endif %}
+        
 </form>
 
 <div id="tabla">

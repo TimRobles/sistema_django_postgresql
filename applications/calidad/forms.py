@@ -1,10 +1,11 @@
 from django import forms
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.movimiento_almacen.models import TipoStock
 from applications.nota_ingreso.models import NotaIngreso
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Unidad
 from applications.material.funciones import stock, stock_disponible, stock_sede_disponible, stock_tipo_stock
-from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
+from applications.variables import CHOICE_VACIO, ESTADOS_NOTA_CALIDAD_STOCK
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import (
@@ -788,3 +789,44 @@ class SalidaTransformacionProductosSeriesForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             self.fields['cantidad'].disabled = True
             self.fields['cantidad_ingresada'].disabled = True
+            
+
+class RegistrarSerieAntiguaForm(BSModalForm):
+    vacio = forms.CharField(required=False)
+    factura = forms.ChoiceField(choices=CHOICE_VACIO, required=False)
+    boleta = forms.ChoiceField(choices=CHOICE_VACIO, required=False)
+    class Meta:
+        fields = (
+            'vacio',
+            'factura',
+            'boleta',
+        )
+
+    def clean_vacio(self):
+        vacio = self.cleaned_data.get('vacio')
+        factura = self.fields['factura']
+        factura.choices = FacturaVenta.objects.values_list('id', 'id')
+        boleta = self.fields['boleta']
+        boleta.choices = BoletaVenta.objects.values_list('id', 'id')
+        return vacio
+
+    def clean(self):
+        cleaned_data = super().clean()
+        factura = cleaned_data.get('factura')
+        boleta = cleaned_data.get('boleta')
+        print(factura)
+        print(boleta)
+        if factura and boleta:
+            self.add_error('factura', 'Solo puedes escoger 1 solo documento.')
+            self.add_error('boleta', 'Solo puedes escoger 1 solo documento.')
+            factura = self.fields['factura']
+            factura.choices = CHOICE_VACIO
+            boleta = self.fields['boleta']
+            boleta.choices = CHOICE_VACIO
+        return cleaned_data
+        
+    def __init__(self, *args, **kwargs):
+        super(RegistrarSerieAntiguaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['vacio'].widget.attrs['class'] = 'form-control ocultar'

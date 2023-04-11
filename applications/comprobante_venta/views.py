@@ -1061,25 +1061,26 @@ def FacturaVentaJsonView(request):
             filtro_numero = False
         filtro_serie = Q(serie_comprobante__serie=term.split(' ')[0])
         for palabra in term.split(' ')[1:]:
-            filtro_razon_social = filtro_razon_social | Q(cliente__razon_social__unaccent__icontains=palabra)
+            filtro_razon_social = filtro_razon_social & Q(cliente__razon_social__unaccent__icontains=palabra)
             if palabra.isnumeric():
                 if filtro_numero:
                     filtro_numero = filtro_numero | Q(numero_factura=palabra)
                 else:
                     filtro_numero = Q(numero_factura=palabra)
             filtro_serie = filtro_serie | Q(serie_comprobante__serie=palabra)
+        print(filtro_razon_social)
         if filtro_numero:
             buscar = FacturaVenta.objects.filter(
                     estado=4,
                 ).filter(
                     filtro_razon_social | filtro_serie | filtro_numero
-                )
+                ).order_by('-fecha_emision')
         else:
             buscar = FacturaVenta.objects.filter(
                     estado=4,
                 ).filter(
                     filtro_razon_social | filtro_serie
-                )
+                ).order_by('-fecha_emision')
         
         for factura in buscar:
             data.append({
@@ -1855,7 +1856,7 @@ def BoletaVentaJsonView(request):
             filtro_numero = False
         filtro_serie = Q(serie_comprobante__serie=term.split(' ')[0])
         for palabra in term.split(' ')[1:]:
-            filtro_razon_social = filtro_razon_social | Q(cliente__razon_social__unaccent__icontains=palabra)
+            filtro_razon_social = filtro_razon_social & Q(cliente__razon_social__unaccent__icontains=palabra)
             if palabra.isnumeric():
                 if filtro_numero:
                     filtro_numero = filtro_numero | Q(numero_factura=palabra)
@@ -1867,13 +1868,13 @@ def BoletaVentaJsonView(request):
                     estado=4,
                 ).filter(
                     filtro_razon_social | filtro_serie | filtro_numero
-                )
+                ).order_by('-fecha_emision')
         else:
             buscar = BoletaVenta.objects.filter(
                     estado=4,
                 ).filter(
                     filtro_razon_social | filtro_serie
-                )
+                ).order_by('-fecha_emision')
             
         for boleta in buscar:
             data.append({

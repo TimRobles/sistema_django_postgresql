@@ -152,7 +152,7 @@ class Serie(models.Model):
     def cliente(self):
         if self.serie_movimiento_almacen.all():
             ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
-            if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO':
+            if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO' or ultimo_movimiento.tipo_stock.descripcion == 'CORRECCION DE SERIE':
                 return self.serie_movimiento_almacen.latest('id').documento_proceso.cliente
         return ""
 
@@ -160,7 +160,7 @@ class Serie(models.Model):
     def documento(self):
         if self.serie_movimiento_almacen.all():
             ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
-            if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO':
+            if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO' or ultimo_movimiento.tipo_stock.descripcion == 'CORRECCION DE SERIE':
                 return self.serie_movimiento_almacen.latest('id').documento_proceso
         return ""
 
