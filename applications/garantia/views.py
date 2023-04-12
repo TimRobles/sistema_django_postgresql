@@ -590,8 +590,10 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super(SerieIngresoReclamoGarantiaView, self).get_context_data(**kwargs)
+        series = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia__id=self.kwargs['id_ingreso'])
         context['serie_encontrada'] = self.serie_encontrada
-        context['series'] = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia__id=self.kwargs['id_ingreso'])
+        context['cantidad_series'] = len(series)
+        context['series'] = series
         context['regresar'] = reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
         context['url_tabla'] = reverse_lazy('garantia_app:serie_ingreso_garantia_tabla', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
         return context
@@ -705,6 +707,7 @@ class SerieIngresoReclamoGarantiaDetalleView(PermissionRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super(SerieIngresoReclamoGarantiaDetalleView, self).get_context_data(**kwargs)
+        context['ingreso_reclamo_garantia_detalle'] = IngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_ingreso_detalle'])
         context['serie_encontrada'] = self.serie_encontrada
         context['series'] = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__id=self.kwargs['id_ingreso_detalle'])
         context['regresar'] = reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
