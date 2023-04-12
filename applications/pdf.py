@@ -122,7 +122,7 @@ def listaGuion(filas, fuente, tamaño=8, tipo="Regular", color='black'):
     lista = []
     for fila in filas:
         lista.append(ListItem(
-            parrafoIzquierda(fila[0], fuente, tamaño, tipo, color),
+            parrafoIzquierda(fila, fuente, tamaño, tipo, color),
             bulletColor='black',
             ))
     return ListFlowable(
