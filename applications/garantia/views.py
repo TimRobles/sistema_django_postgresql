@@ -51,7 +51,9 @@ from .forms import(
     SerieIngresoReclamoGarantiaDocumentoForm,
 )
 
-CONDICIONES_GARANTIA = list(CondicionesGarantia.objects.values_list('condicion'))
+CONDICIONES_GARANTIA = []
+for condicion in list(CondicionesGarantia.objects.values_list('condicion')):
+    CONDICIONES_GARANTIA.append(condicion[0])
 
 
 class IngresoReclamoGarantiaListView(FormView):
