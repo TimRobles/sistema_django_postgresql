@@ -51,7 +51,7 @@ from .forms import(
     SerieIngresoReclamoGarantiaDocumentoForm,
 )
 
-CONDICIONES_GARANTIA = CondicionesGarantia.objects.values_list('condicion')
+CONDICIONES_GARANTIA = list(CondicionesGarantia.objects.values_list('condicion'))
 
 
 class IngresoReclamoGarantiaListView(FormView):
@@ -842,6 +842,8 @@ class IngresoReclamoGarantiaPdfView(View):
         sociedad = ingreso_reclamo_garantia.sociedad
         color = sociedad.color
         vertical = True
+        if request.GET.get('vertical'):
+            vertical = False
         alinear = 'right'
         logo = [[sociedad.logo.url, alinear]]
         pie_pagina = sociedad.pie_pagina
@@ -2172,6 +2174,8 @@ class SalidaReclamoGarantiaPdfView(View):
         sociedad = salida_reclamo_garantia.sociedad
         color = sociedad.color
         vertical = True
+        if request.GET.get('vertical'):
+            vertical = False
         alinear = 'right'
         logo = [[sociedad.logo.url, alinear]]
         pie_pagina = sociedad.pie_pagina

@@ -20,7 +20,12 @@
     {% if ingreso.estado != 1 %}
     <div class="col-auto">
         <a href="{% url 'garantia_app:ingreso_garantia_pdf' ingreso.id %}" target="_blank" class="btn btn-danger">
-            Ver PDF
+            Ver PDF Vertical
+        </a>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'garantia_app:ingreso_garantia_pdf' ingreso.id %}?vertical=False" target="_blank" class="btn btn-danger">
+            Ver PDF Horizontal
         </a>
     </div>
     {% endif %}
