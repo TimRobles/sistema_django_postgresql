@@ -536,6 +536,14 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                     ingreso_reclamo_garantia.sociedad = serie.sociedad
                     ingreso_reclamo_garantia.save()
 
+                if created:
+                    ingreso_reclamo_garantia_detalle.item = item + 1
+                    ingreso_reclamo_garantia_detalle.cantidad = 1
+                else:
+                    if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
+                        ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
+                registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
+                ingreso_reclamo_garantia_detalle.save()
 
                 print(serie.documento)
                 if hasattr(serie.documento, 'nota_salida'):
@@ -564,25 +572,20 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                             updated_by=self.request.user,
                         )
                         self.serie_encontrada = "Serie encontrada"
-                        if created:
-                            ingreso_reclamo_garantia_detalle.item = item + 1
-                            ingreso_reclamo_garantia_detalle.cantidad = 1
-                        else:
-                            if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
-                                ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
-                        registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
-                        ingreso_reclamo_garantia_detalle.save()
                     else:
                         self.serie_encontrada = "La serie pertenece a otra SOCIEDAD"
                 else:
                     self.serie_encontrada = "La serie pertenece a otro CLIENTE"
 
             except:
-                try:
-                    serie = SerieConsulta.objects.get(serie_base=serie_base)
-                    self.serie_encontrada = "Serie antigua"
-                except:
-                    self.serie_encontrada = "No se encontró la serie"
+                if len(Serie.objects.filter(serie_base=serie_base)) > 1:
+                    self.serie_encontrada = "Serie en más de 1 producto"
+                else:
+                    try:
+                        serie = SerieConsulta.objects.get(serie_base=serie_base)
+                        self.serie_encontrada = "Serie antigua"
+                    except:
+                        self.serie_encontrada = "No se encontró la serie"
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -638,8 +641,21 @@ class SerieIngresoReclamoGarantiaDetalleView(PermissionRequiredMixin, FormView):
         if serie_base:
             try:
                 if ingreso_reclamo_garantia_detalle.producto.control_serie:
-                    serie = Serie.objects.get(serie_base=serie_base)
-                    documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                    print(serie_base)
+                    print(ingreso_reclamo_garantia_detalle.content_type)
+                    print(ingreso_reclamo_garantia_detalle.id_registro)
+                    serie = Serie.objects.get(
+                        serie_base=serie_base,
+                        content_type=ingreso_reclamo_garantia_detalle.content_type,
+                        id_registro=ingreso_reclamo_garantia_detalle.id_registro,
+                        )
+                        
+                    print(serie.documento)
+                    if hasattr(serie.documento, 'nota_salida'):
+                        documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                    else:
+                        documento = serie.documento
+
                     content_type_documento = ContentType.objects.get_for_model(documento)
                     id_registro_documento = documento.id
                     cliente = serie.cliente
@@ -683,6 +699,7 @@ class SerieIngresoReclamoGarantiaDetalleView(PermissionRequiredMixin, FormView):
                     self.serie_encontrada = "La serie pertenece a otro PRODUCTO"
 
             except Exception as e:
+                print(e)
                 self.serie_encontrada = "No se encontró la serie"
         return super().get(request, *args, **kwargs)
 
