@@ -454,6 +454,10 @@ MENSAJE_REMOVER_RECIBO_SERVICIO = 'Operación exitosa: El Recibo de Servicio fue
 MENSAJE_REMOVER_REQUERIMIENTO = 'Operación exitosa: El Requerimiento fue removido.'
 MENSAJE_CONCLUIR_CHEQUE_FISICO = 'Operación exitosa: El Cheque Fisico fue concluido con éxito.'
 
+MENSAJE_SOLICITAR_CHEQUE= 'Operación exitosa: El Cheque fue Solicitado.'
+MENSAJE_EDITAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Abierto.'
+MENSAJE_POR_CERRAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Por Cerrar.'
+
 
 COLOR_DEFAULT = '#028A0F'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY

@@ -293,10 +293,10 @@ class Telecredito(models.Model):
 
 class Cheque(models.Model):
     ESTADO_CHEQUE = (
-        (1, 'ABIERTO'),
+        (1, 'PENDIENTE'),
         (2, 'SOLICITADO'),
-        (3, 'POR CERRAR'),
-        (4, 'CERRADO'),
+        (3, 'COBRADO'),
+        (4, 'FINALIZADO'),
         )
     
     concepto = models.CharField('Concepto', max_length=50, default='Nuevo Cheque')
@@ -321,6 +321,19 @@ class Cheque(models.Model):
     @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
+    
+    @property
+    def vuelto_extra(self):
+        if self.ChequeVueltoExtra_cheque.all():
+            return self.ChequeVueltoExtra_cheque.all().aggregate(models.Sum('vuelto_extra'))['vuelto_extra__sum']
+        return Decimal('0.00')
+    
+    @property
+    def recibido(self):
+        if self.ChequeFisico_cheque.all():
+            return self.ChequeFisico_cheque.all().aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        return Decimal('0.00')
+
 
     def __str__(self):
         if self.moneda:
@@ -378,7 +391,4 @@ class ChequeVueltoExtra(models.Model):
         verbose_name_plural = 'Cheque Vueltos Extras'
 
     def __str__(self):
-        if self.cheque:
-            return str(self.cheque) + " " + self.moneda.simbolo + " " + str(self.vuelto_extra)
-        else:
-            return self.moneda.simbolo + " " + str(self.vuelto_extra)
+        return str(self.cheque) + " " + self.moneda.simbolo + " " + str(self.vuelto_extra)

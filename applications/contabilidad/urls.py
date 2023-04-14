@@ -22,6 +22,9 @@ urlCheque = [
     path('cheque/registrar/', views.ChequeCreateView.as_view(), name='cheque_registrar'),
     path('cheque/actualizar/<pk>/', views.ChequeUpdateView.as_view(), name='cheque_actualizar'),
     path('cheque/eliminar/<pk>/', views.ChequeDeleteView.as_view(), name='cheque_eliminar'),
+    path('cheque/solicitar/<pk>/', views.ChequeSolicitarView.as_view(), name='cheque_solicitar'),
+    path('cheque/editar/<pk>/', views.ChequeEditarView.as_view(), name='cheque_editar'),
+    path('cheque/por_cerrar/<pk>/', views.ChequePorCerrarView.as_view(), name='cheque_por_cerrar'),
 
     path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
     path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),
@@ -34,12 +37,14 @@ urlCheque = [
     path('cheque/detalle/recibo-servicio/actualizar/<int:cheque_id>/<pk>', views.ChequeReciboServicioUpdateView.as_view() , name='cheque_recibo_servicio_actualizar'),
     path('cheque/detalle/recibo-servicio/remover/<int:cheque_id>/<pk>/', views.ChequeReciboServicioRemoverView.as_view(), name='cheque_recibo_servicio_remover'),
 
-    # path('cheque/detalle/requerimiento/agregar/<int:cheque_id>/', views.ChequeRequerimientoAgregarView.as_view(), name='cheque_requerimiento_agregar'),
-    # path('cheque/detalle/requerimiento/remover/<int:cheque_id>/<pk>/', views.ChequeRequerimientoRemoverView.as_view(), name='cheque_requerimiento_remover'),
-
     path('cheque/detalle/cheque-fisico/registrar/<int:cheque_id>/', views.ChequeFisicoCreateView.as_view(), name='cheque_fisico_registrar'),
     path('cheque/detalle/cheque-fisico/actualizar/<pk>/', views.ChequeFisicoUpdateView.as_view(), name='cheque_fisico_actualizar'),
     path('cheque/detalle/cheque-fisico/eliminar/<pk>/', views.ChequeFisicoDeleteView.as_view(), name='cheque_fisico_eliminar'),
+    path('cheque/detalle/cheque-fisico/cobrar/<pk>/', views.ChequeFisicoCobrarView.as_view(), name='cheque_fisico_cobrar'),
+
+    path('cheque/vuelto-extra/agregar/<int:cheque_id>/', views.ChequeVueltoExtraCreateView.as_view(), name='cheque_vuelto_extra_agregar'),
+    path('cheque/vuelto-extra/editar/<pk>/', views.ChequeVueltoExtraUpdateView.as_view(), name='cheque_vuelto_extra_editar'),
+    path('cheque/vuelto-extra/eliminar/<pk>/', views.ChequeVueltoExtraDeleteView.as_view(), name='cheque_vuelto_extra_eliminar'),
 ]
 
 

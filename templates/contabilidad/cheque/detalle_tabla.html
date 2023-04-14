@@ -1,14 +1,19 @@
 {% load humanize %}
+{% load funciones_propias %}
 
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
-                <th>Monto Cheque</th>
-                {% if contexto_cheque_detalle.estado %}
-                    <th>Monto Usado</th>
-                    <th>Redondeo</th>
-                    <th>Vuelto</th>
+                <th class="text-end">Monto Cheque</th>
+                {% if contexto_cheque_detalle.estado > 1 %}
+                    <th class="text-end">Monto Recibido</th>
+                {% endif %}
+                {% if contexto_cheque_detalle.estado == 4 %}
+                    <th class="text-end">Monto Usado</th>
+                    <th class="text-end">Redondeo</th>
+                    <th class="text-end">Vuelto Extra</th>
+                    <th class="text-end">Vuelto</th>
                 {% endif %}
                 <th>Usuario</th>
                 <th>Estado</th>
@@ -17,22 +22,28 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.monto_cheque|intcomma }}</td>
-                {% if contexto_cheque_detalle.estado %}
-                    <td>{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.monto_usado|intcomma }}</td>
-                    <td>{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.redondeo|intcomma }}</td>
-                    <td>{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.vuelto|intcomma }}</td>
+                <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.monto_cheque|intcomma }}</td>
+                {% if contexto_cheque_detalle.estado > 1 %}
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} <span id="monto">{{ contexto_cheque_detalle.recibido|redondear|intcomma }}</span></td>
+                {% endif %}
+                {% if contexto_cheque_detalle.estado == 4 %}
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.monto_usado|intcomma }}</td>
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.redondeo|intcomma }}</td>
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.vuelto_extra|intcomma }}</td>
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.vuelto|intcomma }}</td>
                 {% endif %}
                 <td>{{ contexto_cheque_detalle.usuario.first_name }} {{ contexto_cheque_detalle.usuario.last_name }}</td>
                 <td>{{ contexto_cheque_detalle.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
-                    <button data-form-url="{% url 'contabilidad_app:cheque_actualizar' contexto_cheque_detalle.id %}"
-                        data-table-url="{% url 'contabilidad_app:cheque_tabla' %}"
-                        data-keep-open="true"
-                        class="update btn btn-warning btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                        <i class="bi bi-pencil-fill"></i>
-                    </button>
+                    {% if contexto_cheque_detalle.estado == 1 %}
+                        <button data-form-url="{% url 'contabilidad_app:cheque_actualizar' contexto_cheque_detalle.id %}"
+                            data-table-url="{% url 'contabilidad_app:cheque_tabla' %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    {% endif %}     
                 </td>
             </tr>
         </tbody>
@@ -40,114 +51,175 @@
 </div>
 <br>
 <h3> Recibo Boleta Pago
-    <button data-form-url="{% url 'contabilidad_app:cheque_recibo_boleta_pago_agregar' contexto_cheque_detalle.id %}"
-        data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
-        class="create badge bg-primary">
-        Agregar
-    </button>
+    {% if contexto_cheque_detalle.estado == 1 %}
+        <button data-form-url="{% url 'contabilidad_app:cheque_recibo_boleta_pago_agregar' contexto_cheque_detalle.id %}"
+            data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar
+        </button>
+    {% endif %}
 </h3>
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
                 <th>Boleta Pago</th>
-                <th>Monto</th>
-                <th>Monto Pagado</th>
-                <th>Fecha Pago</th>
-                <th>Estado</th>
-                <th class="text-center">Acciones</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">Monto Pagado</th>
+                <th class="text-center">Fecha Pago</th>
+                <th class="text-center">Estado</th>
+                {% if contexto_cheque_detalle.estado == 1 or contexto_cheque_detalle.estado == 3 %}
+                    <th class="text-center">Acciones</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for recibo_bp in contexto_recibos_boleta_pago %}
                 <tr>
                     <td>{{ recibo_bp.boleta_pago }}</td>
-                    <td>{{ recibo_bp.monto|intcomma }}</td>
-                    <td>{{ recibo_bp.monto_pagado|intcomma }}</td>
-                    <td>{{ recibo_bp.fecha_pago|date:'d/m/Y' }}</td>
-                    <td>{{ recibo_bp.get_estado_display }}</td>
+                    <td class="text-end">{{ recibo_bp.monto|intcomma }}</td>
+                    <td class="text-end">{{ recibo_bp.monto_pagado|intcomma }}</td>
+                    <td class="text-center">{{ recibo_bp.fecha_pago|date:'d/m/Y' }}</td>
+                    <td class="text-center">{{ recibo_bp.get_estado_display }}</td>
                     <td class="text-nowrap text-center">
-                        <button data-form-url="{% url 'contabilidad_app:cheque_recibo_boleta_pago_actualizar' contexto_cheque_detalle.id recibo_bp.id %}"
-                            data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
-                            data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        <button data-form-url="{% url 'contabilidad_app:cheque_recibo_boleta_pago_remover' contexto_cheque_detalle.id recibo_bp.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
+                        {% if contexto_cheque_detalle.estado == 3 %}
+                            <button data-form-url="{% url 'contabilidad_app:cheque_recibo_boleta_pago_actualizar' contexto_cheque_detalle.id recibo_bp.id %}"
+                                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        {% endif %}
+                        {% if contexto_cheque_detalle.estado == 1 %}
+                            <button data-form-url="{% url 'contabilidad_app:cheque_recibo_boleta_pago_remover' contexto_cheque_detalle.id recibo_bp.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>  
+                        {% endif %}
                     </td>
                 </tr>    
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="4"></td>
-                <td class="text-end">Total:</td>
-                {% if total_boleta %}
-                    <td class="text-end">{{ total_boleta|intcomma }}</td>
+                {% if contexto_cheque_detalle.estado == 1 or contexto_cheque_detalle.estado == 3 %}
+                    <td colspan="5" class="text-end">Total:</td>
+                {% else %}
+                    <td colspan="4" class="text-end">Total:</td>
                 {% endif %}
-                <td></td>
+                {% if total_boleta %}
+                    <td class="text-end">{{ total_boleta|redondear|intcomma }}</td>
+                {% else %}
+                    <td class="text-end">0.00</td>
+                {% endif %}
             </tr>
         </tfoot>
     </table>
 </div>
 <br>
 <h3> Recibo Servicios
-    <button data-form-url="{% url 'contabilidad_app:cheque_recibo_servicio_agregar' contexto_cheque_detalle.id %}"
-        data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
-        class="create badge bg-primary">
-        Agregar
-    </button>
+    {% if contexto_cheque_detalle.estado == 1 %}
+        <button data-form-url="{% url 'contabilidad_app:cheque_recibo_servicio_agregar' contexto_cheque_detalle.id %}"
+            data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar
+        </button>
+    {% endif %}
 </h3>
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
                 <th>Servicio</th>
-                <th>Monto</th>
-                <th>Monto Pagado</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">Monto Pagado</th>
                 <th>Fecha Pago</th>
                 <th>Estado</th>
-                <th class="text-center">Acciones</th>
+                {% if contexto_cheque_detalle.estado == 1 or contexto_cheque_detalle.estado == 3 %}
+                    <th class="text-center">Acciones</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for recibo_s in contexto_recibos_servicio %}
                 <tr>
                     <td>{{ recibo_s.servicio }}</td>
-                    <td>{{ recibo_s.monto|intcomma }}</td>
-                    <td>{{ recibo_s.monto_pagado|intcomma }}</td>
+                    <td class="text-end">{{ recibo_s.monto|intcomma }}</td>
+                    <td class="text-end">{{ recibo_s.monto_pagado|intcomma }}</td>
                     <td>{{ recibo_s.fecha_pago|date:'d/m/Y' }}</td>
                     <td>{{ recibo_s.get_estado_display }}</td>
                     <td class="text-nowrap text-center">
-                        <button data-form-url="{% url 'contabilidad_app:cheque_recibo_servicio_actualizar' contexto_cheque_detalle.id recibo_s.id %}"
-                            data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
-                            data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        <button data-form-url="{% url 'contabilidad_app:cheque_recibo_servicio_remover' contexto_cheque_detalle.id recibo_s.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
+                        {% if contexto_cheque_detalle.estado == 3 %}
+                            <button data-form-url="{% url 'contabilidad_app:cheque_recibo_servicio_actualizar' contexto_cheque_detalle.id recibo_s.id %}"
+                                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        {% endif %}
+                        {% if contexto_cheque_detalle.estado == 1 %}
+                            <button data-form-url="{% url 'contabilidad_app:cheque_recibo_servicio_remover' contexto_cheque_detalle.id recibo_s.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        {% endif %}
                     </td>
                 </tr>    
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="4"></td>
-                <td class="text-end">Total:</td>
-                {% if total_servicio %}
-                    <td class="text-end">{{ total_servicio|intcomma }}</td>
+                {% if contexto_cheque_detalle.estado == 1 or contexto_cheque_detalle.estado == 3 %}
+                    <td colspan="5" class="text-end">Total:</td>
+                {% else %}
+                    <td colspan="4" class="text-end">Total:</td>
                 {% endif %}
-                <td></td>
+                {% if total_servicio %}
+                    <td class="text-end">{{ total_servicio|redondear|intcomma }}</td>
+                {% else %}
+                    <td class="text-end">0.00</td>
+                {% endif %}
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br>
+<h3> Recibo Caja Chica
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Concepto</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">Monto Pagado</th>
+                <th>Fecha Pago</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for recibo_cc in contexto_recibos_caja_chica %}
+                <tr>
+                    <td>{{ recibo_cc.concepto }}</td>
+                    <td class="text-end">{{ recibo_cc.monto|intcomma }}</td>
+                    <td class="text-end">{{ recibo_cc.monto_pagado|redondear|intcomma }}</td>
+                    <td>{{ recibo_cc.fecha_pago|date:'d/m/Y' }}</td>
+                    <td>{{ recibo_cc.get_estado_display }}</td>
+                </tr>    
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-end">Total:</td>
+                {% if total_caja_chica %}
+                    <td class="text-end">{{ total_caja_chica|intcomma }}</td>
+                {% else %}
+                    <td class="text-end">0.00</td>
+                {% endif %}
             </tr>
         </tfoot>
     </table>
@@ -160,8 +232,8 @@
         <thead>
             <tr>
                 <th>Concepto</th>
-                <th>Monto</th>
-                <th>Monto Usado</th>
+                <th  class="text-end">Monto</th>
+                <th class="text-end">Monto Usado</th>
                 <th>Fecha Entrega</th>
                 <th>Estado</th>
             </tr>
@@ -170,8 +242,8 @@
             {% for requerimiento in contexto_requerimientos %}
                 <tr>
                     <td>{{ requerimiento.concepto }}</td>
-                    <td>{{ requerimiento.monto|intcomma }}</td>
-                    <td>{{ requerimiento.monto_usado|intcomma }}</td>
+                    <td class="text-end">{{ requerimiento.monto|intcomma }}</td>
+                    <td class="text-end">{{ requerimiento.monto_usado|intcomma }}</td>
                     <td>{{ requerimiento.fecha_entrega|date:'d/m/Y' }}</td>
                     <td>{{ requerimiento.get_estado_display }}</td>
                 </tr>    
@@ -179,85 +251,153 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="4"></td>
-                <td class="text-end">Total:</td>
+                <td colspan="4" class="text-end">Total:</td>
                 {% if total_requerimiento %}
-                    <td class="text-end">{{ total_requerimiento|intcomma }}</td>
+                    <td class="text-end">{{ total_requerimiento|redondear|intcomma }}</td>
+                {% else %}
+                    <td class="text-end">0.00</td>
                 {% endif %}
-                <td></td>
             </tr>
         </tfoot>
     </table>
 </div>
 <br>
-<h3> Cheque Físico
-    <button data-form-url="{% url 'contabilidad_app:cheque_fisico_registrar' contexto_cheque_detalle.id %}"
-        data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
-        class="create badge bg-primary">
-        Registrar
-    </button>
-</h3>
-<div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Banco</th>
-                <th>Nro. Cheque</th>
-                <th>Sociedad</th>
-                <th>Responsable</th>
-                <th>Fecha Emisión</th>
-                <th>Fecha Cobro</th>
-                <th class="text-end">Monto</th>
-                <th>Estado</th>
-                <th class="text-center">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cheque_fisico in contexto_cheques_fisicos %}
+
+{% if contexto_cheque_detalle.estado > 1 %}
+    <h3> Cheque Físico
+        {% if contexto_cheque_detalle.estado == 2 %}
+            <button data-form-url="{% url 'contabilidad_app:cheque_fisico_registrar' contexto_cheque_detalle.id %}"
+                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                class="create badge bg-primary">
+                Registrar
+            </button>
+        {% endif %}
+    </h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>{{ cheque_fisico.banco }}</td>
-                    <td>{{ cheque_fisico.numero }}</td>
-                    <td>{{ cheque_fisico.sociedad }}</td>
-                    <td>
-                        {% if cheque_fisico.responsable.first_name %}
-                            {{ cheque_fisico.responsable.first_name}} {{ cheque_fisico.responsable.last_name}}
-                        {% else %}
-                            {{ cheque_fisico.responsable }}
-                        {% endif %}
-                    </td>
-                    <td>{{ cheque_fisico.fecha_emision|date:'d/m/Y' }}</td>
-                    <td>{{ cheque_fisico.fecha_cobro|date:'d/m/Y' }}</td>
-                    <td class="text-nowrap text-end">{{ cheque_fisico.monto|intcomma  }}</td>
-                    <td>{{ cheque_fisico.get_estado_display }}</td>
-                    <td class="text-nowrap text-center">
-                        <button data-form-url="{% url 'contabilidad_app:cheque_fisico_actualizar' cheque_fisico.id %}"
-                            data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
-                            data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        <button data-form-url="{% url 'contabilidad_app:cheque_fisico_eliminar' cheque_fisico.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                        {% if cheque_fisico.foto %}
-                            <a class="btn btn-info btn-sm" href="{{ MEDIA_URL }}{{ cheque_fisico.foto }}" target="_blank" role="button" title="Ver foto"><i class="bi bi-image-fill"></i></a>
-                        {% endif %}
-                    </td>
-                </tr>    
-            {% endfor %}
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="4"></td>
-                <td class="text-end">Total:</td>
-                {% if total_cheque_fisico %}
-                    <td class="text-end">{{ total_cheque_fisico|intcomma }}</td>
-                {% endif %}
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
-</div>
+                    <th>Banco</th>
+                    <th>Nro. Cheque</th>
+                    <th>Sociedad</th>
+                    <th>Responsable</th>
+                    <th class="text-end">Monto</th>
+                    <th>Fecha Emisión</th>
+                    <th class="text-end">Comisión</th>
+                    <th class="text-end">Monto Recibido</th>
+                    <th>Fecha Cobro</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cheque_fisico in contexto_cheques_fisicos %}
+                    <tr>
+                        <td>{{ cheque_fisico.banco }}</td>
+                        <td>{{ cheque_fisico.numero }}</td>
+                        <td>{{ cheque_fisico.sociedad }}</td>
+                        <td>
+                            {% if cheque_fisico.responsable.first_name %}
+                                {{ cheque_fisico.responsable.first_name}} {{ cheque_fisico.responsable.last_name}}
+                            {% else %}
+                                {{ cheque_fisico.responsable }}
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap text-end">{{ cheque_fisico.monto|intcomma  }}</td>
+                        <td>{{ cheque_fisico.fecha_emision|date:'d/m/Y' }}</td>
+                        <td class="text-nowrap text-end">{{ cheque_fisico.comision|intcomma  }}</td>
+                        <td class="text-nowrap text-end">{{ cheque_fisico.monto_recibido|intcomma  }}</td>
+                        <td>{{ cheque_fisico.fecha_cobro|date:'d/m/Y' }}</td>
+                        <td>{{ cheque_fisico.get_estado_display }}</td>
+                        <td class="text-nowrap text-center">
+                            {% if cheque_fisico.estado == 1 %}
+                                <button data-form-url="{% url 'contabilidad_app:cheque_fisico_actualizar' cheque_fisico.id %}"
+                                    data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                                    data-keep-open="true"
+                                    class="update btn btn-warning btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button data-form-url="{% url 'contabilidad_app:cheque_fisico_eliminar' cheque_fisico.id %}"
+                                    class="delete btn btn-danger btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            {% endif %}
+                            {% if contexto_cheque_detalle.estado == 2 %}
+                                <button data-form-url="{% url 'contabilidad_app:cheque_fisico_cobrar' cheque_fisico.id %}"
+                                    data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                                    data-keep-open="true"
+                                    class="update btn btn-success btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Cobrar">
+                                    <i class="bi bi-wallet2"></i>
+                                </button>
+                            {% endif %}
+                            {% if cheque_fisico.foto %}
+                                <a class="btn btn-info btn-sm" href="{{ MEDIA_URL }}{{ cheque_fisico.foto }}" target="_blank" role="button" title="Ver foto"><i class="bi bi-image-fill"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>    
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="10" class="text-end">Total:</td>
+                    {% if total_cheque_fisico %}
+                        <td class="text-end">{{ total_cheque_fisico|redondear|intcomma }}</td>
+                    {% else %}
+                        <td class="text-end">0.00</td>
+                    {% endif %}
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <br>
+    <h3>Vueltos Extra
+        {% if contexto_cheque_detalle.estado == 2 %}
+            <button data-form-url="{% url 'contabilidad_app:cheque_vuelto_extra_agregar' contexto_cheque_detalle.id %}"
+                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                class="delete badge bg-primary">
+                Registrar
+            </button>
+        {% endif %}
+    </h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-end">Vuelto en Efectivo</th>
+                    <th class="text-end">Tipo de Cambio</th>
+                    <th class="text-end">Vuelto en el Cheque</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vuelto_extra in contexto_vuelto_extra %}
+                    <tr>
+                        <td class="text-end">{{ vuelto_extra.moneda.simbolo }} {{ vuelto_extra.vuelto_original|redondear|intcomma }}</td>
+                        <td class="text-end">{{ vuelto_extra.tipo_cambio }}</td>
+                        <td class="text-end">{{ vuelto_extra.cheque.moneda.simbolo }} {{ vuelto_extra.vuelto_extra|redondear|intcomma }}</td>
+                        <td class="text-nowrap text-center">
+                            {% if contexto_cheque_detalle %}
+                            <button data-form-url="{% url 'contabilidad_app:cheque_vuelto_extra_editar' vuelto_extra.id %}"
+                                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'contabilidad_app:cheque_vuelto_extra_eliminar' vuelto_extra.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>    
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
