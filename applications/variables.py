@@ -364,6 +364,7 @@ MESES = (
 
 TIPO_PRESTAMO = (
     (1, 'PRESTAMO'),
+    (2, 'DEVOLUCION'),
     )
 
 ESTADO_PRESTAMO_CAJA_CHICA = (
