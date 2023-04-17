@@ -25,7 +25,9 @@ from applications.caja_chica.forms import (
     CajaChicaPrestamoCrearForm,
     ReciboCajaChicaCrearForm,
     RequerimientoVueltoExtraForm,
-    CajaChicaReciboCrearForm,)
+    CajaChicaReciboCrearForm,
+    CajaChicaReciboServicioAgregarForm,
+    CajaChicaReciboServicioUpdateForm,)
 
 class RequerimientoListView(PermissionRequiredMixin, ListView):
     permission_required = ('caja_chica.view_requerimiento')
@@ -855,7 +857,6 @@ class CajaChicaListView(PermissionRequiredMixin, ListView):
     template_name = "caja_chica/caja_chica/inicio.html"
     context_object_name = 'contexto_caja_chica'
     
-
 def CajaChicaTabla(request):
     data = dict()
     if request.method == 'GET':
@@ -1009,6 +1010,35 @@ class CajaChicaDetalleView(PermissionRequiredMixin, DetailView):
         movimientos.sort(key = lambda i: i[3], reverse=True)
         movimientos.sort(key = lambda i: i[0])
 
+        # #Recibos Caja Chica
+        # for recibos_caja in ReciboCajaChica.objects.filter(caja_chica=caja_chica.id):
+
+        #     fecha = recibos_caja.fecha
+        #     concepto = recibos_caja.concepto
+        #     estado = recibos_caja.get_estado_display()
+        #     ingreso = recibos_caja.monto
+        #     egreso = Decimal('0.00')
+        #     saldo = Decimal('0.00')
+        #     if recibos_caja.estado > 2 and recibos_caja.estado != 4:
+        #         concepto = recibos_caja.concepto_final
+        #         egreso = recibos_caja.monto_final
+        #     if recibos_caja.estado == 7:
+        #         egreso = recibos_caja.monto_usado
+        #     moneda = recibos_caja.moneda
+
+        #     fila = []
+        #     fila.append(fecha)
+        #     fila.append(concepto)
+        #     fila.append(estado)
+        #     fila.append(ingreso)
+        #     fila.append(egreso)
+        #     fila.append(saldo)
+        #     movimientos.append(fila)
+
+        # movimientos.sort(key = lambda i: i[3], reverse=True)
+        # movimientos.sort(key = lambda i: i[0])
+        #____________________________________________________
+
         saldo_acumulado = Decimal('0.00')
         for movimiento in movimientos:
             saldo_acumulado = saldo_acumulado + movimiento[3] - movimiento[4]
@@ -1016,17 +1046,78 @@ class CajaChicaDetalleView(PermissionRequiredMixin, DetailView):
 
         context['movimientos'] = movimientos
         context['recibos'] =  ReciboCajaChica.objects.filter(caja_chica=caja_chica_pk)
-        # context['recibo_servicios'] = ReciboServicio.objects.filter(caja_chica=caja_chica_pk)
+        context['recibos_servicio'] = ReciboServicio.objects.filter(content_type = ContentType.objects.get_for_model(caja_chica), id_registro = caja_chica.id)
+
         return context
 
 def CajaChicaDetalleTabla(request, pk):
     data = dict()
     if request.method == 'GET':
-        cajachica = CajaChica.objects.get(id = pk)
-        template = 'caja_chica/caja_chica/inicio_tabla.html'
+        caja_chica = CajaChica.objects.get(id = pk)
+        template = 'caja_chica/caja_chica/detalle_tabla.html'
         context = {}
-        context['recibos'] =  ReciboCajaChica.objects.filter(caja_chica=cajachica)
-        # context['recibo_servicios'] = ReciboServicio.objects.filter(caja_chica=cajachica)
+
+        movimientos = []
+        
+        #Saldo inicial
+        fecha = date(caja_chica.year, caja_chica.month, 1)
+        concepto = 'SALDO INICIAL'
+        estado = 'ACTIVO'
+        ingreso = caja_chica.saldo_inicial
+        egreso = Decimal('0.00')
+        saldo = Decimal('0.00')
+        fila = []
+        fila.append(fecha)
+        fila.append(concepto)
+        fila.append(estado)
+        fila.append(ingreso)
+        fila.append(egreso)
+        fila.append(saldo)
+        movimientos.append(fila)
+
+        #Requerimientos
+        for requerimiento in Requerimiento.objects.filter(content_type=ContentType.objects.get_for_model(caja_chica), id_registro=caja_chica.id,):
+
+            fecha = requerimiento.fecha
+            concepto = requerimiento.concepto
+            estado = requerimiento.get_estado_display()
+            ingreso = Decimal('0.00')
+            egreso = requerimiento.monto
+            saldo = Decimal('0.00')
+            if requerimiento.estado > 2 and requerimiento.estado != 4:
+                concepto = requerimiento.concepto_final
+                egreso = requerimiento.monto_final
+            if requerimiento.estado == 7:
+                egreso = requerimiento.monto_usado
+            moneda = requerimiento.moneda
+            tipo_cambio = requerimiento.tipo_cambio
+            if moneda != caja_chica.moneda:
+                if moneda.id == 2: #Dólares
+                    egreso = (egreso * tipo_cambio).quantize(Decimal('0.01'))
+            fila = []
+            fila.append(fecha)
+            fila.append(concepto)
+            fila.append(estado)
+            fila.append(ingreso)
+            fila.append(egreso)
+            fila.append(saldo)
+            movimientos.append(fila)
+
+        movimientos.sort(key = lambda i: i[3], reverse=True)
+        movimientos.sort(key = lambda i: i[0])
+
+        # #Recibos Caja Chica
+
+        #________________________________________________________________________________
+        saldo_acumulado = Decimal('0.00')
+        for movimiento in movimientos:
+            saldo_acumulado = saldo_acumulado + movimiento[3] - movimiento[4]
+            movimiento[5] = saldo_acumulado
+
+        context['cajachica'] = caja_chica
+        context['movimientos'] = movimientos
+        context['recibos'] =  ReciboCajaChica.objects.filter(caja_chica=caja_chica)
+        context['recibos_servicio'] = ReciboServicio.objects.filter(content_type = ContentType.objects.get_for_model(caja_chica), id_registro = caja_chica.id)
 
         data['table'] = render_to_string(
             template,
@@ -1042,10 +1133,12 @@ class CajaChicaReciboCreateView(BSModalCreateView):
     form_class = CajaChicaReciboCrearForm
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['pk']})
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['cajachica_id']})
 
     def form_valid(self, form):
-        form.instance.caja_chica = CajaChica.objects.get(id = self.kwargs['pk'])
+        caja =CajaChica.objects.get(id = self.kwargs['cajachica_id'])
+        form.instance.caja_chica = caja
+        form.instance.moneda = caja.moneda
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -1056,13 +1149,12 @@ class CajaChicaReciboCreateView(BSModalCreateView):
         context['titulo']="Caja Chica"
         return context
 
-
 class CajaChicaReciboDeleteView(BSModalDeleteView):
     model = ReciboCajaChica
     template_name = "includes/eliminar generico.html"
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['pk']})
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['cajachica_id']})
 
     def get_context_data(self, **kwargs):
         context = super(CajaChicaReciboDeleteView, self).get_context_data(**kwargs)
@@ -1071,6 +1163,113 @@ class CajaChicaReciboDeleteView(BSModalDeleteView):
         context['item'] = self.get_object().concepto +' - '+str(self.get_object().moneda.simbolo) +' '+ str(self.get_object().monto)
         context['dar_baja'] = "true"
         return context
+
+class CajaChicaReciboPendienteView(BSModalDeleteView):
+    model = ReciboCajaChica
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['cajachica_id']})
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaReciboPendienteView, self).get_context_data(**kwargs)
+        context['accion']=" Cambiar"
+        context['titulo'] = "Recibo Caja Chica de estado Borrador a Pendiente "
+        context['item'] = self.get_object().concepto +' - '+str(self.get_object().moneda.simbolo) +' '+ str(self.get_object().monto)
+        context['dar_baja'] = "true"
+        return context
+
+class CajaChicaReciboUpdateView(BSModalUpdateView):
+    model = ReciboCajaChica
+    template_name = 'includes/formulario generico.html'
+    form_class = CajaChicaReciboCrearForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['cajachica_id']})
+    
+    def form_valid(self, form):
+        caja_chica = CajaChica.objects.get(id=self.kwargs['cajachica_id'])
+        caja_chica.save()
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaReciboUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Recibo Boleta de Pago"
+        return context
+
+    
+class CajaChicaReciboServicioAgregarView(BSModalFormView):
+    template_name = 'includes/formulario generico.html'
+    form_class = CajaChicaReciboServicioAgregarForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['cajachica_id']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                caja_chica = CajaChica.objects.get(id = self.kwargs['cajachica_id'])
+                recibo_servicio = form.cleaned_data.get('recibo_servicio')
+                recibo_servicio.content_type = ContentType.objects.get_for_model(caja_chica)
+                recibo_servicio.id_registro = caja_chica.id
+                registro_guardar(recibo_servicio, self.request)
+                recibo_servicio.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        recibos = ReciboServicio.objects.filter(content_type = None, id_registro = None)
+        kwargs = super().get_form_kwargs()
+        kwargs['recibos'] = recibos
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(CajaChicaReciboServicioAgregarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Recibo Servicio'
+        return context
+
+class CajaChicaReciboServicioUpdateView(BSModalUpdateView):
+    model = ReciboServicio
+    template_name = 'includes/formulario generico.html'
+    form_class = CajaChicaReciboServicioUpdateForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.kwargs['cajachica_id']})
+    
+    def form_valid(self, form):
+        caja_chica = CajaChica.objects.get(id=self.kwargs['cajachica_id'])
+        recibo_servicio = ReciboServicio.objects.filter(
+            content_type = ContentType.objects.get_for_model(caja_chica),
+            id_registro = caja_chica.id,
+            ).filter(
+                ~Q(id=form.instance.id)
+                )
+        monto_usado = 0
+        if recibo_servicio:
+            for boleta_pago in recibo_servicio:
+                monto_usado += boleta_pago.monto_pagado
+        caja_chica.monto_usado = monto_usado + form.cleaned_data.get('monto_pagado')
+        caja_chica.save()
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaReciboServicioUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Recibo Boleta de Pago"
+        return context
+
+
 
 #__CajaChicaPrestamo_____________________________________________________________________
 class CajaChicaPrestamoListView(ListView):
