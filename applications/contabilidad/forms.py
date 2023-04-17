@@ -8,9 +8,11 @@ from applications.variables import ESTADOS_CONFIRMACION
 from applications.material.models import Material
 from applications.usuario.models import DatosUsuario
 from applications.sociedad.models import Sociedad
+from applications.datos_globales.models import Moneda
 from .models import (
     Cheque,
     ChequeFisico,
+    ChequeVueltoExtra,
     ComisionFondoPensiones,
     DatosPlanilla,
     EsSalud,
@@ -454,22 +456,6 @@ class ChequeReciboCajaChicaAgregarForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-# class ChequeRequerimientoAgregarForm(BSModalForm):
-#     requerimiento = forms.ModelChoiceField(queryset=None)
-
-#     class Meta:
-#         fields=(
-#             'requerimiento',
-#             )
-
-#     def __init__(self, *args, **kwargs):
-#         lista_requerimientos = kwargs.pop('requerimientos')
-#         super(ChequeRequerimientoAgregarForm, self).__init__(*args, **kwargs)
-#         self.fields['requerimiento'].queryset = lista_requerimientos
-#         for visible in self.visible_fields():
-#             visible.field.widget.attrs['class'] = 'form-control'
-
-
 class ChequeFisicoForm(BSModalModelForm):
     class Meta:
         model = ChequeFisico
@@ -486,17 +472,9 @@ class ChequeFisicoForm(BSModalModelForm):
             'fecha_emision' : forms.DateInput(
                 attrs ={
                     'type':'date',
-                    # 'required':'required',
                     },
                 format = '%Y-%m-%d',
                 ),
-            # 'fecha_cobro' : forms.DateInput(
-            #     attrs ={
-            #         'type':'date',
-            #         # 'required':'required',
-            #         },
-            #     format = '%Y-%m-%d',
-            #     ),
             }
 
     def __init__(self, *args, **kwargs):
@@ -505,6 +483,51 @@ class ChequeFisicoForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
 
+
+class ChequeFisicoCobrarForm(BSModalModelForm):
+    class Meta:
+        model = ChequeFisico
+        fields = (
+            'comision',
+            'monto_recibido',
+            'fecha_cobro',
+            )
+        widgets = {
+            'fecha_cobro' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ChequeFisicoCobrarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
+
+class ChequeVueltoExtraForm(BSModalModelForm):
+    moneda_cheque = forms.ModelChoiceField(queryset=Moneda.objects.all())
+    class Meta:
+        model = ChequeVueltoExtra
+        fields = (
+            'vuelto_original', 
+            'moneda', 
+            'tipo_cambio', 
+            'vuelto_extra', 
+            'moneda_cheque', 
+            )
+
+    def __init__(self, *args, **kwargs):
+        moneda_cheque = kwargs.pop('moneda_cheque')
+        super(ChequeVueltoExtraForm, self).__init__(*args, **kwargs)
+        self.fields['moneda_cheque'].initial = moneda_cheque
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].required = True
+        
 
 class TelecreditoForm(BSModalModelForm):
     class Meta:
