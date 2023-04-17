@@ -1114,9 +1114,6 @@ def CajaChicaDetalleTabla(request, pk):
             saldo_acumulado = saldo_acumulado + movimiento[3] - movimiento[4]
             movimiento[5] = saldo_acumulado
 
-
-
-
         context['cajachica'] = caja_chica
         context['movimientos'] = movimientos
         context['recibos'] =  ReciboCajaChica.objects.filter(caja_chica=caja_chica)
