@@ -164,6 +164,13 @@ ESTADOS = (
     (2, 'BAJA'),
     )
 
+ESTADOS_TELECREDITO = (
+    (1, 'ABIERTO'),
+    (2, 'SOLICITADO'),
+    (3, 'REGISTRADO'),
+    (4, 'CERRADO'),
+    )
+
 ESTADOS_DOCUMENTO = (
     (1, 'BORRADOR'),
     (2, 'ACTIVO'),
