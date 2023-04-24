@@ -344,6 +344,7 @@ TIPOS_COMISION = (
 TIPO_PAGO_BOLETA = (
     (1, 'FIN DE MES'),
     (2, 'GRATIFICACION'),
+    (3, 'LIQUIDACIÓN'),
     )
 
 TIPO_PAGO_RECIBO = (

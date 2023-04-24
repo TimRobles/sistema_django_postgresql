@@ -955,6 +955,7 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                 registro_guardar(form.instance, self.request)
 
                 detalles = form.instance.detalles
+                tipo_movimiento_disponible = TipoMovimiento.objects.get(codigo=121) # DISPONIBLE
                 if form.instance.solicitud_prestamo_materiales:
                     movimiento_final = TipoMovimiento.objects.get(codigo=132)  # Salida por préstamo
                     documento_anterior = form.instance.solicitud_prestamo_materiales
@@ -980,7 +981,7 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                         id_registro_producto=detalle.id_registro,
                         # cantidad=detalle.cantidad_salida,
                         tipo_movimiento=movimiento_final,
-                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        tipo_stock=tipo_movimiento_disponible,
                         signo_factor_multiplicador=-1,
                         content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
                         id_registro_documento_proceso=documento_anterior.id,
