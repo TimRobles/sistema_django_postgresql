@@ -375,8 +375,8 @@ TIPO_PRESTAMO = (
     )
 
 ESTADO_PRESTAMO_CAJA_CHICA = (
-    (1, 'PRESTADO'),
-    (2, 'DEVUELTO'),
+    (1, 'PENDIENTE'),
+    (2, 'CANCELADO'),
     )
 
 ESTADO_CAJA_CHICA = (
