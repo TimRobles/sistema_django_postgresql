@@ -127,7 +127,7 @@ class ReporteContador(TemplateView):
                 MAX(nnc.nubefact) AS url_nota
                 FROM nota_notacredito nnc
                 LEFT JOIN datos_globales_seriescomprobante dgsc
-                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=nnc.serie_comprobante_id AND dgsc.id='10'
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=nnc.serie_comprobante_id AND dgsc.id='11'
                 LEFT JOIN clientes_cliente cc
                     ON cc.id=nnc.cliente_id
                 LEFT JOIN datos_globales_documentofisico dgdf
