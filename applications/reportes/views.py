@@ -71,14 +71,14 @@ class ReporteContador(TemplateView):
         
         def consultaNotasContador():
 
-            sql = ''' SELECT
+            sql = ''' (SELECT
                 MAX(nnc.id) AS id,
                 to_char(MAX(nnc.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_nota,
                 (CASE WHEN nnc.tipo_comprobante='3' THEN 'NOTA DE CRÉDITO' ELSE '-' END) as comprobante,
                 CONCAT(MAX(dgsc.serie), '-', lpad(CAST(nnc.numero_nota AS TEXT), 6, '0')) as nro_comprobante,
                 MAX(cc.razon_social) AS cliente_denominacion,
                 MAX(cc.numero_documento) AS ruc,
-                CONCAT(MAX(dgsc2.serie), '-', MAX(lpad(CAST(cvf.numero_factura AS TEXT), 6, '0'))) AS factura_modifica,
+                CONCAT(MAX(dgsc2.serie), '-', MAX(lpad(CAST(cvf.numero_factura AS TEXT), 6, '0'))) AS comprobante_modifica,
                 '' AS obs,
                 STRING_AGG(CAST(ROUND(nncd.cantidad, 2) AS TEXT), ' | ') AS cantidad,
                 STRING_AGG(mm.descripcion_corta, ' | ') AS productos,
@@ -104,8 +104,45 @@ class ReporteContador(TemplateView):
                     ON nnc.id=nncd.nota_credito_id
                 LEFT JOIN material_material mm
                     ON nncd.content_type_id='%s' AND mm.id=nncd.id_registro
-                WHERE nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
-                GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota ;''' %(DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
+                WHERE dgsc.serie!='' AND nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
+                GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota) 
+                UNION
+                (SELECT
+                MAX(nnc.id) AS id,
+                to_char(MAX(nnc.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_nota,
+                (CASE WHEN nnc.tipo_comprobante='3' THEN 'NOTA DE CRÉDITO' ELSE '-' END) as comprobante,
+                CONCAT(MAX(dgsc.serie), '-', lpad(CAST(nnc.numero_nota AS TEXT), 6, '0')) as nro_comprobante,
+                MAX(cc.razon_social) AS cliente_denominacion,
+                MAX(cc.numero_documento) AS ruc,
+                CONCAT(MAX(dgsc2.serie), '-', MAX(lpad(CAST(cvb.numero_boleta AS TEXT), 6, '0'))) AS comprobante_modifica,
+                '' AS obs,
+                STRING_AGG(CAST(ROUND(nncd.cantidad, 2) AS TEXT), ' | ') AS cantidad,
+                STRING_AGG(mm.descripcion_corta, ' | ') AS productos,
+                STRING_AGG(CAST(ROUND(nncd.precio_unitario_sin_igv, 2) AS TEXT), ' | ') AS precios,
+                MAX(nnc.descuento_global) AS dscto_global,
+                ROUND(SUM(nncd.sub_total), 2) AS valor_venta,
+                SUM(nncd.igv)AS igv,
+                ROUND(SUM(nncd.total), 2) AS total_venta,
+                MAX(nnc.tipo_nota_credito) AS motivo_nota,
+                MAX(nnc.nubefact) AS url_nota
+                FROM nota_notacredito nnc
+                LEFT JOIN datos_globales_seriescomprobante dgsc
+                    ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=nnc.serie_comprobante_id AND dgsc.id='10'
+                LEFT JOIN clientes_cliente cc
+                    ON cc.id=nnc.cliente_id
+                LEFT JOIN datos_globales_documentofisico dgdf
+                    ON dgdf.id=nnc.content_type_documento_id AND dgdf.modelo_id='%s'
+                LEFT JOIN comprobante_venta_boletaventa cvb
+                    ON cvb.id=nnc.id_registro_documento
+                LEFT JOIN datos_globales_seriescomprobante dgsc2
+                    ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cvb.serie_comprobante_id
+                LEFT JOIN nota_notacreditodetalle nncd
+                    ON nnc.id=nncd.nota_credito_id
+                LEFT JOIN material_material mm
+                    ON nncd.content_type_id='%s' AND mm.id=nncd.id_registro
+                WHERE dgsc.serie!='' AND nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
+                GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota) 
+                ORDER BY fecha_emision_nota, nro_comprobante ;''' %(DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
             query_info = NotaCredito.objects.raw(sql)
             
             info = []
@@ -116,7 +153,7 @@ class ReporteContador(TemplateView):
                 lista_datos.append(fila.nro_comprobante)
                 lista_datos.append(fila.cliente_denominacion)
                 lista_datos.append(fila.ruc)
-                lista_datos.append(fila.factura_modifica)
+                lista_datos.append(fila.comprobante_modifica)
                 lista_datos.append(fila.obs)
                 lista_datos.append(fila.cantidad)
                 lista_datos.append(fila.productos)
@@ -341,7 +378,7 @@ class ReporteContador(TemplateView):
             if info2 != []:
                 # cabecera de la tabla
                 hoja.append(('',)) # Crea la fila del encabezado con los títulos
-                hoja.append(('FECHA', 'TIPO DE COMP.', 'N° COMPROB.', 'RAZON SOCIAL', 'RUC', 'FACTURA QUE SE MODIFICA', '', 'CANT.', 'DESCRIPCION', 'PRECIO UNIT. (US$) SIN IGV', 'DESCUENTO GLOBAL', 'VALOR DE VENTA (US$)', 'IGV (US$)', 'TOTAL (US$)', 'MOTIVO DE LA NOTA', 'LINK')) # Crea la fila del encabezado con los títulos
+                hoja.append(('FECHA', 'TIPO DE COMP.', 'N° COMPROB.', 'RAZON SOCIAL', 'RUC', 'COMPROBANTE QUE SE MODIFICA', '', 'CANT.', 'DESCRIPCION', 'PRECIO UNIT. (US$) SIN IGV', 'DESCUENTO GLOBAL', 'VALOR DE VENTA (US$)', 'IGV (US$)', 'TOTAL (US$)', 'MOTIVO DE LA NOTA', 'LINK')) # Crea la fila del encabezado con los títulos
                 nueva_fila = hoja.max_row
 
                 for col in range(1, col_range + 1):
