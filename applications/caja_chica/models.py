@@ -182,6 +182,11 @@ class CajaChica(models.Model):
     class Meta:
         verbose_name = 'Caja Chica'
         verbose_name_plural = 'Cajas Chicas'
+        ordering = [
+            '-year',
+            '-month',
+            'estado',
+        ]
 
     @property
     def periodo(self):

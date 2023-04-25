@@ -34,13 +34,11 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                             <i class="bi bi-x-lg"></i>
                         </button>
-                        <a href="{% url 'caja_chica_app:caja_chica_detalle' cajachica.id %}"
-                        class="btn btn-info btn-sm">
-                            <i class="bi bi-eye-fill"></i>
-                        </a>
-
                     {% endif %}
-
+                    <a href="{% url 'caja_chica_app:caja_chica_detalle' cajachica.id %}"
+                        class="btn btn-info btn-sm">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
                 </td>
             </tr>
         {% endfor %}
