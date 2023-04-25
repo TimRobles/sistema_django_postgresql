@@ -1,3 +1,4 @@
+{% load funciones_propias %}
 {% if buscar_serie %}
 <h3>Serie Nueva</h3>
 <table class="table">
@@ -61,9 +62,11 @@
             <td>{{ serie.sociedad }}</td>
             <td>{{ serie.cliente }}</td>
             <td class="text-center text-nowrap">
-                <a href="{% url 'calidad_app:serie_ver' serie.id %}" class="btn btn-success btn-sm">
-                    <i class="bi bi-eye-fill"></i>
-                </a>
+                <button data-form-url="{% url 'calidad_app:series_registrar_serie_antigua' serie.id %}"
+                    data-table-url="{% url 'calidad_app:serie_buscar_tabla' %}?serie={{request.GET|get_diccionario:'serie'}}"
+                    class="create btn btn-primary btn-sm">
+                    <i class="bi bi-plus"></i>
+                </button>
             </td>
         </tr>
         {% endfor %}

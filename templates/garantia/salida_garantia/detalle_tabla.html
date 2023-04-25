@@ -15,7 +15,14 @@
         </button>
     </div>
     <div class="col-auto">
-        <a href="{% url 'garantia_app:salida_garantia_pdf' salida.id %}" target="_blank" class="btn btn-danger">Ver PDF</a>
+        <a href="{% url 'garantia_app:salida_garantia_pdf' salida.id %}" target="_blank" class="btn btn-danger">
+            Ver PDF Vertical
+        </a>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'garantia_app:salida_garantia_pdf' salida.id %}?vertical=False" target="_blank" class="btn btn-danger">
+            Ver PDF Horizontal
+        </a>
     </div>
 </div>
 

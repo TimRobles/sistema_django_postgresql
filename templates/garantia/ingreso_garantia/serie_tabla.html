@@ -1,3 +1,28 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+{% if ingreso_reclamo_garantia_detalle %}
+<div class="input-group flex-nowrap mt-3">
+    <label class="input-group-text">Cantidad Ingresada</label>
+    <input type="text" class="form-control" value="{{ ingreso_reclamo_garantia_detalle.cantidad|redondear|intcomma }}" style="max-width: 150px;">
+    <label class="input-group-text ms-auto">Series Registradas</label>
+    <input type="text" class="fondo-personalizado form-control" value="{{ ingreso_reclamo_garantia_detalle.series|redondear|intcomma }}" style="max-width: 150px; 
+    {% if ingreso_reclamo_garantia_detalle.series != ingreso_reclamo_garantia_detalle.cantidad %}
+    --color-fondo:red;
+    {% else %}
+    --color-fondo:green;
+    {% endif %}
+    ">
+</div>
+{% endif %}
+
+{% if cantidad_series %}
+<div class="input-group flex-nowrap mt-3">
+    <label class="input-group-text ms-auto">Series Registradas</label>
+    <input type="text" class="fondo-personalizado form-control" value="{{ cantidad_series|redondear|intcomma }}" style="max-width: 150px;">
+</div>
+{% endif %}
+
 <table class="table">
     <thead>
         <tr>
@@ -5,6 +30,7 @@
             <th>Material</th>
             <th>Cliente</th>
             <th>Documento</th>
+            <th>Fecha</th>
             <th>Almacén</th>
             <th>Sociedad</th>
             <th>Comentario</th>
@@ -25,6 +51,16 @@
             <td class="text-nowrap">
                 {% if serie.documento %}
                 {{ serie.documento.descripcion }}
+                {% endif %}
+            </td>
+            <td class="text-nowrap">
+                {% if serie.documento %}
+                {{ serie.documento.fecha|date:'d/m/Y' }}
+                {% endif %}
+                
+                {% if not serie.documento.fecha|estado_garantia %}
+                <br>
+                <span style="color: red;">Fuera de Garantía</span>
                 {% endif %}
             </td>
             <td>

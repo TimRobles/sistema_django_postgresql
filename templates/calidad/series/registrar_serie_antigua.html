@@ -1,0 +1,45 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block js %}
+<script>
+    $(function () {
+        $("#id_factura").select2({
+            width:'100%',
+            dropdownParent: $(".modal-body"),
+            matcher: buscar_select2,
+            ajax: {
+                url: "{% url 'comprobante_venta_app:factura_venta_json' %}",
+                dataType: 'json',
+                type: "GET",
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {id: item.id, text: item.nombre}
+                        })
+                    };
+                }
+            },
+            minimumInputLength: 3,
+        });
+        $("#id_boleta").select2({
+            width:'100%',
+            dropdownParent: $(".modal-body"),
+            matcher: buscar_select2,
+            ajax: {
+                url: "{% url 'comprobante_venta_app:boleta_venta_json' %}",
+                dataType: 'json',
+                type: "GET",
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {id: item.id, text: item.nombre}
+                        })
+                    };
+                }
+            },
+            minimumInputLength: 3,
+        });
+    });
+</script>
+{% endblock js %}

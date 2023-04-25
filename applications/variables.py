@@ -164,6 +164,13 @@ ESTADOS = (
     (2, 'BAJA'),
     )
 
+ESTADOS_TELECREDITO = (
+    (1, 'ABIERTO'),
+    (2, 'SOLICITADO'),
+    (3, 'REGISTRADO'),
+    (4, 'CERRADO'),
+    )
+
 ESTADOS_DOCUMENTO = (
     (1, 'BORRADOR'),
     (2, 'ACTIVO'),
@@ -337,6 +344,7 @@ TIPOS_COMISION = (
 TIPO_PAGO_BOLETA = (
     (1, 'FIN DE MES'),
     (2, 'GRATIFICACION'),
+    (3, 'LIQUIDACIÓN'),
     )
 
 TIPO_PAGO_RECIBO = (
@@ -364,11 +372,12 @@ MESES = (
 
 TIPO_PRESTAMO = (
     (1, 'PRESTAMO'),
+    (2, 'DEVOLUCION'),
     )
 
 ESTADO_PRESTAMO_CAJA_CHICA = (
-    (1, 'PRESTADO'),
-    (2, 'DEVUELTO'),
+    (1, 'PENDIENTE'),
+    (2, 'CANCELADO'),
     )
 
 ESTADO_CAJA_CHICA = (

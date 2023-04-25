@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django import forms
 from django.core.paginator import Paginator
-from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SolucionMaterial
+from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie, SerieConsulta, SolucionMaterial
 from applications.comprobante_venta.models import BoletaVenta, BoletaVentaDetalle, FacturaVenta, FacturaVentaDetalle
 from applications.garantia.pdf import generarIngresoReclamoGarantia, generarSalidaReclamoGarantia
 from applications.importaciones import*
@@ -51,7 +51,9 @@ from .forms import(
     SerieIngresoReclamoGarantiaDocumentoForm,
 )
 
-CONDICIONES_GARANTIA = CondicionesGarantia.objects.values_list('condicion')
+CONDICIONES_GARANTIA = []
+for condicion in list(CondicionesGarantia.objects.values_list('condicion')):
+    CONDICIONES_GARANTIA.append(condicion[0])
 
 
 class IngresoReclamoGarantiaListView(FormView):
@@ -520,6 +522,8 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
         if serie_base:
             try:
                 serie = Serie.objects.get(serie_base=serie_base)
+                print("************************************")
+                print(serie)
                 item = len(IngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia = ingreso_reclamo_garantia))
                 ingreso_reclamo_garantia_detalle, created = IngresoReclamoGarantiaDetalle.objects.get_or_create(
                     content_type = serie.content_type,
@@ -534,9 +538,20 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                     ingreso_reclamo_garantia.sociedad = serie.sociedad
                     ingreso_reclamo_garantia.save()
 
+                if created:
+                    ingreso_reclamo_garantia_detalle.item = item + 1
+                    ingreso_reclamo_garantia_detalle.cantidad = 1
+                else:
+                    if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
+                        ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
+                registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
+                ingreso_reclamo_garantia_detalle.save()
 
-                
-                documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                print(serie.documento)
+                if hasattr(serie.documento, 'nota_salida'):
+                    documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                else:
+                    documento = serie.documento
 
                 buscar = SerieIngresoReclamoGarantiaDetalle.objects.filter(
                             ingreso_reclamo_garantia_detalle=ingreso_reclamo_garantia_detalle,
@@ -544,7 +559,8 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                             content_type_documento=ContentType.objects.get_for_model(documento),
                             id_registro_documento=documento.id,
                         )
-
+                print(buscar)
+                print("************************************")
                 if len(buscar)>0:
                     self.serie_encontrada = "La serie ya está registrada"
                 elif ingreso_reclamo_garantia.cliente == serie.cliente:
@@ -558,27 +574,28 @@ class SerieIngresoReclamoGarantiaView(PermissionRequiredMixin, FormView):
                             updated_by=self.request.user,
                         )
                         self.serie_encontrada = "Serie encontrada"
-                        if created:
-                            ingreso_reclamo_garantia_detalle.item = item + 1
-                            ingreso_reclamo_garantia_detalle.cantidad = 1
-                        else:
-                            if ingreso_reclamo_garantia_detalle.cantidad == ingreso_reclamo_garantia_detalle.series:
-                                ingreso_reclamo_garantia_detalle.cantidad = ingreso_reclamo_garantia_detalle.cantidad + 1
-                        registro_guardar(ingreso_reclamo_garantia_detalle, self.request)
-                        ingreso_reclamo_garantia_detalle.save()
                     else:
                         self.serie_encontrada = "La serie pertenece a otra SOCIEDAD"
                 else:
                     self.serie_encontrada = "La serie pertenece a otro CLIENTE"
 
             except:
-                self.serie_encontrada = "No se encontró la serie"
+                if len(Serie.objects.filter(serie_base=serie_base)) > 1:
+                    self.serie_encontrada = "Serie en más de 1 producto"
+                else:
+                    try:
+                        serie = SerieConsulta.objects.get(serie_base=serie_base)
+                        self.serie_encontrada = "Serie antigua"
+                    except:
+                        self.serie_encontrada = "No se encontró la serie"
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SerieIngresoReclamoGarantiaView, self).get_context_data(**kwargs)
+        series = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia__id=self.kwargs['id_ingreso'])
         context['serie_encontrada'] = self.serie_encontrada
-        context['series'] = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__ingreso_reclamo_garantia__id=self.kwargs['id_ingreso'])
+        context['cantidad_series'] = len(series)
+        context['series'] = series
         context['regresar'] = reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
         context['url_tabla'] = reverse_lazy('garantia_app:serie_ingreso_garantia_tabla', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
         return context
@@ -628,8 +645,21 @@ class SerieIngresoReclamoGarantiaDetalleView(PermissionRequiredMixin, FormView):
         if serie_base:
             try:
                 if ingreso_reclamo_garantia_detalle.producto.control_serie:
-                    serie = Serie.objects.get(serie_base=serie_base)
-                    documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                    print(serie_base)
+                    print(ingreso_reclamo_garantia_detalle.content_type)
+                    print(ingreso_reclamo_garantia_detalle.id_registro)
+                    serie = Serie.objects.get(
+                        serie_base=serie_base,
+                        content_type=ingreso_reclamo_garantia_detalle.content_type,
+                        id_registro=ingreso_reclamo_garantia_detalle.id_registro,
+                        )
+                        
+                    print(serie.documento)
+                    if hasattr(serie.documento, 'nota_salida'):
+                        documento = serie.documento.nota_salida.documentos_venta_objeto[-1]
+                    else:
+                        documento = serie.documento
+
                     content_type_documento = ContentType.objects.get_for_model(documento)
                     id_registro_documento = documento.id
                     cliente = serie.cliente
@@ -673,11 +703,13 @@ class SerieIngresoReclamoGarantiaDetalleView(PermissionRequiredMixin, FormView):
                     self.serie_encontrada = "La serie pertenece a otro PRODUCTO"
 
             except Exception as e:
+                print(e)
                 self.serie_encontrada = "No se encontró la serie"
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SerieIngresoReclamoGarantiaDetalleView, self).get_context_data(**kwargs)
+        context['ingreso_reclamo_garantia_detalle'] = IngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_ingreso_detalle'])
         context['serie_encontrada'] = self.serie_encontrada
         context['series'] = SerieIngresoReclamoGarantiaDetalle.objects.filter(ingreso_reclamo_garantia_detalle__id=self.kwargs['id_ingreso_detalle'])
         context['regresar'] = reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':self.kwargs['id_ingreso']})
@@ -812,6 +844,8 @@ class IngresoReclamoGarantiaPdfView(View):
         sociedad = ingreso_reclamo_garantia.sociedad
         color = sociedad.color
         vertical = True
+        if request.GET.get('vertical'):
+            vertical = False
         alinear = 'right'
         logo = [[sociedad.logo.url, alinear]]
         pie_pagina = sociedad.pie_pagina
@@ -2142,6 +2176,8 @@ class SalidaReclamoGarantiaPdfView(View):
         sociedad = salida_reclamo_garantia.sociedad
         color = sociedad.color
         vertical = True
+        if request.GET.get('vertical'):
+            vertical = False
         alinear = 'right'
         logo = [[sociedad.logo.url, alinear]]
         pie_pagina = sociedad.pie_pagina

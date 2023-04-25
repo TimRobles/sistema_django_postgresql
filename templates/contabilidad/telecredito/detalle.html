@@ -12,6 +12,11 @@
             data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}">    
             Añadir Recibo Pago
         </button>
+        <button class="create badge bg-warning"
+            data-form-url="{% url 'contabilidad_app:telecredito_actualizar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}">    
+            Editar
+        </button>
         <a href="{% url 'contabilidad_app:telecredito_inicio' %}"><span class="badge bg-danger">Regresar</span></a>
     </h3>
     <div id="tabla">

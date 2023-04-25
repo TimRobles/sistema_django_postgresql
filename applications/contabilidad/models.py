@@ -192,7 +192,7 @@ class MedioPago(models.Model):
 class Institucion(models.Model):
     nombre = models.CharField('Institución', max_length=50)
     url = models.URLField('URL', max_length=200, null=True, blank=True)
-    tipo_servicio = models.ForeignKey(TipoServicio, on_delete=models.CASCADE)
+    tipo_servicio = models.ForeignKey(TipoServicio, on_delete=models.CASCADE, blank=True, null=True)
     medio_pago = models.ManyToManyField(MedioPago)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -352,7 +352,7 @@ class ChequeFisico(models.Model):
     numero = models.CharField('Número de cheque', max_length=50, blank=True, null=True)
     responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
     monto = models.DecimalField('Monto del cheque', max_digits=7, decimal_places=2, default=0)
-    comision = models.DecimalField('Comision', max_digits=4, decimal_places=4, default=0)
+    comision = models.DecimalField('Comision', max_digits=4, decimal_places=4, default=0) #Eliminar
     monto_recibido = models.DecimalField('Monto Recibido', max_digits=7, decimal_places=2, default=0)
     fecha_emision = models.DateField('Fecha de emisión del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)
     fecha_cobro = models.DateField('Fecha de cobro del cheque', auto_now=False, auto_now_add=False, blank=True, null=True)

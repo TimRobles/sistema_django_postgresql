@@ -537,7 +537,6 @@ class TelecreditoForm(BSModalModelForm):
             'concepto',
             'numero',
             'fecha_emision',
-            'usuario',
             'sociedad',
             )
 

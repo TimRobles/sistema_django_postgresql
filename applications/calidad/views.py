@@ -2,6 +2,7 @@ from decimal import Decimal
 from urllib import request
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.importaciones import*
 from applications.logistica.pdf import generarSeries
 from applications.material.funciones import stock_tipo_stock
@@ -26,6 +27,7 @@ from applications.calidad.forms import(
     NotaControlCalidadStockAgregarMaloSinFallaCreateForm,
     NotaControlCalidadStockAgregarMaloSinSerieCreateForm,
     NotaControlCalidadStockTransformacionProductosForm,
+    RegistrarSerieAntiguaForm,
     ReparacionMaterialDetalleSeriesActualizarForm,
     ReparacionMaterialDetalleSeriesForm,
     SalidaTransformacionProductosForm,
@@ -1605,6 +1607,27 @@ class SerieBuscarView(PermissionRequiredMixin, FormView):
             context['buscar_serie_antigua'] = buscar_serie_antigua
         
         return context
+
+
+def SerieBuscarTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = "calidad/series/buscar_tabla.html"
+        context = {}
+        serie = request.GET.get('serie')
+        if serie:
+            buscar_serie = Serie.objects.filter(serie_base = serie.upper())
+            context['buscar_serie'] = buscar_serie
+            buscar_serie_antigua = SerieConsulta.objects.filter(serie_base = serie.upper())
+            context['buscar_serie_antigua'] = buscar_serie_antigua
+
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
 
 
 class SerieDetailView(PermissionRequiredMixin, DetailView):
@@ -3645,4 +3668,90 @@ class ValidarSeriesSalidaTransformacionProductosDetalleDeleteView(PermissionRequ
         context['titulo'] = "Serie"
         context['item'] = self.get_object().serie
         context['dar_baja'] = "true"
+        return context
+
+
+class RegistrarSerieAntiguaView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.delete_validarseriesalidatransformacionproductos')
+    template_name = "calidad/series/registrar_serie_antigua.html"
+    form_class = RegistrarSerieAntiguaForm
+
+    def get_success_url(self):
+        return reverse_lazy('nota_app:nota_credito_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                serie_antigua = SerieConsulta.objects.get(id=self.kwargs['id_serie_antigua'])
+                material = serie_antigua.material
+                tipo_movimiento = TipoMovimiento.objects.get(codigo=777) #Serie Antigua a Serie Nueva
+                estado_serie = EstadoSerie.objects.get(numero_estado=3) #Vendido
+                factura_id = form.cleaned_data.get('factura')
+                boleta_id = form.cleaned_data.get('boleta')
+                if factura_id:
+                    documento = FacturaVenta.objects.get(id=factura_id)
+                    if documento.sociedad != serie_antigua.sociedad:
+                        form.add_error('factura', 'Sociedad incorrecta')
+                        return super().form_invalid(form)
+
+                if boleta_id:
+                    documento = BoletaVenta.objects.get(id=boleta_id)
+                    if documento.sociedad != serie_antigua.sociedad:
+                        form.add_error('boleta', 'Sociedad incorrecta')
+                        return super().form_invalid(form)
+                
+                
+                movimiento_unico = MovimientosAlmacen.objects.create(
+                    content_type_producto=ContentType.objects.get_for_model(material),
+                    id_registro_producto=material.id,
+                    cantidad=1,
+                    tipo_movimiento=tipo_movimiento,
+                    tipo_stock=tipo_movimiento.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(documento),
+                    id_registro_documento_proceso=documento.id,
+                    almacen=None,
+                    sociedad=serie_antigua.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    transformacion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                
+                serie = Serie.objects.create(
+                    serie_base=serie_antigua.serie_base,
+                    content_type=ContentType.objects.get_for_model(material),
+                    id_registro=material.id,
+                    sociedad=serie_antigua.sociedad,
+                    nota_control_calidad_stock_detalle=None,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                HistorialEstadoSerie.objects.create(
+                    serie=serie,
+                    estado_serie=estado_serie,
+                    falla_material=None,
+                    solucion=None,
+                    observacion=None,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                serie.serie_movimiento_almacen.add(movimiento_unico)
+                serie_antigua.delete()
+
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RegistrarSerieAntiguaView, self).get_context_data(**kwargs)
+        context['accion'] = 'Seleccionar'
+        context['titulo'] = 'Comprobante de Venta'
         return context

@@ -6,6 +6,7 @@ app_name = 'calidad_app'
 urlSeries = [
 
     path('serie/buscar/', views.SerieBuscarView.as_view(), name='serie_buscar'),
+    path('serie/buscar/tabla/', views.SerieBuscarTabla, name='serie_buscar_tabla'),
     path('serie/ver/<pk>/', views.SerieDetailView.as_view(), name='serie_ver'),
     
     path('series/detalle/<pk>/', views.NotaControlCalidadStockDetalleView.as_view(), name='series_detalle'),
@@ -19,6 +20,8 @@ urlSeries = [
     path('series/detalle/bueno/actualizar/<pk>/', views.NotaControlCalidadStockBuenoUpdateView.as_view(), name='series_detalle_bueno_actualizar'),
     path('series/detalle/malo/actualizar/<pk>/', views.NotaControlCalidadStockMaloUpdateView.as_view(), name='series_detalle_malo_actualizar'),
     path('series/detalle/malo/sin-serie/actualizar/<pk>/', views.NotaControlCalidadStockMaloSinSerieUpdateView.as_view(), name='series_detalle_malo_sin_serie_actualizar'),
+
+    path('series/registrar-serie-antigua/<int:id_serie_antigua>/', views.RegistrarSerieAntiguaView.as_view(), name='series_registrar_serie_antigua'),
 ]
 
 urlNotaControlCalidadStock = [

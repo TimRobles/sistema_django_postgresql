@@ -1,3 +1,4 @@
+from datetime import date
 import json
 import os
 from textwrap import indent
@@ -85,3 +86,13 @@ def atributo(field):
 @register.filter
 def diferencia(valor, dif):
     return valor - dif
+    
+@register.filter
+def get_diccionario(diccionario, key):
+    return diccionario.get(key)
+    
+@register.filter
+def estado_garantia(fecha):
+    if (fecha - date.today()).days > 0:
+        return True
+    return False

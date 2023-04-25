@@ -1,7 +1,7 @@
 from django import forms
 from .models import *
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-
+from applications.contabilidad.models import ReciboServicio
 class RequerimientoForm(BSModalModelForm):
     class Meta:
         model = Requerimiento
@@ -329,7 +329,6 @@ class CajaChicaReciboCrearForm(BSModalModelForm):
             'concepto',
             'fecha',
             'monto',
-            'moneda',
             )
         
         widgets = {
@@ -346,3 +345,45 @@ class CajaChicaReciboCrearForm(BSModalModelForm):
         super(CajaChicaReciboCrearForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class CajaChicaReciboServicioAgregarForm(BSModalForm):
+    recibo_servicio = forms.ModelChoiceField(queryset=None)
+
+    class Meta:
+        fields=(
+            'recibo_servicio',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_recibos = kwargs.pop('recibos')
+        super(CajaChicaReciboServicioAgregarForm, self).__init__(*args, **kwargs)
+        self.fields['recibo_servicio'].queryset = lista_recibos
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class CajaChicaReciboServicioUpdateForm(BSModalModelForm):
+    class Meta:
+        model = ReciboServicio
+        fields = (
+            'monto_pagado',
+            'fecha_pago',
+            'voucher',
+            )
+
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    # 'required':'required',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(CajaChicaReciboServicioUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+

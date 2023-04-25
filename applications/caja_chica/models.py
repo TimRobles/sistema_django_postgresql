@@ -169,7 +169,7 @@ class CajaChica(models.Model):
     year = models.IntegerField('Año', validators=[MinValueValidator(2015),MaxValueValidator(datetime.now().year)], default=datetime.now().year ,blank=True, null=True)
     ingresos = models.DecimalField('Ingresos', max_digits=7, decimal_places=2, default=0)
     egresos = models.DecimalField('Egresos', max_digits=7, decimal_places=2, default=0)
-    saldo_final = models.DecimalField('Saldo Inicial', max_digits=5, decimal_places=2, default=0)
+    saldo_final = models.DecimalField('Saldo Inicial', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='CajaChica_usuario')
     estado = models.IntegerField(choices=ESTADO_CAJA_CHICA, default=1)
 
