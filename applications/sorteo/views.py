@@ -1,4 +1,5 @@
 from slugify import slugify
+from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from applications.sorteo.forms import CargarExcelForm, SorteoForm, TicketForm
 from applications.sorteo.funciones import llenar_datos
@@ -186,7 +187,7 @@ def Eliminar(request, slug):
 class CargarExcelFormView(BSModalFormView):
     template_name = "includes/formulario generico.html"
     form_class = CargarExcelForm
-    success_url = reverse_lazy('sorteo_webinar_app:sorteo_webinar_lista')
+    success_url = reverse_lazy('sorteo_app:sorteo_lista')
 
     def form_valid(self, form):
         if self.request.session['primero']:
@@ -203,3 +204,37 @@ class CargarExcelFormView(BSModalFormView):
         context['titulo'] = 'Tickets'
         return context
     
+class EliminarDuplicadosView(BSModalDeleteView):
+    model = Sorteo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('sorteo_app:sorteo_ver', kwargs={'slug':self.get_object().slug})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            dnis = []
+            eliminar = []
+            for ticket in self.object.Ticket_sorteo.all():
+                if ticket.dato_dos in dnis:
+                    eliminar.append(ticket)
+                else:
+                    dnis.append(ticket.dato_dos)
+            
+            for ticket in eliminar:
+                ticket.delete()
+            messages.success(request, MENSAJE_FINALIZAR_SOLICITUD_PRESTAMO_MATERIALES)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(EliminarDuplicadosView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Duplicados"
+        context['item'] = self.object
+        return context

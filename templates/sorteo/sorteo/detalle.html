@@ -17,6 +17,10 @@
     class="create btn btn-primary">
     Cargar Excel
 </button>
+<button data-form-url="{% url 'sorteo_app:sorteo_duplicados' sorteo.slug %}"
+    class="delete btn btn-danger">
+    Eliminar duplicados
+</button>
 <a href="{% url 'sorteo_app:sorteo_iniciar' sorteo.slug %}" class="btn btn-primary">Iniciar Sorteo</a>
 <a href="{% url 'sorteo_app:sorteo_lista' %}" class="btn btn-danger">Regresar</a>
 <div id="tabla">
