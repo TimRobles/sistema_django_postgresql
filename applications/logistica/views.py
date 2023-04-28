@@ -983,13 +983,14 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                         tipo_movimiento=movimiento_final,
                         tipo_stock=tipo_stock_disponible,
                         signo_factor_multiplicador=-1,
-                        content_type_documento_proceso=ContentType.objects.get_for_model(documento_anterior),
-                        id_registro_documento_proceso=documento_anterior.id,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(form.instance),
+                        id_registro_documento_proceso=form.instance.id,
                         # almacen=detalle.almacen,
                         sociedad=form.instance.sociedad,
                     )
                     movimiento_dos = movimiento_tres.movimiento_anterior
                     #Pendiente eliminar movimiento del historial Serie
+                    
 
                     movimiento_tres.delete()
                     movimiento_dos.delete()
