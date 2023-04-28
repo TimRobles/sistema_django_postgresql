@@ -31,7 +31,7 @@ from applications.caja_chica.forms import (
     CajaChicaReciboServicioUpdateForm,)
 
 class RequerimientoListView(PermissionRequiredMixin, ListView):
-    permission_required = ('cajachica.view_requerimiento')
+    permission_required = ('caja_chica.view_requerimiento')
 
     model = Requerimiento
     template_name = "caja_chica/requerimiento/inicio.html"
@@ -63,7 +63,7 @@ def RequerimientoTabla(request):
 
 
 class RequerimientoRecibidoListView(PermissionRequiredMixin, ListView):
-    permission_required = ('cajachica.view_requerimiento')
+    permission_required = ('caja_chica.view_requerimiento')
 
     model = Requerimiento
     template_name = "caja_chica/requerimiento/recibido.html"
@@ -99,7 +99,7 @@ def RequerimientoRecibidoTabla(request):
 
 
 class RequerimientoCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cajachica.add_requerimiento')
+    permission_required = ('caja_chica.add_requerimiento')
 
     model = Requerimiento
     template_name = "includes/formulario generico.html"
@@ -136,7 +136,7 @@ class RequerimientoCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 
 class RequerimientoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
 
     model = Requerimiento
     template_name = "includes/formulario generico.html"
@@ -172,7 +172,7 @@ class RequerimientoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class RequerimientoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.delete_requerimiento')
+    permission_required = ('caja_chica.delete_requerimiento')
 
     model = Requerimiento
     template_name = "includes/eliminar generico.html"
@@ -188,7 +188,7 @@ class RequerimientoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     
 
 class RequerimientoSolicitarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "caja_chica/requerimiento/boton.html"
     
@@ -224,7 +224,7 @@ class RequerimientoSolicitarView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class RequerimientoEditarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "caja_chica/requerimiento/boton.html"
     
@@ -260,7 +260,7 @@ class RequerimientoEditarView(PermissionRequiredMixin, BSModalDeleteView):
     
 
 class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "caja_chica/requerimiento/aprobar.html"
     form_class = RequerimientoAprobarForm
@@ -297,7 +297,7 @@ class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
     
 
 class RequerimientoRechazarView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "includes/formulario generico.html"
     form_class = RequerimientoRechazarForm
@@ -318,7 +318,7 @@ class RequerimientoRechazarView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class RequerimientoRetrocederView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "caja_chica/requerimiento/boton.html"
     
@@ -361,7 +361,7 @@ class RequerimientoRetrocederView(PermissionRequiredMixin, BSModalDeleteView):
     
 
 class RequerimientoFinalizarRendicionView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     form_class = RequerimientoFinalizarRendicionForm
     template_name = "caja_chica/requerimiento/finalizar_rendicion.html"
@@ -400,7 +400,7 @@ class RequerimientoFinalizarRendicionView(PermissionRequiredMixin, BSModalUpdate
     
 
 class RequerimientoEditarRendicionView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "caja_chica/requerimiento/boton.html"
     
@@ -436,7 +436,7 @@ class RequerimientoEditarRendicionView(PermissionRequiredMixin, BSModalDeleteVie
 
 
 class RequerimientoAprobarRendicionView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "caja_chica/requerimiento/boton.html"
 
@@ -466,7 +466,7 @@ class RequerimientoAprobarRendicionView(PermissionRequiredMixin, BSModalDeleteVi
 
 
 class RequerimientoRechazarRendicionView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "includes/formulario generico.html"
     form_class = RequerimientoRechazarRendicionForm
@@ -487,7 +487,7 @@ class RequerimientoRechazarRendicionView(PermissionRequiredMixin, BSModalUpdateV
     
 
 class RequerimientoRetrocederRendicionView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.change_requerimiento')
+    permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
     template_name = "caja_chica/requerimiento/boton.html"
     
@@ -523,7 +523,7 @@ class RequerimientoRetrocederRendicionView(PermissionRequiredMixin, BSModalDelet
 
 
 class RequerimientoDetalleView(PermissionRequiredMixin, DetailView):
-    permission_required = ('cajachica.view_requerimiento')
+    permission_required = ('caja_chica.view_requerimiento')
 
     model = Requerimiento
     template_name = "caja_chica/requerimiento/detalle.html"
@@ -562,7 +562,7 @@ def RequerimientoDetalleTabla(request, pk):
     
 
 class RequerimientoVueltoExtraCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cajachica.add_requerimientovueltoextra')
+    permission_required = ('caja_chica.add_requerimientovueltoextra')
     model = RequerimientoVueltoExtra
     template_name = "caja_chica/requerimiento/vuelto_extra.html"
     form_class = RequerimientoVueltoExtraForm
@@ -600,7 +600,7 @@ class RequerimientoVueltoExtraCreateView(PermissionRequiredMixin, BSModalCreateV
 
 
 class RequerimientoVueltoExtraUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_requerimientovueltoextra')
+    permission_required = ('caja_chica.change_requerimientovueltoextra')
     model = RequerimientoVueltoExtra
     template_name = "caja_chica/requerimiento/vuelto_extra.html"
     form_class = RequerimientoVueltoExtraForm
@@ -622,7 +622,7 @@ class RequerimientoVueltoExtraUpdateView(PermissionRequiredMixin, BSModalUpdateV
 
 
 class RequerimientoVueltoExtraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.delete_requerimientovueltoextra')
+    permission_required = ('caja_chica.delete_requerimientovueltoextra')
     model = RequerimientoVueltoExtra
     template_name = "includes/eliminar generico.html"
     
@@ -644,7 +644,7 @@ class RequerimientoVueltoExtraDeleteView(PermissionRequiredMixin, BSModalDeleteV
     
 
 class RequerimientoDocumentoCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cajachica.add_requerimientodocumento')
+    permission_required = ('caja_chica.add_requerimientodocumento')
     model = RequerimientoDocumento
     template_name = "caja_chica/requerimiento/documento/form.html"
     form_class = RequerimientoDocumentoForm
@@ -678,7 +678,7 @@ class RequerimientoDocumentoCreateView(PermissionRequiredMixin, BSModalCreateVie
 
 
 class RequerimientoDocumentoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_requerimientodocumento')
+    permission_required = ('caja_chica.change_requerimientodocumento')
     model = RequerimientoDocumento
     template_name = "caja_chica/requerimiento/documento/form.html"
     form_class = RequerimientoDocumentoForm
@@ -701,7 +701,7 @@ class RequerimientoDocumentoUpdateView(PermissionRequiredMixin, BSModalUpdateVie
     
 
 class RequerimientoDocumentoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.delete_requerimientodocumento')
+    permission_required = ('caja_chica.delete_requerimientodocumento')
     model = RequerimientoDocumento
     template_name = "includes/eliminar generico.html"
     # context_object_name = 'contexto_requerimiento_documento' 
@@ -724,7 +724,7 @@ class RequerimientoDocumentoDeleteView(PermissionRequiredMixin, BSModalDeleteVie
     
 
 class RequerimientoDocumentoDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('cajachica.view_requerimientodocumento')
+    permission_required = ('caja_chica.view_requerimientodocumento')
     model = RequerimientoDocumento
     template_name = "caja_chica/requerimiento/documento/detalle.html"
     context_object_name = 'contexto_documento_detalle'
@@ -755,7 +755,7 @@ def RequerimientoDocumentoDetailTabla(request, pk):
 
 
 class RequerimientoDocumentoDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cajachica.view_requerimientodocumentodetalle')
+    permission_required = ('caja_chica.view_requerimientodocumentodetalle')
 
     model = RequerimientoDocumentoDetalle
     template_name = "includes/formulario generico.html"
@@ -792,7 +792,7 @@ class RequerimientoDocumentoDetalleCreateView(PermissionRequiredMixin, BSModalCr
 
 
 class RequerimientoDocumentoDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.view_requerimiento')
+    permission_required = ('caja_chica.view_requerimiento')
 
     model = RequerimientoDocumentoDetalle
     template_name = "includes/formulario generico.html"
@@ -820,7 +820,7 @@ class RequerimientoDocumentoDetalleUpdateView(PermissionRequiredMixin, BSModalUp
 
 
 class RequerimientoDocumentoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.view_requerimiento')
+    permission_required = ('caja_chica.view_requerimiento')
 
     model = RequerimientoDocumentoDetalle
     template_name = "includes/eliminar generico.html"
@@ -853,7 +853,7 @@ class RequerimientoDocumentoDetalleDeleteView(PermissionRequiredMixin, BSModalDe
 #__CajaChica___________________________________________________________________________
 
 class CajaChicaListView(PermissionRequiredMixin, ListView):
-    permission_required = ('cajachica.view_cajachica')
+    permission_required = ('caja_chica.view_cajachica')
     model = CajaChica
     template_name = "caja_chica/caja_chica/inicio.html"
     context_object_name = 'contexto_caja_chica'
@@ -873,7 +873,7 @@ def CajaChicaTabla(request):
         return JsonResponse(data)
 
 class CajaChicaCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cajachica.add_cajachica')
+    permission_required = ('caja_chica.add_cajachica')
     model = CajaChica
     template_name = "includes/formulario generico.html"
     form_class = CajaChicaCrearForm
@@ -905,7 +905,7 @@ class CajaChicaCreateView(PermissionRequiredMixin, BSModalCreateView):
         return context
 
 class CajaChicaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cajachica.change_cajachica')
+    permission_required = ('caja_chica.change_cajachica')
     model = CajaChica
     template_name = "includes/formulario generico.html"
     form_class = CajaChicaCrearForm
@@ -938,7 +938,7 @@ class CajaChicaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 class CajaChicaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cajachica.delete_cajachica')
+    permission_required = ('caja_chica.delete_cajachica')
     model = CajaChica
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
@@ -953,7 +953,7 @@ class CajaChicaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class CajaChicaDetalleView(PermissionRequiredMixin, DetailView):
-    permission_required = ('cajachica.view_cajachica')
+    permission_required = ('caja_chica.view_cajachica')
     model = CajaChica
     template_name = "caja_chica/caja_chica/detalle.html"
     context_object_name = 'cajachica'

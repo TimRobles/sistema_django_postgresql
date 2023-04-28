@@ -29,7 +29,7 @@ def SorteoTabla(request):
         return JsonResponse(data)
 
 
-class SorteoCreateView(BSModalCreateView):
+class SorteoCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Sorteo
     template_name = "includes/formulario generico.html"
     form_class = SorteoForm
@@ -47,7 +47,7 @@ class SorteoCreateView(BSModalCreateView):
         return context
 
 
-class SorteoUpdateView(BSModalUpdateView):
+class SorteoUpdateView(LoginRequiredMixin, BSModalUpdateView):
     model = Sorteo
     template_name = "includes/formulario generico.html"
     form_class = SorteoForm
@@ -65,7 +65,7 @@ class SorteoUpdateView(BSModalUpdateView):
         return context
 
 
-class SorteoDetailView(DetailView):
+class SorteoDetailView(LoginRequiredMixin, DetailView):
     model = Sorteo
     template_name = "sorteo/sorteo/detalle.html"
     context_object_name = 'sorteo'
@@ -86,7 +86,7 @@ def SorteoDetailTabla(request, slug):
         return JsonResponse(data)
 
 
-class TicketCreateView(BSModalCreateView):
+class TicketCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Ticket
     template_name = "includes/formulario generico.html"
     form_class = TicketForm
@@ -184,7 +184,7 @@ def Eliminar(request, slug):
     return HttpResponse('Eliminando')
 
 
-class CargarExcelFormView(BSModalFormView):
+class CargarExcelFormView(LoginRequiredMixin, BSModalFormView):
     template_name = "includes/formulario generico.html"
     form_class = CargarExcelForm
     success_url = reverse_lazy('sorteo_app:sorteo_lista')
@@ -204,7 +204,7 @@ class CargarExcelFormView(BSModalFormView):
         context['titulo'] = 'Tickets'
         return context
     
-class EliminarDuplicadosView(BSModalDeleteView):
+class EliminarDuplicadosView(LoginRequiredMixin, BSModalDeleteView):
     model = Sorteo
     template_name = "includes/eliminar generico.html"
 

@@ -236,8 +236,11 @@ class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
         contexto_filtro = []
 
         if filtro_sociedad:
-            condicion = Q(nota_ingreso__sociedad = filtro_sociedad)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            ids = []
+            for nota in nota_control_calidad_stock.all():
+                if str(nota.sociedad.id) == filtro_sociedad:
+                    ids.append(nota.id)
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(id__in = ids)
             contexto_filtro.append(f"sociedad={filtro_sociedad}")
 
         if filtro_estado:
