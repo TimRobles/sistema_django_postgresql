@@ -27,7 +27,7 @@ class ListaRequerimientoMaterial(models.Model):
 
 class ListaRequerimientoMaterialDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
