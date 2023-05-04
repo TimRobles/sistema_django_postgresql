@@ -1,19 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load funciones_propias %}
 
 {% block titulo %}
-    Caja Chica {{ cajachica.periodo }}
+    Caja Chica {{ cajachica.periodo }} | {{ cajachica.usuario|nombre_usuario }}
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Caja Chica {{ cajachica.periodo }} 
-        <!-- <button class="create badge bg-primary"
-            data-form-url="{% url 'caja_chica_app:caja_chica_crear' %}"
-            data-table-url="{% url 'caja_chica_app:caja_chica_tabla' %}">
-            Nueva
-        </button> -->
+    <h3>Caja Chica {{ cajachica.periodo }} | {{ cajachica.usuario|nombre_usuario }}
         <a href="{% url 'caja_chica_app:caja_chica_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 
+        {% if cajachica.estado == 1 and request.user == cajachica.usuario %}
         <button class="create badge bg-primary"
             data-form-url="{% url 'caja_chica_app:caja_chica_recibo' cajachica.id %}"
             data-table-url="{% url 'caja_chica_app:caja_chica_detalle_tabla' cajachica.id %}">
@@ -24,7 +21,7 @@
             class="create badge bg-primary">
             Recibo Servicio
         </button>
-            
+        {% endif %}    
     </h3>
     <br>
     <div class="table-responsive" id="tabla">

@@ -123,7 +123,10 @@
                 <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ movimiento.4|redondear|intcomma }}</td>
                 <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ movimiento.5|redondear|intcomma }}</td>
                 <td class="text-nowrap text-center">
-                    {% if movimiento.estado == 1 %}
+                    <a href="{{ movimiento.6 }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                    {% if cajachica.estado == 1 %}
                     {% endif %}
                 </td>
             </tr>

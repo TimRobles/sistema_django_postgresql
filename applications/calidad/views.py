@@ -3,7 +3,7 @@ from urllib import request
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
-from applications.importaciones import*
+from applications.importaciones import *
 from applications.logistica.pdf import generarSeries
 from applications.material.funciones import stock_tipo_stock
 from applications.material.models import SubFamilia

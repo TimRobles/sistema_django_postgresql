@@ -1,8 +1,9 @@
 from datetime import date
 from decimal import Decimal
 
+from django.urls import reverse_lazy
 from django.contrib.contenttypes.models import ContentType
-from applications.caja_chica.models import ReciboCajaChica, Requerimiento
+from applications.caja_chica.models import CajaChicaSalida, ReciboCajaChica, Requerimiento
 
 
 def movimientos_caja_chica(caja_chica):
@@ -15,6 +16,7 @@ def movimientos_caja_chica(caja_chica):
     ingreso = caja_chica.saldo_inicial
     egreso = Decimal('0.00')
     saldo = Decimal('0.00')
+    url = '#'
     fila = []
     fila.append(fecha)
     fila.append(concepto)
@@ -22,6 +24,7 @@ def movimientos_caja_chica(caja_chica):
     fila.append(ingreso)
     fila.append(egreso)
     fila.append(saldo)
+    fila.append(url)
     movimientos.append(fila)
 
     #Requerimientos
@@ -36,13 +39,16 @@ def movimientos_caja_chica(caja_chica):
         if requerimiento.estado > 2 and requerimiento.estado != 4:
             concepto = requerimiento.concepto_final
             egreso = requerimiento.monto_final
+            fecha = requerimiento.fecha_entrega
         if requerimiento.estado == 7:
             egreso = requerimiento.monto_usado
+            fecha = requerimiento.fecha_entrega
         moneda = requerimiento.moneda
         tipo_cambio = requerimiento.tipo_cambio
         if moneda != caja_chica.moneda:
             if moneda.id == 2: #Dólares
                 egreso = (egreso * tipo_cambio).quantize(Decimal('0.01'))
+        url = reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk':requerimiento.id})
         fila = []
         fila.append(fecha)
         fila.append(concepto)
@@ -50,12 +56,13 @@ def movimientos_caja_chica(caja_chica):
         fila.append(ingreso)
         fila.append(egreso)
         fila.append(saldo)
+        fila.append(url)
         movimientos.append(fila)
 
     #Recibos Caja Chica
-    for recibos_caja in ReciboCajaChica.objects.filter(caja_chica=caja_chica.id):
+    for recibos_caja in ReciboCajaChica.objects.filter(caja_chica=caja_chica.id, estado=3):
 
-        fecha = recibos_caja.fecha
+        fecha = recibos_caja.fecha_pago
         concepto = recibos_caja.concepto
         estado = recibos_caja.get_estado_display()
         ingreso = recibos_caja.monto
@@ -63,7 +70,8 @@ def movimientos_caja_chica(caja_chica):
         saldo = Decimal('0.00')
         if recibos_caja.estado == 3:
             ingreso = recibos_caja.monto_pagado
-        moneda = recibos_caja.moneda
+        # moneda = recibos_caja.moneda
+        url = '#'
 
         fila = []
         fila.append(fecha)
@@ -72,9 +80,42 @@ def movimientos_caja_chica(caja_chica):
         fila.append(ingreso)
         fila.append(egreso)
         fila.append(saldo)
+        fila.append(url)
+        movimientos.append(fila)
+
+    #Caja Chica Salida
+    for caja_chica_salida in CajaChicaSalida.objects.filter(caja_chica=caja_chica.id):
+
+        fecha = caja_chica_salida.fecha
+        concepto = caja_chica_salida.concepto
+        estado = 'USADO'
+        ingreso = Decimal('0.00')
+        egreso = caja_chica_salida.monto
+        saldo = Decimal('0.00')
+        url = '#'
+        
+        fila = []
+        fila.append(fecha)
+        fila.append(concepto)
+        fila.append(estado)
+        fila.append(ingreso)
+        fila.append(egreso)
+        fila.append(saldo)
+        fila.append(url)
         movimientos.append(fila)
 
     movimientos.sort(key = lambda i: i[3], reverse=True)
-    movimientos.sort(key = lambda i: i[0])
+    try:
+        movimientos.sort(key = lambda i: i[0])
+    except:
+        fila = []
+        fila.append('')
+        fila.append('ERROR. CONTACTAR A SOPORTE')
+        fila.append('')
+        fila.append(Decimal('0.00'))
+        fila.append(Decimal('0.00'))
+        fila.append(Decimal('0.00'))
+        fila.append('#')
+        movimientos.append(fila)
 
     return movimientos

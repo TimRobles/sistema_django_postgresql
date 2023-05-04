@@ -90,10 +90,11 @@
                     <th class="text-end">Monto Recibido</th>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.estado > 4 %}
-                    <th class="text-end">Monto Usado</th>
+                    <th class="text-end">Utilizado</th>
                     <th class="text-end">Redondeo</th>
                     <th class="text-end">Vuelto Extra</th>
                     <th class="text-end">Vuelto</th>
+                    <th class="text-end">Monto Usado</th>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.concepto_final %}
                     <th>Concepto Final</th>
@@ -116,10 +117,11 @@
                     <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} <span id="monto">{{ contexto_requerimiento_detalle.monto_final|redondear|intcomma }}</span></td>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.estado > 4 %}
-                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto_usado|redondear|intcomma }}</td>
+                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.utilizado|redondear|intcomma }}</td>
                     <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.redondeo|redondear|intcomma }}</td>
                     <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.vuelto_extra|redondear|intcomma }}</td>
                     <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.vuelto|redondear|intcomma }}</td>
+                    <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto_usado|redondear|intcomma }}</td>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.concepto_final %}
                     <td>{{ contexto_requerimiento_detalle.concepto_final }}</td>
@@ -131,7 +133,7 @@
                     <td>{{ contexto_requerimiento_detalle.motivo_rechazo }}</td>
                 {% endif %}
                 <td>{{ contexto_requerimiento_detalle.get_estado_display }}</td>
-                <td>{{ contexto_requerimiento_detalle.usuario_pedido.first_name }} {{ contexto_requerimiento_detalle.usuario_pedido.last_name }}</td>
+                <td>{{ contexto_requerimiento_detalle.usuario_pedido|nombre_usuario }}</td>
             </tr>
         </tbody>
     </table>
