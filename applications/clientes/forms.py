@@ -48,6 +48,7 @@ class ClienteForm(BSModalModelForm):
             self.fields['distrito'].queryset = Distrito.objects.none()
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['pais'].required = True
 
     def clean_tipo_documento(self):
         tipo_documento = self.cleaned_data.get('tipo_documento')
@@ -81,7 +82,7 @@ class ClienteForm(BSModalModelForm):
 class ClienteBuscarForm(forms.Form):
     razon_social = forms.CharField(label = 'Razón Social', max_length=100, required=False)
     ruc = forms.CharField(label = 'RUC', max_length=100, required=False)
-    pais = forms.ModelChoiceField(queryset=Pais.objects.all())
+    pais = forms.ModelChoiceField(queryset=Pais.objects.all(), required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
