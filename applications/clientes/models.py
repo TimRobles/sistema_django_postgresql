@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.db import models
 from django.conf import settings
-from applications.datos_globales.models import Distrito
+from applications.datos_globales.models import Distrito, Pais
 from applications.funciones import consulta_ruc
 from phonenumber_field.modelfields import PhoneNumberField
 from applications import datos_globales
@@ -16,6 +16,7 @@ class Cliente(models.Model):
     razon_social = models.CharField('Razón Social', max_length=100)
     nombre_comercial = models.CharField('Nombre Comercial', max_length=50, blank=True, null=True)
     direccion_fiscal = models.CharField('Dirección Fiscal', max_length=100)
+    pais = models.ForeignKey(Pais, on_delete=models.CASCADE, blank=True, null=True)
     ubigeo = models.CharField('Ubigeo', max_length=6, blank=True, null=True)
     distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
     estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT)

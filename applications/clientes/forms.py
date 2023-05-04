@@ -1,6 +1,6 @@
 from datetime import date
 from django import forms
-from applications.datos_globales.models import Distrito
+from applications.datos_globales.models import Distrito, Pais
 from applications.variables import TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
 from applications import datos_globales
 from .models import (
@@ -25,6 +25,7 @@ class ClienteForm(BSModalModelForm):
             'numero_documento',
             'razon_social',
             'nombre_comercial',
+            'pais',
             'direccion_fiscal',
             'distrito',
             'ubigeo',
@@ -79,14 +80,17 @@ class ClienteForm(BSModalModelForm):
 
 class ClienteBuscarForm(forms.Form):
     razon_social = forms.CharField(label = 'Razón Social', max_length=100, required=False)
-    ruc = forms.CharField(label = 'Razón Social', max_length=100, required=False)
+    ruc = forms.CharField(label = 'RUC', max_length=100, required=False)
+    pais = forms.ModelChoiceField(queryset=Pais.objects.all())
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
         filtro_ruc = kwargs.pop('filtro_ruc')
+        filtro_pais = kwargs.pop('filtro_pais')
         super(ClienteBuscarForm, self).__init__(*args, **kwargs)
         self.fields['razon_social'].initial = filtro_razon_social
         self.fields['ruc'].initial = filtro_ruc
+        self.fields['pais'].initial = filtro_pais
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

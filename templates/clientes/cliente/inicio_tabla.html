@@ -4,6 +4,7 @@
             <th>Razón Social</th>
             <th>RUC</th>
             <th>Dirección Fiscal</th>
+            <th>País</th>
             <th>Ubigeo</th>
             <th>Estado SUNAT</th>
             <th>Condición SUNAT</th>
@@ -16,6 +17,11 @@
             <td>{{ cliente.razon_social }}</td>
             <td>{{ cliente.numero_documento }}</td>
             <td>{{ cliente.direccion_fiscal }}</td>
+            <td>
+                {% if cliente.pais %}
+                {{ cliente.pais }}
+                {% endif %}
+            </td>
             <td>{{ cliente.ubigeo }}</td>
             <td class="text-center">{{ cliente.get_estado_sunat_display }}</td>
             <td class="text-center">{{ cliente.get_condicion_sunat_display }}</td>

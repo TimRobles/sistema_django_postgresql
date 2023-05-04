@@ -20,7 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from applications.reportes.forms import ReportesFiltrosForm
 
-from applications.reportes.funciones import*
+from applications.reportes.funciones import *
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.pdf import*
 from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, reporte_cobranza
