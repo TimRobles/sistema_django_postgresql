@@ -12,6 +12,11 @@
         
         {% if contexto_reparacion_material.estado == 1 %}
             <button class="create badge bg-primary "
+                data-form-url="{% url 'calidad_app:reparacion_material_actualizar' contexto_reparacion_material.id %}"
+                data-table-url="{% url 'calidad_app:reparacion_material_detalle_tabla' contexto_reparacion_material.id %}">
+                Editar
+            </button>
+            <button class="create badge bg-primary "
                 data-form-url="{% url 'calidad_app:reparacion_material_detalle_registrar' contexto_reparacion_material.id %}"
                 data-table-url="{% url 'calidad_app:reparacion_material_detalle_tabla' contexto_reparacion_material.id %}">
                 Agregar Item

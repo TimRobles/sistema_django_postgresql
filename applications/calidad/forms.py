@@ -590,6 +590,21 @@ class ReparacionMaterialDetalleSeriesActualizarForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class ReparacionMaterialDetalleSeriesCambioSerieForm(BSModalModelForm):
+    class Meta:
+        model = ValidarSerieReparacionMaterialDetalle
+        fields=(
+            'serie',
+            'nueva_serie',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ReparacionMaterialDetalleSeriesCambioSerieForm, self).__init__(*args, **kwargs)
+        self.fields['serie'].disabled = True
+        self.fields['nueva_serie'].required = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 
 class SolucionMaterialForm(BSModalModelForm):
     class Meta:

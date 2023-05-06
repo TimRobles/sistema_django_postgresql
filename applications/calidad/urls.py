@@ -98,6 +98,7 @@ urlReparacionMaterialSeries = [
     path('reparacion-material/validar-series/detalle/<pk>/', views.ValidarSeriesReparacionMaterialDetailView.as_view(), name='reparacion_material_validar_series_detalle'),
     path('reparacion-material/validar-series/detalle-tabla/<pk>/', views.ValidarSeriesReparacionMaterialDetailTabla, name='reparacion_material_validar_series_detalle_tabla'),
     path('reparacion-material/validar-series-detalle/actualizar/<pk>/', views.ValidarSeriesReparacionMaterialDetalleUpdateView.as_view(), name='reparacion_material_validar_series_detalle_actualizar'),
+    path('reparacion-material/validar-series-detalle/actualizar-serie/<pk>/', views.ValidarSeriesReparacionMaterialDetalleCambioSerieView.as_view(), name='reparacion_material_validar_series_detalle_actualizar_serie'),
     path('reparacion-material/validar-series-detalle/eliminar/<pk>/', views.ValidarSeriesReparacionMaterialDetalleDeleteView.as_view(), name='reparacion_material_validar_series_detalle_eliminar'),
 ]
 

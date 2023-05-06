@@ -581,6 +581,7 @@ class ValidarSerieReparacionMaterialDetalle(models.Model):
     serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
     solucion_material = models.ForeignKey(SolucionMaterial, on_delete=models.CASCADE, blank=True, null=True)
     observacion = models.TextField('Observación', blank=True, null=True)
+    nueva_serie = models.CharField('Nueva Serie', max_length=200, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieReparacionMaterialDetalle_created_by', editable=False)

@@ -29,6 +29,7 @@ from applications.calidad.forms import(
     NotaControlCalidadStockTransformacionProductosForm,
     RegistrarSerieAntiguaForm,
     ReparacionMaterialDetalleSeriesActualizarForm,
+    ReparacionMaterialDetalleSeriesCambioSerieForm,
     ReparacionMaterialDetalleSeriesForm,
     SalidaTransformacionProductosForm,
     SalidaTransformacionProductosSeriesForm,
@@ -2654,6 +2655,40 @@ class ValidarSeriesReparacionMaterialDetalleUpdateView(PermissionRequiredMixin, 
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
+class ValidarSeriesReparacionMaterialDetalleCambioSerieView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_reparacionmaterialdetalle')
+
+    model = ValidarSerieReparacionMaterialDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = ReparacionMaterialDetalleSeriesCambioSerieForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('calidad_app:reparacion_material_validar_series_detalle', kwargs={'pk':self.get_object().reparacion_detalle.id})
+
+    def form_valid(self, form):
+        buscar_serie = Serie.objects.filter(serie_base=form.instance.nueva_serie)
+        buscar_serie_2 = ValidarSerieReparacionMaterialDetalle.objects.filter(nueva_serie=form.instance.nueva_serie).exclude(id=form.instance.id)
+        if buscar_serie:
+            form.add_error('nueva_serie', "Ya existe la serie.")
+            return super().form_invalid(form)
+        else:
+            if buscar_serie_2:
+                form.add_error('nueva_serie', "Se utilizó esta sere para un cambio, escoge otra serie.")
+                return super().form_invalid(form)
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesReparacionMaterialDetalleCambioSerieView, self).get_context_data(**kwargs)
+        context['accion'] = "Cambiar"
+        context['titulo'] = "Serie"
+        return context
+    
 
 class ValidarSeriesReparacionMaterialDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.delete_validarseriesreparacionmaterialdetalle')
@@ -2750,6 +2785,18 @@ class ReparacionMaterialConcluirView(PermissionRequiredMixin, BSModalDeleteView)
                         created_by=self.request.user,
                         updated_by=self.request.user,
                     )
+                    if serie.nueva_serie:
+                        HistorialEstadoSerie.objects.create(
+                            serie=serie.serie,
+                            estado_serie=EstadoSerie.objects.get(numero_estado=15), # CAMBIO DE SERIE
+                            falla_material=None,
+                            solucion=None,
+                            observacion=f'Se realizó el cambio de serie de {serie.serie} a {serie.nueva_serie}',
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        serie.serie.serie_base = serie.nueva_serie
+                        serie.serie.save()
                     HistorialEstadoSerie.objects.create(
                         serie=serie.serie,
                         estado_serie=EstadoSerie.objects.get(numero_estado=1), # DISPONIBLE

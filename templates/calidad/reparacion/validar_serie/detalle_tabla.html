@@ -8,7 +8,8 @@
                 <th>Sociedad</th>    
                 <th>Falla</th>    
                 <th>Solución</th>    
-                <th>Observación</th>    
+                <th>Observación</th>
+                <th>Cambio de Serie</th>
                 <th class="text-center">Acciones</th>    
             </tr>
         </thead>
@@ -30,6 +31,11 @@
                     <td>{{ validacion.solucion_material.falla_material }}</td>
                     <td>{{ validacion.solucion_material }}</td>
                     <td>{{ validacion.observacion }}</td>
+                    <td>
+                        {% if validacion.nueva_serie %}
+                        {{ validacion.nueva_serie }}
+                        {% endif %}
+                    </td>
                     <td class="text-center text-nowrap">
                         {% if contexto_reparacion_material_detalle.reparacion.estado == 1 %}
                             <button data-form-url="{% url 'calidad_app:reparacion_material_validar_series_detalle_actualizar' validacion.id %}"
@@ -38,6 +44,13 @@
                                 class="update btn btn-warning btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                                 <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button data-form-url="{% url 'calidad_app:reparacion_material_validar_series_detalle_actualizar_serie' validacion.id %}"
+                                data-table-url="{% url 'calidad_app:reparacion_material_validar_series_detalle_tabla' contexto_reparacion_material_detalle.id %}"
+                                data-keep-open="true"    
+                                class="update btn btn-dark btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Cambio de serie">
+                                <i class="bi bi-upc-scan"></i>
                             </button>
                             <button data-form-url="{% url 'calidad_app:reparacion_material_validar_series_detalle_eliminar' validacion.id %}"
                                 class="delete btn btn-danger btn-sm"
