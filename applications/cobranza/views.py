@@ -64,9 +64,8 @@ class LineaCreditoCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        if self.request.session['primero']:
-            registro_guardar(form.instance, self.request)
-            self.request.session['primero'] = False
+        registro_guardar(form.instance, self.request)
+        print(form.instance.created_by)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):

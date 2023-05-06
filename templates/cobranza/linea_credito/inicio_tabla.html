@@ -1,9 +1,11 @@
+{% load funciones_propias %}
+{% load humanize %}
 <table class="table">
     <thead>
         <tr>
             <th>Cliente</th>
-            <th>Monto</th>
             <th>Moneda</th>
+            <th class="text-end">Monto</th>
             <th>Condiciones de pago </th>
             <th>Creado por</th>
             <th>Creado el</th>
@@ -15,13 +17,12 @@
         {% for linea_credito in contexto_linea_credito %}
         <tr>
             <td>{{ linea_credito.cliente }}</td>
-            <td>{{ linea_credito.monto }}</td>
             <td>{{ linea_credito.moneda }}</td>
+            <td class="text-end">{{ linea_credito.monto|redondear|intcomma }}</td>
             <td>{{ linea_credito.condiciones_pago }}</td>
-            <td>{{ linea_credito.created_by}}</td>
+            <td>{{ linea_credito.created_by|nombre_usuario }}</td>
             <td>{{ linea_credito.created_at|date:'d/m/Y'}}</td>
             <td>{{ linea_credito.get_estado_display }}</td>
-
         </tr>
         {% endfor %}
             

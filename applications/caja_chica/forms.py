@@ -127,6 +127,8 @@ class RequerimientoFinalizarRendicionForm(BSModalModelForm):
             self.fields[field].required = True
         self.fields['utilizado'].initial = utilizado
         self.fields['vuelto_extra'].initial = vuelto_extra
+        self.fields['redondeo'].widget.attrs['max'] = '0.1'
+        self.fields['redondeo'].widget.attrs['min'] = '-0.1'
 
 
 class RequerimientoRechazarRendicionForm(BSModalModelForm):

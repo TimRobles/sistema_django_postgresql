@@ -2384,17 +2384,14 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                         movimiento_final = TipoMovimiento.objects.get(codigo=153) # Correcion por Inventario, disminuir stock, s/Serie
                     tipo_stock_inicial = detalle.tipo_stock
                     tipo_stock_final = movimiento_final.tipo_stock_final
-                    signo_factor_multiplicador = -1
                 else:
                     # AJUSTE POR INVENTARIO AUMENTAR STOCK
                     if detalle.material.control_serie and tipo_stock_disponible == detalle.tipo_stock:
                         movimiento_final = TipoMovimiento.objects.get(codigo=157) # Correccion Inventario con Series, aumentar stock
-                        tipo_stock_final = movimiento_final.tipo_stock_final
                     else:
                         movimiento_final = TipoMovimiento.objects.get(codigo=156) #	Correcion por Inventario, aumentar stock, s/Serie
-                        tipo_stock_final = detalle.tipo_stock
-                    tipo_stock_inicial = movimiento_final.tipo_stock_inicial
-                    signo_factor_multiplicador = +1
+                    tipo_stock_inicial = movimiento_final.tipo_stock_final
+                    tipo_stock_final = detalle.tipo_stock
 
                 movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.material.content_type,
@@ -2402,7 +2399,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                     cantidad = cantidad,
                     tipo_movimiento = movimiento_final,
                     tipo_stock = tipo_stock_inicial,
-                    signo_factor_multiplicador = signo_factor_multiplicador,
+                    signo_factor_multiplicador = -1,
                     content_type_documento_proceso = detalle.ajuste_inventario_materiales.content_type,
                     id_registro_documento_proceso = detalle.ajuste_inventario_materiales.id,
                     almacen = detalle.almacen,
@@ -2417,7 +2414,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                     cantidad = cantidad,
                     tipo_movimiento = movimiento_final,
                     tipo_stock = tipo_stock_final,
-                    signo_factor_multiplicador = -1*signo_factor_multiplicador,
+                    signo_factor_multiplicador = +1,
                     content_type_documento_proceso = detalle.ajuste_inventario_materiales.content_type,
                     id_registro_documento_proceso = detalle.ajuste_inventario_materiales.id,
                     almacen = detalle.almacen,

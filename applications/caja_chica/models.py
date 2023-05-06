@@ -193,7 +193,7 @@ class CajaChica(models.Model):
         return f"{self.get_month_display()} {self.year}"
 
     def __str__(self):
-        return "%s. %s  - %s - %s - %s" % (self.moneda.simbolo, self.saldo_inicial, self.get_month_display(), self.get_estado_display(), self.usuario.username ) 
+        return "CAJA CHICA %s %s - %s - %s" % (self.get_month_display(), self.year, self.get_estado_display(), self.usuario.username ) 
 
 class CajaChicaSalida(models.Model):
     concepto = models.CharField('Concepto Salida', max_length=50, null=True)

@@ -35,6 +35,11 @@ class LineaCredito(models.Model):
     class Meta:
         verbose_name = 'Linea de Credito'
         verbose_name_plural = 'Lineas de Credito'
+        ordering = [
+            'cliente',
+            'estado',
+            'created_at',
+            ]
 
     def __str__(self):
         return str(self.id)
