@@ -42,6 +42,8 @@ urlpatterns = [
     path('datos-importacion/actualizar/<pk>/', views.DatosImportacionUpdateView.as_view(), name='datos_importacion_actualizar'),
 
     path('producto-sunat/actualizar/<pk>/', views.ProductoSunatUpdateView.as_view(), name='producto_sunat_actualizar'),
+    path('producto-sunat/buscar/<pk>/', views.ProductoSunatBuscarView.as_view(), name='producto_sunat_buscar'),
+    path('producto-sunat/', views.ProductoSunatJsonView, name='producto_sunat_json'),
 
     path('familia-sunat/<str:id_segmento>/', views.FamiliaSunatView, name='familia_sunat'),
     path('clase-sunat/<str:id_familia>/', views.ClaseSunatView, name='clase_sunat'),

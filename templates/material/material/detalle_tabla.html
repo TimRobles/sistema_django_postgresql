@@ -180,6 +180,13 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
+                    <button data-form-url="{% url 'material_app:producto_sunat_buscar' contexto_material.id %}"
+                        data-table-url="{% url 'material_app:material_detalle_tabla' contexto_material.id %}"
+                        data-keep-open="true" data-modal="modal-xl"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-search-fill"></i>
+                    </button>
 
                 </td>
             </tr>

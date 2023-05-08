@@ -345,6 +345,33 @@ class ProductoSunatForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class ProductoSunatBuscarForm(BSModalModelForm):
+    vacio = forms.CharField(required=False)
+    producto_sunat = forms.ModelChoiceField(label = 'Producto Sunat', queryset = ProductoSunat.objects.none(), required=False)
+    class Meta:
+        model = Material
+        fields=(
+            'vacio',
+            'producto_sunat',
+            )
+    
+    def clean_vacio(self):
+        vacio = self.cleaned_data.get('vacio')
+        producto_sunat = self.fields['producto_sunat']
+        producto_sunat.queryset = ProductoSunat.objects.all()
+        return vacio
+
+    def __init__(self, *args, **kwargs):
+        super(ProductoSunatBuscarForm, self).__init__(*args, **kwargs)
+        producto_sunat = self.instance.producto_sunat
+        if producto_sunat:
+            self.fields['producto_sunat'].queryset = ProductoSunat.objects.filter(codigo = producto_sunat.codigo)
+            self.fields['producto_sunat'].initial = producto_sunat
+        
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['vacio'].widget.attrs['class'] = 'form-control ocultar'
+
 class ImagenMaterialForm(BSModalModelForm):
     class Meta:
         model = ImagenMaterial

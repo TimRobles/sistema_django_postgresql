@@ -16,7 +16,7 @@ from ..orden_compra.models import OrdenCompraDetalle
 from ..comprobante_compra.models import ComprobanteCompraCI, ComprobanteCompraPIDetalle, ComprobanteCompraPI
 
 from .forms import (
-    MaterialBuscarForm, ModeloForm, MarcaForm,MaterialForm,
+    MaterialBuscarForm, ModeloForm, MarcaForm,MaterialForm, ProductoSunatBuscarForm,
     RelacionMaterialComponenteForm,EspecificacionForm,
     DatasheetForm,DatosImportacionForm,ProductoSunatForm,
     ImagenMaterialForm,VideoMaterialForm,ProveedorMaterialForm,EquivalenciaUnidadForm,IdiomaMaterialForm,
@@ -738,6 +738,47 @@ class ProductoSunatUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         context['accion']="Actualizar"
         context['titulo']="Producto Sunat"
         return context
+
+
+class ProductoSunatBuscarView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('material.change_material')
+    model = Material
+    template_name = "material/material/form_sunat_buscar.html"
+    form_class = ProductoSunatBuscarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('material_app:material_detalle', kwargs={'pk':self.object.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProductoSunatBuscarView, self).get_context_data(**kwargs)
+        context['accion']="Buscar"
+        context['titulo']="Producto Sunat"
+        return context
+
+def ProductoSunatJsonView(request):
+    if request.is_ajax():
+        term = request.GET.get('term')
+        data = []
+        if term:
+            condicion = Q(descripcion__unaccent__icontains = term.split(" ")[0])
+            for palabra in term.split(" ")[1:]:
+                condicion &= Q(descripcion__unaccent__icontains = palabra)
+            buscar = ProductoSunat.objects.filter(condicion)
+        for producto_sunat in buscar:
+            data.append({
+                'id' : producto_sunat.codigo,
+                'nombre' : producto_sunat.__str__(),
+                })
+        return JsonResponse(data, safe=False)
 
 class FamiliaSunatForm(forms.Form):
     familia = forms.ModelChoiceField(queryset = FamiliaSunat.objects.all(), required=False)
