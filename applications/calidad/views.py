@@ -2691,7 +2691,7 @@ class ValidarSeriesReparacionMaterialDetalleCambioSerieView(PermissionRequiredMi
     
 
 class ValidarSeriesReparacionMaterialDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('calidad.delete_validarseriesreparacionmaterialdetalle')
+    permission_required = ('calidad.delete_validarseriereparacionmaterialdetalle')
     model = ValidarSerieReparacionMaterialDetalle
     template_name = "includes/eliminar generico.html"
 
