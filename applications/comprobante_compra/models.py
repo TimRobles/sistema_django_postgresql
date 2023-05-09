@@ -7,6 +7,7 @@ from applications.funciones import obtener_totales
 from applications.material.models import ProveedorMaterial
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from django.contrib.contenttypes.models import ContentType
+from applications.recepcion_compra.models import RecepcionCompra
 from applications.rutas import ARCHIVO_COMPROBANTE_COMPRA_PI_ARCHIVO, COMPROBANTE_COMPRA_CI_ARCHIVO, COMPROBANTE_COMPRA_PI_ARCHIVO
 from applications.sociedad.models import Sociedad
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
@@ -61,6 +62,20 @@ class ComprobanteCompraPI(models.Model):
     @property
     def fecha(self):
         return self.fecha_comprobante
+
+    @property
+    def fecha_recepcion(self):
+        fechas = []
+        try:
+            recepciones = RecepcionCompra.objects.filter(
+                content_type=self.content_type,
+                id_registro=self.id,
+            )
+            for recepcion in recepciones:
+                fechas.append(recepcion.fecha_recepcion)
+            return max(fechas)
+        except:
+            return None
 
     @property
     def proveedor(self):
