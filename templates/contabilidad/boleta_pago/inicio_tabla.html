@@ -11,7 +11,7 @@
         {% for boleta_pago in contexto_boleta_pago %}
         <tr>
             <td>{{ boleta_pago.created_at|date:'d/m/Y' }}</td>
-            <td>{{ boleta_pago.get_month_display }} - {{ boleta_pago.year }}- {{ boleta_pago.get_tipo_display}} -  {{ boleta_pago.datos_planilla.usuario.first_name}} {{ boleta_pago.datos_planilla.usuario.last_name}} </td>
+            <td>{{ boleta_pago }}</td>
             <td>{{ boleta_pago.created_by}}</td>
             <td>
                 <button data-form-url="{% url 'contabilidad_app:boleta_pago_actualizar' boleta_pago.id %}"

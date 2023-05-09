@@ -8,6 +8,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad, Banco
+from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.variables import TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
 from applications.rutas import CONTABILIDAD_FOTO_CHEQUE
@@ -73,9 +74,13 @@ class DatosPlanilla(models.Model):
     class Meta:
         verbose_name = 'Datos Planilla'
         verbose_name_plural = 'Datos Planillas'
+        ordering = [
+            'estado',
+            '-fecha_inicio',
+            ]
 
     def __str__(self):
-        return str(self.usuario)
+        return nombre_usuario(self.usuario)
 
 class EsSalud(models.Model):
     fecha_inicio = models.DateField('Fecha Inicio', auto_now=False, auto_now_add=False)
@@ -128,7 +133,7 @@ class BoletaPago(models.Model):
 
 
     def __str__(self):
-        return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), self.datos_planilla ) 
+        return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), str(self.datos_planilla)) 
 
 class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
