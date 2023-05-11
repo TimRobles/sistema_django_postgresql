@@ -85,6 +85,7 @@ class DeudoresView(PermissionRequiredMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super(DeudoresView, self).get_form_kwargs()
         kwargs['filtro_razon_social'] = self.request.GET.get('razon_social')
+        kwargs['filtro_estado_cancelado'] = self.request.GET.get('estado_cancelado')
         return kwargs
     
     def get_context_data(self, **kwargs):
@@ -93,6 +94,7 @@ class DeudoresView(PermissionRequiredMixin, FormView):
 
         clientes = Cliente.objects.all()
         filtro_razon_social = self.request.GET.get('razon_social')
+        filtro_estado_cancelado = self.request.GET.get('estado_cancelado')
 
         contexto_filtro = []
 
@@ -102,6 +104,12 @@ class DeudoresView(PermissionRequiredMixin, FormView):
                 condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes = clientes.filter(condicion)
             contexto_filtro.append("razon_social=" + filtro_razon_social)
+        if filtro_estado_cancelado == '2':
+            clientes = clientes.filter(Deuda_cliente__estado_cancelado=False).distinct()
+            contexto_filtro.append("estado_cancelado=" + filtro_estado_cancelado)
+        elif filtro_estado_cancelado == '3':
+            clientes = clientes.filter(Deuda_cliente__estado_cancelado=True).exclude(Deuda_cliente__estado_cancelado=False).distinct()
+            contexto_filtro.append("estado_cancelado=" + filtro_estado_cancelado)
         
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -611,6 +619,8 @@ class CuentaBancariaDetalleView(PermissionRequiredMixin, FormView):
         kwargs['filtro_monto'] = self.request.GET.get('monto')
         kwargs['filtro_numero_operacion'] = self.request.GET.get('numero_operacion')
         kwargs['filtro_comentario'] = self.request.GET.get('comentario')
+        kwargs['filtro_es_pago'] = self.request.GET.get('es_pago')
+        kwargs['filtro_foto'] = self.request.GET.get('foto')
         return kwargs
     
 
@@ -621,6 +631,8 @@ class CuentaBancariaDetalleView(PermissionRequiredMixin, FormView):
         filtro_monto = self.request.GET.get('monto')
         filtro_numero_operacion = self.request.GET.get('numero_operacion')
         filtro_comentario = self.request.GET.get('comentario')
+        filtro_es_pago = self.request.GET.get('es_pago')
+        filtro_foto = self.request.GET.get('foto')
         contexto_filtro = []
         if filtro_fecha:
             contexto_filtro.append("fecha=" + filtro_fecha)
@@ -630,6 +642,14 @@ class CuentaBancariaDetalleView(PermissionRequiredMixin, FormView):
             contexto_filtro.append("numero_operacion=" + filtro_numero_operacion)
         if filtro_comentario:
             contexto_filtro.append("comentario=" + filtro_comentario)
+        if filtro_es_pago == '2':
+            contexto_filtro.append("es_pago=" + filtro_es_pago)
+        elif filtro_es_pago == '3':
+            contexto_filtro.append("es_pago=" + filtro_es_pago)
+        if filtro_foto == '2':
+            contexto_filtro.append("foto=" + filtro_foto)
+        elif filtro_foto == '3':
+            contexto_filtro.append("foto=" + filtro_foto)
         
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -641,7 +661,7 @@ class CuentaBancariaDetalleView(PermissionRequiredMixin, FormView):
                 context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        movimientos = movimientos_bancarios(cuenta_bancaria.id, filtro_fecha, filtro_monto, filtro_numero_operacion, filtro_comentario)
+        movimientos = movimientos_bancarios(cuenta_bancaria.id, filtro_fecha, filtro_monto, filtro_numero_operacion, filtro_comentario, filtro_es_pago, filtro_foto)
         
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -665,6 +685,8 @@ def CuentaBancariaDetalleTabla(request, pk):
         filtro_monto = request.GET.get('monto')
         filtro_numero_operacion = request.GET.get('numero_operacion')
         filtro_comentario = request.GET.get('comentario')
+        filtro_es_pago = request.GET.get('es_pago')
+        filtro_foto = request.GET.get('foto')
         contexto_filtro = []
         if filtro_fecha:
             contexto_filtro.append("fecha=" + filtro_fecha)
@@ -674,6 +696,14 @@ def CuentaBancariaDetalleTabla(request, pk):
             contexto_filtro.append("numero_operacion=" + filtro_numero_operacion)
         if filtro_comentario:
             contexto_filtro.append("comentario=" + filtro_comentario)
+        if filtro_es_pago == '2':
+            contexto_filtro.append("es_pago=" + filtro_es_pago)
+        elif filtro_es_pago == '3':
+            contexto_filtro.append("es_pago=" + filtro_es_pago)
+        if filtro_foto == '2':
+            contexto_filtro.append("foto=" + filtro_foto)
+        elif filtro_foto == '3':
+            contexto_filtro.append("foto=" + filtro_foto)
         
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -685,7 +715,7 @@ def CuentaBancariaDetalleTabla(request, pk):
                 context['pagina_filtro'] = f'page={request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        movimientos = movimientos_bancarios(pk, filtro_fecha, filtro_monto, filtro_numero_operacion, filtro_comentario)
+        movimientos = movimientos_bancarios(pk, filtro_fecha, filtro_monto, filtro_numero_operacion, filtro_comentario, filtro_es_pago, filtro_foto)
 
         objectsxpage = 25 # Show 25 objects per page.
 
@@ -1096,6 +1126,8 @@ class DepositosView(PermissionRequiredMixin, FormView):
         kwargs['filtro_cuenta_bancaria'] = self.request.GET.get('cuenta_bancaria')
         kwargs['filtro_numero_operacion'] = self.request.GET.get('numero_operacion')
         kwargs['filtro_comentario'] = self.request.GET.get('comentario')
+        kwargs['filtro_pendiente_usar'] = self.request.GET.get('pendiente_usar')
+        kwargs['filtro_foto'] = self.request.GET.get('foto')
         return kwargs
     
     def get_context_data(self, **kwargs):
@@ -1107,6 +1139,8 @@ class DepositosView(PermissionRequiredMixin, FormView):
         filtro_cuenta_bancaria = self.request.GET.get('cuenta_bancaria')
         filtro_numero_operacion = self.request.GET.get('numero_operacion')
         filtro_comentario = self.request.GET.get('comentario')
+        filtro_pendiente_usar = self.request.GET.get('pendiente_usar')
+        filtro_foto = self.request.GET.get('foto')
         contexto_filtro = []
         if filtro_fecha:
             condicion = Q(fecha = filtro_fecha)
@@ -1136,6 +1170,18 @@ class DepositosView(PermissionRequiredMixin, FormView):
                 condicion &= Q(comentario__unaccent__icontains = palabra)
             ingresos = ingresos.filter(condicion)
             contexto_filtro.append("comentario=" + filtro_comentario)
+        if filtro_pendiente_usar == '2':
+            ingresos = ingresos.filter(pendiente_usar=True)
+            contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
+        elif filtro_pendiente_usar == '3':
+            ingresos = ingresos.filter(pendiente_usar=False)
+            contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
+        if filtro_foto == '2':
+            ingresos = ingresos.exclude(voucher="")
+            contexto_filtro.append("foto=" + filtro_foto)
+        elif filtro_foto == '3':
+            ingresos = ingresos.filter(voucher="")
+            contexto_filtro.append("foto=" + filtro_foto)
         
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -1171,6 +1217,8 @@ def DepositosTabla(request):
         filtro_cuenta_bancaria = request.GET.get('cuenta_bancaria')
         filtro_numero_operacion = request.GET.get('numero_operacion')
         filtro_comentario = request.GET.get('comentario')
+        filtro_pendiente_usar = request.GET.get('pendiente_usar')
+        filtro_foto = request.GET.get('foto')
         contexto_filtro = []
         if filtro_fecha:
             condicion = Q(fecha = filtro_fecha)
@@ -1200,6 +1248,18 @@ def DepositosTabla(request):
                 condicion &= Q(comentario__unaccent__icontains = palabra)
             ingresos = ingresos.filter(condicion)
             contexto_filtro.append("comentario=" + filtro_comentario)
+        if filtro_pendiente_usar == '2':
+            ingresos = ingresos.filter(pendiente_usar=True)
+            contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
+        elif filtro_pendiente_usar == '3':
+            ingresos = ingresos.filter(pendiente_usar=False)
+            contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
+        if filtro_foto == '2':
+            ingresos = ingresos.exclude(voucher="")
+            contexto_filtro.append("foto=" + filtro_foto)
+        elif filtro_foto == '3':
+            ingresos = ingresos.filter(voucher="")
+            contexto_filtro.append("foto=" + filtro_foto)
         
         context['contexto_filtro'] = "&".join(contexto_filtro)
 

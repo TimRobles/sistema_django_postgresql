@@ -204,11 +204,14 @@ class DeudaPagarForm(BSModalModelForm):
 
 class ClienteBuscarForm(forms.Form):
     razon_social = forms.CharField(label = 'Cliente', max_length=100, required=False)
+    estado_cancelado = forms.ChoiceField(choices=[(1, 'TODOS'), (2, 'CON DEUDA'), (3, 'SIN DEUDA')], required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
+        filtro_estado_cancelado = kwargs.pop('filtro_estado_cancelado')
         super(ClienteBuscarForm, self).__init__(*args, **kwargs)
         self.fields['razon_social'].initial = filtro_razon_social
+        self.fields['estado_cancelado'].initial = filtro_estado_cancelado
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -220,6 +223,8 @@ class DepositosBuscarForm(forms.Form):
     cuenta_bancaria = forms.ModelChoiceField(queryset=CuentaBancariaSociedad.objects.all(), required=False)
     numero_operacion = forms.CharField(label = 'Número de Operación', max_length=100, required=False)
     comentario = forms.CharField(label = 'Comentario', max_length=100, required=False)
+    pendiente_usar = forms.ChoiceField(choices=[(1, 'TODOS'),(2, 'PENDIENTE'),(3, 'USADO'),], required=False)
+    foto = forms.ChoiceField(choices=[(1, 'TODOS'),(2, 'CON FOTO'),(3, 'SIN FOTO'),], required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_fecha = kwargs.pop('filtro_fecha')
@@ -228,6 +233,8 @@ class DepositosBuscarForm(forms.Form):
         filtro_cuenta_bancaria = kwargs.pop('filtro_cuenta_bancaria')
         filtro_numero_operacion = kwargs.pop('filtro_numero_operacion')
         filtro_comentario = kwargs.pop('filtro_comentario')
+        filtro_pendiente_usar = kwargs.pop('filtro_pendiente_usar')
+        filtro_foto = kwargs.pop('filtro_foto')
         super(DepositosBuscarForm, self).__init__(*args, **kwargs)
         self.fields['fecha'].initial = filtro_fecha
         self.fields['monto'].initial = filtro_monto
@@ -235,6 +242,8 @@ class DepositosBuscarForm(forms.Form):
         self.fields['cuenta_bancaria'].initial = filtro_cuenta_bancaria
         self.fields['numero_operacion'].initial = filtro_numero_operacion
         self.fields['comentario'].initial = filtro_comentario
+        self.fields['pendiente_usar'].initial = filtro_pendiente_usar
+        self.fields['foto'].initial = filtro_foto
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
 
@@ -244,17 +253,23 @@ class CuentaBancariaDetalleBuscarForm(forms.Form):
     monto = forms.DecimalField(required=False)
     numero_operacion = forms.CharField(label = 'Número de Operación', max_length=100, required=False)
     comentario = forms.CharField(label = 'Comentario', max_length=100, required=False)
+    es_pago = forms.ChoiceField(choices=[(1, 'TODOS'),(2, 'ES PAGO'),(3, 'NO ES PAGO'),], required=False)
+    foto = forms.ChoiceField(choices=[(1, 'TODOS'),(2, 'CON FOTO'),(3, 'SIN FOTO'),], required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_fecha = kwargs.pop('filtro_fecha')
         filtro_monto = kwargs.pop('filtro_monto')
         filtro_numero_operacion = kwargs.pop('filtro_numero_operacion')
         filtro_comentario = kwargs.pop('filtro_comentario')
+        filtro_es_pago = kwargs.pop('filtro_es_pago')
+        filtro_foto = kwargs.pop('filtro_foto')
         super(CuentaBancariaDetalleBuscarForm, self).__init__(*args, **kwargs)
         self.fields['fecha'].initial = filtro_fecha
         self.fields['monto'].initial = filtro_monto
         self.fields['numero_operacion'].initial = filtro_numero_operacion
         self.fields['comentario'].initial = filtro_comentario
+        self.fields['es_pago'].initial = filtro_es_pago
+        self.fields['foto'].initial = filtro_foto
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
 

@@ -174,7 +174,7 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Pagar Deuda">
                     <i class="bi bi-wallet2"></i>
                 </button>
-                <a href="{% url 'cobranza_app:cuenta_bancaria_detalle' movimiento.cuenta_bancaria.id %}"
+                <a href="{% url 'cobranza_app:cuenta_bancaria_detalle' movimiento.cuenta_bancaria.id %}?fecha={{ movimiento.fecha|date:'Y-m-d' }}&monto={{ movimiento.monto }}&numero_operacion={{ movimiento.numero_operacion|validar_none }}&comentario={{ movimiento.comentario|validar_none }}"
                     class="btn btn-success btn-sm">
                     <i class="bi bi-eye-fill"></i>
                 </a>
