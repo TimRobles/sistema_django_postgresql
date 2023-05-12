@@ -80,6 +80,9 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
+        print("/*******************************")
+        print(self.usuario)
+        print("*******************************/")
         return nombre_usuario(self.usuario)
 
 class EsSalud(models.Model):
@@ -133,6 +136,7 @@ class BoletaPago(models.Model):
 
 
     def __str__(self):
+        print(self.datos_planilla)
         return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), str(self.datos_planilla)) 
 
 class ReciboBoletaPago(models.Model):
