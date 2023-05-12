@@ -2158,7 +2158,7 @@ class InventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDeleteVie
 
 
 class InventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('logistica.view_inventariomaterial')
+    permission_required = ('logistica.view_inventariomateriales')
 
     model = InventarioMateriales
     template_name = "logistica/inventario_materiales/detalle.html"
@@ -2442,7 +2442,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
 
 
 class AjusteInventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('logistica.view_ajusteinventariomaterial')
+    permission_required = ('logistica.view_ajusteinventariomateriales')
 
     model = AjusteInventarioMateriales
     template_name = "logistica/ajuste_inventario_materiales/detalle.html"
