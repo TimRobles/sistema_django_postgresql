@@ -2199,7 +2199,7 @@ def InventarioMaterialesDetailTabla(request, pk):
 
 
 class InventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('logistica.view_inventariomaterialdetalle')
+    permission_required = ('logistica.view_inventariomaterialesdetalle')
     template_name = "logistica/inventario_materiales/form_material.html"
     form_class = InventarioMaterialesDetalleForm
     success_url = reverse_lazy('logistica_app:inventario_materiales_inicio')
@@ -2262,7 +2262,7 @@ class InventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalForm
 
 
 class InventarioMaterialesDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('logistica.change_inventariomaterialdetalle')
+    permission_required = ('logistica.change_inventariomaterialesdetalle')
     model = InventarioMaterialesDetalle
     template_name = "logistica/inventario_materiales/form_material.html"
     form_class = InventarioMaterialesDetalleForm
@@ -2296,7 +2296,7 @@ class InventarioMaterialesDetalleUpdateView(PermissionRequiredMixin, BSModalUpda
 
 
 class InventarioMaterialesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.delete_inventariomaterialdetalle')
+    permission_required = ('logistica.delete_inventariomaterialesdetalle')
     model = InventarioMaterialesDetalle
     template_name = "includes/eliminar generico.html"
 
@@ -2503,7 +2503,7 @@ def AjusteInventarioMaterialesDetailTabla(request, pk):
 
 
 class AjusteInventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('logistica.add_ajusteinventariomaterialdetalle')
+    permission_required = ('logistica.add_ajusteinventariomaterialesdetalle')
     template_name = "includes/formulario generico.html"
     form_class = AjusteInventarioMaterialesDetalleForm
 
@@ -2569,7 +2569,7 @@ class AjusteInventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSMod
 
 
 class AjusteInventarioMaterialesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.delete_ajusteinventariomaterialdetalle')
+    permission_required = ('logistica.delete_ajusteinventariomaterialesdetalle')
     model = AjusteInventarioMaterialesDetalle
     template_name = "includes/eliminar generico.html"
 
