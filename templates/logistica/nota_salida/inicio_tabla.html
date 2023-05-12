@@ -9,6 +9,7 @@
             <th>Observacion Adicional</th>
             <th>Motivo Anulación</th>
             <th>Estado</th>
+            <th>Creación</th>
             <th class="text-center">Acciones</th>  
         </tr>
     </thead>
@@ -34,6 +35,7 @@
                 <td>{{ nota_salida.observacion_adicional }}</td>
                 <td>{{ nota_salida.motivo_anulacion }}</td>
                 <td>{{ nota_salida.get_estado_display }}</td>
+                <td>{{ nota_salida.created_by|nombre_usuario }}: {{ nota_salida.created_at|date:'d/m/Y H:i' }}</td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'logistica_app:nota_salida_actualizar' nota_salida.id %}"
                         data-table-url="{% url 'logistica_app:nota_salida_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
