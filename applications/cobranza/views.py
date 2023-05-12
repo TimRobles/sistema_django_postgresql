@@ -1171,10 +1171,10 @@ class DepositosView(PermissionRequiredMixin, FormView):
             ingresos = ingresos.filter(condicion)
             contexto_filtro.append("comentario=" + filtro_comentario)
         if filtro_pendiente_usar == '2':
-            ingresos = ingresos.filter(pendiente_usar=False)
+            ingresos = ingresos.filter(pendiente_usar=True)
             contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
         elif filtro_pendiente_usar == '3':
-            ingresos = ingresos.filter(pendiente_usar=True)
+            ingresos = ingresos.filter(pendiente_usar=False)
             contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
         if filtro_foto == '2':
             ingresos = ingresos.exclude(voucher="")
@@ -1249,10 +1249,10 @@ def DepositosTabla(request):
             ingresos = ingresos.filter(condicion)
             contexto_filtro.append("comentario=" + filtro_comentario)
         if filtro_pendiente_usar == '2':
-            ingresos = ingresos.filter(pendiente_usar=False)
+            ingresos = ingresos.filter(pendiente_usar=True)
             contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
         elif filtro_pendiente_usar == '3':
-            ingresos = ingresos.filter(pendiente_usar=True)
+            ingresos = ingresos.filter(pendiente_usar=False)
             contexto_filtro.append("pendiente_usar=" + filtro_pendiente_usar)
         if filtro_foto == '2':
             ingresos = ingresos.exclude(voucher="")
