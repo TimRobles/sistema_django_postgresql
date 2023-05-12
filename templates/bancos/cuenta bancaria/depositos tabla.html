@@ -166,7 +166,7 @@
                 {{ movimiento.moneda.simbolo }} {{ movimiento.monto|redondear|intcomma }}
             </td>
             <td class="text-end text-nowrap">
-                {{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }} {{ movimiento.pendiente_usar }}
+                {{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}
             </td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'cobranza_app:cuenta_bancaria_pagar_deuda' movimiento.cuenta_bancaria.id movimiento.id 1 %}"

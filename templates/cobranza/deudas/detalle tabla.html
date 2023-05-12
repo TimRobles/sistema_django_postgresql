@@ -12,7 +12,6 @@
             <th class="text-end">Deuda</th>
             <th class="text-center">Fecha de Vencimiento</th>
             <th>Estado</th>
-            <th>Estado Cancelado</th>
             <th class="text-center text-nowrap">Acciones</th>
         </tr>
     </thead>
@@ -162,7 +161,6 @@
             <td class="text-end text-nowrap"><b>{{ deuda.moneda.simbolo }} {{ deuda.saldo|redondear|intcomma }}</b></td>
             <td class="text-center">{{ deuda.fecha_vencimiento|date:'d/m/Y' }}</td>
             <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado }}</td>
-            <td class="texto-personalizado" style="--color-texto: {{ deuda.color }};">{{ deuda.estado_cancelado }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'cobranza_app:deudores_nota_deuda' id_cliente deuda.id %}"
                     data-table-url="{% url 'cobranza_app:deudores_detalle_tabla' id_cliente %}{{ contexto_filtro }}{{ pagina_filtro }}"
