@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.contabilidad.funciones import calcular_datos_boleta
 from applications.funciones import registrar_excepcion
+from applications.home.templatetags.funciones_propias import nombre_usuario
 
 from applications.importaciones import *
 from applications.funciones import registrar_excepcion
@@ -325,7 +326,7 @@ class BoletaPagoListView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(BoletaPagoListView, self).get_context_data(**kwargs)
         boleta_pago = BoletaPago.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  20 # Show 20 objects per page.
 
         if len(boleta_pago) > objectsxpage:
             paginator = Paginator(boleta_pago, objectsxpage)
@@ -343,7 +344,7 @@ def BoletaPagoTabla(request):
         template = 'contabilidad/boleta_pago/inicio_tabla.html'
         context = {}
         boleta_pago = BoletaPago.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  20 # Show 20 objects per page.
 
         if len(boleta_pago) > objectsxpage:
             paginator = Paginator(boleta_pago, objectsxpage)
@@ -408,6 +409,19 @@ class BoletaPagoDeleteView(BSModalDeleteView):
         context['accion'] = 'Eliminar'
         context['titulo'] = 'Boleta'
         context['item'] = self.get_object()
+        return context
+
+class BoletaPagoDetailView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_boletapago')
+    template_name = "contabilidad/boleta_pago/boleta de pago.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(BoletaPagoDetailView, self).get_context_data(**kwargs)
+        boleta = BoletaPago.objects.get(pk=kwargs['pk'])
+        
+        context['boleta'] = boleta
+        context['titulo'] = "Boleta de Pago - %s - %s" % (nombre_usuario(boleta.datos_planilla.usuario), boleta.periodo)
+        context['previous'] = reverse_lazy('contabilidad:boleta_pago_inicio')
         return context
 #---------------------------------------------------------------------------------
 

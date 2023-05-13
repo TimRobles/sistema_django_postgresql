@@ -71,6 +71,7 @@ urlpatterns = urlTelecredito + urlCheque +[
     path('boleta-pago/registrar/', views.BoletaPagoCreateView.as_view(), name='boleta_pago_registrar'),
     path('boleta-pago/actualizar/<pk>/', views.BoletaPagoUpdateView.as_view(), name='boleta_pago_actualizar'),    
     path('boleta-pago/eliminar/<pk>/', views.BoletaPagoDeleteView.as_view(), name='boleta_pago_eliminar'),    
+    path('boleta-pago/ver/<pk>/', views.BoletaPagoDetailView.as_view(), name='boleta_pago_ver'),    
 
     path('recibo-boleta-pago/', views.ReciboBoletaPagoListView.as_view(), name='recibo_boleta_pago_inicio'),
     path('recibo-boleta-pago-tabla/', views.ReciboBoletaPagoTabla, name='recibo_boleta_pago_tabla'),

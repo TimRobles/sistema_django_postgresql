@@ -36,9 +36,11 @@
         </div>
     </form>
 
+    {% include 'includes/paginador.html' %}
     <div class="table-responsive" id="tabla">
         {% include 'contabilidad/boleta_pago/inicio_tabla.html' %}
     </div>
+    {% include 'includes/paginador inferior.html' %}
     
 {% endblock contenido %}
     

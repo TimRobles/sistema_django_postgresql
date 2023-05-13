@@ -80,10 +80,8 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
-        print("/*******************************")
-        print(self.usuario)
-        print("*******************************/")
         return nombre_usuario(self.usuario)
+        
 
 class EsSalud(models.Model):
     fecha_inicio = models.DateField('Fecha Inicio', auto_now=False, auto_now_add=False)
@@ -134,10 +132,12 @@ class BoletaPago(models.Model):
         verbose_name_plural = 'Boletas de Pago'
         ordering = ['-id',]
 
+    @property
+    def periodo(self):
+        return f"{self.get_month_display()} - {self.year}"
 
     def __str__(self):
-        print(self.datos_planilla)
-        return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), str(self.datos_planilla)) 
+        return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), self.datos_planilla) 
 
 class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
