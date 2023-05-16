@@ -80,7 +80,7 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
-        return nombre_usuario(self.usuario)
+        return f"{nombre_usuario(self.usuario)} - {self.id}"
         
 
 class EsSalud(models.Model):
@@ -116,10 +116,11 @@ class BoletaPago(models.Model):
     bonif_1mayo = models.DecimalField('Bonificación 1 Mayo', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     essalud = models.DecimalField('Essalud', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     aporte_obligatorio = models.DecimalField('Aporte Obligatorio', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
-    comision_porcentaje = models.DecimalField('Comisión Porcentaje', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    comision = models.DecimalField('Comisión', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     prima_seguro = models.DecimalField('Prima Seguro', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     impuesto_quinta = models.DecimalField('Impuesto de Quinta', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     neto_recibido = models.DecimalField('Neto Recibido', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    cts = models.DecimalField('CTS', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -135,6 +136,18 @@ class BoletaPago(models.Model):
     @property
     def periodo(self):
         return f"{self.get_month_display()} - {self.year}"
+
+    @property
+    def total_haber(self):
+        return self.haber_mensual + self.lic_con_goce_haber + self.dominical + self.asig_familiar + self.movilidad + self.vacaciones + self.gratificacion + self.ley29351 + self.cts
+
+    @property
+    def total_descuento_empleador(self):
+        return self.essalud
+
+    @property
+    def total_descuento_trabajador(self):
+        return self.aporte_obligatorio + self.comision + self.prima_seguro + self.impuesto_quinta
 
     def __str__(self):
         return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), self.datos_planilla) 

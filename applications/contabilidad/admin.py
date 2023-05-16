@@ -21,6 +21,7 @@ from .models import(
 @admin.register(FondoPensiones)
 class FondoPensionesAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         'created_at',
         'created_by',
@@ -38,6 +39,7 @@ class FondoPensionesAdmin(admin.ModelAdmin):
 @admin.register(ComisionFondoPensiones)
 class ComisionFondoPensionesAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'fondo_pensiones',
         'fecha_vigencia',
         'aporte_obligatorio',
@@ -59,6 +61,7 @@ class ComisionFondoPensionesAdmin(admin.ModelAdmin):
 @admin.register(DatosPlanilla)
 class DatosPlanillaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'fecha_inicio',
         'fecha_baja',
         'sueldo_bruto',
@@ -90,6 +93,7 @@ class DatosPlanillaAdmin(admin.ModelAdmin):
 @admin.register(EsSalud)
 class EsSaludAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'fecha_inicio',
         'porcentaje',
         'ley30334',
@@ -109,6 +113,7 @@ class EsSaludAdmin(admin.ModelAdmin):
 @admin.register(BoletaPago)
 class BoletaPagoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'datos_planilla',
         'year',
         'month',
@@ -121,10 +126,11 @@ class BoletaPagoAdmin(admin.ModelAdmin):
         'vacaciones',
         'gratificacion',
         'ley29351',
+        'cts',
         'bonif_1mayo',
         'essalud',
         'aporte_obligatorio',
-        'comision_porcentaje',
+        'comision',
         'prima_seguro',
         'impuesto_quinta',
         'neto_recibido',
@@ -171,6 +177,7 @@ class ReciboBoletaPagoAdmin(admin.ModelAdmin):
 @admin.register(TipoServicio)
 class TipoServicioAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         'created_at',
         'created_by',
@@ -188,6 +195,7 @@ class TipoServicioAdmin(admin.ModelAdmin):
 @admin.register(Institucion)
 class InstitucionAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         'url',
         'created_at',
@@ -206,6 +214,7 @@ class InstitucionAdmin(admin.ModelAdmin):
 @admin.register(MedioPago)
 class MedioPagoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         'created_at',
         'created_by',
@@ -223,6 +232,7 @@ class MedioPagoAdmin(admin.ModelAdmin):
 @admin.register(Servicio)
 class ServicioAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'institucion',
         'tipo_servicio',
         'numero_referencia',
@@ -247,6 +257,7 @@ class ServicioAdmin(admin.ModelAdmin):
 @admin.register(ReciboServicio)
 class ReciboServicioAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'servicio',
         'foto',
         'fecha_emision',
@@ -276,6 +287,7 @@ class ReciboServicioAdmin(admin.ModelAdmin):
 @admin.register(Telecredito)
 class TelecreditoAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'concepto',
         'moneda',
         'banco',

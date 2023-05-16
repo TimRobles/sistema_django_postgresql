@@ -1,8 +1,10 @@
+from decimal import Decimal
 from re import template
 from django.db import models
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.contabilidad.funciones import calcular_datos_boleta
+from applications.datos_globales.models import RemuneracionMinimaVital
 from applications.funciones import registrar_excepcion
 from applications.home.templatetags.funciones_propias import nombre_usuario
 
@@ -151,7 +153,7 @@ class DatosPlanillaListView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(DatosPlanillaListView, self).get_context_data(**kwargs)
         datos_planilla = DatosPlanilla.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  20 # Show 20 objects per page.
 
         if len(datos_planilla) > objectsxpage:
             paginator = Paginator(datos_planilla, objectsxpage)
@@ -169,7 +171,7 @@ def DatosPlanillaTabla(request):
         template = 'contabilidad/datos_planilla/inicio_tabla.html'
         context = {}
         datos_planilla = DatosPlanilla.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  20 # Show 20 objects per page.
 
         if len(datos_planilla) > objectsxpage:
             paginator = Paginator(datos_planilla, objectsxpage)
@@ -364,7 +366,7 @@ def BoletaPagoTabla(request):
 
 class BoletaPagoCreateView(BSModalCreateView):
     model = BoletaPago
-    template_name = "includes/formulario generico.html"
+    template_name = "contabilidad/boleta_pago/form crear.html"
     form_class = BoletaPagoForm
     success_url = reverse_lazy('contabilidad_app:boleta_pago_inicio')
 
@@ -392,9 +394,32 @@ class BoletaPagoUpdateView(BSModalUpdateView):
     
 
     def get_context_data(self, **kwargs):
+        boleta = self.get_object()
         context = super(BoletaPagoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = 'Actualizar'
         context['titulo'] = 'Boleta de Pago'
+        if boleta.datos_planilla.fondo_pensiones:
+            comision_fondo_pensiones = boleta.datos_planilla.fondo_pensiones.ComisionFondoPensiones_fondo_pensiones.latest('fecha_vigencia')
+            aporte_obligatorio = comision_fondo_pensiones.aporte_obligatorio
+            comision_flujo_mixta = comision_fondo_pensiones.comision_flujo_mixta
+            comision_flujo = comision_fondo_pensiones.comision_flujo
+            prima_seguro = comision_fondo_pensiones.prima_seguro
+        else:
+            aporte_obligatorio = Decimal('0.00')
+            comision_flujo_mixta = Decimal('0.00')
+            comision_flujo = Decimal('0.00')
+            prima_seguro = Decimal('0.00')
+        essalud = EsSalud.objects.latest('fecha_inicio')
+        context['aporte_obligatorio'] = aporte_obligatorio
+        context['comision_flujo_mixta'] = comision_flujo_mixta
+        context['comision_flujo'] = comision_flujo
+        context['prima_seguro'] = prima_seguro
+        context['tipo_comision'] = boleta.datos_planilla.tipo_comision
+        context['rmv'] = RemuneracionMinimaVital.objects.latest('fecha_inicio').monto
+        context['essalud'] = essalud.porcentaje
+        context['asignacion_familiar'] = boleta.datos_planilla.asignacion_familiar
+        context['movilidad'] = boleta.datos_planilla.movilidad
+        context['planilla'] = boleta.datos_planilla.planilla
         return context
 
 class BoletaPagoDeleteView(BSModalDeleteView):

@@ -25,15 +25,15 @@
                 </tr>
                 <tr>
                     <td>Licencia con goce de haber:</td>
-                    <td></td>
+                    <td class="text-end">{{ boleta.lic_con_goce_haber|intcomma }}</td>
                     <td></td>
                     <td>Aporte Obligatorio a SNP:</td>
                     <td></td>
-                    <td class="text-end">{{ boleta.aporte|intcomma }}</td>
+                    <td class="text-end">{{ boleta.aporte_obligatorio|intcomma }}</td>
                 </tr>
                 <tr>
                     <td>Dominical:</td>
-                    <td></td>
+                    <td class="text-end">{{ boleta.dominical|intcomma }}</td>
                     <td></td>
                     <td>Comisión:</td>
                     <td></td>
@@ -41,11 +41,11 @@
                 </tr>
                 <tr>
                     <td>Asignación Familiar:</td>
-                    <td class="text-end">{{ boleta.asignacion_familiar|intcomma }}</td>
+                    <td class="text-end">{{ boleta.asig_familiar|intcomma }}</td>
                     <td></td>
                     <td>Prima Seguro:</td>
                     <td></td>
-                    <td class="text-end">{{ boleta.seguro|intcomma }}</td>
+                    <td class="text-end">{{ boleta.prima_seguro|intcomma }}</td>
                 </tr>
                 <tr>
                     <td>Movilidad:</td>
@@ -53,7 +53,7 @@
                     <td></td>
                     <td>Impuesto 5ta Categoría:</td>
                     <td></td>
-                    <td class="text-end">{{ boleta.impuesto|intcomma }}</td>
+                    <td class="text-end">{{ boleta.impuesto_quinta|intcomma }}</td>
                 </tr>
                 <tr>
                     <td>Vacaciones:</td>
@@ -87,35 +87,11 @@
                     <td></td>
                     <td></td>
                 </tr>
-                <tr>
-                    <td>Ley 2351:</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>AFP 10.23:</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>AFP 3:</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
                 
                 {% if boleta.bonificacion1mayo %}
                 <tr>
                     <td>BONIF. 1ro MAYO:</td>
-                    <td class="text-end">{{ boleta.bonificacion1mayo }}</td>
+                    <td class="text-end">{{ boleta.bonificacion1mayo|intcomma }}</td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -139,7 +115,7 @@
                     <td></td>
                     <td>Neto Recibido:</td>
                     <td></td>
-                    <td class="text-end">{{ boleta.neto|intcomma }}</td>
+                    <td class="text-end">{{ boleta.neto_recibido|intcomma }}</td>
                 </tr>
             </tfoot>
         </table>

@@ -174,10 +174,11 @@ class BoletaPagoActualizarForm(BSModalModelForm):
             'vacaciones',
             'gratificacion',
             'ley29351',
+            'cts',
             'bonif_1mayo',
             'essalud',
             'aporte_obligatorio',
-            'comision_porcentaje',
+            'comision',
             'prima_seguro',
             'impuesto_quinta',
             'neto_recibido',
@@ -187,6 +188,8 @@ class BoletaPagoActualizarForm(BSModalModelForm):
         super(BoletaPagoActualizarForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['datos_planilla'].required = False
+        self.fields['datos_planilla'].disabled = True
 
 
 class ReciboBoletaPagoForm(BSModalModelForm):
