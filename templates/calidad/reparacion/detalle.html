@@ -29,6 +29,15 @@
                 Concluir Reparación
             </button>
         {% endif %}
+        {% if contexto_reparacion_material.estado == 3 %}
+            <button data-form-url="{% url 'calidad_app:reparacion_material_dar_baja' contexto_reparacion_material.id %}"   
+                data-table-url="{% url 'calidad_app:reparacion_material_inicio' %}"
+                data-keep-open="true"    
+                class="delete badge bg-primary "
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Retroceder">
+                Retroceder Reparación
+            </button>
+        {% endif %}
     </h3>
     <a href="{% url 'calidad_app:reparacion_material_inicio' %}" class="btn btn-danger">Regresar</a> 
     <br></br>

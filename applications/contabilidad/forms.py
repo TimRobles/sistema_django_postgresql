@@ -172,6 +172,7 @@ class BoletaPagoActualizarForm(BSModalModelForm):
             'movilidad',
             'asig_familiar',
             'vacaciones',
+            'compra_vacaciones',
             'gratificacion',
             'ley29351',
             'cts',

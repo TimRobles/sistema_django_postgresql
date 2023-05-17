@@ -2711,6 +2711,94 @@ class ValidarSeriesReparacionMaterialDetalleDeleteView(PermissionRequiredMixin, 
         context['dar_baja'] = "true"
         return context
 
+class ReparacionMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('calidad.change_reparacionmaterial')
+    model = ReparacionMaterial
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('calidad_app:reparacion_material_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('calidad_app:reparacion_material_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+
+            tipo_movimiento = TipoMovimiento.objects.get(codigo=160) # Reparación, material reparado
+
+            for detalle in self.object.ReparacionMaterialDetalle_reparacion.all():
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.material.content_type,
+                    id_registro_producto = detalle.material.id,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = tipo_movimiento,
+                    tipo_stock = tipo_movimiento.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = detalle.reparacion.content_type,
+                    id_registro_documento_proceso = detalle.reparacion.id,
+                    almacen = detalle.almacen,
+                    sociedad = detalle.reparacion.sociedad,
+                )
+                movimiento_uno = movimiento_dos.movimiento_anterior
+
+                for serie in detalle.ValidarSerieReparacionMaterialDetalle_reparacion_detalle.all():
+                    historial_reparado = HistorialEstadoSerie.objects.get(
+                        serie=serie.serie,
+                        estado_serie=EstadoSerie.objects.get(numero_estado=5), # REPARADO
+                        falla_material=serie.solucion_material.falla_material,
+                        solucion=serie.solucion_material,
+                        observacion=serie.observacion,
+                    )
+                    historial_disponible = HistorialEstadoSerie.objects.get(
+                        serie=serie.serie,
+                        estado_serie=EstadoSerie.objects.get(numero_estado=1), # DISPONIBLE
+                        falla_material=None,
+                        solucion=None,
+                        observacion=None,
+                    )
+                    if serie.nueva_serie:
+                        historial_cambio = HistorialEstadoSerie.objects.get(
+                            serie=serie.serie,
+                            estado_serie=EstadoSerie.objects.get(numero_estado=15), # CAMBIO DE SERIE
+                            falla_material=None,
+                            solucion=None,
+                        )
+                        serie_antigua = historial_cambio.observacion
+                        serie.serie.serie_base = serie_antigua.split(" ")[-3]
+                        serie.serie.save()
+                    historial_disponible.delete()
+                    if serie.nueva_serie:
+                        historial_cambio.delete()
+                    historial_reparado.delete()
+                movimiento_dos.delete()
+                movimiento_uno.delete()
+
+            self.object.estado = 1          # BORRADOR
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_ACTUALIZACION)
+
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ReparacionMaterialDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Retroceder"
+        context['titulo'] = "Reparación de Material"
+        context['dar_baja'] = "true"
+        context['item'] = 'Doc. Reparación Nro. ' + str(self.object)
+        return context
+
+
 class ReparacionMaterialConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('calidad.change_reparacionmaterial')
     model = ReparacionMaterial

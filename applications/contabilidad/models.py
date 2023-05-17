@@ -111,6 +111,7 @@ class BoletaPago(models.Model):
     movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     asig_familiar = models.DecimalField('Asignación Familiar', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     vacaciones = models.DecimalField('Vacaciones', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    compra_vacaciones = models.DecimalField('Compra de Vacaciones', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     gratificacion = models.DecimalField('Gratificación', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     ley29351 = models.DecimalField('Ley29351', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     bonif_1mayo = models.DecimalField('Bonificación 1 Mayo', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)

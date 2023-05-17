@@ -124,6 +124,7 @@ class BoletaPagoAdmin(admin.ModelAdmin):
         'movilidad',
         'asig_familiar',
         'vacaciones',
+        'compra_vacaciones',
         'gratificacion',
         'ley29351',
         'cts',
