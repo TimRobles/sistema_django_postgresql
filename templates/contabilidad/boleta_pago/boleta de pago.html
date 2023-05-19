@@ -6,6 +6,20 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th>Dias laborados:</th>
+                    <td>{{ boleta.dias_trabajados }}</td>
+                    <th></th>
+                    <td></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
                     <th>Concepto</th>
                     <th class="text-center">Monto</th>
                     <th></th>
@@ -88,10 +102,10 @@
                     <td></td>
                 </tr>
                 
-                {% if boleta.bonificacion1mayo %}
+                {% if boleta.bonif_1mayo %}
                 <tr>
                     <td>BONIF. 1ro MAYO:</td>
-                    <td class="text-end">{{ boleta.bonificacion1mayo|intcomma }}</td>
+                    <td class="text-end">{{ boleta.bonif_1mayo|intcomma }}</td>
                     <td></td>
                     <td></td>
                     <td></td>

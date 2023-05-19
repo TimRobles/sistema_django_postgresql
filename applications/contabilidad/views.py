@@ -13,6 +13,7 @@ from applications.funciones import registrar_excepcion
 from applications.caja_chica.models import ReciboCajaChica, Requerimiento
 
 from .forms import(
+    BoletaPagoBuscarForm,
     ChequeFisicoCobrarForm,
     ChequeFisicoForm,
     ChequeForm,
@@ -322,12 +323,66 @@ class EsSaludUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class BoletaPagoListView(TemplateView):
+class BoletaPagoListView(FormView):
+    form_class = BoletaPagoBuscarForm
     template_name = "contabilidad/boleta_pago/inicio.html"
+
+    def get_form_kwargs(self):
+        kwargs = super(BoletaPagoListView, self).get_form_kwargs()
+        kwargs['filtro_year'] = self.request.GET.get('year')
+        kwargs['filtro_month'] = self.request.GET.get('month')
+        kwargs['filtro_tipo'] = self.request.GET.get('tipo')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_usuario'] = self.request.GET.get('usuario')
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(BoletaPagoListView, self).get_context_data(**kwargs)
         boleta_pago = BoletaPago.objects.all()
+
+        filtro_year = self.request.GET.get('year')
+        filtro_month = self.request.GET.get('month')
+        filtro_tipo = self.request.GET.get('tipo')
+        filtro_estado = self.request.GET.get('estado')
+        filtro_usuario = self.request.GET.get('usuario')
+        
+        contexto_filtro = []
+
+        if filtro_year:
+            condicion = Q(year = filtro_year)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"year={filtro_year}")
+
+        if filtro_month:
+            condicion = Q(month = filtro_month)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"month={filtro_month}")
+
+        if filtro_tipo:
+            condicion = Q(tipo = filtro_tipo)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"tipo={filtro_tipo}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_usuario:
+            condicion = Q(created_by = filtro_usuario)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"usuario={filtro_usuario}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
         objectsxpage =  20 # Show 20 objects per page.
 
         if len(boleta_pago) > objectsxpage:
@@ -337,7 +392,6 @@ class BoletaPagoListView(TemplateView):
 
         context['contexto_boleta_pago'] = boleta_pago
         context['contexto_pagina'] = boleta_pago
-        context['contexto_filtro'] = '?'
         return context
 
 def BoletaPagoTabla(request):
@@ -346,6 +400,50 @@ def BoletaPagoTabla(request):
         template = 'contabilidad/boleta_pago/inicio_tabla.html'
         context = {}
         boleta_pago = BoletaPago.objects.all()
+        
+        filtro_year = request.GET.get('year')
+        filtro_month = request.GET.get('month')
+        filtro_tipo = request.GET.get('tipo')
+        filtro_estado = request.GET.get('estado')
+        filtro_usuario = request.GET.get('usuario')
+        
+        contexto_filtro = []
+
+        if filtro_year:
+            condicion = Q(year = filtro_year)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"year={filtro_year}")
+
+        if filtro_month:
+            condicion = Q(month = filtro_month)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"month={filtro_month}")
+
+        if filtro_tipo:
+            condicion = Q(tipo = filtro_tipo)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"tipo={filtro_tipo}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_usuario:
+            condicion = Q(created_by = filtro_usuario)
+            boleta_pago = boleta_pago.filter(condicion)
+            contexto_filtro.append(f"usuario={filtro_usuario}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
         objectsxpage =  20 # Show 20 objects per page.
 
         if len(boleta_pago) > objectsxpage:
@@ -355,7 +453,6 @@ def BoletaPagoTabla(request):
 
         context['contexto_boleta_pago'] = boleta_pago
         context['contexto_pagina'] = boleta_pago
-        context['contexto_filtro'] = '?'
 
         data['table'] = render_to_string(
             template,
@@ -398,8 +495,9 @@ class BoletaPagoUpdateView(BSModalUpdateView):
         context = super(BoletaPagoUpdateView, self).get_context_data(**kwargs)
         context['accion'] = 'Actualizar'
         context['titulo'] = 'Boleta de Pago'
+        fecha_boleta = date(boleta.year, boleta.month, 1)
         if boleta.datos_planilla.fondo_pensiones:
-            comision_fondo_pensiones = boleta.datos_planilla.fondo_pensiones.ComisionFondoPensiones_fondo_pensiones.latest('fecha_vigencia')
+            comision_fondo_pensiones = boleta.datos_planilla.fondo_pensiones.ComisionFondoPensiones_fondo_pensiones.filter(fecha_vigencia__lte=fecha_boleta).latest('fecha_vigencia')
             aporte_obligatorio = comision_fondo_pensiones.aporte_obligatorio
             comision_flujo_mixta = comision_fondo_pensiones.comision_flujo_mixta
             comision_flujo = comision_fondo_pensiones.comision_flujo
@@ -409,14 +507,13 @@ class BoletaPagoUpdateView(BSModalUpdateView):
             comision_flujo_mixta = Decimal('0.00')
             comision_flujo = Decimal('0.00')
             prima_seguro = Decimal('0.00')
-        essalud = EsSalud.objects.latest('fecha_inicio')
         context['aporte_obligatorio'] = aporte_obligatorio
         context['comision_flujo_mixta'] = comision_flujo_mixta
         context['comision_flujo'] = comision_flujo
         context['prima_seguro'] = prima_seguro
         context['tipo_comision'] = boleta.datos_planilla.tipo_comision
-        context['rmv'] = RemuneracionMinimaVital.objects.latest('fecha_inicio').monto
-        context['essalud'] = essalud.porcentaje
+        context['rmv'] = RemuneracionMinimaVital.objects.filter(fecha_inicio__lte=fecha_boleta).latest('fecha_inicio').monto
+        context['essalud'] = EsSalud.objects.filter(fecha_inicio__lte=fecha_boleta).latest('fecha_inicio').porcentaje
         context['asignacion_familiar'] = boleta.datos_planilla.asignacion_familiar
         context['movilidad'] = boleta.datos_planilla.movilidad
         context['planilla'] = boleta.datos_planilla.planilla

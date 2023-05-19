@@ -15,6 +15,7 @@ from .models import(
     Servicio,
     ReciboServicio,
     Telecredito,
+    TamañoEmpresa,
 )
 
 
@@ -128,6 +129,7 @@ class BoletaPagoAdmin(admin.ModelAdmin):
         'gratificacion',
         'ley29351',
         'cts',
+        'dias_trabajados',
         'bonif_1mayo',
         'essalud',
         'aporte_obligatorio',
@@ -372,6 +374,26 @@ class ChequeVueltoExtraAdmin(admin.ModelAdmin):
         'moneda',
         'tipo_cambio',
         'cheque',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by', 
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(TamañoEmpresa)
+class TamañoEmpresaAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'tipo_empresa',
+        'sociedad',
+        'fecha_inicio',
         'created_at',
         'created_by',
         'updated_at',

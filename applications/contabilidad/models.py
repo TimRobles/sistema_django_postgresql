@@ -122,6 +122,7 @@ class BoletaPago(models.Model):
     impuesto_quinta = models.DecimalField('Impuesto de Quinta', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     neto_recibido = models.DecimalField('Neto Recibido', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     cts = models.DecimalField('CTS', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    dias_trabajados = models.DecimalField('Días Trabajados', max_digits=2, decimal_places=0, default=Decimal('30'), blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -140,7 +141,7 @@ class BoletaPago(models.Model):
 
     @property
     def total_haber(self):
-        return self.haber_mensual + self.lic_con_goce_haber + self.dominical + self.asig_familiar + self.movilidad + self.vacaciones + self.gratificacion + self.ley29351 + self.cts
+        return self.haber_mensual + self.lic_con_goce_haber + self.dominical + self.asig_familiar + self.movilidad + self.vacaciones + self.gratificacion + self.ley29351 + self.cts + self.bonif_1mayo
 
     @property
     def total_descuento_empleador(self):
@@ -415,3 +416,27 @@ class ChequeVueltoExtra(models.Model):
 
     def __str__(self):
         return str(self.cheque) + " " + self.moneda.simbolo + " " + str(self.vuelto_extra)
+
+
+class TamañoEmpresa(models.Model):
+    TIPO_EMPRESA = (
+        (1, 'MICRO EMPRESA'),
+        (2, 'PEQUEÑA EMPRESA'),
+        (3, 'MEDIANA EMPRESA'),
+        (4, 'GRAN EMPRESA'),
+    )
+    
+    tipo_empresa = models.IntegerField(choices=TIPO_EMPRESA)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, related_name='TamañoEmpresa_sociedad')
+    fecha_inicio = models.DateField('Fecha de inicio', auto_now=False, auto_now_add=False)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TamañoEmpresa_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TamañoEmpresa_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Tamaño de Empresa'
+        verbose_name_plural = 'Tamaño de Empresas'
+
+    def __str__(self):
+        return f"{self.fecha_inicio} - {self.get_tipo_empresa_display()}"

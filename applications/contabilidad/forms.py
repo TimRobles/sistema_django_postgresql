@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
-from applications.variables import ESTADOS_CONFIRMACION
+from applications.variables import CHOICE_VACIO, ESTADOS, ESTADOS_CONFIRMACION, MESES, YEARS, TIPO_PAGO_BOLETA
 from applications.material.models import Material
 from applications.usuario.models import DatosUsuario
 from applications.sociedad.models import Sociedad
@@ -176,6 +176,7 @@ class BoletaPagoActualizarForm(BSModalModelForm):
             'gratificacion',
             'ley29351',
             'cts',
+            'dias_trabajados',
             'bonif_1mayo',
             'essalud',
             'aporte_obligatorio',
@@ -596,5 +597,28 @@ class TelecreditoReciboPagoUpdateForm(BSModalModelForm):
         super(TelecreditoReciboPagoUpdateForm, self).__init__(*args, **kwargs)
         # for field in self.fields:
         #     self.fields[field].required = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class BoletaPagoBuscarForm(forms.Form):
+    year = forms.ChoiceField(choices=CHOICE_VACIO + YEARS, required=False)
+    month = forms.ChoiceField(choices=CHOICE_VACIO + MESES, required=False)
+    tipo = forms.ChoiceField(choices=CHOICE_VACIO + TIPO_PAGO_BOLETA, required=False)
+    estado = forms.ChoiceField(choices=CHOICE_VACIO + ESTADOS, required=False)
+    usuario = forms.ModelChoiceField(queryset=get_user_model().objects, required=False)
+    
+    def __init__(self, *args, **kwargs):
+        filtro_year = kwargs.pop('filtro_year')
+        filtro_month = kwargs.pop('filtro_month')
+        filtro_tipo = kwargs.pop('filtro_tipo')
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_usuario = kwargs.pop('filtro_usuario')
+        super(BoletaPagoBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['year'].initial = filtro_year
+        self.fields['month'].initial = filtro_month
+        self.fields['tipo'].initial = filtro_tipo
+        self.fields['estado'].initial = filtro_estado
+        self.fields['usuario'].initial = filtro_usuario
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
