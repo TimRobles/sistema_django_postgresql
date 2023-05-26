@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Cotización
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'cotizacion/cotizacion_venta/detalle_tabla soles.html' %}
+    </div>
+{% endblock contenido %}
+

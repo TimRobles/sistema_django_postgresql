@@ -16,6 +16,9 @@ urlpatterns = [
     path('cotizacion-venta/anular/<pk>/', views.CotizacionVentaAnularView.as_view(), name='cotizacion_venta_anular'),
     path('cotizacion-venta/clonar/<pk>/', views.CotizacionVentaClonarView.as_view(), name='cotizacion_venta_clonar'),
     path('cotizacion-venta/vendedor/<pk>/', views.CotizacionVentaVendedorView.as_view(), name='cotizacion_venta_vendedor'),
+
+    path('cotizacion-venta/soles/ver/<int:id_cotizacion>/', views.CotizacionVentaSolesVerView.as_view(), name='cotizacion_venta_soles_ver'),
+    path('cotizacion-venta/soles/ver/tabla/<int:id_cotizacion>/', views.CotizacionVentaSolesVerTabla, name='cotizacion_venta_soles_ver_tabla'),
     
     path('cotizacion-venta/resumen/<pk>/', views.CotizacionVentaResumenView.as_view(), name='cotizacion_venta_resumen'),
     
@@ -53,6 +56,10 @@ urlpatterns = [
     path('cotizacion-venta/pdf/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadPdfView.as_view(), name='cotizacion_venta_pdf'),
     path('cotizacion-venta/pdf/cuentas/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadCuentasPdfView.as_view(), name='cotizacion_venta_cuentas_pdf'),
     path('cotizacion-venta/pdf/cuentas/soles/<str:sociedad>/<slug>/', views.CotizacionVentaSociedadCuentasSolesPdfView.as_view(), name='cotizacion_venta_cuentas_soles_pdf'),
+
+    path('cotizacion-venta/soles/pdfs/<slug>/', views.CotizacionVentaSolesPdfsView.as_view(), name='cotizacion_venta_soles_pdfs'),
+    path('cotizacion-venta/soles/pdf/<str:sociedad>/<slug>/', views.CotizacionVentaSolesSociedadPdfView.as_view(), name='cotizacion_venta_soles_pdf'),
+    path('cotizacion-venta/soles/pdf/cuentas/soles/<str:sociedad>/<slug>/', views.CotizacionVentaSolesSociedadCuentasSolesPdfView.as_view(), name='cotizacion_venta_soles_cuentas_soles_pdf'),
 
     path('confirmacion/ver/<int:id_confirmacion>/', views.ConfirmarVerView.as_view(), name='confirmacion_ver'),
     path('confirmacion/ver/tabla/<int:id_confirmacion>/', views.ConfirmarVerTabla, name='confirmacion_ver_tabla'),

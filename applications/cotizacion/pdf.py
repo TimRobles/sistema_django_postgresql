@@ -171,7 +171,7 @@ def dataCuentas(monedas, moneda_cotizacion, fuenteBase, color):
                 for sociedad in moneda.sociedades:
                     if sociedad.color == color:
                         fila = []
-                        fila.append(parrafoCentro(f'MONTO: {moneda.simbolo} {sociedad.total}', fuenteBase, 10))
+                        fila.append(parrafoCentro(f'MONTO: {moneda.simbolo} {intcomma(sociedad.total)}', fuenteBase, 10))
                         data.append(fila)
                         fila = []
                         fila.append(parrafoIzquierda("BANCO", fuenteBase))
