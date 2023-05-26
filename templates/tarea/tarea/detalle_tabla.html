@@ -1,0 +1,159 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3> Detalle Tarea
+    <a href="{% url 'tarea_app:tarea_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    
+</h3>
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th>Tipo tarea : </th>
+                    <td>
+                        {% if contexto_tarea.tipo_tarea %}
+                        {{ contexto_tarea.tipo_tarea }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Fecha Inicio : </th>
+                    <td>
+                        {% if contexto_tarea.fecha_inicio %}
+                        {{ contexto_tarea.fecha_inicio|date:'d/m/Y'}}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Fecha Limite : </th>
+                    <td>
+                        {% if contexto_tarea.fecha_limite %}
+                        {{ contexto_tarea.fecha_limite|date:'d/m/Y'}}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Prioridad : </th>
+                    <td>
+                        {% if contexto_tarea.prioridad %}
+                        {{ contexto_tarea.get_prioridad_display }} 
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th>Área : </th>
+                    <td>
+                        {% if contexto_tarea.area %}
+                        {{ contexto_tarea.area }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Encargado : </th>
+                    <td>
+                        {% if contexto_tarea.encargado %}
+                        {{ contexto_tarea.encargado }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Apoyo : </th>
+                    <td>
+                        {% for apoyo in contexto_tarea.apoyo.all %}
+                            <li class="text-nowrap">
+                                {{ apoyo }}
+                            </li>
+                        {% endfor %}           
+                    </td>
+                </tr>
+                <tr>
+                    <th>Estado : </th>
+                    <td>
+                        {% if contexto_tarea.estado %}
+                        {{ contexto_tarea.get_estado_display }}
+                        {% endif %}
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<h4>Descripción
+    <button data-form-url="{% url 'tarea_app:tarea_descripcion' contexto_tarea.id %}"
+        class="delete btn btn-primary">
+        +  
+    </button>
+</h4>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if contexto_tarea.descripcion %}
+                    {{ contexto_tarea.descripcion|linebreaks }}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+    
+</div>
+
+<h4>Comentarios
+    <button data-form-url="{% url 'tarea_app:tarea_comentario' contexto_tarea.id %}"
+        class="delete btn btn-primary">
+        +
+    </button>    
+</h4>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth"> Usuario </th>
+                <th class="text-rigth">COMENTARIOS </th>
+                <th class="text-rigth">Fecha </th>
+                <th class="text-rigth">Acciones </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comentario in comentarios %}
+                <tr>
+                    <td>{{ comentario.created_by|nombre_usuario }}</td>
+                    <td>{{ comentario.comentario|linebreaks }}</td>
+                    <td>{{ comentario.created_at|date:'d/m/Y'}}</td>
+                    <td class="text-center text-nowrap">
+                        <button data-form-url="{% url 'tarea_app:tarea_comentario_actualizar' comentario.id %}"
+                            data-table-url="{% url 'tarea_app:tarea_detalle_tabla' contexto_tarea.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        
+                        <button data-form-url="{% url 'tarea_app:tarea_comentario_eliminar' comentario.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>    
+</div>

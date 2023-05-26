@@ -1,0 +1,48 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha Inicio</th>
+            <th>Encargado</th>
+            <th>Tipo Tarea</th>
+            <th>Estado</th>
+            <th>Fecha Limite</th>
+            <th>Descripcion</th>
+            <th>Asignado por</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tarea in contexto_tarea %}
+        <tr>
+            <td>{{ tarea.fecha_inicio|date:'d/m/Y' }}</td>
+            <td>{{ tarea.encargado.first_name }}</td>
+            <td>{{ tarea.tipo_tarea }}</td>
+            <td>{{ tarea.get_estado_display}}</td>
+            <td>{{ tarea.fecha_limite|date:'d/m/Y' }}</td>
+            <td>{{ tarea.descripcion }}</td>
+            <td>{{ tarea.created_by|nombre_usuario }}</td>
+            <td>
+                <button data-form-url="{% url 'tarea_app:tarea_actualizar' tarea.id %}"
+                    data-table-url="{% url 'tarea_app:tarea_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+
+                <a href="{% url 'tarea_app:tarea_detalle' tarea.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

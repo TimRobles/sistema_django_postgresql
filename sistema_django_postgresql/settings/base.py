@@ -76,6 +76,7 @@ LOCAL_APPS = (
     'applications.contabilidad',
     'applications.caja_chica',
     'applications.crm',
+    'applications.tarea',
 )
 
 THIRD_PARTY_APPS = (
