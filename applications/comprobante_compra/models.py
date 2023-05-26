@@ -51,6 +51,10 @@ class ComprobanteCompraPI(models.Model):
     class Meta:
         verbose_name = 'Comprobante de Compra PI'
         verbose_name_plural = 'Comprobantes de Compra PIs'
+        ordering = [
+            'estado',
+            'fecha_estimada_llegada',
+        ]
 
     @property
     def no_existe_CI(self):

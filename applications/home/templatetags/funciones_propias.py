@@ -18,6 +18,12 @@ def espacio_guion(value):
     return texto
 
 @register.filter
+def validar_none(value):
+    if value:
+        return value
+    return ""
+
+@register.filter
 def recortar_popover(texto):
     if len(str(texto))>40:
         return mark_safe("""<span data-bs-toggle="tooltip" data-bs-placement="top" title="%s">%s...</span>""" % (str(texto), str(texto)[:40]))
@@ -75,9 +81,9 @@ def nombre_usuario(usuario):
     try:
         if usuario.get_full_name():
             return usuario.get_full_name()
-        return usuario
+        return usuario.username
     except:
-        return usuario
+        return usuario.username
 
 @register.filter
 def atributo(field):

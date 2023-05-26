@@ -1,8 +1,8 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Fecha Creación</th>
             <th>Boleta</th>
+            <th>Sociedad</th>
             <th>Creado por</th>
             <th class="text-center">Acciones</th>
         </tr>
@@ -10,12 +10,12 @@
     <tbody>
         {% for boleta_pago in contexto_boleta_pago %}
         <tr>
-            <td>{{ boleta_pago.created_at|date:'d/m/Y' }}</td>
             <td>{{ boleta_pago }}</td>
+            <td>{{ boleta_pago.datos_planilla.sociedad }}</td>
             <td>{{ boleta_pago.created_by}}</td>
-            <td>
+            <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'contabilidad_app:boleta_pago_actualizar' boleta_pago.id %}"
-                    data-table-url="{% url 'contabilidad_app:boleta_pago_tabla' %}"
+                    data-table-url="{% url 'contabilidad_app:boleta_pago_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     data-keep-open="true"
                     class="update btn btn-warning btn-sm"
                     data-modal="modal-xl"
@@ -27,7 +27,12 @@
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                     <i class="bi-x-lg"></i>
-                </button>                
+                </button>
+                <button data-form-url="{% url 'contabilidad_app:boleta_pago_ver' boleta_pago.id %}"
+                    class="read btn btn-success btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </button>
 
             </td>
         </tr>

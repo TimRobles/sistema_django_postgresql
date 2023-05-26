@@ -17,7 +17,7 @@
             <td>{{ recibo_boleta_pago.created_by}}</td>
             <td>
                 <button data-form-url="{% url 'contabilidad_app:recibo_boleta_pago_actualizar' recibo_boleta_pago.id %}"
-                    data-table-url="{% url 'contabilidad_app:recibo_boleta_pago_tabla' %}"
+                    data-table-url="{% url 'contabilidad_app:recibo_boleta_pago_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     data-keep-open="true"
                     class="update btn btn-warning btn-sm"
                     data-modal="modal-xl"

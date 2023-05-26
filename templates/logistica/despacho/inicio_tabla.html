@@ -8,6 +8,8 @@
             <th>Observación</th>
             <th>Motivo Anulación</th>
             <th>Estado</th>
+            <th>Creación</th>
+            <th>Modificación</th>
             <th class="text-center">Acciones</th>
 
         </tr>
@@ -29,7 +31,9 @@
                     {{ despacho.motivo_anulacion }}    
                 {% endif %}  
             </td>
-            <td> {{ despacho.get_estado_display }} </td>
+            <td>{{ despacho.get_estado_display }}</td>
+            <td>{{ despacho.created_by|nombre_usuario }}: {{ despacho.created_at|date:'d/m/Y H:i' }}</td>
+            <td>{{ despacho.updated_by|nombre_usuario }}: {{ despacho.updated_at|date:'d/m/Y H:i' }}</td>
             <td class="text-center">
                 {% if despacho.estado == 1 %}
                     <button data-form-url="{% url 'logistica_app:despacho_actualizar' despacho.id %}"

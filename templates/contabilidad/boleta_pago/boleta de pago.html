@@ -1,0 +1,139 @@
+{% extends 'includes/modal generico.html' %}
+{% load humanize %}
+
+{% block content %}        
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Dias laborados:</th>
+                    <td>{{ boleta.dias_trabajados }}</td>
+                    <th></th>
+                    <td></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th class="text-center">Monto</th>
+                    <th></th>
+                    <th>Concepto</th>
+                    <th class="text-center">Empleador</th>
+                    <th class="text-center">Trabajador</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Haber mensual:</td>
+                    <td class="text-end">{{ boleta.haber_mensual|intcomma }}</td>
+                    <td></td>
+                    <td>EsSalud:</td>
+                    <td class="text-end">{{ boleta.essalud|intcomma }}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Licencia con goce de haber:</td>
+                    <td class="text-end">{{ boleta.lic_con_goce_haber|intcomma }}</td>
+                    <td></td>
+                    <td>Aporte Obligatorio a SNP:</td>
+                    <td></td>
+                    <td class="text-end">{{ boleta.aporte_obligatorio|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Dominical:</td>
+                    <td class="text-end">{{ boleta.dominical|intcomma }}</td>
+                    <td></td>
+                    <td>Comisión:</td>
+                    <td></td>
+                    <td class="text-end">{{ boleta.comision|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Asignación Familiar:</td>
+                    <td class="text-end">{{ boleta.asig_familiar|intcomma }}</td>
+                    <td></td>
+                    <td>Prima Seguro:</td>
+                    <td></td>
+                    <td class="text-end">{{ boleta.prima_seguro|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Movilidad:</td>
+                    <td class="text-end">{{ boleta.movilidad|intcomma }}</td>
+                    <td></td>
+                    <td>Impuesto 5ta Categoría:</td>
+                    <td></td>
+                    <td class="text-end">{{ boleta.impuesto_quinta|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Vacaciones:</td>
+                    <td class="text-end">{{ boleta.vacaciones|intcomma }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Gratificación:</td>
+                    <td class="text-end">{{ boleta.gratificacion|intcomma }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Ley 29351:</td>
+                    <td class="text-end">{{ boleta.ley29351|intcomma }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>C.T.S.:</td>
+                    <td class="text-end">{{ boleta.cts|intcomma }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                
+                {% if boleta.bonif_1mayo %}
+                <tr>
+                    <td>BONIF. 1ro MAYO:</td>
+                    <td class="text-end">{{ boleta.bonif_1mayo|intcomma }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endif %}
+                    
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Total haber:</td>
+                    <td class="text-end">{{ boleta.total_haber|intcomma }}</td>
+                    <td></td>
+                    <td>Descuentos:</td>
+                    <td class="text-end">{{ boleta.total_descuento_empleador|intcomma }}</td>
+                    <td class="text-end">{{ boleta.total_descuento_trabajador|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Neto Recibido:</td>
+                    <td></td>
+                    <td class="text-end">{{ boleta.neto_recibido|intcomma }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+{% endblock content %}
+    

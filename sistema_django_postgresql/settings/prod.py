@@ -28,3 +28,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR.ancestor(1).child('media')
 
 BUSCAR_IP = 'HTTP_CF_CONNECTING_IP'
+
+CRONJOBS = [
+    ('0 10 * * 1-6', 'applications.reportes.pdf.reporte_cobranza', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
+]

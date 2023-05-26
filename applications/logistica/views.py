@@ -1233,7 +1233,7 @@ class ValidarSeriesNotaSalidaDetailView(PermissionRequiredMixin, FormView):
                     form.add_error('serie', "Serie ya ha sido registrada")
                     return super().form_invalid(form)
 
-                if buscar.estado != 'DISPONIBLE':
+                if buscar.estado != 'DISPONIBLE' and buscar.estado != 'REPARADO':
                     form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
                     return super().form_invalid(form)
             except:
@@ -2055,6 +2055,11 @@ class InventarioMaterialesCreateView(PermissionRequiredMixin, BSModalCreateView)
     form_class = InventarioMaterialesForm
     success_url = reverse_lazy('logistica_app:inventario_materiales_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(InventarioMaterialesCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
@@ -2075,6 +2080,11 @@ class InventarioMaterialesUpdateView(PermissionRequiredMixin, BSModalUpdateView)
     template_name = "includes/formulario generico.html"
     form_class = InventarioMaterialesUpdateForm
     success_url = reverse_lazy('logistica_app:inventario_materiales_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(InventarioMaterialesUpdateView, self).get_context_data(**kwargs)
@@ -2158,7 +2168,7 @@ class InventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDeleteVie
 
 
 class InventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('logistica.view_inventariomaterial')
+    permission_required = ('logistica.view_inventariomateriales')
 
     model = InventarioMateriales
     template_name = "logistica/inventario_materiales/detalle.html"
@@ -2189,10 +2199,15 @@ def InventarioMaterialesDetailTabla(request, pk):
 
 
 class InventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('logistica.view_inventariomaterialdetalle')
+    permission_required = ('logistica.view_inventariomaterialesdetalle')
     template_name = "logistica/inventario_materiales/form_material.html"
     form_class = InventarioMaterialesDetalleForm
     success_url = reverse_lazy('logistica_app:inventario_materiales_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         registro = InventarioMateriales.objects.get(id = self.kwargs['inventario_materiales_id'])
@@ -2247,10 +2262,15 @@ class InventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalForm
 
 
 class InventarioMaterialesDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('logistica.change_inventariomaterialdetalle')
+    permission_required = ('logistica.change_inventariomaterialesdetalle')
     model = InventarioMaterialesDetalle
     template_name = "logistica/inventario_materiales/form_material.html"
     form_class = InventarioMaterialesDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:inventario_materiales_detalle', kwargs={'pk':self.get_object().inventario_materiales_id})
@@ -2276,9 +2296,14 @@ class InventarioMaterialesDetalleUpdateView(PermissionRequiredMixin, BSModalUpda
 
 
 class InventarioMaterialesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.delete_inventariomaterialdetalle')
+    permission_required = ('logistica.delete_inventariomaterialesdetalle')
     model = InventarioMaterialesDetalle
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:inventario_materiales_detalle', kwargs={'pk': self.get_object().inventario_materiales_id})
@@ -2336,6 +2361,11 @@ class AjusteInventarioMaterialesUpdateView(PermissionRequiredMixin, BSModalUpdat
     template_name = "includes/formulario generico.html"
     form_class = AjusteInventarioMaterialesForm
     success_url = reverse_lazy('logistica_app:ajuste_inventario_materiales_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(AjusteInventarioMaterialesUpdateView, self).get_context_data(**kwargs)
@@ -2442,7 +2472,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
 
 
 class AjusteInventarioMaterialesDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('logistica.view_ajusteinventariomaterial')
+    permission_required = ('logistica.view_ajusteinventariomateriales')
 
     model = AjusteInventarioMateriales
     template_name = "logistica/ajuste_inventario_materiales/detalle.html"
@@ -2473,9 +2503,14 @@ def AjusteInventarioMaterialesDetailTabla(request, pk):
 
 
 class AjusteInventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('logistica.add_ajusteinventariomaterialdetalle')
+    permission_required = ('logistica.add_ajusteinventariomaterialesdetalle')
     template_name = "includes/formulario generico.html"
     form_class = AjusteInventarioMaterialesDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:ajuste_inventario_materiales_detalle', kwargs={'pk': self.kwargs['ajuste_inventario_materiales_id']})
@@ -2534,9 +2569,14 @@ class AjusteInventarioMaterialesDetalleCreateView(PermissionRequiredMixin, BSMod
 
 
 class AjusteInventarioMaterialesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.delete_ajusteinventariomaterialdetalle')
+    permission_required = ('logistica.delete_ajusteinventariomaterialesdetalle')
     model = AjusteInventarioMaterialesDetalle
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:ajuste_inventario_materiales_detalle', kwargs={'pk': self.get_object().ajuste_inventario_materiales_id})

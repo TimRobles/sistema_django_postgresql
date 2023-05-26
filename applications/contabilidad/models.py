@@ -80,7 +80,8 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
-        return nombre_usuario(self.usuario)
+        return f"{nombre_usuario(self.usuario)} - {self.id}"
+        
 
 class EsSalud(models.Model):
     fecha_inicio = models.DateField('Fecha Inicio', auto_now=False, auto_now_add=False)
@@ -110,15 +111,18 @@ class BoletaPago(models.Model):
     movilidad = models.DecimalField('Movilidad', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     asig_familiar = models.DecimalField('Asignación Familiar', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     vacaciones = models.DecimalField('Vacaciones', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    compra_vacaciones = models.DecimalField('Compra de Vacaciones', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     gratificacion = models.DecimalField('Gratificación', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     ley29351 = models.DecimalField('Ley29351', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     bonif_1mayo = models.DecimalField('Bonificación 1 Mayo', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     essalud = models.DecimalField('Essalud', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     aporte_obligatorio = models.DecimalField('Aporte Obligatorio', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
-    comision_porcentaje = models.DecimalField('Comisión Porcentaje', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    comision = models.DecimalField('Comisión', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     prima_seguro = models.DecimalField('Prima Seguro', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     impuesto_quinta = models.DecimalField('Impuesto de Quinta', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
     neto_recibido = models.DecimalField('Neto Recibido', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    cts = models.DecimalField('CTS', max_digits=7, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    dias_trabajados = models.DecimalField('Días Trabajados', max_digits=2, decimal_places=0, default=Decimal('30'), blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -131,9 +135,24 @@ class BoletaPago(models.Model):
         verbose_name_plural = 'Boletas de Pago'
         ordering = ['-id',]
 
+    @property
+    def periodo(self):
+        return f"{self.get_month_display()} - {self.year}"
+
+    @property
+    def total_haber(self):
+        return self.haber_mensual + self.lic_con_goce_haber + self.dominical + self.asig_familiar + self.movilidad + self.vacaciones + self.gratificacion + self.ley29351 + self.cts + self.bonif_1mayo
+
+    @property
+    def total_descuento_empleador(self):
+        return self.essalud
+
+    @property
+    def total_descuento_trabajador(self):
+        return self.aporte_obligatorio + self.comision + self.prima_seguro + self.impuesto_quinta
 
     def __str__(self):
-        return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), str(self.datos_planilla)) 
+        return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), self.datos_planilla) 
 
 class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
@@ -397,3 +416,27 @@ class ChequeVueltoExtra(models.Model):
 
     def __str__(self):
         return str(self.cheque) + " " + self.moneda.simbolo + " " + str(self.vuelto_extra)
+
+
+class TamañoEmpresa(models.Model):
+    TIPO_EMPRESA = (
+        (1, 'MICRO EMPRESA'),
+        (2, 'PEQUEÑA EMPRESA'),
+        (3, 'MEDIANA EMPRESA'),
+        (4, 'GRAN EMPRESA'),
+    )
+    
+    tipo_empresa = models.IntegerField(choices=TIPO_EMPRESA)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, related_name='TamañoEmpresa_sociedad')
+    fecha_inicio = models.DateField('Fecha de inicio', auto_now=False, auto_now_add=False)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TamañoEmpresa_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='TamañoEmpresa_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Tamaño de Empresa'
+        verbose_name_plural = 'Tamaño de Empresas'
+
+    def __str__(self):
+        return f"{self.fecha_inicio} - {self.get_tipo_empresa_display()}"

@@ -369,6 +369,8 @@ class ComprobanteCompraPIAnularView(PermissionRequiredMixin, BSModalDeleteView):
                     )
                 if len(movimiento_dos.MovimientosAlmacen_movimiento_anterior.all()) > 0:
                     messages.warning(request, MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI)
+                    transaction.savepoint_rollback(sid)
+                    registrar_excepcion(self, f"{MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI}: {self.object}", __file__)
                     return HttpResponseRedirect(reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':comprobante.slug}))
 
             for material in materiales:

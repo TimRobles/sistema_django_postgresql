@@ -1,7 +1,9 @@
+from datetime import date
 from decimal import Decimal
 import requests
 from applications.cotizacion.models import PrecioListaMaterial
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
+from applications import orden_compra
 from applications.variables import ESTADOS
 from django.db import models
 from django.conf import settings
@@ -195,6 +197,38 @@ class Material(models.Model):
                         content_type_producto = ContentType.objects.get_for_model(self),
                         id_registro_producto = self.id,
                     ).latest('created_at')
+        except:
+            return ""
+
+    @property
+    def ultimo_precio(self):
+        try:
+            ordenes_detalle = orden_compra.models.OrdenCompraDetalle.objects.filter(
+                        content_type = ContentType.objects.get_for_model(self),
+                        id_registro = self.id,
+                    )
+            ultima_fecha = date(1900,1,1)
+            ultimo_precio = Decimal('0.00')
+            for orden_detalle in ordenes_detalle:
+                if orden_detalle.orden_compra.fecha_orden >= ultima_fecha:
+                    ultima_fecha = orden_detalle.orden_compra.fecha_orden
+                    ultimo_precio = orden_detalle.precio_final_con_igv
+            return ultimo_precio
+        except:
+            return ""
+
+    @property
+    def minimo_precio(self):
+        try:
+            ordenes_detalle = orden_compra.models.OrdenCompraDetalle.objects.filter(
+                        content_type = ContentType.objects.get_for_model(self),
+                        id_registro = self.id,
+                    )
+            minimo_precio = Decimal('1000000000000000.00')
+            for orden_detalle in ordenes_detalle:
+                if orden_detalle.precio_final_con_igv <= minimo_precio:
+                    minimo_precio = orden_detalle.precio_final_con_igv
+            return minimo_precio
         except:
             return ""
 

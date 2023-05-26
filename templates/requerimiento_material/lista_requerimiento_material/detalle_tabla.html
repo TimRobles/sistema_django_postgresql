@@ -44,6 +44,8 @@
                 <th>Código Sunat</th>
                 <th>Control por Serie</th>
                 <th>Control de Calidad</th>
+                <th class="text-end">Ultimo Precio</th>
+                <th class="text-end">Mínimo Precio</th>
                 <th>Comentario</th>
                 <th>Acciones</th>
             </tr>
@@ -76,6 +78,8 @@
                         No
                         {% endif %}
                     </td>
+                    <td class="text-end">{{ material.material.ultimo_precio|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.material.minimo_precio|redondear|intcomma }}</td>
                     <td>
                         {% if material.comentario  != None %}
                             {{ material.comentario }}

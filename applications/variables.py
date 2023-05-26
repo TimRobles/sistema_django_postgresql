@@ -356,6 +356,11 @@ TIPO_PAGO_RECIBO = (
     (5, 'LIQUIDACION'),
     )
 
+YEARS = (
+    (2022, '2022'),
+    (2023, '2023'),
+)
+
 MESES = (
     (1, 'ENERO'),
     (2, 'FEBRERO'),

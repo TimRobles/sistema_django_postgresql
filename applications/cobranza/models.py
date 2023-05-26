@@ -147,6 +147,7 @@ class Nota(models.Model):
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=3)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
+    pendiente_usar = models.BooleanField('Saldo Pendiente para Usar', default=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Nota_created_by', editable=False)
@@ -166,8 +167,9 @@ class Nota(models.Model):
     
     @property
     def usado(self):
-        if self.pagos.aggregate(Sum('monto'))['monto__sum']:
-            return self.pagos.aggregate(Sum('monto'))['monto__sum']
+        pagos = self.pagos
+        if pagos.aggregate(Sum('monto'))['monto__sum']:
+            return pagos.aggregate(Sum('monto'))['monto__sum']
         else:
             return Decimal('0.00')
 
@@ -194,6 +196,7 @@ class Ingreso(models.Model):
     comision = models.DecimalField('Comisión', max_digits=5, decimal_places=2, default=Decimal('0.00'))
     voucher = ResizedImageField(force_format="WEBP", quality=75, upload_to=INGRESO_VOUCHER, blank=True, null=True)
     es_pago = models.BooleanField('Para pagar Deudas', default=False)
+    pendiente_usar = models.BooleanField('Saldo Pendiente para Usar', default=True)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=3)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -226,8 +229,9 @@ class Ingreso(models.Model):
     
     @property
     def usado(self):
-        if self.pagos.aggregate(Sum('monto'))['monto__sum']:
-            return self.pagos.aggregate(Sum('monto'))['monto__sum']
+        pagos = self.pagos
+        if pagos.aggregate(Sum('monto'))['monto__sum']:
+            return pagos.aggregate(Sum('monto'))['monto__sum']
         else:
             return Decimal('0.00')
 
@@ -300,14 +304,6 @@ class Deuda(models.Model):
         verbose_name = 'Deuda'
         verbose_name_plural = 'Deudas'
         ordering = ['-fecha_deuda']
-
-    @property
-    def tipo(self):
-        if self.content_type == ContentType.objects.get_for_model(Ingreso):
-            return 1
-        if self.content_type == ContentType.objects.get_for_model(Nota):
-            return 2
-        return None
 
     @property
     def pagos(self):
@@ -467,6 +463,14 @@ class Pago(models.Model):
             ]
 
     @property
+    def tipo(self):
+        if self.content_type == ContentType.objects.get_for_model(Ingreso):
+            return 1
+        if self.content_type == ContentType.objects.get_for_model(Nota):
+            return 2
+        return None
+
+    @property
     def ingreso_nota(self):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
@@ -479,6 +483,31 @@ class Pago(models.Model):
 
     def __str__(self):
         return "%s" % (self.monto)
+
+def actualizar_estado_cancelado(*args, **kwargs):
+    obj = kwargs['instance']
+    deuda = obj.deuda
+    if deuda.saldo == Decimal('0.00'):
+        deuda.estado_cancelado = True
+    else:
+        deuda.estado_cancelado = False
+    deuda.save()
+
+def actualizar_pendiente_usar(*args, **kwargs):
+    obj = kwargs['instance']
+    ingreso_nota = obj.ingreso_nota
+    if ingreso_nota.saldo == Decimal('0.00'):
+        ingreso_nota.pendiente_usar = False
+    else:
+        ingreso_nota.pendiente_usar = True
+    ingreso_nota.save()
+
+post_save.connect(actualizar_estado_cancelado, sender=Pago)
+post_save.connect(actualizar_estado_cancelado, sender=Redondeo)
+post_delete.connect(actualizar_estado_cancelado, sender=Pago)
+post_delete.connect(actualizar_estado_cancelado, sender=Redondeo)
+post_save.connect(actualizar_pendiente_usar, sender=Pago)
+post_delete.connect(actualizar_pendiente_usar, sender=Pago)
 
 
 class PagoProveedor(models.Model):

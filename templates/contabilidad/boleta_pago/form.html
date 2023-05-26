@@ -1,17 +1,24 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
+{% block arriba %}
+<input type="button" class="btn btn-success" id="calcular" value="Calcular">
+{% endblock arriba %}    
+
+
+{% block abajo %}
+<span id="aporte_obligatorio">{{ aporte_obligatorio }}</span>
+<span id="comision_flujo_mixta">{{ comision_flujo_mixta }}</span>
+<span id="comision_flujo">{{ comision_flujo }}</span>
+<span id="prima_seguro">{{ prima_seguro }}</span>
+<span id="tipo_comision">{{ tipo_comision }}</span>
+<span id="rmv">{{ rmv }}</span>
+<span id="essalud">{{ essalud }}</span>
+<span id="asignacion_familiar">{{ asignacion_familiar }}</span>
+<span id="planilla">{{ planilla }}</span>
+<span id="movilidad">{{ movilidad }}</span>
+{% endblock abajo %}
+    
 {% block js %}
-    <script>
-        $(function () {
-
-            $("#id_usuario").select2({
-                width: '100%',
-                dropdownParent: $(".modal-body"),
-                matcher: buscar_select2
-            });
-            });
-    </script>
-
-
+<script src="{% static 'js/contabilidad/boleta_pago/form.js' %}?{{ cache_bust }}"></script>
 {% endblock js %}
