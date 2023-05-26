@@ -1,0 +1,26 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tipo_tarea in contexto_tipo_tarea %}
+        <tr>
+            <td>{{ tipo_tarea.nombre }}</td>
+            <td>
+                <button data-form-url="{% url 'tarea_app:tipo_tarea_actualizar' tipo_tarea.id %}"
+                    data-table-url="{% url 'tarea_app:tipo_tarea_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
