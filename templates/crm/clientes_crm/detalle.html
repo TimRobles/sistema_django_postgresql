@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Cliente CRM
+{% endblock titulo %}
+
+{% block contenido %}
+    <h1>{{ contexto_cliente_crm}}</h1>
+    <div id="tabla">
+        {% include 'crm/clientes_crm/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
