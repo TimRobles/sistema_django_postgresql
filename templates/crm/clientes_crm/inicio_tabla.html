@@ -1,0 +1,43 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Razón Social</th>
+            <th>RUC</th>
+            <th>Medio</th>
+            <th>País</th>
+            <th>Fecha Registro</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in contexto_pagina %}
+        <tr>
+            <td>{{ cliente.cliente_crm.razon_social }}</td>
+            <td>{{ cliente.cliente_crm.numero_documento }}</td>
+            <td>{{ cliente.get_medio_display }}</td>
+            <td>
+                {% if cliente.pais %}
+                {{ cliente.cliente_crm.pais }}
+                {% endif %}
+            </td>
+            <td>{{ cliente.cliente_crm.created_at|date:'d/m/Y'}}</td>
+            <td class="text-center">{{ cliente.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'crm_app:cliente_crm_actualizar' cliente.id %}"
+                    data-table-url="{% url 'crm_app:cliente_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <a href="{% url 'crm_app:cliente_crm_detalle' cliente.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -398,6 +398,21 @@ ESTADO_RECIBO_CAJA_CHICA = (
         (3, 'PAGADO'),
     )
 
+MEDIO = (
+    (1, 'FACEBOOK'),
+    (2, 'INSTAGRAM'),
+    (3, 'LLAMADA'),
+    (4, 'WEBINAR'),
+    (5, 'EVENTO ISP'),
+)
+
+ESTADOS_CLIENTE_CRM = (
+    (1, 'NUEVO'),
+    (2, 'POTENCIAL'),
+    (3, 'INTERESADO'),
+    (4, 'FINAL'),
+    (5, 'ESTRELLA'),
+)
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'

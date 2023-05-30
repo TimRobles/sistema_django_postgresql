@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Tipo de Tarea
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Tipo de Tarea
+        <button data-form-url="{% url 'tarea_app:tipo_tarea_registrar' %}"
+            data-table-url="{% url 'tarea_app:tipo_tarea_tabla' %}"
+            class="create badge bg-primary">
+            Registrar 
+        </button>
+    </h3>
+
+    {% include 'includes/paginador.html' %}
+    <div class="table-responsive" id="tabla">
+        {% include 'tarea/tipo_tarea/inicio_tabla.html' %}
+    </div>
+    {% include 'includes/paginador inferior.html' %}
+    
+{% endblock contenido %}
+    

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Clientes CRM
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Clientes CRM
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'crm_app:cliente_crm_registrar' %}"
+            data-table-url="{% url 'crm_app:cliente_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}">
+            Registrar
+        </button>
+    </h3>
+    <br>
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'crm_app:cliente_crm_inicio' %}">Limpiar</a>
+    </form>
+    <br>
+
+    {% include 'includes/paginador.html' %}
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'crm/clientes_crm/inicio_tabla.html' %}
+    </div>
+    
+    {% include 'includes/paginador inferior.html' %}
+    
+{% endblock contenido %}
