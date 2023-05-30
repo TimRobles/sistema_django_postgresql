@@ -369,7 +369,7 @@ class BoletaPagoListView(FormView):
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
-            condicion = Q(created_by = filtro_usuario)
+            condicion = Q(datos_planilla__usuario = filtro_usuario)
             boleta_pago = boleta_pago.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 
@@ -430,7 +430,7 @@ def BoletaPagoTabla(request):
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
-            condicion = Q(created_by = filtro_usuario)
+            condicion = Q(datos_planilla__usuario = filtro_usuario)
             boleta_pago = boleta_pago.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 

@@ -43,7 +43,10 @@ def diccionario_tipo_documento(value):
 
 @register.filter
 def filename(value):
-    return os.path.basename(value.file.name)
+    try:
+        return os.path.basename(value.file.name)
+    except:
+        return "NO SE ENCONTRÓ EL ARCHIVO"
 
 @register.filter
 def numeroXn(numero, n):
