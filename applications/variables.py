@@ -193,6 +193,11 @@ ESTADO_COMPROBANTE = (
     (2, 'ANULADO'),
     )
 
+ESTADO_DOCUMENTO = (
+    (1, 'PENDIENTE'),
+    (2, 'ANULADO'),
+    )
+
 ESTADO_COMPROBANTE_PI = (
     (0, 'BORRADOR'),
     (1, 'PENDIENTE'),

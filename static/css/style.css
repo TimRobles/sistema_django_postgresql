@@ -68,3 +68,8 @@
 .columna-auto{
     width: auto !important;
 }
+
+.columna-grande{
+    width: auto !important;
+    min-width: 350px !important;
+}

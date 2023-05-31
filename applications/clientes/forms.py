@@ -52,7 +52,7 @@ class ClienteForm(BSModalModelForm):
 
     def clean_tipo_documento(self):
         tipo_documento = self.cleaned_data.get('tipo_documento')
-        if tipo_documento == '-' or tipo_documento == '0':
+        if tipo_documento == '-' or tipo_documento == '0' or tipo_documento == '4':
             self.fields['numero_documento'].required = False
             self.fields['ubigeo'].required = False
         else:
@@ -82,15 +82,22 @@ class ClienteForm(BSModalModelForm):
 class ClienteBuscarForm(forms.Form):
     razon_social = forms.CharField(label = 'Razón Social', max_length=100, required=False)
     ruc = forms.CharField(label = 'RUC', max_length=100, required=False)
+    ubigeo = forms.ModelChoiceField(queryset=Distrito.objects.none(), required=False)
     pais = forms.ModelChoiceField(queryset=Pais.objects.all(), required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
         filtro_ruc = kwargs.pop('filtro_ruc')
+        filtro_ubigeo = kwargs.pop('filtro_ubigeo')
         filtro_pais = kwargs.pop('filtro_pais')
         super(ClienteBuscarForm, self).__init__(*args, **kwargs)
         self.fields['razon_social'].initial = filtro_razon_social
         self.fields['ruc'].initial = filtro_ruc
+        try:
+            self.fields['ubigeo'].queryset = Distrito.objects.filter(codigo=filtro_ubigeo)
+            self.fields['ubigeo'].initial = Distrito.objects.get(codigo=filtro_ubigeo)
+        except:
+            pass
         self.fields['pais'].initial = filtro_pais
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

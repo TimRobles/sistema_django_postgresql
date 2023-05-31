@@ -32,3 +32,41 @@
     {% include 'includes/paginador inferior.html' %}
     
 {% endblock contenido %}
+
+{% block extrajs %}
+<script>
+    $(function () {
+
+        $("#id_ubigeo").select2({
+            width: '100%',
+            matcher: buscar_select2,
+            ajax: {
+                url: "{% url 'datos_globales_app:distrito_json' %}",
+                dataType: 'json',
+                type: "GET",
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {id: item.id, text: item.nombre}
+                        })
+                    };
+                }
+            },
+            minimumInputLength: 3,
+        });
+            
+    });
+    function select_form() {
+        combos = document.getElementsByClassName('select2');
+        for (let index = 0; index < combos.length; index++) {
+            const element = combos[index];
+            element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control columna-grande');
+            element.className = element.className.replace('select2-container--default', 'form-control columna-grande');
+        }
+    }
+
+    setTimeout(() => {
+        select_form();
+    }, 500);
+</script>
+{% endblock extrajs %}
