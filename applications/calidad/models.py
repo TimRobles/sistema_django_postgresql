@@ -121,6 +121,13 @@ class Serie(models.Model):
             return ""
 
     @property
+    def estado_serie(self):
+        try:
+            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie
+        except:
+            return None
+
+    @property
     def numero_estado(self):
         if self.HistorialEstadoSerie_serie.all():
             return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.numero_estado
@@ -150,11 +157,16 @@ class Serie(models.Model):
 
     @property
     def cliente(self):
-        if self.serie_movimiento_almacen.all():
-            ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
-            if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO' or ultimo_movimiento.tipo_stock.descripcion == 'CORRECCION DE SERIE':
-                return self.serie_movimiento_almacen.latest('id').documento_proceso.cliente
-        return ""
+        try:
+            if self.serie_movimiento_almacen.all():
+                ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
+                if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO' or ultimo_movimiento.tipo_stock.descripcion == 'CORRECCION DE SERIE':
+                    return self.serie_movimiento_almacen.latest('id').documento_proceso.cliente
+                elif ultimo_movimiento.tipo_stock.descripcion == 'BLOQUEO RECLAMO CLIENTE':
+                    return self.serie_movimiento_almacen.all().order_by('-id')[2].documento_proceso.cliente
+            return ""
+        except:
+            return ""
 
     @property
     def documento(self):

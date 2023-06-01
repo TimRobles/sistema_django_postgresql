@@ -101,4 +101,5 @@ urlpatterns = [
     path('stock/tipo_stock/<int:id_material>/<int:id_sociedad>/<int:id_almacen>/<int:id_tipo_stock>/', views.StockTipoStockView, name='stock_tipo_stock'),
 
     path('series/<pk>/', views.MaterialSeriesView.as_view(), name='series'),
+    path('series/ver/<int:id_material>/', views.MaterialSeriesVerView.as_view(), name='series_ver'),
 ]

@@ -1651,6 +1651,50 @@ def ValidarSeriesTraspasoStockDetailTabla(request, pk):
         return JsonResponse(data)
 
 
+class ValidarSeriesTraspasoStockSeriesPdf(View):
+    def get(self, request, *args, **kwargs):
+        obj = TraspasoStock.objects.get(id=self.kwargs['pk'])
+
+        color = obj.sociedad.color
+        titulo = 'REGISTRO DE SERIES DE EQUIPOS'
+        vertical = True
+        logo = [obj.sociedad.logo.url]
+        pie_pagina = obj.sociedad.pie_pagina
+
+        titulo = "%s - %s - %s" % (titulo, numeroXn(obj.nro_traspaso, 6), obj.encargado)
+
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(obj, ContentType.objects.get_for_model(TraspasoStock))
+        series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        
+        texto_cabecera = 'Series registradas:'
+        
+        series_final = {}
+        for serie in series_unicas:
+            if not serie.producto in series_final:
+                series_final[serie.producto] = []
+            series_final[serie.producto].append(serie.serie_base)
+
+        TablaEncabezado = ['DOCUMENTO',
+                           'FECHA',
+                           'ENCARGADO',
+                           ]
+
+        TablaDatos = []
+        TablaDatos.append(numeroXn(obj.nro_traspaso, 6))
+        TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
+        TablaDatos.append(obj.encargado)
+        
+        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
+
+        return respuesta
+
+
 class ValidarSeriesTraspasoStockDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('traslado_producto.delete_validarseriesenviotrasladoproductodetalle')
     model = ValidarSerieTraspasoStockDetalle

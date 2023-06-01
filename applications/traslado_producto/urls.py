@@ -13,6 +13,7 @@ urlSeries = [
 
     path('validar-series/traspaso-stock/detalle/<pk>/', views.ValidarSeriesTraspasoStockDetailView.as_view(), name='validar_series_traspaso_stock_detalle'),
     path('validar-series/traspaso-stock/detalle-tabla/<pk>/', views.ValidarSeriesTraspasoStockDetailTabla, name='validar_series_traspaso_stock_detalle_tabla'),
+    path('validar-series/traspaso-stock/pdf/<pk>/', views.ValidarSeriesTraspasoStockSeriesPdf.as_view(), name='validar_series_traspaso_stock_pdf'),
     path('validar-series-detalle/traspaso-stock/eliminar/<pk>/', views.ValidarSeriesTraspasoStockDetalleDeleteView.as_view(), name='validar_series_traspaso_stock_detalle_eliminar'),
 ]
 

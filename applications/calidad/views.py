@@ -1555,7 +1555,7 @@ class NotaControlCalidadStockSeriesPdf(View):
             if obj.proveedor.ruc:
                 tipo_documento = "RUC"
 
-        texto_cabecera = 'La empresa MULTICABLE PERU SAC certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:'
+        texto_cabecera = f'La empresa {obj.sociedad} certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:'
         
         series_final = {}
         for serie in series_unicas:

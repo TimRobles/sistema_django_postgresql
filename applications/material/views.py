@@ -1,5 +1,6 @@
 from decimal import Decimal
 import json
+from django.core.paginator import Paginator
 from applications.calidad.models import Serie
 from applications.funciones import obtener_atributos, registrar_excepcion
 from applications.importaciones import *
@@ -16,7 +17,7 @@ from ..orden_compra.models import OrdenCompraDetalle
 from ..comprobante_compra.models import ComprobanteCompraCI, ComprobanteCompraPIDetalle, ComprobanteCompraPI
 
 from .forms import (
-    MaterialBuscarForm, ModeloForm, MarcaForm,MaterialForm, ProductoSunatBuscarForm,
+    MaterialBuscarForm, MaterialSeriesBuscarForm, ModeloForm, MarcaForm,MaterialForm, ProductoSunatBuscarForm,
     RelacionMaterialComponenteForm,EspecificacionForm,
     DatasheetForm,DatosImportacionForm,ProductoSunatForm,
     ImagenMaterialForm,VideoMaterialForm,ProveedorMaterialForm,EquivalenciaUnidadForm,IdiomaMaterialForm,
@@ -1771,6 +1772,87 @@ class MaterialSeriesView(PermissionRequiredMixin, BSModalReadView):
         context['titulo'] = "Series"
         context['material'] = self.object
         context['series'] = series
+        return context
+
+
+class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
+    permission_required = ('material.view_material')
+    template_name = "material/series_material_ver.html"
+    form_class = MaterialSeriesBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(MaterialSeriesVerView, self).get_form_kwargs()
+        kwargs['serie'] = self.request.GET.get('serie')
+        kwargs['sociedad'] = self.request.GET.get('sociedad')
+        kwargs['estado'] = self.request.GET.get('estado')
+        kwargs['almacen'] = self.request.GET.get('almacen')
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super(MaterialSeriesVerView, self).get_context_data(**kwargs)
+        material = Material.objects.get(id=self.kwargs['id_material'])
+        series = Serie.objects.filter(
+            content_type = material.content_type,
+            id_registro = material.id,
+        ).order_by('serie_base')
+
+        filtro_serie = self.request.GET.get('serie')
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_estado = self.request.GET.get('estado')
+        filtro_almacen = self.request.GET.get('almacen')
+
+        contexto_filtro = []
+
+        if filtro_serie:
+            condicion = Q(serie_base = filtro_serie.upper())
+            series = series.filter(condicion)
+            contexto_filtro.append("serie=" + filtro_serie)
+
+        if filtro_sociedad:
+            condicion = Q(sociedad = filtro_sociedad.upper())
+            series = series.filter(condicion)
+            contexto_filtro.append("serie=" + filtro_sociedad)
+
+        if filtro_almacen:
+            series_id = []
+            for serie in series:
+                if serie.almacen:
+                    if str(serie.almacen.id) == filtro_almacen:
+                        series_id.append(serie.id)
+            series = series.filter(id__in=series_id)
+            contexto_filtro.append("almacen=" + filtro_almacen)
+
+        if filtro_estado:
+            series_id = []
+            for serie in series:
+                if serie.estado_serie:
+                    if str(serie.estado_serie.id) == filtro_estado:
+                        series_id.append(serie.id)
+            series = series.filter(id__in=series_id)
+            contexto_filtro.append("estado=" + filtro_estado)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  20 # Show 10 objects per page.
+
+        if len(series) > objectsxpage:
+            paginator = Paginator(series, objectsxpage)
+            page_number = self.request.GET.get('page')
+            series = paginator.get_page(page_number)
+
+        context['titulo'] = "Series"
+        context['material'] = material
+        context['series'] = series
+        context['contexto_pagina'] = series
         return context
 
 
