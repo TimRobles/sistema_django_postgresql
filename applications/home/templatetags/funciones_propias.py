@@ -86,7 +86,8 @@ def nombre_usuario(usuario):
             return usuario.get_full_name()
         return usuario.username
     except:
-        return usuario.username
+        print(usuario)
+        return usuario
 
 @register.filter
 def atributo(field):
