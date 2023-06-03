@@ -191,11 +191,13 @@ ESTADO_NOTA_INGRESO = (
 ESTADO_COMPROBANTE = (
     (1, 'PENDIENTE'),
     (2, 'ANULADO'),
+    (3, 'FINALIZADO'),
     )
 
 ESTADO_DOCUMENTO = (
     (1, 'PENDIENTE'),
     (2, 'ANULADO'),
+    (3, 'FINALIZADO'),
     )
 
 ESTADO_COMPROBANTE_PI = (

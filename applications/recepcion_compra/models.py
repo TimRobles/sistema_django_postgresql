@@ -103,6 +103,7 @@ class FotoRecepcionCompra(models.Model):
 
 class DocumentoReclamo(models.Model):
     recepcion_compra = models.ForeignKey(RecepcionCompra, on_delete=models.CASCADE)
+    nro_documento_reclamo = models.IntegerField()
     fecha_documento = models.DateField('Fecha de Documento', auto_now=False, auto_now_add=False)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='DocumentoReclamo_usuario')
     observaciones = models.TextField(blank=True, null=True)
@@ -123,11 +124,16 @@ class DocumentoReclamo(models.Model):
 
 
 class DocumentoReclamoDetalle(models.Model):
-    documento_reclamo = models.ForeignKey(DocumentoReclamo, on_delete=models.CASCADE)
+    TIPO_RECLAMO_DETALLE = (
+        (-1, 'DEFECTO'),
+        (1, 'EXCESO'),
+    )
+    documento_reclamo = models.ForeignKey(DocumentoReclamo, on_delete=models.CASCADE, related_name='DocumentoReclamoDetalle_documento_reclamo')
     item = models.IntegerField()
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
+    tipo = models.IntegerField(choices=TIPO_RECLAMO_DETALLE)
     precio_unitario_sin_igv = models.DecimalField('Precio unitario sin igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
     precio_unitario_con_igv = models.DecimalField('Precio unitario con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
     precio_final_con_igv = models.DecimalField('Precio final con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))

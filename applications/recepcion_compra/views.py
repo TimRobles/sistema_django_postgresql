@@ -1,3 +1,4 @@
+from decimal import Decimal
 from applications.funciones import numeroXn, registrar_excepcion
 from applications.links import link_detalle
 from applications.home.templatetags.funciones_propias import filename
@@ -5,7 +6,7 @@ from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.recepcion_compra.forms import ArchivoRecepcionCompraForm, FotoRecepcionCompraForm, RecepcionCompraAnularForm, RecepcionCompraGenerarNotaIngresoForm
-from .models import FotoRecepcionCompra, RecepcionCompra, ArchivoRecepcionCompra
+from .models import DocumentoReclamo, DocumentoReclamoDetalle, FotoRecepcionCompra, RecepcionCompra, ArchivoRecepcionCompra
 
 # Create your views here.
 
@@ -233,3 +234,108 @@ class RecepcionCompraGenerarNotaIngresoView(PermissionRequiredMixin, BSModalForm
         context['accion'] = "Recibir"
         context['titulo'] = "Comprobante de Compra"
         return context
+
+
+class RecepcionCompraGenerarDocumentoReclamoView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.view_documentoreclamo')
+    template_name = "includes/eliminar generico.html"
+    model = RecepcionCompra
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('recepcion_compra_app:documento_reclamo_detalle', kwargs={'pk':self.kwargs['documento'].id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                recepcion_compra = self.get_object()
+                numero_documento = len(DocumentoReclamo.objects.all()) + 1
+                documento = DocumentoReclamo.objects.create(
+                    nro_documento_reclamo = numero_documento,
+                    recepcion_compra = recepcion_compra,
+                    fecha_documento=date.today(),
+                    usuario=self.request.user,
+                    estado=1,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                materiales = recepcion_compra.content_type.model_class().objects.ver_detalle(recepcion_compra.id_registro)
+                for material in materiales:
+                    if material.exceso == Decimal('0.00') and material.pendiente > Decimal('0.00'):
+                        cantidad = material.pendiente
+                        tipo = -1
+                    elif material.exceso > Decimal('0.00') and material.pendiente == Decimal('0.00'):
+                        cantidad = material.exceso
+                        tipo = 1
+                    elif material.exceso == Decimal('0.00') and material.pendiente == Decimal('0.00'):
+                        continue
+
+                    DocumentoReclamoDetalle.objects.create(
+                        documento_reclamo=documento,
+                        item=material.item,
+                        content_type=ContentType.objects.get_for_model(material.producto),
+                        id_registro=material.producto.id,
+                        cantidad=cantidad,
+                        tipo=tipo,
+                        precio_unitario_sin_igv=material.precio_unitario_sin_igv,
+                        precio_unitario_con_igv=material.precio_unitario_con_igv,
+                        precio_final_con_igv=material.precio_final_con_igv,
+                        descuento=material.descuento,
+                        sub_total=material.sub_total,
+                        igv=material.igv,
+                        total=material.total,
+                        tipo_igv=material.tipo_igv,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                self.kwargs['documento'] = documento
+                self.request.session['primero'] = False
+            return HttpResponseRedirect(self.get_success_url())
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.get_object().id})
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RecepcionCompraGenerarDocumentoReclamoView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Documento de Reclamo"
+        context['texto'] = ""
+        return context
+
+
+class DocumentoReclamoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('recepcion_compra.view_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "recepcion_compra/documento_reclamo/detalle.html"
+    context_object_name = 'contexto_recepcion_compra'
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = self.get_object().DocumentoReclamoDetalle_documento_reclamo.all()
+        context['regresar'] = link_detalle(ContentType.objects.get_for_model(self.get_object()), self.get_object().recepcion_compra.id)
+        return context
+    
+
+def DocumentoReclamoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'recepcion_compra/documento_reclamo/detalle_tabla.html'
+        context = {}
+        documento_reclamo = DocumentoReclamo.objects.get(id = pk)
+        context['contexto_recepcion_compra'] = documento_reclamo
+        context['materiales'] = documento_reclamo.DocumentoReclamoDetalle_documento_reclamo.all()
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
