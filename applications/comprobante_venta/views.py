@@ -1639,7 +1639,7 @@ class BoletaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
         buscar_boletas = FacturaVenta.objects.filter(
             serie_comprobante=boleta_actual.serie_comprobante,).filter(
             Q(estado=2) | Q(estado=1)).exclude(
-                numero_factura__gte=boleta_actual.numero_factura,
+                numero_boleta__gte=boleta_actual.numero_boleta,
             )
         if len(buscar_boletas) > 0:
             error_envio_nubefact = True

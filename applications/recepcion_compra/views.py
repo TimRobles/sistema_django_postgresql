@@ -311,6 +311,19 @@ class RecepcionCompraGenerarDocumentoReclamoView(PermissionRequiredMixin, BSModa
         return context
 
 
+class DocumentoReclamoListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('recepcion_compra.view_documentoreclamo')
+    template_name = "recepcion_compra/documento_reclamo/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoDetailView, self).get_context_data(**kwargs)
+        recepcion_compra = RecepcionCompra.objects.get(id=self.kwargs['id_recepcion'])
+        documento_reclamos = DocumentoReclamo.objects.filter(recepcion_compra=recepcion_compra)
+        context['documento_reclamos'] = documento_reclamos
+        context['regresar'] = link_detalle(ContentType.objects.get_for_model(documento_reclamos.latest('id')), documento_reclamos.latest('id').recepcion_compra.id)
+        return context
+
+
 class DocumentoReclamoDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('recepcion_compra.view_documentoreclamo')
     model = DocumentoReclamo

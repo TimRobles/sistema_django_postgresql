@@ -102,7 +102,7 @@ class FotoRecepcionCompra(models.Model):
 
 
 class DocumentoReclamo(models.Model):
-    recepcion_compra = models.ForeignKey(RecepcionCompra, on_delete=models.CASCADE)
+    recepcion_compra = models.ForeignKey(RecepcionCompra, on_delete=models.CASCADE, related_name='DocumentoReclamo_recepcion_compra')
     nro_documento_reclamo = models.IntegerField()
     fecha_documento = models.DateField('Fecha de Documento', auto_now=False, auto_now_add=False)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='DocumentoReclamo_usuario')
