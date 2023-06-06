@@ -1636,7 +1636,7 @@ class BoletaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
             if not detalle.codigo_producto_sunat:
                 error_codigo_sunat = True
 
-        buscar_boletas = FacturaVenta.objects.filter(
+        buscar_boletas = BoletaVenta.objects.filter(
             serie_comprobante=boleta_actual.serie_comprobante,).filter(
             Q(estado=2) | Q(estado=1)).exclude(
                 numero_boleta__gte=boleta_actual.numero_boleta,
