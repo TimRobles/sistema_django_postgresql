@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from applications.funciones import ver_proveedor
+from applications.funciones import numeroXn, ver_proveedor
 from applications.rutas import ARCHIVO_RECEPCION_COMPRA_ARCHIVO, FOTO_RECEPCION_COMPRA_FOTO
 
 from applications.variables import ESTADO_COMPROBANTE, ESTADO_DOCUMENTO, TIPO_IGV_CHOICES
@@ -120,7 +120,7 @@ class DocumentoReclamo(models.Model):
         verbose_name_plural = 'Documentos de Reclamos'
 
     def __str__(self):
-        return f"{self.recepcion_compra}"
+        return f"DOCUMENTO DE RECLAMO {numeroXn(self.nro_documento_reclamo, 6)}"
 
 
 class DocumentoReclamoDetalle(models.Model):

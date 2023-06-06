@@ -316,9 +316,10 @@ class DocumentoReclamoListView(PermissionRequiredMixin, TemplateView):
     template_name = "recepcion_compra/documento_reclamo/inicio.html"
     
     def get_context_data(self, **kwargs):
-        context = super(DocumentoReclamoDetailView, self).get_context_data(**kwargs)
+        context = super(DocumentoReclamoListView, self).get_context_data(**kwargs)
         recepcion_compra = RecepcionCompra.objects.get(id=self.kwargs['id_recepcion'])
         documento_reclamos = DocumentoReclamo.objects.filter(recepcion_compra=recepcion_compra)
+        context['recepcion_compra'] = recepcion_compra
         context['documento_reclamos'] = documento_reclamos
         context['regresar'] = link_detalle(ContentType.objects.get_for_model(documento_reclamos.latest('id')), documento_reclamos.latest('id').recepcion_compra.id)
         return context
@@ -328,7 +329,7 @@ class DocumentoReclamoDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('recepcion_compra.view_documentoreclamo')
     model = DocumentoReclamo
     template_name = "recepcion_compra/documento_reclamo/detalle.html"
-    context_object_name = 'contexto_recepcion_compra'
+    context_object_name = 'contexto_documento_reclamo'
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoReclamoDetailView, self).get_context_data(**kwargs)
@@ -343,7 +344,7 @@ def DocumentoReclamoDetailTabla(request, pk):
         template = 'recepcion_compra/documento_reclamo/detalle_tabla.html'
         context = {}
         documento_reclamo = DocumentoReclamo.objects.get(id = pk)
-        context['contexto_recepcion_compra'] = documento_reclamo
+        context['contexto_documento_reclamo'] = documento_reclamo
         context['materiales'] = documento_reclamo.DocumentoReclamoDetalle_documento_reclamo.all()
         
         data['table'] = render_to_string(
@@ -352,3 +353,19 @@ def DocumentoReclamoDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
+
+class DocumentoReclamoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self) -> str:
+        return link_detalle(ContentType.objects.get_for_model(self.get_object()), self.get_object().recepcion_compra.id)
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Documento de Reclamo'
+        context['item'] = self.get_object()
+        return context

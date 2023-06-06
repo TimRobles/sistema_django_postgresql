@@ -17,7 +17,6 @@
         class="delete btn btn-danger">
         Anular Recepción
     </button>
-    
     {% if contexto_recepcion_compra.DocumentoReclamo_recepcion_compra.all %}
         <a href="{% url 'recepcion_compra_app:documento_reclamo_lista' contexto_recepcion_compra.id %}" class="btn btn-primary">Ver Documentos de Reclamo</a>    
     {% endif %}

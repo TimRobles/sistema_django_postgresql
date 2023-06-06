@@ -6,7 +6,7 @@
             <tr>
                 <th>Fecha</th>
                 <th>Comprobante</th>
-                <th>Número de Comprobante</th>
+                <th>Número de Documento</th>
                 <th>Proveedor</th>
                 <th>Interlocutor</th>
                 <th>Sociedad</th>
@@ -15,16 +15,16 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ contexto_recepcion_compra.fecha_recepcion|date:'d/m/Y' }}</td>
-                <td>{{ contexto_recepcion_compra.content_type.name }}</td>
-                <td>{{ contexto_recepcion_compra.numero_comprobante_compra }}</td>
-                <td>{{ contexto_recepcion_compra.proveedor }}</td>
-                <td>{{ contexto_recepcion_compra.interlocutor_proveedor }}</td>
-                <td>{{ contexto_recepcion_compra.sociedad }}</td>
+                <td>{{ contexto_documento_reclamo.fecha_documento|date:'d/m/Y' }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra }}</td>
+                <td>{{ contexto_documento_reclamo.nro_documento_reclamo|numeroXn:6 }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra.proveedor }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra.interlocutor_proveedor }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra.sociedad }}</td>
                 <td class="text-center">
-                    {{ contexto_recepcion_compra.get_estado_display }}
-                    {% if contexto_recepcion_compra.motivo_anulacion %}
-                        - {{ contexto_recepcion_compra.motivo_anulacion }}
+                    {{ contexto_documento_reclamo.get_estado_display }}
+                    {% if contexto_documento_reclamo.motivo_anulacion %}
+                        - {{ contexto_documento_reclamo.motivo_anulacion }}
                     {% endif %}
                 </td>
             </tr>
@@ -33,9 +33,9 @@
 </div>
 <br>
 <h4>Observaciones:</h4>
-<p>{{ contexto_recepcion_compra.observaciones }}</p>
+<p>{{ contexto_documento_reclamo.observaciones }}</p>
 <br>
-<h3>Materiales</h3>
+<h3>Productos en Exceso</h3>
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -43,24 +43,45 @@
                 <th>Item</th>
                 <th>Material</th>
                 <th>Unidad</th>
-                <th class="text-nowrap">Cantidad Adquirida</th>
-                <th class="text-nowrap">Cantidad Contada</th>
-                <th>Pendiente</th>
-                <th>Exceso</th>
+                <th class="text-end text-nowrap">Cantidad Exceso</th>
             </tr>
         </thead>
         <tbody>
             {% for material in materiales %}
+            {% if material.tipo == 1 %}
                 <tr>
-
                     <td>{{ material.item}}</td>
-                    <td>{{ material.material.descripcion_venta }}</td>
-                    <td>{{ material.material.unidad_base }}</td>
+                    <td>{{ material.producto.descripcion_venta }}</td>
+                    <td>{{ material.producto.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.contado|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.exceso|redondear|intcomma }}</td>
                 </tr>
+            {% endif %}
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>Productos en Defecto</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th class="text-end text-nowrap">Cantidad Defecto</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+            {% if material.tipo == -1 %}
+                <tr>
+                    <td>{{ material.item}}</td>
+                    <td>{{ material.producto.descripcion_venta }}</td>
+                    <td>{{ material.producto.unidad_base }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                </tr>
+            {% endif %}
             {% endfor %}    
         </tbody>
     </table>
@@ -68,8 +89,8 @@
 <br>
 <h3>
     Archivos
-    <button data-form-url="{% url 'recepcion_compra_app:archivo_recepcion_compra_crear' contexto_recepcion_compra.id %}"
-        data-table-url="{% url 'recepcion_compra_app:recepcion_compra_detalle_tabla' contexto_recepcion_compra.id %}"
+    <button data-form-url="{% url 'recepcion_compra_app:archivo_recepcion_compra_crear' contexto_documento_reclamo.id %}"
+        data-table-url="{% url 'recepcion_compra_app:recepcion_compra_detalle_tabla' contexto_documento_reclamo.id %}"
         class="create badge bg-primary">
         Agregar Archivo
     </button>
@@ -103,8 +124,8 @@
 <br>
 <h3>
     Fotos
-    <button data-form-url="{% url 'recepcion_compra_app:foto_recepcion_compra_crear' contexto_recepcion_compra.id %}"
-        data-table-url="{% url 'recepcion_compra_app:recepcion_compra_detalle_tabla' contexto_recepcion_compra.id %}"
+    <button data-form-url="{% url 'recepcion_compra_app:foto_recepcion_compra_crear' contexto_documento_reclamo.id %}"
+        data-table-url="{% url 'recepcion_compra_app:recepcion_compra_detalle_tabla' contexto_documento_reclamo.id %}"
         class="create badge bg-primary">
         Agregar Foto
     </button>

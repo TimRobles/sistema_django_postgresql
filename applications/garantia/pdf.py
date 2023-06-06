@@ -77,7 +77,10 @@ def dataIngresoReclamoGarantia(series, fuenteBase, color):
         fila = []
         fila.append(parrafoCentro(dato.serie.serie_base, fuenteBase))
         fila.append(parrafoCentro(dato.comentario, fuenteBase))
-        fila.append(parrafoCentro(f"{dato.documento.descripcion} {dato.documento.fecha.strftime('%d/%m/%Y')}", fuenteBase))
+        try:    
+            fila.append(parrafoCentro(f"{dato.documento.descripcion} {dato.documento.fecha.strftime('%d/%m/%Y')}", fuenteBase))
+        except:
+            fila.append(parrafoCentro(f"SIN DOCUMENTO", fuenteBase))
         data.append(fila)
 
     t_items=Table(

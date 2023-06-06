@@ -196,7 +196,7 @@ ESTADO_COMPROBANTE = (
 
 ESTADO_DOCUMENTO = (
     (1, 'PENDIENTE'),
-    (2, 'ANULADO'),
+    (2, 'ACTIVO'),
     (3, 'FINALIZADO'),
     )
 

@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load funciones_propias %}
 
 {% block titulo %}
     Documentos de Reclamo
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Documentos de Reclamo - {{ contexto_recepcion_compra }}</h3>
+    <h3>Documentos de Reclamo - {{ recepcion_compra }}</h3>
     
     <div id="tabla">
         <table class="table">
@@ -17,12 +18,26 @@
                     <th>Observaciones</th>
                     <th>Motivo de Anulación</th>
                     <th>Estado</th>
+                    <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
+                {% for documento_reclamo in documento_reclamos %}
                 <tr>
-                    
+                    <td>{{ documento_reclamo.fecha_documento|date:'d/m/Y' }}</td>
+                    <td>{{ documento_reclamo.nro_documento_reclamo|numeroXn:6 }}</td>
+                    <td>{{ documento_reclamo.usuario|nombre_usuario }}</td>
+                    <td>{{ documento_reclamo.observaciones }}</td>
+                    <td>{{ documento_reclamo.motivo_anulacion }}</td>
+                    <td>{{ documento_reclamo.get_estado_display }}</td>
+                    <td class="text-center text-nowrap">
+                        <a href="{% url 'recepcion_compra_app:documento_reclamo_detalle' documento_reclamo.id %}"
+                        class="btn btn-sm btn-info">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    </td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

@@ -6,15 +6,15 @@
 
 {% block contenido %}
     <h3>Documento de Reclamo</h3>
-    <button data-form-url="{% url 'recepcion_compra_app:recepcion_compra_generar_nota_credito' contexto_recepcion_compra.id %}"
+    <button data-form-url="{% url 'recepcion_compra_app:recepcion_compra_generar_nota_credito' contexto_documento_reclamo.id %}"
         class="delete btn btn-primary">
         Cerrar Documento
     </button>
     
-    {% if contexto_recepcion_compra.estado == 1 %}
-    <button data-form-url="{% url 'recepcion_compra_app:recepcion_compra_anular' contexto_recepcion_compra.id %}"
+    {% if contexto_documento_reclamo.estado == 1 %}
+    <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_eliminar' contexto_documento_reclamo.id %}"
         class="delete btn btn-danger">
-        Anular Documento
+        Eliminar Documento
     </button>
     {% endif %}
     <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>

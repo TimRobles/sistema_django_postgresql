@@ -22,4 +22,5 @@ urlpatterns = [
     path('documento-reclamo/lista/<id_recepcion>/', views.DocumentoReclamoListView.as_view(), name='documento_reclamo_lista'),
     path('documento-reclamo/detalle/<pk>/', views.DocumentoReclamoDetailView.as_view(), name='documento_reclamo_detalle'),
     path('documento-reclamo/detalle/tabla/<pk>/', views.DocumentoReclamoDetailTabla, name='documento_reclamo_detalle_tabla'),
+    path('documento-reclamo/eliminar/<pk>/', views.DocumentoReclamoDeleteView.as_view(), name='documento_reclamo_eliminar'),
 ]
