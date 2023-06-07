@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.shortcuts import render
 from django import forms
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
-from applications.comprobante_venta.models import FacturaVentaDetalle
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta, FacturaVentaDetalle
 from applications.home.templatetags.funciones_propias import nombre_usuario, redondear
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
@@ -1624,6 +1624,24 @@ class CotizacionVentaConfirmarAnularView(PermissionRequiredMixin, BSModalDeleteV
     template_name = "includes/form generico.html"   
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_factura = False
+        error_boleta = False
+        context['titulo'] = 'Error de guardar'
+        confirmaciones_venta = ConfirmacionVenta.objects.filter(
+            cotizacion_venta = self.get_object(),
+        )
+        for confirmacion_venta in confirmaciones_venta:
+            if len(FacturaVenta.objects.filter(confirmacion=confirmacion_venta).exclude(estado=3)) > 0:
+                error_factura = True
+            if len(BoletaVenta.objects.filter(confirmacion=confirmacion_venta).exclude(estado=3)) > 0:
+                error_boleta = True
+        if error_factura:
+            context['texto'] = 'Hay Facturas sin anular.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_boleta:
+            context['texto'] = 'Hay Boletas sin anular.'
+            return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1677,7 +1695,7 @@ class CotizacionVentaConfirmarAnularView(PermissionRequiredMixin, BSModalDeleteV
     def get_context_data(self, **kwargs):
         context = super(CotizacionVentaConfirmarAnularView, self).get_context_data(**kwargs)
         context['accion'] = "Anular"
-        context['titulo'] = "Confirmar de Cotización"
+        context['titulo'] = "Confirmación de Cotización"
         context['texto'] = "¿Está seguro de Anular la Confirmar de la cotización?"
         context['item'] = "Cotización %s - %s" % (numeroXn(self.object.numero_cotizacion, 6), self.object.cliente)
         return context

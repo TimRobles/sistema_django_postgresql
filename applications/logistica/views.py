@@ -939,6 +939,14 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
     form_class = NotaSalidaAnularForm
 
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_despacho = False
+        context['titulo'] = 'Error de guardar'
+        if len(Despacho.objects.filter(nota_salida=self.get_object()).exclude(estado=3)) > 0:
+            error_despacho = True
+        if error_despacho:
+            context['texto'] = 'Hay Despachos sin anular.'
+            return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
