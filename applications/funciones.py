@@ -14,6 +14,7 @@ from django.contrib import messages
 import sys
 
 def consulta_ruc(ruc):
+    sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
     url = "https://api.apis.net.pe/v1/ruc?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
@@ -45,6 +46,7 @@ def consulta_ruc(ruc):
 #     }
 
 def consulta_dni(dni):
+    sleep(2)
     token = "7c95cc7e139486c8b86f15f9d96ec096" #Libre
     url = "https://api.apifacturacion.com/dni/"
     data = {"token" : "%s" % token}
@@ -65,6 +67,7 @@ def consulta_dni(dni):
 #     }
 
 def consulta_dni2(dni):
+    sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
     url = "https://api.apis.net.pe/v1/dni?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
@@ -100,6 +103,7 @@ def consulta_dni2(dni):
 #}
 
 def consulta_sunat_tipo_cambio(fecha: date):
+    sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
     url = "https://api.apis.net.pe/v1/tipo-cambio-sunat?fecha="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
@@ -485,3 +489,12 @@ def get_datetime(date_time):
     fecha_split = fecha.split('-')
     hora_split = hora.split(':')
     return datetime(int(fecha_split[0]), int(fecha_split[1]), int(fecha_split[2]), int(hora_split[0]), int(hora_split[1]))
+
+
+def buscar_diccionario(diccionario, objeto):
+    print(diccionario, objeto)
+    for k, v in diccionario:
+        print(k, v)
+        if v.upper() == objeto.upper():
+            return k
+    return None

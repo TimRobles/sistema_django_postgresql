@@ -1,6 +1,7 @@
 import requests
 from django.core.paginator import Paginator
 from django import forms
+from applications.clientes.funciones import validar_estado_ruc
 from applications.comprobante_venta.funciones import anular_nubefact, consultar_guia, guia_nubefact
 from applications.funciones import registrar_excepcion
 from applications.importaciones import*
@@ -296,6 +297,8 @@ class GuiaTransportistaView(PermissionRequiredMixin, BSModalUpdateView):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['pk']})
 
     def form_valid(self, form):
+        if form.instance.transportista:
+            validar_estado_ruc(form.instance.transportista)
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -667,6 +670,7 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
+        error_transportista_estado = False
         error_direccion_partida = False
         error_direccion_destino = False
         error_ubigeo_partida = False
@@ -678,6 +682,8 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
         error_transportista_placa_numero_cero_guion = False
         error_transporte_privado = False
         context['titulo'] = 'Error de guardar'
+        if self.get_object().transportista.estado_sunat != 1:
+            error_transportista_estado = True
         if not self.get_object().direccion_partida:
             error_direccion_partida = True
         if not self.get_object().direccion_destino:
@@ -702,6 +708,9 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
                 error_transporte_privado = True
     
 
+        if error_transportista_estado:
+            context['texto'] = 'Ingrese una Transportista con estado Activo'
+            return render(request, 'includes/modal sin permiso.html', context)
         if error_direccion_partida:
             context['texto'] = 'Ingrese una Dirección de partida'
             return render(request, 'includes/modal sin permiso.html', context)

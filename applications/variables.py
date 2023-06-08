@@ -93,7 +93,7 @@ CONDICION_SUNAT = (
 
 ESTADO_SUNAT = (
     (1, 'Activo'),
-    (2, 'Suspensión temporal'),
+    (2, 'Suspension temporal'),
     (3, 'Baja provisional'),
     (4, 'Baja definitiva'),
     (5, 'Baja provisional de oficio'),

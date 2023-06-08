@@ -3,6 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 from django.shortcuts import render
 from django import forms
+from applications.clientes.funciones import validar_estado_ruc
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta, FacturaVentaDetalle
 from applications.home.templatetags.funciones_propias import nombre_usuario, redondear
@@ -343,6 +344,8 @@ class CotizacionVentaClienteView(PermissionRequiredMixin, BSModalUpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        if form.instance.cliente:
+            validar_estado_ruc(form.instance.cliente)
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -704,11 +707,17 @@ class CotizacionVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
+        error_cliente_estado = False
         error_tipo_cambio = False
         context['titulo'] = 'Error de guardar'
+        if self.get_object().cliente.estado_sunat != 1:
+            error_cliente_estado = True
         if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
             error_tipo_cambio = True
 
+        if error_cliente_estado:
+            context['texto'] = 'El cliente no está Activo.'
+            return render(request, 'includes/modal sin permiso.html', context)
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
             return render(request, 'includes/modal sin permiso.html', context)

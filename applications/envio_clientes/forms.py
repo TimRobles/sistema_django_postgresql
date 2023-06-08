@@ -9,6 +9,8 @@ class TransportistaForm(BSModalModelForm):
             'tipo_documento',
             'numero_documento',
             'razon_social',
+            'estado_sunat',
+            'condicion_sunat',
             )
 
     def __init__(self, *args, **kwargs):

@@ -369,3 +369,19 @@ class DocumentoReclamoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['titulo'] = 'Documento de Reclamo'
         context['item'] = self.get_object()
         return context
+
+
+class DocumentoReclamoCerrarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self) -> str:
+        return link_detalle(ContentType.objects.get_for_model(self.get_object()), self.get_object().recepcion_compra.id)
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoCerrarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Documento de Reclamo'
+        context['item'] = self.get_object()
+        return context
