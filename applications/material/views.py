@@ -230,7 +230,7 @@ def MaterialTabla(request):
         if filtro:
             condicion = Q(descripcion_venta__unaccent__icontains = filtro.split(" ")[0]) | Q(descripcion_corta__unaccent__icontains = filtro.split(" ")[0]) | Q(marca__nombre__unaccent__icontains = filtro.split(" ")[0]) | Q(modelo__nombre__unaccent__icontains = filtro.split(" ")[0])
             for palabra in filtro.split(" ")[1:]:
-                condicion &= Q(descripcion_venta__unaccent__icontains = palabra) | Q(descripcion_corta__unaccent__icontains = palabra) | Q(marca__nombre_unaccent__icontains = palabra) | Q(modelo__nombre__unaccent__icontains = palabra)
+                condicion &= Q(descripcion_venta__unaccent__icontains = palabra) | Q(descripcion_corta__unaccent__icontains = palabra) | Q(marca__nombre__unaccent__icontains = palabra) | Q(modelo__nombre__unaccent__icontains = palabra)
             materiales = materiales.filter(condicion)
             contexto_filtro.append("buscar=" + filtro)
 
