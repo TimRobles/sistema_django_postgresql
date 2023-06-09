@@ -1,5 +1,6 @@
 from datetime import date, datetime
 import json
+from time import sleep
 import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
