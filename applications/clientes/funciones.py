@@ -9,8 +9,12 @@ def validar_estado_ruc(obj):
     request = Request
     request.method = 'GET'
     ruc = obj.numero_documento
-    data = consulta_ruc(ruc)
-    print(data)
-    obj.estado_sunat = buscar_diccionario(ESTADO_SUNAT, data['estado'])
-    obj.condicion_sunat = buscar_diccionario(CONDICION_SUNAT, data['condicion'])
-    obj.save()
+    if obj.tipo_documento == '6':
+        try:
+            data = consulta_ruc(ruc)
+            print(data)
+            obj.estado_sunat = buscar_diccionario(ESTADO_SUNAT, data['estado'])
+            obj.condicion_sunat = buscar_diccionario(CONDICION_SUNAT, data['condicion'])
+            obj.save()
+        except:
+            pass
