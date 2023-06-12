@@ -167,7 +167,22 @@ def nota_credito_detalle_post_save(*args, **kwargs):
     obj.nota_credito.total = respuesta['total']
     obj.nota_credito.save()
 
+def nota_credito_detalle_post_delete(sender, instance, *args, **kwargs):
+    obj = instance
+    respuesta = obtener_totales(obj.nota_credito)
+    obj.nota_credito.total_descuento = respuesta['total_descuento']
+    obj.nota_credito.total_anticipo = respuesta['total_anticipo']
+    obj.nota_credito.total_gravada = respuesta['total_gravada']
+    obj.nota_credito.total_inafecta = respuesta['total_inafecta']
+    obj.nota_credito.total_exonerada = respuesta['total_exonerada']
+    obj.nota_credito.total_igv = respuesta['total_igv']
+    obj.nota_credito.total_gratuita = respuesta['total_gratuita']
+    obj.nota_credito.otros_cargos = respuesta['total_otros_cargos']
+    obj.nota_credito.total = respuesta['total']
+    obj.nota_credito.save()
+
 post_save.connect(nota_credito_detalle_post_save, sender=NotaCreditoDetalle)
+post_delete.connect(nota_credito_detalle_post_delete, sender=NotaCreditoDetalle)
 
 
 class NotaDebito(models.Model):

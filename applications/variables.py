@@ -196,7 +196,7 @@ ESTADO_COMPROBANTE = (
 
 ESTADO_DOCUMENTO = (
     (1, 'PENDIENTE'),
-    (2, 'ACTIVO'),
+    (2, 'CONFIRMADO'),
     (3, 'FINALIZADO'),
     )
 
@@ -494,6 +494,8 @@ MENSAJE_CONCLUIR_CHEQUE_FISICO = 'Operación exitosa: El Cheque Fisico fue concl
 MENSAJE_SOLICITAR_CHEQUE= 'Operación exitosa: El Cheque fue Solicitado.'
 MENSAJE_EDITAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Abierto.'
 MENSAJE_POR_CERRAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Por Cerrar.'
+
+MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO = 'Operación exitosa: El Documento de Reclamo fue Confirmado.'
 
 
 COLOR_DEFAULT = '#028A0F'

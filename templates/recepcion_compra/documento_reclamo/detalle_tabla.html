@@ -44,6 +44,13 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th class="text-end text-nowrap">Cantidad Exceso</th>
+                <th class="text-end text-nowrap">Precio Final</th>
+                <th class="text-end text-nowrap">Total</th>
+                <th class="text-end text-nowrap">Factor</th>
+                <th class="text-end text-nowrap">Adicional</th>
+                <th class="text-end text-nowrap">Nuevo Total</th>
+                <th>Acción</th>
+                <th class="text-center text-nowrap">Editar</th>
             </tr>
         </thead>
         <tbody>
@@ -54,6 +61,29 @@
                     <td>{{ material.producto.descripcion_venta }}</td>
                     <td>{{ material.producto.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.factor|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.adicional|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.nuevo_total|redondear|intcomma }}</td>
+                    <td>{{ material.get_accion_display }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_documento_reclamo.estado == 2 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+
+                        {% if contexto_documento_reclamo.estado == 3 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar_monto' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+                    </td>
                 </tr>
             {% endif %}
             {% endfor %}    
@@ -70,6 +100,13 @@
                 <th>Material</th>
                 <th>Unidad</th>
                 <th class="text-end text-nowrap">Cantidad Defecto</th>
+                <th class="text-end text-nowrap">Precio Final</th>
+                <th class="text-end text-nowrap">Total</th>
+                <th class="text-end text-nowrap">Factor</th>
+                <th class="text-end text-nowrap">Adicional</th>
+                <th class="text-end text-nowrap">Nuevo Total</th>
+                <th>Acción</th>
+                <th class="text-center text-nowrap">Editar</th>
             </tr>
         </thead>
         <tbody>
@@ -80,6 +117,31 @@
                     <td>{{ material.producto.descripcion_venta }}</td>
                     <td>{{ material.producto.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.factor|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.adicional|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.nuevo_total|redondear|intcomma }}</td>
+                    <td>{{ material.get_accion_display }}</td>
+                    <td class="text-center text-nowrap">
+                        
+                        {% if contexto_documento_reclamo.estado == 2 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+
+                        {% if contexto_documento_reclamo.estado == 3 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar_monto' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+                            
+                    </td>
                 </tr>
             {% endif %}
             {% endfor %}    

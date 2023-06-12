@@ -6,12 +6,28 @@
 
 {% block contenido %}
     <h3>Documento de Reclamo</h3>
-    <button data-form-url="{% url 'recepcion_compra_app:recepcion_compra_generar_nota_credito' contexto_documento_reclamo.id %}"
-        class="delete btn btn-primary">
-        Cerrar Documento
-    </button>
     
+    {% if contexto_documento_reclamo.estado == 3 %}
+    <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_finalizar_revertir' contexto_documento_reclamo.id %}"
+        class="delete btn btn-danger">
+        Revertir Finalizar Documento
+    </button>
+    {% endif %}
+    {% if contexto_documento_reclamo.estado == 2 %}
+    <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_finalizar' contexto_documento_reclamo.id %}"
+        class="delete btn btn-danger">
+        Finalizar Documento
+    </button>
+    <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_confirmar_revertir' contexto_documento_reclamo.id %}"
+        class="delete btn btn-danger">
+        Revertir Confirmar Documento
+    </button>
+    {% endif %}
     {% if contexto_documento_reclamo.estado == 1 %}
+    <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_confirmar' contexto_documento_reclamo.id %}"
+        class="delete btn btn-primary">
+        Confirmar Documento
+    </button>
     <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_eliminar' contexto_documento_reclamo.id %}"
         class="delete btn btn-danger">
         Eliminar Documento

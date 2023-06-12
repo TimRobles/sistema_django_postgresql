@@ -14,8 +14,6 @@ function seleccionar_nota(nota) {
 }
 
 function calcular(monto) {
-    console.log($('#moneda')[0].innerHTML);
-    console.log($('#id_monto')[0].parentElement.children[0].innerHTML.split(' ')[1]);
     if ($('#moneda')[0].innerHTML == $('#id_monto')[0].parentElement.children[0].innerHTML.split(' ')[1]) {
         monto_final.value = monto.value;
     } else if ($('#moneda')[0].innerHTML == '$') {
@@ -42,3 +40,21 @@ texto_monto_final = $('#monto_final')[0].parentElement.children[0];
 texto_monto_final.innerHTML = 'Moneda Final ' + $('#moneda')[0].innerHTML;
 
 seleccionar_nota($('#id_nota')[0])
+
+function select_form() {
+    console.log('Seleccionar')
+    combos = document.getElementsByClassName('select2');
+    for (let index = 0; index < combos.length; index++) {
+        const element = combos[index];
+        element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control');
+        element.className = element.className.replace('select2-container--default', 'form-control');
+        element.className = element.className.replace('select2-container--focus', '');
+        element.className = element.className.replace('select2-selection--single', '');
+    }
+}
+
+setTimeout(() => {
+    select_form();
+}, 500);
+
+select_form();

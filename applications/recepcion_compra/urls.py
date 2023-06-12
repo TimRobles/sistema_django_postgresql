@@ -23,4 +23,11 @@ urlpatterns = [
     path('documento-reclamo/detalle/<pk>/', views.DocumentoReclamoDetailView.as_view(), name='documento_reclamo_detalle'),
     path('documento-reclamo/detalle/tabla/<pk>/', views.DocumentoReclamoDetailTabla, name='documento_reclamo_detalle_tabla'),
     path('documento-reclamo/eliminar/<pk>/', views.DocumentoReclamoDeleteView.as_view(), name='documento_reclamo_eliminar'),
+    path('documento-reclamo/confirmar/<pk>/', views.DocumentoReclamoConfirmarView.as_view(), name='documento_reclamo_confirmar'),
+    path('documento-reclamo/confirmar/revertir/<pk>/', views.DocumentoReclamoConfirmarRevertirView.as_view(), name='documento_reclamo_confirmar_revertir'),
+    path('documento-reclamo/finalizar/<pk>/', views.DocumentoReclamoFinalizarView.as_view(), name='documento_reclamo_finalizar'),
+    path('documento-reclamo/finalizar/revertir/<pk>/', views.DocumentoReclamoFinalizarRevertirView.as_view(), name='documento_reclamo_finalizar_revertir'),
+    
+    path('documento-reclamo/detalle/actualizar/<pk>/', views.DocumentoReclamoDetalleUpdateView.as_view(), name='documento_reclamo_detalle_actualizar'),
+    path('documento-reclamo/detalle/actualizar/monto/<pk>/', views.DocumentoReclamoDetalleMontoUpdateView.as_view(), name='documento_reclamo_detalle_actualizar_monto'),
 ]
