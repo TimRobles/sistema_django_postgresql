@@ -44,6 +44,11 @@ class RecepcionCompra(models.Model):
         return documento.sociedad
 
     @property
+    def moneda(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return documento.moneda
+
+    @property
     def documento(self):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return documento
@@ -122,6 +127,20 @@ class DocumentoReclamo(models.Model):
     @property
     def fecha(self):
         return self.fecha_documento
+    
+    @property
+    def total_exceso(self):
+        suma = Decimal('0.00')
+        for detalle in self.DocumentoReclamoDetalle_documento_reclamo.filter(tipo=1):
+            suma += detalle.nuevo_total
+        return suma
+    
+    @property
+    def total_defecto(self):
+        suma = Decimal('0.00')
+        for detalle in self.DocumentoReclamoDetalle_documento_reclamo.filter(tipo=-1):
+            suma += detalle.nuevo_total
+        return suma
 
     def __str__(self):
         return f"DOCUMENTO DE RECLAMO {numeroXn(self.nro_documento_reclamo, 6)}"

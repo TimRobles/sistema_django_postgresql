@@ -1,5 +1,5 @@
 from decimal import Decimal
-from applications.funciones import numeroXn, registrar_excepcion
+from applications.funciones import calculos_linea, igv, numeroXn, registrar_excepcion
 from applications.links import link_detalle
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
@@ -275,7 +275,8 @@ class RecepcionCompraGenerarDocumentoReclamoView(PermissionRequiredMixin, BSModa
                         tipo = 1
                     elif material.exceso == Decimal('0.00') and material.pendiente == Decimal('0.00'):
                         continue
-
+                    
+                    calculos = calculos_linea(cantidad, material.precio_unitario_con_igv, material.precio_final_con_igv, igv(documento.fecha), material.tipo_igv)
                     DocumentoReclamoDetalle.objects.create(
                         documento_reclamo=documento,
                         item=material.item,
@@ -283,13 +284,13 @@ class RecepcionCompraGenerarDocumentoReclamoView(PermissionRequiredMixin, BSModa
                         id_registro=material.producto.id,
                         cantidad=cantidad,
                         tipo=tipo,
-                        precio_unitario_sin_igv=material.precio_unitario_sin_igv,
+                        precio_unitario_sin_igv=calculos['precio_unitario_sin_igv'],
                         precio_unitario_con_igv=material.precio_unitario_con_igv,
                         precio_final_con_igv=material.precio_final_con_igv,
-                        descuento=material.descuento,
-                        sub_total=material.sub_total,
-                        igv=material.igv,
-                        total=material.total,
+                        descuento=calculos['subtotal'],
+                        sub_total=calculos['descuento'],
+                        igv=calculos['igv'],
+                        total=calculos['total'],
                         tipo_igv=material.tipo_igv,
                         created_by = self.request.user,
                         updated_by = self.request.user,

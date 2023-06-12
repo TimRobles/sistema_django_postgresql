@@ -60,12 +60,12 @@
                     <td>{{ material.item}}</td>
                     <td>{{ material.producto.descripcion_venta }}</td>
                     <td>{{ material.producto.unidad_base }}</td>
-                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.total|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.factor|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.adicional|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.nuevo_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.factor|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.adicional|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.nuevo_total|redondear|intcomma }}</td>
                     <td>{{ material.get_accion_display }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_documento_reclamo.estado == 2 %}
@@ -88,6 +88,13 @@
             {% endif %}
             {% endfor %}    
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="8" class="text-end">Total:</td>
+                <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ contexto_documento_reclamo.total_exceso|redondear|intcomma }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
     </table>
 </div>
 <br>
@@ -116,12 +123,12 @@
                     <td>{{ material.item}}</td>
                     <td>{{ material.producto.descripcion_venta }}</td>
                     <td>{{ material.producto.unidad_base }}</td>
-                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.precio_final_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.total|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.factor|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.adicional|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.nuevo_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.factor|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.adicional|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.nuevo_total|redondear|intcomma }}</td>
                     <td>{{ material.get_accion_display }}</td>
                     <td class="text-center text-nowrap">
                         
@@ -146,6 +153,13 @@
             {% endif %}
             {% endfor %}    
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="8" class="text-end">Total:</td>
+                <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ contexto_documento_reclamo.total_defecto|redondear|intcomma }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
     </table>
 </div>
 <br>
