@@ -1,8 +1,8 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.importaciones import *
-from applications.crm.forms import ClienteCRMBuscarForm, ClienteCRMDetalleForm, ClienteCRMForm
-from applications.crm.models import ClienteCRM, ClienteCRMDetalle
+from applications.crm.forms import ClienteCRMBuscarForm, ClienteCRMDetalleForm, ClienteCRMForm, EventoCRMForm, EventoCRMBuscarForm, EventoCRMDetalleDescripcionForm
+from applications.crm.models import ClienteCRM, ClienteCRMDetalle, EventoCRM
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 class ClienteCRMListView(PermissionRequiredMixin, FormView):
@@ -259,4 +259,200 @@ class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
         context = super(ClienteCRMDetalleCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Detalle Cliente CRM"
+        return context
+    
+
+
+
+class EventoCRMListView(FormView):
+    template_name = "crm/eventos_crm/inicio.html"
+    form_class = EventoCRMBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(EventoCRMListView, self).get_form_kwargs()
+        kwargs['filtro_pais'] = self.request.GET.get('pais')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(EventoCRMListView,self).get_context_data(**kwargs)
+        eventos_crm = EventoCRM.objects.all()
+        
+        filtro_pais = self.request.GET.get('pais')
+        filtro_estado = self.request.GET.get('estado')
+        filtro_fecha_inicio = self.request.GET.get('fecha_inicio')
+        
+        contexto_filtro = []
+
+        if filtro_pais:
+            condicion = Q(pais = filtro_pais)
+            eventos_crm = eventos_crm.filter(condicion)
+            contexto_filtro.append(f"pais={filtro_pais}")        
+        
+        if filtro_estado:
+            condicion = Q(estado__icontains = filtro_estado)
+            eventos_crm = eventos_crm.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_fecha_inicio:
+            condicion = Q(fecha_inicio = filtro_fecha_inicio)
+            eventos_crm = eventos_crm.filter(condicion)
+            contexto_filtro.append(f"fecha_inicio={filtro_fecha_inicio}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(eventos_crm) > objectsxpage:
+            paginator = Paginator(eventos_crm, objectsxpage)
+            page_number = self.request.GET.get('page')
+            eventos_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = eventos_crm
+        context['contexto_evento_crm'] = eventos_crm
+        return context
+
+def EventoCRMTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/eventos_crm/inicio_tabla.html'
+        context = {}
+        eventos_crm = EventoCRM.objects.all()
+
+        filtro_pais = request.GET.get('pais')
+        filtro_estado = request.GET.get('estado')
+        filtro_fecha_inicio = request.GET.get('fecha_inicio')
+
+        contexto_filtro = []
+
+        if filtro_pais:
+            condicion = Q(pais = filtro_pais)
+            eventos_crm = eventos_crm.filter(condicion)
+            contexto_filtro.append(f"pais={filtro_pais}")
+
+        if filtro_estado:
+            condicion = Q(estado__icontains = filtro_estado)
+            eventos_crm = eventos_crm.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_fecha_inicio:
+            condicion = Q(fecha_inicio = filtro_fecha_inicio)
+            eventos_crm = eventos_crm.filter(condicion)
+            contexto_filtro.append(f"fecha_inicio={filtro_fecha_inicio}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(eventos_crm) > objectsxpage:
+            paginator = Paginator(eventos_crm, objectsxpage)
+            page_number = request.GET.get('page')
+            eventos_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = eventos_crm
+        context['contexto_evento_crm'] = eventos_crm
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class EventoCRMCreateView(BSModalCreateView):
+    model = EventoCRM
+    template_name = "includes/formulario generico.html"
+    form_class = EventoCRMForm
+    success_url = reverse_lazy('crm_app:evento_crm_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EventoCRMCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Evento CRM"
+        return context
+
+class EventoCRMUpdateView(BSModalUpdateView):
+    model = EventoCRM
+    template_name = "includes/formulario generico.html"
+    form_class = EventoCRMForm
+    success_url = reverse_lazy('crm_app:evento_crm_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EventoCRMUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Evento CRM"
+        return context
+
+
+
+class EventoCRMDetailView(DetailView):
+    model = EventoCRM
+    template_name = "crm/eventos_crm/detalle.html"
+    context_object_name = 'contexto_evento_crm'
+
+    def get_context_data(self, **kwargs):
+        evento_crm = EventoCRM.objects.get(id = self.kwargs['pk'])
+        context = super(EventoCRMDetailView, self).get_context_data(**kwargs)
+        context['contexto_evento_crm'] = evento_crm
+        
+        return context
+
+def EventoCRMDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/eventos_crm/detalle_tabla.html'
+        context = {}
+        evento_crm = EventoCRM.objects.get(id = pk)
+
+        context['contexto_evento_crm'] = evento_crm
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class  EventoCRMDetalleDescripcionView(BSModalUpdateView):
+    model = EventoCRM
+    template_name = "includes/formulario generico.html"
+    form_class = EventoCRMDetalleDescripcionForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.object.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EventoCRMDetalleDescripcionView, self).get_context_data(**kwargs)
+        context['accion'] = "Descripción"
         return context

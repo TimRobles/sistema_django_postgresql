@@ -421,6 +421,37 @@ ESTADOS_CLIENTE_CRM = (
     (5, 'ESTRELLA'),
 )
 
+ESTADOS_EVENTO_CRM = (
+    (1, 'ASIGNADO'),
+    (2, 'EN PROCESO'),
+    (3, 'FINALIZADO'),
+    )
+
+PRIORIDAD_TAREA = (
+    (1, 'ALTA'),
+    (2, 'MEDIA'),
+    (3, 'BAJA'),
+    )
+    
+ESTADO_TAREA = (
+    (1, 'ASIGNADO'),
+    (2, 'EN PROCESO'),
+    (3, 'FINALIZADO'),
+    )
+    
+MOTIVO_INASISTENCIA = (
+    (1, 'ASISTIO'),
+    (2, 'FALTA'),
+    (3, 'PERMISO'),
+    (4, 'VACACIONES'),
+    )
+
+ESTADO_SOLICITUD_INASISTENCIA = (
+    (1, 'SOLICITADO'),
+    (2, 'APROBADO'),
+    (3, 'RECHAZADO'),
+    )
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'

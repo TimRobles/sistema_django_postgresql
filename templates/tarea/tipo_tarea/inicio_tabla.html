@@ -2,6 +2,8 @@
     <thead>
         <tr>
             <th>Nombre</th>
+            <th>Fecha de Creación</th>
+            <th>Fecha de Modificación</th>
 
             <th class="text-center">Acciones</th>
         </tr>
@@ -10,6 +12,8 @@
         {% for tipo_tarea in contexto_tipo_tarea %}
         <tr>
             <td>{{ tipo_tarea.nombre }}</td>
+            <td>{{ tipo_tarea.created_at|date:'d/m/Y' }}</td>
+            <td>{{ tipo_tarea.updated_at|date:'d/m/Y' }}</td>
             <td>
                 <button data-form-url="{% url 'tarea_app:tipo_tarea_actualizar' tipo_tarea.id %}"
                     data-table-url="{% url 'tarea_app:tipo_tarea_tabla' %}"

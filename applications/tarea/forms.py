@@ -2,8 +2,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 from .models import TipoTarea, Tarea, HistorialComentarioTarea
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
-
+from applications.crm.models import ClienteCRM, EventoCRM
+from applications.datos_globales.models import Area
+from applications.variables import ESTADO_TAREA, PRIORIDAD_TAREA
+from applications.variables import CHOICE_VACIO
+from django.conf import settings
 
 class TipoTareaForm(BSModalModelForm):
     class Meta:
@@ -18,7 +21,68 @@ class TipoTareaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
 
+class TareaBuscarForm(forms.Form):
+    fecha_inicio = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADO_TAREA, required=False)
+    tipo_tarea = forms.ModelChoiceField(queryset=TipoTarea.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_fecha_inicio = kwargs.pop('filtro_fecha_inicio')
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_tipo_tarea = kwargs.pop('filtro_tipo_tarea')
+        super(TareaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['fecha_inicio'].initial = filtro_fecha_inicio
+        self.fields['estado'].initial = filtro_estado
+        self.fields['tipo_tarea'].initial = filtro_tipo_tarea
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class TareaForm(BSModalModelForm):
+    class Meta:
+        model = Tarea
+        fields = (
+            'tipo_tarea',
+            'fecha_inicio',
+            'fecha_limite',
+            'descripcion',
+            'area',
+            'encargado',
+            'apoyo',
+            'prioridad',
+            )
+        
+        widgets = {
+            'fecha_inicio' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            
+            'fecha_limite' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+        
+        
+    def __init__(self, *args, **kwargs):
+        super(TareaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
+
+class TareaActualizarForm(BSModalModelForm):
     class Meta:
         model = Tarea
         fields=(
@@ -48,13 +112,11 @@ class TareaForm(BSModalModelForm):
                 
             }
 
-
     def __init__(self, *args, **kwargs):
-        super(TareaForm, self).__init__(*args, **kwargs)
+        super(TareaActualizarForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
-        self.fields['apoyo'].widget.attrs['class'] = 'form-check'
 
 class TareaDescripcionForm(BSModalModelForm):
     class Meta:
@@ -80,34 +142,32 @@ class HistorialComentarioTareaForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-class TareaClienteForm(BSModalModelForm):
-    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
-    cliente_interlocutor = forms.ModelChoiceField(queryset=ClienteInterlocutor.objects.all(), required=False)
+class TareaAsignarForm(BSModalModelForm):
+    cliente = forms.ModelChoiceField(queryset=ClienteCRM.objects.all(), required=False)
+    evento = forms.ModelChoiceField(queryset=EventoCRM.objects.all(), required=False)
+
     class Meta:
         model = Tarea
         fields = (
             'cliente',
-            'cliente_interlocutor',
-            )
+            'evento',
+        )
 
-    def clean_cliente(self):
-        cliente = self.cleaned_data.get('cliente')
-        if cliente:
-            cliente_interlocutor = self.fields['cliente_interlocutor']
-            lista = []
-            relaciones = ClienteInterlocutor.objects.filter(cliente = cliente.id)
-            for relacion in relaciones:
-                lista.append(relacion.interlocutor.id)
+    def clean(self):
+        cleaned_data = super().clean()
+        cliente = cleaned_data.get('cliente')
+        evento = cleaned_data.get('evento')
 
-            cliente_interlocutor.queryset = InterlocutorCliente.objects.filter(id__in = lista)
-
-        return cliente
-
+        if cliente and evento:
+            self.add_error('cliente', 'Solo puedes asignar una sola opción.')
+            self.add_error('evento', 'Solo puedes asignar una sola opción.')
+            cliente = self.fields['cliente']
+            evento = self.fields['evento']
+        return cleaned_data
+        
     def __init__(self, *args, **kwargs):
-        interlocutor_queryset = kwargs.pop('interlocutor_queryset')
-        interlocutor = kwargs.pop('interlocutor')
-        super(TareaClienteForm, self).__init__(*args, **kwargs)
-        self.fields['cliente_interlocutor'].queryset = interlocutor_queryset
-        self.fields['cliente_interlocutor'].initial = interlocutor
+        super(TareaAsignarForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+

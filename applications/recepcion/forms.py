@@ -9,6 +9,8 @@ from .models import ResponsableAsistencia, Visita, Asistencia
 
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
+from applications.variables import MOTIVO_INASISTENCIA
+
 class VisitaForm(BSModalModelForm):
     class Meta:
         model = Visita
@@ -68,6 +70,7 @@ class AsistenciaForm(BSModalModelForm):
         fields=(
             'usuario',
             'sede',
+            'justificacion',
             )
 
     def __init__(self, *args, **kwargs):
@@ -101,7 +104,7 @@ class AsistenciaBuscarForm(forms.Form):
 
 class AsistenciaPersonalBuscarForm(forms.Form):
     nombre = forms.CharField(max_length=50, required=False)
-    fecha = forms.DateField(
+    fecha_registro = forms.DateField(
         required=False,
         widget = forms.DateInput(
                 attrs ={
@@ -113,10 +116,10 @@ class AsistenciaPersonalBuscarForm(forms.Form):
 
     def __init__(self, *args, **kwargs):     
         filtro_nombre = kwargs.pop('filtro_nombre')
-        filtro_fecha = kwargs.pop('filtro_fecha')
+        filtro_fecha_registro = kwargs.pop('filtro_fecha_registro')
         super(AsistenciaPersonalBuscarForm, self).__init__(*args, **kwargs)
         self.fields['nombre'].initial = filtro_nombre
-        self.fields['fecha'].initial = filtro_fecha
+        self.fields['fecha_registro'].initial = filtro_fecha_registro
         
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -129,9 +132,68 @@ class AsistenciaSalidaForm(BSModalModelForm):
         model = Asistencia
         fields = (
             'sede',
+            'justificacion',
         )
     def __init__(self, *args, **kwargs):
         super(AsistenciaSalidaForm, self).__init__(*args, **kwargs)
         self.fields['sede'].queryset = Sede.objects.filter(estado=1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class InasistenciaForm(BSModalModelForm):
+    motivo_inasistencia = forms.ChoiceField(choices=((None, '--------------------'),) + MOTIVO_INASISTENCIA[1:] )
+    fecha = forms.DateField(
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    class Meta:
+        model = Asistencia
+        fields = (
+            'usuario',
+            'motivo_inasistencia',
+            'fecha',
+            'justificacion',
+            'archivo',
+        )
+
+
+    def __init__(self, *args, **kwargs):
+        super(InasistenciaForm, self).__init__(*args, **kwargs)
+        self.fields['usuario'].queryset = ResponsableAsistencia.objects.get(usuario_responsable = self.request.user).usuario_a_registrar
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class InasistenciaAprobarForm(BSModalModelForm):
+    comentario = forms.CharField(label='Comentario de aprobación',max_length=50,required=False)
+    class Meta:
+        model = Asistencia
+        fields = (
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(InasistenciaAprobarForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class InasistenciaRechazarForm(BSModalModelForm):
+    comentario = forms.CharField(label='Comentario de rechazo',max_length=50,required=True)
+    class Meta:
+        model = Asistencia
+        fields = (
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(InasistenciaRechazarForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+

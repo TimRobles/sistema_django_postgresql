@@ -17,10 +17,11 @@ urlpatterns = [
     path('tarea/detalle/<pk>/', views.TareaDetailView.as_view(), name='tarea_detalle'),
     path('tarea/detalle-tabla/<pk>/', views.TareaDetailTabla, name='tarea_detalle_tabla'),
     
-    path('tarea/descripcion/<pk>/', views.TareaDescripcionView.as_view(), name='tarea_descripcion'),
-    path('tarea/comentario/<int:tarea_id>/', views.HistorialComentarioTareaCreateView.as_view(), name='tarea_comentario'),
-    path('tarea/comentario/actualizar/<pk>/', views.HistorialComentarioTareaUpdateView.as_view(), name='tarea_comentario_actualizar'),
-    path('tarea/comentario/eliminar/<pk>/', views.HistorialComentarioTareaDeleteView.as_view(), name='tarea_comentario_eliminar'),
-
+    path('tarea/detalle/descripcion/<pk>/', views.TareaDetalleDescripcionView.as_view(), name='tarea_detalle_descripcion'),
+    path('tarea/detalle/comentario/<int:tarea_id>/', views.TareaDetalleHistorialComentarioCreateView.as_view(), name='tarea_detalle_comentario'),
+    path('tarea/detalle/comentario/actualizar/<pk>/', views.TareaDetalleHistorialComentarioUpdateView.as_view(), name='tarea_detalle_comentario_actualizar'),
+    path('tarea/detalle/comentario/eliminar/<pk>/', views.TareaDetalleHistorialComentarioDeleteView.as_view(), name='tarea_detalle_comentario_eliminar'),
+    path('tarea/detalle/asignar/<pk>/', views.TareaAsignarView.as_view(), name='tarea_detalle_asignar'),
+    path('tarea/detalle/culminar/<pk>/', views.TareaCulminarUpdateView.as_view(), name='tarea_detalle_culminar'),
 ]
 
