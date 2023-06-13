@@ -682,8 +682,9 @@ class GuiaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
         error_transportista_placa_numero_cero_guion = False
         error_transporte_privado = False
         context['titulo'] = 'Error de guardar'
-        if self.get_object().transportista.estado_sunat != 1:
-            error_transportista_estado = True
+        if self.get_object().transportista:
+            if self.get_object().transportista.estado_sunat != 1:
+                error_transportista_estado = True
         if not self.get_object().direccion_partida:
             error_direccion_partida = True
         if not self.get_object().direccion_destino:
