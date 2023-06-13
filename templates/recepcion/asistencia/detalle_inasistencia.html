@@ -1,0 +1,96 @@
+{% load widget_tweaks %}
+{% load static %}
+
+
+<form id="formulario" action="" enctype="multipart/form-data" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {% block arriba %}
+
+        <h4>{{ contexto_inasistencia.usuario }}</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        {% if contexto_inasistencia.motivo %}
+                        <th class="text-rigth">Motivo</th>
+                        {% endif %}
+                        
+                        {% if contexto_inasistencia.fecha_registro %}
+                        <th class="text-rigth">Fecha</th>
+                        {% endif %}
+                        
+                        {% if contexto_inasistencia.justificacion %}
+                        <th class="text-rigth">Justificación</th>
+                        {% endif %}
+                        
+                        {% if contexto_inasistencia.archivo %}
+                        <th class="text-rigth">Archivo</th>
+                        {% endif %}                        
+                                                
+                        {% if contexto_inasistencia.estado_solicitud %}
+                        <th class="text-rigth">Estado Solicitud</th>
+                        {% endif %}                        
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% if contexto_inasistencia.motivo %}
+                        <td>{{ contexto_inasistencia.get_motivo_inasistencia_display }}</td>
+                        {% endif %}
+                        
+                        {% if contexto_inasistencia.fecha_registro %}
+                        <td>{{ contexto_inasistencia.fecha_registro|date:'d/m/Y'}}</td>
+                        {% endif %}
+                        
+                        {% if contexto_inasistencia.justificacion %}
+                        <td>{{ contexto_inasistencia.justificacion}}</td>
+                        {% endif %}
+                                        
+                        {% if contexto_inasistencia.archivo %}
+                        <td>
+                        <a href="{{ MEDIA_URL }}{{ contexto_inasistencia.archivo }}" target="_blank">Ver Archivo</a>
+                        </td>
+                        {% endif %}                            
+                    
+                        {% if contexto_inasistencia.estado_solicitud %}
+                        <td>
+                            {{ contexto_inasistencia.get_estado_solicitud_display}}
+                        </td>
+                        {% endif %}  
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        
+        {% endblock arriba %}
+        {% include 'includes/formulario.html' %}
+        
+        {% block abajo %}
+                
+        {% if contexto_inasistencia.comentario and contexto_inasistencia.estado_solicitud == 2 %}
+        <h5>Comentario de aprobación:</h5>
+        {% endif %}
+                    
+        {% if contexto_inasistencia.comentario and contexto_inasistencia.estado_solicitud == 3 %}
+        <h5>Comentario de rechazo:</h5>
+        {% endif %}
+            
+        {% if contexto_inasistencia.comentario %}
+        {{ contexto_inasistencia.comentario}}
+        {% endif %}  
+
+        {% endblock abajo %}            
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
+
+

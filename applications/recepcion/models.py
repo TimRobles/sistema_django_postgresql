@@ -1,7 +1,7 @@
 from pyexpat import model
 from django.db import models
 from django.conf import settings
-from applications.variables import TIPO_DOCUMENTO_CHOICES
+from applications.variables import TIPO_DOCUMENTO_CHOICES, MOTIVO_INASISTENCIA, ESTADO_SOLICITUD_INASISTENCIA
 from applications.sociedad.models import Sociedad
 from applications.sede.models import Sede
 from applications.clientes.models import Cliente
@@ -17,6 +17,7 @@ class Visita(models.Model):
     hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True)
     hora_salida = models.TimeField('Hora de Salida', auto_now=False, auto_now_add=False, blank=True, null=True)
     cliente = models.CharField(max_length=100, null=True, blank=True)
+    fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
     fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Visita_created_by', editable=False)
@@ -45,10 +46,15 @@ class Visita(models.Model):
 class Asistencia(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuarios', on_delete=models.PROTECT, related_name='Asistencia_usuario')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT) 
-    hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True)
+    hora_ingreso = models.TimeField('Hora de Ingreso',  auto_now=False, auto_now_add=True, blank=True, null=True)
     hora_salida = models.TimeField('Hora de Salida', auto_now=False, auto_now_add=False, blank=True, null=True)
-    fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
-    sede =  models.ForeignKey(Sede, on_delete=models.PROTECT) 
+    fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=False, blank=True, null=True)
+    sede =  models.ForeignKey(Sede, on_delete=models.PROTECT, blank=True, null=True) 
+    motivo_inasistencia = models.IntegerField('Motivo', choices=MOTIVO_INASISTENCIA, default=1)
+    justificacion = models.CharField('Justificación', max_length=50, blank=True, null=True)
+    archivo = models.FileField('Archivo',upload_to = 'file/asistencia/archivo/', max_length=100, blank=True, null=True)
+    comentario = models.CharField('Comentario', max_length=50, blank=True, null=True)
+    estado_solicitud = models.IntegerField(choices=ESTADO_SOLICITUD_INASISTENCIA,blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Asistencia_created_by', editable=False)

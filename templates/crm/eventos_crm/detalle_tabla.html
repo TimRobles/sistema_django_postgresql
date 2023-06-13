@@ -1,0 +1,93 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th>Fecha Inicio : </th>
+                    <td>
+                        {% if contexto_evento_crm.fecha_inicio %}
+                        {{ contexto_evento_crm.fecha_inicio|date:'d/m/Y'}}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Fecha Cierre : </th>
+                    <td>
+                        {% if contexto_evento_crm.fecha_cierre %}
+                        {{ contexto_evento_crm.fecha_cierre|date:'d/m/Y'}}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Pais : </th>
+                    <td>
+                        {% if contexto_evento_crm.pais %}
+                        {{ contexto_evento_crm.pais }} 
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>                
+                <tr>
+                    <th>Presupuesto Asignado : </th>
+                    <td>
+                        {% if contexto_evento_crm.presupuesto_asignado %}
+                        {{ contexto_evento_crm.presupuesto_asignado }}
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th>Presupuesto Asignado  : </th>
+                    <td>
+                        {% if contexto_evento_crm.presupuesto_utilizado %}
+                        {{ contexto_evento_crm.presupuesto_utilizado }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Estado : </th>
+                    <td>
+                        {% if contexto_evento_crm.estado %}
+                        {{ contexto_evento_crm.get_estado_display }}
+                        {% endif %}
+                    </td>
+                </tr>      
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h4>Descripción
+    <button data-form-url="{% url 'crm_app:evento_crm_detalle_descripcion' contexto_evento_crm.id %}"
+        class="delete btn btn-primary">
+        +  
+    </button>
+</h4>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if contexto_evento_crm.descripcion %}
+                    {{ contexto_evento_crm.descripcion|linebreaks }}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+    
+</div>

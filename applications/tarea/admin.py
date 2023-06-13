@@ -7,6 +7,7 @@ from .models import(
 @admin.register(TipoTarea)
 class TipoTareaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'nombre',
         'created_at',
         'created_by',
@@ -23,6 +24,7 @@ class TipoTareaAdmin(admin.ModelAdmin):
 @admin.register(Tarea)
 class TareaAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'fecha_inicio',
         'fecha_limite',
         'fecha_cierre',

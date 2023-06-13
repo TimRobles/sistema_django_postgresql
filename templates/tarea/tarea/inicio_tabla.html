@@ -4,10 +4,11 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Estado</th>
+            <th>Prioridad</th>
             <th>Fecha Inicio</th>
             <th>Encargado</th>
             <th>Tipo Tarea</th>
-            <th>Estado</th>
             <th>Fecha Limite</th>
             <th>Descripcion</th>
             <th>Asignado por</th>
@@ -18,10 +19,11 @@
     <tbody>
         {% for tarea in contexto_tarea %}
         <tr>
+            <td>{{ tarea.get_estado_display}}</td>
+            <td>{{ tarea.get_prioridad_display}}</td>
             <td>{{ tarea.fecha_inicio|date:'d/m/Y' }}</td>
             <td>{{ tarea.encargado.first_name }}</td>
             <td>{{ tarea.tipo_tarea }}</td>
-            <td>{{ tarea.get_estado_display}}</td>
             <td>{{ tarea.fecha_limite|date:'d/m/Y' }}</td>
             <td>{{ tarea.descripcion }}</td>
             <td>{{ tarea.created_by|nombre_usuario }}</td>

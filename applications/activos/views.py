@@ -200,7 +200,6 @@ class ModeloActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('activos.change_modeloactivo')
     model = ModeloActivo
     template_name = "includes/formulario generico.html"
-    form_class = ModeloActivoForm
     success_url = reverse_lazy('activos_app:modelo_activo_inicio')
 
     def dispatch(self, request, *args, **kwargs):
