@@ -76,6 +76,7 @@ class AsistenciaForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(AsistenciaForm, self).__init__(*args, **kwargs)
         self.fields['usuario'].queryset = ResponsableAsistencia.objects.get(usuario_responsable = self.request.user).usuario_a_registrar
+        self.fields['justificacion'].help_text = 'En caso de tardanza'
         
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
@@ -137,6 +138,7 @@ class AsistenciaSalidaForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(AsistenciaSalidaForm, self).__init__(*args, **kwargs)
         self.fields['sede'].queryset = Sede.objects.filter(estado=1)
+        self.fields['justificacion'].help_text = 'En caso de salir temprano'
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
