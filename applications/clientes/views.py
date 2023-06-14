@@ -44,6 +44,7 @@ class ClienteListView(PermissionRequiredMixin, FormView):
         kwargs = super(ClienteListView, self).get_form_kwargs()
         kwargs['filtro_razon_social'] = self.request.GET.get('razon_social')
         kwargs['filtro_ruc'] = self.request.GET.get('ruc')
+        kwargs['filtro_ubigeo'] = self.request.GET.get('ubigeo')
         kwargs['filtro_pais'] = self.request.GET.get('pais')
         return kwargs
 
@@ -53,6 +54,7 @@ class ClienteListView(PermissionRequiredMixin, FormView):
         
         filtro_razon_social = self.request.GET.get('razon_social')
         filtro_ruc = self.request.GET.get('ruc')
+        filtro_ubigeo = self.request.GET.get('ubigeo')
         filtro_pais = self.request.GET.get('pais')
         
         contexto_filtro = []
@@ -68,6 +70,11 @@ class ClienteListView(PermissionRequiredMixin, FormView):
             condicion = Q(numero_documento__icontains = filtro_ruc)
             clientes = clientes.filter(condicion)
             contexto_filtro.append(f"ruc={filtro_ruc}")
+
+        if filtro_ubigeo:
+            condicion = Q(ubigeo = filtro_ubigeo)
+            clientes = clientes.filter(condicion)
+            contexto_filtro.append(f"ubigeo={filtro_ubigeo}")
 
         if filtro_pais:
             condicion = Q(pais = filtro_pais)
@@ -103,6 +110,7 @@ def ClienteTabla(request):
 
         filtro_razon_social = request.GET.get('razon_social')
         filtro_ruc = request.GET.get('ruc')
+        filtro_ubigeo = request.GET.get('ubigeo')
         filtro_pais = request.GET.get('pais')
 
         contexto_filtro = []
@@ -118,6 +126,11 @@ def ClienteTabla(request):
             condicion = Q(numero_documento__icontains = filtro_ruc)
             clientes = clientes.filter(condicion)
             contexto_filtro.append(f"ruc={filtro_ruc}")
+
+        if filtro_ubigeo:
+            condicion = Q(ubigeo = filtro_ubigeo)
+            clientes = clientes.filter(condicion)
+            contexto_filtro.append(f"ubigeo={filtro_ubigeo}")
 
         if filtro_pais:
             condicion = Q(pais = filtro_pais)

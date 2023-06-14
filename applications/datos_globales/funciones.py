@@ -273,7 +273,6 @@ def actualizarTipoCambioSunat(fecha: date, request):
     if created or not obj.tipo_cambio_venta:
         respuesta = consulta_sunat_tipo_cambio(fecha)
         print(respuesta)
-        sleep(2)
         try:
             venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
             compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))

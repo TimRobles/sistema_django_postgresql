@@ -17,6 +17,14 @@
         class="delete btn btn-danger">
         Anular Recepción
     </button>
+    {% if contexto_recepcion_compra.DocumentoReclamo_recepcion_compra.all %}
+        <a href="{% url 'recepcion_compra_app:documento_reclamo_lista' contexto_recepcion_compra.id %}" class="btn btn-primary">Ver Documentos de Reclamo</a>    
+    {% endif %}
+        
+    <button data-form-url="{% url 'recepcion_compra_app:recepcion_compra_generar_documento_reclamo' contexto_recepcion_compra.id %}"
+        class="delete btn btn-primary">
+        Generar Documento de Reclamo
+    </button>
     {% endif %}
     <a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
     <br>

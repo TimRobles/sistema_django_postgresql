@@ -1,4 +1,7 @@
 from django import forms
+from applications.almacenes.models import Almacen
+from applications.calidad.models import EstadoSerie
+from applications.sociedad.models import Sociedad
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from applications.proveedores.models import Proveedor
@@ -147,6 +150,25 @@ class MaterialBuscarForm(forms.Form):
         filtro = kwargs.pop('filtro') 
         super(MaterialBuscarForm, self).__init__(*args, **kwargs) 
         self.fields['buscar'].initial = filtro 
+        for visible in self.visible_fields(): 
+            visible.field.widget.attrs['class'] = 'form-control' 
+ 
+class MaterialSeriesBuscarForm(forms.Form): 
+    serie = forms.CharField(max_length=150, required=False) 
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    estado = forms.ModelChoiceField(queryset=EstadoSerie.objects.all(), required=False)
+    almacen = forms.ModelChoiceField(queryset=Almacen.objects.filter(estado_alta_baja=1), required=False)
+ 
+    def __init__(self, *args, **kwargs): 
+        serie = kwargs.pop('serie') 
+        sociedad = kwargs.pop('sociedad') 
+        estado = kwargs.pop('estado') 
+        almacen = kwargs.pop('almacen') 
+        super(MaterialSeriesBuscarForm, self).__init__(*args, **kwargs) 
+        self.fields['serie'].initial = serie 
+        self.fields['sociedad'].initial = sociedad 
+        self.fields['estado'].initial = estado 
+        self.fields['almacen'].initial = almacen 
         for visible in self.visible_fields(): 
             visible.field.widget.attrs['class'] = 'form-control' 
  

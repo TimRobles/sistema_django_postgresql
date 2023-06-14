@@ -153,7 +153,7 @@ class RecepcionTrasladoProducto(models.Model):
         return self.envio_traslado_producto.sociedad
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (self.fecha_recepcion.strftime('%d/%m/%Y'), numeroXn(self.id, 6), self.sede_destino, self.responsable)
+        return "%s - %s - %s - %s" % (self.fecha_recepcion.strftime('%d/%m/%Y'), numeroXn(self.numero_recepcion_traslado, 6), self.sede_destino, self.responsable)
 
 
 class RecepcionTrasladoProductoDetalle(models.Model):

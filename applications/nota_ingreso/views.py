@@ -153,8 +153,7 @@ class NotaIngresoAgregarMaterialView(PermissionRequiredMixin, BSModalFormView):
                     contar = 0
 
                 if comprobante_compra_detalle.cantidad < contar + cantidad:
-                    form.add_error('cantidad', 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
-                    return super().form_invalid(form)
+                    messages.warning(self.request, 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
                 
                 nota_ingreso_detalle, created = NotaIngresoDetalle.objects.get_or_create(
                     content_type=content_type,
@@ -250,9 +249,8 @@ class NotaIngresoActualizarMaterialView(PermissionRequiredMixin, BSModalFormView
                     contar = 0
 
                 if comprobante_compra_detalle.cantidad < contar + cantidad:
-                    form.add_error('cantidad', 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
-                    return super().form_invalid(form)
-                
+                    messages.warning(self.request, 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
+                    
                 nota_ingreso_detalle.content_type=content_type
                 nota_ingreso_detalle.id_registro=id_registro
                 nota_ingreso_detalle.cantidad_conteo = cantidad

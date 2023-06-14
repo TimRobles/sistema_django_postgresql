@@ -1,0 +1,234 @@
+{% load humanize %}
+{% load funciones_propias %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Comprobante</th>
+                <th>Número de Documento</th>
+                <th>Proveedor</th>
+                <th>Interlocutor</th>
+                <th>Sociedad</th>
+                <th class="text-center">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_documento_reclamo.fecha_documento|date:'d/m/Y' }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra }}</td>
+                <td>{{ contexto_documento_reclamo.nro_documento_reclamo|numeroXn:6 }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra.proveedor }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra.interlocutor_proveedor }}</td>
+                <td>{{ contexto_documento_reclamo.recepcion_compra.sociedad }}</td>
+                <td class="text-center">
+                    {{ contexto_documento_reclamo.get_estado_display }}
+                    {% if contexto_documento_reclamo.motivo_anulacion %}
+                        - {{ contexto_documento_reclamo.motivo_anulacion }}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h4>Observaciones:</h4>
+<p>{{ contexto_documento_reclamo.observaciones }}</p>
+<br>
+<h3>Productos en Exceso</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th class="text-end text-nowrap">Cantidad Exceso</th>
+                <th class="text-end text-nowrap">Precio Final</th>
+                <th class="text-end text-nowrap">Total</th>
+                <th class="text-end text-nowrap">Factor</th>
+                <th class="text-end text-nowrap">Adicional</th>
+                <th class="text-end text-nowrap">Nuevo Total</th>
+                <th>Acción</th>
+                <th class="text-center text-nowrap">Editar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+            {% if material.tipo == 1 %}
+                <tr>
+                    <td>{{ material.item}}</td>
+                    <td>{{ material.producto.descripcion_venta }}</td>
+                    <td>{{ material.producto.unidad_base }}</td>
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.factor|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.adicional|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.nuevo_total|redondear|intcomma }}</td>
+                    <td>{{ material.get_accion_display }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_documento_reclamo.estado == 2 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+
+                        {% if contexto_documento_reclamo.estado == 3 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar_monto' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+            {% endfor %}    
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="8" class="text-end">Total:</td>
+                <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ contexto_documento_reclamo.total_exceso|redondear|intcomma }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br>
+<h3>Productos en Defecto</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th class="text-end text-nowrap">Cantidad Defecto</th>
+                <th class="text-end text-nowrap">Precio Final</th>
+                <th class="text-end text-nowrap">Total</th>
+                <th class="text-end text-nowrap">Factor</th>
+                <th class="text-end text-nowrap">Adicional</th>
+                <th class="text-end text-nowrap">Nuevo Total</th>
+                <th>Acción</th>
+                <th class="text-center text-nowrap">Editar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+            {% if material.tipo == -1 %}
+                <tr>
+                    <td>{{ material.item}}</td>
+                    <td>{{ material.producto.descripcion_venta }}</td>
+                    <td>{{ material.producto.unidad_base }}</td>
+                    <td class="text-end text-nowrap">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.factor|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ material.adicional|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ material.nuevo_total|redondear|intcomma }}</td>
+                    <td>{{ material.get_accion_display }}</td>
+                    <td class="text-center text-nowrap">
+                        
+                        {% if contexto_documento_reclamo.estado == 2 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+
+                        {% if contexto_documento_reclamo.estado == 3 %}
+                        <button data-form-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_actualizar_monto' material.id %}"
+                            data-table-url="{% url 'recepcion_compra_app:documento_reclamo_detalle_tabla' contexto_documento_reclamo.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% endif %}
+                            
+                    </td>
+                </tr>
+            {% endif %}
+            {% endfor %}    
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="8" class="text-end">Total:</td>
+                <td class="text-end text-nowrap">{{ contexto_documento_reclamo.recepcion_compra.moneda.simbolo }} {{ contexto_documento_reclamo.total_defecto|redondear|intcomma }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br>
+<h3>
+    Archivos
+    <button data-form-url="{% url 'recepcion_compra_app:archivo_recepcion_compra_crear' contexto_documento_reclamo.id %}"
+        data-table-url="{% url 'recepcion_compra_app:recepcion_compra_detalle_tabla' contexto_documento_reclamo.id %}"
+        class="create badge bg-primary">
+        Agregar Archivo
+    </button>
+</h3>    
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Archivo</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for archivo in archivos %}
+            <tr>
+                <td class="text-center">
+                    <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">{{ archivo.archivo|filename }}</a>
+                </td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'recepcion_compra_app:archivo_recepcion_compra_eliminar' archivo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>
+    Fotos
+    <button data-form-url="{% url 'recepcion_compra_app:foto_recepcion_compra_crear' contexto_documento_reclamo.id %}"
+        data-table-url="{% url 'recepcion_compra_app:recepcion_compra_detalle_tabla' contexto_documento_reclamo.id %}"
+        class="create badge bg-primary">
+        Agregar Foto
+    </button>
+</h3>    
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Foto</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for foto in fotos %}
+            <tr>
+                <td class="text-center">
+                    <a href="{{ MEDIA_URL }}{{ foto.foto }}" target="_blank">{{ foto.foto|filename }}</a>
+                </td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'recepcion_compra_app:foto_recepcion_compra_eliminar' foto.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

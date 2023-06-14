@@ -136,7 +136,10 @@ def dataCabeceraNotaSalidaSeries(TablaEncabezado, TablaDatos, fuenteBase, color)
             ]
         )
     t._argW[1]=cmToPx(2.5)
-    t._argW[3]=cmToPx(3)
+    try:
+        t._argW[3]=cmToPx(3)
+    except:
+        pass
 
     return t
 

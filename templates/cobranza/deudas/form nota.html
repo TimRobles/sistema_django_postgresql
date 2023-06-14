@@ -28,6 +28,7 @@
             width:'100%',
             dropdownParent: $(".modal-body"),
             matcher: buscar_select2,
+            placeholder: "Ingresa el monto de la Nota de Cŕedito.",
             ajax: {
                 url: "{% url 'cobranza_app:nota_json' deuda.cliente.id deuda.sociedad.id %}",
                 dataType: 'json',

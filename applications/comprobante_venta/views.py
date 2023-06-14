@@ -661,7 +661,6 @@ class FacturaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
         context['titulo'] = 'Error de guardar'
         if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
             error_tipo_cambio = True
-
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -763,18 +762,33 @@ class FacturaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView)
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
+        factura_actual = self.get_object()
         error_nubefact = False
+        error_envio_nubefact = False
         error_codigo_sunat = False
         context['titulo'] = 'Error de guardar'
-        if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+        if factura_actual.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(factura_actual.sociedad, ContentType.objects.get_for_model(factura_actual)) == 'MANUAL':
             error_nubefact = True
-        for detalle in self.get_object().FacturaVentaDetalle_factura_venta.all():
+        for detalle in factura_actual.FacturaVentaDetalle_factura_venta.all():
             if not detalle.codigo_producto_sunat:
                 error_codigo_sunat = True
+
+        buscar_facturas = FacturaVenta.objects.filter(
+            serie_comprobante=factura_actual.serie_comprobante,).filter(
+            Q(estado=2) | Q(estado=1)).exclude(
+                numero_factura__gte=factura_actual.numero_factura,
+            )
+        if len(buscar_facturas) > 0:
+            error_envio_nubefact = True
 
         if error_nubefact:
             context['texto'] = 'No hay una ruta para envío a NubeFact'
             return render(request, 'includes/modal sin permiso.html', context)
+
+        if error_envio_nubefact:
+            context['texto'] = 'Hay Facturas sin enviar a nubefact.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        
         if error_codigo_sunat:
             context['texto'] = 'Hay productos sin Código de Sunat'
             return render(request, 'includes/modal sin permiso.html', context)
@@ -1611,18 +1625,33 @@ class BoletaVentaNubeFactEnviarView(PermissionRequiredMixin, BSModalDeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
+        boleta_actual = self.get_object()
         error_nubefact = False
+        error_envio_nubefact = False
         error_codigo_sunat = False
         context['titulo'] = 'Error de guardar'
-        if self.get_object().serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(self.get_object().sociedad, ContentType.objects.get_for_model(self.get_object())) == 'MANUAL':
+        if boleta_actual.serie_comprobante.NubefactSerieAcceso_serie_comprobante.acceder(boleta_actual.sociedad, ContentType.objects.get_for_model(boleta_actual)) == 'MANUAL':
             error_nubefact = True
-        for detalle in self.get_object().BoletaVentaDetalle_boleta_venta.all():
+        for detalle in boleta_actual.BoletaVentaDetalle_boleta_venta.all():
             if not detalle.codigo_producto_sunat:
                 error_codigo_sunat = True
+
+        buscar_boletas = BoletaVenta.objects.filter(
+            serie_comprobante=boleta_actual.serie_comprobante,).filter(
+            Q(estado=2) | Q(estado=1)).exclude(
+                numero_boleta__gte=boleta_actual.numero_boleta,
+            )
+        if len(buscar_boletas) > 0:
+            error_envio_nubefact = True
 
         if error_nubefact:
             context['texto'] = 'No hay una ruta para envío a NubeFact'
             return render(request, 'includes/modal sin permiso.html', context)
+        
+        if error_envio_nubefact:
+            context['texto'] = 'Hay Boletas sin enviar a nubefact.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        
         if error_codigo_sunat:
             context['texto'] = 'Hay productos sin Código de Sunat'
             return render(request, 'includes/modal sin permiso.html', context)
