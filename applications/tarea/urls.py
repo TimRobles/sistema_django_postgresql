@@ -22,6 +22,7 @@ urlpatterns = [
     path('tarea/detalle/comentario/actualizar/<pk>/', views.TareaDetalleHistorialComentarioUpdateView.as_view(), name='tarea_detalle_comentario_actualizar'),
     path('tarea/detalle/comentario/eliminar/<pk>/', views.TareaDetalleHistorialComentarioDeleteView.as_view(), name='tarea_detalle_comentario_eliminar'),
     path('tarea/detalle/asignar/<pk>/', views.TareaAsignarView.as_view(), name='tarea_detalle_asignar'),
-    path('tarea/detalle/culminar/<pk>/', views.TareaCulminarUpdateView.as_view(), name='tarea_detalle_culminar'),
+    path('tarea/detalle/finalizar/<pk>/', views.TareaFinalizarUpdateView.as_view(), name='tarea_detalle_finalizar'),
+    path('tarea/iniciar/<pk>/', views.TareaIniciarUpdateView.as_view(), name='tarea_iniciar'),
 ]
 

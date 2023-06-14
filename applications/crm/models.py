@@ -22,7 +22,6 @@ class ClienteCRM(models.Model):
     def __str__(self):
         return self.cliente_crm.razon_social
 
-
 class ClienteCRMDetalle(models.Model):
 
     interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT)
@@ -40,7 +39,6 @@ class ClienteCRMDetalle(models.Model):
 
     def __str__(self):
         return self.interlocutor
-
 
 class EventoCRM(models.Model):
     
@@ -66,3 +64,6 @@ class EventoCRM(models.Model):
 
     def __str__(self):
         return str(self.titulo)
+
+
+

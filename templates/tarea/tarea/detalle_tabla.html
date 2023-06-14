@@ -14,14 +14,14 @@
         
     {% endif %}    
 
-    <!-- {% if contexto_tarea.estado %} -->
+    {% if contexto_tarea.estado == 2 %}
 
-    <button data-form-url="{% url 'tarea_app:tarea_detalle_culminar' contexto_tarea.id %}"
+    <button data-form-url="{% url 'tarea_app:tarea_detalle_finalizar' contexto_tarea.id %}"
         class="delete btn btn-danger">
-        Culminar
+        Finalizar Tarea
     </button>
-        
-    <!-- {% endif %} -->
+
+    {% endif %}
         
 </h3>
 
@@ -32,7 +32,7 @@
 
                 <tr>
                     <th>Tipo tarea : </th>
-                    <td>
+                    <td> 
                         {% if contexto_tarea.tipo_tarea %}
                         {{ contexto_tarea.tipo_tarea }}
                         {% endif %}

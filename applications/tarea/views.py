@@ -399,21 +399,64 @@ class TareaAsignarView(BSModalUpdateView):
         context['titulo']="Cliente o Evento"
         return context
 
-class TareaCulminarUpdateView(BSModalUpdateView):
+
+class TareaFinalizarUpdateView(BSModalDeleteView):
     model = Tarea
-    template_name ="includes/formulario generico.html"
+    template_name ="includes/form generico.html"
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
+    
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+ 
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
-        context = super(TareaCulminarUpdateView, self).get_context_data(**kwargs)
-        context['accion'] = "Culminar"
+        context = super(TareaFinalizarUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Finalizar"
         context['titulo'] = "Tarea"
+        context['texto'] = '¿Está seguro de FINALIZAR la tarea?'
+        context['item'] = self.get_object()
         return context
+
+
+class TareaIniciarUpdateView(BSModalDeleteView):
+    model = Tarea
+    template_name ="includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
     
-    def form_valid(self, form):
-        form.instance.estado = 3
-        registro_guardar(form.instance, self.request)        
-        return super().form_valid(form)
-    
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+ 
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TareaIniciarUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Iniciar"
+        context['titulo'] = "Tarea"
+        context['texto'] = '¿Está seguro de INICIAR la tarea?'
+        context['item'] = self.get_object()
+        return context
+
+
