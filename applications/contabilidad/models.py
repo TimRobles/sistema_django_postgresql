@@ -9,7 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad, Banco
 from applications.home.templatetags.funciones_propias import nombre_usuario
-from applications.variables import TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
+from applications.variables import ESTADOS_RECIBO, TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
 from applications.rutas import CONTABILIDAD_FOTO_CHEQUE
 
@@ -45,6 +45,10 @@ class ComisionFondoPensiones(models.Model):
     class Meta:
         verbose_name = 'Comision Fondo Pension'
         verbose_name_plural = 'Comision Fondos Pensiones'
+        ordering = [
+            '-fecha_vigencia',
+            'fondo_pensiones',
+        ]
 
     def __str__(self):
         return str(self.id)
@@ -133,7 +137,12 @@ class BoletaPago(models.Model):
     class Meta:
         verbose_name = 'Boleta de Pago'
         verbose_name_plural = 'Boletas de Pago'
-        ordering = ['-id',]
+        ordering = [
+            '-year',
+            '-month',
+            'tipo',
+            'datos_planilla',
+            ]
 
     @property
     def periodo(self):
@@ -175,7 +184,10 @@ class ReciboBoletaPago(models.Model):
     class Meta:
         verbose_name = 'Recibo Boleta Pago'
         verbose_name_plural = 'Recibos Boleta Pago'
-        ordering = ['-id',]
+        ordering = [
+            '-fecha_pagar',
+            'boleta_pago',
+            ]
 
     def __str__(self):
         return "%s - %s  - %s - %s" % (self.boleta_pago.get_month_display(), self.boleta_pago.year, self.get_tipo_pago_display(), self.boleta_pago.datos_planilla ) 
@@ -269,7 +281,7 @@ class ReciboServicio(models.Model):
     fecha_pago = models.DateField('Fecha de Pago', null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
     id_registro = models.IntegerField(blank=True, null=True)   
-    estado = models.IntegerField(choices=ESTADOS, default=1)
+    estado = models.IntegerField(choices=ESTADOS_RECIBO, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboServicio_created_by', editable=False)
@@ -279,6 +291,10 @@ class ReciboServicio(models.Model):
     class Meta:
         verbose_name = 'Recibo de Servicio'
         verbose_name_plural = 'Recibos de Servicios'
+        ordering = [
+            '-fecha_emision',
+            'servicio',
+        ]
 
     def __str__(self):
         return str(self.servicio)

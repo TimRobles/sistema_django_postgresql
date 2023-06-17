@@ -1,10 +1,16 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<!-- Pendiente poner filtro -->
+
 <table class="table">
     <thead>
         <tr>
             <th>Servicio</th>
             <th>Fecha Emision</th>
             <th>Fecha Vencimiento</th>
-            <th>Monto</th>
+            <th class="text-end text-nowrap">Monto</th>
+            <th class="text-end text-nowrap">Monto Pagado</th>
             <th>Fecha Pago</th>
             <th>Estado</th>
 
@@ -17,7 +23,8 @@
             <td>{{ recibo.servicio }}</td>
             <td>{{ recibo.fecha_emision|date:'d/m/Y'}}</td>
             <td>{{ recibo.fecha_vencimiento|date:'d/m/Y'}}</td>
-            <td>{{ recibo.monto }}</td>
+            <td class="text-end text-nowrap">{{ recibo.moneda.simbolo }} {{ recibo.monto|redondear|intcomma }}</td>
+            <td class="text-end text-nowrap">{{ recibo.moneda.simbolo }} {{ recibo.monto_pagado|redondear|intcomma }}</td>
             <td>{{ recibo.fecha_pago|date:'d/m/Y'}}</td>
             <td>{{ recibo.get_estado_display}}</td>
 

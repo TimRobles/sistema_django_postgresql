@@ -165,6 +165,12 @@ ESTADOS = (
     (2, 'BAJA'),
     )
 
+ESTADOS_RECIBO = (
+    (1, 'PENDIENTE'),
+    (2, 'CANCELADO'),
+    (3, 'ANULADO'),
+    )
+
 ESTADOS_TELECREDITO = (
     (1, 'ABIERTO'),
     (2, 'SOLICITADO'),
