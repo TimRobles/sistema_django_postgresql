@@ -452,6 +452,18 @@ ESTADO_SOLICITUD_INASISTENCIA = (
     (3, 'RECHAZADO'),
     )
 
+TIPO_ENCUESTA_CRM = (
+    (1, 'VENTA'),
+    (2, 'EVENTO'),
+    (3, 'SATISFACCION'),
+    )
+
+TIPO_PREGUNTA_CRM = (
+    (1, 'UNICA OPCION'),
+    (2, 'MULTIPLE'),
+    (3, 'ABIERTA'),
+    )
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'

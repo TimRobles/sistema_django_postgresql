@@ -55,6 +55,7 @@ class Asistencia(models.Model):
     archivo = models.FileField('Archivo',upload_to = 'file/asistencia/archivo/', max_length=100, blank=True, null=True)
     comentario = models.CharField('Comentario', max_length=50, blank=True, null=True)
     estado_solicitud = models.IntegerField(choices=ESTADO_SOLICITUD_INASISTENCIA,blank=True, null=True)
+    editar_solicitud = models.BooleanField('Editar Solicitud', default=False)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Asistencia_created_by', editable=False)

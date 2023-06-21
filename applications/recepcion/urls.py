@@ -18,6 +18,7 @@ urlpatterns = [
     path('asistencia-personal/registrar-salida/<pk>/', views.AsistenciaPersonalRegistrarSalidaView.as_view(), name='asistencia_personal_registrar_salida'),
     
     path('asistencia-personal/registrar/inasistencia/', views.InasistenciaRegistrarView.as_view(), name='inasistencia_registrar'),
+    path('asistencia-personal/actualizar/inasistencia/<pk>/', views.InasistenciaActualizarView.as_view(), name='inasistencia_actualizar'),
     path('asistencia-personal/detalle/inasistencia/<pk>/', views.InasistenciaDetalleView.as_view(), name='inasistencia_detalle'),
     path('asistencia-personal/aprobar/<pk>/', views.InasistenciaAprobarView.as_view(), name='inasistencia_aprobar'),
     path('asistencia-personal/rechazar/<pk>/', views.InasistenciaRechazarView.as_view(), name='inasistencia_rechazar'),
