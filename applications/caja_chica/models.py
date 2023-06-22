@@ -106,14 +106,14 @@ class RequerimientoDocumento(models.Model):
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
     tipo = models.IntegerField('Tipo de Documento', choices=TIPO_CHOICES)
-    numero = models.CharField('Número de Documento', max_length=50)
+    numero = models.CharField('Número de Documento', max_length=50, blank=True, null=True)
     establecimiento = models.CharField('Establecimiento', max_length=50, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     total_documento = models.DecimalField('Total en Documento', max_digits=7, decimal_places=2)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=4)
     total_requerimiento = models.DecimalField('Total en Requerimiento', max_digits=7, decimal_places=2)
     voucher = models.FileField('Documento', upload_to=REQUERIMIENTO_VOUCHER, max_length=100, blank=True, null=True)
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True)
     requerimiento = models.ForeignKey(Requerimiento, on_delete=models.CASCADE, related_name='RequerimientoDocumento_requerimiento')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -183,10 +183,14 @@ class CajaChica(models.Model):
         verbose_name = 'Caja Chica'
         verbose_name_plural = 'Cajas Chicas'
         ordering = [
+            'estado',
             '-year',
             '-month',
-            'estado',
         ]
+
+    @property
+    def cantidad_requerimientos(self):
+        return len(Requerimiento.objects.filter(content_type=ContentType.objects.get_for_model(self), id_registro=self.id))
 
     @property
     def periodo(self):

@@ -293,6 +293,7 @@ class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
         context = super(RequerimientoAprobarView, self).get_context_data(**kwargs)
         context['accion']="Aprobar"
         context['titulo']="Requerimiento"
+        context['requerimiento'] = self.get_object()
         return context
     
 
@@ -665,6 +666,13 @@ class RequerimientoDocumentoCreateView(PermissionRequiredMixin, BSModalCreateVie
         return kwargs
 
     def form_valid(self, form):
+        if form.instance.tipo != 3:
+            if form.instance.numero == None or form.instance.numero == "":
+                form.add_error('numero', 'Ingresar un número de documento.')
+                return super().form_invalid(form)
+            if form.instance.sociedad == None or form.instance.sociedad == "":
+                form.add_error('sociedad', 'Ingresar una Sociedad.')
+                return super().form_invalid(form)
         form.instance.requerimiento = Requerimiento.objects.get(id = self.kwargs['requerimiento_id'])
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
@@ -693,7 +701,32 @@ class RequerimientoDocumentoUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         kwargs['tipo_cambio'] = documento.tipo_cambio
         return kwargs
 
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            print(form)
+            if self.request.session['primero']:
+                print('********************************************')
+                print(form.instance.tipo_cambio)
+                print('********************************************')
+                if form.instance.tipo != 3:
+                    if form.instance.numero == None or form.instance.numero == "":
+                        form.add_error('numero', 'Ingresar un número de documento.')
+                        return super().form_invalid(form)
+                    if form.instance.sociedad == None or form.instance.sociedad == "":
+                        form.add_error('sociedad', 'Ingresar una Sociedad.')
+                        return super().form_invalid(form)
+                registro_guardar(form.instance, self.request)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(RequerimientoDocumentoUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
         context['titulo']="Documento"

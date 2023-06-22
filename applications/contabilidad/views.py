@@ -1087,7 +1087,6 @@ class ChequeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     success_url = reverse_lazy('contabilidad_app:cheque_inicio')
 
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -1235,11 +1234,16 @@ class ChequeDetalleView(PermissionRequiredMixin, DetailView):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
 
         return context
 
@@ -1257,11 +1261,16 @@ def ChequeDetalleTabla(request, pk):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
 
         data['table'] = render_to_string(
             template,
@@ -1297,7 +1306,13 @@ class ChequeReciboBoletaPagoAgregarView(BSModalFormView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
-        recibos = ReciboBoletaPago.objects.filter(content_type = None, id_registro = None)
+        cheque = Cheque.objects.get(id = self.kwargs['cheque_id'])
+        recibos = ReciboBoletaPago.objects.filter(
+            content_type=None,
+            id_registro=None,
+            )
+        if cheque.moneda:
+            recibos = recibos.filter(boleta_pago__datos_planilla__moneda=cheque.moneda)
         kwargs = super().get_form_kwargs()
         kwargs['recibos'] = recibos
         return kwargs

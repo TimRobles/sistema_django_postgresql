@@ -26,6 +26,8 @@
             </td>
             <td>{{ cheque.get_estado_display }}</td>
             <td class="text-center text-nowrap">
+                
+                {% if cheque.estado == 1 and request.user == cheque.usuario %}
                 <button data-form-url="{% url 'contabilidad_app:cheque_actualizar' cheque.id %}"
                     data-table-url="{% url 'contabilidad_app:cheque_tabla' %}"
                     data-keep-open="true"
@@ -38,6 +40,7 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                     <i class="bi bi-x-lg"></i>
                 </button>   
+                {% endif %}
                 <a href="{% url 'contabilidad_app:cheque_detalle' cheque.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">

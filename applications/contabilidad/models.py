@@ -84,7 +84,7 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
-        return f"{nombre_usuario(self.usuario)} - {self.id}"
+        return f"{nombre_usuario(self.usuario)} - {self.id} {self.sociedad}"
         
 
 class EsSalud(models.Model):
@@ -160,6 +160,10 @@ class BoletaPago(models.Model):
     def total_descuento_trabajador(self):
         return self.aporte_obligatorio + self.comision + self.prima_seguro + self.impuesto_quinta
 
+    @property
+    def moneda(self):
+        return self.datos_planilla.moneda
+
     def __str__(self):
         return "%s - %s  - %s - %s" % (self.get_month_display(), self.year, self.get_tipo_display(), self.datos_planilla) 
 
@@ -188,6 +192,10 @@ class ReciboBoletaPago(models.Model):
             '-fecha_pagar',
             'boleta_pago',
             ]
+    
+    @property
+    def moneda(self):
+        return self.boleta_pago.moneda
 
     def __str__(self):
         return "%s - %s  - %s - %s" % (self.boleta_pago.get_month_display(), self.boleta_pago.year, self.get_tipo_pago_display(), self.boleta_pago.datos_planilla ) 

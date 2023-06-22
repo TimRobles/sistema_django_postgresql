@@ -340,7 +340,7 @@ class ChequeForm(BSModalModelForm):
             'concepto',
             'moneda',
             'monto_cheque',
-            'usuario',
+            # 'usuario',
             )
 
     def clean_monto(self):

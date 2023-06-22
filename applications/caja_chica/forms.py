@@ -201,17 +201,26 @@ class RequerimientoDocumentoForm(BSModalModelForm):
         tipo_cambio = kwargs.pop('tipo_cambio')
         super(RequerimientoDocumentoForm, self).__init__(*args, **kwargs)
         self.fields['moneda_requerimiento'].initial = moneda_requerimiento
+        print('///////////////////////////////////////////')
+        print(tipo_cambio)
         if tipo_cambio:
             self.fields['tipo_cambio'].initial = tipo_cambio
+            try:
+                self.instance.tipo_cambio = tipo_cambio
+            except:
+                pass
+        print('///////////////////////////////////////////')
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         for field in self.fields:
             self.fields[field].required = True
+        self.fields['numero'].required = False
         self.fields['establecimiento'].required = False
         self.fields['voucher'].required = False
         self.fields['tipo_cambio'].required = False
         self.fields['total_requerimiento'].required = False
+        self.fields['sociedad'].required = False
         self.fields['moneda_requerimiento'].disabled = True
 
 
