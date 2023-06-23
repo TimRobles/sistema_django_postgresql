@@ -1,9 +1,12 @@
 from decimal import Decimal
 from django.shortcuts import render
 from applications.caja_chica.funciones import movimientos_caja_chica
+from applications.caja_chica.pdf import generarCajaChicaPdf
+from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.importaciones import *
 from applications.funciones import registrar_excepcion
 from applications.contabilidad.models import ReciboServicio
+from applications.sociedad.models import Sociedad
 
 from .models import (
     Requerimiento, 
@@ -1226,6 +1229,26 @@ class CajaChicaReciboServicioUpdateView(BSModalUpdateView):
         context['accion'] = "Actualizar"
         context['titulo'] = "Recibo Boleta de Pago"
         return context
+
+
+class CajaChicaPdfView(View):
+    def get(self, request, *args, **kwargs):
+        caja = CajaChica.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_caja_chica(caja)
+        
+        titulo = 'Cierre de caja - %s - %s' % (caja.periodo, nombre_usuario(caja.usuario))
+        vertical = False
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarCajaChicaPdf(titulo, vertical, logo, pie_pagina, movimientos, caja, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
 
 
 

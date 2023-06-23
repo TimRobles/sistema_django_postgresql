@@ -8,7 +8,7 @@ from applications.caja_chica.models import CajaChicaSalida, ReciboCajaChica, Req
 
 def movimientos_caja_chica(caja_chica):
     movimientos = []
-    
+
     #Saldo inicial
     fecha = date(caja_chica.year, caja_chica.month, 1)
     concepto = 'SALDO INICIAL'
@@ -49,6 +49,9 @@ def movimientos_caja_chica(caja_chica):
             if moneda.id == 2: #Dólares
                 egreso = (egreso * tipo_cambio).quantize(Decimal('0.01'))
         url = reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk':requerimiento.id})
+        documentos = []
+        for documento in requerimiento.RequerimientoDocumento_requerimiento.all():
+            documentos.append(documento)
         fila = []
         fila.append(fecha)
         fila.append(concepto)
@@ -57,6 +60,7 @@ def movimientos_caja_chica(caja_chica):
         fila.append(egreso)
         fila.append(saldo)
         fila.append(url)
+        fila.append(documentos)
         movimientos.append(fila)
 
     #Recibos Caja Chica
@@ -72,6 +76,7 @@ def movimientos_caja_chica(caja_chica):
             ingreso = recibos_caja.monto_pagado
         # moneda = recibos_caja.moneda
         url = '#'
+        documentos = []
 
         fila = []
         fila.append(fecha)
@@ -81,6 +86,7 @@ def movimientos_caja_chica(caja_chica):
         fila.append(egreso)
         fila.append(saldo)
         fila.append(url)
+        fila.append(documentos)
         movimientos.append(fila)
 
     #Caja Chica Salida
@@ -93,6 +99,7 @@ def movimientos_caja_chica(caja_chica):
         egreso = caja_chica_salida.monto
         saldo = Decimal('0.00')
         url = '#'
+        documentos = []
         
         fila = []
         fila.append(fecha)
@@ -102,6 +109,7 @@ def movimientos_caja_chica(caja_chica):
         fila.append(egreso)
         fila.append(saldo)
         fila.append(url)
+        fila.append(documentos)
         movimientos.append(fila)
 
     movimientos.sort(key = lambda i: i[3], reverse=True)
