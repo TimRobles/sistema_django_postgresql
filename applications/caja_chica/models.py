@@ -52,7 +52,11 @@ class Requerimiento(models.Model):
     class Meta:
         verbose_name = 'Requerimiento'
         verbose_name_plural = 'Requerimientos'
-        ordering = ['estado', 'fecha', 'created_at' ]
+        ordering = [
+            'estado',
+            '-fecha',
+            'created_at',
+            ]
 
     @property
     def vuelto_extra(self):
