@@ -156,7 +156,7 @@ def listaNumero(texto, fuente, tamaño=8, tipo="Regular", color='black'):
         )
 
 def hipervinculo(ruta, texto):
-    return '<a href="/media/%s" target="_blank" color="blue"><u>%s</u></a>' % (ruta, texto)
+    return '<a href="/media/%s" color="blue"><u>%s</u></a>' % (ruta, texto)
 
 def insertarImagen(ruta, ancho, alto):
     return '<img src="%s" width="%s" height="%s" valign="top"/>' % (ruta_media(ruta), str(cmToPx(ancho)), str(cmToPx(alto)))
