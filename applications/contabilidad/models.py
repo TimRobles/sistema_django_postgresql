@@ -247,6 +247,9 @@ class Institucion(models.Model):
     class Meta:
         verbose_name = 'Institucion'
         verbose_name_plural = 'Instituciones'
+        ordering = [
+            'nombre',
+        ]
 
     def __str__(self):
         return str(self.nombre)
@@ -273,14 +276,15 @@ class Servicio(models.Model):
         verbose_name_plural = 'Servicios'
         ordering = [
             'institucion',
+            'tipo_servicio',
             'alias',
             'sociedad',
         ]
 
     def __str__(self):
         if self.sociedad:
-            return f"{self.institucion} - {self.alias} - {self.sociedad.abreviatura}"
-        return f"{self.institucion} - {self.alias}"
+            return f"{self.institucion} - {self.tipo_servicio} - {self.alias} - {self.sociedad.abreviatura}"
+        return f"{self.institucion} - {self.tipo_servicio} - {self.alias}"
 
 class ReciboServicio(models.Model):
     servicio = models.ForeignKey(Servicio, blank=True, null=True, on_delete=models.PROTECT)
