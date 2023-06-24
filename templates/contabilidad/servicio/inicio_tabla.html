@@ -7,7 +7,6 @@
             <th>Alias</th>
             <th>Número de Referencia</th>
             <th>Estado</th>
-
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -20,7 +19,6 @@
             <td>{{ servicio.alias}}</td>
             <td>{{ servicio.numero_referencia }}</td>
             <td>{{ servicio.get_estado_display}}</td>
-
             <td>
                 <button data-form-url="{% url 'contabilidad_app:servicio_actualizar' servicio.id %}"
                     data-table-url="{% url 'contabilidad_app:servicio_tabla' %}"
