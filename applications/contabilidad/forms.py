@@ -262,6 +262,36 @@ class ServicioForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+
+class ServicioBuscarForm(forms.Form):
+    institucion = forms.ModelChoiceField(queryset=Institucion.objects.all(), required=False)
+    tipo_servicio = forms.ModelChoiceField(queryset=TipoServicio.objects.all(), required=False)
+    numero_referencia = forms.CharField(required=False)
+    titular_servicio = forms.CharField(required=False)
+    alias = forms.CharField(required=False)
+    estado = forms.ChoiceField(choices=((None, '-----------------'),) + ESTADOS, required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    
+    def __init__(self, *args, **kwargs):
+        filtro_institucion = kwargs.pop('filtro_institucion')
+        filtro_tipo_servicio = kwargs.pop('filtro_tipo_servicio')
+        filtro_numero_referencia = kwargs.pop('filtro_numero_referencia')
+        filtro_titular_servicio = kwargs.pop('filtro_titular_servicio')
+        filtro_alias = kwargs.pop('filtro_alias')
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        super(ServicioBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['institucion'].initial = filtro_institucion
+        self.fields['tipo_servicio'].initial = filtro_tipo_servicio
+        self.fields['numero_referencia'].initial = filtro_numero_referencia
+        self.fields['titular_servicio'].initial = filtro_titular_servicio
+        self.fields['alias'].initial = filtro_alias
+        self.fields['estado'].initial = filtro_estado
+        self.fields['sociedad'].initial = filtro_sociedad
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class ReciboServicioForm(BSModalModelForm):
     class Meta:
         model = ReciboServicio

@@ -30,6 +30,7 @@ from .forms import(
     BoletaPagoActualizarForm,
     ReciboBoletaPagoForm,
     ReciboBoletaPagoActualizarForm,
+    ServicioBuscarForm,
     ServicioForm,
     ReciboServicioForm,
     TelecreditoForm,
@@ -638,12 +639,89 @@ class ReciboBoletaPagoDeleteView(BSModalDeleteView):
 
 #---------------------------------------------------------------------------------
 
-class ServicioListView(TemplateView):
+class ServicioListView(FormView):
+    form_class = ServicioBuscarForm
     template_name = "contabilidad/servicio/inicio.html"
+
+    def get_form_kwargs(self):
+        kwargs = super(ServicioListView, self).get_form_kwargs()
+        kwargs['filtro_institucion'] = self.request.GET.get('institucion')
+        kwargs['filtro_tipo_servicio'] = self.request.GET.get('tipo_servicio')
+        kwargs['filtro_numero_referencia'] = self.request.GET.get('numero_referencia')
+        kwargs['filtro_titular_servicio'] = self.request.GET.get('titular_servicio')
+        kwargs['filtro_alias'] = self.request.GET.get('alias')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(ServicioListView, self).get_context_data(**kwargs)
         servicio = Servicio.objects.all()
+
+        filtro_institucion = self.request.GET.get('institucion')
+        filtro_tipo_servicio = self.request.GET.get('tipo_servicio')
+        filtro_numero_referencia = self.request.GET.get('numero_referencia')
+        filtro_titular_servicio = self.request.GET.get('titular_servicio')
+        filtro_alias = self.request.GET.get('alias')
+        filtro_estado = self.request.GET.get('estado')
+        filtro_sociedad = self.request.GET.get('sociedad')
+        
+        contexto_filtro = []
+
+        if filtro_institucion:
+            condicion = Q(institucion = filtro_institucion)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"institucion={filtro_institucion}")
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"tipo_servicio={filtro_tipo_servicio}")
+
+        if filtro_numero_referencia:
+            condicion = Q(numero_referencia__unaccent__icontains = filtro_numero_referencia.split(" ")[0])
+            for palabra in filtro_numero_referencia.split(" ")[1:]:
+                condicion &= Q(numero_referencia__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"numero_referencia={filtro_numero_referencia}")
+
+        if filtro_titular_servicio:
+            condicion = Q(titular_servicio__unaccent__icontains = filtro_titular_servicio.split(" ")[0])
+            for palabra in filtro_titular_servicio.split(" ")[1:]:
+                condicion &= Q(titular_servicio__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"titular_servicio={filtro_titular_servicio}")
+
+        if filtro_alias:
+            condicion = Q(alias__unaccent__icontains = filtro_alias.split(" ")[0])
+            for palabra in filtro_alias.split(" ")[1:]:
+                condicion &= Q(alias__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"alias={filtro_alias}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_sociedad:
+            ids = []
+            for nota in servicio.all():
+                if str(nota.sociedad.id) == filtro_sociedad:
+                    ids.append(nota.id)
+            servicio = servicio.filter(id__in = ids)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
         objectsxpage =  10 # Show 10 objects per page.
 
         if len(servicio) > objectsxpage:
@@ -653,7 +731,6 @@ class ServicioListView(TemplateView):
 
         context['contexto_servicio'] = servicio
         context['contexto_pagina'] = servicio
-        context['contexto_filtro'] = '?'
         return context
 
 def ServicioTabla(request):
@@ -662,6 +739,71 @@ def ServicioTabla(request):
         template = 'contabilidad/servicio/inicio_tabla.html'
         context = {}
         servicio = Servicio.objects.all()
+        
+        filtro_institucion = request.GET.get('institucion')
+        filtro_tipo_servicio = request.GET.get('tipo_servicio')
+        filtro_numero_referencia = request.GET.get('numero_referencia')
+        filtro_titular_servicio = request.GET.get('titular_servicio')
+        filtro_alias = request.GET.get('alias')
+        filtro_estado = request.GET.get('estado')
+        filtro_sociedad = request.GET.get('sociedad')
+        
+        contexto_filtro = []
+
+        if filtro_institucion:
+            condicion = Q(institucion = filtro_institucion)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"institucion={filtro_institucion}")
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"tipo_servicio={filtro_tipo_servicio}")
+
+        if filtro_numero_referencia:
+            condicion = Q(numero_referencia__unaccent__icontains = filtro_numero_referencia.split(" ")[0])
+            for palabra in filtro_numero_referencia.split(" ")[1:]:
+                condicion &= Q(numero_referencia__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"numero_referencia={filtro_numero_referencia}")
+
+        if filtro_titular_servicio:
+            condicion = Q(titular_servicio__unaccent__icontains = filtro_titular_servicio.split(" ")[0])
+            for palabra in filtro_titular_servicio.split(" ")[1:]:
+                condicion &= Q(titular_servicio__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"titular_servicio={filtro_titular_servicio}")
+
+        if filtro_alias:
+            condicion = Q(alias__unaccent__icontains = filtro_alias.split(" ")[0])
+            for palabra in filtro_alias.split(" ")[1:]:
+                condicion &= Q(alias__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"alias={filtro_alias}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_sociedad:
+            ids = []
+            for nota in servicio.all():
+                if str(nota.sociedad.id) == filtro_sociedad:
+                    ids.append(nota.id)
+            servicio = servicio.filter(id__in = ids)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
         objectsxpage =  10 # Show 10 objects per page.
 
         if len(servicio) > objectsxpage:
@@ -671,7 +813,6 @@ def ServicioTabla(request):
 
         context['contexto_servicio'] = servicio
         context['contexto_pagina'] = servicio
-        context['contexto_filtro'] = '?'
 
         data['table'] = render_to_string(
             template,
