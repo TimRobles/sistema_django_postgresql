@@ -186,6 +186,13 @@
 </div>
 <br>
 <h3> Recibo Caja Chica
+    {% if contexto_cheque_detalle.estado == 1 %}
+        <button data-form-url="{% url 'contabilidad_app:cheque_recibo_caja_chica_agregar' contexto_cheque_detalle.id %}"
+            data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+            class="create badge bg-primary">
+            Agregar
+        </button>
+    {% endif %}
 </h3>
 <div class="table-responsive">
     <table class="table">
@@ -196,6 +203,7 @@
                 <th class="text-end">Monto Pagado</th>
                 <th>Fecha Pago</th>
                 <th>Estado</th>
+                <th class="text-center text-nowrap">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -206,6 +214,24 @@
                     <td class="text-end">{{ recibo_cc.monto_pagado|redondear|intcomma }}</td>
                     <td>{{ recibo_cc.fecha_pago|date:'d/m/Y' }}</td>
                     <td>{{ recibo_cc.get_estado_display }}</td>
+                    <td class="text-center text-nowrap">                    
+                        {% if contexto_cheque_detalle.estado == 3 %}
+                            <button data-form-url="{% url 'contabilidad_app:cheque_recibo_caja_chica_actualizar' contexto_cheque_detalle.id recibo_cc.id %}"
+                                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        {% endif %}
+                        {% if contexto_cheque_detalle.estado == 1 %}
+                            <button data-form-url="{% url 'contabilidad_app:cheque_recibo_caja_chica_remover' contexto_cheque_detalle.id recibo_cc.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        {% endif %}
+                    </td>
                 </tr>    
             {% endfor %}
         </tbody>

@@ -263,7 +263,11 @@ class ReciboCajaChica(models.Model):
     class Meta:
         verbose_name = 'Recibo Caja Chica'
         verbose_name_plural = 'Recibos Caja Chica'
+        ordering = [
+            'estado',
+            '-fecha',
+        ]
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.concepto} - {self.caja_chica} - {self.fecha}"
 

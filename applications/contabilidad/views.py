@@ -19,6 +19,8 @@ from .forms import(
     ChequeForm,
     ChequeReciboBoletaPagoAgregarForm,
     ChequeReciboBoletaPagoUpdateForm,
+    ChequeReciboCajaChicaAgregarForm,
+    ChequeReciboCajaChicaUpdateForm,
     ChequeReciboServicioAgregarForm,
     ChequeReciboServicioUpdateForm,
     ChequeVueltoExtraForm,
@@ -1621,6 +1623,102 @@ class ChequeReciboServicioRemoverView(PermissionRequiredMixin, BSModalDeleteView
 
     def get_context_data(self, **kwargs):
         context = super(ChequeReciboServicioRemoverView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Recibo"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+    
+
+class ChequeReciboCajaChicaAgregarView(BSModalFormView):
+    template_name = 'includes/formulario generico.html'
+    form_class = ChequeReciboCajaChicaAgregarForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.kwargs['cheque_id']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                cheque = Cheque.objects.get(id = self.kwargs['cheque_id'])
+                recibo_caja_chica = form.cleaned_data.get('recibo_caja_chica')
+                recibo_caja_chica.cheque = cheque
+                registro_guardar(recibo_caja_chica, self.request)
+                recibo_caja_chica.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        recibos = ReciboCajaChica.objects.filter(cheque = None)
+        kwargs = super().get_form_kwargs()
+        kwargs['recibos'] = recibos
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ChequeReciboCajaChicaAgregarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Recibo Caja Chica'
+        return context
+    
+
+class ChequeReciboCajaChicaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('caja_chica.change_recibocajachica')
+    model = ReciboCajaChica
+    template_name = 'includes/formulario generico.html'
+    form_class = ChequeReciboCajaChicaUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk': self.kwargs['cheque_id']})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeReciboCajaChicaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Recibo Caja Chica"
+        return context
+
+
+class ChequeReciboCajaChicaRemoverView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.delete_cheque')
+    model = ReciboCajaChica
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk': self.kwargs['cheque_id']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            recibo_caja_chica = self.get_object()
+            recibo_caja_chica.cheque = None
+            recibo_caja_chica.monto_pagado = 0
+            recibo_caja_chica.fecha_pago = None
+            registro_guardar(recibo_caja_chica, self.request)
+            recibo_caja_chica.save()
+            messages.success(request, MENSAJE_REMOVER_RECIBO_SERVICIO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeReciboCajaChicaRemoverView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Recibo"
         context['item'] = self.get_object()

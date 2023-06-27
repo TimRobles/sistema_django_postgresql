@@ -1344,6 +1344,11 @@ class ReciboCajaChicaCreateView(BSModalCreateView):
     form_class = ReciboCajaChicaCrearForm
     success_url = reverse_lazy('caja_chica_app:recibo_inicio')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['caja_chica'] = CajaChica.objects.filter(estado=1, usuario=self.request.user)
+        return kwargs
+
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -1363,6 +1368,11 @@ class ReciboCajaChicaUpdateView(BSModalUpdateView):
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['caja_chica'] = CajaChica.objects.filter(estado=1, usuario=self.request.user)
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(ReciboCajaChicaUpdateView, self).get_context_data(**kwargs)

@@ -2,6 +2,7 @@ from datetime import date
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from applications.caja_chica.models import ReciboCajaChica
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 from applications.variables import CHOICE_VACIO, ESTADOS, ESTADOS_CONFIRMACION, MESES, YEARS, TIPO_PAGO_BOLETA
@@ -487,6 +488,32 @@ class ChequeReciboCajaChicaAgregarForm(BSModalForm):
         lista_recibos = kwargs.pop('recibos')
         super(ChequeReciboCajaChicaAgregarForm, self).__init__(*args, **kwargs)
         self.fields['recibo_caja_chica'].queryset = lista_recibos
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ChequeReciboCajaChicaUpdateForm(BSModalModelForm):
+    class Meta:
+        model = ReciboCajaChica
+        fields = (
+            'monto_pagado',
+            'fecha_pago',
+            )
+
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    # 'required':'required',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ChequeReciboCajaChicaUpdateForm, self).__init__(*args, **kwargs)
+        # for field in self.fields:
+        #     self.fields[field].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

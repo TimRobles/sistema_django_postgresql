@@ -326,7 +326,9 @@ class ReciboCajaChicaCrearForm(BSModalModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        caja_chica = kwargs.pop('caja_chica')
         super(ReciboCajaChicaCrearForm, self).__init__(*args, **kwargs)
+        self.fields['caja_chica'].queryset = caja_chica
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
