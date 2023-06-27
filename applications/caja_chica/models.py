@@ -11,7 +11,8 @@ from applications.rutas import REQUERIMIENTO_FOTO_PRODUCTO, REQUERIMIENTO_VOUCHE
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
 from applications.variables import MESES, TIPO_PRESTAMO, ESTADO_PRESTAMO_CAJA_CHICA, ESTADO_CAJA_CHICA, ESTADO_RECIBO_CAJA_CHICA
-
+from applications.caja_chica import funciones
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 class Requerimiento(models.Model):
     ESTADO_CHOICES = (
@@ -79,6 +80,9 @@ class Requerimiento(models.Model):
             return self.concepto_final + '-' + self.get_estado_display()
         else:
             return self.concepto + '-' + self.get_estado_display()
+
+
+post_save.connect(funciones.cheque_monto_usado_post_save, sender=Requerimiento)
 
 
 class RequerimientoVueltoExtra(models.Model):
@@ -271,3 +275,4 @@ class ReciboCajaChica(models.Model):
     def __str__(self):
         return f"{self.concepto} - {self.caja_chica} - {self.fecha}"
 
+post_save.connect(funciones.cheque_monto_usado_post_save, sender=ReciboCajaChica)

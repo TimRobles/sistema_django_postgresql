@@ -25,7 +25,9 @@ urlCheque = [
     path('cheque/solicitar/<pk>/', views.ChequeSolicitarView.as_view(), name='cheque_solicitar'),
     path('cheque/editar/<pk>/', views.ChequeEditarView.as_view(), name='cheque_editar'),
     path('cheque/por_cerrar/<pk>/', views.ChequePorCerrarView.as_view(), name='cheque_por_cerrar'),
-    path('cheque/cerrar/<pk>/', views.ChequePorCerrarView.as_view(), name='cheque_cerrar'),
+    path('cheque/por-cerrar/editar/<pk>/', views.ChequePorCerrarEditarView.as_view(), name='cheque_por_cerrar_editar'),
+    path('cheque/cerrar/<pk>/', views.ChequeCerrarView.as_view(), name='cheque_cerrar'),
+    path('cheque/cerrado/editar/<pk>/', views.ChequeCerradoEditarView.as_view(), name='cheque_cerrado_editar'),
 
     path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
     path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),

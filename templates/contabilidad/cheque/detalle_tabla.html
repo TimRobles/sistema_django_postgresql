@@ -8,9 +8,9 @@
                 <th class="text-end">Monto Cheque</th>
                 {% if contexto_cheque_detalle.estado > 1 %}
                     <th class="text-end">Monto Recibido</th>
+                    <th class="text-end">Monto Usado</th>
                 {% endif %}
                 {% if contexto_cheque_detalle.estado == 4 %}
-                    <th class="text-end">Monto Usado</th>
                     <th class="text-end">Redondeo</th>
                     <th class="text-end">Vuelto Extra</th>
                     <th class="text-end">Vuelto</th>
@@ -25,9 +25,9 @@
                 <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.monto_cheque|intcomma }}</td>
                 {% if contexto_cheque_detalle.estado > 1 %}
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} <span id="monto">{{ contexto_cheque_detalle.recibido|redondear|intcomma }}</span></td>
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.monto_usado|intcomma }}</td>
                 {% endif %}
                 {% if contexto_cheque_detalle.estado == 4 %}
-                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.monto_usado|intcomma }}</td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.redondeo|intcomma }}</td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.vuelto_extra|intcomma }}</td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ contexto_cheque_detalle.vuelto|intcomma }}</td>

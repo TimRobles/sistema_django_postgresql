@@ -498,6 +498,7 @@ class ChequeReciboCajaChicaUpdateForm(BSModalModelForm):
         fields = (
             'monto_pagado',
             'fecha_pago',
+            'estado',
             )
 
         widgets = {

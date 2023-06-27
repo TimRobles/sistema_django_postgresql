@@ -3,6 +3,7 @@ from re import template
 from django.db import models
 from django.shortcuts import render
 from django.core.paginator import Paginator
+from applications.caja_chica.funciones import cheque_monto_usado
 from applications.contabilidad.funciones import calcular_datos_boleta
 from applications.datos_globales.models import RemuneracionMinimaVital
 from applications.funciones import registrar_excepcion
@@ -1360,7 +1361,115 @@ class ChequePorCerrarView(PermissionRequiredMixin, BSModalDeleteView):
         context['dar_baja'] = "true"
         context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
         return context
+
     
+class ChequePorCerrarEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_cheque')
+    model = Cheque
+    template_name = "contabilidad/cheque/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequePorCerrarEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Cheque"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
+class ChequeCerrarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_cheque')
+    model = Cheque
+    template_name = "contabilidad/cheque/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            cheque_monto_usado(self.object)
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_POR_CERRAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeCerrarView, self).get_context_data(**kwargs)
+        context['accion'] = "Cerrar"
+        context['titulo'] = "Cheque"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+    
+
+class ChequeCerradoEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_cheque')
+    model = Cheque
+    template_name = "contabilidad/cheque/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeCerradoEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Cheque"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
 
 class ChequeDetalleView(PermissionRequiredMixin, DetailView):
     permission_required = ('contabilidad.view_cheque')

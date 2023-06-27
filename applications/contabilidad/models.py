@@ -12,6 +12,8 @@ from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.variables import ESTADOS_RECIBO, TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
 from applications.rutas import CONTABILIDAD_FOTO_CHEQUE
+from applications.caja_chica import funciones
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 class FondoPensiones(models.Model):
     nombre = models.CharField('Nombre Fondo de Pensiones', max_length=50)
@@ -201,6 +203,8 @@ class ReciboBoletaPago(models.Model):
         return "%s - %s  - %s - %s" % (self.boleta_pago.get_month_display(), self.boleta_pago.year, self.get_tipo_pago_display(), self.boleta_pago.datos_planilla ) 
 
 
+post_save.connect(funciones.cheque_monto_usado_post_save, sender=ReciboBoletaPago)
+
 
 class TipoServicio(models.Model):
     nombre = models.CharField('Servicio', max_length=50)
@@ -318,6 +322,8 @@ class ReciboServicio(models.Model):
     def __str__(self):
         return str(self.servicio)
 
+post_save.connect(funciones.cheque_monto_usado_post_save, sender=ReciboServicio)
+
 
 class Telecredito(models.Model):
     concepto = models.CharField('Concepto', max_length=50)
@@ -362,6 +368,7 @@ class Cheque(models.Model):
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
     monto_cheque = models.DecimalField('Monto del cheque', max_digits=7, decimal_places=2, default=0)
     monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
+    comision = models.DecimalField('Comisión', max_digits=7, decimal_places=2, default=0)
     redondeo = models.DecimalField('Redondeo', max_digits=7, decimal_places=2, default=0)
     vuelto = models.DecimalField('Vuelto', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='Cheque_usuario', blank=True, null=True)
@@ -451,6 +458,9 @@ class ChequeVueltoExtra(models.Model):
 
     def __str__(self):
         return str(self.cheque) + " " + self.moneda.simbolo + " " + str(self.vuelto_extra)
+
+
+post_save.connect(funciones.cheque_monto_usado_post_save, sender=ChequeVueltoExtra)
 
 
 class TamañoEmpresa(models.Model):
