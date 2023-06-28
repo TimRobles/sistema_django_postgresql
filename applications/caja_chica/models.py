@@ -79,6 +79,18 @@ class Requerimiento(models.Model):
         return Decimal('0.00')
 
     @property
+    def cheque(self):
+        if self.content_type == ContentType.objects.get_for_model(Cheque):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
+    @property
+    def caja(self):
+        if self.content_type == ContentType.objects.get_for_model(CajaChica):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
+    @property
     def caja_cheque(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 

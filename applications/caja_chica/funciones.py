@@ -133,7 +133,8 @@ def movimientos_caja_chica(caja_chica):
 def cheque_monto_usado_post_save(*args, **kwargs):
     obj = kwargs['instance']
     cheque = obj.cheque
-    cheque_monto_usado(cheque)
+    if cheque:
+        cheque_monto_usado(cheque)
 
 def cheque_monto_usado(cheque):
     recibos_boleta_pago = applications.contabilidad.models.ReciboBoletaPago.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
