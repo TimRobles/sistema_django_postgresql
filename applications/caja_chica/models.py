@@ -60,6 +60,13 @@ class Requerimiento(models.Model):
             ]
 
     @property
+    def vouchers(self):
+        for documento in self.RequerimientoDocumento_requerimiento.all():
+            if documento.voucher:
+                return True
+        return False
+
+    @property
     def vuelto_extra(self):
         if self.RequerimientoVueltoExtra_requerimiento.all():
             return self.RequerimientoVueltoExtra_requerimiento.all().aggregate(models.Sum('vuelto_extra'))['vuelto_extra__sum']

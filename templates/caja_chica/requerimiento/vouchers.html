@@ -1,0 +1,44 @@
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="responsive-table">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Número</th>
+                <th>Establecimiento</th>
+                <th>Total</th>
+                <th>Sociedad</th>
+                <th>Voucher</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for documento in contexto_requerimiento_detalle.RequerimientoDocumento_requerimiento.all %}
+                <tr>
+                    <td>{{ documento.fecha|date:'d/m/Y' }}</td>
+                    <td>{{ documento.get_tipo_display }}</td>
+                    <td>{{ documento.numero }}</td>
+                    <td>{{ documento.establecimiento }}</td>
+                    <td class="text-nowrap">{{ documento.moneda.simbolo }} {{ documento.total_documento }}</td>
+                    <td>{{ documento.sociedad }}</td>
+                    <td>
+                        {% if documento.voucher %}
+                        <a href="{{ MEDIA_URL }}{{ documento.voucher }}" target="_blank"
+                        class="btn btn-info btn-sm">
+                            <i class="bi bi-image-fill"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}
+    

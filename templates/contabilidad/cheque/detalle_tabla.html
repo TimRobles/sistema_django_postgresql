@@ -68,9 +68,7 @@
                 <th class="text-end">Monto Pagado</th>
                 <th class="text-center">Fecha Pago</th>
                 <th class="text-center">Estado</th>
-                {% if contexto_cheque_detalle.estado == 1 or contexto_cheque_detalle.estado == 3 %}
-                    <th class="text-center">Acciones</th>
-                {% endif %}
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -82,6 +80,12 @@
                     <td class="text-center">{{ recibo_bp.fecha_pago|date:'d/m/Y' }}</td>
                     <td class="text-center">{{ recibo_bp.get_estado_display }}</td>
                     <td class="text-nowrap text-center">
+                        {% if recibo_bp.voucher %}
+                            <a href="{{ MEDIA_URL }}{{ recibo_bp.voucher }}" target="_blank"
+                            class="btn btn-info btn-sm">
+                                <i class="bi bi-image-fill"></i>
+                            </a>
+                        {% endif %}
                         {% if contexto_cheque_detalle.estado == 3 %}
                             <button data-form-url="{% url 'contabilidad_app:cheque_recibo_boleta_pago_actualizar' contexto_cheque_detalle.id recibo_bp.id %}"
                                 data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
@@ -134,9 +138,7 @@
                 <th class="text-end">Monto Pagado</th>
                 <th>Fecha Pago</th>
                 <th>Estado</th>
-                {% if contexto_cheque_detalle.estado == 1 or contexto_cheque_detalle.estado == 3 %}
-                    <th class="text-center">Acciones</th>
-                {% endif %}
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -148,6 +150,12 @@
                     <td>{{ recibo_s.fecha_pago|date:'d/m/Y' }}</td>
                     <td>{{ recibo_s.get_estado_display }}</td>
                     <td class="text-nowrap text-center">
+                        {% if recibo_s.voucher %}
+                            <a href="{{ MEDIA_URL }}{{ recibo_s.voucher }}" target="_blank"
+                            class="btn btn-info btn-sm">
+                                <i class="bi bi-image-fill"></i>
+                            </a>
+                        {% endif %}
                         {% if contexto_cheque_detalle.estado == 3 %}
                             <button data-form-url="{% url 'contabilidad_app:cheque_recibo_servicio_actualizar' contexto_cheque_detalle.id recibo_s.id %}"
                                 data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
@@ -259,6 +267,7 @@
                 <th class="text-end">Monto Usado</th>
                 <th>Fecha Entrega</th>
                 <th>Estado</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -269,6 +278,15 @@
                     <td class="text-end">{{ requerimiento.monto_usado|intcomma }}</td>
                     <td>{{ requerimiento.fecha_entrega|date:'d/m/Y' }}</td>
                     <td>{{ requerimiento.get_estado_display }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if requerimiento.vouchers %}
+                            <button data-form-url="{% url 'caja_chica_app:requerimiento_vouchers' requerimiento.id %}"
+                                class="read btn btn-info btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Vouchers">
+                                <i class="bi bi-image-fill"></i>
+                            </button>
+                        {% endif %}
+                    </td>
                 </tr>    
             {% endfor %}
         </tbody>

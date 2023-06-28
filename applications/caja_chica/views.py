@@ -563,6 +563,19 @@ def RequerimientoDetalleTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
+
+class RequerimientoVouchersView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('caja_chica.view_requerimiento')
+
+    model = Requerimiento
+    template_name = "caja_chica/requerimiento/vouchers.html"
+    context_object_name = 'contexto_requerimiento_detalle'
+    
+    def get_context_data(self, **kwargs):
+        context = super(RequerimientoVouchersView, self).get_context_data(**kwargs)
+        context['titulo'] = f'Documentos - {self.get_object()}'
+        return context
     
 
 class RequerimientoVueltoExtraCreateView(PermissionRequiredMixin, BSModalCreateView):
