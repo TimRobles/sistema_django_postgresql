@@ -1,7 +1,9 @@
+var spinnerText = "<span class='spinner-border spinner-border-sm' role='status' aria-hidden='true'></span>";
+
 function randomText(datos) {
     min = 0;
     max = Object.keys($datos).length - 1;
-    console.log(Math.floor(Math.random() * (max - min + 1)) + min)
+    // console.log(Math.floor(Math.random() * (max - min + 1)) + min)
     return datos[Math.floor(Math.random() * (max - min + 1)) + min]['nombre'];
 }
 
@@ -15,17 +17,24 @@ function ruleta(element, tiempo, final, datos) {
     }, tiempo*1000);
 }
 
-function sorteo(respuesta, tiempo) {
+function sorteo(respuesta, tiempo, e) {
     setTimeout(() => {
         Swal.fire({
             title: respuesta.split(" | ")[1],
             html: respuesta.split(" | ")[2],
           });
+
+        e.target.innerHTML = "Sorteo";
+        e.target.disabled = false;
     }, tiempo*1000 + 500);
 }
 
 $('#sortear').on('click', function (e) {
     var nombre = $('#nombre')[0];
+    console.log('SORTEOOOOOO')
+
+    e.target.innerHTML = spinnerText;
+    e.target.disabled = true;
     
     url = $('#url_datos')[0].innerHTML;
     url_nested = $('#url_sortear')[0].innerHTML;
@@ -35,18 +44,18 @@ $('#sortear').on('click', function (e) {
     xhr.onload = function(){
         if (this.status === 200) {
             $datos = JSON.parse(xhr.responseText);
-            console.log($datos[0]);
-            console.log($datos[0]['nombre']);
-            console.log(Object.keys($datos).length);
+            // console.log($datos[0]);
+            // console.log($datos[0]['nombre']);
+            // console.log(Object.keys($datos).length);
     
             var xhr_nested = new XMLHttpRequest();
             xhr_nested.open('GET', url_nested);
             xhr_nested.onload = function(){
                 if (this.status === 200) {
-                    console.log(xhr_nested.responseText);
+                    // console.log(xhr_nested.responseText);
                     tiempo = 6;
                     ruleta(nombre, tiempo*1, xhr_nested.responseText.split(" | ")[0], $datos);
-                    sorteo(xhr_nested.responseText, tiempo+1)
+                    sorteo(xhr_nested.responseText, tiempo+1, e)
                 }
             }
             xhr_nested.send();
