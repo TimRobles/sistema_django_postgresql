@@ -33,6 +33,7 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
+        kwargs['filtro_tipo_venta'] = self.request.GET.get('tipo_venta')
         kwargs['filtro_estado'] = self.request.GET.get('estado')
         return kwargs
 
@@ -44,6 +45,7 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
+        filtro_tipo_venta = self.request.GET.get('tipo_venta')
         filtro_estado = self.request.GET.get('estado')
 
         contexto_filtro = []
@@ -67,6 +69,11 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
             condicion = Q(numero_factura = filtro_numero_factura)
             factura_venta = factura_venta.filter(condicion)
             contexto_filtro.append("numero_factura=" + filtro_numero_factura)
+
+        if filtro_tipo_venta:
+            condicion = Q(tipo_venta = filtro_tipo_venta)
+            factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("tipo_venta=" + filtro_tipo_venta)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
@@ -103,6 +110,7 @@ def FacturaVentaTabla(request):
         filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_fecha_emision = request.GET.get('fecha_emision')
+        filtro_tipo_venta = request.GET.get('tipo_venta')
         filtro_estado = request.GET.get('estado')
 
         contexto_filtro = []
@@ -126,6 +134,11 @@ def FacturaVentaTabla(request):
             condicion = Q(numero_factura = filtro_numero_factura)
             factura_venta = factura_venta.filter(condicion)
             contexto_filtro.append("numero_factura=" + filtro_numero_factura)
+
+        if filtro_tipo_venta:
+            condicion = Q(tipo_venta = filtro_tipo_venta)
+            factura_venta = factura_venta.filter(condicion)
+            contexto_filtro.append("tipo_venta=" + filtro_tipo_venta)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)

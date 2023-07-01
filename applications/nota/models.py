@@ -1,16 +1,18 @@
 from django.db import models
 from decimal import Decimal
+from applications.almacenes.models import Almacen
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.funciones import numeroXn, obtener_totales
+from applications.proveedores.models import Proveedor
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesComprobante, TipoCambio, Unidad
 from django.contrib.contenttypes.models import ContentType
-from applications.nota.managers import NotaCreditoManager
+from applications.nota.managers import NotaCreditoManager, NotaDevolucionManager
 
 from django.conf import settings
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
-from applications.variables import ESTADOS_DOCUMENTO, SUNAT_TRANSACTION, TIPO_COMPROBANTE, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_NOTA_CREDITO, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
+from applications.variables import ESTADO_NOTA_DEVOLUCION, ESTADOS_DOCUMENTO, SUNAT_TRANSACTION, TIPO_COMPROBANTE, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_NOTA_CREDITO, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
 
 # Create your models here.
 class NotaCredito(models.Model):
@@ -81,6 +83,10 @@ class NotaCredito(models.Model):
     @property
     def fecha(self):
         return self.fecha_emision
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
 
     def __str__(self):
         if self.numero_nota:
@@ -199,3 +205,83 @@ class NotaDebito(models.Model):
     def __str__(self):
         """Unicode representation of NotaDebito."""
         pass
+
+
+class NotaDevolucion(models.Model):
+    nro_nota_devolucion = models.IntegerField('Número de Nota de Devolucion', help_text='Correlativo', blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicial / NotaDevolucionMuestra
+    id_registro = models.IntegerField()
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    fecha_devolucion = models.DateField('Fecha de Devolucion', auto_now=False, auto_now_add=False)
+    observaciones = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_NOTA_DEVOLUCION, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaDevolucion_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaDevolucion_updated_by', editable=False)
+
+    objects = NotaDevolucionManager()
+
+    class Meta:
+        verbose_name = 'Nota de Devolucion'
+        verbose_name_plural = 'Notas de Devolucion'
+
+    @property
+    def fecha(self):
+        return self.fecha_devolucion
+
+    @property
+    def detalles(self):
+        return self.NotaDevolucionDetalle_nota_devolucion.all()
+    
+    @property
+    def recepcion_compra(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    def __str__(self):
+        return "NOTA DE DEVOLUCIÓN %s%s - %s %s %s" % (self.sociedad.abreviatura, numeroXn(self.nro_nota_devolucion, 6), self.fecha_devolucion.strftime('%d/%m/%Y'), self.created_by, self.recepcion_compra)
+
+
+class NotaDevolucionDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #NotaCredito
+    id_registro = models.IntegerField()
+    cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
+    #Control Calidad y Sede?
+    nota_devolucion = models.ForeignKey(NotaDevolucion, on_delete=models.PROTECT, related_name='NotaDevolucionDetalle_nota_devolucion')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaDevolucionDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaDevolucionDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Nota de Devolucion Detalle'
+        verbose_name_plural = 'Notas de Devolucion Detalles'
+        ordering = [
+            'nota_devolucion',
+            'item',
+            ]
+    
+    @property
+    def cantidad(self):
+        return self.cantidad_conteo
+    
+    @property
+    def sociedad(self):
+        return self.comprobante_compra_detalle.sociedad
+    
+    @property
+    def producto(self):
+        return self.comprobante_compra_detalle.producto
+
+    @property
+    def comprobante_compra_detalle(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    def __str__(self):
+        return "%s - %s" % (self.comprobante_compra_detalle, self.almacen)
