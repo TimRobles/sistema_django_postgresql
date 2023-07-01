@@ -33,7 +33,7 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_fecha_emision'] = self.request.GET.get('fecha_emision')
-        kwargs['filtro_tipo_venta'] = self.request.GET.get('tipo_venta')
+        kwargs['filtro_sunat_transaction'] = self.request.GET.get('sunat_transaction')
         kwargs['filtro_estado'] = self.request.GET.get('estado')
         return kwargs
 
@@ -45,7 +45,7 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
-        filtro_tipo_venta = self.request.GET.get('tipo_venta')
+        filtro_sunat_transaction = self.request.GET.get('sunat_transaction')
         filtro_estado = self.request.GET.get('estado')
 
         contexto_filtro = []
@@ -70,10 +70,10 @@ class FacturaVentaListView(PermissionRequiredMixin, FormView):
             factura_venta = factura_venta.filter(condicion)
             contexto_filtro.append("numero_factura=" + filtro_numero_factura)
 
-        if filtro_tipo_venta:
-            condicion = Q(tipo_venta = filtro_tipo_venta)
+        if filtro_sunat_transaction:
+            condicion = Q(confirmacion__sunat_transaction = filtro_sunat_transaction)
             factura_venta = factura_venta.filter(condicion)
-            contexto_filtro.append("tipo_venta=" + filtro_tipo_venta)
+            contexto_filtro.append("sunat_transaction=" + filtro_sunat_transaction)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
@@ -110,7 +110,7 @@ def FacturaVentaTabla(request):
         filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_fecha_emision = request.GET.get('fecha_emision')
-        filtro_tipo_venta = request.GET.get('tipo_venta')
+        filtro_sunat_transaction = request.GET.get('sunat_transaction')
         filtro_estado = request.GET.get('estado')
 
         contexto_filtro = []
@@ -135,10 +135,10 @@ def FacturaVentaTabla(request):
             factura_venta = factura_venta.filter(condicion)
             contexto_filtro.append("numero_factura=" + filtro_numero_factura)
 
-        if filtro_tipo_venta:
-            condicion = Q(tipo_venta = filtro_tipo_venta)
+        if filtro_sunat_transaction:
+            condicion = Q(confirmacion__sunat_transaction = filtro_sunat_transaction)
             factura_venta = factura_venta.filter(condicion)
-            contexto_filtro.append("tipo_venta=" + filtro_tipo_venta)
+            contexto_filtro.append("sunat_transaction=" + filtro_sunat_transaction)
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)

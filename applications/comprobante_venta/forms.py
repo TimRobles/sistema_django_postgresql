@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from applications.clientes.models import Cliente
 from applications.datos_globales.models import SeriesComprobante
 from applications.sociedad.models import Sociedad
-from applications.variables import CHOICE_VACIO, ESTADOS_DOCUMENTO, TIPO_VENTA
+from applications.variables import CHOICE_VACIO, ESTADOS_DOCUMENTO, SUNAT_TRANSACTION, TIPO_VENTA
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
@@ -82,7 +82,7 @@ class FacturaVentaBuscarForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    tipo_venta = forms.ChoiceField(choices=CHOICE_VACIO + TIPO_VENTA, required=False)
+    sunat_transaction = forms.ChoiceField(choices=CHOICE_VACIO + SUNAT_TRANSACTION, required=False)
     estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_DOCUMENTO, required=False)
 
     def __init__(self, *args, **kwargs):
@@ -90,14 +90,14 @@ class FacturaVentaBuscarForm(forms.Form):
         filtro_sociedad = kwargs.pop('filtro_sociedad')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_fecha_emision = kwargs.pop('filtro_fecha_emision')
-        filtro_tipo_venta = kwargs.pop('filtro_tipo_venta')
+        filtro_sunat_transaction = kwargs.pop('filtro_sunat_transaction')
         filtro_estado = kwargs.pop('filtro_estado')
         super(FacturaVentaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['numero_factura'].initial = filtro_numero_factura
         self.fields['sociedad'].initial = filtro_sociedad
         self.fields['cliente'].initial = filtro_cliente
         self.fields['fecha_emision'].initial = filtro_fecha_emision
-        self.fields['tipo_venta'].initial = filtro_tipo_venta
+        self.fields['sunat_transaction'].initial = filtro_sunat_transaction
         self.fields['estado'].initial = filtro_estado
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
