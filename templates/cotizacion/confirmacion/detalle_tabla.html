@@ -114,12 +114,14 @@
         {% endif %}
         
         {% if permiso_logistica %}
+            {% if confirmacion.estado != 3 %}
             <div class="col-auto">
                 <button data-form-url="{% url 'cotizacion_app:confirmacion_nota_salida' confirmacion.id %}"
                     class="delete btn btn-primary">
                     Generar Nota de Salida
                 </button>
             </div>
+            {% endif %}
             
             {% if confirmacion.NotaSalida_confirmacion_venta.all %}
             <div class="col-auto">
