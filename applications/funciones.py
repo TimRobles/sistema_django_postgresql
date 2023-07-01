@@ -170,7 +170,8 @@ def slug_aleatorio(modelo):
 def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, anticipo_regularizacion=False, tipo_cambio=Decimal('1')):
     respuesta = {}
 
-    if tipo_igv==8:
+    if tipo_igv==17:
+        precio_unitario_con_igv = precio_final_con_igv
         precio_unitario_sin_igv = precio_unitario_con_igv
         precio_final_sin_igv = precio_final_con_igv
     else:
@@ -181,13 +182,14 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
     descuento = (descuento_unitario * Decimal(cantidad)).quantize(Decimal('0.01'))
 
     total = (Decimal(cantidad) * precio_final_con_igv).quantize(Decimal('0.01'))
-    if tipo_igv==8:
+    if tipo_igv==17:
         subtotal = total
     else:
         subtotal = (Decimal(cantidad) * precio_final_sin_igv).quantize(Decimal('0.01'))
     igv = (total - subtotal).quantize(Decimal('0.01'))
 
     respuesta['precio_unitario_sin_igv'] = precio_unitario_sin_igv
+    respuesta['precio_unitario_con_igv'] = precio_unitario_con_igv
     respuesta['descuento'] = descuento
     respuesta['descuento_con_igv'] = (precio_unitario_con_igv * cantidad).quantize(Decimal('0.0000000001')) - total
     respuesta['subtotal'] = subtotal
@@ -221,6 +223,8 @@ def calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descue
         total_descuento_con_igv += resultado_linea['descuento_con_igv']
         if resultado_linea['tipo_igv']==8:
             total_exonerada += resultado_linea['subtotal']
+        elif resultado_linea['tipo_igv']==17:
+            total_gratuita += resultado_linea['subtotal']
         else:
             if resultado_linea['anticipo_regularizacion']:
                 suma_igv -= resultado_linea['igv']

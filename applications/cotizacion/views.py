@@ -881,7 +881,7 @@ class CotizacionVentaMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalU
             form.instance.cantidad = form.instance.cantidad
             respuesta = calculos_linea(form.instance.cantidad, precio_unitario_con_igv, precio_final_con_igv, igv(), form.instance.tipo_igv)
             form.instance.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
-            form.instance.precio_unitario_con_igv = precio_unitario_con_igv
+            form.instance.precio_unitario_con_igv = respuesta['precio_unitario_con_igv']
             form.instance.precio_final_con_igv = precio_final_con_igv
             form.instance.sub_total = respuesta['subtotal']
             form.instance.descuento = respuesta['descuento']
