@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Ajuste Inventario Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Ajuste Inventario Merchandising</h3>
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/ajuste_inventario_merchandising/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

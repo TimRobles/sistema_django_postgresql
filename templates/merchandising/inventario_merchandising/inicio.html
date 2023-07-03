@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Inventario Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Inventario Merchandising
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'merchandising_app:inventario_merchandising_registrar' %}"
+            data-table-url="{% url 'merchandising_app:inventario_merchandising_tabla' %}">
+            Registrar
+        </button>
+    </h3>
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/inventario_merchandising/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

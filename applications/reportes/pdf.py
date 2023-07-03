@@ -468,6 +468,7 @@ def generar_reporte_cobranza(global_sociedad, titulo):
 
 def reporte_cobranza():
     try:
+        print('reporte_cobranza')
         nombre_archivo_1 = "Reporte_Cobranza_MC_" + str(date.today()) + '.pdf'
         nombre_archivo_2 = "Reporte_Cobranza_MP_" + str(date.today()) + '.pdf'
         archivo_1 = generar_reporte_cobranza(global_sociedad = '1', titulo=nombre_archivo_1)

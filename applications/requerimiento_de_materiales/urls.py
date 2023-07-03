@@ -14,6 +14,7 @@ urlpatterns = [
     path('lista-requerimiento-material/eliminar/<pk>/', views.ListaRequerimientoMaterialDetalleDeleteView.as_view(), name='lista_requerimiento_material_eliminar_material'),
     path('lista-requerimiento-material/eliminar-lista/<pk>/', views.ListaRequerimientoMaterialDeleteView.as_view(), name='lista_requerimiento_material_eliminar'),
 
+    path('lista-requerimiento-merchandising/agregar-merchandising/<int:requerimiento_id>/', views.ListaRequerimientoMerchandisingDetalleCreateView.as_view(), name='lista_requerimiento_merchandising_agregar'),
 
     path('requerimiento-material-proveedor/', views.RequerimientoMaterialProveedorListView.as_view(), name='requerimiento_material_proveedor_inicio'),
     path('requerimiento-material-proveedor-tabla/', views.RequerimientoMaterialProveedorTabla, name='requerimiento_material_proveedor_tabla'),
@@ -29,6 +30,7 @@ urlpatterns = [
     path('requerimiento-material-proveedor/enviar_correo/<int:requerimiento_id>', views.RequerimientoMaterialProveedorEnviarCorreoView.as_view(), name='requerimiento_material_proveedor_enviar_correo'),
     path('requerimiento-material-proveedor/pdf/<slug>/', views.RequerimientoMaterialProveedorPdfView.as_view(), name='requerimiento_material_proveedor_pdf'),
 
+    path('requerimiento-merchandising-proveedor/agregar-merchandising/<int:requerimiento_id>/', views.RequerimientoMerchandisingProveedorDetalleCreateView.as_view(), name='requerimiento_merchandising_proveedor_agregar'),
 
     path('proveedor-interlocutor/<str:id_interlocutor_proveedor>/', views.ProveedorView, name='proveedor_interlocutor'),
 

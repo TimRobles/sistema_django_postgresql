@@ -1,5 +1,5 @@
 from django import forms
-from applications.crm.models import ClienteCRM, ClienteCRMDetalle
+from applications.crm.models import ClienteCRM, ClienteCRMDetalle, ProveedorCRM
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import Pais
 from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO
@@ -23,7 +23,6 @@ class ClienteCRMForm(BSModalModelForm):
 class ClienteCRMBuscarForm(forms.Form):
     razon_social = forms.CharField(label = 'Razón Social', max_length=100, required=False)
     medio = forms.ChoiceField(choices=((None, '--------------------'),) + MEDIO, required=False)
-    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_CLIENTE_CRM, required=False)
     pais = forms.ModelChoiceField(queryset=Pais.objects.all(), required=False)
     fecha_registro = forms.DateField(
         required=False,
@@ -34,6 +33,7 @@ class ClienteCRMBuscarForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
+    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_CLIENTE_CRM, required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
@@ -55,30 +55,36 @@ class ClienteCRMDetalleForm(BSModalModelForm):
     class Meta:
         model = ClienteCRMDetalle
         fields = (
-            'interlocutor',
-            'correo',
-            'telefono',
+            'fecha',
+            'comentario',
+            'monto',
+            'archivo_recibido',
+            'archivo_enviado',
             )
-    
-    # def clean_cliente(self):
-    #     cliente = self.cliente
-    #     if cliente:
-    #         interlocutor = self.fields['interlocutor']
-    #         lista = []
-    #         relaciones = ClienteInterlocutor.objects.filter(cliente = cliente.id)
-    #         for relacion in relaciones:
-    #             lista.append(relacion.interlocutor.id)
-
-    #         interlocutor.queryset = InterlocutorCliente.objects.filter(id__in = lista)
-
-    #     return cliente
+        
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
 
     def __init__(self, *args, **kwargs):
-        # self.cliente = kwargs.pop('cliente')
-        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
-        # interlocutor = kwargs.pop('interlocutor')
         super(ClienteCRMDetalleForm, self).__init__(*args, **kwargs)
-        # self.fields['interlocutor'].queryset = interlocutor_queryset
-        # self.fields['interlocutor'].initial = interlocutor
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ProveedorCRMForm(BSModalModelForm):
+    class Meta:
+        model = ProveedorCRM
+        fields = (
+            'proveedor_crm',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ProveedorCRMForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

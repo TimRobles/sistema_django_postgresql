@@ -48,6 +48,7 @@ urlpatterns = [
     path('caja-chica/', include('applications.caja_chica.urls')),
     path('crm/', include('applications.crm.urls')),
     path('tarea/', include('applications.tarea.urls')),
+    path('merchandising/', include('applications.merchandising.urls')),
 ]
 
 urlpatterns += [url(r'^ftp/(?P<path>.*)', serve, {'document_root': settings.FTP_ROOT})]

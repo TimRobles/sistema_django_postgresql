@@ -3,6 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 from django.shortcuts import render
 from django import forms
+import applications
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from applications.comprobante_venta.models import FacturaVentaDetalle
 from applications.home.templatetags.funciones_propias import nombre_usuario, redondear

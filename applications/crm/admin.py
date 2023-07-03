@@ -8,6 +8,7 @@ class ClienteCRMAdmin(admin.ModelAdmin):
         'id',
         'cliente_crm',
         'medio',
+        'fecha_registro',
         'estado',
         'created_by',
         'created_at',
@@ -24,10 +25,15 @@ class ClienteCRMAdmin(admin.ModelAdmin):
 @admin.register(ClienteCRMDetalle)
 class ClienteCRMDetalleAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
-        'interlocutor',
-        'correo',
-        'telefono',
+        # 'id',
+        # 'interlocutor',
+        # 'correo',
+        # 'telefono',
+        'fecha',
+        'comentario',
+        'monto',
+        'archivo_recibido',
+        'archivo_enviado',
         'cliente_crm',
         'created_by',
         'created_at',

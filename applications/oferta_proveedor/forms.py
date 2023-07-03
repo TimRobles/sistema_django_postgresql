@@ -192,3 +192,27 @@ class OrdenCompraSociedadForm(BSModalForm):
         super(OrdenCompraSociedadForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+######################################################---MERCHANDISING---######################################################
+
+
+class AgregarMerchandisingOfertaProveedorForm(BSModalModelForm):
+    merchandising = forms.ModelChoiceField(queryset=None)
+    unidad = forms.CharField(label='Unidad Base', required=False)
+
+    class Meta:
+        model = OfertaProveedorDetalle
+        fields=(
+            'merchandising',
+            'cantidad',
+            'unidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        lista_materiales = kwargs.pop('merchandisings')
+        super(AgregarMerchandisingOfertaProveedorForm, self).__init__(*args, **kwargs)
+        self.fields['merchandising'].queryset = lista_materiales
+        self.fields['unidad'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

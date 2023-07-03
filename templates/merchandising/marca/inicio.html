@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Marcas Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Marcas Merchandising
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'merchandising_app:marca_merchandising_registrar' %}"
+            data-table-url="{% url 'merchandising_app:marca_merchandising_tabla' %}">
+            Registrar Marca
+        </button>
+    </h3>
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/marca/inicio_tabla.html' %}
+    </div>
+    
+{% endblock contenido %}

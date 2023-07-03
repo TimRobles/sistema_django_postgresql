@@ -63,6 +63,11 @@
             class="create btn btn-primary">
             Agregar Material
         </button>
+        <button data-form-url="{% url 'requerimiento_material_app:requerimiento_merchandising_proveedor_agregar' requerimiento.id %}"
+            data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_detalle_tabla' requerimiento.id %}"
+            class="create btn btn-primary">
+            Agregar Merchandising
+        </button>
     </div>
 
     <div class="table-responsive" id="tabla">

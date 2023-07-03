@@ -8,6 +8,7 @@ from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.proveedores.models import InterlocutorProveedor, Proveedor,ProveedorInterlocutor
 from applications.material.models import Material, ProveedorMaterial
 from applications.datos_globales.models import Moneda
+from applications.merchandising.models import Merchandising
 from .models import ListaRequerimientoMaterialDetalle,RequerimientoMaterialProveedor,RequerimientoMaterialProveedorDetalle
 from applications.variables import INTERNACIONAL_NACIONAL
 
@@ -167,8 +168,10 @@ class RequerimientoMaterialProveedorDetalleForm(BSModalForm):
     def __init__(self, *args, **kwargs):
         materiales = kwargs.pop('materiales')
         lista_materiales = []
+        content_type = ContentType.objects.get_for_model(Material)
         for material in materiales:
-            lista_materiales.append(material.id_registro)
+            if material.content_type == content_type:
+                lista_materiales.append(material.id_registro)
 
         super(RequerimientoMaterialProveedorDetalleForm, self).__init__(*args, **kwargs)
         self.fields['material'].queryset = Material.objects.filter(id__in = lista_materiales)
@@ -223,3 +226,58 @@ class RequerimientoMaterialProveedorEnviarCorreoForm(BSModalForm):
         self.fields['internacional_nacional'].choices = INTERNACIONAL_NACIONAL
         self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
         self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'
+
+
+######################################################---MERCHANDISING---######################################################
+
+
+class ListaRequerimientoMerchandisingDetalleForm(BSModalForm):
+    merchandising = forms.ModelChoiceField(queryset=Merchandising.objects.all())
+    cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+    unidad = forms.CharField(label='Unidad Base', required=False)
+    comentario = forms.CharField(widget=forms.Textarea, required=False)
+    class Meta:
+        model = ListaRequerimientoMaterialDetalle
+        fields=(
+            'merchandising',
+            'cantidad',
+            'unidad',
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ListaRequerimientoMerchandisingDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
+        self.fields['unidad'].disabled = True
+
+
+class RequerimientoMerchandisingProveedorDetalleForm(BSModalForm):
+    merchandising = forms.ModelChoiceField(queryset=None)
+    cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+    unidad = forms.CharField(label='Unidad Base', required=False)
+    class Meta:
+        model = RequerimientoMaterialProveedorDetalle
+        fields=(
+            'merchandising',
+            'unidad',
+            'cantidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        merchandisings = kwargs.pop('merchandisings')
+        content_type = ContentType.objects.get_for_model(Merchandising)
+        lista_merchandising = []
+        for merchandising in merchandisings:
+            if merchandising.content_type == content_type:
+                lista_merchandising.append(merchandising.id_registro)
+
+        super(RequerimientoMerchandisingProveedorDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['merchandising'].queryset = Merchandising.objects.filter(id__in = lista_merchandising)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['unidad'].disabled = True
+        self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 0.001

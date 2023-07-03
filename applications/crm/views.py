@@ -1,12 +1,12 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.importaciones import *
-from applications.crm.forms import ClienteCRMBuscarForm, ClienteCRMDetalleForm, ClienteCRMForm
-from applications.crm.models import ClienteCRM, ClienteCRMDetalle
+from applications.crm.forms import ClienteCRMBuscarForm, ClienteCRMDetalleForm, ClienteCRMForm, ProveedorCRMForm
+from applications.crm.models import ClienteCRM, ClienteCRMDetalle, ProveedorCRM
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 class ClienteCRMListView(PermissionRequiredMixin, FormView):
-    permission_required = ('crm.view_clientes_crm')
+    permission_required = ('crm.view_clientecrm')
     template_name = "crm/clientes_crm/inicio.html"
     form_class = ClienteCRMBuscarForm
     success_url = '.'
@@ -51,7 +51,7 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_pais:
-            condicion = Q(pais = filtro_pais)
+            condicion = Q(cliente_crm__pais = filtro_pais)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"pais={filtro_pais}")        
         
@@ -113,7 +113,7 @@ def ClienteCRMTabla(request):
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_pais:
-            condicion = Q(pais = filtro_pais)
+            condicion = Q(cliente_crm__pais = filtro_pais)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"pais={filtro_pais}")
 
@@ -149,7 +149,7 @@ def ClienteCRMTabla(request):
         return JsonResponse(data)
 
 class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('crm.add_clientes_crm')
+    permission_required = ('crm.add_clientecrm')
     model = ClienteCRM
     template_name = "crm/clientes_crm/form_cliente.html"
     form_class = ClienteCRMForm
@@ -173,7 +173,7 @@ class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 
 class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('crm.change_clientes_crm')
+    permission_required = ('crm.change_clientecrm')
     model = ClienteCRM
     template_name = "crm/clientes_crm/form_cliente.html"
     form_class = ClienteCRMForm
@@ -197,7 +197,7 @@ class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class ClienteCRMDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('crm.view_clientecrm')
+    permission_required = ('crm.view_clientecrmdetalle')
     model = ClienteCRM
     template_name = "crm/clientes_crm/detalle.html"
     context_object_name = 'contexto_cliente_crm'
@@ -225,29 +225,13 @@ def ClienteCRMDetailTabla(request, pk):
         return JsonResponse(data)
 
 class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('crm.add_representantelegal')
+    permission_required = ('crm.add_clientecrmdetalle')
     model = ClienteCRMDetalle
-    template_name = "crm/clientes_crm/form_detalle.html"
+    template_name = "includes/formulario generico.html"
     form_class = ClienteCRMDetalleForm
     
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.kwargs['cliente_crm_id']})
-    
-    # def get_form_kwargs(self):
-    #     kwargs = super().get_form_kwargs()
-    #     detalle = kwargs['instance']
-    #     print('************************')
-    #     print(detalle)
-    #     print('************************')
-    #     lista = []
-    #     relaciones = ClienteInterlocutor.objects.filter(cliente = detalle.cliente_crm.cliente_crm)
-    #     for relacion in relaciones:
-    #         lista.append(relacion.interlocutor.id)
-
-    #     kwargs['cliente'] = detalle.cliente_crm
-    #     kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
-    #     kwargs['interlocutor'] = detalle.interlocutor
-    #     return kwargs
 
     def form_valid(self, form):
         form.instance.cliente_crm = ClienteCRM.objects.get(id = self.kwargs['cliente_crm_id'])
@@ -258,5 +242,99 @@ class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
     def get_context_data(self, **kwargs):
         context = super(ClienteCRMDetalleCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
-        context['titulo']="Detalle Cliente CRM"
+        context['titulo']="Información Adicional"
         return context
+    
+
+class ClienteCRMDetalleUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = ClienteCRMDetalleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.object.cliente_crm.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteCRMDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información Adicional"
+        return context
+    
+
+class ClienteCRMDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteCRMDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información Adicional"
+        context['item'] = self.get_object().comentario
+        context['dar_baja'] = "true"
+        return context
+    
+
+class ProveedorCRMListView(PermissionRequiredMixin, ListView):
+    permission_required = ('crm.view_proveedorcrm')
+    model = ProveedorCRM
+    template_name = "crm/proveedor_crm/inicio.html"
+    context_object_name = 'contexto_proveedor_crm'
+
+def ProveedorCRMTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/proveedor_crm/inicio_tabla.html'
+        context = {}
+        context['contexto_proveedor_crm'] = ProveedorCRM.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class ProveedorCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_proveedorcrm')
+    model = ProveedorCRM
+    template_name = "crm/proveedor_crm/form.html"
+    form_class = ProveedorCRMForm
+    success_url = reverse_lazy('crm_app:proveedor_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProveedorCRMCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Proveedor CRM"
+        return context
+
+    def form_valid(self, form):
+
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
