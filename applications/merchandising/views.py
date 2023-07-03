@@ -12,10 +12,26 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovim
 from ..orden_compra.models import OrdenCompraDetalle
 
 from .forms import (
-    AjusteInventarioMerchandisingDetalleForm, AjusteInventarioMerchandisingForm, InventarioMerchandisingDetalleForm, InventarioMerchandisingForm, InventarioMerchandisingUpdateForm, MerchandisingBuscarForm, ModeloMerchandisingForm, MarcaMerchandisingForm, MerchandisingForm, ProductoSunatBuscarForm,
-    RelacionMerchandisingComponenteForm, EspecificacionMerchandisingForm,
-    DatasheetMerchandisingForm, DatosImportacionMerchandisingForm, ProductoSunatMerchandisingForm,
-    ImagenMerchandisingForm,VideoMerchandisingForm,ProveedorMerchandisingForm,EquivalenciaUnidadMerchandisingForm,IdiomaMerchandisingForm,
+    AjusteInventarioMerchandisingDetalleForm, 
+    AjusteInventarioMerchandisingForm, 
+    InventarioMerchandisingDetalleForm, 
+    InventarioMerchandisingForm, 
+    InventarioMerchandisingUpdateForm, 
+    MerchandisingBuscarForm, 
+    ModeloMerchandisingForm, 
+    MarcaMerchandisingForm, 
+    MerchandisingForm, 
+    ProductoSunatBuscarForm,
+    RelacionMerchandisingComponenteForm, 
+    EspecificacionMerchandisingForm,
+    DatasheetMerchandisingForm, 
+    DatosImportacionMerchandisingForm, 
+    ProductoSunatMerchandisingForm,
+    ImagenMerchandisingForm,
+    VideoMerchandisingForm,
+    ProveedorMerchandisingForm,
+    EquivalenciaUnidadMerchandisingForm,
+    IdiomaMerchandisingForm,
     )
 
 from .models import (

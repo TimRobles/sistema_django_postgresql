@@ -1,7 +1,15 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.importaciones import *
-from applications.crm.forms import ClienteCRMBuscarForm, ClienteCRMDetalleForm, ClienteCRMForm, ProveedorCRMForm, EventoCRMForm, EventoCRMBuscarForm, EventoCRMDetalleDescripcionForm
+from applications.crm.forms import (
+    ClienteCRMBuscarForm, 
+    ClienteCRMDetalleForm, 
+    ClienteCRMForm, 
+    ProveedorCRMForm, 
+    EventoCRMForm, 
+    EventoCRMBuscarForm, 
+    EventoCRMDetalleDescripcionForm,
+    )
 from applications.crm.models import ClienteCRM, ClienteCRMDetalle, ProveedorCRM, EventoCRM
 
 class ClienteCRMListView(PermissionRequiredMixin, FormView):
@@ -79,6 +87,7 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
         context['contexto_pagina'] = clientes_crm
         return context
 
+
 def ClienteCRMTabla(request):
     data = dict()
     if request.method == 'GET':
@@ -147,6 +156,7 @@ def ClienteCRMTabla(request):
         )
         return JsonResponse(data)
 
+
 class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_clientecrm')
     model = ClienteCRM
@@ -207,6 +217,7 @@ class ClienteCRMDetailView(PermissionRequiredMixin, DetailView):
         context['cliente_crm_detalle'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm)
         return context
 
+
 def ClienteCRMDetailTabla(request, pk):
     data = dict()
     if request.method == 'GET':
@@ -222,6 +233,7 @@ def ClienteCRMDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
 
 class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_clientecrmdetalle')
@@ -398,6 +410,7 @@ class EventoCRMListView(FormView):
         context['contexto_evento_crm'] = eventos_crm
         return context
 
+
 def EventoCRMTabla(request):
     data = dict()
     if request.method == 'GET':
@@ -470,6 +483,7 @@ class EventoCRMCreateView(BSModalCreateView):
         context['titulo']="Evento CRM"
         return context
 
+
 class EventoCRMUpdateView(BSModalUpdateView):
     model = EventoCRM
     template_name = "includes/formulario generico.html"
@@ -487,7 +501,6 @@ class EventoCRMUpdateView(BSModalUpdateView):
         return context
 
 
-
 class EventoCRMDetailView(DetailView):
     model = EventoCRM
     template_name = "crm/eventos_crm/detalle.html"
@@ -499,6 +512,7 @@ class EventoCRMDetailView(DetailView):
         context['contexto_evento_crm'] = evento_crm
         
         return context
+
 
 def EventoCRMDetailTabla(request, pk):
     data = dict()
@@ -515,6 +529,7 @@ def EventoCRMDetailTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
 
 class  EventoCRMDetalleDescripcionView(BSModalUpdateView):
     model = EventoCRM

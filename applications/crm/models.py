@@ -35,6 +35,7 @@ class ClienteCRM(models.Model):
     def __str__(self):
         return str(self.cliente_crm)
 
+
 class ClienteCRMDetalle(models.Model):
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -99,6 +100,7 @@ def actualizar_estado_cliente_crm(id_cliente=None):
         else:
             cliente.estado == 1
         cliente.save()
+
 
 class EventoCRM(models.Model):
     

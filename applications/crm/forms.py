@@ -3,7 +3,6 @@ from applications.crm.models import ClienteCRM, ClienteCRMDetalle, ProveedorCRM,
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import Pais
 from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM
-from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 
 class ClienteCRMForm(BSModalModelForm):
@@ -90,8 +89,6 @@ class ProveedorCRMForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-
-
 class EventoCRMForm(BSModalModelForm):
     class Meta:
         model = EventoCRM
@@ -124,6 +121,7 @@ class EventoCRMForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
 
+
 class EventoCRMBuscarForm(forms.Form):
     pais = forms.ModelChoiceField(queryset=Pais.objects.all(), required=False)
     estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_EVENTO_CRM, required=False)
@@ -147,6 +145,7 @@ class EventoCRMBuscarForm(forms.Form):
         self.fields['fecha_inicio'].initial = filtro_fecha_inicio
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
 
 class EventoCRMDetalleDescripcionForm(BSModalModelForm):
     class Meta:

@@ -22,7 +22,8 @@ from .models import (
     VideoMerchandising,
     ProveedorMerchandising,
     EquivalenciaUnidadMerchandising,
-    IdiomaMerchandising)
+    IdiomaMerchandising,
+    )
 from applications.cotizacion.models import PrecioListaMaterial
 from applications.comprobante_compra.models import ComprobanteCompraPI
 from django.contrib.auth import get_user_model
