@@ -164,6 +164,7 @@ class DeudaNotaForm(BSModalModelForm):
             nota = Nota.objects.get(id=self.instance.id_registro)
             self.fields['nota'].queryset = Nota.objects.filter(id=nota.id)
             self.fields['nota'].initial = nota
+            self.fields['nota'].help_text = 'Ingresa el monto de la Nota de Cŕedito'
         except:
             self.fields['tipo_cambio'].initial = tipo_cambio
 
@@ -195,6 +196,7 @@ class DeudaPagarForm(BSModalModelForm):
             ingreso = Ingreso.objects.get(id=self.instance.id_registro)
             self.fields['ingresos'].queryset = Ingreso.objects.filter(id=ingreso.id)
             self.fields['ingresos'].initial = ingreso
+            self.fields['ingresos'].help_text = 'Ingresa el Monto o Razon Social del Banco'
         except:
             self.fields['tipo_cambio'].initial = tipo_cambio
 

@@ -21,7 +21,7 @@
                 <td class="text-nowrap text-end">{{ cajachica.moneda.simbolo }} {{ cajachica.saldo_final|redondear|intcomma }}</td>
                 <td>{{ cajachica.get_estado_display }}</td>
                 <td class="text-nowrap text-center">
-                    {% if cajachica.estado == 1 %}
+                    {% if cajachica.estado == 1 and request.user == cajachica.usuario and cajachica.cantidad_requerimientos == 0 %}
                         <button data-form-url="{% url 'caja_chica_app:caja_chica_actualizar' cajachica.id %}"
                             data-table-url="{% url 'caja_chica_app:caja_chica_tabla' %}"
                             data-keep-open="true"

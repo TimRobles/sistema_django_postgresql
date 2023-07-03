@@ -151,7 +151,7 @@
                     <th class="pe-2">Transportista:</th>
                     <td>
                         {% if guia.transportista %}
-                        {{ guia.transportista }}
+                        {{ guia.transportista }} ({{ guia.transportista.get_estado_sunat_display }})
                         {% endif %}    
                     </td>
                     <td rowspan="2">

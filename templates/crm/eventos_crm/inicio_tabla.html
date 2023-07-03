@@ -1,0 +1,37 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha Inicio</th>
+            <th>Fecha Cierre</th>
+            <th>Titulo</th>
+            <th>Pais</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for evento in contexto_pagina %}
+        <tr>
+            <td>{{ evento.fecha_inicio|date:'d/m/Y'}}</td>
+            <td>{{ evento.fecha_cierre|date:'d/m/Y'}}</td>
+            <td>{{ evento.titulo}}</td>
+            <td>{{ evento.pais}}</td>
+            <td>{{ evento.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'crm_app:evento_crm_actualizar' evento.id %}"
+                    data-table-url="{% url 'crm_app:evento_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <a href="{% url 'crm_app:evento_crm_detalle' evento.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

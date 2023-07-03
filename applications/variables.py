@@ -93,7 +93,7 @@ CONDICION_SUNAT = (
 
 ESTADO_SUNAT = (
     (1, 'Activo'),
-    (2, 'Suspensión temporal'),
+    (2, 'Suspension temporal'),
     (3, 'Baja provisional'),
     (4, 'Baja definitiva'),
     (5, 'Baja provisional de oficio'),
@@ -165,6 +165,12 @@ ESTADOS = (
     (2, 'BAJA'),
     )
 
+ESTADOS_RECIBO = (
+    (1, 'PENDIENTE'),
+    (2, 'CANCELADO'),
+    (3, 'ANULADO'),
+    )
+
 ESTADOS_TELECREDITO = (
     (1, 'ABIERTO'),
     (2, 'SOLICITADO'),
@@ -188,9 +194,22 @@ ESTADO_NOTA_INGRESO = (
     (3, 'ANULADO'),
     )
 
+ESTADO_NOTA_DEVOLUCION = (
+    (1, 'BORRADOR'),
+    (2, 'FINALIZADO'),
+    (3, 'ANULADO'),
+    )
+
 ESTADO_COMPROBANTE = (
     (1, 'PENDIENTE'),
     (2, 'ANULADO'),
+    (3, 'FINALIZADO'),
+    )
+
+ESTADO_DOCUMENTO = (
+    (1, 'PENDIENTE'),
+    (2, 'CONFIRMADO'),
+    (3, 'FINALIZADO'),
     )
 
 ESTADO_COMPROBANTE_PI = (
@@ -415,6 +434,37 @@ ESTADOS_CLIENTE_CRM = (
     (6, 'DEUDOR'),
 )
 
+ESTADOS_EVENTO_CRM = (
+    (1, 'ASIGNADO'),
+    (2, 'EN PROCESO'),
+    (3, 'FINALIZADO'),
+    )
+
+PRIORIDAD_TAREA = (
+    (1, 'ALTA'),
+    (2, 'MEDIA'),
+    (3, 'BAJA'),
+    )
+    
+ESTADO_TAREA = (
+    (1, 'ASIGNADO'),
+    (2, 'EN PROCESO'),
+    (3, 'FINALIZADO'),
+    )
+    
+MOTIVO_INASISTENCIA = (
+    (1, 'ASISTIO'),
+    (2, 'FALTA'),
+    (3, 'PERMISO'),
+    (4, 'VACACIONES'),
+    )
+
+ESTADO_SOLICITUD_INASISTENCIA = (
+    (1, 'SOLICITADO'),
+    (2, 'APROBADO'),
+    (3, 'RECHAZADO'),
+    )
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
@@ -490,6 +540,8 @@ MENSAJE_CONCLUIR_CHEQUE_FISICO = 'Operación exitosa: El Cheque Fisico fue concl
 MENSAJE_SOLICITAR_CHEQUE= 'Operación exitosa: El Cheque fue Solicitado.'
 MENSAJE_EDITAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Abierto.'
 MENSAJE_POR_CERRAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Por Cerrar.'
+
+MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO = 'Operación exitosa: El Documento de Reclamo fue Confirmado.'
 
 
 COLOR_DEFAULT = '#028A0F'

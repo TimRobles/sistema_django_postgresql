@@ -9,6 +9,7 @@
 {% block contenido %}
     <h3>Caja Chica {{ cajachica.periodo }} | {{ cajachica.usuario|nombre_usuario }}
         <a href="{% url 'caja_chica_app:caja_chica_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+        <a href="{% url 'caja_chica_app:caja_chica_pdf' cajachica.id %}" target="_blank"><span class="badge bg-danger">Ver Pdf</span></a>
 
         {% if cajachica.estado == 1 and request.user == cajachica.usuario %}
         <button class="create badge bg-primary"

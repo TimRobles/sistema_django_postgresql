@@ -1,11 +1,12 @@
-from applications.funciones import numeroXn, registrar_excepcion
+from decimal import Decimal
+from applications.funciones import calculos_linea, igv, numeroXn, registrar_excepcion
 from applications.links import link_detalle
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
-from applications.movimiento_almacen.models import MovimientosAlmacen
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
-from applications.recepcion_compra.forms import ArchivoRecepcionCompraForm, FotoRecepcionCompraForm, RecepcionCompraAnularForm, RecepcionCompraGenerarNotaIngresoForm
-from .models import FotoRecepcionCompra, RecepcionCompra, ArchivoRecepcionCompra
+from applications.recepcion_compra.forms import ArchivoRecepcionCompraForm, DocumentoReclamoDetalleForm, DocumentoReclamoDetalleMontoForm, FotoRecepcionCompraForm, RecepcionCompraAnularForm, RecepcionCompraGenerarNotaIngresoForm
+from .models import DocumentoReclamo, DocumentoReclamoDetalle, FotoRecepcionCompra, RecepcionCompra, ArchivoRecepcionCompra
 
 # Create your views here.
 
@@ -232,4 +233,354 @@ class RecepcionCompraGenerarNotaIngresoView(PermissionRequiredMixin, BSModalForm
         context = super(RecepcionCompraGenerarNotaIngresoView, self).get_context_data(**kwargs)
         context['accion'] = "Recibir"
         context['titulo'] = "Comprobante de Compra"
+        return context
+
+
+class RecepcionCompraGenerarDocumentoReclamoView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.view_documentoreclamo')
+    template_name = "includes/eliminar generico.html"
+    model = RecepcionCompra
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('recepcion_compra_app:documento_reclamo_detalle', kwargs={'pk':self.kwargs['documento'].id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                recepcion_compra = self.get_object()
+                numero_documento = len(DocumentoReclamo.objects.all()) + 1
+                documento = DocumentoReclamo.objects.create(
+                    nro_documento_reclamo = numero_documento,
+                    recepcion_compra = recepcion_compra,
+                    fecha_documento=date.today(),
+                    usuario=self.request.user,
+                    estado=1,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                materiales = recepcion_compra.content_type.model_class().objects.ver_detalle(recepcion_compra.id_registro)
+                for material in materiales:
+                    if material.exceso == Decimal('0.00') and material.pendiente > Decimal('0.00'):
+                        cantidad = material.pendiente
+                        tipo = -1
+                    elif material.exceso > Decimal('0.00') and material.pendiente == Decimal('0.00'):
+                        cantidad = material.exceso
+                        tipo = 1
+                    elif material.exceso == Decimal('0.00') and material.pendiente == Decimal('0.00'):
+                        continue
+                    
+                    calculos = calculos_linea(cantidad, material.precio_unitario_con_igv, material.precio_final_con_igv, igv(documento.fecha), material.tipo_igv)
+                    DocumentoReclamoDetalle.objects.create(
+                        documento_reclamo=documento,
+                        item=material.item,
+                        content_type=ContentType.objects.get_for_model(material.producto),
+                        id_registro=material.producto.id,
+                        cantidad=cantidad,
+                        tipo=tipo,
+                        precio_unitario_sin_igv=calculos['precio_unitario_sin_igv'],
+                        precio_unitario_con_igv=material.precio_unitario_con_igv,
+                        precio_final_con_igv=material.precio_final_con_igv,
+                        descuento=calculos['subtotal'],
+                        sub_total=calculos['descuento'],
+                        igv=calculos['igv'],
+                        total=calculos['total'],
+                        tipo_igv=material.tipo_igv,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                self.kwargs['documento'] = documento
+                self.request.session['primero'] = False
+            return HttpResponseRedirect(self.get_success_url())
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return reverse_lazy('nota_ingreso_app:nota_ingreso_detalle', kwargs={'pk':self.get_object().id})
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RecepcionCompraGenerarDocumentoReclamoView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Documento de Reclamo"
+        context['texto'] = ""
+        return context
+
+
+class DocumentoReclamoListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('recepcion_compra.view_documentoreclamo')
+    template_name = "recepcion_compra/documento_reclamo/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoListView, self).get_context_data(**kwargs)
+        recepcion_compra = RecepcionCompra.objects.get(id=self.kwargs['id_recepcion'])
+        documento_reclamos = DocumentoReclamo.objects.filter(recepcion_compra=recepcion_compra)
+        context['recepcion_compra'] = recepcion_compra
+        context['documento_reclamos'] = documento_reclamos
+        context['regresar'] = link_detalle(ContentType.objects.get_for_model(documento_reclamos.latest('id')), documento_reclamos.latest('id').recepcion_compra.id)
+        return context
+
+
+class DocumentoReclamoDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('recepcion_compra.view_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "recepcion_compra/documento_reclamo/detalle.html"
+    context_object_name = 'contexto_documento_reclamo'
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = self.get_object().DocumentoReclamoDetalle_documento_reclamo.all()
+        context['regresar'] = link_detalle(ContentType.objects.get_for_model(self.get_object()), self.get_object().recepcion_compra.id)
+        return context
+    
+
+def DocumentoReclamoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'recepcion_compra/documento_reclamo/detalle_tabla.html'
+        context = {}
+        documento_reclamo = DocumentoReclamo.objects.get(id = pk)
+        context['contexto_documento_reclamo'] = documento_reclamo
+        context['materiales'] = documento_reclamo.DocumentoReclamoDetalle_documento_reclamo.all()
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class DocumentoReclamoDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('recepcion_compra.update_documentoreclamodetalle')
+    model = DocumentoReclamoDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = DocumentoReclamoDetalleForm
+    success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Documento Reclamo Detalle"
+        return context
+
+
+class DocumentoReclamoDetalleMontoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('recepcion_compra.update_documentoreclamodetalle')
+    model = DocumentoReclamoDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = DocumentoReclamoDetalleMontoForm
+    success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.nuevo_total = form.instance.total * form.instance.factor + form.instance.adicional
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoDetalleMontoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Documento Reclamo Detalle"
+        return context
+
+
+class DocumentoReclamoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self) -> str:
+        return link_detalle(ContentType.objects.get_for_model(self.get_object()), self.get_object().recepcion_compra.id)
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = 'Eliminar'
+        context['titulo'] = 'Documento de Reclamo'
+        context['item'] = self.get_object()
+        return context
+
+
+class DocumentoReclamoConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('recepcion_compra_app:documento_reclamo_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            documento_reclamo = self.get_object()
+            documento_reclamo.estado = 2
+            documento_reclamo.save()
+            messages.success(request, MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoConfirmarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Confirmar'
+        context['titulo'] = 'Documento de Reclamo'
+        context['item'] = self.get_object()
+        return context
+
+
+class DocumentoReclamoConfirmarRevertirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('recepcion_compra_app:documento_reclamo_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            documento_reclamo = self.get_object()
+            documento_reclamo.estado = 1
+            documento_reclamo.save()
+            messages.success(request, MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoConfirmarRevertirView, self).get_context_data(**kwargs)
+        context['accion'] = 'Confirmar'
+        context['titulo'] = 'Documento de Reclamo'
+        context['item'] = self.get_object()
+        return context
+
+
+class DocumentoReclamoFinalizarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('recepcion_compra_app:documento_reclamo_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            documento_reclamo = self.get_object()
+            documento_reclamo.estado = 3
+            documento_reclamo.save()
+            for detalle in documento_reclamo.DocumentoReclamoDetalle_documento_reclamo.all():
+                if detalle.accion==1:
+                    tipo_movimiento = TipoMovimiento.objects.get(codigo=162) #Descuento a Proveedor por defecto
+                elif detalle.accion==2:
+                    tipo_movimiento = TipoMovimiento.objects.get(codigo=163) #No hacer nada envío Proveedor
+                elif detalle.accion==3:
+                    tipo_movimiento = TipoMovimiento.objects.get(codigo=164) #Por pagar a Proveedor
+                
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    tipo_movimiento=tipo_movimiento,
+                    tipo_stock=tipo_movimiento.tipo_stock_inicial,
+                    signo_factor_multiplicador = detalle.tipo,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(documento_reclamo),
+                    id_registro_documento_proceso=documento_reclamo.id,
+                    almacen=None,
+                    sociedad=documento_reclamo.recepcion_compra.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    transformacion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                    
+            messages.success(request, MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoFinalizarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Finalizar'
+        context['titulo'] = 'Documento de Reclamo'
+        context['item'] = self.get_object()
+        return context
+
+
+class DocumentoReclamoFinalizarRevertirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('recepcion_compra.delete_documentoreclamo')
+    model = DocumentoReclamo
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy('recepcion_compra_app:documento_reclamo_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            documento_reclamo = self.get_object()
+            documento_reclamo.estado = 2
+            documento_reclamo.save()
+            for detalle in documento_reclamo.DocumentoReclamoDetalle_documento_reclamo.all():
+                if detalle.accion==1:
+                    tipo_movimiento = TipoMovimiento.objects.get(codigo=162) #Descuento a Proveedor por defecto
+                elif detalle.accion==2:
+                    tipo_movimiento = TipoMovimiento.objects.get(codigo=163) #No hacer nada envío Proveedor
+                elif detalle.accion==3:
+                    tipo_movimiento = TipoMovimiento.objects.get(codigo=164) #Por pagar a Proveedor
+                
+                movimiento_uno = MovimientosAlmacen.objects.get(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad,
+                    tipo_movimiento=tipo_movimiento,
+                    tipo_stock=tipo_movimiento.tipo_stock_inicial,
+                    signo_factor_multiplicador = detalle.tipo,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(documento_reclamo),
+                    id_registro_documento_proceso=documento_reclamo.id,
+                    almacen=None,
+                    sociedad=documento_reclamo.recepcion_compra.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    transformacion=False,
+                )
+                movimiento_uno.delete()
+                    
+            messages.success(request, MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoReclamoFinalizarRevertirView, self).get_context_data(**kwargs)
+        context['accion'] = 'Revertir Finalizar'
+        context['titulo'] = 'Documento de Reclamo'
+        context['item'] = self.get_object()
         return context

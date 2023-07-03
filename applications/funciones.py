@@ -1,5 +1,6 @@
 from datetime import date, datetime
 import json
+from time import sleep
 import requests
 from decimal import Decimal
 from requests.adapters import HTTPAdapter
@@ -14,6 +15,7 @@ from django.contrib import messages
 import sys
 
 def consulta_ruc(ruc):
+    sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
     url = "https://api.apis.net.pe/v1/ruc?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
@@ -45,6 +47,7 @@ def consulta_ruc(ruc):
 #     }
 
 def consulta_dni(dni):
+    sleep(2)
     token = "7c95cc7e139486c8b86f15f9d96ec096" #Libre
     url = "https://api.apifacturacion.com/dni/"
     data = {"token" : "%s" % token}
@@ -65,6 +68,7 @@ def consulta_dni(dni):
 #     }
 
 def consulta_dni2(dni):
+    sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
     url = "https://api.apis.net.pe/v1/dni?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
@@ -100,6 +104,7 @@ def consulta_dni2(dni):
 #}
 
 def consulta_sunat_tipo_cambio(fecha: date):
+    sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
     url = "https://api.apis.net.pe/v1/tipo-cambio-sunat?fecha="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
@@ -165,7 +170,8 @@ def slug_aleatorio(modelo):
 def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, anticipo_regularizacion=False, tipo_cambio=Decimal('1')):
     respuesta = {}
 
-    if tipo_igv==8:
+    if tipo_igv==17:
+        precio_unitario_con_igv = precio_final_con_igv
         precio_unitario_sin_igv = precio_unitario_con_igv
         precio_final_sin_igv = precio_final_con_igv
     else:
@@ -176,13 +182,14 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
     descuento = (descuento_unitario * Decimal(cantidad)).quantize(Decimal('0.01'))
 
     total = (Decimal(cantidad) * precio_final_con_igv).quantize(Decimal('0.01'))
-    if tipo_igv==8:
+    if tipo_igv==17:
         subtotal = total
     else:
         subtotal = (Decimal(cantidad) * precio_final_sin_igv).quantize(Decimal('0.01'))
     igv = (total - subtotal).quantize(Decimal('0.01'))
 
     respuesta['precio_unitario_sin_igv'] = precio_unitario_sin_igv
+    respuesta['precio_unitario_con_igv'] = precio_unitario_con_igv
     respuesta['descuento'] = descuento
     respuesta['descuento_con_igv'] = (precio_unitario_con_igv * cantidad).quantize(Decimal('0.0000000001')) - total
     respuesta['subtotal'] = subtotal
@@ -216,6 +223,8 @@ def calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descue
         total_descuento_con_igv += resultado_linea['descuento_con_igv']
         if resultado_linea['tipo_igv']==8:
             total_exonerada += resultado_linea['subtotal']
+        elif resultado_linea['tipo_igv']==17:
+            total_gratuita += resultado_linea['subtotal']
         else:
             if resultado_linea['anticipo_regularizacion']:
                 suma_igv -= resultado_linea['igv']
@@ -485,3 +494,12 @@ def get_datetime(date_time):
     fecha_split = fecha.split('-')
     hora_split = hora.split(':')
     return datetime(int(fecha_split[0]), int(fecha_split[1]), int(fecha_split[2]), int(hora_split[0]), int(hora_split[1]))
+
+
+def buscar_diccionario(diccionario, objeto):
+    print(diccionario, objeto)
+    for k, v in diccionario:
+        print(k, v)
+        if v.upper() == objeto.upper():
+            return k
+    return None

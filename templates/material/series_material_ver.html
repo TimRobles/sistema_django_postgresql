@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Series Materiales
+{% endblock titulo %}
+
+{% block contenido %}
+<h3>{{ material }}</h3>
+
+<form action="" method="get" autocomplete="off">
+    {% include 'includes/formulario lineal.html' %}
+    <button type="submit" class="btn btn-success" title="Buscar">
+        <i class="bi bi-search"></i>
+    </button>
+    <a class="btn btn-success" href="{% url 'material_app:series_ver' material.id %}">Limpiar</a>
+</form>
+
+{% include 'includes/paginador.html' %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Serie</th>
+                <th>Sociedad</th>
+                <th>Almacén</th>
+                <th>Cliente</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for serie in series %}
+            <tr>
+                <td>{{ serie.serie_base }}</td>
+                <td>{{ serie.sociedad }}</td>
+                <td>
+                    {% if serie.almacen %}    
+                    {{ serie.almacen }}
+                    {% endif %}
+                </td>
+                <td>{{ serie.cliente }}</td>
+                <td>{{ serie.estado }}</td>
+            </tr>
+            {% endfor %} 
+        </tbody>
+    </table>
+</div>
+
+{% include 'includes/paginador inferior.html' %}
+
+{% endblock contenido %}

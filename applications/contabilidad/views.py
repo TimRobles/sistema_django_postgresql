@@ -3,6 +3,7 @@ from re import template
 from django.db import models
 from django.shortcuts import render
 from django.core.paginator import Paginator
+from applications.caja_chica.funciones import cheque_monto_usado
 from applications.contabilidad.funciones import calcular_datos_boleta
 from applications.datos_globales.models import RemuneracionMinimaVital
 from applications.funciones import registrar_excepcion
@@ -19,6 +20,8 @@ from .forms import(
     ChequeForm,
     ChequeReciboBoletaPagoAgregarForm,
     ChequeReciboBoletaPagoUpdateForm,
+    ChequeReciboCajaChicaAgregarForm,
+    ChequeReciboCajaChicaUpdateForm,
     ChequeReciboServicioAgregarForm,
     ChequeReciboServicioUpdateForm,
     ChequeVueltoExtraForm,
@@ -30,6 +33,7 @@ from .forms import(
     BoletaPagoActualizarForm,
     ReciboBoletaPagoForm,
     ReciboBoletaPagoActualizarForm,
+    ServicioBuscarForm,
     ServicioForm,
     ReciboServicioForm,
     TelecreditoForm,
@@ -369,7 +373,7 @@ class BoletaPagoListView(FormView):
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
-            condicion = Q(created_by = filtro_usuario)
+            condicion = Q(datos_planilla__usuario = filtro_usuario)
             boleta_pago = boleta_pago.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 
@@ -430,7 +434,7 @@ def BoletaPagoTabla(request):
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
-            condicion = Q(created_by = filtro_usuario)
+            condicion = Q(datos_planilla__usuario = filtro_usuario)
             boleta_pago = boleta_pago.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 
@@ -638,12 +642,89 @@ class ReciboBoletaPagoDeleteView(BSModalDeleteView):
 
 #---------------------------------------------------------------------------------
 
-class ServicioListView(TemplateView):
+class ServicioListView(FormView):
+    form_class = ServicioBuscarForm
     template_name = "contabilidad/servicio/inicio.html"
+
+    def get_form_kwargs(self):
+        kwargs = super(ServicioListView, self).get_form_kwargs()
+        kwargs['filtro_institucion'] = self.request.GET.get('institucion')
+        kwargs['filtro_tipo_servicio'] = self.request.GET.get('tipo_servicio')
+        kwargs['filtro_numero_referencia'] = self.request.GET.get('numero_referencia')
+        kwargs['filtro_titular_servicio'] = self.request.GET.get('titular_servicio')
+        kwargs['filtro_alias'] = self.request.GET.get('alias')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(ServicioListView, self).get_context_data(**kwargs)
         servicio = Servicio.objects.all()
+
+        filtro_institucion = self.request.GET.get('institucion')
+        filtro_tipo_servicio = self.request.GET.get('tipo_servicio')
+        filtro_numero_referencia = self.request.GET.get('numero_referencia')
+        filtro_titular_servicio = self.request.GET.get('titular_servicio')
+        filtro_alias = self.request.GET.get('alias')
+        filtro_estado = self.request.GET.get('estado')
+        filtro_sociedad = self.request.GET.get('sociedad')
+        
+        contexto_filtro = []
+
+        if filtro_institucion:
+            condicion = Q(institucion = filtro_institucion)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"institucion={filtro_institucion}")
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"tipo_servicio={filtro_tipo_servicio}")
+
+        if filtro_numero_referencia:
+            condicion = Q(numero_referencia__unaccent__icontains = filtro_numero_referencia.split(" ")[0])
+            for palabra in filtro_numero_referencia.split(" ")[1:]:
+                condicion &= Q(numero_referencia__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"numero_referencia={filtro_numero_referencia}")
+
+        if filtro_titular_servicio:
+            condicion = Q(titular_servicio__unaccent__icontains = filtro_titular_servicio.split(" ")[0])
+            for palabra in filtro_titular_servicio.split(" ")[1:]:
+                condicion &= Q(titular_servicio__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"titular_servicio={filtro_titular_servicio}")
+
+        if filtro_alias:
+            condicion = Q(alias__unaccent__icontains = filtro_alias.split(" ")[0])
+            for palabra in filtro_alias.split(" ")[1:]:
+                condicion &= Q(alias__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"alias={filtro_alias}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_sociedad:
+            ids = []
+            for nota in servicio.all():
+                if str(nota.sociedad.id) == filtro_sociedad:
+                    ids.append(nota.id)
+            servicio = servicio.filter(id__in = ids)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
         objectsxpage =  10 # Show 10 objects per page.
 
         if len(servicio) > objectsxpage:
@@ -653,7 +734,6 @@ class ServicioListView(TemplateView):
 
         context['contexto_servicio'] = servicio
         context['contexto_pagina'] = servicio
-        context['contexto_filtro'] = '?'
         return context
 
 def ServicioTabla(request):
@@ -662,6 +742,71 @@ def ServicioTabla(request):
         template = 'contabilidad/servicio/inicio_tabla.html'
         context = {}
         servicio = Servicio.objects.all()
+        
+        filtro_institucion = request.GET.get('institucion')
+        filtro_tipo_servicio = request.GET.get('tipo_servicio')
+        filtro_numero_referencia = request.GET.get('numero_referencia')
+        filtro_titular_servicio = request.GET.get('titular_servicio')
+        filtro_alias = request.GET.get('alias')
+        filtro_estado = request.GET.get('estado')
+        filtro_sociedad = request.GET.get('sociedad')
+        
+        contexto_filtro = []
+
+        if filtro_institucion:
+            condicion = Q(institucion = filtro_institucion)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"institucion={filtro_institucion}")
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"tipo_servicio={filtro_tipo_servicio}")
+
+        if filtro_numero_referencia:
+            condicion = Q(numero_referencia__unaccent__icontains = filtro_numero_referencia.split(" ")[0])
+            for palabra in filtro_numero_referencia.split(" ")[1:]:
+                condicion &= Q(numero_referencia__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"numero_referencia={filtro_numero_referencia}")
+
+        if filtro_titular_servicio:
+            condicion = Q(titular_servicio__unaccent__icontains = filtro_titular_servicio.split(" ")[0])
+            for palabra in filtro_titular_servicio.split(" ")[1:]:
+                condicion &= Q(titular_servicio__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"titular_servicio={filtro_titular_servicio}")
+
+        if filtro_alias:
+            condicion = Q(alias__unaccent__icontains = filtro_alias.split(" ")[0])
+            for palabra in filtro_alias.split(" ")[1:]:
+                condicion &= Q(alias__unaccent__icontains = palabra)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"alias={filtro_alias}")
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            servicio = servicio.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_sociedad:
+            ids = []
+            for nota in servicio.all():
+                if str(nota.sociedad.id) == filtro_sociedad:
+                    ids.append(nota.id)
+            servicio = servicio.filter(id__in = ids)
+            contexto_filtro.append(f"sociedad={filtro_sociedad}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
         objectsxpage =  10 # Show 10 objects per page.
 
         if len(servicio) > objectsxpage:
@@ -671,7 +816,6 @@ def ServicioTabla(request):
 
         context['contexto_servicio'] = servicio
         context['contexto_pagina'] = servicio
-        context['contexto_filtro'] = '?'
 
         data['table'] = render_to_string(
             template,
@@ -1087,7 +1231,6 @@ class ChequeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     success_url = reverse_lazy('contabilidad_app:cheque_inicio')
 
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -1218,7 +1361,115 @@ class ChequePorCerrarView(PermissionRequiredMixin, BSModalDeleteView):
         context['dar_baja'] = "true"
         context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
         return context
+
     
+class ChequePorCerrarEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_cheque')
+    model = Cheque
+    template_name = "contabilidad/cheque/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequePorCerrarEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Cheque"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
+class ChequeCerrarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_cheque')
+    model = Cheque
+    template_name = "contabilidad/cheque/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            cheque_monto_usado(self.object)
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_POR_CERRAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeCerrarView, self).get_context_data(**kwargs)
+        context['accion'] = "Cerrar"
+        context['titulo'] = "Cheque"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+    
+
+class ChequeCerradoEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_cheque')
+    model = Cheque
+    template_name = "contabilidad/cheque/boton.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeCerradoEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Cheque"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
 
 class ChequeDetalleView(PermissionRequiredMixin, DetailView):
     permission_required = ('contabilidad.view_cheque')
@@ -1235,11 +1486,16 @@ class ChequeDetalleView(PermissionRequiredMixin, DetailView):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
 
         return context
 
@@ -1257,11 +1513,16 @@ def ChequeDetalleTabla(request, pk):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
 
         data['table'] = render_to_string(
             template,
@@ -1297,7 +1558,13 @@ class ChequeReciboBoletaPagoAgregarView(BSModalFormView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_form_kwargs(self):
-        recibos = ReciboBoletaPago.objects.filter(content_type = None, id_registro = None)
+        cheque = Cheque.objects.get(id = self.kwargs['cheque_id'])
+        recibos = ReciboBoletaPago.objects.filter(
+            content_type=None,
+            id_registro=None,
+            )
+        if cheque.moneda:
+            recibos = recibos.filter(boleta_pago__datos_planilla__moneda=cheque.moneda)
         kwargs = super().get_form_kwargs()
         kwargs['recibos'] = recibos
         return kwargs
@@ -1465,6 +1732,102 @@ class ChequeReciboServicioRemoverView(PermissionRequiredMixin, BSModalDeleteView
 
     def get_context_data(self, **kwargs):
         context = super(ChequeReciboServicioRemoverView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Recibo"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+    
+
+class ChequeReciboCajaChicaAgregarView(BSModalFormView):
+    template_name = 'includes/formulario generico.html'
+    form_class = ChequeReciboCajaChicaAgregarForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.kwargs['cheque_id']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                cheque = Cheque.objects.get(id = self.kwargs['cheque_id'])
+                recibo_caja_chica = form.cleaned_data.get('recibo_caja_chica')
+                recibo_caja_chica.cheque = cheque
+                registro_guardar(recibo_caja_chica, self.request)
+                recibo_caja_chica.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        recibos = ReciboCajaChica.objects.filter(cheque = None)
+        kwargs = super().get_form_kwargs()
+        kwargs['recibos'] = recibos
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ChequeReciboCajaChicaAgregarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Recibo Caja Chica'
+        return context
+    
+
+class ChequeReciboCajaChicaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('caja_chica.change_recibocajachica')
+    model = ReciboCajaChica
+    template_name = 'includes/formulario generico.html'
+    form_class = ChequeReciboCajaChicaUpdateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk': self.kwargs['cheque_id']})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeReciboCajaChicaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Recibo Caja Chica"
+        return context
+
+
+class ChequeReciboCajaChicaRemoverView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.delete_cheque')
+    model = ReciboCajaChica
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk': self.kwargs['cheque_id']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            recibo_caja_chica = self.get_object()
+            recibo_caja_chica.cheque = None
+            recibo_caja_chica.monto_pagado = 0
+            recibo_caja_chica.fecha_pago = None
+            registro_guardar(recibo_caja_chica, self.request)
+            recibo_caja_chica.save()
+            messages.success(request, MENSAJE_REMOVER_RECIBO_SERVICIO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ChequeReciboCajaChicaRemoverView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
         context['titulo'] = "Recibo"
         context['item'] = self.get_object()

@@ -1,8 +1,12 @@
+{% load funciones_propias %}
+{% load humanize %}
+
 <table class="table">
     <thead>
         <tr>
             <th>Boleta</th>
             <th>Sociedad</th>
+            <th class="text-end text-nowrap">Neto Recibido</th>
             <th>Creado por</th>
             <th class="text-center">Acciones</th>
         </tr>
@@ -12,7 +16,8 @@
         <tr>
             <td>{{ boleta_pago }}</td>
             <td>{{ boleta_pago.datos_planilla.sociedad }}</td>
-            <td>{{ boleta_pago.created_by}}</td>
+            <td class="text-end text-nowrap">{{ boleta_pago.datos_planilla.moneda.simbolo }} {{ boleta_pago.neto_recibido|redondear|intcomma }}</td>
+            <td>{{ boleta_pago.created_by }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'contabilidad_app:boleta_pago_actualizar' boleta_pago.id %}"
                     data-table-url="{% url 'contabilidad_app:boleta_pago_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"

@@ -68,12 +68,20 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
                     <i class="bi bi-box-seam"></i>
                 </button>
-
+                
+                
+                {% if material.control_serie %}
                 <button data-form-url="{% url 'material_app:series' material.id %}"
                     class="read btn btn-dark btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Series">
                     <i class="bi bi-upc-scan"></i>
                 </button>
+                <a href="{% url 'material_app:series_ver' material.id %}"
+                    class="read btn btn-dark btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Series">
+                    <i class="bi bi-upc-scan"></i>
+                </a>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

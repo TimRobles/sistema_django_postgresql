@@ -1,6 +1,10 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
+{% block arriba %}
+{{ requerimiento.concepto }} {{ requerimiento.moneda.simbolo }} {{ requerimiento.monto }}
+{% endblock arriba %}    
+
 {% block js %}
     <script src="{% static 'js/caja_chica/requerimiento/aprobar.js' %}?{{ cache_bust }}"></script>
 {% endblock js %}

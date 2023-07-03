@@ -90,6 +90,8 @@ function select_form() {
         const element = combos[index];
         element.className = element.className.replace('select2-container--default select2-container--focus', 'form-control');
         element.className = element.className.replace('select2-container--default', 'form-control');
+        element.className = element.className.replace('select2-container--focus', '');
+        element.className = element.className.replace('select2-selection--single', '');
     }
 }
 

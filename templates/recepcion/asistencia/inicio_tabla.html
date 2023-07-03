@@ -10,7 +10,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for asistencia in contexto_asistencia %}
+        {% for asistencia in contexto_pagina %}
         <tr>
             <td>
                 {% if asistencia.usuario.first_name %}
@@ -19,8 +19,12 @@
                 {{ asistencia.usuario }}
                 {% endif %}
             </td>
-            <td>{{ asistencia.sociedad}}</td>
-            <td>{{ asistencia.sede}}</td>
+            <td>{{ asistencia.sociedad.abreviatura}}</td>
+            <td>
+                {% if asistencia.sede %}
+                {{ asistencia.sede}}      
+                {% endif %}
+            </td>
             <td>{{ asistencia.hora_ingreso }}</td>
             <td>
                 

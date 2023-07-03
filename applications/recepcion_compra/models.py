@@ -1,10 +1,11 @@
+from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from applications.funciones import ver_proveedor
+from applications.funciones import numeroXn, ver_proveedor
 from applications.rutas import ARCHIVO_RECEPCION_COMPRA_ARCHIVO, FOTO_RECEPCION_COMPRA_FOTO
 
-from applications.variables import ESTADO_COMPROBANTE
+from applications.variables import ESTADO_COMPROBANTE, ESTADO_DOCUMENTO, TIPO_IGV_CHOICES
 
 # Create your models here.
 class RecepcionCompra(models.Model):
@@ -41,6 +42,11 @@ class RecepcionCompra(models.Model):
     def sociedad(self):
         documento = self.content_type.get_object_for_this_type(id=self.id_registro)
         return documento.sociedad
+
+    @property
+    def moneda(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return documento.moneda
 
     @property
     def documento(self):
@@ -98,4 +104,95 @@ class FotoRecepcionCompra(models.Model):
 
     def __str__(self):
         return str(self.foto)
+
+
+class DocumentoReclamo(models.Model):
+    recepcion_compra = models.ForeignKey(RecepcionCompra, on_delete=models.CASCADE, related_name='DocumentoReclamo_recepcion_compra')
+    nro_documento_reclamo = models.IntegerField()
+    fecha_documento = models.DateField('Fecha de Documento', auto_now=False, auto_now_add=False)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='DocumentoReclamo_usuario')
+    observaciones = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_DOCUMENTO, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DocumentoReclamo_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DocumentoReclamo_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Documento de Reclamo'
+        verbose_name_plural = 'Documentos de Reclamos'
+
+    @property
+    def fecha(self):
+        return self.fecha_documento
+    
+    @property
+    def total_exceso(self):
+        suma = Decimal('0.00')
+        for detalle in self.DocumentoReclamoDetalle_documento_reclamo.filter(tipo=1):
+            suma += detalle.nuevo_total
+        return suma
+    
+    @property
+    def total_defecto(self):
+        suma = Decimal('0.00')
+        for detalle in self.DocumentoReclamoDetalle_documento_reclamo.filter(tipo=-1):
+            suma += detalle.nuevo_total
+        return suma
+
+    def __str__(self):
+        return f"DOCUMENTO DE RECLAMO {numeroXn(self.nro_documento_reclamo, 6)}"
+
+
+class DocumentoReclamoDetalle(models.Model):
+    TIPO_RECLAMO_DETALLE = (
+        (-1, 'DEFECTO'),
+        (1, 'EXCESO'),
+    )
+    ACCION_RECLAMO_DETALLE = (
+        (1, 'DESCONTAR'),
+        (2, 'NO HACER NADA'),
+        (3, 'POR PAGAR'),
+    )
+    documento_reclamo = models.ForeignKey(DocumentoReclamo, on_delete=models.CASCADE, related_name='DocumentoReclamoDetalle_documento_reclamo')
+    item = models.IntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
+    id_registro = models.IntegerField()
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
+    tipo = models.IntegerField(choices=TIPO_RECLAMO_DETALLE)
+    accion = models.IntegerField(choices=ACCION_RECLAMO_DETALLE, default=2)
+    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    precio_unitario_con_igv = models.DecimalField('Precio unitario con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    precio_final_con_igv = models.DecimalField('Precio final con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
+    factor = models.DecimalField('Factor', max_digits=4, decimal_places=2,default=Decimal('0.00'))
+    adicional = models.DecimalField('Adicional', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    nuevo_total = models.DecimalField('Nuevo Total', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='DocumentoReclamoDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='DocumentoReclamoDetalle_updated_by', editable=False)
+    
+    class Meta:
+        verbose_name = 'Documento de Reclamo Detalle'
+        verbose_name_plural = 'Documentos de Reclamo Detalles'
+        ordering = [
+            'documento_reclamo',
+            'item',
+        ]
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+
+    def __str__(self):
+        return f"{self.item} - {self.producto}"
 

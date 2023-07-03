@@ -11,7 +11,8 @@ from applications.rutas import REQUERIMIENTO_FOTO_PRODUCTO, REQUERIMIENTO_VOUCHE
 from datetime import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
 from applications.variables import MESES, TIPO_PRESTAMO, ESTADO_PRESTAMO_CAJA_CHICA, ESTADO_CAJA_CHICA, ESTADO_RECIBO_CAJA_CHICA
-
+from applications.caja_chica import funciones
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 class Requerimiento(models.Model):
     ESTADO_CHOICES = (
@@ -52,7 +53,18 @@ class Requerimiento(models.Model):
     class Meta:
         verbose_name = 'Requerimiento'
         verbose_name_plural = 'Requerimientos'
-        ordering = ['estado', 'fecha', 'created_at' ]
+        ordering = [
+            'estado',
+            '-fecha',
+            'created_at',
+            ]
+
+    @property
+    def vouchers(self):
+        for documento in self.RequerimientoDocumento_requerimiento.all():
+            if documento.voucher:
+                return True
+        return False
 
     @property
     def vuelto_extra(self):
@@ -67,6 +79,18 @@ class Requerimiento(models.Model):
         return Decimal('0.00')
 
     @property
+    def cheque(self):
+        if self.content_type == ContentType.objects.get_for_model(Cheque):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
+    @property
+    def caja(self):
+        if self.content_type == ContentType.objects.get_for_model(CajaChica):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
+    @property
     def caja_cheque(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
@@ -75,6 +99,9 @@ class Requerimiento(models.Model):
             return self.concepto_final + '-' + self.get_estado_display()
         else:
             return self.concepto + '-' + self.get_estado_display()
+
+
+post_save.connect(funciones.cheque_monto_usado_post_save, sender=Requerimiento)
 
 
 class RequerimientoVueltoExtra(models.Model):
@@ -106,14 +133,14 @@ class RequerimientoDocumento(models.Model):
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
     tipo = models.IntegerField('Tipo de Documento', choices=TIPO_CHOICES)
-    numero = models.CharField('Número de Documento', max_length=50)
+    numero = models.CharField('Número de Documento', max_length=50, blank=True, null=True)
     establecimiento = models.CharField('Establecimiento', max_length=50, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     total_documento = models.DecimalField('Total en Documento', max_digits=7, decimal_places=2)
     tipo_cambio = models.DecimalField('Tipo de Cambio', max_digits=5, decimal_places=4)
     total_requerimiento = models.DecimalField('Total en Requerimiento', max_digits=7, decimal_places=2)
     voucher = models.FileField('Documento', upload_to=REQUERIMIENTO_VOUCHER, max_length=100, blank=True, null=True)
-    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, blank=True, null=True)
     requerimiento = models.ForeignKey(Requerimiento, on_delete=models.CASCADE, related_name='RequerimientoDocumento_requerimiento')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -183,10 +210,14 @@ class CajaChica(models.Model):
         verbose_name = 'Caja Chica'
         verbose_name_plural = 'Cajas Chicas'
         ordering = [
+            'estado',
             '-year',
             '-month',
-            'estado',
         ]
+
+    @property
+    def cantidad_requerimientos(self):
+        return len(Requerimiento.objects.filter(content_type=ContentType.objects.get_for_model(self), id_registro=self.id))
 
     @property
     def periodo(self):
@@ -255,7 +286,12 @@ class ReciboCajaChica(models.Model):
     class Meta:
         verbose_name = 'Recibo Caja Chica'
         verbose_name_plural = 'Recibos Caja Chica'
+        ordering = [
+            'estado',
+            '-fecha',
+        ]
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.concepto} - {self.caja_chica} - {self.fecha}"
 
+post_save.connect(funciones.cheque_monto_usado_post_save, sender=ReciboCajaChica)

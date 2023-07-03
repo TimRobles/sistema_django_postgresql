@@ -53,7 +53,7 @@ $(document).on("click", ".btn-primary", function (e) {
     click_habilitar(false);
     setTimeout(() => {
         click_habilitar(true);
-    }, 500);
+    }, 2000);
 });
 
 click_habilitar (true)

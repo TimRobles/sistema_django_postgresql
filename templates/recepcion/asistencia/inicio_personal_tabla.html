@@ -4,9 +4,11 @@
             <th>Nombre</th>
             <th>Sociedad</th>
             <th>Sede</th>
-            <th>Hora de Ingreso</th>
-            <th>Hora de Salida</th>
+            <th>Hora Ingreso</th>
+            <th>Hora Salida</th>
             <th>Fecha de Registro</th>
+            <th>Estado</th>
+            <th>Estado Solicitud</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -20,30 +22,65 @@
                 {{ asistencia.usuario }}
                 {% endif %}
             </td>
-            <td>{{ asistencia.sociedad}}</td>
-            <td>{{ asistencia.sede}}</td>
+            <td>{{ asistencia.sociedad.abreviatura }}</td>
+            <td>
+                {% if asistencia.sede %}        
+                {{ asistencia.sede}}
+                {% endif %}    
+            </td>
             <td>{{ asistencia.hora_ingreso }}</td>
             <td>
-                
                 {% if asistencia.hora_salida %}
                 {{ asistencia.hora_salida }}                  
-                {% endif %}
-                    
+                {% endif %}    
             </td>
             <td>{{ asistencia.fecha_registro|date:'d/m/Y' }}</td>
+            <td>{{ asistencia.get_motivo_inasistencia_display}}</td>
+            <td>
+                {% if asistencia.estado_solicitud %}
+                {{ asistencia.get_estado_solicitud_display }}
+                {% endif %} 
+            </td>
 
             <td class="text-center text-nowrap">
                 
-                {% if asistencia.hora_salida == None %}
-                <button data-form-url="{% url 'recepcion_app:asistencia_personal_registrar_salida' asistencia.id %}"
-                    data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
-                
+                {% if asistencia.hora_salida == None and asistencia.motivo_inasistencia == 1 %}
+                    <button data-form-url="{% url 'recepcion_app:asistencia_personal_registrar_salida' asistencia.id %}"
+                        data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
                 {% endif %}
+
+                                
+                {% if asistencia.motivo_inasistencia != 1 or asistencia.justificacion != None %}
+                    <button data-form-url="{% url 'recepcion_app:inasistencia_detalle' asistencia.id %}"
+                        data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
+                        class="update btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                        <i class="bi bi-eye-fill"></i>
+                    </button>
                     
+                {% endif %}
+                                
+                {% if asistencia.estado_solicitud == 1 and permiso_asistencia %}
+                    <button data-form-url="{% url 'recepcion_app:inasistencia_aprobar' asistencia.id %}"
+                        data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
+                        class="update btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Aprobar">
+                        <i class="bi bi-check-lg"></i>
+                    </button>                
+                    <button data-form-url="{% url 'recepcion_app:inasistencia_rechazar' asistencia.id %}"
+                        data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
+                        class="update btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Rechazar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                {% endif %}
+
+                
+
             </td>
         </tr>
         {% endfor %}

@@ -1,8 +1,8 @@
 from django import forms
-from applications.crm.models import ClienteCRM, ClienteCRMDetalle, ProveedorCRM
+from applications.crm.models import ClienteCRM, ClienteCRMDetalle, ProveedorCRM, EventoCRM
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import Pais
-from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO
+from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 
@@ -86,5 +86,76 @@ class ProveedorCRMForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProveedorCRMForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+
+class EventoCRMForm(BSModalModelForm):
+    class Meta:
+        model = EventoCRM
+        fields=(
+            'titulo',
+            'fecha_inicio',
+            'fecha_cierre',
+            'pais',
+            )
+        
+        widgets = {
+            'fecha_inicio' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            
+            'fecha_cierre' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),   
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(EventoCRMForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
+
+class EventoCRMBuscarForm(forms.Form):
+    pais = forms.ModelChoiceField(queryset=Pais.objects.all(), required=False)
+    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_EVENTO_CRM, required=False)
+    fecha_inicio = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        filtro_pais = kwargs.pop('filtro_pais')
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_fecha_inicio = kwargs.pop('filtro_fecha_inicio')
+        super(EventoCRMBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['pais'].initial = filtro_pais
+        self.fields['estado'].initial = filtro_estado
+        self.fields['fecha_inicio'].initial = filtro_fecha_inicio
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class EventoCRMDetalleDescripcionForm(BSModalModelForm):
+    class Meta:
+        model = EventoCRM
+        fields=(
+            'descripcion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(EventoCRMDetalleDescripcionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

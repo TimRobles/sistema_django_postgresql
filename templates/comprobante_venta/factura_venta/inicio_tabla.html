@@ -10,6 +10,7 @@
             <th>Fecha Emision</th>
             <th class="text-end">Total</th>
             <th>Estado</th>
+            <th>Transacción</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -22,7 +23,8 @@
             <td>{{ factura_venta.cliente }}</td>
             <td>{{ factura_venta.fecha_emision|date:'d/m/Y' }}</td>
             <td class="text-end text-nowrap">{{ factura_venta.moneda.simbolo }} {{ factura_venta.total|redondear|intcomma }}</td>
-            <td>{{factura_venta.get_estado_display}}</td>
+            <td>{{ factura_venta.get_estado_display }}</td>
+            <td>{{ factura_venta.confirmacion.get_sunat_transaction_display }}</td>
             <td class="text-center">
                 <a href="{% url 'comprobante_venta_app:factura_venta_detalle' factura_venta.id %}"
                     class="btn btn-info btn-sm"

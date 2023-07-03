@@ -1,4 +1,5 @@
 from decimal import Decimal
+from time import time
 from urllib import request
 from django.core.paginator import Paginator
 from django.shortcuts import render
@@ -515,6 +516,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
     def delete(self, request, *args, **kwargs):
         sid = transaction.savepoint()
         try:
+            print(datetime.now())
             self.object = self.get_object()
 
             detalles = self.object.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all()
@@ -621,6 +623,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
             registro_guardar(self.object, self.request)
             self.object.save()
             messages.success(request, MENSAJE_CONCLUIR_NOTA_CONTROL_CALIDAD_STOCK)
+            print(datetime.now())
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -1555,7 +1558,7 @@ class NotaControlCalidadStockSeriesPdf(View):
             if obj.proveedor.ruc:
                 tipo_documento = "RUC"
 
-        texto_cabecera = 'La empresa MULTICABLE PERU SAC certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:'
+        texto_cabecera = f'La empresa {obj.sociedad} certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:'
         
         series_final = {}
         for serie in series_unicas:

@@ -23,6 +23,7 @@ url_requerimiento = [
     path('requerimiento/retroceder-rendicion/<pk>/', views.RequerimientoRetrocederRendicionView.as_view(), name='requerimiento_retroceder_rendicion'),
     path('requerimiento/detalle/<pk>/', views.RequerimientoDetalleView.as_view(), name='requerimiento_detalle'),
     path('requerimiento/detalle-tabla/<pk>', views.RequerimientoDetalleTabla, name='requerimiento_detalle_tabla'),
+    path('requerimiento/vouchers/<pk>/', views.RequerimientoVouchersView.as_view(), name='requerimiento_vouchers'),
 
     path('requerimiento/vuelto-extra/agregar/<int:requerimiento_id>/', views.RequerimientoVueltoExtraCreateView.as_view(), name='requerimiento_vuelto_extra_agregar'),
     path('requerimiento/vuelto-extra/editar/<pk>/', views.RequerimientoVueltoExtraUpdateView.as_view(), name='requerimiento_vuelto_extra_editar'),
@@ -47,6 +48,8 @@ url_caja_chica = [
     path('caja-chica/eliminar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_eliminar'),
     path('caja-chica/detalle/<pk>/', views.CajaChicaDetalleView.as_view(), name='caja_chica_detalle'),
     path('caja-chica/detalle-tabla/<pk>/', views.CajaChicaDetalleTabla, name='caja_chica_detalle_tabla'),
+    path('caja_chica/pdf/<pk>/', views.CajaChicaPdfView.as_view(), name='caja_chica_pdf'),
+    path('caja-chica/cerrar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_cerrar'), #Actualizar Saldos
 
     path('caja-chica/recibo/<int:cajachica_id>/', views.CajaChicaReciboCreateView.as_view(), name='caja_chica_recibo'),
     path('caja-chica/recibo/eliminar/<pk>/<int:cajachica_id>/', views.CajaChicaReciboDeleteView.as_view(), name='caja_chica_recibo_eliminar'),

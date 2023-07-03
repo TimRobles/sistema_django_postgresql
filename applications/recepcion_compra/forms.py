@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from .models import ArchivoRecepcionCompra, FotoRecepcionCompra, RecepcionCompra
+from .models import ArchivoRecepcionCompra, DocumentoReclamoDetalle, FotoRecepcionCompra, RecepcionCompra
 
 class ArchivoRecepcionCompraForm(BSModalModelForm):
     class Meta:
@@ -58,5 +58,44 @@ class RecepcionCompraAnularForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(RecepcionCompraAnularForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DocumentoReclamoDetalleForm(BSModalModelForm):
+    class Meta:
+        model = DocumentoReclamoDetalle
+        fields=(
+            'accion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(DocumentoReclamoDetalleForm, self).__init__(*args, **kwargs)
+        detalle = kwargs['instance']
+        if detalle.tipo == 1:
+            ACCION_RECLAMO_DETALLE = (
+                (2, 'NO HACER NADA'),
+                (3, 'POR PAGAR'),
+            )
+        else:
+            ACCION_RECLAMO_DETALLE = (
+                (1, 'DESCONTAR'),
+                (2, 'NO HACER NADA'),
+            )
+        self.fields['accion'].choices = ACCION_RECLAMO_DETALLE
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DocumentoReclamoDetalleMontoForm(BSModalModelForm):
+    class Meta:
+        model = DocumentoReclamoDetalle
+        fields=(
+            'factor',
+            'adicional',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(DocumentoReclamoDetalleMontoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

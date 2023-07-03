@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ClienteCRM, ClienteCRMDetalle
+from .models import ClienteCRM, ClienteCRMDetalle, EventoCRM
 
 @admin.register(ClienteCRM)
 class ClienteCRMAdmin(admin.ModelAdmin):
@@ -39,6 +39,27 @@ class ClienteCRMDetalleAdmin(admin.ModelAdmin):
         'created_at',
         'updated_by',
         'updated_at',        
+        )
+        
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(EventoCRM)
+class EventoCRMAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'id',
+        'fecha_inicio',
+        'fecha_cierre',
+        'titulo',
+        'descripcion',
+        'sorteo',
+        'presupuesto_asignado',
+        'presupuesto_utilizado',
+        'estado',        
         )
         
     def save_model(self, request, obj, form, change):

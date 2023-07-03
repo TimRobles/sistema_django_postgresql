@@ -1,6 +1,8 @@
 function ConsultarRuc() {
     $ruc = $('#id_numero_documento')[0].value;
     $razon_social = $('#id_razon_social')[0];
+    $estado = $('#id_estado_sunat')[0];
+    $condicion = $('#id_condicion_sunat')[0];
     $boton = $('#consultar-documento')[0];
 
     url = '/consulta-ruc/' + $ruc;
@@ -13,6 +15,8 @@ function ConsultarRuc() {
             $info = JSON.parse($respuesta['info'].replace(/&quot;/g,'"').replace(/&amp;/g,'&'));
 
             $razon_social.value = $info['razon_social'];
+            setSelectedValueText($estado, $info['estado']);
+            setSelectedValueText($condicion, $info['condicion']);
         }else{
             $respuesta = false;
             $razon_social.value = "";

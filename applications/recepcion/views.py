@@ -9,7 +9,8 @@ from applications.colaborador.models import DatosContratoHonorarios, DatosContra
 
 from .forms import (
     VisitaForm,VisitaBuscarForm,
-    AsistenciaForm,AsistenciaBuscarForm,AsistenciaPersonalBuscarForm,AsistenciaSalidaForm
+    AsistenciaForm,AsistenciaBuscarForm,AsistenciaPersonalBuscarForm,AsistenciaSalidaForm,
+    InasistenciaForm,InasistenciaAprobarForm,InasistenciaRechazarForm
     )
 
 from .models import (
@@ -35,24 +36,39 @@ class VisitaListView(PermissionRequiredMixin, FormView):
         visitas = Visita.objects.all()
         filtro_nombre = self.request.GET.get('nombre')
         filtro_fecha = self.request.GET.get('fecha')
-        if filtro_nombre and filtro_fecha:
-            condicion = Q(nombre__unaccent__icontains = filtro_nombre.split(" ")[0]) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= Q(nombre__unaccent__icontains = palabra) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            visitas = visitas.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha   
-        elif filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            visitas = visitas.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
-        elif filtro_nombre:
-            condicion = Q(nombre__unaccent__icontains = filtro_nombre.split(" ")[0])
+ 
+        contexto_filtro = []
+
+        if filtro_nombre:
+            condicion = Q(nombre__unaccent__icontains = filtro_nombre.split(" ")[0]) |Q(nombre__unaccent__icontains=filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= Q(nombre__unaccent__icontains = palabra)
             visitas = visitas.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
-   
-        context['contexto_visita'] = visitas
+            contexto_filtro.append("nombre" + filtro_nombre)
+
+        if filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            visitas = visitas.filter(condicion)
+            contexto_filtro.append("nombre" + filtro_fecha)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(visitas) > objectsxpage:
+            paginator = Paginator(visitas, objectsxpage)
+            page_number = self.request.GET.get('page')
+            visitas = paginator.get_page(page_number)
+
+        context['contexto_pagina'] = visitas
         return context
 
 def VisitaTabla(request):
@@ -63,23 +79,39 @@ def VisitaTabla(request):
         visitas = Visita.objects.all()
         filtro_nombre = request.GET.get('nombre')
         filtro_fecha = request.GET.get('fecha')
-        if filtro_nombre and filtro_fecha:
-            condicion = Q(nombre__unaccent__icontains = filtro_nombre.split(" ")[0]) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= Q(nombre__unaccent__icontains = palabra) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            visitas = visitas.filter(condicion)
  
-        elif filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            visitas = visitas.filter(condicion)
+        contexto_filtro = []
 
-        elif filtro_nombre:
-            condicion = Q(nombre__unaccent__icontains = filtro_nombre.split(" ")[0])
+        if filtro_nombre:
+            condicion = Q(nombre__unaccent__icontains = filtro_nombre.split(" ")[0]) |Q(nombre__unaccent__icontains=filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= Q(nombre__unaccent__icontains = palabra)
             visitas = visitas.filter(condicion)
+            contexto_filtro.append("nombre" + filtro_nombre)
 
-        context['contexto_visita'] = visitas
+        if filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            visitas = visitas.filter(condicion)
+            contexto_filtro.append("nombre" + filtro_fecha)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage = 15 # Show 15 objects per page.
+
+        if len(visitas) > objectsxpage:
+            paginator = Paginator(visitas, objectsxpage)
+            page_number = request.GET.get('page')
+            visitas = paginator.get_page(page_number)
+
+        context['contexto_pagina'] = visitas
 
         data['table'] = render_to_string(
             template,
@@ -166,26 +198,38 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
         filtro_nombre = self.request.GET.get('nombre')
         filtro_fecha = self.request.GET.get('fecha')
 
-        if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            asistencias = asistencias.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha 
+        contexto_filtro = []
 
-        elif filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            asistencias = asistencias.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
-        
-        elif filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) 
+        if filtro_nombre:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
+            contexto_filtro.append("nombre=" + filtro_nombre)
+
+        if filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+            contexto_filtro.append("fecha_registro=" + filtro_fecha)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
    
-        context['contexto_asistencia'] = asistencias
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(asistencias) > objectsxpage:
+            paginator = Paginator(asistencias, objectsxpage)
+            page_number = self.request.GET.get('page')
+            asistencias = paginator.get_page(page_number)
+
+        context['contexto_pagina'] = asistencias
         return context
 
 def AsistenciaTabla(request):
@@ -197,23 +241,39 @@ def AsistenciaTabla(request):
         filtro_nombre = request.GET.get('nombre')
         filtro_fecha = request.GET.get('fecha')
 
-        if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            asistencias = asistencias.filter(condicion) 
+        contexto_filtro = []
 
-        elif filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            asistencias = asistencias.filter(condicion)
-        
-        elif filtro_nombre:
+        if filtro_nombre:
             condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
-   
-        context['contexto_asistencia'] = asistencias
+            contexto_filtro.append("nombre=" + filtro_nombre)
+
+        if filtro_fecha:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+            contexto_filtro.append("fecha_registro=" + filtro_fecha)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+
+        objectsxpage = 15 # Show 15 objects per page.
+
+        if len(asistencias) > objectsxpage:
+            paginator = Paginator(asistencias, objectsxpage)
+            page_number = request.GET.get('page')
+            asistencias = paginator.get_page(page_number)
+
+        context['contexto_pagina'] = asistencias
 
         data['table'] = render_to_string(
             template,
@@ -238,44 +298,54 @@ class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super(AsistenciaPersonalView, self).get_form_kwargs()
         kwargs['filtro_nombre'] = self.request.GET.get('nombre')
-        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        kwargs['filtro_fecha_registro'] = self.request.GET.get('fecha_registro')
         return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(AsistenciaPersonalView,self).get_context_data(**kwargs)
         usuarios = list(ResponsableAsistencia.objects.get(usuario_responsable = self.request.user).usuario_a_registrar.all())
         asistencias = Asistencia.objects.filter(usuario__in=usuarios)
-        filtro_nombre = self.request.GET.get('nombre')
-        filtro_fecha = self.request.GET.get('fecha')
-
-        if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            asistencias = asistencias.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha 
-
-        elif filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            asistencias = asistencias.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
         
-        elif filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) 
+        filtro_nombre = self.request.GET.get('nombre')
+        filtro_fecha_registro = self.request.GET.get('fecha_registro')
+
+        contexto_filtro = []
+
+        if filtro_nombre:
+            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
-            context['contexto_filtro'] = "?nombre=" + filtro_nombre + '&fecha=' + filtro_fecha
+            contexto_filtro.append("nombre=" + filtro_nombre)
 
-        objectsxpage =  10 # Show 10 objects per page.
+        if filtro_fecha_registro:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha_registro, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+            contexto_filtro.append("fecha_registro=" + filtro_fecha_registro)
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
 
         if len(asistencias) > objectsxpage:
             paginator = Paginator(asistencias, objectsxpage)
             page_number = self.request.GET.get('page')
             asistencias = paginator.get_page(page_number)
 
+        permiso_asistencia = False
+        if 'recepcion.aprobar_rechazar' in self.request.user.get_all_permissions():
+            permiso_asistencia = True
         context['contexto_asistencia_personal'] = asistencias
         context['contexto_pagina'] = asistencias
+        context['permiso_asistencia'] = permiso_asistencia
         
         return context
 
@@ -288,34 +358,45 @@ def AsistenciaPersonalTabla(request):
 
         asistencias = Asistencia.objects.filter(usuario__in=usuarios)
         filtro_nombre = request.GET.get('nombre')
-        filtro_fecha = request.GET.get('fecha')
+        filtro_fecha_registro = request.GET.get('fecha')
 
-        if filtro_nombre and filtro_fecha:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra)) & Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())  
-            asistencias = asistencias.filter(condicion) 
+        contexto_filtro = []
 
-        elif filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            asistencias = asistencias.filter(condicion)
-        
-        elif filtro_nombre:
+        if filtro_nombre:
             condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
             for palabra in filtro_nombre.split(" ")[1:]:
                 condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
             asistencias = asistencias.filter(condicion)
-   
+            contexto_filtro.append("nombre=" + filtro_nombre)
 
-        objectsxpage =  10 # Show 10 objects per page.
+        if filtro_fecha_registro:
+            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha_registro, "%Y-%m-%d").date())
+            asistencias = asistencias.filter(condicion)
+            contexto_filtro.append("fecha_registro=" + filtro_fecha_registro)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
 
         if len(asistencias) > objectsxpage:
             paginator = Paginator(asistencias, objectsxpage)
             page_number = request.GET.get('page')
             asistencias = paginator.get_page(page_number)
 
+        permiso_asistencia = False
+        if 'recepcion.aprobar_rechazar' in request.user.get_all_permissions():
+            permiso_asistencia = True
         context['contexto_asistencia_personal'] = asistencias
         context['contexto_pagina'] = asistencias
+        context['permiso_asistencia'] = permiso_asistencia
 
         data['table'] = render_to_string(
             template,
@@ -374,6 +455,7 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
                 return super().form_invalid(form)
 
         form.instance.sociedad = sociedad
+        form.instance.fecha_registro = date.today()
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
@@ -414,3 +496,139 @@ class AsistenciaPersonalRegistrarSalidaView(PermissionRequiredMixin, BSModalUpda
         context['accion']="Registrar Salida"
         context['titulo']="Asistencia Personal"
         return context
+
+
+class InasistenciaRegistrarView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('recepcion.change_asistencia')
+    template_name = "recepcion/asistencia/crear_inasistencia.html"
+    form_class = InasistenciaForm
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
+    @transaction.atomic
+    def form_valid(self, form):
+        fecha = form.cleaned_data['fecha']
+
+        try:
+            print(form.instance.usuario.Asistencia_usuario.all().get(fecha_registro = fecha))
+            form.add_error('usuario', 'Ya existe registro con la fecha seleccionada.')
+            return super().form_invalid(form)
+        except:
+            pass
+
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                try:
+                    sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad
+            
+                except:
+                    try:
+                        sociedad = DatosContratoHonorarios.objects.get(usuario = form.instance.usuario).sociedad
+
+                    except:
+                        sociedad = None
+                        form.add_error('usuario', 'Este usuario no tiene contrato vigente.')
+                        return super().form_invalid(form)
+
+                fecha = form.cleaned_data['fecha']
+
+                form.instance.sociedad = sociedad
+                form.instance.fecha_registro = fecha
+                form.instance.estado_solicitud = 1
+
+                registro_guardar(form.instance, self.request)
+                form.instance.save()
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(InasistenciaRegistrarView, self).get_context_data(**kwargs)
+        confirmar = False
+        context['confirmar']=confirmar
+        context['accion']="Registrar"
+        context['titulo']="Inasistencia"
+        return context
+
+class InasistenciaDetalleView(PermissionRequiredMixin, DetailView):
+    permission_required = ('recepcion.view_asistencia')
+    model = Asistencia
+    template_name = "recepcion/asistencia/detalle_inasistencia.html"
+    context_object_name = 'contexto_inasistencia'
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
+    def get_context_data(self, **kwargs):
+        context = super(AsistenciaPersonalView,self).get_context_data(**kwargs)
+        asistencias = Asistencia.objects.get(id = self.kwargs['pk'])
+
+        context['contexto_inasistencia'] = asistencias
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(InasistenciaDetalleView, self).get_context_data(**kwargs)
+        context['titulo']="Inasistencia | Permisos"
+        return context
+
+class InasistenciaAprobarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('recepcion.change_asistencia')
+    model = Asistencia
+    template_name = "includes/formulario generico.html"
+    form_class = InasistenciaAprobarForm
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
+    def form_valid(self, form):
+        form.instance.estado_solicitud = 2
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(InasistenciaAprobarView, self).get_context_data(**kwargs)
+        context['accion']="Aprobar"
+        context['titulo']="Inasistencia"
+        return context
+    
+class InasistenciaRechazarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('recepcion.change_asistencia')
+    model = Asistencia
+    template_name = "includes/formulario generico.html"
+    form_class = InasistenciaRechazarForm
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
+    def form_valid(self, form):
+        form.instance.estado_solicitud = 3
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(InasistenciaRechazarView, self).get_context_data(**kwargs)
+        context['accion']="Rechazar"
+        context['titulo']="Inasistencia"
+        return context
+

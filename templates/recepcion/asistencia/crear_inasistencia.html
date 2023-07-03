@@ -1,0 +1,25 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block arriba %}
+
+<div style="color: red;" id="confirmar"></div>
+
+{% endblock arriba %}
+    
+
+{% block js %}
+<script>
+        $(function () {
+            
+            $("#id_usuario").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+        });
+ 
+</script>
+{% endblock js %}
+
+

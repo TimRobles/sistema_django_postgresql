@@ -7,7 +7,7 @@ from time import sleep
 from django.db import models
 from applications.datos_globales.models import TipoCambio, TipoCambioSunat
 
-from applications.funciones import consulta_sunat_tipo_cambio, numero_espacio, numero_guion, registrar_excepcion_interna, registrar_excepcion_sin_user
+from applications.funciones import consulta_sunat_tipo_cambio, numero_cero, numero_espacio, numero_guion, registrar_excepcion_interna, registrar_excepcion_sin_user
 
 def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, cliente_tipo_de_documento, cliente_numero_de_documento, cliente_denominacion, cliente_direccion, correos, fecha_de_emision, fecha_de_vencimiento, moneda, tipo_de_cambio, porcentaje_de_igv, descuento_global, total_descuento, total_anticipo, total_gravada, total_inafecta, total_exonerada, total_igv, total_gratuita, total_otros_cargos, total, percepcion_tipo, percepcion_base_imponible, total_percepcion, total_incluido_percepcion, total_impuestos_bolsas, detraccion, observaciones, documento_que_se_modifica_tipo, documento_que_se_modifica_serie, documento_que_se_modifica_numero, tipo_de_nota_de_credito, tipo_de_nota_de_debito, enviar_automaticamente_a_la_sunat, enviar_automaticamente_al_cliente, condiciones_de_pago, medio_de_pago, placa_vehiculo, orden_compra_servicio, formato_de_pdf, generado_por_contingencia, productos, guias, cuotas):
     try:
@@ -78,14 +78,14 @@ def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, clie
             item["codigo"] = numero_espacio(producto.codigo_interno)
             item["codigo_producto_sunat"] = producto.codigo_producto_sunat
             item["descripcion"] = producto.descripcion_documento
-            item["cantidad"] = numero_espacio(producto.cantidad)
-            item["valor_unitario"] = numero_espacio(producto.precio_unitario_sin_igv)
-            item["precio_unitario"] = numero_espacio(producto.precio_unitario_con_igv)
-            item["descuento"] = numero_espacio(producto.descuento)
-            item["subtotal"] = numero_espacio(producto.sub_total)
-            item["tipo_de_igv"] = numero_espacio(producto.tipo_igv)
-            item["igv"] = numero_espacio(producto.igv)
-            item["total"] = numero_espacio(producto.total)
+            item["cantidad"] = numero_cero(producto.cantidad)
+            item["valor_unitario"] = numero_cero(producto.precio_unitario_sin_igv)
+            item["precio_unitario"] = numero_cero(producto.precio_unitario_con_igv)
+            item["descuento"] = numero_cero(producto.descuento)
+            item["subtotal"] = numero_cero(producto.sub_total)
+            item["tipo_de_igv"] = numero_cero(producto.tipo_igv)
+            item["igv"] = numero_cero(producto.igv)
+            item["total"] = numero_cero(producto.total)
             item["anticipo_regularizacion"] = producto.anticipo_regularizacion
             if producto.anticipo_documento_serie:
                 item["anticipo_documento_serie"] = numero_espacio(producto.anticipo_documento_serie.serie)
@@ -273,7 +273,6 @@ def actualizarTipoCambioSunat(fecha: date, request):
     if created or not obj.tipo_cambio_venta:
         respuesta = consulta_sunat_tipo_cambio(fecha)
         print(respuesta)
-        sleep(2)
         try:
             venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
             compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))

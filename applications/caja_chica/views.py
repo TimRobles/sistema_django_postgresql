@@ -1,9 +1,12 @@
 from decimal import Decimal
 from django.shortcuts import render
 from applications.caja_chica.funciones import movimientos_caja_chica
+from applications.caja_chica.pdf import generarCajaChicaPdf
+from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.importaciones import *
 from applications.funciones import registrar_excepcion
 from applications.contabilidad.models import ReciboServicio
+from applications.sociedad.models import Sociedad
 
 from .models import (
     Requerimiento, 
@@ -293,6 +296,7 @@ class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
         context = super(RequerimientoAprobarView, self).get_context_data(**kwargs)
         context['accion']="Aprobar"
         context['titulo']="Requerimiento"
+        context['requerimiento'] = self.get_object()
         return context
     
 
@@ -559,6 +563,19 @@ def RequerimientoDetalleTabla(request, pk):
             request=request
         )
         return JsonResponse(data)
+
+
+class RequerimientoVouchersView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('caja_chica.view_requerimiento')
+
+    model = Requerimiento
+    template_name = "caja_chica/requerimiento/vouchers.html"
+    context_object_name = 'contexto_requerimiento_detalle'
+    
+    def get_context_data(self, **kwargs):
+        context = super(RequerimientoVouchersView, self).get_context_data(**kwargs)
+        context['titulo'] = f'Documentos - {self.get_object()}'
+        return context
     
 
 class RequerimientoVueltoExtraCreateView(PermissionRequiredMixin, BSModalCreateView):
@@ -665,6 +682,13 @@ class RequerimientoDocumentoCreateView(PermissionRequiredMixin, BSModalCreateVie
         return kwargs
 
     def form_valid(self, form):
+        if form.instance.tipo != 3:
+            if form.instance.numero == None or form.instance.numero == "":
+                form.add_error('numero', 'Ingresar un número de documento.')
+                return super().form_invalid(form)
+            if form.instance.sociedad == None or form.instance.sociedad == "":
+                form.add_error('sociedad', 'Ingresar una Sociedad.')
+                return super().form_invalid(form)
         form.instance.requerimiento = Requerimiento.objects.get(id = self.kwargs['requerimiento_id'])
         form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
@@ -693,7 +717,32 @@ class RequerimientoDocumentoUpdateView(PermissionRequiredMixin, BSModalUpdateVie
         kwargs['tipo_cambio'] = documento.tipo_cambio
         return kwargs
 
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            print(form)
+            if self.request.session['primero']:
+                print('********************************************')
+                print(form.instance.tipo_cambio)
+                print('********************************************')
+                if form.instance.tipo != 3:
+                    if form.instance.numero == None or form.instance.numero == "":
+                        form.add_error('numero', 'Ingresar un número de documento.')
+                        return super().form_invalid(form)
+                    if form.instance.sociedad == None or form.instance.sociedad == "":
+                        form.add_error('sociedad', 'Ingresar una Sociedad.')
+                        return super().form_invalid(form)
+                registro_guardar(form.instance, self.request)
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
     def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
         context = super(RequerimientoDocumentoUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
         context['titulo']="Documento"
@@ -1195,6 +1244,26 @@ class CajaChicaReciboServicioUpdateView(BSModalUpdateView):
         return context
 
 
+class CajaChicaPdfView(View):
+    def get(self, request, *args, **kwargs):
+        caja = CajaChica.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_caja_chica(caja)
+        
+        titulo = 'Cierre de caja - %s - %s' % (caja.periodo, nombre_usuario(caja.usuario))
+        vertical = False
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarCajaChicaPdf(titulo, vertical, logo, pie_pagina, movimientos, caja, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
+
+
 
 #__CajaChicaPrestamo_____________________________________________________________________
 class CajaChicaPrestamoListView(ListView):
@@ -1288,6 +1357,11 @@ class ReciboCajaChicaCreateView(BSModalCreateView):
     form_class = ReciboCajaChicaCrearForm
     success_url = reverse_lazy('caja_chica_app:recibo_inicio')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['caja_chica'] = CajaChica.objects.filter(estado=1, usuario=self.request.user)
+        return kwargs
+
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -1307,6 +1381,11 @@ class ReciboCajaChicaUpdateView(BSModalUpdateView):
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['caja_chica'] = CajaChica.objects.filter(estado=1, usuario=self.request.user)
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(ReciboCajaChicaUpdateView, self).get_context_data(**kwargs)

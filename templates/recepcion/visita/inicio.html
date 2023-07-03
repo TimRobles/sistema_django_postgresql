@@ -9,7 +9,7 @@
     <h3>Visitas
         <button class="create badge bg-primary"
             data-form-url="{% url 'recepcion_app:visita_registrar' %}"
-            data-table-url="{% url 'recepcion_app:visita_tabla' %}{{ contexto_filtro }}">
+            data-table-url="{% url 'recepcion_app:visita_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}">
             Registrar Visita
         </button>
     </h3>
@@ -37,10 +37,14 @@
             </div>            
         </div>
     </form>
+    <br>
+    {% include 'includes/paginador.html' %}
     <div class="table-responsive" id="tabla">
         {% include 'recepcion/visita/inicio_tabla.html' %}
     </div>
     
+    {% include 'includes/paginador inferior.html' %}
+
 {% endblock contenido %}
 
 {% block extrajs %}

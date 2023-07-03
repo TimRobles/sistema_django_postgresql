@@ -26,6 +26,25 @@
                 Editar
             </button>
         {% endif %}
+        {% if contexto_cheque_detalle.estado == 3 %}
+            <button data-form-url="{% url 'contabilidad_app:cheque_cerrar' contexto_cheque_detalle.id %}"
+                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                class="delete badge bg-success">
+                Cerrar
+            </button>
+            <button data-form-url="{% url 'contabilidad_app:cheque_por_cerrar_editar' contexto_cheque_detalle.id %}"
+                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                class="delete badge bg-secondary">
+                Editar
+            </button>
+        {% endif %}
+        {% if contexto_cheque_detalle.estado == 4 %}
+            <button data-form-url="{% url 'contabilidad_app:cheque_cerrado_editar' contexto_cheque_detalle.id %}"
+                data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
+                class="delete badge bg-secondary">
+                Editar
+            </button>
+        {% endif %}
         <a href="{% url 'contabilidad_app:cheque_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
     <br>

@@ -4,10 +4,11 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Estado</th>
+            <th>Prioridad</th>
             <th>Fecha Inicio</th>
             <th>Encargado</th>
             <th>Tipo Tarea</th>
-            <th>Estado</th>
             <th>Fecha Limite</th>
             <th>Descripcion</th>
             <th>Asignado por</th>
@@ -18,10 +19,24 @@
     <tbody>
         {% for tarea in contexto_tarea %}
         <tr>
+            <td>{{ tarea.get_estado_display}}</td>
+            <td>
+                {% if tarea.prioridad ==  1%}
+                <span style="color: red;"> {{ tarea.get_prioridad_display}} </span>
+                {% endif %}                
+                
+                {% if tarea.prioridad ==  2%}
+                <span style="color: green;"> {{ tarea.get_prioridad_display}} </span>
+                {% endif %}
+                                    
+                {% if tarea.prioridad ==  3%}
+                <span style="color: blue;"> {{ tarea.get_prioridad_display}} </span>
+                {% endif %}
+                    
+            </td>
             <td>{{ tarea.fecha_inicio|date:'d/m/Y' }}</td>
             <td>{{ tarea.encargado.first_name }}</td>
             <td>{{ tarea.tipo_tarea }}</td>
-            <td>{{ tarea.get_estado_display}}</td>
             <td>{{ tarea.fecha_limite|date:'d/m/Y' }}</td>
             <td>{{ tarea.descripcion }}</td>
             <td>{{ tarea.created_by|nombre_usuario }}</td>
@@ -40,6 +55,18 @@
                     <i class="bi bi-eye-fill"></i>
                 </a>
 
+                {% if tarea.estado == 1 %}
+
+                <button data-form-url="{% url 'tarea_app:tarea_iniciar' tarea.id %}"
+                    data-table-url="{% url 'tarea_app:tarea_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-success btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Iniciar">
+                    <i class="bi bi-check2"></i>
+                </button>                
+
+                {% endif %}
+                    
             </td>
 
         </tr>

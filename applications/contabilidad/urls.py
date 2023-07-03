@@ -25,6 +25,9 @@ urlCheque = [
     path('cheque/solicitar/<pk>/', views.ChequeSolicitarView.as_view(), name='cheque_solicitar'),
     path('cheque/editar/<pk>/', views.ChequeEditarView.as_view(), name='cheque_editar'),
     path('cheque/por_cerrar/<pk>/', views.ChequePorCerrarView.as_view(), name='cheque_por_cerrar'),
+    path('cheque/por-cerrar/editar/<pk>/', views.ChequePorCerrarEditarView.as_view(), name='cheque_por_cerrar_editar'),
+    path('cheque/cerrar/<pk>/', views.ChequeCerrarView.as_view(), name='cheque_cerrar'),
+    path('cheque/cerrado/editar/<pk>/', views.ChequeCerradoEditarView.as_view(), name='cheque_cerrado_editar'),
 
     path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
     path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),
@@ -36,6 +39,10 @@ urlCheque = [
     path('cheque/detalle/recibo-servicio/agregar/<int:cheque_id>/', views.ChequeReciboServicioAgregarView.as_view(), name='cheque_recibo_servicio_agregar'),
     path('cheque/detalle/recibo-servicio/actualizar/<int:cheque_id>/<pk>', views.ChequeReciboServicioUpdateView.as_view() , name='cheque_recibo_servicio_actualizar'),
     path('cheque/detalle/recibo-servicio/remover/<int:cheque_id>/<pk>/', views.ChequeReciboServicioRemoverView.as_view(), name='cheque_recibo_servicio_remover'),
+
+    path('cheque/detalle/recibo-caja-chica/agregar/<int:cheque_id>/', views.ChequeReciboCajaChicaAgregarView.as_view(), name='cheque_recibo_caja_chica_agregar'),
+    path('cheque/detalle/recibo-caja-chica/actualizar/<int:cheque_id>/<pk>', views.ChequeReciboCajaChicaUpdateView.as_view() , name='cheque_recibo_caja_chica_actualizar'),
+    path('cheque/detalle/recibo-caja-chica/remover/<int:cheque_id>/<pk>/', views.ChequeReciboCajaChicaRemoverView.as_view(), name='cheque_recibo_caja_chica_remover'),
 
     path('cheque/detalle/cheque-fisico/registrar/<int:cheque_id>/', views.ChequeFisicoCreateView.as_view(), name='cheque_fisico_registrar'),
     path('cheque/detalle/cheque-fisico/actualizar/<pk>/', views.ChequeFisicoUpdateView.as_view(), name='cheque_fisico_actualizar'),

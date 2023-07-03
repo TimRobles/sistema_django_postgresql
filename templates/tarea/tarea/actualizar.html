@@ -1,0 +1,34 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block js %}
+<script>
+        $(function () {
+
+            $("#id_tipo_tarea").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_area").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+            
+            $("#id_prioridad").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });   
+                     
+            $("#id_encargado").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+        });
+ 
+</script>
+{% endblock js %}
