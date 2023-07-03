@@ -382,7 +382,11 @@ class Cheque(models.Model):
     class Meta:
         verbose_name = 'Cheque'
         verbose_name_plural = 'Cheques'
-        ordering = ['estado', 'concepto',]
+        ordering = [
+            'estado',
+            'created_at',
+            'concepto',
+            ]
 
     @property
     def content_type(self):
