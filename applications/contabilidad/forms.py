@@ -455,6 +455,7 @@ class ChequeReciboServicioUpdateForm(BSModalModelForm):
         fields = (
             'monto_pagado',
             'fecha_pago',
+            'estado',
             'voucher',
             )
 

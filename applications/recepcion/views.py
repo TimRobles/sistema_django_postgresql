@@ -340,8 +340,12 @@ class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
             page_number = self.request.GET.get('page')
             asistencias = paginator.get_page(page_number)
 
+        permiso_asistencia = False
+        if 'recepcion.aprobar_rechazar' in self.request.user.get_all_permissions():
+            permiso_asistencia = True
         context['contexto_asistencia_personal'] = asistencias
         context['contexto_pagina'] = asistencias
+        context['permiso_asistencia'] = permiso_asistencia
         
         return context
 
@@ -387,8 +391,12 @@ def AsistenciaPersonalTabla(request):
             page_number = request.GET.get('page')
             asistencias = paginator.get_page(page_number)
 
+        permiso_asistencia = False
+        if 'recepcion.aprobar_rechazar' in request.user.get_all_permissions():
+            permiso_asistencia = True
         context['contexto_asistencia_personal'] = asistencias
         context['contexto_pagina'] = asistencias
+        context['permiso_asistencia'] = permiso_asistencia
 
         data['table'] = render_to_string(
             template,

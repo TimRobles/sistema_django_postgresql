@@ -64,7 +64,7 @@
                     
                 {% endif %}
                                 
-                {% if asistencia.estado_solicitud == 1 %}
+                {% if asistencia.estado_solicitud == 1 and permiso_asistencia %}
                     <button data-form-url="{% url 'recepcion_app:inasistencia_aprobar' asistencia.id %}"
                         data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
                         class="update btn btn-success btn-sm"

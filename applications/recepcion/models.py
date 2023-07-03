@@ -34,6 +34,7 @@ class Visita(models.Model):
             '-hora_ingreso',
             'nombre'
             ]
+        permissions = [("aprobar_rechazar", "Aprobar o Rechazar Justificaciones")]
 
     def save(self):
         self.nombre = self.nombre.upper()
