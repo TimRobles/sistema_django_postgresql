@@ -86,7 +86,7 @@
             <tr>
                 <th>Fecha</th>
                 <th class="text-end">Monto Solicitado</th>
-                {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 %}
+                {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 and contexto_requerimiento_detalle.fecha_entrega %}
                     <th class="text-end">Monto Recibido</th>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.estado > 4 %}
@@ -113,7 +113,7 @@
             <tr>
                 <td>{{ contexto_requerimiento_detalle.fecha|date:'d/m/Y' }}</td>
                 <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} {{ contexto_requerimiento_detalle.monto|redondear|intcomma }}</td>
-                {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 %}
+                {% if contexto_requerimiento_detalle.estado > 2 and contexto_requerimiento_detalle.estado != 4 and contexto_requerimiento_detalle.fecha_entrega %}
                     <td class="text-end">{{ contexto_requerimiento_detalle.moneda.simbolo }} <span id="monto">{{ contexto_requerimiento_detalle.monto_final|redondear|intcomma }}</span></td>
                 {% endif %}
                 {% if contexto_requerimiento_detalle.estado > 4 %}

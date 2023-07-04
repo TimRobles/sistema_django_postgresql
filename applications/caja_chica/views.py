@@ -5,7 +5,7 @@ from applications.caja_chica.pdf import generarCajaChicaPdf
 from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.importaciones import *
 from applications.funciones import registrar_excepcion
-from applications.contabilidad.models import ReciboServicio
+from applications.contabilidad.models import Cheque, ReciboServicio
 from applications.sociedad.models import Sociedad
 
 from .models import (
@@ -277,11 +277,13 @@ class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
         caja=[]
         for caja_chica in CajaChica.objects.filter(estado=1, usuario=self.request.user):
             caja.append((f'{ContentType.objects.get_for_model(caja_chica).id}|{caja_chica.id}', caja_chica.__str__()))
-        cheque=[]
+        cheques=[]
+        for cheque in Cheque.objects.filter(estado=1, usuario=self.request.user):
+            cheques.append((f'{ContentType.objects.get_for_model(cheque).id}|{cheque.id}', f"CHEQUE - {cheque.__str__()}"))
         kwargs['moneda'] = requerimiento.moneda
         kwargs['fecha'] = requerimiento.fecha
         kwargs['caja'] = caja
-        kwargs['cheque'] = cheque
+        kwargs['cheque'] = cheques
         return kwargs
 
     def form_valid(self, form):
@@ -289,6 +291,8 @@ class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
         form.instance.estado = 3
         form.instance.content_type = ContentType.objects.get(id=int(caja_cheque.split('|')[0]))
         form.instance.id_registro = int(caja_cheque.split('|')[1])
+        if form.instance.content_type == ContentType.objects.get_for_model(Cheque):
+            form.instance.fecha_entrega = None
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -369,6 +373,16 @@ class RequerimientoFinalizarRendicionView(PermissionRequiredMixin, BSModalUpdate
     model = Requerimiento
     form_class = RequerimientoFinalizarRendicionForm
     template_name = "caja_chica/requerimiento/finalizar_rendicion.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        requerimiento = self.get_object()
+        if not requerimiento.fecha_entrega:
+            context['texto'] = 'Aún no te han entregado el dinero'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk':self.get_object().id})
