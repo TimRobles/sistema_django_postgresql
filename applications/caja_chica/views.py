@@ -20,7 +20,8 @@ from .models import (
 from applications.caja_chica.forms import (
     RequerimientoAprobarForm, 
     RequerimientoDocumentoDetalleForm, 
-    RequerimientoDocumentoForm, 
+    RequerimientoDocumentoForm,
+    RequerimientoEntregarForm, 
     RequerimientoFinalizarRendicionForm,
     RequerimientoForm,
     RequerimientoRechazarForm,
@@ -450,6 +451,33 @@ class RequerimientoEditarRendicionView(PermissionRequiredMixin, BSModalDeleteVie
         context['titulo'] = "Rendición"
         context['dar_baja'] = "true"
         context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
+class RequerimientoEntregarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('caja_chica.change_requerimiento')
+    model = Requerimiento
+    template_name = "caja_chica/requerimiento/aprobar.html"
+    form_class = RequerimientoEntregarForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk':self.get_object().id})
+
+    def get_form_kwargs(self):
+        kwargs = super(RequerimientoEntregarView, self).get_form_kwargs()
+        requerimiento = Requerimiento.objects.filter(id = self.kwargs['pk'])[0]
+        kwargs['fecha'] = requerimiento.fecha
+        return kwargs
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RequerimientoEntregarView, self).get_context_data(**kwargs)
+        context['accion']="Entregar"
+        context['titulo']="Requerimiento"
+        context['requerimiento'] = self.get_object()
         return context
 
 

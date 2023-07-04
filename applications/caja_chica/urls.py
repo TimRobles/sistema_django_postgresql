@@ -17,6 +17,7 @@ url_requerimiento = [
     path('requerimiento/retroceder/<pk>/', views.RequerimientoRetrocederView.as_view(), name='requerimiento_retroceder'),
     path('requerimiento/rechazar/<pk>/', views.RequerimientoRechazarView.as_view(), name='requerimiento_rechazar'),
     path('requerimiento/finalizar-rendicion/<pk>/', views.RequerimientoFinalizarRendicionView.as_view(), name='requerimiento_finalizar_rendicion'),
+    path('requerimiento/entregar/<pk>/', views.RequerimientoEntregarView.as_view(), name='requerimiento_entregar'),
     path('requerimiento/editar-rendicion/<pk>/', views.RequerimientoEditarRendicionView.as_view(), name='requerimiento_editar_rendicion'),
     path('requerimiento/aprobar-rendicion/<pk>/', views.RequerimientoAprobarRendicionView.as_view(), name='requerimiento_aprobar_rendicion'),
     path('requerimiento/rechazar-rendicion/<pk>/', views.RequerimientoRechazarRendicionView.as_view(), name='requerimiento_rechazar_rendicion'),

@@ -528,6 +528,7 @@ class ChequeFisicoForm(BSModalModelForm):
             'banco',
             'numero',
             'responsable',
+            'moneda',
             'monto',
             'fecha_emision',
             'foto',

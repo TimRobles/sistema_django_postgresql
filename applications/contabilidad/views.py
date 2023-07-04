@@ -1523,7 +1523,9 @@ class ChequeDetalleView(PermissionRequiredMixin, DetailView):
         context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
         context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
         context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_cheque_fisico_comision'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
         context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        context['total_monto_requerido'] = context['total_boleta'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
 
         return context
 
@@ -1550,7 +1552,9 @@ def ChequeDetalleTabla(request, pk):
         context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
         context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
         context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        context['total_cheque_fisico_comision'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
         context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        context['total_monto_requerido'] = context['total_boleta'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
 
         data['table'] = render_to_string(
             template,
