@@ -1333,6 +1333,15 @@ class ChequePorCerrarView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "contabilidad/cheque/boton.html"
     
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        cheque = self.get_object()
+        error_cobrado = False
+        for cheque in ChequeFisico.objects.filter(cheque=cheque):
+            if cheque.estado != 2:
+                error_cobrado = True
+        if error_cobrado:
+            context['texto'] = 'Hay cheques pendientes de cobro'
+            return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1405,6 +1414,25 @@ class ChequeCerrarView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "contabilidad/cheque/boton.html"
     
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        cheque = self.get_object()
+        error_cancelado = False
+        for requerimiento in Requerimiento.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            if requerimiento.estado != 7:
+                error_cancelado = True
+        for recibo in ReciboCajaChica.objects.filter(cheque=cheque):
+            if recibo.estado != 3:
+                error_cancelado = True
+        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            if recibo.estado != 2:
+                error_cancelado = True
+        for recibo in ReciboServicio.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            if recibo.estado != 2:
+                error_cancelado = True
+
+        if error_cancelado:
+            context['texto'] = 'Hay comprobantes pendiente de cancelar'
+            return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)

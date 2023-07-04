@@ -1264,6 +1264,67 @@ class CajaChicaPdfView(View):
         return respuesta
 
 
+class CajaChicaCierreView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('caja_chica.delete_cajachica')
+    model = CajaChica
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
+
+    def get_success_url(self):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.get_object().id})
+
+    def delete(self, request, *args, **kwargs):
+        caja_chica = self.get_object()
+        movimientos = movimientos_caja_chica(caja_chica)
+        saldo_acumulado = Decimal('0.00')
+        egreso_acumulado = Decimal('0.00')
+        for movimiento in movimientos:
+            saldo_acumulado = saldo_acumulado + movimiento[3] - movimiento[4]
+            egreso_acumulado = egreso_acumulado + movimiento[4]
+        caja_chica.egresos = egreso_acumulado
+        caja_chica.saldo_final = saldo_acumulado
+        caja_chica.estado = 2
+        caja_chica.save()
+        
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaCierreView, self).get_context_data(**kwargs)
+        context['accion'] = "Cierre"
+        context['titulo'] = "de Caja Chica"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+
+
+class CajaChicaAbrirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('caja_chica.delete_cajachica')
+    model = CajaChica
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
+
+    def get_success_url(self):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.get_object().id})
+
+    def delete(self, request, *args, **kwargs):
+        caja_chica = self.get_object()
+        saldo_acumulado = Decimal('0.00')
+        egreso_acumulado = Decimal('0.00')
+        caja_chica.egresos = egreso_acumulado
+        caja_chica.saldo_final = saldo_acumulado
+        caja_chica.estado = 1
+        caja_chica.save()
+        
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaAbrirView, self).get_context_data(**kwargs)
+        context['accion'] = "Abrir"
+        context['titulo'] = "Caja Chica"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+
 
 #__CajaChicaPrestamo_____________________________________________________________________
 class CajaChicaPrestamoListView(ListView):

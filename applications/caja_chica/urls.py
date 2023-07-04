@@ -49,7 +49,8 @@ url_caja_chica = [
     path('caja-chica/detalle/<pk>/', views.CajaChicaDetalleView.as_view(), name='caja_chica_detalle'),
     path('caja-chica/detalle-tabla/<pk>/', views.CajaChicaDetalleTabla, name='caja_chica_detalle_tabla'),
     path('caja_chica/pdf/<pk>/', views.CajaChicaPdfView.as_view(), name='caja_chica_pdf'),
-    path('caja-chica/cerrar/<pk>/', views.CajaChicaDeleteView.as_view(), name='caja_chica_cerrar'), #Actualizar Saldos
+    path('caja-chica/cerrar/<pk>/', views.CajaChicaCierreView.as_view(), name='caja_chica_cerrar'), 
+    path('caja-chica/abrir/<pk>/', views.CajaChicaAbrirView.as_view(), name='caja_chica_abrir'), 
 
     path('caja-chica/recibo/<int:cajachica_id>/', views.CajaChicaReciboCreateView.as_view(), name='caja_chica_recibo'),
     path('caja-chica/recibo/eliminar/<pk>/<int:cajachica_id>/', views.CajaChicaReciboDeleteView.as_view(), name='caja_chica_recibo_eliminar'),

@@ -412,6 +412,7 @@ class ChequeReciboBoletaPagoUpdateForm(BSModalModelForm):
         fields = (
             'monto_pagado',
             'fecha_pago',
+            'estado',
             'voucher',
             )
 

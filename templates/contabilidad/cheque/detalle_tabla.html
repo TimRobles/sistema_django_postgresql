@@ -344,10 +344,10 @@
                                 {{ cheque_fisico.responsable }}
                             {% endif %}
                         </td>
-                        <td class="text-nowrap text-end">{{ cheque_fisico.monto|intcomma  }}</td>
+                        <td class="text-nowrap text-end">{{ cheque_fisico.moneda.simbolo  }} {{ cheque_fisico.monto|intcomma  }}</td>
                         <td>{{ cheque_fisico.fecha_emision|date:'d/m/Y' }}</td>
-                        <td class="text-nowrap text-end">{{ cheque_fisico.comision|intcomma  }}</td>
-                        <td class="text-nowrap text-end">{{ cheque_fisico.monto_recibido|intcomma  }}</td>
+                        <td class="text-nowrap text-end">{{ cheque_fisico.moneda.simbolo  }} {{ cheque_fisico.comision|intcomma  }}</td>
+                        <td class="text-nowrap text-end">{{ cheque_fisico.moneda.simbolo  }} {{ cheque_fisico.monto_recibido|intcomma  }}</td>
                         <td>{{ cheque_fisico.fecha_cobro|date:'d/m/Y' }}</td>
                         <td>{{ cheque_fisico.get_estado_display }}</td>
                         <td class="text-nowrap text-center">
