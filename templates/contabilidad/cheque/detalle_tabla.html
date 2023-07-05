@@ -71,6 +71,7 @@
             <tr>
                 <th>Boleta Pago</th>
                 <th class="text-end">Monto</th>
+                <th class="text-end">Redondeo</th>
                 <th class="text-end">Monto Pagado</th>
                 <th class="text-center">Fecha Pago</th>
                 <th class="text-center">Estado</th>
@@ -82,6 +83,7 @@
                 <tr>
                     <td>{{ recibo_bp.boleta_pago }}</td>
                     <td class="text-end">{{ recibo_bp.moneda.simbolo }} {{ recibo_bp.monto|redondear|intcomma }}</td>
+                    <td class="text-end">{{ recibo_bp.moneda.simbolo }} {{ recibo_bp.redondeo|redondear|intcomma }}</td>
                     <td class="text-end">{{ recibo_bp.moneda.simbolo }} {{ recibo_bp.monto_pagado|redondear|intcomma }}</td>
                     <td class="text-center">{{ recibo_bp.fecha_pago|date:'d/m/Y' }}</td>
                     <td class="text-center">{{ recibo_bp.get_estado_display }}</td>
@@ -115,11 +117,13 @@
         <tfoot>
             <tr>
                 <td class="text-end">Total:</td>
-                {% if total_boleta %}
-                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_boleta|redondear|intcomma }}</td>
-                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_boleta_pagado|redondear|intcomma }}</td>
+                {% if total_boleta_pago %}
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_boleta_pago|redondear|intcomma }}</td>
+                    <td></td>
+                    <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_boleta_pago_pagado|redondear|intcomma }}</td>
                 {% else %}
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} 0.00</td>
+                    <td></td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} 0.00</td>
                 {% endif %}
                 <td colspan="3"></td>
@@ -143,6 +147,8 @@
             <tr>
                 <th>Servicio</th>
                 <th class="text-end">Monto</th>
+                <th class="text-end">Mora</th>
+                <th class="text-end">Redondeo</th>
                 <th class="text-end">Monto Pagado</th>
                 <th>Fecha Pago</th>
                 <th>Estado</th>
@@ -154,6 +160,8 @@
                 <tr>
                     <td>{{ recibo_s.servicio }}</td>
                     <td class="text-end">{{ recibo_s.moneda.simbolo }} {{ recibo_s.monto|redondear|intcomma }}</td>
+                    <td class="text-end">{{ recibo_s.moneda.simbolo }} {{ recibo_s.mora|redondear|intcomma }}</td>
+                    <td class="text-end">{{ recibo_s.moneda.simbolo }} {{ recibo_s.redondeo|redondear|intcomma }}</td>
                     <td class="text-end">{{ recibo_s.moneda.simbolo }} {{ recibo_s.monto_pagado|redondear|intcomma }}</td>
                     <td>{{ recibo_s.fecha_pago|date:'d/m/Y' }}</td>
                     <td>{{ recibo_s.get_estado_display }}</td>
@@ -189,9 +197,11 @@
                 <td class="text-end">Total:</td>
                 {% if total_servicio %}
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_servicio|redondear|intcomma }}</td>
+                    <td colspan="2"></td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_servicio_pagado|redondear|intcomma }}</td>
-                {% else %}
+                    {% else %}
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} 0.00</td>
+                    <td colspan="2"></td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} 0.00</td>
                 {% endif %}
                 <td colspan="3"></td>
@@ -274,6 +284,7 @@
             <tr>
                 <th>Concepto</th>
                 <th class="text-end">Monto</th>
+                <th class="text-end">Redondeo</th>
                 <th class="text-end">Monto Usado</th>
                 <th>Fecha Entrega</th>
                 <th>Estado</th>
@@ -285,6 +296,7 @@
                 <tr>
                     <td>{{ requerimiento.concepto_final }}</td>
                     <td class="text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto|redondear|intcomma }}</td>
+                    <td class="text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.redondeo|redondear|intcomma }}</td>
                     <td class="text-end">{{ requerimiento.moneda.simbolo }} {{ requerimiento.monto_usado|redondear|intcomma }}</td>
                     <td>{{ requerimiento.fecha_entrega|date:'d/m/Y' }}</td>
                     <td>{{ requerimiento.get_estado_display }}</td>
@@ -313,9 +325,11 @@
                 <td class="text-end">Total:</td>
                 {% if total_requerimiento %}
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_requerimiento|redondear|intcomma }}</td>
+                    <td></td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_requerimiento_usado|redondear|intcomma }}</td>
                 {% else %}
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} 0.00</td>
+                    <td></td>
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} 0.00</td>
                 {% endif %}
                 <td colspan="3"></td>

@@ -411,6 +411,7 @@ class ChequeReciboBoletaPagoUpdateForm(BSModalModelForm):
         model = ReciboBoletaPago
         fields = (
             'monto_pagado',
+            'redondeo',
             'fecha_pago',
             'estado',
             'voucher',
@@ -455,6 +456,8 @@ class ChequeReciboServicioUpdateForm(BSModalModelForm):
         model = ReciboServicio
         fields = (
             'monto_pagado',
+            'mora',
+            'redondeo',
             'fecha_pago',
             'estado',
             'voucher',
