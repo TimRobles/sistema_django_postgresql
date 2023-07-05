@@ -4,7 +4,8 @@ from django.db import models
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.caja_chica.funciones import cheque_monto_usado
-from applications.contabilidad.funciones import calcular_datos_boleta
+from applications.contabilidad.funciones import calcular_datos_boleta, movimientos_cheque
+from applications.contabilidad.pdf import generarChequeCerrar, generarChequeSolicitar
 from applications.datos_globales.models import RemuneracionMinimaVital
 from applications.funciones import registrar_excepcion
 from applications.home.templatetags.funciones_propias import nombre_usuario
@@ -1514,18 +1515,52 @@ class ChequeDetalleView(PermissionRequiredMixin, DetailView):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_cheque_fisico_comision'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
-        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
-        context['total_monto_requerido'] = context['total_boleta'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
+        total_boleta_pago = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        total_boleta_pago_pagado = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago_pagado = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_servicio = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        total_servicio_pagado = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio_pagado = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_caja_chica = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        total_caja_chica_pagado = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica_pagado = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_requerimiento = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_requerimiento_usado = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento_usado = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        total_cheque_fisico = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_cheque_fisico_comision = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_comision = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
+        total_cheque_fisico_recibido = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_recibido = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        
+        context['total_boleta_pago'] = total_boleta_pago
+        context['total_boleta_pago_pagado'] = total_boleta_pago_pagado
+        context['total_servicio'] = total_servicio
+        context['total_servicio_pagado'] = total_servicio_pagado
+        context['total_caja_chica'] = total_caja_chica
+        context['total_caja_chica_pagado'] = total_caja_chica_pagado
+        context['total_requerimiento'] = total_requerimiento
+        context['total_requerimiento_usado'] = total_requerimiento_usado
+        context['total_cheque_fisico'] = total_cheque_fisico
+        context['total_cheque_fisico_comision'] = total_cheque_fisico_comision
+        context['total_cheque_fisico_recibido'] = total_cheque_fisico_recibido
+        context['total_monto_requerido'] = context['total_boleta_pago'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
 
         return context
 
@@ -1543,18 +1578,52 @@ def ChequeDetalleTabla(request, pk):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_cheque_fisico_comision'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
-        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
-        context['total_monto_requerido'] = context['total_boleta'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
+        total_boleta_pago = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        total_boleta_pago_pagado = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago_pagado = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_servicio = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        total_servicio_pagado = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio_pagado = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_caja_chica = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        total_caja_chica_pagado = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica_pagado = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_requerimiento = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_requerimiento_usado = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento_usado = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        total_cheque_fisico = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_cheque_fisico_comision = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_comision = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
+        total_cheque_fisico_recibido = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_recibido = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        
+        context['total_boleta_pago'] = total_boleta_pago
+        context['total_boleta_pago_pagado'] = total_boleta_pago_pagado
+        context['total_servicio'] = total_servicio
+        context['total_servicio_pagado'] = total_servicio_pagado
+        context['total_caja_chica'] = total_caja_chica
+        context['total_caja_chica_pagado'] = total_caja_chica_pagado
+        context['total_requerimiento'] = total_requerimiento
+        context['total_requerimiento_usado'] = total_requerimiento_usado
+        context['total_cheque_fisico'] = total_cheque_fisico
+        context['total_cheque_fisico_comision'] = total_cheque_fisico_comision
+        context['total_cheque_fisico_recibido'] = total_cheque_fisico_recibido
+        context['total_monto_requerido'] = context['total_boleta_pago'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
 
         data['table'] = render_to_string(
             template,
@@ -2046,6 +2115,46 @@ class ChequeVueltoExtraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['dar_baja'] = "true"
         return context
 
+
+class ChequeSolicitarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        cheque = Cheque.objects.get(id = kwargs['pk'])
+        recibos, datos = movimientos_cheque(cheque)
+
+        titulo = 'Solicitud de Cheque - %s' % cheque.concepto
+        fecha = date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = True
+        logo = request.session['empresa_logo']
+        pie_pagina = request.session['empresa_pie_pagina']
+        color = request.session['empresa_color']
+        buf = generarChequeSolicitar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
+
+
+class ChequeCerrarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        cheque = Cheque.objects.get(id = kwargs['pk'])
+        suma_vueltos = ChequeVueltoExtra.objects.suma_vueltos(cheque.id)
+        suma_vueltos_cambio = ChequeVueltoExtra.objects.suma_vueltos_cambio(cheque.id)
+        recibos, datos = movimientos_cheque(cheque)
+
+        titulo = 'Rendición de Cheque - %s' % cheque.concepto
+        fecha = date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = False
+        logo = request.session['empresa_logo']
+        pie_pagina = request.session['empresa_pie_pagina']
+        color = request.session['empresa_color']
+        buf = generarChequeCerrar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
+        
 
 #---------------------------------------------------------------------------------
 
