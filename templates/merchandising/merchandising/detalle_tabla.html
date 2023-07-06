@@ -1,0 +1,619 @@
+<h3>Datos de Merchandising</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Descripción venta</th>
+                <th class="text-rigth">Descripción corta</th>
+                <th class="text-rigth">Familia</th>
+                <th class="text-rigth">Subfamilia</th>
+                <th class="text-rigth">Unidad Base</th>
+                <th class="text-rigth">Peso Unidad Base</th>
+                <th class="text-rigth">Marca</th>
+                <th class="text-rigth">Modelo</th>
+                <th class="text-center">Clase</th>
+                <th class="text-center">Control Serie</th>
+                <th class="text-center">Control Lote</th>
+                <th class="text-center">Control Calidad</th>
+                <th class="text-center">Mostrar</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_merchandising.descripcion_venta }}</td>
+                <td>{{ contexto_merchandising.descripcion_corta }}</td>
+                <td>{{ contexto_merchandising.subfamilia.familia }}</td>
+                <td>{{ contexto_merchandising.subfamilia }}</td>
+                <td>{{ contexto_merchandising.unidad_base }}</td>
+                <td>{{ contexto_merchandising.peso_unidad_base }}</td>
+
+                <td class="text-center">
+                    {% if contexto_merchandising.marca != None %}
+                        {{ contexto_merchandising.marca }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    {% if contexto_merchandising.modelo != None %}
+                        {{ contexto_merchandising.modelo }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    {% if contexto_merchandising.clase != None %}
+                        {{ contexto_merchandising.clase }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    {% if contexto_merchandising.control_serie == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    {% if contexto_merchandising.control_lote == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    {% if contexto_merchandising.control_calidad == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    {% if contexto_merchandising.mostrar == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:merchandising_actualizar' contexto_merchandising.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+
+<h3>Datos de Importación</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Traducción</th>
+                <th class="text-rigth">Partida</th>
+                <th class="text-rigth">Uso o funcion</th>
+                <th class="text-rigth">Compuesto por</th>
+                <th class="text-center">Es componente</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_merchandising.traduccion }}</td>
+                <td>{{ contexto_merchandising.partida }}</td>
+                <td>{{ contexto_merchandising.uso_funcion }}</td>
+                <td>{{ contexto_merchandising.compuesto_por }}</td>
+                <td class="text-center">
+                    {% if contexto_merchandising.es_componente == True %}
+                        Sí
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:datos_importacion_merchandising_actualizar' contexto_merchandising.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+
+<h3>Producto SUNAT</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Segmento SUNAT</th>
+                <th class="text-rigth">Familia SUNAT</th>
+                <th class="text-rigth">Clase SUNAT</th>
+                <th class="text-rigth">Producto SUNAT</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_merchandising.producto_sunat.clase.familia.segmento }}</td>
+                <td>{{ contexto_merchandising.producto_sunat.clase.familia}}</td>
+                <td>{{ contexto_merchandising.producto_sunat.clase}}</td>
+                <td>
+                    {% if contexto_merchandising.producto_sunat %}
+                    {{ contexto_merchandising.producto_sunat }}
+                    {% else %}
+
+                    {% endif %}
+                </td>
+
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:producto_sunat_merchandising_actualizar' contexto_merchandising.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true" data-modal="modal-xl"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'merchandising_app:producto_sunat_merchandising_buscar' contexto_merchandising.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true" data-modal="modal-xl"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+
+<h3>Componentes
+    <button data-form-url="{% url 'merchandising_app:componente_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Relacionar Componentes
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Componente</th>
+                <th class="text-rigth">Cantidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for componente in componentes %}
+            <tr>
+                <td>{{ componente.componentemerchandising }}</td>
+                <td>{{ componente.cantidad }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:componente_merchandising_actualizar' componente.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    <button data-form-url="{% url 'merchandising_app:componente_merchandising_eliminar' componente.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+
+</br>
+<h3>Especificaciones
+    <button data-form-url="{% url 'merchandising_app:especificacion_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Relacionar Especificaciones
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Orden</th>
+                <th class="text-rigth">Atributo</th>
+                <th class="text-rigth">Valor</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for especificacion in especificaciones %}
+            <tr>
+                <td>{{ especificacion.orden }}</td>
+                <td>{{ especificacion.atributomerchandising }}</td>
+                <td>{{ especificacion.valor }}</td>
+
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:especificacion_merchandising_actualizar' especificacion.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    <button data-form-url="{% url 'merchandising_app:especificacion_merchandising_eliminar' especificacion.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+
+</br>
+<h3>Datasheet
+    <button data-form-url="{% url 'merchandising_app:datasheet_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Relacionar Datasheet
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Descripción</th>
+                <th class="text-rigth">Archivo</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for datasheet in datasheets %}
+            <tr>
+                <td>{{ datasheet.descripcion }}</td>
+                <td><a href="{{ MEDIA_URL }}{{ datasheet.archivo }}" target="_blank">Ver Archivo</a></td>
+
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:datasheet_merchandising_actualizar' datasheet.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    <button data-form-url="{% url 'merchandising_app:datasheet_merchandising_eliminar' datasheet.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+<h3>Imagen
+    <button data-form-url="{% url 'merchandising_app:imagen_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Relacionar Imagen
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Descripción</th>
+                <th class="text-rigth">Imagen</th>
+                <th class="text-center">Acciones</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for imagen  in imagenes %}
+            <tr>
+                <td>{{ imagen.descripcion}}</td>
+                <td><a href="{{ MEDIA_URL }}{{ imagen.imagen}}" target="_blank">Ver Imagen</a></td>
+
+                <td class="text-center text-nowrap">
+                    {% if imagen.estado_alta_baja == 1 %}
+                        <button data-form-url="{% url 'merchandising_app:imagen_merchandising_actualizar' imagen.id %}"
+                            data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'merchandising_app:imagen_merchandising_baja' imagen.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% elif imagen.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'merchandising_app:imagen_merchandising_alta' imagen.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>
+
+</br>
+<h3>Video
+    <button data-form-url="{% url 'merchandising_app:video_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Relacionar Video
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Descripción</th>
+                <th class="text-rigth">Video</th>
+                <th class="text-center">Acciones</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for video  in videos %}
+            <tr>
+                <td>{{ video.descripcion}}</td>
+                <td><a href="{{ video.url}}" target="_blank" >Ver Video</a></td>
+
+                <td class="text-center text-nowrap">
+                    {% if video.estado_alta_baja == 1 %}
+
+                        <button data-form-url="{% url 'merchandising_app:video_merchandising_actualizar' video.id %}"
+                            data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'merchandising_app:video_merchandising_baja' video.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% elif video.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'merchandising_app:video_merchandising_alta' video.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+<h3>Equivalencia Unidad
+    <button data-form-url="{% url 'merchandising_app:equivalencia_unidad_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Registrar
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Cantidad base</th>
+                <th class="text-rigth">Unidad Base</th>
+                <th class="text-rigth">Cantidad nueva unidad</th>
+                <th class="text-rigth">Nueva unidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equivalencia  in equivalencias %}
+            <tr>
+                <td>{{ equivalencia.cantidad_base}}</td>
+                <td>{{ equivalencia.merchandising.unidad_base}}</td>
+                <td>{{ equivalencia.cantidad_nueva_unidad}}</td>
+                <td>{{ equivalencia.nueva_unidad}}</td>
+                <td class="text-center text-nowrap">
+
+                    {% if equivalencia.estado_alta_baja == 1 %}
+                        <button data-form-url="{% url 'merchandising_app:equivalencia_unidad_merchandising_actualizar' equivalencia.id %}"
+                            data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'merchandising_app:equivalencia_unidad_merchandising_baja' equivalencia.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% elif equivalencia.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'merchandising_app:equivalencia_unidad_merchandising_alta' equivalencia.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<br>
+
+</br>
+<h3>Proveedor Merchandising
+    <button data-form-url="{% url 'merchandising_app:proveedor_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Registrar
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Proveedor</th>
+                <th class="text-rigth">Name</th>
+                <th class="text-rigth">Brand</th>
+                <th class="text-rigth">Descripción</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+            <tr>
+                <td>{{ proveedor.proveedor}}</td>
+                <td>{{ proveedor.name}}</td>
+                <td>{{ proveedor.brand}}</td>
+                <td>{{ proveedor.description}}</td>
+                <td class="text-center text-nowrap">
+                    {% if proveedor.estado_alta_baja == 1 %}
+                        <button data-form-url="{% url 'merchandising_app:proveedor_merchandising_actualizar' proveedor.id %}"
+                            data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'merchandising_app:proveedor_merchandising_baja' proveedor.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </button>
+                    {% elif proveedor.estado_alta_baja == 2 %}
+                        <button data-form-url="{% url 'merchandising_app:proveedor_merchandising_alta' proveedor.id %}"
+                            class="delete btn btn-success btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Alta">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+</br>
+<h3>Idioma Merchandising
+    <button data-form-url="{% url 'merchandising_app:idioma_merchandising_registrar' contexto_merchandising.id %}"
+        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+        class="create badge bg-primary">
+        Registrar 
+    </button>
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-rigth">Idioma</th>
+                <th class="text-rigth">Traducción</th>
+                <th class="text-center">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for idioma in idiomas %}
+            <tr>
+                <td>{{ idioma.idioma}}</td>
+                <td>{{ idioma.traduccion}}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:idioma_merchandising_actualizar' idioma.id %}"
+                        data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>

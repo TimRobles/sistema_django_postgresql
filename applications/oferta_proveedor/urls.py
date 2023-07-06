@@ -24,4 +24,6 @@ urlpatterns = [
     path('oferta-proveedor/generar-nuevo-requerimiento/<slug>/', views.OfertaProveedorGenerarNuevoRequerimientoView.as_view(), name='oferta_proveedor_generar_nuevo_requerimiento'),
     path('oferta-proveedor/generar-orden-compra/<str:slug_oferta>/', views.OfertaProveedorGenerarOrdenCompraView.as_view(), name='oferta_proveedor_generar_orden_compra'),
 
+    path('oferta-proveedor/agregar-merchandising/<str:oferta_proveedor_slug>/', views.MerchandisingOfertaProveedorAgregarView.as_view(), name='oferta_proveedor_agregar_merchandising'),
+
 ]

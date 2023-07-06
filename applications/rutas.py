@@ -10,3 +10,6 @@ INGRESO_VOUCHER = 'img/ingreso/voucher/'
 REQUERIMIENTO_VOUCHER = 'file/caja_chica/requerimiento/documento/'
 REQUERIMIENTO_FOTO_PRODUCTO = 'img/caja_chica/requerimiento/producto/'
 CONTABILIDAD_FOTO_CHEQUE = 'img/contabilidad/cheque/'
+
+CLIENTE_CRM_ARCHIVO_RECIBIDO = 'img/crm/cliente_crm/'
+CLIENTE_CRM_ARCHIVO_ENVIADO = 'img/crm/cliente_crm/'

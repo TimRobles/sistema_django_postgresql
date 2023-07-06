@@ -3,10 +3,12 @@
         <tr>
             <th>Razón Social</th>
             <th>RUC</th>
+            <th>Representante</th>
+            <th>Tipo Representante</th>
             <th>Medio</th>
             <th>País</th>
-            <th>Fecha Registro</th>
-            <th>Estado</th>
+            <th class="text-center">Fecha Registro</th>
+            <th class="text-center">Estado</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -15,13 +17,15 @@
         <tr>
             <td>{{ cliente.cliente_crm.razon_social }}</td>
             <td>{{ cliente.cliente_crm.numero_documento }}</td>
+            <td>{{ cliente.representante.interlocutor }}</td>
+            <td>{{ cliente.representante.get_tipo_representante_legal_display }}</td>
             <td>{{ cliente.get_medio_display }}</td>
             <td>
                 {% if cliente.pais %}
                 {{ cliente.cliente_crm.pais }}
                 {% endif %}
             </td>
-            <td>{{ cliente.cliente_crm.created_at|date:'d/m/Y'}}</td>
+            <td class="text-center">{{ cliente.fecha_registro|date:'d/m/Y'}}</td>
             <td class="text-center">{{ cliente.get_estado_display }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'crm_app:cliente_crm_actualizar' cliente.id %}"

@@ -1,0 +1,36 @@
+{% load widget_tweaks %}
+
+<form id="formulario" action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <p class="delete-text">¿Está seguro de
+            {% if dar_baja %}
+            {{ accion }}
+            {% else %}
+            eliminar
+            {% endif %}
+            {{ titulo }}?</p>
+        <p>
+            <strong>{{ item }}</strong>
+        </p>
+        {% for error in form.non_field_errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+        {% endfor %}
+
+        {% block abajo %}
+        {% endblock abajo %}
+    </div>
+    <div class="modal-footer">
+        <button type="submit" id="delete-btn" class="btn btn-danger">
+            {% if dar_baja %}
+            {{ accion }}
+            {% else %}
+            Borrar
+            {% endif %}
+        </button>
+    </div>
+</form>

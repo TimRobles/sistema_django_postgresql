@@ -1,0 +1,51 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Sede</th>
+            <th>Fecha Ajuste Inventario</th>
+            <th>Hora Ajuste Inventario</th>
+            <th>Responsable</th>
+            <th>Observación</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ajuste in contexto_ajuste_inventario_merchandising %}
+        <tr>
+            <td>{{ ajuste.sociedad }}</td>
+            <td>{{ ajuste.sede }}</td>
+            <td>{{ ajuste.fecha_ajuste_inventario|date:'d/m/Y' }}</td>
+            <td>{{ ajuste.hora_ajuste_inventario }}</td>
+            <td>
+                {% if ajuste.responsable %}
+                    {% if ajuste.responsable.first_name %}
+                        {{ ajuste.responsable.first_name }} {{ ajuste.responsable.last_name }}
+                    {% else %}
+                        {{ ajuste.responsable }}
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ ajuste.observacion }}</td>
+            <td>{{ ajuste.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+                {% if ajuste.estado == 1 %}
+                    <button data-form-url="{% url 'merchandising_app:ajuste_inventario_merchandising_actualizar' ajuste.id %}"
+                        data-table-url="{% url 'merchandising_app:ajuste_inventario_merchandising_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                {% endif %}
+                <a href="{% url 'merchandising_app:ajuste_inventario_merchandising_detalle' ajuste.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

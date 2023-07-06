@@ -77,6 +77,11 @@
             class="create badge bg-primary">
             Agregar Material
         </button>
+        <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_agregar_merchandising' contexto_oferta_proveedor.slug %}"
+            data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
+            class="create badge bg-primary">
+            Agregar Merchandising
+        </button>
         <button data-form-url="{% url 'oferta_proveedor_app:oferta_proveedor_crear_material' contexto_oferta_proveedor.slug %}"
             data-table-url="{% url 'oferta_proveedor_app:oferta_proveedor_detalle_tabla' contexto_oferta_proveedor.slug %}"
             class="create badge bg-primary">

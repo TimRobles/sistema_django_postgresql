@@ -1,19 +1,17 @@
 {% extends 'includes/formulario generico.html' %}
 {% load static %}
 
-{% block abajo %}
-{% endblock abajo %}
-    
-
 {% block js %}
     <script>
         $(function () {
-            $("#id_interlocutor").select2({
+
+            $("#id_merchandising").select2({
                 width: '100%',
                 dropdownParent: $(".modal-body"),
                 matcher: buscar_select2
             });
-        });
+
+            });
     </script>
- 
+
 {% endblock js %}

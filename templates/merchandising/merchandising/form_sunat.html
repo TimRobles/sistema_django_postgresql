@@ -1,0 +1,33 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}    
+
+{% block js %}
+    <script src="{% static 'js/merchandising/form_sunat.js' %}?{{ cache_bust }}"></script>
+    <script>
+        $(function () {
+            $("#id_segmento_sunat").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_familia_sunat").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_clase_sunat").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_producto_sunat").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+            });
+    </script>
+{% endblock js %}

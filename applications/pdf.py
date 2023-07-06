@@ -1,5 +1,6 @@
 import os, io
 from django.conf import settings
+from sistema_django_postgresql.settings.base import BASE_DIR
 import urllib.parse
 from django.contrib.humanize.templatetags.humanize import intcomma
 
@@ -13,7 +14,8 @@ from functools import partial
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-rutaBase=os.getcwd()
+# rutaBase=os.getcwd()
+rutaBase=BASE_DIR
 
 def ruta_media(ruta):
     return settings.MEDIA_ROOT + '/' + urllib.parse.unquote(ruta.replace(settings.MEDIA_URL, ''))

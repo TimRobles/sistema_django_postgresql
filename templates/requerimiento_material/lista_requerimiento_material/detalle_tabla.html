@@ -27,6 +27,13 @@
         Agregar Material
     </button>
 
+    <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_merchandising_agregar' requerimiento.id %}"
+        data-table-url="{% url 'requerimiento_material_app:lista_requerimiento_material_detalle_tabla' requerimiento.id  %}"
+        data-keep-open="True"
+        class="update btn btn-primary">
+        Agregar Merchandising
+    </button>
+
     <button data-form-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_registrar' requerimiento.id %}"
         data-table-url="{% url 'requerimiento_material_app:requerimiento_material_proveedor_tabla' %}"
         class="delete btn btn-primary" title="Agregar Proveedor">
@@ -101,7 +108,6 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                             <i class="bi-x-lg"></i>
                         </button>
-
                     </td>
 
                 </tr>

@@ -1,0 +1,52 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Merchandising</th>
+                <th>Unidad</th>
+                <th>Almacen</th>
+                <th>Tipo Stock</th>
+                <th>Cantidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for merchandising in inventario_merchandising_detalle %}
+            <tr>
+                <td>{{ merchandising.item }}</td>
+                <td>{{ merchandising.merchandising }}</td>
+                <td>{{ merchandising.merchandising.unidad_base }}</td>
+                <td>{{ merchandising.almacen }}</td>
+                <td>{{ merchandising.tipo_stock }}</td>
+                <td>{{ merchandising.cantidad|redondear|intcomma }}</td>
+                <td class="text-center text-nowrap">
+                    
+                    {% if contexto_inventario_merchandising_detalle.estado == 1 %}
+                        <button data-form-url="{% url 'merchandising_app:inventario_merchandising_detalle_actualizar' merchandising.id %}"
+                            data-table-url="{% url 'merchandising_app:inventario_merchandising_detalle_tabla' contexto_inventario_merchandising_detalle.id  %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'merchandising_app:inventario_merchandising_detalle_eliminar' merchandising.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+                    <button data-form-url="{% url 'movimiento_almacen_app:ver_stock' merchandising.merchandising.id merchandising.merchandising.content_type.id %}"
+                        class="read btn swatch-purple btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Stocks">
+                        <i class="bi bi-box-seam"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

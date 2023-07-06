@@ -16,10 +16,12 @@ from .forms import (
     ListaRequerimientoMaterialForm,
     ListaRequerimientoMaterialDetalleForm,
     ListaRequerimientoMaterialDetalleUpdateForm,
+    ListaRequerimientoMerchandisingDetalleForm,
     RequerimientoMaterialProveedorEnviarCorreoForm,
     RequerimientoMaterialProveedorForm,
     RequerimientoMaterialProveedorDetalleUpdateForm,
     RequerimientoMaterialProveedorDetalleForm,
+    RequerimientoMerchandisingProveedorDetalleForm,
 )
 
 from .models import (
@@ -50,6 +52,7 @@ def ListaRequerimientoMaterialTabla(request):
             request=request
         )
         return JsonResponse(data)
+
 
 class ListaRequerimientoMaterialCreateView(PermissionRequiredMixin, FormView):
     permission_required = ('requerimiento_de_materiales.add_listarequerimientomaterialdetalle')
@@ -109,6 +112,7 @@ class ListaRequerimientoMaterialCreateView(PermissionRequiredMixin, FormView):
         context['materiales'] = materiales
         return context
 
+
 class ListaRequerimientoMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('requerimiento_de_materiales.delete_listarequerimientomaterial')
     model = ListaRequerimientoMaterial
@@ -127,6 +131,7 @@ class ListaRequerimientoMaterialDeleteView(PermissionRequiredMixin, BSModalDelet
         context['item'] = self.get_object().titulo
         context['dar_baja'] = "true"
         return context
+
 
 class ListaRequerimientoMaterialUpdateView(PermissionRequiredMixin, FormView):
     permission_required = ('requerimiento_de_materiales.change_listarequerimientomaterialdetalle')
@@ -174,6 +179,7 @@ class ListaRequerimientoMaterialUpdateView(PermissionRequiredMixin, FormView):
         context['titulo']="Requerimiento"
         return context
 
+
 def ListaRequerimientoMaterialDetalleTabla(request, requerimiento_id):
     data = dict()
     if request.method == 'GET':
@@ -203,6 +209,7 @@ def ListaRequerimientoMaterialDetalleTabla(request, requerimiento_id):
             request=request
         )
         return JsonResponse(data)
+
 
 class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('requerimiento_de_materiales.add_listarequerimientomaterialdetalle')
@@ -256,6 +263,7 @@ class ListaRequerimientoMaterialDetalleCreateView(PermissionRequiredMixin, BSMod
         context['url_material'] = reverse_lazy('material_app:material_info', kwargs={'id_material':None})[:-5]
         return context
 
+
 class ListaRequerimientoMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('requerimiento_de_materiales.change_listarequerimientomaterialdetalle')
     model = ListaRequerimientoMaterialDetalle
@@ -280,6 +288,7 @@ class ListaRequerimientoMaterialDetalleUpdateView(PermissionRequiredMixin, BSMod
         context['titulo']="material"
         return context
 
+
 class ListaRequerimientoMaterialDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('requerimiento_de_materiales.delete_listarequerimientomaterialdetalle')
     model = ListaRequerimientoMaterialDetalle
@@ -302,7 +311,6 @@ class ListaRequerimientoMaterialDetalleDeleteView(PermissionRequiredMixin, BSMod
         return context
 
 
-
 class RequerimientoMaterialProveedorListView(PermissionRequiredMixin, ListView):
     permission_required = ('requerimiento_de_materiales.view_requerimientomaterialproveedor')
     model = RequerimientoMaterialProveedor
@@ -322,6 +330,7 @@ def RequerimientoMaterialProveedorTabla(request):
             request=request
         )
         return JsonResponse(data)
+
 
 class RequerimientoMaterialProveedorCreateView(PermissionRequiredMixin,BSModalCreateView):
     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedor')
@@ -351,6 +360,7 @@ class RequerimientoMaterialProveedorCreateView(PermissionRequiredMixin,BSModalCr
         context['titulo']="Requerimiento a Proveedor"
         return context
 
+
 class RequerimientoMaterialProveedorUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('requerimiento_de_materiales.change_requerimientomaterialproveedor')
     model = RequerimientoMaterialProveedor
@@ -371,12 +381,12 @@ class RequerimientoMaterialProveedorUpdateView(PermissionRequiredMixin, BSModalU
 
         return super().form_valid(form)
 
-
     def get_context_data(self, **kwargs):
         context = super(RequerimientoMaterialProveedorUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
         context['titulo']="Material"
         return context
+
 
 class RequerimientoMaterialProveedorDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('requerimiento_de_materiales.delete_requerimientomaterialproveedor')
@@ -396,6 +406,7 @@ class RequerimientoMaterialProveedorDeleteView(PermissionRequiredMixin, BSModalD
         context['item'] = self.get_object().titulo
         context['dar_baja'] = "true"
         return context
+
 
 class RequerimientoMaterialProveedorDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('requerimiento_de_materiales.view_requerimientomaterialproveedordetalle')
@@ -421,6 +432,7 @@ class RequerimientoMaterialProveedorDetailView(PermissionRequiredMixin, DetailVi
         context['materiales'] = materiales
 
         return context
+
 
 def RequerimientoMaterialProveedorDetailTabla(request, pk):
     data = dict()
@@ -450,6 +462,7 @@ def RequerimientoMaterialProveedorDetailTabla(request, pk):
         )
         return JsonResponse(data)
 
+
 class RequerimientoMaterialProveedorDuplicarView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedor')
     model = RequerimientoMaterialProveedor
@@ -476,6 +489,7 @@ class RequerimientoMaterialProveedorDuplicarView(PermissionRequiredMixin, BSModa
         context['accion']="Duplicar"
         context['titulo']="Requerimiento"
         return context
+
 
 class RequerimientoMaterialProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('requerimiento_de_materiales.change_requerimientomaterialproveedordetalle')
@@ -518,6 +532,7 @@ class RequerimientoMaterialProveedorDetalleUpdateView(PermissionRequiredMixin, B
         context['titulo']="Material"
         return context
 
+
 class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('requerimiento_de_materiales.delete_requerimientomaterialproveedordetalle')
     model = RequerimientoMaterialProveedorDetalle
@@ -556,6 +571,7 @@ class RequerimientoMaterialProveedorDetalleDeleteView(PermissionRequiredMixin, B
         context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
+
 
 class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedordetalle')
@@ -622,6 +638,7 @@ class RequerimientoMaterialProveedorDetalleCreateView(PermissionRequiredMixin, B
         context['titulo'] = 'Material'
         context['url_material'] = reverse_lazy('material_app:material_info', kwargs={'id_material':None})[:-5]
         return context
+
 
 class RequerimientoMaterialProveedorPdfView(View):
     def dispatch(self, request, *args, **kwargs):
@@ -696,9 +713,9 @@ class RequerimientoMaterialProveedorPdfView(View):
 
         return respuesta
 
+
 class RequerimientoMaterialProveedorEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedor')
-
     template_name = "includes/formulario generico.html"
     form_class = RequerimientoMaterialProveedorEnviarCorreoForm
     success_url = reverse_lazy('oferta_proveedor_app:oferta_proveedor_inicio')
@@ -854,3 +871,124 @@ def ProveedorView(request, id_interlocutor_proveedor):
             request=request
         ).replace('selected', 'selected=""')
         return JsonResponse(data)
+
+######################################################---MERCHANDISING---######################################################
+
+class ListaRequerimientoMerchandisingDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('requerimiento_de_materiales.add_listarequerimientomaterialdetalle')
+    template_name = "requerimiento_material/lista_requerimiento_material/form_merchandising.html"
+    form_class = ListaRequerimientoMerchandisingDetalleForm
+    success_url = reverse_lazy('requerimiento_material_app:lista_requerimiento_material_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = ListaRequerimientoMaterial.objects.get(id = self.kwargs['requerimiento_id'])
+                item = len(ListaRequerimientoMaterialDetalle.objects.filter(lista_requerimiento_material = registro))
+
+                merchandising = form.cleaned_data.get('merchandising')
+                cantidad = form.cleaned_data.get('cantidad')
+                comentario = form.cleaned_data.get('comentario')
+
+                obj, created = ListaRequerimientoMaterialDetalle.objects.get_or_create(
+                    content_type = ContentType.objects.get_for_model(merchandising),
+                    id_registro = merchandising.id,
+                    lista_requerimiento_material = registro,
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+                    obj.comentario = comentario
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+                    obj.comentario = obj.comentario + ' | ' + comentario
+
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.success_url)
+    
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ListaRequerimientoMerchandisingDetalleCreateView, self).get_context_data(**kwargs)
+        context['titulo'] = 'Agregar Merchandising'
+        context['accion'] = 'Guardar'
+        context['url_merchandising'] = reverse_lazy('merchandising_app:merchandising_info', kwargs={'id_merchandising':None})[:-5]
+        return context
+    
+
+class RequerimientoMerchandisingProveedorDetalleCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('requerimiento_de_materiales.add_requerimientomaterialproveedordetalle')
+    template_name = "requerimiento_material/requerimiento_material_proveedor/form_merchandising.html"
+    form_class = RequerimientoMerchandisingProveedorDetalleForm
+    success_url = reverse_lazy('requerimiento_material_app:requerimiento_material_proveedor_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
+                item = len(registro.RequerimientoMaterialProveedorDetalle_requerimiento_material.all())
+                merchandising = form.cleaned_data.get('merchandising')
+                cantidad = form.cleaned_data.get('cantidad')
+
+                requerimiento_material_detalle = ListaRequerimientoMaterialDetalle.objects.get(
+                    content_type = ContentType.objects.get_for_model(merchandising),
+                    id_registro = merchandising.id ,
+                    lista_requerimiento_material = registro.lista_requerimiento,
+                )
+
+                obj, created = RequerimientoMaterialProveedorDetalle.objects.get_or_create(
+                    id_requerimiento_material_detalle = requerimiento_material_detalle,
+                    requerimiento_material = registro
+                )
+
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+                    # obj.comentario = comentario
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+                    # if obj.comentario[-len(' | ' + comentario):] != ' | ' + comentario:
+                    #     obj.comentario = obj.comentario + ' | ' + comentario
+
+
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        registro = RequerimientoMaterialProveedor.objects.get(id = self.kwargs['requerimiento_id'])
+        merchandisings = registro.lista_requerimiento.ListaRequerimientoMaterialDetalle_requerimiento_material.all()
+        kwargs = super().get_form_kwargs()
+        kwargs['merchandisings'] = merchandisings
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RequerimientoMerchandisingProveedorDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Merchandising'
+        context['url_merchandising'] = reverse_lazy('merchandising_app:merchandising_info', kwargs={'id_merchandising':None})[:-5]
+        return context

@@ -1,0 +1,20 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block abajo %}
+<span hidden id="url_merchandising">{{ url_merchandising }}</span>
+{% endblock abajo %}
+    
+
+{% block js %}
+    <script src="{% static 'js/requerimiento_material/lista_requerimiento_material/form_merchandising.js' %}?{{ cache_bust }}"></script>
+    <script>
+        $(function () {
+            $("#id_merchandising").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+        });
+    </script> 
+{% endblock js %}

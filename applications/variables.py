@@ -437,6 +437,7 @@ ESTADOS_CLIENTE_CRM = (
     (3, 'INTERESADO'),
     (4, 'FINAL'),
     (5, 'ESTRELLA'),
+    (6, 'DEUDOR'),
 )
 
 ESTADOS_EVENTO_CRM = (
@@ -527,6 +528,8 @@ MENSAJE_CONCLUIR_TRASPASO_STOCK = 'Operación exitosa: El Traspaso Stock fue con
 
 MENSAJE_GENERAR_DOCUMENTO_AJUSTE_INVENTARIO = 'Operación exitosa: Inventario Materiales fue concluido. Documento de Ajuste de Inventario generado'
 MENSAJE_AJUSTE_INVENTARIO_MATERIALES = 'Operación exitosa: Ajuste Inventario Materiales fue concluido.'
+MENSAJE_GENERAR_DOCUMENTO_AJUSTE_INVENTARIO_MERCHANDISING = 'Operación exitosa: Inventario Merchandising fue concluido. Documento de Ajuste de Inventario generado'
+MENSAJE_AJUSTE_INVENTARIO_MERCHANDISING = 'Operación exitosa: Ajuste Inventario Merchandising fue concluido.'
 MENSAJE_CONCLUIR_TRANSFORMACION_PRODUCTOS = 'Operación exitosa: La Transformacion de productos fue concluido.'
 MENSAJE_SOLICITAR_REQUERIMIENTO = 'Operación exitosa: El Requerimiento fue Solicitado.'
 MENSAJE_EDITAR_REQUERIMIENTO = 'Operación exitosa: El Requerimiento paso a estado Borrador.'

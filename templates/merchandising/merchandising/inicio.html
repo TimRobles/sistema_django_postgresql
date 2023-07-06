@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Merchandising
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'merchandising_app:merchandising_registrar' %}"
+            data-table-url="{% url 'merchandising_app:merchandising_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}">
+            Registrar
+        </button>
+    </h3>
+    <br>
+    <form action="" method="get" autocomplete="off">
+        <div class="row">
+            {% for field in form %}
+            <div class="col-lg-8">
+                <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %}
+                >
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                </div>
+                {% for error in field.errors %}
+                    <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            <div class="col-lg-2 my-auto">
+                <button type="submit" class="btn btn-success" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a class="btn btn-success" href="{% url 'merchandising_app:merchandising_inicio' %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+    <br>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/merchandising/inicio_tabla.html' %}
+    </div>
+
+{% endblock contenido %}

@@ -23,6 +23,10 @@ DATABASES = {
     },
 }
 
+CRONJOBS = [
+    ('00 01 * * *', 'applications.crm.models.actualizar_estado_cliente_crm', '--settings sistema_django_postgresql.settings.local >> /home/ronny/Escritorio/Rama_Ronny/sistema_django_postgresql/cronjob.log 2>&1'),
+]
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR.child('static'),

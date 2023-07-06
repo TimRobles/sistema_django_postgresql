@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from applications.importaciones import *
 from applications.oferta_proveedor.models import ArchivoOfertaProveedor, OfertaProveedor, OfertaProveedorDetalle
-from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorComentarioForm, OfertaProveedorDetalleProveedorMaterialUpdateForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm, OfertaProveedorMonedaForm, OfertaProveedorUpdateForm, OrdenCompraSociedadForm
+from applications.oferta_proveedor.forms import AgregarMaterialOfertaProveedorForm, AgregarMerchandisingOfertaProveedorForm, ArchivoOfertaProveedorForm, CrearMaterialOfertaProveedorForm, OfertaProveedorComentarioForm, OfertaProveedorDetalleProveedorMaterialUpdateForm, OfertaProveedorDetalleUpdateForm, OfertaProveedorForm, OfertaProveedorMonedaForm, OfertaProveedorUpdateForm, OrdenCompraSociedadForm
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion
 from applications.funciones import slug_aleatorio
 from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from applications.requerimiento_de_materiales.models import ListaRequerimientoMaterialDetalle, RequerimientoMaterialProveedor, RequerimientoMaterialProveedorDetalle
-from applications.material.models import ProveedorMaterial
+from applications.material.models import Material, ProveedorMaterial
+from applications.merchandising.models import Merchandising
 
 class OfertaProveedorListView(PermissionRequiredMixin, ListView):
     permission_required = ('oferta_proveedor.view_ofertaproveedor')
@@ -395,7 +396,8 @@ class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormVie
     def get_form_kwargs(self):
         registro = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
         proveedor = registro.requerimiento_material.proveedor.id
-        materiales = ProveedorMaterial.objects.filter(proveedor__id = proveedor)
+        content_type = ContentType.objects.get_for_model(Material)
+        materiales = ProveedorMaterial.objects.filter(proveedor__id = proveedor, content_type = content_type)
 
         kwargs = super().get_form_kwargs()
         kwargs['materiales'] = materiales
@@ -652,4 +654,75 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
         context = super(OfertaProveedorGenerarOrdenCompraView, self).get_context_data(**kwargs)
         context['accion'] = "Generar"
         context['titulo'] = "Orden de Compra"
+        return context
+    
+######################################################---MERCHANDISING---######################################################
+
+
+class MerchandisingOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
+    template_name = "oferta_proveedor/oferta_proveedor/form_merchandising.html"
+    form_class = AgregarMerchandisingOfertaProveedorForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':self.kwargs['oferta_proveedor_slug']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                registro = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
+                item = len(registro.OfertaProveedorDetalle_oferta_proveedor.all())
+                merchandising = form.cleaned_data.get('merchandising')
+                cantidad = form.cleaned_data.get('cantidad')
+
+                obj, created = OfertaProveedorDetalle.objects.get_or_create(
+                    proveedor_material = merchandising,
+                    oferta_proveedor = registro,
+                )
+                if created:
+                    obj.item = item + 1
+                    obj.cantidad = cantidad
+
+                else:
+                    obj.cantidad = obj.cantidad + cantidad
+                    respuesta = calculos_linea(obj.cantidad, obj.precio_unitario_con_igv, obj.precio_final_con_igv, igv(), obj.tipo_igv)
+                    obj.precio_unitario_sin_igv = respuesta['precio_unitario_sin_igv']
+                    obj.descuento = respuesta['descuento']
+                    obj.descuento_con_igv = respuesta['descuento_con_igv']
+                    obj.subtotal = respuesta['subtotal']
+                    obj.igv = respuesta['igv']
+                    obj.total = respuesta['total']
+
+                registro_guardar(obj, self.request)
+                obj.save()
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_form_kwargs(self):
+        registro = OfertaProveedor.objects.get(slug = self.kwargs['oferta_proveedor_slug'])
+        proveedor = registro.requerimiento_material.proveedor.id
+        content_type = ContentType.objects.get_for_model(Merchandising)
+        merchandisings = ProveedorMaterial.objects.filter(proveedor__id = proveedor, content_type = content_type)
+
+        kwargs = super().get_form_kwargs()
+        kwargs['merchandisings'] = merchandisings
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(MerchandisingOfertaProveedorAgregarView, self).get_context_data(**kwargs)
+        context['accion'] = 'Agregar'
+        context['titulo'] = 'Merchandising'
+        context['url_merchandising'] = reverse_lazy('merchandising_app:proveedor_merchandising_info', kwargs={'id_merchandising':None})[:-5]
         return context

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Inventario Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+
+    <h3>Detalle Inventario Merchandising
+        {% if contexto_inventario_merchandising_detalle.estado == 1 %}
+            <button data-form-url="{% url 'merchandising_app:inventario_merchandising_detalle_registrar' contexto_inventario_merchandising_detalle.id %}"
+                data-table-url="{% url 'merchandising_app:inventario_merchandising_detalle_tabla' contexto_inventario_merchandising_detalle.id %}"
+                class="create badge bg-primary">
+                Agregar Merchandising
+            </button>
+            <button data-form-url="{% url 'merchandising_app:inventario_merchandising_concluir' contexto_inventario_merchandising_detalle.id %}"
+                data-table-url="{% url 'merchandising_app:inventario_merchandising_inicio' %}"
+                class="delete badge bg-primary">
+                Concluir Inventario
+            </button>
+        {% else %}
+            <a href="{% url 'merchandising_app:ajuste_inventario_merchandising_inicio' %}"><span class="badge bg-primary">Ajuste Inventario</span></a>
+        {% endif %}
+        <a href="{% url 'merchandising_app:inventario_merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
+
+    <br>
+
+    <div id="tabla">
+        {% include 'merchandising/inventario_merchandising/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
