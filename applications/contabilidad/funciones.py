@@ -131,7 +131,8 @@ def movimientos_cheque(cheque):
         concepto = recibo_cc.concepto
         monto = recibo_cc.monto
         mora = Decimal('0.00')
-        monto = recibo_cc.monto
+        redondeo = Decimal('0.00')
+        redondeo = recibo_cc.redondeo
         documentos = False
         voucher = False
         fecha_pago = recibo_cc.fecha_pago
@@ -160,7 +161,7 @@ def movimientos_cheque(cheque):
         concepto = requerimiento.concepto_final
         monto = requerimiento.monto
         mora = Decimal('0.00')
-        monto = requerimiento.monto
+        redondeo = requerimiento.redondeo
         documentos = requerimiento.RequerimientoDocumento_requerimiento.all()
         if len(documentos) == 0:
             documentos = False
