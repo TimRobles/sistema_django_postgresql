@@ -141,13 +141,11 @@ def cheque_monto_usado(cheque):
     recibos_servicio = applications.contabilidad.models.ReciboServicio.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
     recibos_caja_chica = applications.caja_chica.models.ReciboCajaChica.objects.filter(cheque = cheque)
     requerimientos = applications.caja_chica.models.Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
-    vuelto_extra = applications.contabilidad.models.ChequeVueltoExtra.objects.filter(cheque = cheque)
 
     total_boleta_pago_pagado = Decimal('0.00')
     total_servicio_pagado = Decimal('0.00')
     total_caja_chica_pagado = Decimal('0.00')
     total_requerimiento_usado = Decimal('0.00')
-    total_vuelto_extra = Decimal('0.00')
 
     if recibos_boleta_pago:
         total_boleta_pago_pagado = recibos_boleta_pago.aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
@@ -157,8 +155,6 @@ def cheque_monto_usado(cheque):
         total_caja_chica_pagado = recibos_caja_chica.aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
     if requerimientos:
         total_requerimiento_usado = requerimientos.aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-    if vuelto_extra:
-        total_vuelto_extra = vuelto_extra.aggregate(models.Sum('vuelto_extra'))['vuelto_extra__sum']
     
-    cheque.monto_usado = total_boleta_pago_pagado + total_servicio_pagado + total_caja_chica_pagado + total_requerimiento_usado + total_vuelto_extra
+    cheque.monto_usado = total_boleta_pago_pagado + total_servicio_pagado + total_caja_chica_pagado + total_requerimiento_usado
     cheque.save()
