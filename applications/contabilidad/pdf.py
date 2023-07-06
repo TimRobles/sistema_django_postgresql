@@ -204,7 +204,7 @@ def dataChequeCerrar(movimientos, cheque, fuenteBase):
     if cheque.ChequeVueltoExtra_cheque.all():
         suma_origen = cheque.ChequeVueltoExtra_cheque.all().aggregate(models.Sum('vuelto_original'))['vuelto_original__sum']
         suma_destino = cheque.ChequeVueltoExtra_cheque.all().aggregate(models.Sum('vuelto_extra'))['vuelto_extra__sum']
-        moneda_cambio = cheque.ChequeVueltoExtra_cheque.latest().moneda
+        moneda_cambio = cheque.ChequeVueltoExtra_cheque.latest('created_at').moneda
 
     data_resumen_cheques.append([
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.recibido), fuenteBase),
