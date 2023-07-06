@@ -113,9 +113,9 @@ def movimientos_caja_chica(caja_chica):
         fila.append(documentos)
         movimientos.append(fila)
 
-    movimientos.sort(key = lambda i: i[3], reverse=True)
+    movimientos.sort(key = lambda i: i[3], reverse=True) #Egreso
     try:
-        movimientos.sort(key = lambda i: i[0])
+        movimientos.sort(key = lambda i: i[0]) #Fecha
     except:
         fila = []
         fila.append('')
@@ -159,5 +159,6 @@ def cheque_monto_usado(cheque):
         total_requerimiento_usado = requerimientos.aggregate(models.Sum('monto_usado'))['monto_usado__sum']
     if vuelto_extra:
         total_vuelto_extra = vuelto_extra.aggregate(models.Sum('vuelto_extra'))['vuelto_extra__sum']
+    
     cheque.monto_usado = total_boleta_pago_pagado + total_servicio_pagado + total_caja_chica_pagado + total_requerimiento_usado + total_vuelto_extra
     cheque.save()

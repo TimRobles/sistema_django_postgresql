@@ -29,6 +29,8 @@ urlCheque = [
     path('cheque/cerrar/<pk>/', views.ChequeCerrarView.as_view(), name='cheque_cerrar'),
     path('cheque/cerrado/editar/<pk>/', views.ChequeCerradoEditarView.as_view(), name='cheque_cerrado_editar'),
 
+    path('cheque/solicitar/pdf/<pk>/', views.ChequeSolicitarPdfView.as_view(), name='cheque_solicitar_pdf'),
+
     path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
     path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),
 

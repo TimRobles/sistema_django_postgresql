@@ -1,7 +1,8 @@
+from decimal import Decimal
 from applications.pdf import *
 from django.contrib.humanize.templatetags.humanize import intcomma
 
-def dataChequeSolicitar(recibos, datos, fuenteBase):
+def dataChequeSolicitar(movimientos, cheque, fuenteBase):
     encabezado = []
     encabezado.append(parrafoCentro("Tipo", fuenteBase, 8, 'Bold'))
     encabezado.append(parrafoCentro("Concepto", fuenteBase, 8, 'Bold'))
@@ -11,18 +12,19 @@ def dataChequeSolicitar(recibos, datos, fuenteBase):
     data_recibos = []
     data_recibos.append(encabezado)
 
-    for recibo in recibos:
+    total = Decimal('0.00')
+    for recibo in movimientos:
         fila = []
-        fila.append(parrafoIzquierda(recibo.tipo, fuenteBase))
-        try:
-            link = hipervinculo(recibo.foto, 'Imagen de recibo')
-            
-            fila.append(parrafoIzquierda(recibo.concepto.__str__() + ' (' + link + ')', fuenteBase))
-        except:
-            fila.append(parrafoIzquierda(recibo.concepto.__str__(), fuenteBase))
+        fila.append(parrafoIzquierda(recibo[0], fuenteBase)) #Tipo
+        if recibo[1]:
+            link = hipervinculo(recibo[1], 'Imagen de recibo') #Foto recibo
+            fila.append(parrafoIzquierda(recibo[2].__str__() + ' (' + link + ')', fuenteBase)) #Concepto y Foto recibo
+        else:
+            fila.append(parrafoIzquierda(recibo[2].__str__(), fuenteBase)) #Concepto
 
-        fila.append(parrafoCentro(recibo.fecha.strftime('%d/%m/%Y'), fuenteBase))
-        fila.append(parrafoDerecha(recibo.simbolo + ' ' + intcomma(recibo.monto), fuenteBase))
+        fila.append(parrafoCentro(recibo[3].strftime('%d/%m/%Y'), fuenteBase)) #Fecha
+        fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(recibo[4]), fuenteBase)) #Monto
+        total += recibo[4]
 
         data_recibos.append(fila)
 
@@ -30,19 +32,19 @@ def dataChequeSolicitar(recibos, datos, fuenteBase):
     fila.append(vacio())
     fila.append(vacio())
     fila.append(parrafoDerecha("Total:", fuenteBase, 8, 'Bold'))
-    fila.append(parrafoDerecha(datos['simbolo'] + ' ' + intcomma(datos['total']), fuenteBase, 8, 'Bold'))
+    fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(total), fuenteBase, 8, 'Bold'))
     
     data_recibos.append(fila)
 
     return data_recibos
 
-def generarChequeSolicitar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, color):
+def generarChequeSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color):
     fuenteBase = "ComicNeue"
 
-    data_recibos = dataChequeSolicitar(recibos, datos, fuenteBase)
+    data_recibos = dataChequeSolicitar(movimientos, cheque, fuenteBase)
     
     elementos = []
-    elementos.append(parrafoIzquierda("Lima %s" % fecha, fuenteBase, 8))
+    elementos.append(parrafoIzquierda("Lima %s" % fecha_hoy, fuenteBase, 8))
     elementos.append(parrafoIzquierda("Gastos solicitados:", fuenteBase, 8))
     elementos.append(parrafoCentro(titulo, fuenteBase, 14, 'Bold'))
     elementos.append(vacio())
@@ -67,7 +69,7 @@ def generarChequeSolicitar(titulo, vertical, logo, pie_pagina, fecha, recibos, d
 
 ########################################################################
 
-def dataChequeCerrar(recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, fuenteBase):
+def dataChequeCerrar(movimientos, cheque, fuenteBase):
     encabezado = []
     encabezado.append(parrafoCentro("Tipo", fuenteBase, 8, 'Bold'))
     encabezado.append(parrafoCentro("Concepto", fuenteBase, 8, 'Bold'))
@@ -82,13 +84,18 @@ def dataChequeCerrar(recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, 
     data_recibos = []
     data_recibos.append(encabezado)
 
-    for recibo in recibos:
+    total = Decimal('0.00')
+    total_mora = Decimal('0.00')
+    total_redondeo = Decimal('0.00')
+    total_pagado = Decimal('0.00')
+
+    for recibo in movimientos:
         fila = []
-        fila.append(parrafoIzquierda(recibo.tipo, fuenteBase))
+        fila.append(parrafoIzquierda(recibo[0], fuenteBase)) #Tipo
 
         data_documentos = []
         try:
-            if len(recibo.RequerimientoDocumento_requerimiento.all())>0:
+            if recibo[7]: #Documentos
                 data_documentos.append([
                     parrafoCentro('Fecha', fuenteBase),
                     parrafoIzquierda('Documento', fuenteBase),
@@ -96,7 +103,7 @@ def dataChequeCerrar(recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, 
                     parrafoDerecha('Monto', fuenteBase),
                     parrafoCentro('Imagen', fuenteBase),
                     ])
-                for documento in recibo.RequerimientoDocumento_requerimiento.all():
+                for documento in recibo[7]: #Documentos
                     fila_nested = []
                     fila_nested.append(parrafoCentro(documento.fecha.strftime('%d/%m/%Y'), fuenteBase))
                     fila_nested.append(parrafoIzquierda("%s %s" % (documento.get_tipo_display(), documento.numero), fuenteBase))
@@ -120,34 +127,33 @@ def dataChequeCerrar(recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, 
             data_documentos = []
 
         try:
-            link = hipervinculo(recibo.voucher, 'Imagen de voucher')
+            link = hipervinculo(recibo[8], 'Imagen de voucher')
             
-            fila.append(parrafoIzquierda(recibo.concepto.__str__() + ' (' + link + ')', fuenteBase))
+            fila.append(parrafoIzquierda(recibo[2].__str__() + ' (' + link + ')', fuenteBase))
         except:
             try:
                 if data_documentos != []:
-                    fila.append(parrafoIzquierdaTabla(recibo.concepto.__str__(), t_documentos, fuenteBase))
+                    fila.append(parrafoIzquierdaTabla(recibo[2].__str__(), t_documentos, fuenteBase))
                 else:
-                    fila.append(parrafoIzquierda(recibo.concepto.__str__(), fuenteBase))
+                    fila.append(parrafoIzquierda(recibo[2].__str__(), fuenteBase))
             except:
-                fila.append(parrafoIzquierda(recibo.concepto.__str__(), fuenteBase))
+                fila.append(parrafoIzquierda(recibo[2].__str__(), fuenteBase))
         
-        fila.append(parrafoCentro(recibo.fecha.strftime('%d/%m/%Y'), fuenteBase))
+        fila.append(parrafoCentro(recibo[3].strftime('%d/%m/%Y'), fuenteBase)) #Fecha
 
-        try:
-            fila.append(parrafoCentro(recibo.fecha_pago.strftime('%d/%m/%Y'), fuenteBase))
-        except:
-            fila.append(parrafoCentro(recibo.fecha_entrega.strftime('%d/%m/%Y'), fuenteBase))
-
-        fila.append(parrafoDerecha(recibo.simbolo + ' ' + intcomma(recibo.monto), fuenteBase))
-        try:
-            fila.append(parrafoDerecha(recibo.simbolo + ' ' + intcomma(recibo.mora), fuenteBase))
-        except:
-            fila.append(parrafoDerecha(recibo.simbolo + ' 0.00', fuenteBase))
-        fila.append(parrafoDerecha(recibo.simbolo + ' ' + intcomma(recibo.redondeo), fuenteBase))
-        fila.append(parrafoDerecha(recibo.simbolo + ' ' + intcomma(recibo.monto_pagado), fuenteBase))
-        fila.append(parrafoCentro(recibo.get_estado_display(), fuenteBase))
+        fila.append(parrafoCentro(recibo[9].strftime('%d/%m/%Y'), fuenteBase)) #Fecha Pago
         
+        fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(recibo[4]), fuenteBase))
+        fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(recibo[5]), fuenteBase))
+        fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(recibo[6]), fuenteBase))
+        fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(recibo[10]), fuenteBase))
+        fila.append(parrafoCentro(recibo[11], fuenteBase))
+        
+        total += recibo[4]
+        total_mora += recibo[5]
+        total_redondeo += recibo[6]
+        total_pagado += recibo[10]
+
         data_recibos.append(fila)
 
     fila = []
@@ -155,10 +161,10 @@ def dataChequeCerrar(recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, 
     fila.append(vacio())
     fila.append(vacio())
     fila.append(parrafoDerecha("Total:", fuenteBase, 8, 'Bold'))
-    fila.append(parrafoDerecha(datos['simbolo'] + ' ' + intcomma(datos['total']), fuenteBase, 8, 'Bold'))
-    fila.append(parrafoDerecha(datos['simbolo'] + ' ' + intcomma(datos['total_mora']), fuenteBase, 8, 'Bold'))
-    fila.append(parrafoDerecha(datos['simbolo'] + ' ' + intcomma(datos['total_redondeo']), fuenteBase, 8, 'Bold'))
-    fila.append(parrafoDerecha(datos['simbolo'] + ' ' + intcomma(datos['total_pagado']), fuenteBase, 8, 'Bold'))
+    fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(total), fuenteBase, 8, 'Bold'))
+    fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(total_mora), fuenteBase, 8, 'Bold'))
+    fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(total_redondeo), fuenteBase, 8, 'Bold'))
+    fila.append(parrafoDerecha(cheque.moneda.simbolo + ' ' + intcomma(total_pagado), fuenteBase, 8, 'Bold'))
     
     data_recibos.append(fila)
 
@@ -196,18 +202,18 @@ def dataChequeCerrar(recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, 
 
     data_resumen_cheques.append([
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.monto_cheques), fuenteBase),
-        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(datos['total_pagado']), fuenteBase),
+        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(total_pagado), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.redondeo), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.vuelto), fuenteBase),
-        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(suma_vueltos) + ' = ' + suma_vueltos_cambio[1] + ' ' + intcomma(suma_vueltos_cambio[0]), fuenteBase),
+        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(Decimal('0.00')) + ' = ' + Decimal('0.00') + ' ' + intcomma(Decimal('0.00')), fuenteBase),
     ])
     
     return data_recibos, data_cheques, data_resumen_cheques
 
-def generarChequeCerrar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, color):
+def generarChequeCerrarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color):
     fuenteBase = "ComicNeue"
 
-    data_recibos, data_cheques, data_resumen_cheques = dataChequeCerrar(recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, fuenteBase)
+    data_recibos, data_cheques, data_resumen_cheques = dataChequeCerrar(movimientos, cheque, fuenteBase)
 
     t_cheques=Table(
         data_cheques,
@@ -262,7 +268,7 @@ def generarChequeCerrar(titulo, vertical, logo, pie_pagina, fecha, recibos, dato
     t_recibos._argW[8]=cmToPx(2)
 
     elementos = []
-    elementos.append(parrafoIzquierda("Lima %s" % fecha, fuenteBase, 8))
+    elementos.append(parrafoIzquierda("Lima %s" % fecha_hoy, fuenteBase, 8))
     
     elementos.append(parrafoCentro("Datos del cheque", fuenteBase, 14, 'Bold'))
     elementos.append(vacio())

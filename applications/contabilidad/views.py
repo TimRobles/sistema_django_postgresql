@@ -5,17 +5,20 @@ from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.caja_chica.funciones import cheque_monto_usado
 from applications.contabilidad.funciones import calcular_datos_boleta, movimientos_cheque
-from applications.contabilidad.pdf import generarChequeCerrar, generarChequeSolicitar
+from applications.contabilidad.pdf import generarChequeCerrarPdf, generarChequeSolicitarPdf
 from applications.datos_globales.models import RemuneracionMinimaVital
 from applications.funciones import registrar_excepcion
 from applications.home.templatetags.funciones_propias import nombre_usuario
+from django.template.defaultfilters import date as _date
 
 from applications.importaciones import *
 from applications.funciones import registrar_excepcion
 from applications.caja_chica.models import ReciboCajaChica, Requerimiento
+from applications.sociedad.models import Sociedad
 
 from .forms import(
     BoletaPagoBuscarForm,
+    ChequeCerrarForm,
     ChequeFisicoCobrarForm,
     ChequeFisicoForm,
     ChequeForm,
@@ -1409,10 +1412,11 @@ class ChequePorCerrarEditarView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 
-class ChequeCerrarView(PermissionRequiredMixin, BSModalDeleteView):
+class ChequeCerrarView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_cheque')
     model = Cheque
-    template_name = "contabilidad/cheque/boton.html"
+    form_class = ChequeCerrarForm
+    template_name = "contabilidad/cheque/cerrar.html"
     
     def dispatch(self, request, *args, **kwargs):
         context = {}
@@ -1442,19 +1446,27 @@ class ChequeCerrarView(PermissionRequiredMixin, BSModalDeleteView):
         return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
 
     @transaction.atomic
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         sid = transaction.savepoint()
         try:
-            self.object = self.get_object()
-            cheque_monto_usado(self.object)
-            self.object.estado = 4
-            registro_guardar(self.object, self.request)
-            self.object.save()
-            messages.success(request, MENSAJE_POR_CERRAR_CHEQUE)
+            form.instance.estado = 4
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
-        return HttpResponseRedirect(self.get_success_url())
+            return super().form_invalid(form)
+            
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        cheque = self.get_object()
+        comisiones = Decimal('0.00')
+        for movimiento in movimientos_cheque(cheque):
+            comisiones += movimiento[5] + movimiento[6]
+        kwargs['recibido'] = cheque.recibido
+        kwargs['comisiones'] = comisiones
+        kwargs['vuelto_extra'] = cheque.vuelto_extra
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(ChequeCerrarView, self).get_context_data(**kwargs)
@@ -1484,6 +1496,9 @@ class ChequeCerradoEditarView(PermissionRequiredMixin, BSModalDeleteView):
         try:
             self.object = self.get_object()
             self.object.estado = 3
+            self.object.comision = Decimal('0.00')
+            self.object.redondeo = Decimal('0.00')
+            self.object.vuelto = Decimal('0.00')
             registro_guardar(self.object, self.request)
             self.object.save()
             messages.success(request, MENSAJE_EDITAR_CHEQUE)
@@ -2119,15 +2134,17 @@ class ChequeVueltoExtraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 class ChequeSolicitarPdfView(View):
     def get(self, request, *args, **kwargs):
         cheque = Cheque.objects.get(id = kwargs['pk'])
-        recibos, datos = movimientos_cheque(cheque)
+        movimientos = movimientos_cheque(cheque)
 
         titulo = 'Solicitud de Cheque - %s' % cheque.concepto
-        fecha = date(datetime.today(), "d \d\e F \d\e Y")
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
         vertical = True
-        logo = request.session['empresa_logo']
-        pie_pagina = request.session['empresa_pie_pagina']
-        color = request.session['empresa_color']
-        buf = generarChequeSolicitar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, color)
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarChequeSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
@@ -2138,6 +2155,7 @@ class ChequeSolicitarPdfView(View):
 class ChequeCerrarPdfView(View):
     def get(self, request, *args, **kwargs):
         cheque = Cheque.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_cheque(cheque)
         suma_vueltos = ChequeVueltoExtra.objects.suma_vueltos(cheque.id)
         suma_vueltos_cambio = ChequeVueltoExtra.objects.suma_vueltos_cambio(cheque.id)
         recibos, datos = movimientos_cheque(cheque)
@@ -2148,7 +2166,7 @@ class ChequeCerrarPdfView(View):
         logo = request.session['empresa_logo']
         pie_pagina = request.session['empresa_pie_pagina']
         color = request.session['empresa_color']
-        buf = generarChequeCerrar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, color)
+        buf = generarChequeCerrarPdf(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo

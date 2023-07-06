@@ -64,21 +64,139 @@ def calcular_datos_boleta(obj):
 
 
 def movimientos_cheque(cheque):
-    recibos_boleta_pago = ReciboBoletaPago.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
-    recibos_servicio = ReciboServicio.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
-    recibos_caja_chica = ReciboCajaChica.objects.filter(cheque = cheque)
-    requerimientos = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
-    cheques_fisicos = ChequeFisico.objects.filter(cheque = cheque)
-    vuelto_extra = ChequeVueltoExtra.objects.filter(cheque = cheque)
-    total_boleta_pago = recibos_boleta_pago.aggregate(models.Sum('monto'))['monto__sum']
-    total_boleta_pago_pagado = recibos_boleta_pago.aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-    total_servicio = recibos_servicio.aggregate(models.Sum('monto'))['monto__sum']
-    total_servicio_pagado = recibos_servicio.aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-    total_caja_chica = recibos_caja_chica.aggregate(models.Sum('monto'))['monto__sum']
-    total_caja_chica_pagado = recibos_caja_chica.aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-    total_requerimiento = requerimientos.aggregate(models.Sum('monto'))['monto__sum']
-    total_requerimiento_usado = requerimientos.aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-    total_cheque_fisico = cheques_fisicos.aggregate(models.Sum('monto'))['monto__sum']
-    total_cheque_fisico_comision = cheques_fisicos.aggregate(models.Sum('comision'))['comision__sum']
-    total_cheque_fisico_recibido = cheques_fisicos.aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
-    total_monto_requerido = total_boleta_pago + total_servicio + total_caja_chica + total_requerimiento
+    movimientos = []
+    
+    for recibo_bp in ReciboBoletaPago.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id):
+        tipo = 'BOLETA DE PAGO'
+        foto = False
+        fecha = recibo_bp.fecha_pagar
+        concepto = recibo_bp.boleta_pago
+        monto = recibo_bp.monto
+        mora = Decimal('0.00')
+        redondeo = recibo_bp.redondeo
+        documentos = False
+        voucher = recibo_bp.voucher
+        fecha_pago = recibo_bp.fecha_pago
+        monto_pagado = recibo_bp.monto_pagado
+        estado = recibo_bp.get_estado_display()
+
+        fila = []
+        fila.append(tipo)
+        fila.append(foto)
+        fila.append(concepto)
+        fila.append(fecha)
+        fila.append(monto)
+        fila.append(mora)
+        fila.append(redondeo)
+        fila.append(documentos)
+        fila.append(voucher)
+        fila.append(fecha_pago)
+        fila.append(monto_pagado)
+        fila.append(estado)
+        movimientos.append(fila)
+
+    for recibo_s in ReciboServicio.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id):
+        tipo = 'SERVICIO'
+        foto = recibo_s.foto
+        fecha = recibo_s.fecha_vencimiento
+        concepto = recibo_s.servicio
+        monto = recibo_s.monto
+        mora = Decimal('0.00')
+        redondeo = recibo_s.redondeo
+        documentos = False
+        voucher = recibo_s.voucher
+        fecha_pago = recibo_s.fecha_pago
+        monto_pagado = recibo_s.monto_pagado
+        estado = recibo_s.get_estado_display()
+
+        fila = []
+        fila.append(tipo)
+        fila.append(foto)
+        fila.append(concepto)
+        fila.append(fecha)
+        fila.append(monto)
+        fila.append(mora)
+        fila.append(redondeo)
+        fila.append(documentos)
+        fila.append(voucher)
+        fila.append(fecha_pago)
+        fila.append(monto_pagado)
+        fila.append(estado)
+        movimientos.append(fila)
+
+    for recibo_cc in ReciboCajaChica.objects.filter(cheque = cheque):
+        tipo = 'CAJA CHICA'
+        foto = False
+        fecha = recibo_cc.fecha
+        concepto = recibo_cc.concepto
+        monto = recibo_cc.monto
+        mora = Decimal('0.00')
+        monto = recibo_cc.monto
+        documentos = False
+        voucher = False
+        fecha_pago = recibo_cc.fecha_pago
+        monto_pagado = recibo_cc.monto_pagado
+        estado = recibo_cc.get_estado_display()
+
+        fila = []
+        fila.append(tipo)
+        fila.append(foto)
+        fila.append(concepto)
+        fila.append(fecha)
+        fila.append(monto)
+        fila.append(mora)
+        fila.append(redondeo)
+        fila.append(documentos)
+        fila.append(voucher)
+        fila.append(fecha_pago)
+        fila.append(monto_pagado)
+        fila.append(estado)
+        movimientos.append(fila)
+
+    for requerimiento in Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id):
+        tipo = 'REQUERIMIENTO'
+        foto = False
+        fecha = requerimiento.fecha
+        concepto = requerimiento.concepto_final
+        monto = requerimiento.monto
+        mora = Decimal('0.00')
+        monto = requerimiento.monto
+        documentos = requerimiento.RequerimientoDocumento_requerimiento.all()
+        if len(documentos) == 0:
+            documentos = False
+        voucher = False
+        fecha_entrega = requerimiento.fecha_entrega
+        monto_usado = requerimiento.monto_usado
+        estado = requerimiento.get_estado_display()
+
+        fila = []
+        fila.append(tipo)
+        fila.append(foto)
+        fila.append(concepto)
+        fila.append(fecha)
+        fila.append(monto)
+        fila.append(mora)
+        fila.append(redondeo)
+        fila.append(documentos)
+        fila.append(voucher)
+        fila.append(fecha_entrega)
+        fila.append(monto_usado)
+        fila.append(estado)
+        movimientos.append(fila)
+
+    try:
+        movimientos.sort(key = lambda i: i[0]) #Fecha
+    except:
+        fila = []
+        fila.append('')
+        fila.append('ERROR. CONTACTAR A SOPORTE')
+        fila.append('')
+        fila.append('')
+        fila.append(Decimal('0.00'))
+        fila.append(Decimal('0.00'))
+        fila.append(Decimal('0.00'))
+        movimientos.append(fila)
+
+    return movimientos
+    # cheques_fisicos = ChequeFisico.objects.filter(cheque = cheque)
+    # vuelto_extra = ChequeVueltoExtra.objects.filter(cheque = cheque)

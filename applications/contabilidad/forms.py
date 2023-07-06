@@ -596,7 +596,37 @@ class ChequeVueltoExtraForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         for field in self.fields:
             self.fields[field].required = True
-        
+
+
+class ChequeCerrarForm(BSModalModelForm):
+    recibido = forms.DecimalField(required=False)
+    vuelto_extra = forms.DecimalField(required=False)
+    class Meta:
+        model = Cheque
+        fields = (
+            'recibido',
+            'monto_usado',
+            'vuelto_extra',
+            'comision',
+            'redondeo',
+            'vuelto',
+            )
+
+    def __init__(self, *args, **kwargs):
+        recibido = kwargs.pop('recibido')
+        comisiones = kwargs.pop('comisiones')
+        vuelto_extra = kwargs.pop('vuelto_extra')
+        super(ChequeCerrarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].required = True
+        self.fields['recibido'].initial = recibido
+        self.fields['comision'].initial = comisiones
+        self.fields['vuelto_extra'].initial = vuelto_extra
+        self.fields['redondeo'].widget.attrs['max'] = '0.1'
+        self.fields['redondeo'].widget.attrs['min'] = '-0.1'
+
 
 class TelecreditoForm(BSModalModelForm):
     class Meta:
