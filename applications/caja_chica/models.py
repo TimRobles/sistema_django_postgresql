@@ -129,6 +129,7 @@ class RequerimientoDocumento(models.Model):
         (1, 'FACTURA'),
         (2, 'BOLETA'),
         (3, 'SIN DOCUMENTO'),
+        (4, 'RECIBO POR HONORARIOS'),
     )
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)
