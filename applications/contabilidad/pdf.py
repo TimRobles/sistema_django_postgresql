@@ -1,5 +1,6 @@
 from decimal import Decimal
 from applications.pdf import *
+from django.db import models
 from django.contrib.humanize.templatetags.humanize import intcomma
 
 def dataChequeSolicitar(movimientos, cheque, fuenteBase):
@@ -197,13 +198,20 @@ def dataChequeCerrar(movimientos, cheque, fuenteBase):
         parrafoCentro('Otros Vueltos', fuenteBase, 8, 'Bold'),
     ])
 
+    suma_origen = Decimal('0.00')
+    suma_destino = Decimal('0.00')
+    moneda_cambio = cheque.moneda
+    if cheque.ChequeVueltoExtra_cheque.all():
+        suma_origen = cheque.ChequeVueltoExtra_cheque.all().aggregate(models.Sum('vuelto_original'))['vuelto_original__sum']
+        suma_destino = cheque.ChequeVueltoExtra_cheque.all().aggregate(models.Sum('vuelto_extra'))['vuelto_extra__sum']
+        moneda_cambio = cheque.ChequeVueltoExtra_cheque.latest().moneda
 
     data_resumen_cheques.append([
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.recibido), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(total_pagado), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.redondeo), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.vuelto), fuenteBase),
-        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(Decimal('0.00')) + ' = ' + 'S/' + ' ' + intcomma(Decimal('0.00')), fuenteBase),
+        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(suma_destino) + ' = ' + moneda_cambio.simbolo + ' ' + intcomma(suma_origen), fuenteBase),
     ])
     
     return data_recibos, data_cheques, data_resumen_cheques
