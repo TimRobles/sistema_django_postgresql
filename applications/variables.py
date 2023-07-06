@@ -547,7 +547,7 @@ MENSAJE_POR_CERRAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Por Cer
 MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO = 'Operación exitosa: El Documento de Reclamo fue Confirmado.'
 
 
-COLOR_DEFAULT = '#03b014'
+COLOR_DEFAULT = '#04fb1d'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY
 Celular: 974899069 / Teléfono: 2536767
 Dirección: CAL. RICARDO ANGULO 1226 URB. CORPAC, SAN ISIDRO-LIMA-LIMA / E-mail: info@multiplay.com.pe / Web: www.multiplay.com.pe'''
