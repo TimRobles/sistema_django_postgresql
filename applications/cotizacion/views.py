@@ -122,7 +122,7 @@ class CotizacionVentaListView(PermissionRequiredMixin, FormView):
                 context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  15 # Show 10 objects per page.
+        objectsxpage =  30 # Show 10 objects per page.
 
         if len(cotizacion_ventas) > objectsxpage:
             paginator = Paginator(cotizacion_ventas, objectsxpage)
@@ -179,7 +179,7 @@ def CotizacionVentaTabla(request):
                 context['pagina_filtro'] = f'page={request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  15 # Show 10 objects per page.
+        objectsxpage =  30 # Show 10 objects per page.
 
         if len(cotizacion_ventas) > objectsxpage:
             paginator = Paginator(cotizacion_ventas, objectsxpage)

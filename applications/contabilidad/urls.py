@@ -109,6 +109,7 @@ urlpatterns = urlTelecredito + urlCheque +[
     path('institucion-tabla/', views.InstitucionTabla, name='institucion_tabla'),
     path('institucion/registrar/', views.InstitucionCreateView.as_view(), name='institucion_registrar'),
     path('institucion/actualizar/<pk>/', views.InstitucionUpdateView.as_view(), name='institucion_actualizar'),   
+    path('institucion/eliminar/<pk>/', views.InstitucionDeleteView.as_view(), name='institucion_eliminar'),   
 
     path('medio-pago/', views.MedioPagoListView.as_view(), name='medio_pago_inicio'),
     path('medio-pago-tabla/', views.MedioPagoTabla, name='medio_pago_tabla'),

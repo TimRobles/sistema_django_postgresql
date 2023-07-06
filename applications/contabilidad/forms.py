@@ -716,3 +716,17 @@ class BoletaPagoBuscarForm(forms.Form):
         self.fields['usuario'].initial = filtro_usuario
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class InstitucionBuscarForm(forms.Form):
+    nombre = forms.CharField(max_length=50, required=False)
+    tipo_servicio = forms.ModelChoiceField(queryset=TipoServicio.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        filtro_nombre = kwargs.pop('filtro_nombre')
+        filtro_tipo_servicio = kwargs.pop('filtro_tipo_servicio')
+        super(InstitucionBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['nombre'].initial = filtro_nombre
+        self.fields['tipo_servicio'].initial = filtro_tipo_servicio
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

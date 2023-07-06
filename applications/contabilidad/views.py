@@ -35,6 +35,7 @@ from .forms import(
     EsSaludForm,
     BoletaPagoForm,
     BoletaPagoActualizarForm,
+    InstitucionBuscarForm,
     ReciboBoletaPagoForm,
     ReciboBoletaPagoActualizarForm,
     ServicioBuscarForm,
@@ -1033,22 +1034,57 @@ class TipoServicioUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class InstitucionListView(TemplateView):
+class InstitucionListView(FormView):
     template_name = "contabilidad/institucion/inicio.html"
+    form_class = InstitucionBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(InstitucionListView, self).get_form_kwargs()
+        kwargs['filtro_nombre'] = self.request.GET.get('nombre')
+        kwargs['filtro_tipo_servicio'] = self.request.GET.get('tipo_servicio')
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(InstitucionListView, self).get_context_data(**kwargs)
         institucion = Institucion.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+
+        filtro_nombre = self.request.GET.get('nombre')
+        filtro_tipo_servicio = self.request.GET.get('tipo_servicio')
+
+        contexto_filtro = []
+
+        if filtro_nombre:
+            condicion = Q(nombre__razon_social__unaccent__icontains = filtro_nombre.split(" ")[0])
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= Q(nombre__razon_social__unaccent__icontains = palabra)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("nombre=" + filtro_nombre)
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("tipo_servicio=" + filtro_tipo_servicio)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  30 # Show 10 objects per page.
 
         if len(institucion) > objectsxpage:
             paginator = Paginator(institucion, objectsxpage)
             page_number = self.request.GET.get('page')
             institucion = paginator.get_page(page_number)
-
+   
         context['contexto_institucion'] = institucion
         context['contexto_pagina'] = institucion
-        context['contexto_filtro'] = '?'
         return context
 
 def InstitucionTabla(request):
@@ -1057,16 +1093,43 @@ def InstitucionTabla(request):
         template = 'contabilidad/institucion/inicio_tabla.html'
         context = {}
         institucion = Institucion.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+
+        filtro_nombre = request.GET.get('nombre')
+        filtro_tipo_servicio = request.GET.get('tipo_servicio')
+
+        contexto_filtro = []
+
+        if filtro_nombre:
+            condicion = Q(nombre__razon_social__unaccent__icontains = filtro_nombre.split(" ")[0])
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= Q(nombre__razon_social__unaccent__icontains = palabra)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("nombre=" + filtro_nombre)
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("tipo_servicio=" + filtro_tipo_servicio)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  30 # Show 10 objects per page.
 
         if len(institucion) > objectsxpage:
             paginator = Paginator(institucion, objectsxpage)
             page_number = request.GET.get('page')
             institucion = paginator.get_page(page_number)
-
+   
         context['contexto_institucion'] = institucion
         context['contexto_pagina'] = institucion
-        context['contexto_filtro'] = '?'
 
         data['table'] = render_to_string(
             template,
@@ -1092,6 +1155,7 @@ class InstitucionCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
+
 class InstitucionUpdateView(BSModalUpdateView):
     model = Institucion
     template_name = "contabilidad/institucion/form.html"
@@ -1106,6 +1170,20 @@ class InstitucionUpdateView(BSModalUpdateView):
         context = super(InstitucionUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Institución"
+        return context
+
+
+class InstitucionDeleteView(BSModalDeleteView):
+    model = Institucion
+    template_name = "includes/eliminar generico.html"
+    form_class = InstitucionForm
+    success_url = reverse_lazy('contabilidad_app:institucion_inicio')
+       
+    def get_context_data(self, **kwargs):
+        context = super(InstitucionDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Institución"
+        context['item'] = self.get_object()
         return context
 
 #---------------------------------------------------------------------------------

@@ -103,6 +103,6 @@ def get_diccionario(diccionario, key):
     
 @register.filter
 def estado_garantia(fecha):
-    if (fecha - date.today()).days > 0:
+    if (fecha - date.today()).days > 365:
         return True
     return False
