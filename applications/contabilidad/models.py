@@ -434,7 +434,6 @@ class Cheque(models.Model):
             return self.ChequeFisico_cheque.all().aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
         return Decimal('0.00')
 
-
     def __str__(self):
         if self.moneda:
             return self.concepto + ' ' + self.usuario.username + ' ' + self.get_estado_display() + ' ' + self.moneda.nombre

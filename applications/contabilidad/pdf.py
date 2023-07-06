@@ -109,35 +109,33 @@ def dataChequeCerrar(movimientos, cheque, fuenteBase):
                     fila_nested.append(parrafoIzquierda("%s %s" % (documento.get_tipo_display(), documento.numero), fuenteBase))
                     fila_nested.append(parrafoIzquierda(documento.establecimiento, fuenteBase))
                     fila_nested.append(parrafoDerecha('%s %s' % (documento.moneda.simbolo, documento.total_documento), fuenteBase))
+                    print(documento.voucher, documento)
                     if documento.voucher:
                         fila_nested.append(parrafoCentro(hipervinculo(documento.voucher, 'Imagen de voucher'), fuenteBase))
                     else:
                         fila_nested.append(vacio())
                     data_documentos.append(fila_nested)
+                    print(data_documentos)
                     t_documentos=Table(
                         data_documentos,
                         style=[
-                            ('GRID',(0,0),(-1,-1),1,colors.black),
-                            ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
-                            ('VALIGN',(0,0),(-1,-1),'TOP'),
-                            ('ALIGN',(0,0),(-1,-1),'CENTER')
+                                ('GRID',(0,0),(-1,-1),1,colors.black),
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
+                                ('VALIGN',(0,0),(-1,-1),'TOP'),
+                                ('ALIGN',(0,0),(-1,-1),'CENTER')
                             ]
                         )
-        except:
+        except Exception as e:
+            print(e)
             data_documentos = []
 
-        try:
+        if data_documentos != []:
+            fila.append(parrafoIzquierdaTabla(recibo[2].__str__(), t_documentos, fuenteBase))
+        elif recibo[8]:
             link = hipervinculo(recibo[8], 'Imagen de voucher')
-            
             fila.append(parrafoIzquierda(recibo[2].__str__() + ' (' + link + ')', fuenteBase))
-        except:
-            try:
-                if data_documentos != []:
-                    fila.append(parrafoIzquierdaTabla(recibo[2].__str__(), t_documentos, fuenteBase))
-                else:
-                    fila.append(parrafoIzquierda(recibo[2].__str__(), fuenteBase))
-            except:
-                fila.append(parrafoIzquierda(recibo[2].__str__(), fuenteBase))
+        else:
+            fila.append(parrafoIzquierda(recibo[2].__str__(), fuenteBase))
         
         fila.append(parrafoCentro(recibo[3].strftime('%d/%m/%Y'), fuenteBase)) #Fecha
 
@@ -201,11 +199,11 @@ def dataChequeCerrar(movimientos, cheque, fuenteBase):
 
 
     data_resumen_cheques.append([
-        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.monto_cheques), fuenteBase),
+        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.recibido), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(total_pagado), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.redondeo), fuenteBase),
         parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(cheque.vuelto), fuenteBase),
-        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(Decimal('0.00')) + ' = ' + Decimal('0.00') + ' ' + intcomma(Decimal('0.00')), fuenteBase),
+        parrafoCentro(cheque.moneda.simbolo + ' ' + intcomma(Decimal('0.00')) + ' = ' + 'S/' + ' ' + intcomma(Decimal('0.00')), fuenteBase),
     ])
     
     return data_recibos, data_cheques, data_resumen_cheques

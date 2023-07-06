@@ -47,6 +47,10 @@
             </button>
         {% endif %}
         {% if contexto_cheque_detalle.estado == 4 %}
+            <a href="{% url 'contabilidad_app:cheque_cerrar_pdf' contexto_cheque_detalle.id %}" target="_blank"
+                class="badge bg-danger">
+                Ver PDF Cerrado
+            </a>
             <button data-form-url="{% url 'contabilidad_app:cheque_cerrado_editar' contexto_cheque_detalle.id %}"
                 data-table-url="{% url 'contabilidad_app:cheque_detalle_tabla' contexto_cheque_detalle.id %}"
                 class="delete badge bg-secondary">

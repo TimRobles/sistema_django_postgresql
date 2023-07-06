@@ -22,7 +22,7 @@ class Requerimiento(models.Model):
         (4, 'RECHAZADO'),
         (5, 'REVISAR RENDICIÓN'),
         (6, 'RENDICIÓN RECHAZADA'),
-        (7, 'FINALIZADO'),
+        (7, 'CANCELADO'),
     )
 
     fecha = models.DateField('Fecha',)

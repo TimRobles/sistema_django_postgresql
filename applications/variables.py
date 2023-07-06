@@ -420,7 +420,7 @@ ESTADO_CAJA_CHICA = (
 ESTADO_RECIBO_CAJA_CHICA = (
         (1, 'BORRADOR'),
         (2, 'PENDIENTE'),
-        (3, 'PAGADO'),
+        (3, 'CANCELADO'),
     )
 
 MEDIO = (

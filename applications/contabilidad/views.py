@@ -2156,17 +2156,16 @@ class ChequeCerrarPdfView(View):
     def get(self, request, *args, **kwargs):
         cheque = Cheque.objects.get(id = kwargs['pk'])
         movimientos = movimientos_cheque(cheque)
-        suma_vueltos = ChequeVueltoExtra.objects.suma_vueltos(cheque.id)
-        suma_vueltos_cambio = ChequeVueltoExtra.objects.suma_vueltos_cambio(cheque.id)
-        recibos, datos = movimientos_cheque(cheque)
-
+        
         titulo = 'Rendición de Cheque - %s' % cheque.concepto
-        fecha = date(datetime.today(), "d \d\e F \d\e Y")
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
         vertical = False
-        logo = request.session['empresa_logo']
-        pie_pagina = request.session['empresa_pie_pagina']
-        color = request.session['empresa_color']
-        buf = generarChequeCerrarPdf(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, cheque, suma_vueltos, suma_vueltos_cambio, color)
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarChequeCerrarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
