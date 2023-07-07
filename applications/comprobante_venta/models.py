@@ -115,8 +115,8 @@ def factura_venta_pre_save(*args, **kwargs):
     obj2 = FacturaVenta.objects.get(id=obj.id)
     applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
 
-post_save.connect(factura_venta_post_save, sender=FacturaVenta)
-pre_save.connect(factura_venta_pre_save, sender=FacturaVenta)
+# post_save.connect(factura_venta_post_save, sender=FacturaVenta)
+# pre_save.connect(factura_venta_pre_save, sender=FacturaVenta)
 
 class FacturaVentaDetalle(models.Model):
     item = models.IntegerField()

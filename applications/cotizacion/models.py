@@ -152,8 +152,8 @@ def cotizacion_venta_pre_save(*args, **kwargs):
     obj2 = CotizacionVenta.objects.get(id=obj.id)
     applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
 
-post_save.connect(cotizacion_venta_post_save, sender=CotizacionVenta)
-pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
+# post_save.connect(cotizacion_venta_post_save, sender=CotizacionVenta)
+# pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
         
 
 class CotizacionVentaDetalle(models.Model):
