@@ -377,8 +377,8 @@ def deuda_pre_save(*args, **kwargs):
     obj2 = Deuda.objects.get(id=obj.id)
     applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
 
-post_save.connect(deuda_post_save, sender=Deuda)
-pre_save.connect(deuda_pre_save, sender=Deuda)
+# post_save.connect(deuda_post_save, sender=Deuda)
+# pre_save.connect(deuda_pre_save, sender=Deuda)
 
 class Cuota(models.Model):
     deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE, related_name='Cuota_deuda')
