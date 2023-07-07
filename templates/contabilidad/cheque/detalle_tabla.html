@@ -170,6 +170,12 @@
                     <td>{{ recibo_s.fecha_pago|date:'d/m/Y' }}</td>
                     <td>{{ recibo_s.get_estado_display }}</td>
                     <td class="text-nowrap text-center">
+                        {% if recibo_s.foto %}
+                            <a href="{{ MEDIA_URL }}{{ recibo_s.foto }}" target="_blank"
+                            class="btn btn-warning btn-sm">
+                                <i class="bi bi-image-fill"></i>
+                            </a>
+                        {% endif %}
                         {% if recibo_s.voucher %}
                             <a href="{{ MEDIA_URL }}{{ recibo_s.voucher }}" target="_blank"
                             class="btn btn-info btn-sm">
@@ -330,7 +336,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td class="text-end">Total:</td>
+                <td colspan="2" class="text-end">Total:</td>
                 {% if total_requerimiento %}
                     <td class="text-end">{{ contexto_cheque_detalle.moneda.simbolo }} {{ total_requerimiento|redondear|intcomma }}</td>
                     <td></td>
