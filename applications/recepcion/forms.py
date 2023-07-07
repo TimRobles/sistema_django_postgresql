@@ -186,11 +186,14 @@ class InasistenciaAprobarForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class InasistenciaRechazarForm(BSModalModelForm):
+    motivo_inasistencia = forms.ChoiceField(choices=((None, '--------------------'),) + MOTIVO_INASISTENCIA[1:] )
     comentario = forms.CharField(label='Comentario de rechazo',max_length=50,required=True)
     class Meta:
         model = Asistencia
         fields = (
+            'motivo_inasistencia',
             'comentario',
+            'editar_solicitud',
         )
 
     def __init__(self, *args, **kwargs):
@@ -198,4 +201,29 @@ class InasistenciaRechazarForm(BSModalModelForm):
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['editar_solicitud'].widget.attrs['class'] = 'form-check-input'
 
+class InasistenciaActualizarForm(BSModalModelForm):
+    class Meta:
+        model = Asistencia
+        fields = (
+            'motivo_inasistencia',
+            'fecha_registro',
+            'justificacion',
+            'archivo',
+        )
+
+        widgets = {
+            'fecha_registro' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(InasistenciaActualizarForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

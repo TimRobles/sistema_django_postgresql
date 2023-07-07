@@ -47,9 +47,9 @@
                 {% if asistencia.hora_salida == None and asistencia.motivo_inasistencia == 1 %}
                     <button data-form-url="{% url 'recepcion_app:asistencia_personal_registrar_salida' asistencia.id %}"
                         data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
-                        class="update btn btn-warning btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Salida">
-                        <i class="bi bi-pencil-fill"></i>
+                        class="update btn btn-secondary btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Salida">
+                        <i class="bi bi-door-open-fill"></i>
                     </button>
                 {% endif %}
 
@@ -60,6 +60,16 @@
                         class="update btn btn-info btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                         <i class="bi bi-eye-fill"></i>
+                    </button>
+                    
+                {% endif %}
+                                                                
+                {% if asistencia.estado_solicitud == 3 and asistencia.editar_solicitud == True %}
+                    <button data-form-url="{% url 'recepcion_app:inasistencia_actualizar' asistencia.id %}"
+                        data-table-url="{% url 'recepcion_app:asistencia_personal_tabla' %}{{ contexto_filtro }}"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
                     </button>
                     
                 {% endif %}
