@@ -86,7 +86,7 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
-        return f"{self.usuario.username} - {self.id} {self.sociedad}"
+        return f"{self.usuario.username} - {self.sociedad.abreviatura}"
         
 
 class EsSalud(models.Model):

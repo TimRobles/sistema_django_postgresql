@@ -17,7 +17,7 @@
         {% for recibo_boleta_pago in contexto_recibo_boleta_pago %}
         <tr>
             <td>{{ recibo_boleta_pago.fecha_pagar|date:'d/m/Y' }}</td>
-            <td>{{ recibo_boleta_pago.boleta_pago.get_month_display }} - {{ recibo_boleta_pago.boleta_pago.year }} - {{ recibo_boleta_pago.get_tipo_pago_display }} - {{ recibo_boleta_pago.boleta_pago.datos_planilla.usuario|nombre_usuario }} </td>
+            <td>{{ recibo_boleta_pago }} </td>
             <td>{{ recibo_boleta_pago.fecha_pago|date:'d/m/Y' }}</td>
             <td class="text-end text-nowrap">{{ recibo_boleta_pago.boleta_pago.datos_planilla.moneda.simbolo }} {{ recibo_boleta_pago.monto|redondear|intcomma }}</td>
             <td class="text-end text-nowrap">{{ recibo_boleta_pago.boleta_pago.datos_planilla.moneda.simbolo }} {{ recibo_boleta_pago.monto_pagado|redondear|intcomma }}</td>

@@ -2334,7 +2334,7 @@ class TelecreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class TelecreditoRecibosListView(PermissionRequiredMixin, TemplateView):
-    permission_required = ('contabilidad.view_telecreditorecibo')
+    permission_required = ('contabilidad.view_telecredito')
     template_name = "contabilidad/telecredito/detalle.html"
     
     def get_context_data(self, **kwargs):
