@@ -2370,7 +2370,7 @@ def TelecreditoRecibosTabla(request, pk):
 
 
 class TelecreditoRecibosCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('contabilidad.add_telecreditorecibo')
+    permission_required = ('contabilidad.add_telecredito')
     template_name = 'contabilidad/telecredito/form_recibos.html'
     form_class = TelecreditoReciboPagoForm
     
@@ -2416,7 +2416,7 @@ class TelecreditoRecibosCreateView(PermissionRequiredMixin, BSModalFormView):
     
 
 class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('contabilidad.delete_telecreditorecibo')
+    permission_required = ('contabilidad.delete_telecredito')
     model = ReciboBoletaPago
     template_name = "includes/eliminar generico.html"
 
@@ -2469,7 +2469,7 @@ class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('contabilidad.change_telecreditorecibo')
+    permission_required = ('contabilidad.change_telecredito')
     model = ReciboBoletaPago
     template_name = 'includes/formulario generico.html'
     form_class = TelecreditoReciboPagoUpdateForm
