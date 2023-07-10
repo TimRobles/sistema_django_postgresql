@@ -173,9 +173,9 @@ class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
     fecha_pagar = models.DateField('Fecha Pagar', auto_now=False, auto_now_add=False)
     tipo_pago = models.IntegerField(choices=TIPO_PAGO_RECIBO, blank=True, null=True)
-    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, blank=True, null=True)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
     redondeo = models.DecimalField('Redondeo', max_digits=3, decimal_places=2, default=0, blank=True, null=True)
-    monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0, blank=True, null=True)
+    monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0)
     voucher = models.FileField('Voucher', upload_to=None, max_length=100, blank=True, null=True)
     fecha_pago = models.DateField('Fecha de Pago', auto_now=False, auto_now_add=False, blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) #Cheque / Telecrédito / Caja Chica
