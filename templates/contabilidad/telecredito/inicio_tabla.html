@@ -13,8 +13,9 @@
             <th>Banco</th>
             <th>Usuario</th>
             <th>Fecha Cobro</th>
-            <th>Monto</th>
-            <th>Monto Usado</th>
+            <th class="text-end text-nowrap">Monto</th>
+            <th class="text-end text-nowrap">Monto Usado</th>
+            <th>Estado</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -29,8 +30,9 @@
             <td>{{ telecredito.banco }}</td>
             <td>{{ telecredito.usuario }}</td>
             <td>{% if telecredito.fecha_cobro %} {{ telecredito.fecha_cobro|date:'d/m/Y' }} {% endif %}</td>
-            <td>{{ telecredito.moneda.simbolo }} {{ telecredito.monto|redondear|intcomma }}</td>
-            <td>{{ telecredito.moneda.simbolo }} {{ telecredito.monto_usado|redondear|intcomma }}</td>
+            <td class="text-end text-nowrap">{{ telecredito.moneda.simbolo }} {{ telecredito.monto|redondear|intcomma }}</td>
+            <td class="text-end text-nowrap">{{ telecredito.moneda.simbolo }} {{ telecredito.monto_usado|redondear|intcomma }}</td>
+            <td>{{ telecredito.get_estado_display }}</td>
             <td>
                 <button data-form-url="{% url 'contabilidad_app:telecredito_actualizar' telecredito.id %}"
                     data-table-url="{% url 'contabilidad_app:telecredito_tabla' %}"

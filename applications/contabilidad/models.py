@@ -9,7 +9,7 @@ import applications
 
 from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad, Banco
 from applications.home.templatetags.funciones_propias import nombre_usuario
-from applications.variables import ESTADOS_RECIBO, TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
+from applications.variables import ESTADOS_RECIBO, ESTADOS_TELECREDITO, TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
 from applications.rutas import CONTABILIDAD_FOTO_CHEQUE
 from applications.caja_chica import funciones
@@ -367,7 +367,7 @@ class Telecredito(models.Model):
     monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='Telecredito_usuario')
     sociedad = models.ForeignKey(Sociedad, null=True,blank=True, on_delete=models.PROTECT)
-    estado = models.IntegerField(choices=ESTADOS,default=1)
+    estado = models.IntegerField(choices=ESTADOS_TELECREDITO,default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Telecredito_created_by', editable=False)
@@ -377,6 +377,9 @@ class Telecredito(models.Model):
     class Meta:
         verbose_name = 'Telecredito'
         verbose_name_plural = 'Telecreditos'
+        ordering = [
+            '-fecha_emision',
+        ]
 
     @property
     def content_type(self):
