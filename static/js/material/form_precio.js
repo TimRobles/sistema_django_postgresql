@@ -8,7 +8,7 @@ function seleccionar_comprobante(valores) {
         $id_material = valores2[2]
         $material_content_type = valores2[3]
         
-        $precio_compra = $('#id_precio_compra')[0];
+        // $precio_compra = $('#id_precio_compra')[0];
         $moneda = $('#id_moneda')[0];
         $logistico = $('#id_logistico')[0];
         
@@ -24,7 +24,7 @@ function seleccionar_comprobante(valores) {
                 valores3 = xhr.responseText.split('|');
                 console.log($moneda);
                 
-                $precio_compra.value = valores3[0];
+                $('#id_precio_compra')[0].value = valores3[0];
                 console.log(valores3[0]);
                 setSelectedValueText($moneda,valores3[1]);
                 $logistico.value = valores3[2];
