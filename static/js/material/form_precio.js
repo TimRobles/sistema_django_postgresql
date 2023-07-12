@@ -18,14 +18,18 @@ function seleccionar_comprobante(valores) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
         xhr.onload = function(){
+            console.log("********************")
             if (this.status === 200) {
+                console.log(xhr.responseText);
                 valores3 = xhr.responseText.split('|');
-                console.log($moneda)
+                console.log($moneda);
                 
-                $precio_compra.value = valores3[0]
+                $precio_compra.value = valores3[0];
+                console.log(valores3[0]);
                 setSelectedValueText($moneda,valores3[1]);
                 $logistico.value = valores3[2];
             }
+            console.log("********************")
         }
         xhr.send();
     }
