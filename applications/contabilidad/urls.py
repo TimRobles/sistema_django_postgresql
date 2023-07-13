@@ -8,12 +8,22 @@ urlTelecredito = [
     path('telecredito-tabla/', views.TelecreditoTabla, name='telecredito_tabla'),
     path('telecredito/registrar/', views.TelecreditoCreateView.as_view(), name='telecredito_registrar'),
     path('telecredito/actualizar/<pk>/', views.TelecreditoUpdateView.as_view(), name='telecredito_actualizar'),
-    # path('telecredito/eliminar/<pk>/', views.TelecreditoDeleteView.as_view(), name='telecredito_eliminar'),
-    path('telecredito/recibos/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_recibos_inicio'),
-    path('telecredito/recibos-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_recibos_tabla'),
-    path('telecredito/recibos/registrar/<pk>', views.TelecreditoRecibosCreateView.as_view() , name='telecredito_recibos_registrar'),
-    path('telecredito/recibos/eliminar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosDeleteView.as_view() , name='telecredito_recibos_eliminar'),
-    path('telecredito/recibos/actualizar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosUpdateView.as_view() , name='telecredito_recibos_actualizar'),
+    path('telecredito/eliminar/<pk>/', views.TelecreditoDeleteView.as_view(), name='telecredito_eliminar'),
+    path('telecredito/solicitar/<pk>/', views.TelecreditoSolicitarView.as_view(), name='telecredito_solicitar'),
+    path('telecredito/editar/<pk>/', views.TelecreditoEditarView.as_view(), name='telecredito_editar'),
+    path('telecredito/registrar/<pk>/', views.TelecreditoRegistrarView.as_view(), name='telecredito_registrar'),
+    path('telecredito/registrar/editar/<pk>/', views.TelecreditoRegistrarEditarView.as_view(), name='telecredito_registrar_editar'),
+    path('telecredito/cerrar/<pk>/', views.TelecreditoCerrarView.as_view(), name='telecredito_cerrar'),
+    path('telecredito/cerrar/editar/<pk>/', views.TelecreditoCerradoEditarView.as_view(), name='telecredito_cerrar_editar'),
+    
+    path('cheque/solicitar/pdf/<pk>/', views.ChequeSolicitarPdfView.as_view(), name='cheque_solicitar_pdf'),
+    path('cheque/cerrar/pdf/<pk>/', views.ChequeCerrarPdfView.as_view(), name='cheque_cerrar_pdf'),
+
+    path('telecredito/detalle/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_detalle'),
+    path('telecredito/detalle-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_detalle_tabla'),
+    path('telecredito/detalle/registrar/<pk>', views.TelecreditoRecibosCreateView.as_view() , name='telecredito_detalle_registrar'),
+    path('telecredito/detalle/eliminar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosDeleteView.as_view() , name='telecredito_detalle_eliminar'),
+    path('telecredito/detalle/actualizar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosUpdateView.as_view() , name='telecredito_detalle_actualizar'),
 ]
 
 urlCheque = [

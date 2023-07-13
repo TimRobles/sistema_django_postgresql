@@ -199,5 +199,45 @@ def movimientos_cheque(cheque):
         movimientos.append(fila)
 
     return movimientos
-    # cheques_fisicos = ChequeFisico.objects.filter(cheque = cheque)
-    # vuelto_extra = ChequeVueltoExtra.objects.filter(cheque = cheque)
+    
+
+def movimientos_telecredito(telecredito):
+    movimientos = []
+    
+    for recibo_bp in ReciboBoletaPago.objects.filter(content_type = ContentType.objects.get_for_model(telecredito), id_registro = telecredito.id):
+        tipo = 'BOLETA DE PAGO'
+        foto = False
+        fecha = recibo_bp.fecha_pagar
+        concepto = recibo_bp.boleta_pago
+        monto = recibo_bp.monto
+        voucher = recibo_bp.voucher
+        fecha_pago = recibo_bp.fecha_pago
+        monto_pagado = recibo_bp.monto_pagado
+        estado = recibo_bp.get_estado_display()
+
+        fila = []
+        fila.append(tipo)
+        fila.append(foto)
+        fila.append(concepto)
+        fila.append(fecha)
+        fila.append(monto)
+        fila.append(voucher)
+        fila.append(fecha_pago)
+        fila.append(monto_pagado)
+        fila.append(estado)
+        movimientos.append(fila)
+
+    try:
+        movimientos.sort(key = lambda i: i[0]) #Fecha
+    except:
+        fila = []
+        fila.append('')
+        fila.append('ERROR. CONTACTAR A SOPORTE')
+        fila.append('')
+        fila.append('')
+        fila.append(Decimal('0.00'))
+        fila.append(Decimal('0.00'))
+        fila.append(Decimal('0.00'))
+        movimientos.append(fila)
+
+    return movimientos

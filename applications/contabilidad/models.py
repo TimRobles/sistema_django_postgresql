@@ -386,7 +386,7 @@ class Telecredito(models.Model):
         return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return str(id)
+        return f"{self.concepto}"
 
 
 class Cheque(models.Model):

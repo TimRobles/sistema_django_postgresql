@@ -675,6 +675,7 @@ class TelecreditoReciboPagoUpdateForm(BSModalModelForm):
             'monto_pagado',
             'fecha_pago',
             'voucher',
+            'estado',
             )
 
         widgets = {

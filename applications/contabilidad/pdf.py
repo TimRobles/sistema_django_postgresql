@@ -331,7 +331,7 @@ def dataTelecreditoSolicitar(recibos, datos, fuenteBase):
 
     return data_recibos
 
-def generarTelecreditoSolicitar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, color):
+def generarTelecreditoSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, color):
     fuenteBase = "ComicNeue"
 
     data_recibos = dataTelecreditoSolicitar(recibos, datos, fuenteBase)
@@ -421,7 +421,7 @@ def dataTelecreditoCerrar(recibos, datos, telecredito, fuenteBase):
 
     return data_recibos, data_telecreditos
 
-def generarTelecreditoCerrar(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, telecredito, color):
+def generarTelecreditoCerrarPdf(titulo, vertical, logo, pie_pagina, fecha, recibos, datos, telecredito, color):
     fuenteBase = "ComicNeue"
 
     data_recibos, data_telecreditos = dataTelecreditoCerrar(recibos, datos, telecredito, fuenteBase)

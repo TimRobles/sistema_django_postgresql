@@ -33,7 +33,7 @@
             <td class="text-end text-nowrap">{{ telecredito.moneda.simbolo }} {{ telecredito.monto|redondear|intcomma }}</td>
             <td class="text-end text-nowrap">{{ telecredito.moneda.simbolo }} {{ telecredito.monto_usado|redondear|intcomma }}</td>
             <td>{{ telecredito.get_estado_display }}</td>
-            <td>
+            <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'contabilidad_app:telecredito_actualizar' telecredito.id %}"
                     data-table-url="{% url 'contabilidad_app:telecredito_tabla' %}"
                     data-keep-open="true"
@@ -41,11 +41,20 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
-                <a href="{% url 'contabilidad_app:telecredito_recibos_inicio' telecredito.id %}"
+                <a href="{% url 'contabilidad_app:telecredito_detalle' telecredito.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Recibos">
                     <i class="bi bi-eye-fill"></i>
                 </a>
+                
+                {% if telecredito.estado == 1 %}
+                <button data-form-url="{% url 'contabilidad_app:telecredito_eliminar' telecredito.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                {% endif %}
+                    
             </td>
 
         </tr>

@@ -18,7 +18,9 @@
                 <td><b>Banco</b></td>
                 <td class="px-2">:</td>
                 <td>{{ contexto_telecredito.banco }}</td>
-                <td class="px-4"></td>
+                <td><b>Estado</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_telecredito.get_estado_display }}</td>
             </tr>
             <tr>
                 <td><b>Fecha Emisión</b></td>
@@ -31,8 +33,7 @@
                 <td class="px-4"></td>
                 <td><b>Fecha de Cobro</b></td>
                 <td class="px-2">:</td>
-                <td>{% if contexto_telecredito.fecha_cobro %} {{ contexto_telecredito.fecha_cobro }} {% endif %} </td>
-                <td class="px-4"></td>
+                <td colspan="4">{% if contexto_telecredito.fecha_cobro %} {{ contexto_telecredito.fecha_cobro }} {% endif %} </td>
             </tr>
         </tbody>
     </table>
@@ -51,33 +52,39 @@
                 <th>Monto</th>
                 <th>Monto Pagado</th>
                 <th>Fecha Pago</th>
+                <th>Estado</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for telecredito_recibo in contexto_telecredito_recibos %}
+            {% for telecredito_recibo in contexto_telecredito_detalle %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td class="fondo-personalizado" style="--color-fondo: {{ telecredito_recibo.boleta_pago.datos_planilla.sociedad.color }} ;">{{ telecredito_recibo.boleta_pago.datos_planilla.sociedad }}</td>
                 <td>{{ telecredito_recibo.get_tipo_pago_display }}</td>
-                <td>{{ telecredito_recibo.fecha_pagar }}</td>
+                <td>{{ telecredito_recibo.fecha_pagar|date:'d/m/Y' }}</td>
                 <td>{{ telecredito_recibo.boleta_pago.datos_planilla.usuario }}</td>
                 <td class="text-end" >{{ telecredito_recibo.boleta_pago.datos_planilla.moneda.simbolo }} {{ telecredito_recibo.monto|redondear|intcomma }}</td>
                 <td class="text-end" >{{ telecredito_recibo.boleta_pago.datos_planilla.moneda.simbolo }} {{ telecredito_recibo.monto_pagado|redondear|intcomma }}</td>
-                <td>{% if telecredito_recibo.fecha_pago %} {{ telecredito_recibo.fecha_pago }} {% endif %}</td>
+                <td>{% if telecredito_recibo.fecha_pago %} {{ telecredito_recibo.fecha_pago|date:'d/m/Y' }} {% endif %}</td>
+                <td>{{ telecredito_recibo.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
-                    <button data-form-url="{% url 'contabilidad_app:telecredito_recibos_actualizar' contexto_telecredito.id telecredito_recibo.id %}"
-                        data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}"
+                    {% if contexto_telecredito.estado == 3 %}
+                    <button data-form-url="{% url 'contabilidad_app:telecredito_detalle_actualizar' contexto_telecredito.id telecredito_recibo.id %}"
+                        data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}"
                         data-keep-open="true"
                         class="update btn btn-warning btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <button data-form-url="{% url 'contabilidad_app:telecredito_recibos_eliminar' contexto_telecredito.id telecredito_recibo.id %}"
+                    {% endif %}
+                    {% if contexto_telecredito.estado == 1 %}
+                    <button data-form-url="{% url 'contabilidad_app:telecredito_detalle_eliminar' contexto_telecredito.id telecredito_recibo.id %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Remover">
                         <i class="bi bi-x-lg"></i>
                     </button>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

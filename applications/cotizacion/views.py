@@ -707,14 +707,21 @@ class CotizacionVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
+        error_cliente = False
         error_cliente_estado = False
         error_tipo_cambio = False
         context['titulo'] = 'Error de guardar'
-        if self.get_object().cliente.estado_sunat != 1:
-            error_cliente_estado = True
+        if not self.get_object().cliente:
+            error_cliente = True
+        else:
+            if self.get_object().cliente.estado_sunat != 1:
+                error_cliente_estado = True
         if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
             error_tipo_cambio = True
 
+        if error_cliente:
+            context['texto'] = 'Debes seleccionar un cliente.'
+            return render(request, 'includes/modal sin permiso.html', context)
         if error_cliente_estado:
             context['texto'] = 'El cliente no está Activo.'
             return render(request, 'includes/modal sin permiso.html', context)

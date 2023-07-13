@@ -4,8 +4,8 @@ from django.db import models
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.caja_chica.funciones import cheque_monto_usado
-from applications.contabilidad.funciones import calcular_datos_boleta, movimientos_cheque
-from applications.contabilidad.pdf import generarChequeCerrarPdf, generarChequeSolicitarPdf
+from applications.contabilidad.funciones import calcular_datos_boleta, movimientos_cheque, movimientos_telecredito
+from applications.contabilidad.pdf import generarChequeCerrarPdf, generarChequeSolicitarPdf, generarTelecreditoCerrarPdf, generarTelecreditoSolicitarPdf
 from applications.datos_globales.models import RemuneracionMinimaVital
 from applications.funciones import registrar_excepcion
 from applications.home.templatetags.funciones_propias import nombre_usuario
@@ -1329,6 +1329,18 @@ class ChequeDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('contabilidad_app:cheque_inicio')
 
+    def delete(self, request, *args, **kwargs):
+        cheque = self.get_object()
+        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            recibo.content_type = None
+            recibo.id_registro = None
+            recibo.save()
+        for recibo in ReciboServicio.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            recibo.content_type = None
+            recibo.id_registro = None
+            recibo.save()
+        return super().delete(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(ChequeDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
@@ -2333,18 +2345,267 @@ class TelecreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context      
 
 
+class TelecreditoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.delete_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('contabilidad_app:telecredito_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        telecredito = self.get_object()
+        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(telecredito), id_registro=telecredito.id):
+            recibo.content_type = None
+            recibo.id_registro = None
+            recibo.save()
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Telecredito"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+
+
+class TelecreditoSolicitarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoSolicitarView, self).get_context_data(**kwargs)
+        context['accion'] = "Solicitar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+    
+
+class TelecreditoEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
+class TelecreditoRegistrarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRegistrarView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+    
+
+class TelecreditoRegistrarEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRegistrarEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
+class TelecreditoCerrarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        telecredito = self.get_object()
+        error_cancelado = False
+        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(telecredito), id_registro=telecredito.id):
+            if recibo.estado != 2:
+                error_cancelado = True
+        
+        if error_cancelado:
+            context['texto'] = 'Hay comprobantes pendiente de cancelar'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_POR_CERRAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoCerrarView, self).get_context_data(**kwargs)
+        context['accion'] = "Cerrar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+    
+
+class TelecreditoCerradoEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoCerradoEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
 class TelecreditoRecibosListView(PermissionRequiredMixin, TemplateView):
     permission_required = ('contabilidad.view_telecredito')
     template_name = "contabilidad/telecredito/detalle.html"
     
     def get_context_data(self, **kwargs):
         context = super(TelecreditoRecibosListView, self).get_context_data(**kwargs)
-        telecredito_recibos = ReciboBoletaPago.objects.filter(
+        telecredito_detalle = ReciboBoletaPago.objects.filter(
             content_type=ContentType.objects.get_for_model(Telecredito), 
             id_registro = self.kwargs['pk']
             )
         telecredito = Telecredito.objects.get(id=self.kwargs['pk'])
-        context['contexto_telecredito_recibos'] = telecredito_recibos
+        context['contexto_telecredito_detalle'] = telecredito_detalle
         context['contexto_telecredito'] = telecredito
         return context
 
@@ -2354,12 +2615,12 @@ def TelecreditoRecibosTabla(request, pk):
     if request.method == 'GET':
         template = 'contabilidad/telecredito/detalle_tabla.html'
         context = {}
-        telecredito_recibos = ReciboBoletaPago.objects.filter(
+        telecredito_detalle = ReciboBoletaPago.objects.filter(
             content_type=ContentType.objects.get_for_model(Telecredito), 
             id_registro = pk
             )
         telecredito = Telecredito.objects.get(id=pk)
-        context['contexto_telecredito_recibos'] = telecredito_recibos
+        context['contexto_telecredito_detalle'] = telecredito_detalle
         context['contexto_telecredito'] = telecredito
         data['table'] = render_to_string(
             template,
@@ -2375,7 +2636,7 @@ class TelecreditoRecibosCreateView(PermissionRequiredMixin, BSModalFormView):
     form_class = TelecreditoReciboPagoForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['pk']})
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.kwargs['pk']})
     
 
     @transaction.atomic
@@ -2426,7 +2687,7 @@ class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.kwargs['telecredito_id']})
     
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -2480,7 +2741,7 @@ class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.kwargs['telecredito_id']})
 
     def get_context_data(self, **kwargs):
         context = super(TelecreditoRecibosUpdateView, self).get_context_data(**kwargs)
@@ -2504,3 +2765,45 @@ class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         telecredito.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+
+class TelecreditoSolicitarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        telecredito = Telecredito.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_telecredito(telecredito)
+
+        titulo = 'Solicitud de Telecredito - %s' % telecredito.concepto
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = True
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarTelecreditoSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, telecredito, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
+
+
+class TelecreditoCerrarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        telecredito = Telecredito.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_telecredito(telecredito)
+        
+        titulo = 'Rendición de Telecredito - %s' % telecredito.concepto
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = False
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarTelecreditoCerrarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, telecredito, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
