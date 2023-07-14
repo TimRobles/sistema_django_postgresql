@@ -190,7 +190,7 @@ class EventoCRMDetalleInformacionAdicional(models.Model):
     def __str__(self):
         return str(self.comentario)
     
-
+    
 class PreguntaCRM(models.Model):
     tipo_presgunta = models.IntegerField('Tipo Pregunta', choices=TIPO_PREGUNTA_CRM, blank=True, null=True)
     texto = models.CharField('Pregunta', max_length=100)
