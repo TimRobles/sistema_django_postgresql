@@ -12,13 +12,20 @@
         <tr>
             <td>{{ institucion.nombre }}</td>
             <td>{{ institucion.url}}</td>
+            <td>{{ institucion.tipo_servicio}}</td>
             <td>
                 <button data-form-url="{% url 'contabilidad_app:institucion_actualizar' institucion.id %}"
-                    data-table-url="{% url 'contabilidad_app:institucion_tabla' %}"
+                    data-table-url="{% url 'contabilidad_app:institucion_tabla' %}{{ contexto_filtro }}"
                     data-keep-open="true"
                     class="update btn btn-warning btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'contabilidad_app:institucion_eliminar' institucion.id %}"
+                    data-table-url="{% url 'contabilidad_app:institucion_tabla' %}{{ contexto_filtro }}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
                 </button>
             </td>
 

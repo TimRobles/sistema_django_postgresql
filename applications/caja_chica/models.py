@@ -22,7 +22,7 @@ class Requerimiento(models.Model):
         (4, 'RECHAZADO'),
         (5, 'REVISAR RENDICIÓN'),
         (6, 'RENDICIÓN RECHAZADA'),
-        (7, 'FINALIZADO'),
+        (7, 'CANCELADO'),
     )
 
     fecha = models.DateField('Fecha',)
@@ -129,6 +129,7 @@ class RequerimientoDocumento(models.Model):
         (1, 'FACTURA'),
         (2, 'BOLETA'),
         (3, 'SIN DOCUMENTO'),
+        (4, 'RECIBO POR HONORARIOS'),
     )
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False)

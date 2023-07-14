@@ -5,11 +5,11 @@ from decimal import Decimal
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
-
+import applications
 
 from applications.datos_globales.models import Moneda, Area, Cargo, Sociedad, Banco
 from applications.home.templatetags.funciones_propias import nombre_usuario
-from applications.variables import ESTADOS_RECIBO, TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
+from applications.variables import ESTADOS_RECIBO, ESTADOS_TELECREDITO, TIPOS_COMISION, ESTADOS, TIPO_PAGO_BOLETA, TIPO_PAGO_RECIBO, MESES
 
 from applications.rutas import CONTABILIDAD_FOTO_CHEQUE
 from applications.caja_chica import funciones
@@ -86,7 +86,7 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
-        return f"{nombre_usuario(self.usuario)} - {self.id} {self.sociedad}"
+        return f"{self.usuario.username} - {self.sociedad.abreviatura}"
         
 
 class EsSalud(models.Model):
@@ -173,14 +173,14 @@ class ReciboBoletaPago(models.Model):
     boleta_pago = models.ForeignKey(BoletaPago, null=True,  on_delete=models.PROTECT)
     fecha_pagar = models.DateField('Fecha Pagar', auto_now=False, auto_now_add=False)
     tipo_pago = models.IntegerField(choices=TIPO_PAGO_RECIBO, blank=True, null=True)
-    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, blank=True, null=True)
+    monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
     redondeo = models.DecimalField('Redondeo', max_digits=3, decimal_places=2, default=0, blank=True, null=True)
-    monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0, blank=True, null=True)
+    monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0)
     voucher = models.FileField('Voucher', upload_to=None, max_length=100, blank=True, null=True)
     fecha_pago = models.DateField('Fecha de Pago', auto_now=False, auto_now_add=False, blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) #Cheque / Telecrédito / Caja Chica
     id_registro = models.IntegerField(blank=True, null=True)   
-    estado = models.IntegerField(choices=ESTADOS, default=1, blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS_RECIBO, default=1, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReciboBoletaPago_created_by', editable=False)
@@ -198,6 +198,24 @@ class ReciboBoletaPago(models.Model):
     @property
     def moneda(self):
         return self.boleta_pago.moneda
+
+    @property
+    def cheque(self):
+        if self.content_type == ContentType.objects.get_for_model(Cheque):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
+    @property
+    def caja(self):
+        if self.content_type == ContentType.objects.get_for_model(applications.caja_chica.models.CajaChica):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
+    @property
+    def telecredito(self):
+        if self.content_type == ContentType.objects.get_for_model(Telecredito):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
 
     def __str__(self):
         return "%s - %s  - %s - %s" % (self.boleta_pago.get_month_display(), self.boleta_pago.year, self.get_tipo_pago_display(), self.boleta_pago.datos_planilla ) 
@@ -302,7 +320,7 @@ class ReciboServicio(models.Model):
     monto_pagado = models.DecimalField('Monto Pagado', max_digits=7, decimal_places=2, default=0)
     voucher = models.FileField('Voucher',blank=True, null=True)
     fecha_pago = models.DateField('Fecha de Pago', null=True)
-    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) #Cheque / Caja Chica
     id_registro = models.IntegerField(blank=True, null=True)   
     estado = models.IntegerField(choices=ESTADOS_RECIBO, default=1)
 
@@ -319,6 +337,18 @@ class ReciboServicio(models.Model):
             'servicio',
         ]
 
+    @property
+    def cheque(self):
+        if self.content_type == ContentType.objects.get_for_model(Cheque):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
+    @property
+    def caja(self):
+        if self.content_type == ContentType.objects.get_for_model(applications.caja_chica.models.CajaChica):
+            return self.content_type.get_object_for_this_type(id=self.id_registro)
+        return False
+
     def __str__(self):
         return str(self.servicio)
 
@@ -330,6 +360,7 @@ class Telecredito(models.Model):
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT,  blank=True, null=True)
     banco = models.ForeignKey(Banco, on_delete=models.PROTECT,  blank=True, null=True)
     numero = models.CharField('Numero', max_length=50, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=7, decimal_places=2, default=0)
     fecha_emision = models.DateField('Fecha de Emisión', auto_now=False, auto_now_add=False)
     fecha_cobro = models.DateField('Fecha de Cobro', auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -337,7 +368,7 @@ class Telecredito(models.Model):
     monto_usado = models.DecimalField('Monto Usado', max_digits=7, decimal_places=2, default=0)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Usuario', on_delete=models.PROTECT, related_name='Telecredito_usuario')
     sociedad = models.ForeignKey(Sociedad, null=True,blank=True, on_delete=models.PROTECT)
-    estado = models.IntegerField(choices=ESTADOS,default=1)
+    estado = models.IntegerField(choices=ESTADOS_TELECREDITO,default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Telecredito_created_by', editable=False)
@@ -347,13 +378,16 @@ class Telecredito(models.Model):
     class Meta:
         verbose_name = 'Telecredito'
         verbose_name_plural = 'Telecreditos'
+        ordering = [
+            '-fecha_emision',
+        ]
 
     @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return str(id)
+        return f"{self.concepto}"
 
 
 class Cheque(models.Model):
@@ -404,7 +438,6 @@ class Cheque(models.Model):
             return self.ChequeFisico_cheque.all().aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
         return Decimal('0.00')
 
-
     def __str__(self):
         if self.moneda:
             return self.concepto + ' ' + self.usuario.username + ' ' + self.get_estado_display() + ' ' + self.moneda.nombre
@@ -421,6 +454,7 @@ class ChequeFisico(models.Model):
     banco = models.ForeignKey(Banco, on_delete=models.PROTECT, blank=True, null=True)
     numero = models.CharField('Número de cheque', max_length=50, blank=True, null=True)
     responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+    moneda = models.ForeignKey(Moneda, on_delete=models.RESTRICT)
     monto = models.DecimalField('Monto del cheque', max_digits=7, decimal_places=2, default=0)
     comision = models.DecimalField('Comision', max_digits=4, decimal_places=4, default=0) #Eliminar
     monto_recibido = models.DecimalField('Monto Recibido', max_digits=7, decimal_places=2, default=0)
@@ -441,7 +475,7 @@ class ChequeFisico(models.Model):
         verbose_name_plural = 'Cheques Fisicos'
 
     def __str__(self):
-        return str(self.cheque)
+        return f"{self.banco} - {self.numero} - {self.moneda.simbolo} {self.monto}"
 
 
 class ChequeVueltoExtra(models.Model):

@@ -411,7 +411,9 @@ class ChequeReciboBoletaPagoUpdateForm(BSModalModelForm):
         model = ReciboBoletaPago
         fields = (
             'monto_pagado',
+            'redondeo',
             'fecha_pago',
+            'estado',
             'voucher',
             )
 
@@ -454,6 +456,8 @@ class ChequeReciboServicioUpdateForm(BSModalModelForm):
         model = ReciboServicio
         fields = (
             'monto_pagado',
+            'mora',
+            'redondeo',
             'fecha_pago',
             'estado',
             'voucher',
@@ -527,6 +531,7 @@ class ChequeFisicoForm(BSModalModelForm):
             'banco',
             'numero',
             'responsable',
+            'moneda',
             'monto',
             'fecha_emision',
             'foto',
@@ -591,7 +596,37 @@ class ChequeVueltoExtraForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         for field in self.fields:
             self.fields[field].required = True
-        
+
+
+class ChequeCerrarForm(BSModalModelForm):
+    recibido = forms.DecimalField(required=False)
+    vuelto_extra = forms.DecimalField(required=False)
+    class Meta:
+        model = Cheque
+        fields = (
+            'recibido',
+            'monto_usado',
+            'vuelto_extra',
+            'comision',
+            'redondeo',
+            'vuelto',
+            )
+
+    def __init__(self, *args, **kwargs):
+        recibido = kwargs.pop('recibido')
+        comisiones = kwargs.pop('comisiones')
+        vuelto_extra = kwargs.pop('vuelto_extra')
+        super(ChequeCerrarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].required = True
+        self.fields['recibido'].initial = recibido
+        self.fields['comision'].initial = comisiones
+        self.fields['vuelto_extra'].initial = vuelto_extra
+        self.fields['redondeo'].widget.attrs['max'] = '0.1'
+        self.fields['redondeo'].widget.attrs['min'] = '-0.1'
+
 
 class TelecreditoForm(BSModalModelForm):
     class Meta:
@@ -600,6 +635,7 @@ class TelecreditoForm(BSModalModelForm):
             'banco',
             'concepto',
             'numero',
+            'moneda',
             'fecha_emision',
             'sociedad',
             )
@@ -640,6 +676,7 @@ class TelecreditoReciboPagoUpdateForm(BSModalModelForm):
             'monto_pagado',
             'fecha_pago',
             'voucher',
+            'estado',
             )
 
         widgets = {
@@ -681,3 +718,39 @@ class BoletaPagoBuscarForm(forms.Form):
         self.fields['usuario'].initial = filtro_usuario
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class InstitucionBuscarForm(forms.Form):
+    nombre = forms.CharField(max_length=50, required=False)
+    tipo_servicio = forms.ModelChoiceField(queryset=TipoServicio.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        filtro_nombre = kwargs.pop('filtro_nombre')
+        filtro_tipo_servicio = kwargs.pop('filtro_tipo_servicio')
+        super(InstitucionBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['nombre'].initial = filtro_nombre
+        self.fields['tipo_servicio'].initial = filtro_tipo_servicio
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TelecreditoCobrarForm(BSModalModelForm):
+    class Meta:
+        model = Telecredito
+        fields = (
+            'fecha_cobro',
+            )
+        widgets = {
+            'fecha_cobro' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(TelecreditoCobrarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True

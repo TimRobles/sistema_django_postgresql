@@ -26,6 +26,8 @@ class PrecioListaMaterial(models.Model):
     id_registro_documento = models.IntegerField(blank=True, null=True)
     precio_compra = models.DecimalField('Precio de compra', max_digits=22, decimal_places=10,default=Decimal('0.00'))
     precio_lista = models.DecimalField('Precio de lista', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    # precio_minimo = models.DecimalField('Precio de minimo', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    # precio_distribuidor = models.DecimalField('Precio de distribuidor', max_digits=22, decimal_places=10,default=Decimal('0.00'))
     precio_sin_igv = models.DecimalField('Precio sin igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
     logistico = models.DecimalField('Logistico', max_digits=22, decimal_places=10,default=Decimal('0.00'))
@@ -143,14 +145,16 @@ class CotizacionVenta(models.Model):
                     self.estado = 8
                     self.save()
 
-# def cotizacion_venta_post_save(*args, **kwargs):
-#     obj = kwargs['instance']
-#     applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
+def cotizacion_venta_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    if obj.estado > 1:
+        applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
 
-# def cotizacion_venta_pre_save(*args, **kwargs):
-#     obj = kwargs['instance']
-#     obj2 = CotizacionVenta.objects.get(id=obj.id)
-#     applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
+def cotizacion_venta_pre_save(*args, **kwargs):
+    obj = kwargs['instance']
+    if obj.estado > 1:
+        obj2 = CotizacionVenta.objects.get(id=obj.id)
+        applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
 
 # post_save.connect(cotizacion_venta_post_save, sender=CotizacionVenta)
 # pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)

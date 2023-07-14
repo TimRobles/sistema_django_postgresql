@@ -8,6 +8,7 @@ SUNAT_TRANSACTION = (
     (34, 'OPERACIÓN SUJETA A PERCEPCIÓN'),
     (32, 'DETRACCIÓN - SERVICIOS DE TRANSPORTE DE PASAJEROS.'),
     (31, 'DETRACCIÓN - RECURSOS HIDROBIOLÓGICOS'),
+    (35, 'VENTA NACIONAL A TURISTAS - TAX FREE'),
 )
 
 TIPO_DOCUMENTO_SUNAT = (
@@ -17,7 +18,9 @@ TIPO_DOCUMENTO_SUNAT = (
     ('4', 'CARNET DE EXTRANJERÍA'),
     ('7', 'PASAPORTE'),
     ('A', 'CÉDULA DIPLOMÁTICA DE IDENTIDAD'),
+    ('B', 'DOC.IDENT.PAIS.RESIDENCIA-NO.D'),
     ('0', 'NO DOMICILIADO, SIN RUC (EXPORTACIÓN)'),
+    ('G', 'Salvoconducto'),
     )
 
 DICCIONARIO_TIPO_DOCUMENTO_SUNAT = {
@@ -27,7 +30,9 @@ DICCIONARIO_TIPO_DOCUMENTO_SUNAT = {
     '4' : 'C. EXTRANJERÍA',
     '7' : 'PASAPORTE',
     'A' : 'CÉDULA DIPLOMÁTICA DE IDENTIDAD',
+    'B' : 'DOC.IDENT.PAIS.RESIDENCIA-NO.D',
     '0' : 'SIN RUC (EXPORTACIÓN)',
+    'G' : 'Salvoconducto',
     }
 
 TIPO_REPRESENTANTE_LEGAL_SUNAT = (
@@ -132,6 +137,7 @@ TIPO_DOCUMENTO_CHOICES = (
     ('4', 'CARNET DE EXTRANJERÍA'),
     ('7', 'PASAPORTE'),
     ('A', 'CÉDULA DIPLOMÁTICA DE IDENTIDAD'),
+    ('B', 'DOC.IDENT.PAIS.RESIDENCIA-NO.D'),
     ('-', 'SIN DOCUMENTO'),
     )
 
@@ -414,7 +420,7 @@ ESTADO_CAJA_CHICA = (
 ESTADO_RECIBO_CAJA_CHICA = (
         (1, 'BORRADOR'),
         (2, 'PENDIENTE'),
-        (3, 'PAGADO'),
+        (3, 'CANCELADO'),
     )
 
 MEDIO = (
@@ -463,6 +469,18 @@ ESTADO_SOLICITUD_INASISTENCIA = (
     (1, 'SOLICITADO'),
     (2, 'APROBADO'),
     (3, 'RECHAZADO'),
+    )
+
+TIPO_ENCUESTA_CRM = (
+    (1, 'VENTA'),
+    (2, 'EVENTO'),
+    (3, 'SATISFACCION'),
+    )
+
+TIPO_PREGUNTA_CRM = (
+    (1, 'UNICA OPCION'),
+    (2, 'MULTIPLE'),
+    (3, 'ABIERTA'),
     )
 
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
@@ -544,7 +562,7 @@ MENSAJE_POR_CERRAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Por Cer
 MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO = 'Operación exitosa: El Documento de Reclamo fue Confirmado.'
 
 
-COLOR_DEFAULT = '#028A0F'
+COLOR_DEFAULT = '#04fb1d'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY
 Celular: 974899069 / Teléfono: 2536767
 Dirección: CAL. RICARDO ANGULO 1226 URB. CORPAC, SAN ISIDRO-LIMA-LIMA / E-mail: info@multiplay.com.pe / Web: www.multiplay.com.pe'''

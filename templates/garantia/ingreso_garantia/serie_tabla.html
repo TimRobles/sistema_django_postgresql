@@ -58,7 +58,7 @@
                 {{ serie.documento.fecha|date:'d/m/Y' }}
                 {% endif %}
                 
-                {% if not serie.documento.fecha|estado_garantia %}
+                {% if serie.documento.fecha|estado_garantia %}
                 <br>
                 <span style="color: red;">Fuera de Garantía</span>
                 {% endif %}

@@ -54,9 +54,9 @@ class TareaForm(BSModalModelForm):
             'fecha_limite',
             'descripcion',
             'area',
+            'prioridad',
             'encargado',
             'apoyo',
-            'prioridad',
             )
         
         widgets = {
@@ -73,6 +73,7 @@ class TareaForm(BSModalModelForm):
                     },
                 format = '%Y-%m-%d',
                 ),
+            'apoyo' : forms.CheckboxSelectMultiple(),
             }
         
         
@@ -81,6 +82,10 @@ class TareaForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+        self.fields['apoyo'].widget.attrs['class'] = 'nobull'
+        self.fields['apoyo'].required = False
+        # self.fields['apoyo'].widget.attrs['class'] = 'form-check-input'
+
 
 class TareaActualizarForm(BSModalModelForm):
     class Meta:
@@ -90,9 +95,9 @@ class TareaActualizarForm(BSModalModelForm):
             'fecha_inicio',
             'fecha_limite',
             'area',
+            'prioridad',
             'encargado',
             'apoyo',
-            'prioridad',
             )
         
         widgets = {
@@ -109,7 +114,7 @@ class TareaActualizarForm(BSModalModelForm):
                     },
                 format = '%Y-%m-%d',
                 ),
-                
+            'apoyo' : forms.CheckboxSelectMultiple(),
             }
 
     def __init__(self, *args, **kwargs):
@@ -117,6 +122,8 @@ class TareaActualizarForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+        self.fields['apoyo'].widget.attrs['class'] = 'nobull'
+        self.fields['apoyo'].required = False
 
 class TareaDescripcionForm(BSModalModelForm):
     class Meta:

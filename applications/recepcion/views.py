@@ -10,7 +10,7 @@ from applications.colaborador.models import DatosContratoHonorarios, DatosContra
 from .forms import (
     VisitaForm,VisitaBuscarForm,
     AsistenciaForm,AsistenciaBuscarForm,AsistenciaPersonalBuscarForm,AsistenciaSalidaForm,
-    InasistenciaForm,InasistenciaAprobarForm,InasistenciaRechazarForm
+    InasistenciaForm,InasistenciaAprobarForm,InasistenciaRechazarForm, InasistenciaActualizarForm
     )
 
 from .models import (
@@ -560,6 +560,24 @@ class InasistenciaRegistrarView(PermissionRequiredMixin, BSModalFormView):
         context['titulo']="Inasistencia"
         return context
 
+class InasistenciaActualizarView(BSModalUpdateView):
+    model = Asistencia
+    template_name = "includes/formulario generico.html"
+    form_class = InasistenciaActualizarForm
+    success_url = reverse_lazy('recepcion_app:asistencia_personal_inicio')
+
+    def form_valid(self, form):
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(InasistenciaActualizarView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Inasistencia"
+        return context
+    
+
 class InasistenciaDetalleView(PermissionRequiredMixin, DetailView):
     permission_required = ('recepcion.view_asistencia')
     model = Asistencia
@@ -598,6 +616,7 @@ class InasistenciaAprobarView(PermissionRequiredMixin, BSModalUpdateView):
 
     def form_valid(self, form):
         form.instance.estado_solicitud = 2
+        form.instance.editar_solicitud = False
         registro_guardar(self.object, self.request)
         self.object.save()
         return super().form_valid(form)

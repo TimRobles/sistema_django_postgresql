@@ -7,16 +7,66 @@
 
 {% block contenido %}
     <h3>Recibos de Pago por Telecrédito
+        {% if contexto_telecredito.estado == 1 %}
         <button class="create badge bg-primary"
-            data-form-url="{% url 'contabilidad_app:telecredito_recibos_registrar' contexto_telecredito.id %}"
-            data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}">    
+            data-form-url="{% url 'contabilidad_app:telecredito_detalle_registrar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
             Añadir Recibo Pago
         </button>
         <button class="create badge bg-warning"
             data-form-url="{% url 'contabilidad_app:telecredito_actualizar' contexto_telecredito.id %}"
-            data-table-url="{% url 'contabilidad_app:telecredito_recibos_tabla' contexto_telecredito.id %}">    
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
             Editar
         </button>
+        <button class="delete badge bg-success"
+            data-form-url="{% url 'contabilidad_app:telecredito_solicitar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
+            Solicitar
+        </button>
+        {% endif %}
+        {% if contexto_telecredito.estado == 2 %}
+        <button class="delete badge bg-primary"
+            data-form-url="{% url 'contabilidad_app:telecredito_registrar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
+            Registrar
+        </button>
+        <button class="delete badge bg-warning"
+            data-form-url="{% url 'contabilidad_app:telecredito_editar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
+            Retroceder
+        </button>
+        <a href="{% url 'contabilidad_app:telecredito_solicitar_pdf' contexto_telecredito.id %}" target="_blank"
+        class="badge bg-danger">
+            Ver PDF
+        </a>
+        {% endif %}
+        {% if contexto_telecredito.estado == 3 %}
+        <button class="delete badge bg-primary"
+            data-form-url="{% url 'contabilidad_app:telecredito_cerrar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
+            Cerrar
+        </button>
+        <button class="delete badge bg-warning"
+            data-form-url="{% url 'contabilidad_app:telecredito_registrar_editar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
+            Retroceder
+        </button>
+        <a href="{% url 'contabilidad_app:telecredito_solicitar_pdf' contexto_telecredito.id %}" target="_blank"
+        class="badge bg-danger">
+            Ver PDF
+        </a>
+        {% endif %}
+        {% if contexto_telecredito.estado == 4 %}
+        <button class="delete badge bg-warning"
+            data-form-url="{% url 'contabilidad_app:telecredito_cerrar_editar' contexto_telecredito.id %}"
+            data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
+            Retroceder
+        </button>
+        <a href="{% url 'contabilidad_app:telecredito_cerrar_pdf' contexto_telecredito.id %}" target="_blank"
+        class="badge bg-danger">
+            Ver PDF
+        </a>
+        {% endif %}
         <a href="{% url 'contabilidad_app:telecredito_inicio' %}"><span class="badge bg-danger">Regresar</span></a>
     </h3>
     <div id="tabla">

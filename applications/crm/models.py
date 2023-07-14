@@ -1,11 +1,11 @@
 from django.db import models
 from decimal import Decimal
 from django.conf import settings
-from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM
-from applications.clientes.models import Cliente, RepresentanteLegalCliente
 from applications.rutas import CLIENTE_CRM_ARCHIVO_ENVIADO, CLIENTE_CRM_ARCHIVO_RECIBIDO
 from applications.comprobante_venta.models import FacturaVenta
 from applications.proveedores.models import Proveedor
+from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
+from applications.clientes.models import Cliente, RepresentanteLegalCliente, CorreoInterlocutorCliente, InterlocutorCliente, TelefonoInterlocutorCliente
 from applications.sorteo.models import Sorteo
 from applications.datos_globales.models import Pais, Unidad
 from django.contrib.contenttypes.models import ContentType
@@ -136,6 +136,7 @@ class EventoCRM(models.Model):
 
     def __str__(self):
         return str(self.titulo)
+    
 
 class EventoCRMDetalle(models.Model):
     
@@ -188,3 +189,98 @@ class EventoCRMDetalleInformacionAdicional(models.Model):
 
     def __str__(self):
         return str(self.comentario)
+    
+
+class PreguntaCRM(models.Model):
+    tipo_presgunta = models.IntegerField('Tipo Pregunta', choices=TIPO_PREGUNTA_CRM, blank=True, null=True)
+    texto = models.CharField('Pregunta', max_length=100)
+    orden = models.IntegerField()
+    mostrar = models.BooleanField(blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='PreguntaCRM_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='PreguntaCRM_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Pregunta CRM'
+        verbose_name_plural = 'Preguntas CRM'
+
+    def __str__(self):
+        return str(self.texto)
+    
+
+class EncuestaCRM(models.Model):
+    tipo_encuesta = models.IntegerField('Tipo Encuesta', choices=TIPO_ENCUESTA_CRM, blank=True, null=True)
+    titulo = models.CharField('Titulo Encuesta', max_length=50)
+    pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT,blank=True, null=True)
+    mostrar = models.BooleanField(blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='EncuestaCRM_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='EncuestaCRM_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Encuesta CRM'
+        verbose_name_plural = 'Encuestas CRM'
+
+    def __str__(self):
+        return str(self.titulo)
+    
+
+class AlternativaCRM(models.Model):
+    orden = models.IntegerField()
+    texto = models.CharField('Alternativa', max_length=100)
+    mostrar = models.BooleanField(blank=True, null=True)
+    pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AlternativaCRM_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AlternativaCRM_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Alternativa CRM'
+        verbose_name_plural = 'Alternativas CRM'
+
+    def __str__(self):
+        return str(self.texto)
+
+
+class RespuestaCRM(models.Model):
+    cliente_crm = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='RespuestaCRM_interlocutor')
+    nombre_interlocutor = models.CharField('Nombre Interlocutor', max_length=50, blank=True, null=True)
+    encuesta_crm = models.ForeignKey(EncuestaCRM, on_delete=models.PROTECT, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaCRM_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaCRM_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Respuesta CRM'
+        verbose_name_plural = 'Respuestas CRM'
+
+    def __str__(self):
+        return str(self.encuesta_crm)
+    
+
+class RespuestaDetalleCRM(models.Model):
+    alternativa_crm = models.ForeignKey(AlternativaCRM, on_delete=models.PROTECT, blank=True, null=True)
+    pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT, blank=True, null=True)
+    respuesta_crm = models.ForeignKey(RespuestaCRM, on_delete=models.PROTECT, blank=True, null=True)
+    texto = models.CharField('Alternativa', max_length=100)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaDetalleCRM_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaDetalleCRM_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Respuesta CRM'
+        verbose_name_plural = 'Respuestas CRM'
+
+    def __str__(self):
+        return str(self.encuesta_crm)
