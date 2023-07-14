@@ -1,0 +1,44 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Orden</th>
+            <th>Texto</th>
+            <th>Tipo de Pregunta</th>
+            <th>Mostrar</th>
+            <th>F. Registro</th>
+            <th>Creado por</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pregunta in contexto_pagina %}
+        <tr>
+            <td>{{ pregunta.orden}}</td>
+            <td>{{ pregunta.texto}}</td>
+            <td>{{ pregunta.get_tipo_pregunta_display}}</td>
+            <td>{{ pregunta.mostrar}}</td>
+            <td>{{ pregunta.created_at|date:'d/m/Y'}}</td>
+            <td>{{ pregunta.created_by }}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'crm_app:pregunta_crm_actualizar' pregunta.id %}"
+                    data-table-url="{% url 'crm_app:pregunta_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'crm_app:pregunta_crm_eliminar' pregunta.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <a href="{% url 'crm_app:pregunta_crm_detalle' pregunta.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Alternativas">
+                <i class="bi bi-ui-checks"> </i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

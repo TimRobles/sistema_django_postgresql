@@ -1,0 +1,67 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tip encuesta</th>
+            <th>Titulo</th>
+            <th>Pais</th>
+            <th>Mostrar</th>
+            <th>F. Registro</th>
+            <th>Creado por</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for encuesta in contexto_pagina %}
+        <tr>
+            <td>{{ encuesta.get_tipo_encuesta_display}}</td>
+            <td>{{ encuesta.titulo}}</td>
+            <td>{{ encuesta.pais}}</td>
+            <td>{{ encuesta.mostrar}}</td>
+            <td>{{ encuesta.created_at|date:'d/m/Y'}}</td>
+            <td>{{ encuesta.created_by}}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'crm_app:encuesta_crm_actualizar' encuesta.slug %}"
+                    data-table-url="{% url 'crm_app:encuesta_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <a href="{% url 'crm_app:encuesta_crm_detalle' encuesta.slug %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+                <button data-form-url="{% url 'crm_app:encuesta_crm_eliminar' encuesta.slug %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% block js %}
+    <script>
+        $(function copyUrl() {
+            var urlInput = document.getElementById("urlInput");
+        
+            /* Selecciona el texto en el campo de entrada de URL */
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999); /* Para dispositivos móviles */
+        
+            /* Copia el texto al portapapeles */
+            document.execCommand("copy");
+        
+            /* Deselecciona el campo de entrada de URL */
+            urlInput.blur();
+        
+            /* Alerta al usuario que la URL ha sido copiada */
+            alert("URL copiada al portapapeles: " + urlInput.value);
+        });
+    </script>
+    
+{% endblock js %}
