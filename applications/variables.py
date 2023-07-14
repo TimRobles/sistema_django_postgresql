@@ -435,7 +435,7 @@ ESTADOS_CLIENTE_CRM = (
 )
 
 ESTADOS_EVENTO_CRM = (
-    (1, 'ASIGNADO'),
+    (1, 'ACTIVO'),
     (2, 'EN PROCESO'),
     (3, 'FINALIZADO'),
     )

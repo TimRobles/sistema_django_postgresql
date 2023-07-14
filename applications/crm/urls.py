@@ -20,4 +20,13 @@ urlpatterns = [
     path('evento-crm/detalle/<pk>/', views.EventoCRMDetailView.as_view(), name='evento_crm_detalle'),
     path('evento-crm/detalle-tabla/<pk>/', views.EventoCRMDetailTabla, name='evento_crm_detalle_tabla'),
     path('evento-crm/detalle/descripcion/<pk>/', views.EventoCRMDetalleDescripcionView.as_view(), name='evento_crm_detalle_descripcion'),
+    path('evento-crm/update/<pk>/', views.EventoCRMActualizarView.as_view(), name='evento_crm_update'),
+    path('evento-crm/detalle/registrar/<int:evento_crm_id>/', views.EventoCRMDetalleInformacionAdicionalCreateView.as_view(), name='evento_crm_detalle_informacion_adicional_registrar'),
+    path('evento-crm/detalle/actualizar/<pk>/', views.EventoCRMDetalleInformacionAdicionalUpdateView.as_view(), name='evento_crm_detalle_informacion_adicional_actualizar'),
+    path('evento-crm/detalle/eliminar/<pk>/', views.EventoCRMDetalleInformacionAdicionalDeleteView.as_view(), name='evento_crm_detalle_informacion_adicional_eliminar'),
+    path('evento-crm/detalle/agregar-merchandising/<int:evento_crm_id>/', views.EventoCRMDetalleMerchandisingCreateView.as_view(), name='evento_crm_detalle_agregar_merchandising'),
+    path('evento-crm/detalle/actualizar-merchandising/<pk>/', views.EventoCRMDetalleMerchandisingUpdateView.as_view(), name='evento_crm_detalle_actualizar_merchandising'),
+    path('evento-crm/detalle/eliminar-merchandising/<pk>/', views.EventoCRMDetalleMerchandisingDeleteView.as_view(), name='evento_crm_detalle_eliminar_merchandising'),
+    path('evento-crm/generar-guia/<pk>/', views.EventoCRMGenerarGuiaView.as_view(), name='evento_crm_generar_guia'),
+
 ]

@@ -6,7 +6,41 @@
         <table>
             <tbody>
                 <tr>
-                    <th>Fecha Inicio : </th>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>
+                        {% if contexto_evento_crm.sociedad %}
+                        {{ contexto_evento_crm.sociedad }}  
+                        {% endif %}
+                    </td>
+                    <td class="ps-2" rowspan="2">
+                        {% if contexto_evento_crm.estado == 1 %}
+                        <button data-form-url="{% url 'crm_app:evento_crm_update' contexto_evento_crm.id %}"
+                            data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+                            data-keep-open="true"
+                            class="delete btn btn-success">
+                            Actualizar Evento
+                        </button>
+                        {% endif %}
+                    </td>                
+                </tr>
+                <tr>
+                    <th class="pe-2">Sede Origen:</th>
+                    <td>
+                        {% if contexto_evento_crm.sede_origen %}
+                        {{ contexto_evento_crm.sede_origen }} 
+                        {% endif %}
+                    </td>  
+                </tr>
+                <tr>
+                    <th class="pe-2">Ubicación</th>
+                    <td>
+                        {% if contexto_evento_crm.ubicacion  %}
+                        {{ contexto_evento_crm.ubicacion }}
+                        {% endif %}
+                    </td>              
+                </tr>
+                <tr>
+                    <th class="pe-2">Fecha Inicio : </th>
                     <td>
                         {% if contexto_evento_crm.fecha_inicio %}
                         {{ contexto_evento_crm.fecha_inicio|date:'d/m/Y'}}
@@ -14,7 +48,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Fecha Cierre : </th>
+                    <th class="pe-2">Fecha Cierre : </th>
                     <td>
                         {% if contexto_evento_crm.fecha_cierre %}
                         {{ contexto_evento_crm.fecha_cierre|date:'d/m/Y'}}
@@ -22,7 +56,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Pais : </th>
+                    <th class="pe-2">Pais : </th>
                     <td>
                         {% if contexto_evento_crm.pais %}
                         {{ contexto_evento_crm.pais }} 
@@ -37,7 +71,7 @@
         <table>
             <tbody>                
                 <tr>
-                    <th>Presupuesto Asignado : </th>
+                    <th class="pe-2">Presupuesto Asignado: </th>
                     <td>
                         {% if contexto_evento_crm.presupuesto_asignado %}
                         {{ contexto_evento_crm.presupuesto_asignado }}
@@ -46,7 +80,7 @@
                 </tr>
                 
                 <tr>
-                    <th>Presupuesto Asignado  : </th>
+                    <th class="pe-2">Presupuesto Utilizado: </th>
                     <td>
                         {% if contexto_evento_crm.presupuesto_utilizado %}
                         {{ contexto_evento_crm.presupuesto_utilizado }}
@@ -54,7 +88,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Estado : </th>
+                    <th class="pe-2">Estado : </th>
                     <td>
                         {% if contexto_evento_crm.estado %}
                         {{ contexto_evento_crm.get_estado_display }}
@@ -65,13 +99,14 @@
         </table>
     </div>
 </div>
-
-<h4>Descripción
+<br>
+<h3>Descripción
     <button data-form-url="{% url 'crm_app:evento_crm_detalle_descripcion' contexto_evento_crm.id %}"
-        class="delete btn btn-primary">
+        data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+        class="delete badge bg-success">
         +  
     </button>
-</h4>
+</h3>
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -88,6 +123,105 @@
             </tr>
         </tbody>
     </table>
-    </div>
-    
+</div>
+<br>
+{% if contexto_evento_crm.estado == 1 %}
+<h3>Merchandising
+    <button data-form-url="{% url 'crm_app:evento_crm_detalle_agregar_merchandising' contexto_evento_crm.id %}"
+        data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+        data-keep-open="True"
+        class="update badge bg-success">
+        Agregar
+    </button>
+    <a href="{% url 'crm_app:evento_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+{% endif %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Producto</th>
+                <th>Almacén Origen</th>
+                <th>Tipo Stock</th>
+                <th class="text-end">Cantidad Asignada</th>
+                <th>Unidad</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for merchandising in merchandisings  %}
+            <tr>
+                <td>{{ merchandising.item }}</td>
+                <td style="min-width: 500px;">{{ merchandising.merchandising.descripcion_documento }}</td>
+                <td class="text-nowrap">{{ merchandising.almacen_origen.nombre }}</td>
+                <td class="text-nowrap">{{ merchandising.tipo_stock.descripcion }}</td>
+                <td class="text-end text-nowrap">{{ merchandising.cantidad_asignada }}</td>
+                <td class="text-nowrap">{{ merchandising.unidad }}</td>
+                <td class="text-center text-nowrap">
+                    {% if contexto_evento_crm.estado == 1 %}
+                        <button data-form-url="{% url 'crm_app:evento_crm_detalle_actualizar_merchandising' merchandising.id %}"
+                            data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'crm_app:evento_crm_detalle_eliminar_merchandising' merchandising.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>                
+            {% endfor %}
+                
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>Información Adicional
+    <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_registrar' contexto_evento_crm.id %}"
+        data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+        class="create badge bg-success">
+        Registrar
+    </button>
+    <a href="{% url 'crm_app:evento_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Comentario</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evento_crm in evento_crm_detalle_informacion_adicional %}
+            <tr>
+                <td>{{ evento_crm.fecha|date:'d/m/Y' }}</td>
+                <td>{{ evento_crm.comentario}}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_actualizar' evento_crm.id %}"
+                        data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_eliminar' evento_crm.id  %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>

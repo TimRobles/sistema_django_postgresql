@@ -368,17 +368,17 @@ class Deuda(models.Model):
         return "%s %s %s" % (self.documento, self.moneda.simbolo, self.monto)
         return "%s %s %s (%s %s)" % (self.documento, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
 
-def deuda_post_save(*args, **kwargs):
-    obj = kwargs['instance']
-    applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
+# def deuda_post_save(*args, **kwargs):
+#     obj = kwargs['instance']
+#     applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
 
-def deuda_pre_save(*args, **kwargs):
-    obj = kwargs['instance']
-    obj2 = Deuda.objects.get(id=obj.id)
-    applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
+# def deuda_pre_save(*args, **kwargs):
+#     obj = kwargs['instance']
+#     obj2 = Deuda.objects.get(id=obj.id)
+#     applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
 
-post_save.connect(deuda_post_save, sender=Deuda)
-pre_save.connect(deuda_pre_save, sender=Deuda)
+# post_save.connect(deuda_post_save, sender=Deuda)
+# pre_save.connect(deuda_pre_save, sender=Deuda)
 
 class Cuota(models.Model):
     deuda = models.ForeignKey(Deuda, on_delete=models.CASCADE, related_name='Cuota_deuda')

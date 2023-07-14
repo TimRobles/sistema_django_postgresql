@@ -1,8 +1,10 @@
 from django import forms
-from applications.crm.models import ClienteCRM, ClienteCRMDetalle, ProveedorCRM, EventoCRM
+from applications.crm.models import ClienteCRM, ClienteCRMDetalle, EventoCRMDetalle, EventoCRMDetalleInformacionAdicional, ProveedorCRM, EventoCRM
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import Pais
 from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM
+from applications.sede.models import Sede
+from applications.merchandising.models import Merchandising
 
 
 class ClienteCRMForm(BSModalModelForm):
@@ -97,6 +99,7 @@ class EventoCRMForm(BSModalModelForm):
             'fecha_inicio',
             'fecha_cierre',
             'pais',
+            'encargado',
             )
         
         widgets = {
@@ -158,3 +161,115 @@ class EventoCRMDetalleDescripcionForm(BSModalModelForm):
         super(EventoCRMDetalleDescripcionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class EventoCRMActualizarForm(BSModalModelForm):
+    class Meta:
+        model = EventoCRM
+        fields=(
+            'sociedad',
+            'sede_origen',
+            'ubicacion',
+            )
+        widgets = {
+            'fecha_traslado' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+    
+    def clean_sociedad(self):
+        sociedad = self.cleaned_data.get('sociedad')
+        sede_origen = self.fields['sede_origen']
+        sede_origen.queryset = sociedad.Sede_sociedad.filter(estado=1)
+        
+        return sociedad
+
+    def __init__(self, *args, **kwargs):
+        super(EventoCRMActualizarForm, self).__init__(*args, **kwargs)  
+        try:
+            self.fields['sede_origen'].queryset = kwargs['instance'].sociedad.Sede_sociedad.filter(estado=1)
+        except:
+            self.fields['sede_origen'].queryset = Sede.objects.none()
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class EventoCRMDetalleForm(BSModalModelForm):
+    merchandising = forms.ModelChoiceField(queryset=Merchandising.objects.all())
+    cantidad_asignada = forms.DecimalField(max_digits=22, decimal_places=10)
+    stock_disponible = forms.CharField(required=False)
+
+    class Meta:
+        model = EventoCRMDetalle
+        fields=(
+            'merchandising',
+            'almacen_origen',
+            'tipo_stock',
+            'cantidad_asignada',
+            'stock_disponible',
+            'unidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        evento_crm = kwargs.pop('evento_crm')
+        super(EventoCRMDetalleForm, self).__init__(*args, **kwargs)   
+        self.fields['almacen_origen'].queryset = evento_crm.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['stock_disponible'].disabled = True
+        self.fields['almacen_origen'].required = True
+        self.fields['cantidad_asignada'].required = True
+        self.fields['unidad'].required = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class EventoCRMDetalleActualizarForm(BSModalModelForm):
+    stock_disponible = forms.CharField(required=False)
+    class Meta:
+        model = EventoCRMDetalle
+        fields=(
+            'almacen_origen',
+            'tipo_stock',
+            'cantidad_asignada',
+            'stock_disponible',
+            'unidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        evento_crm = kwargs.pop('evento_crm')
+        super(EventoCRMDetalleActualizarForm, self).__init__(*args, **kwargs)   
+        self.fields['almacen_origen'].queryset = evento_crm.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
+        self.fields['unidad'].queryset = kwargs['instance'].producto.subfamilia.unidad.all()
+        self.fields['almacen_origen'].required = True
+        self.fields['tipo_stock'].required = True
+        self.fields['cantidad_asignada'].required = True
+        self.fields['unidad'].required = True
+        self.fields['stock_disponible'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class EventoCRMDetalleInformacionAdicionalForm(BSModalModelForm):
+    class Meta:
+        model = EventoCRMDetalleInformacionAdicional
+        fields = (
+            'fecha',
+            'comentario',
+            )
+        
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(EventoCRMDetalleInformacionAdicionalForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+

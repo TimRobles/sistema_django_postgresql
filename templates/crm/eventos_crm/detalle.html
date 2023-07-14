@@ -5,9 +5,13 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h1>{{ contexto_evento_crm.titulo}}
+    <h3>{{ contexto_evento_crm.titulo}}
         <a href="{% url 'crm_app:evento_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
-    </h1>
+        <button data-form-url="{% url 'crm_app:evento_crm_generar_guia' contexto_evento_crm.id %}"
+            class="delete btn btn-primary">
+            Generar Guia
+        </button>
+    </h3>
     <div id="tabla">
         {% include 'crm/eventos_crm/detalle_tabla.html' %}
     </div>

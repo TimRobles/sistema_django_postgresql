@@ -7,7 +7,13 @@ from applications.rutas import CLIENTE_CRM_ARCHIVO_ENVIADO, CLIENTE_CRM_ARCHIVO_
 from applications.comprobante_venta.models import FacturaVenta
 from applications.proveedores.models import Proveedor
 from applications.sorteo.models import Sorteo
-from applications.datos_globales.models import Pais
+from applications.datos_globales.models import Pais, Unidad
+from django.contrib.contenttypes.models import ContentType
+
+from applications.almacenes.models import Almacen
+from applications.movimiento_almacen.models import TipoStock
+from applications.sede.models import Sede
+from applications.sociedad.models import Sociedad
 
 class ClienteCRM(models.Model):
 
@@ -104,15 +110,19 @@ def actualizar_estado_cliente_crm(id_cliente=None):
 
 class EventoCRM(models.Model):
     
+    titulo = models.CharField('Titulo Evento', max_length=50)
+    pais = models.ForeignKey(Pais, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
+    ubicacion = models.CharField('Ubicación', max_length=100,blank=True, null=True)
+    encargado = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Encargado', on_delete=models.PROTECT, blank=True, null=True)
     fecha_inicio = models.DateField('Fecha Inicio', blank=True, null=True)
     fecha_cierre = models.DateField('Fecha Cierre', blank=True, null=True)
-    titulo = models.CharField('Titulo Evento', max_length=50)
-    descripcion = models.TextField('Descripción', blank=True, null=True)
-    # total_merchandising = models.DecimalField('Total Merchandising', max_digits=22, decimal_places=10)
-    sorteo = models.ForeignKey(Sorteo, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
     presupuesto_asignado = models.DecimalField('Presupuesto asignado', max_digits=6, decimal_places=3, blank=True, null=True)
     presupuesto_utilizado = models.DecimalField('Presupuesto utilizado', max_digits=6, decimal_places=3, blank=True, null=True)
-    pais = models.ForeignKey(Pais, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
+    total_merchandising = models.DecimalField('Total Merchandising', max_digits=22, decimal_places=10, blank=True, null=True)
+    descripcion = models.TextField('Descripción', blank=True, null=True)
+    sorteo = models.ForeignKey(Sorteo, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT,blank=True, null=True)
+    sede_origen = models.ForeignKey(Sede, on_delete=models.PROTECT, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_EVENTO_CRM, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -127,5 +137,54 @@ class EventoCRM(models.Model):
     def __str__(self):
         return str(self.titulo)
 
+class EventoCRMDetalle(models.Model):
+    
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)#Merchandising
+    id_registro = models.IntegerField()
+    almacen_origen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
+    cantidad_asignada = models.DecimalField('Cantidad Asignada', max_digits=8, decimal_places=2,blank=True, null=True)
+    cantidad_utilizada = models.DecimalField('Cantidad Utilizada', max_digits=8, decimal_places=2,blank=True, null=True)
+    cantidad_restante = models.DecimalField('Cantidad Restante', max_digits=8, decimal_places=2,blank=True, null=True)
+    unidad = models.ForeignKey(Unidad, on_delete=models.PROTECT,blank=True, null=True)
+    evento_crm = models.ForeignKey(EventoCRM, on_delete=models.CASCADE, related_name='EventoCRMDetalle_evento_crm')
 
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EventoCRMDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EventoCRMDetalle_updated_by', editable=False)
 
+    class Meta:
+        verbose_name = 'Evento CRM Detalle '
+        verbose_name_plural = 'Eventos CRM Detalle'
+        ordering = [
+            'evento_crm',
+            'item',
+            ]
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+            
+    def __str__(self):
+        return f"{self.item} - {self.producto}. Cantidad: {self.cantidad_asignada}"
+    
+
+class EventoCRMDetalleInformacionAdicional(models.Model):
+
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False, blank=True, null=True)
+    comentario = models.TextField('Comentario', blank=True, null=True)
+    evento_crm =  models.ForeignKey(EventoCRM, on_delete=models.CASCADE)
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='EventoCRMDetalleInformacionAdicional_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='EventoCRMDetalleInformacionAdicional_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Evento CRM Detalle Informacion Adicional'
+        verbose_name_plural = 'Eventos CRM Detalle Informacion Adicional'
+
+    def __str__(self):
+        return str(self.comentario)
