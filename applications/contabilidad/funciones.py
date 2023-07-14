@@ -210,6 +210,9 @@ def movimientos_telecredito(telecredito):
         fecha = recibo_bp.fecha_pagar
         concepto = recibo_bp.boleta_pago
         monto = recibo_bp.monto
+        mora = Decimal('0.00')
+        redondeo = recibo_bp.redondeo
+        documentos = False
         voucher = recibo_bp.voucher
         fecha_pago = recibo_bp.fecha_pago
         monto_pagado = recibo_bp.monto_pagado
@@ -221,6 +224,9 @@ def movimientos_telecredito(telecredito):
         fila.append(concepto)
         fila.append(fecha)
         fila.append(monto)
+        fila.append(mora)
+        fila.append(redondeo)
+        fila.append(documentos)
         fila.append(voucher)
         fila.append(fecha_pago)
         fila.append(monto_pagado)

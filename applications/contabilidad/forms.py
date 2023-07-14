@@ -635,6 +635,7 @@ class TelecreditoForm(BSModalModelForm):
             'banco',
             'concepto',
             'numero',
+            'moneda',
             'fecha_emision',
             'sociedad',
             )
@@ -731,3 +732,25 @@ class InstitucionBuscarForm(forms.Form):
         self.fields['tipo_servicio'].initial = filtro_tipo_servicio
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class TelecreditoCobrarForm(BSModalModelForm):
+    class Meta:
+        model = Telecredito
+        fields = (
+            'fecha_cobro',
+            )
+        widgets = {
+            'fecha_cobro' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(TelecreditoCobrarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True

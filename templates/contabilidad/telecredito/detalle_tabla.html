@@ -25,7 +25,7 @@
             <tr>
                 <td><b>Fecha Emisión</b></td>
                 <td class="px-2">:</td>
-                <td>{{ contexto_telecredito.fecha_emision }}</td>
+                <td>{{ contexto_telecredito.fecha_emision|date:'d/m/Y' }}</td>
                 <td class="px-4"></td>
                 <td><b>Usuario</b></td>
                 <td class="px-2">:</td>
@@ -33,7 +33,7 @@
                 <td class="px-4"></td>
                 <td><b>Fecha de Cobro</b></td>
                 <td class="px-2">:</td>
-                <td colspan="4">{% if contexto_telecredito.fecha_cobro %} {{ contexto_telecredito.fecha_cobro }} {% endif %} </td>
+                <td colspan="4">{% if contexto_telecredito.fecha_cobro %} {{ contexto_telecredito.fecha_cobro|date:'d/m/Y' }} {% endif %} </td>
             </tr>
         </tbody>
     </table>

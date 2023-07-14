@@ -51,7 +51,7 @@
             data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
             Retroceder
         </button>
-        <a href="#" target="_blank"
+        <a href="{% url 'contabilidad_app:telecredito_solicitar_pdf' contexto_telecredito.id %}" target="_blank"
         class="badge bg-danger">
             Ver PDF
         </a>
@@ -62,7 +62,7 @@
             data-table-url="{% url 'contabilidad_app:telecredito_detalle_tabla' contexto_telecredito.id %}">    
             Retroceder
         </button>
-        <a href="#" target="_blank"
+        <a href="{% url 'contabilidad_app:telecredito_cerrar_pdf' contexto_telecredito.id %}" target="_blank"
         class="badge bg-danger">
             Ver PDF
         </a>

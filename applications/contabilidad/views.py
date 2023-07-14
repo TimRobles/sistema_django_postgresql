@@ -41,6 +41,7 @@ from .forms import(
     ServicioBuscarForm,
     ServicioForm,
     ReciboServicioForm,
+    TelecreditoCobrarForm,
     TelecreditoForm,
     TelecreditoReciboPagoForm,
     TelecreditoReciboPagoUpdateForm,
@@ -1312,6 +1313,11 @@ class ChequeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     form_class = ChequeForm
     success_url = reverse_lazy('contabilidad_app:cheque_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -1329,17 +1335,24 @@ class ChequeDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('contabilidad_app:cheque_inicio')
 
+    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        cheque = self.get_object()
-        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
-            recibo.content_type = None
-            recibo.id_registro = None
-            recibo.save()
-        for recibo in ReciboServicio.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
-            recibo.content_type = None
-            recibo.id_registro = None
-            recibo.save()
-        return super().delete(request, *args, **kwargs)
+        sid = transaction.savepoint()
+        try:
+            cheque = self.get_object()
+            for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+                recibo.content_type = None
+                recibo.id_registro = None
+                recibo.save()
+            for recibo in ReciboServicio.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+                recibo.content_type = None
+                recibo.id_registro = None
+                recibo.save()
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(ChequeDeleteView, self).get_context_data(**kwargs)
@@ -2440,10 +2453,11 @@ class TelecreditoEditarView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 
-class TelecreditoRegistrarView(PermissionRequiredMixin, BSModalDeleteView):
+class TelecreditoRegistrarView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_telecredito')
     model = Telecredito
-    template_name = "includes/eliminar generico.html"
+    template_name = "includes/formulario generico.html"
+    form_class = TelecreditoCobrarForm
     
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -2454,14 +2468,12 @@ class TelecreditoRegistrarView(PermissionRequiredMixin, BSModalDeleteView):
         return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
 
     @transaction.atomic
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         sid = transaction.savepoint()
         try:
-            self.object = self.get_object()
-            self.object.estado = 3
-            registro_guardar(self.object, self.request)
-            self.object.save()
-            messages.success(request, MENSAJE_SOLICITAR_CHEQUE)
+            form.instance.estado = 3
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -2471,8 +2483,6 @@ class TelecreditoRegistrarView(PermissionRequiredMixin, BSModalDeleteView):
         context = super(TelecreditoRegistrarView, self).get_context_data(**kwargs)
         context['accion'] = "Registrar"
         context['titulo'] = "Telecredito"
-        context['dar_baja'] = "true"
-        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
         return context
     
 
@@ -2495,6 +2505,7 @@ class TelecreditoRegistrarEditarView(PermissionRequiredMixin, BSModalDeleteView)
         try:
             self.object = self.get_object()
             self.object.estado = 2
+            self.object.fecha_cobro = None
             registro_guardar(self.object, self.request)
             self.object.save()
             messages.success(request, MENSAJE_EDITAR_CHEQUE)
