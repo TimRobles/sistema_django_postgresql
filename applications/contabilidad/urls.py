@@ -16,8 +16,8 @@ urlTelecredito = [
     path('telecredito/cerrar/<pk>/', views.TelecreditoCerrarView.as_view(), name='telecredito_cerrar'),
     path('telecredito/cerrar/editar/<pk>/', views.TelecreditoCerradoEditarView.as_view(), name='telecredito_cerrar_editar'),
     
-    path('cheque/solicitar/pdf/<pk>/', views.ChequeSolicitarPdfView.as_view(), name='cheque_solicitar_pdf'),
-    path('cheque/cerrar/pdf/<pk>/', views.ChequeCerrarPdfView.as_view(), name='cheque_cerrar_pdf'),
+    path('telecredito/solicitar/pdf/<pk>/', views.TelecreditoSolicitarPdfView.as_view(), name='telecredito_solicitar_pdf'),
+    path('telecredito/cerrar/pdf/<pk>/', views.TelecreditoCerrarPdfView.as_view(), name='telecredito_cerrar_pdf'),
 
     path('telecredito/detalle/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_detalle'),
     path('telecredito/detalle-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_detalle_tabla'),
