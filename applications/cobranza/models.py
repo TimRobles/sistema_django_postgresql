@@ -362,9 +362,9 @@ class Deuda(models.Model):
         if self.content_type:
             try:
                 documento_venta = self.content_type.get_object_for_this_type(id = self.id_registro)
+                return '%s %s - %s' % (documento_venta.get_tipo_comprobante_display(), documento_venta.documento, documento_venta.cliente)
             except:
-                documento_venta = 'ERROR, NO EXISTE DOCUMENTO'
-            return '%s %s - %s' % (documento_venta.get_tipo_comprobante_display(), documento_venta.documento, documento_venta.cliente)
+                return 'ERROR, NO EXISTE DOCUMENTO'
         return ""
 
     def __str__(self):
