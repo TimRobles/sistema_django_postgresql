@@ -191,7 +191,7 @@
                     <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">{{ archivo.archivo|filename }}</a>
                 </td>
                 <td class="text-center text-nowrap">
-                    <button data-form-url="{% url 'comprobante_compra_app:archivo_comprobante_compra_pi_eliminar' archivo.id %}"
+                    <button data-form-url="{% url 'comprobante_compra_app:pregunta_crm_eliminar' archivo.id %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi bi-x-lg"></i>

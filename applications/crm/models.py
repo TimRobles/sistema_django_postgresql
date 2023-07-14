@@ -8,6 +8,7 @@ from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CR
 from applications.clientes.models import Cliente, RepresentanteLegalCliente, CorreoInterlocutorCliente, InterlocutorCliente, TelefonoInterlocutorCliente
 from applications.sorteo.models import Sorteo
 from applications.datos_globales.models import Pais
+from .managers import RespuestaDetalleCRMManager
 
 class ClienteCRM(models.Model):
 
@@ -112,7 +113,7 @@ class EventoCRM(models.Model):
     sorteo = models.ForeignKey(Sorteo, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
     presupuesto_asignado = models.DecimalField('Presupuesto asignado', max_digits=6, decimal_places=3, blank=True, null=True)
     presupuesto_utilizado = models.DecimalField('Presupuesto utilizado', max_digits=6, decimal_places=3, blank=True, null=True)
-    pais = models.ForeignKey(Pais, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
+    pais = models.ForeignKey(Pais, on_delete=models.PROTECT, related_name='pais',blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_EVENTO_CRM, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -126,12 +127,139 @@ class EventoCRM(models.Model):
 
     def __str__(self):
         return str(self.titulo)
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class PreguntaCRM(models.Model):
-    tipo_presgunta = models.IntegerField('Tipo Pregunta', choices=TIPO_PREGUNTA_CRM, blank=True, null=True)
+    tipo_pregunta = models.IntegerField('Tipo Pregunta', choices=TIPO_PREGUNTA_CRM)
     texto = models.CharField('Pregunta', max_length=100)
     orden = models.IntegerField()
-    mostrar = models.BooleanField(blank=True, null=True)
+    mostrar = models.BooleanField('Mostrar', default=False)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='PreguntaCRM_created_by', editable=False)
@@ -141,6 +269,11 @@ class PreguntaCRM(models.Model):
     class Meta:
         verbose_name = 'Pregunta CRM'
         verbose_name_plural = 'Preguntas CRM'
+        ordering = [
+            'orden',
+            '-created_at',
+            'mostrar',
+        ]
 
     def __str__(self):
         return str(self.texto)
@@ -149,8 +282,10 @@ class PreguntaCRM(models.Model):
 class EncuestaCRM(models.Model):
     tipo_encuesta = models.IntegerField('Tipo Encuesta', choices=TIPO_ENCUESTA_CRM, blank=True, null=True)
     titulo = models.CharField('Titulo Encuesta', max_length=50)
-    pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT,blank=True, null=True)
-    mostrar = models.BooleanField(blank=True, null=True)
+    pregunta_crm = models.ManyToManyField(PreguntaCRM, blank=True)
+    mostrar = models.BooleanField('Mostrar', default=False)
+    pais = models.ForeignKey(Pais, on_delete=models.PROTECT, related_name='Pais',blank=True, null=True)
+    slug = models.SlugField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='EncuestaCRM_created_by', editable=False)
@@ -160,7 +295,9 @@ class EncuestaCRM(models.Model):
     class Meta:
         verbose_name = 'Encuesta CRM'
         verbose_name_plural = 'Encuestas CRM'
-
+        ordering = [
+            '-created_at',
+        ]
     def __str__(self):
         return str(self.titulo)
     
@@ -168,8 +305,9 @@ class EncuestaCRM(models.Model):
 class AlternativaCRM(models.Model):
     orden = models.IntegerField()
     texto = models.CharField('Alternativa', max_length=100)
-    mostrar = models.BooleanField(blank=True, null=True)
-    pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT, blank=True, null=True)
+    valor = models.CharField('Valor', max_length=100)
+    mostrar = models.BooleanField('Mostrar', default=False)
+    pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT, blank=True, null=True, related_name='AlternativaCRM_pregunta_crm')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AlternativaCRM_created_by', editable=False)
@@ -179,15 +317,30 @@ class AlternativaCRM(models.Model):
     class Meta:
         verbose_name = 'Alternativa CRM'
         verbose_name_plural = 'Alternativas CRM'
-
+        ordering = [
+            'pregunta_crm',
+            'orden',
+            'texto',
+            'created_at',
+        ]
     def __str__(self):
         return str(self.texto)
 
+
 class RespuestaCRM(models.Model):
+    ESTADO_RESPUESTA = (
+        (1, 'BORRADOR'),
+        (2, 'ENVIADO'),
+        (3, 'EXPIRADO'),
+    )
+
+    fecha_vencimiento = models.DateField('Fecha de Vencimiento', auto_now=False, auto_now_add=False, blank=True, null=True)
     cliente_crm = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='RespuestaCRM_interlocutor')
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='RespuestaCRM_interlocutor', blank=True, null=True)
     nombre_interlocutor = models.CharField('Nombre Interlocutor', max_length=50, blank=True, null=True)
     encuesta_crm = models.ForeignKey(EncuestaCRM, on_delete=models.PROTECT, blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADO_RESPUESTA, default=1)
+    slug = models.SlugField(blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaCRM_created_by', editable=False)
@@ -197,26 +350,30 @@ class RespuestaCRM(models.Model):
     class Meta:
         verbose_name = 'Respuesta CRM'
         verbose_name_plural = 'Respuestas CRM'
-
+        ordering = [
+            '-created_at',
+        ]
     def __str__(self):
         return str(self.encuesta_crm)
-
 
 class RespuestaDetalleCRM(models.Model):
     alternativa_crm = models.ForeignKey(AlternativaCRM, on_delete=models.PROTECT, blank=True, null=True)
     pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT, blank=True, null=True)
-    respuesta_crm = models.ForeignKey(RespuestaCRM, on_delete=models.PROTECT, blank=True, null=True)
-    texto = models.CharField('Alternativa', max_length=100)
+    respuesta_crm = models.ForeignKey(RespuestaCRM, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaDetalleCRM_respuesta_crm')
+    texto = models.CharField('Texto', max_length=100, blank=True, null=True)
+    borrador = models.BooleanField()
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaDetalleCRM_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RespuestaDetalleCRM_updated_by', editable=False)
 
+    objects = RespuestaDetalleCRMManager()
+
     class Meta:
-        verbose_name = 'Respuesta CRM'
-        verbose_name_plural = 'Respuestas CRM'
+        verbose_name = 'Respuesta Detalle CRM'
+        verbose_name_plural = 'Respuestas Detalle CRM'
 
     def __str__(self):
-        return str(self.encuesta_crm)
+        return str(self.respuesta_crm)
 

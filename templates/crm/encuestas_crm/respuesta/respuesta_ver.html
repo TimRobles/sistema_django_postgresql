@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+   Encuesta
+{% endblock titulo %}
+
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block contenido %}
+
+<h3>{{ encuesta.titulo}}</h3>
+<br>
+<div class="table-responsive">
+        <style>
+        ul { list-style-type: none; }
+
+    </style>
+
+    <span id="respuesta_id" hidden>{{ respuesta.id }}</span>
+    <span id="url" hidden>{% url 'crm_app:encuesta_respuesta' %}</span>
+
+    <table class="table">
+        <tbody>
+            <td>
+                <ul>
+                    {% for pregunta in encuesta.pregunta_crm.all %}
+                    <li>{{ pregunta.orden }}. {{ pregunta.texto }}</li>                        
+                        {% if pregunta.tipo_pregunta == 1  %}   
+                            <div class="pregunta">
+                                {% for alternativa in pregunta.AlternativaCRM_pregunta_crm.all %}
+                                <div class="input-group">
+                                    <input class="form-check-input respuesta-opcion-crm" type="radio" data-pregunta="{{ pregunta.id }}" data-alternativa="{{ alternativa.id }}" name="{{ pregunta.texto }}" value="{{ alternativa }}">
+                                    <label class="input-group-text">{{ alternativa.texto }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>    
+                            <br>
+                        {% endif %}
+                        {% if pregunta.tipo_pregunta == 2  %}   
+                            <div class="pregunta">
+                                {% for alternativa in pregunta.AlternativaCRM_pregunta_crm.all %}
+                                <div class="input-group">
+                                    <input class="form-check-input respuesta-alternativa-crm" type="checkbox" data-pregunta="{{ pregunta.id }}" data-alternativa="{{ alternativa.id }}" name="{{ alternativa }}" value="{{ alternativa }}">
+                                    <label class="input-group-text">{{ alternativa.texto }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>    
+                            <br>
+                        {% endif %}
+                        {% if pregunta.tipo_pregunta == 3  %}
+                            <input class="form-control respuesta-texto-crm" type="text" data-pregunta="{{ pregunta.id }}" name="{{ pregunta.texto }}"
+                            required maxlength="100">
+                        <br>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+        </tbody>
+    </table>
+</div>
+
+<button onclick="responder()" class="btn btn-info btn-sm">Enviar
+    <i class="bi bi-send"></i>
+</button>
+<br>
+
+{% endblock contenido %}
+
+
+{% block extrajs %}
+<script src="{% static 'js/crm/encuestas_crm/respuesta/respuesta_ver.js' %}"></script>
+{% endblock extrajs %}
+    
