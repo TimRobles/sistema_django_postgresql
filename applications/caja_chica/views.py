@@ -5,7 +5,7 @@ from applications.caja_chica.pdf import generarCajaChicaPdf
 from applications.home.templatetags.funciones_propias import nombre_usuario
 from applications.importaciones import *
 from applications.funciones import registrar_excepcion
-from applications.contabilidad.models import ReciboServicio
+from applications.contabilidad.models import Cheque, ReciboServicio
 from applications.sociedad.models import Sociedad
 
 from .models import (
@@ -20,7 +20,8 @@ from .models import (
 from applications.caja_chica.forms import (
     RequerimientoAprobarForm, 
     RequerimientoDocumentoDetalleForm, 
-    RequerimientoDocumentoForm, 
+    RequerimientoDocumentoForm,
+    RequerimientoEntregarForm, 
     RequerimientoFinalizarRendicionForm,
     RequerimientoForm,
     RequerimientoRechazarForm,
@@ -277,11 +278,13 @@ class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
         caja=[]
         for caja_chica in CajaChica.objects.filter(estado=1, usuario=self.request.user):
             caja.append((f'{ContentType.objects.get_for_model(caja_chica).id}|{caja_chica.id}', caja_chica.__str__()))
-        cheque=[]
+        cheques=[]
+        for cheque in Cheque.objects.filter(estado=1, usuario=self.request.user):
+            cheques.append((f'{ContentType.objects.get_for_model(cheque).id}|{cheque.id}', f"CHEQUE - {cheque.__str__()}"))
         kwargs['moneda'] = requerimiento.moneda
         kwargs['fecha'] = requerimiento.fecha
         kwargs['caja'] = caja
-        kwargs['cheque'] = cheque
+        kwargs['cheque'] = cheques
         return kwargs
 
     def form_valid(self, form):
@@ -289,6 +292,8 @@ class RequerimientoAprobarView(PermissionRequiredMixin, BSModalUpdateView):
         form.instance.estado = 3
         form.instance.content_type = ContentType.objects.get(id=int(caja_cheque.split('|')[0]))
         form.instance.id_registro = int(caja_cheque.split('|')[1])
+        if form.instance.content_type == ContentType.objects.get_for_model(Cheque):
+            form.instance.fecha_entrega = None
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -370,6 +375,16 @@ class RequerimientoFinalizarRendicionView(PermissionRequiredMixin, BSModalUpdate
     form_class = RequerimientoFinalizarRendicionForm
     template_name = "caja_chica/requerimiento/finalizar_rendicion.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        requerimiento = self.get_object()
+        if not requerimiento.fecha_entrega:
+            context['texto'] = 'Aún no te han entregado el dinero'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk':self.get_object().id})
 
@@ -439,6 +454,33 @@ class RequerimientoEditarRendicionView(PermissionRequiredMixin, BSModalDeleteVie
         return context
 
 
+class RequerimientoEntregarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('caja_chica.change_requerimiento')
+    model = Requerimiento
+    template_name = "caja_chica/requerimiento/aprobar.html"
+    form_class = RequerimientoEntregarForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('caja_chica_app:requerimiento_detalle', kwargs={'pk':self.get_object().id})
+
+    def get_form_kwargs(self):
+        kwargs = super(RequerimientoEntregarView, self).get_form_kwargs()
+        requerimiento = Requerimiento.objects.filter(id = self.kwargs['pk'])[0]
+        kwargs['fecha'] = requerimiento.fecha
+        return kwargs
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RequerimientoEntregarView, self).get_context_data(**kwargs)
+        context['accion']="Entregar"
+        context['titulo']="Requerimiento"
+        context['requerimiento'] = self.get_object()
+        return context
+
+
 class RequerimientoAprobarRendicionView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('caja_chica.change_requerimiento')
     model = Requerimiento
@@ -496,6 +538,11 @@ class RequerimientoRetrocederRendicionView(PermissionRequiredMixin, BSModalDelet
     template_name = "caja_chica/requerimiento/boton.html"
     
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        requerimiento = self.get_object()
+        if not requerimiento.cheque.estado == 1:
+            context['texto'] = 'El cheque está procesado.'
+            return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1263,6 +1310,67 @@ class CajaChicaPdfView(View):
         
         return respuesta
 
+
+class CajaChicaCierreView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('caja_chica.delete_cajachica')
+    model = CajaChica
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
+
+    def get_success_url(self):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.get_object().id})
+
+    def delete(self, request, *args, **kwargs):
+        caja_chica = self.get_object()
+        movimientos = movimientos_caja_chica(caja_chica)
+        saldo_acumulado = Decimal('0.00')
+        egreso_acumulado = Decimal('0.00')
+        for movimiento in movimientos:
+            saldo_acumulado = saldo_acumulado + movimiento[3] - movimiento[4]
+            egreso_acumulado = egreso_acumulado + movimiento[4]
+        caja_chica.egresos = egreso_acumulado
+        caja_chica.saldo_final = saldo_acumulado
+        caja_chica.estado = 2
+        caja_chica.save()
+        
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaCierreView, self).get_context_data(**kwargs)
+        context['accion'] = "Cierre"
+        context['titulo'] = "de Caja Chica"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+
+
+class CajaChicaAbrirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('caja_chica.delete_cajachica')
+    model = CajaChica
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('caja_chica_app:caja_chica_inicio')
+
+    def get_success_url(self):
+        return reverse_lazy('caja_chica_app:caja_chica_detalle', kwargs={'pk':self.get_object().id})
+
+    def delete(self, request, *args, **kwargs):
+        caja_chica = self.get_object()
+        saldo_acumulado = Decimal('0.00')
+        egreso_acumulado = Decimal('0.00')
+        caja_chica.egresos = egreso_acumulado
+        caja_chica.saldo_final = saldo_acumulado
+        caja_chica.estado = 1
+        caja_chica.save()
+        
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(CajaChicaAbrirView, self).get_context_data(**kwargs)
+        context['accion'] = "Abrir"
+        context['titulo'] = "Caja Chica"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
 
 
 #__CajaChicaPrestamo_____________________________________________________________________

@@ -8,12 +8,22 @@ urlTelecredito = [
     path('telecredito-tabla/', views.TelecreditoTabla, name='telecredito_tabla'),
     path('telecredito/registrar/', views.TelecreditoCreateView.as_view(), name='telecredito_registrar'),
     path('telecredito/actualizar/<pk>/', views.TelecreditoUpdateView.as_view(), name='telecredito_actualizar'),
-    # path('telecredito/eliminar/<pk>/', views.TelecreditoDeleteView.as_view(), name='telecredito_eliminar'),
-    path('telecredito/recibos/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_recibos_inicio'),
-    path('telecredito/recibos-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_recibos_tabla'),
-    path('telecredito/recibos/registrar/<pk>', views.TelecreditoRecibosCreateView.as_view() , name='telecredito_recibos_registrar'),
-    path('telecredito/recibos/eliminar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosDeleteView.as_view() , name='telecredito_recibos_eliminar'),
-    path('telecredito/recibos/actualizar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosUpdateView.as_view() , name='telecredito_recibos_actualizar'),
+    path('telecredito/eliminar/<pk>/', views.TelecreditoDeleteView.as_view(), name='telecredito_eliminar'),
+    path('telecredito/solicitar/<pk>/', views.TelecreditoSolicitarView.as_view(), name='telecredito_solicitar'),
+    path('telecredito/editar/<pk>/', views.TelecreditoEditarView.as_view(), name='telecredito_editar'),
+    path('telecredito/registrar/<pk>/', views.TelecreditoRegistrarView.as_view(), name='telecredito_registrar'),
+    path('telecredito/registrar/editar/<pk>/', views.TelecreditoRegistrarEditarView.as_view(), name='telecredito_registrar_editar'),
+    path('telecredito/cerrar/<pk>/', views.TelecreditoCerrarView.as_view(), name='telecredito_cerrar'),
+    path('telecredito/cerrar/editar/<pk>/', views.TelecreditoCerradoEditarView.as_view(), name='telecredito_cerrar_editar'),
+    
+    path('telecredito/solicitar/pdf/<pk>/', views.TelecreditoSolicitarPdfView.as_view(), name='telecredito_solicitar_pdf'),
+    path('telecredito/cerrar/pdf/<pk>/', views.TelecreditoCerrarPdfView.as_view(), name='telecredito_cerrar_pdf'),
+
+    path('telecredito/detalle/<pk>/', views.TelecreditoRecibosListView.as_view(), name='telecredito_detalle'),
+    path('telecredito/detalle-tabla/<pk>/', views.TelecreditoRecibosTabla, name='telecredito_detalle_tabla'),
+    path('telecredito/detalle/registrar/<pk>', views.TelecreditoRecibosCreateView.as_view() , name='telecredito_detalle_registrar'),
+    path('telecredito/detalle/eliminar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosDeleteView.as_view() , name='telecredito_detalle_eliminar'),
+    path('telecredito/detalle/actualizar/<int:telecredito_id>/<pk>', views.TelecreditoRecibosUpdateView.as_view() , name='telecredito_detalle_actualizar'),
 ]
 
 urlCheque = [
@@ -28,6 +38,9 @@ urlCheque = [
     path('cheque/por-cerrar/editar/<pk>/', views.ChequePorCerrarEditarView.as_view(), name='cheque_por_cerrar_editar'),
     path('cheque/cerrar/<pk>/', views.ChequeCerrarView.as_view(), name='cheque_cerrar'),
     path('cheque/cerrado/editar/<pk>/', views.ChequeCerradoEditarView.as_view(), name='cheque_cerrado_editar'),
+
+    path('cheque/solicitar/pdf/<pk>/', views.ChequeSolicitarPdfView.as_view(), name='cheque_solicitar_pdf'),
+    path('cheque/cerrar/pdf/<pk>/', views.ChequeCerrarPdfView.as_view(), name='cheque_cerrar_pdf'),
 
     path('cheque/detalle/<pk>/', views.ChequeDetalleView.as_view(), name='cheque_detalle'),
     path('cheque/detalle-tabla/<pk>', views.ChequeDetalleTabla, name='cheque_detalle_tabla'),
@@ -106,6 +119,7 @@ urlpatterns = urlTelecredito + urlCheque +[
     path('institucion-tabla/', views.InstitucionTabla, name='institucion_tabla'),
     path('institucion/registrar/', views.InstitucionCreateView.as_view(), name='institucion_registrar'),
     path('institucion/actualizar/<pk>/', views.InstitucionUpdateView.as_view(), name='institucion_actualizar'),   
+    path('institucion/eliminar/<pk>/', views.InstitucionDeleteView.as_view(), name='institucion_eliminar'),   
 
     path('medio-pago/', views.MedioPagoListView.as_view(), name='medio_pago_inicio'),
     path('medio-pago-tabla/', views.MedioPagoTabla, name='medio_pago_tabla'),

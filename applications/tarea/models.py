@@ -33,7 +33,7 @@ class Tarea(models.Model):
     descripcion = models.TextField('Descripción')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='Área',blank=True, null=True)
     encargado = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Encargado',on_delete=models.PROTECT, blank=True, null=True,related_name='Tarea_encargado')
-    apoyo = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name='Apoyo', blank=True,related_name='Tarea_apoyo')
+    apoyo = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name='Apoyo', blank=True, related_name='Tarea_apoyo')
     prioridad = models.IntegerField('Prioridad',choices=PRIORIDAD_TAREA,blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT) # Cliente | Evento
     id_registro = models.IntegerField(blank=True, null=True)

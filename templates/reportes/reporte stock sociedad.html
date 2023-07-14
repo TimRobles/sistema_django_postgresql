@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Reporte Stock Sociedad
+{% endblock titulo %}
+
+{% block contenido %}
+<h1>Reporte Stock Sociedad</h1>
+<br>
+<form action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    {% include 'includes/formulario lineal.html' %}
+    <button type="submit" class="btn btn-success" title="Buscar">
+        <i class="bi bi-search"></i>
+    </button>
+</form>
+{% endblock contenido %}
+    

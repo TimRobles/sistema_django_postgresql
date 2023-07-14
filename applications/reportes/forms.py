@@ -39,3 +39,12 @@ class ReportesFiltrosForm(forms.Form):
         self.fields['cliente'].required = False
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteStockSociedadPdfForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteStockSociedadPdfForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

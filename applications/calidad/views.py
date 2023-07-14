@@ -2391,7 +2391,7 @@ class ReparacionMaterialCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 
 class ReparacionMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('calidad.reparacionmaterial')
+    permission_required = ('calidad.change_reparacionmaterial')
     model = ReparacionMaterial
     template_name = "includes/formulario generico.html"
     form_class = ReparacionMaterialForm

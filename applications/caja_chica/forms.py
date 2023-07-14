@@ -88,6 +88,38 @@ class RequerimientoAprobarForm(BSModalModelForm):
         self.fields['caja_cheque'].choices = [('0|0', '--------------------'),] + caja + cheque
 
 
+class RequerimientoEntregarForm(BSModalModelForm):
+    class Meta:
+        model = Requerimiento
+        fields = (
+            'fecha_entrega',
+            )
+
+        widgets = {
+            'fecha_entrega': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs = {
+                    'type': 'date',
+                    'class': 'input-group-field',
+                }
+            ),
+        }
+
+    def clean_fecha_entrega(self):
+        fecha_entrega = self.cleaned_data.get('fecha_entrega')
+        
+        if self.fecha > fecha_entrega:
+            self.add_error('fecha_entrega', 'La fecha de entrega no puede ser menor a la fecha de solicitud.')
+    
+        return fecha_entrega
+
+    def __init__(self, *args, **kwargs):
+        self.fecha = kwargs.pop('fecha')
+        super(RequerimientoEntregarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        
+
 class RequerimientoRechazarForm(BSModalModelForm):
     class Meta:
         model = Requerimiento

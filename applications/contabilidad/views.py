@@ -4,17 +4,21 @@ from django.db import models
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from applications.caja_chica.funciones import cheque_monto_usado
-from applications.contabilidad.funciones import calcular_datos_boleta
+from applications.contabilidad.funciones import calcular_datos_boleta, movimientos_cheque, movimientos_telecredito
+from applications.contabilidad.pdf import generarChequeCerrarPdf, generarChequeSolicitarPdf, generarTelecreditoCerrarPdf, generarTelecreditoSolicitarPdf
 from applications.datos_globales.models import RemuneracionMinimaVital
 from applications.funciones import registrar_excepcion
 from applications.home.templatetags.funciones_propias import nombre_usuario
+from django.template.defaultfilters import date as _date
 
 from applications.importaciones import *
 from applications.funciones import registrar_excepcion
 from applications.caja_chica.models import ReciboCajaChica, Requerimiento
+from applications.sociedad.models import Sociedad
 
 from .forms import(
     BoletaPagoBuscarForm,
+    ChequeCerrarForm,
     ChequeFisicoCobrarForm,
     ChequeFisicoForm,
     ChequeForm,
@@ -31,11 +35,13 @@ from .forms import(
     EsSaludForm,
     BoletaPagoForm,
     BoletaPagoActualizarForm,
+    InstitucionBuscarForm,
     ReciboBoletaPagoForm,
     ReciboBoletaPagoActualizarForm,
     ServicioBuscarForm,
     ServicioForm,
     ReciboServicioForm,
+    TelecreditoCobrarForm,
     TelecreditoForm,
     TelecreditoReciboPagoForm,
     TelecreditoReciboPagoUpdateForm,
@@ -1029,22 +1035,57 @@ class TipoServicioUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class InstitucionListView(TemplateView):
+class InstitucionListView(FormView):
     template_name = "contabilidad/institucion/inicio.html"
+    form_class = InstitucionBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(InstitucionListView, self).get_form_kwargs()
+        kwargs['filtro_nombre'] = self.request.GET.get('nombre')
+        kwargs['filtro_tipo_servicio'] = self.request.GET.get('tipo_servicio')
+        return kwargs
     
     def get_context_data(self, **kwargs):
         context = super(InstitucionListView, self).get_context_data(**kwargs)
         institucion = Institucion.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+
+        filtro_nombre = self.request.GET.get('nombre')
+        filtro_tipo_servicio = self.request.GET.get('tipo_servicio')
+
+        contexto_filtro = []
+
+        if filtro_nombre:
+            condicion = Q(nombre__razon_social__unaccent__icontains = filtro_nombre.split(" ")[0])
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= Q(nombre__razon_social__unaccent__icontains = palabra)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("nombre=" + filtro_nombre)
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("tipo_servicio=" + filtro_tipo_servicio)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  30 # Show 10 objects per page.
 
         if len(institucion) > objectsxpage:
             paginator = Paginator(institucion, objectsxpage)
             page_number = self.request.GET.get('page')
             institucion = paginator.get_page(page_number)
-
+   
         context['contexto_institucion'] = institucion
         context['contexto_pagina'] = institucion
-        context['contexto_filtro'] = '?'
         return context
 
 def InstitucionTabla(request):
@@ -1053,16 +1094,43 @@ def InstitucionTabla(request):
         template = 'contabilidad/institucion/inicio_tabla.html'
         context = {}
         institucion = Institucion.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+
+        filtro_nombre = request.GET.get('nombre')
+        filtro_tipo_servicio = request.GET.get('tipo_servicio')
+
+        contexto_filtro = []
+
+        if filtro_nombre:
+            condicion = Q(nombre__razon_social__unaccent__icontains = filtro_nombre.split(" ")[0])
+            for palabra in filtro_nombre.split(" ")[1:]:
+                condicion &= Q(nombre__razon_social__unaccent__icontains = palabra)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("nombre=" + filtro_nombre)
+
+        if filtro_tipo_servicio:
+            condicion = Q(tipo_servicio = filtro_tipo_servicio)
+            institucion = institucion.filter(condicion)
+            contexto_filtro.append("tipo_servicio=" + filtro_tipo_servicio)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  30 # Show 10 objects per page.
 
         if len(institucion) > objectsxpage:
             paginator = Paginator(institucion, objectsxpage)
             page_number = request.GET.get('page')
             institucion = paginator.get_page(page_number)
-
+   
         context['contexto_institucion'] = institucion
         context['contexto_pagina'] = institucion
-        context['contexto_filtro'] = '?'
 
         data['table'] = render_to_string(
             template,
@@ -1088,6 +1156,7 @@ class InstitucionCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
+
 class InstitucionUpdateView(BSModalUpdateView):
     model = Institucion
     template_name = "contabilidad/institucion/form.html"
@@ -1102,6 +1171,20 @@ class InstitucionUpdateView(BSModalUpdateView):
         context = super(InstitucionUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
         context['titulo'] = "Institución"
+        return context
+
+
+class InstitucionDeleteView(BSModalDeleteView):
+    model = Institucion
+    template_name = "includes/eliminar generico.html"
+    form_class = InstitucionForm
+    success_url = reverse_lazy('contabilidad_app:institucion_inicio')
+       
+    def get_context_data(self, **kwargs):
+        context = super(InstitucionDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Institución"
+        context['item'] = self.get_object()
         return context
 
 #---------------------------------------------------------------------------------
@@ -1230,6 +1313,11 @@ class ChequeUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     form_class = ChequeForm
     success_url = reverse_lazy('contabilidad_app:cheque_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -1246,6 +1334,25 @@ class ChequeDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     model = Cheque
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('contabilidad_app:cheque_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            cheque = self.get_object()
+            for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+                recibo.content_type = None
+                recibo.id_registro = None
+                recibo.save()
+            for recibo in ReciboServicio.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+                recibo.content_type = None
+                recibo.id_registro = None
+                recibo.save()
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         context = super(ChequeDeleteView, self).get_context_data(**kwargs)
@@ -1333,6 +1440,15 @@ class ChequePorCerrarView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "contabilidad/cheque/boton.html"
     
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        cheque = self.get_object()
+        error_cobrado = False
+        for cheque in ChequeFisico.objects.filter(cheque=cheque):
+            if cheque.estado != 2:
+                error_cobrado = True
+        if error_cobrado:
+            context['texto'] = 'Hay cheques pendientes de cobro'
+            return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1399,12 +1515,32 @@ class ChequePorCerrarEditarView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 
-class ChequeCerrarView(PermissionRequiredMixin, BSModalDeleteView):
+class ChequeCerrarView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_cheque')
     model = Cheque
-    template_name = "contabilidad/cheque/boton.html"
+    form_class = ChequeCerrarForm
+    template_name = "contabilidad/cheque/cerrar.html"
     
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        cheque = self.get_object()
+        error_cancelado = False
+        for requerimiento in Requerimiento.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            if requerimiento.estado != 7:
+                error_cancelado = True
+        for recibo in ReciboCajaChica.objects.filter(cheque=cheque):
+            if recibo.estado != 3:
+                error_cancelado = True
+        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            if recibo.estado != 2:
+                error_cancelado = True
+        for recibo in ReciboServicio.objects.filter(content_type=ContentType.objects.get_for_model(cheque), id_registro=cheque.id):
+            if recibo.estado != 2:
+                error_cancelado = True
+
+        if error_cancelado:
+            context['texto'] = 'Hay comprobantes pendiente de cancelar'
+            return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1413,19 +1549,27 @@ class ChequeCerrarView(PermissionRequiredMixin, BSModalDeleteView):
         return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.get_object().id})
 
     @transaction.atomic
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         sid = transaction.savepoint()
         try:
-            self.object = self.get_object()
-            cheque_monto_usado(self.object)
-            self.object.estado = 4
-            registro_guardar(self.object, self.request)
-            self.object.save()
-            messages.success(request, MENSAJE_POR_CERRAR_CHEQUE)
+            form.instance.estado = 4
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
-        return HttpResponseRedirect(self.get_success_url())
+            return super().form_invalid(form)
+            
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        cheque = self.get_object()
+        comisiones = Decimal('0.00')
+        for movimiento in movimientos_cheque(cheque):
+            comisiones += movimiento[5] + movimiento[6]
+        kwargs['recibido'] = cheque.recibido
+        kwargs['comisiones'] = comisiones
+        kwargs['vuelto_extra'] = cheque.vuelto_extra
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(ChequeCerrarView, self).get_context_data(**kwargs)
@@ -1455,6 +1599,9 @@ class ChequeCerradoEditarView(PermissionRequiredMixin, BSModalDeleteView):
         try:
             self.object = self.get_object()
             self.object.estado = 3
+            self.object.comision = Decimal('0.00')
+            self.object.redondeo = Decimal('0.00')
+            self.object.vuelto = Decimal('0.00')
             registro_guardar(self.object, self.request)
             self.object.save()
             messages.success(request, MENSAJE_EDITAR_CHEQUE)
@@ -1486,16 +1633,52 @@ class ChequeDetalleView(PermissionRequiredMixin, DetailView):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        total_boleta_pago = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        total_boleta_pago_pagado = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago_pagado = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_servicio = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        total_servicio_pagado = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio_pagado = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_caja_chica = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        total_caja_chica_pagado = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica_pagado = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_requerimiento = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_requerimiento_usado = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento_usado = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        total_cheque_fisico = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_cheque_fisico_comision = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_comision = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
+        total_cheque_fisico_recibido = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_recibido = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        
+        context['total_boleta_pago'] = total_boleta_pago
+        context['total_boleta_pago_pagado'] = total_boleta_pago_pagado
+        context['total_servicio'] = total_servicio
+        context['total_servicio_pagado'] = total_servicio_pagado
+        context['total_caja_chica'] = total_caja_chica
+        context['total_caja_chica_pagado'] = total_caja_chica_pagado
+        context['total_requerimiento'] = total_requerimiento
+        context['total_requerimiento_usado'] = total_requerimiento_usado
+        context['total_cheque_fisico'] = total_cheque_fisico
+        context['total_cheque_fisico_comision'] = total_cheque_fisico_comision
+        context['total_cheque_fisico_recibido'] = total_cheque_fisico_recibido
+        context['total_monto_requerido'] = context['total_boleta_pago'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
 
         return context
 
@@ -1513,16 +1696,52 @@ def ChequeDetalleTabla(request, pk):
         context['contexto_requerimientos'] = Requerimiento.objects.filter(content_type = ContentType.objects.get_for_model(cheque), id_registro = cheque.id)
         context['contexto_cheques_fisicos'] = ChequeFisico.objects.filter(cheque = cheque)
         context['contexto_vuelto_extra'] = ChequeVueltoExtra.objects.filter(cheque = cheque)
-        context['total_boleta'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_boleta_pagado'] = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_servicio'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_servicio_pagado'] = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_caja_chica'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_caja_chica_pagado'] = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
-        context['total_requerimiento'] = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_requerimiento_usado'] = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
-        context['total_cheque_fisico'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
-        context['total_cheque_fisico_recibido'] = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        total_boleta_pago = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto'))['monto__sum']
+        total_boleta_pago_pagado = Decimal('0.00')
+        if context['contexto_recibos_boleta_pago']:
+            total_boleta_pago_pagado = context['contexto_recibos_boleta_pago'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_servicio = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio = context['contexto_recibos_servicio'].aggregate(models.Sum('monto'))['monto__sum']
+        total_servicio_pagado = Decimal('0.00')
+        if context['contexto_recibos_servicio']:
+            total_servicio_pagado = context['contexto_recibos_servicio'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_caja_chica = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto'))['monto__sum']
+        total_caja_chica_pagado = Decimal('0.00')
+        if context['contexto_recibos_caja_chica']:
+            total_caja_chica_pagado = context['contexto_recibos_caja_chica'].aggregate(models.Sum('monto_pagado'))['monto_pagado__sum']
+        total_requerimiento = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento = context['contexto_requerimientos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_requerimiento_usado = Decimal('0.00')
+        if context['contexto_requerimientos']:
+            total_requerimiento_usado = context['contexto_requerimientos'].aggregate(models.Sum('monto_usado'))['monto_usado__sum']
+        total_cheque_fisico = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto'))['monto__sum']
+        total_cheque_fisico_comision = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_comision = context['contexto_cheques_fisicos'].aggregate(models.Sum('comision'))['comision__sum']
+        total_cheque_fisico_recibido = Decimal('0.00')
+        if context['contexto_cheques_fisicos']:
+            total_cheque_fisico_recibido = context['contexto_cheques_fisicos'].aggregate(models.Sum('monto_recibido'))['monto_recibido__sum']
+        
+        context['total_boleta_pago'] = total_boleta_pago
+        context['total_boleta_pago_pagado'] = total_boleta_pago_pagado
+        context['total_servicio'] = total_servicio
+        context['total_servicio_pagado'] = total_servicio_pagado
+        context['total_caja_chica'] = total_caja_chica
+        context['total_caja_chica_pagado'] = total_caja_chica_pagado
+        context['total_requerimiento'] = total_requerimiento
+        context['total_requerimiento_usado'] = total_requerimiento_usado
+        context['total_cheque_fisico'] = total_cheque_fisico
+        context['total_cheque_fisico_comision'] = total_cheque_fisico_comision
+        context['total_cheque_fisico_recibido'] = total_cheque_fisico_recibido
+        context['total_monto_requerido'] = context['total_boleta_pago'] + context['total_servicio'] + context['total_caja_chica'] + context['total_requerimiento']
 
         data['table'] = render_to_string(
             template,
@@ -2015,6 +2234,48 @@ class ChequeVueltoExtraDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 
+class ChequeSolicitarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        cheque = Cheque.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_cheque(cheque)
+
+        titulo = 'Solicitud de Cheque - %s' % cheque.concepto
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = True
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarChequeSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
+
+
+class ChequeCerrarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        cheque = Cheque.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_cheque(cheque)
+        
+        titulo = 'Rendición de Cheque - %s' % cheque.concepto
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = False
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarChequeCerrarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
+        
+
 #---------------------------------------------------------------------------------
 
 class TelecreditoListView(PermissionRequiredMixin, TemplateView):
@@ -2097,18 +2358,265 @@ class TelecreditoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context      
 
 
+class TelecreditoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.delete_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('contabilidad_app:telecredito_inicio')
+
+    def delete(self, request, *args, **kwargs):
+        telecredito = self.get_object()
+        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(telecredito), id_registro=telecredito.id):
+            recibo.content_type = None
+            recibo.id_registro = None
+            recibo.save()
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Telecredito"
+        context['item'] = self.get_object()
+        context['dar_baja'] = "true"
+        return context
+
+
+class TelecreditoSolicitarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoSolicitarView, self).get_context_data(**kwargs)
+        context['accion'] = "Solicitar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+    
+
+class TelecreditoEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 1
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
+class TelecreditoRegistrarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/formulario generico.html"
+    form_class = TelecreditoCobrarForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            form.instance.estado = 3
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRegistrarView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Telecredito"
+        return context
+    
+
+class TelecreditoRegistrarEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            self.object.fecha_cobro = None
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoRegistrarEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
+class TelecreditoCerrarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        telecredito = self.get_object()
+        error_cancelado = False
+        for recibo in ReciboBoletaPago.objects.filter(content_type=ContentType.objects.get_for_model(telecredito), id_registro=telecredito.id):
+            if recibo.estado != 2:
+                error_cancelado = True
+        
+        if error_cancelado:
+            context['texto'] = 'Hay comprobantes pendiente de cancelar'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_POR_CERRAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoCerrarView, self).get_context_data(**kwargs)
+        context['accion'] = "Cerrar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+    
+
+class TelecreditoCerradoEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_telecredito')
+    model = Telecredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_EDITAR_CHEQUE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TelecreditoCerradoEditarView, self).get_context_data(**kwargs)
+        context['accion'] = "Editar"
+        context['titulo'] = "Telecredito"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.concepto) + ' | ' + str(self.object.usuario.username)
+        return context
+
+
 class TelecreditoRecibosListView(PermissionRequiredMixin, TemplateView):
-    permission_required = ('contabilidad.view_telecreditorecibo')
+    permission_required = ('contabilidad.view_telecredito')
     template_name = "contabilidad/telecredito/detalle.html"
     
     def get_context_data(self, **kwargs):
         context = super(TelecreditoRecibosListView, self).get_context_data(**kwargs)
-        telecredito_recibos = ReciboBoletaPago.objects.filter(
+        telecredito_detalle = ReciboBoletaPago.objects.filter(
             content_type=ContentType.objects.get_for_model(Telecredito), 
             id_registro = self.kwargs['pk']
             )
         telecredito = Telecredito.objects.get(id=self.kwargs['pk'])
-        context['contexto_telecredito_recibos'] = telecredito_recibos
+        context['contexto_telecredito_detalle'] = telecredito_detalle
         context['contexto_telecredito'] = telecredito
         return context
 
@@ -2118,12 +2626,12 @@ def TelecreditoRecibosTabla(request, pk):
     if request.method == 'GET':
         template = 'contabilidad/telecredito/detalle_tabla.html'
         context = {}
-        telecredito_recibos = ReciboBoletaPago.objects.filter(
+        telecredito_detalle = ReciboBoletaPago.objects.filter(
             content_type=ContentType.objects.get_for_model(Telecredito), 
             id_registro = pk
             )
         telecredito = Telecredito.objects.get(id=pk)
-        context['contexto_telecredito_recibos'] = telecredito_recibos
+        context['contexto_telecredito_detalle'] = telecredito_detalle
         context['contexto_telecredito'] = telecredito
         data['table'] = render_to_string(
             template,
@@ -2134,12 +2642,12 @@ def TelecreditoRecibosTabla(request, pk):
 
 
 class TelecreditoRecibosCreateView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('contabilidad.add_telecreditorecibo')
+    permission_required = ('contabilidad.add_telecredito')
     template_name = 'contabilidad/telecredito/form_recibos.html'
     form_class = TelecreditoReciboPagoForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['pk']})
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.kwargs['pk']})
     
 
     @transaction.atomic
@@ -2180,7 +2688,7 @@ class TelecreditoRecibosCreateView(PermissionRequiredMixin, BSModalFormView):
     
 
 class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('contabilidad.delete_telecreditorecibo')
+    permission_required = ('contabilidad.delete_telecredito')
     model = ReciboBoletaPago
     template_name = "includes/eliminar generico.html"
 
@@ -2190,7 +2698,7 @@ class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.kwargs['telecredito_id']})
     
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -2233,7 +2741,7 @@ class TelecreditoRecibosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('contabilidad.change_telecreditorecibo')
+    permission_required = ('contabilidad.change_telecredito')
     model = ReciboBoletaPago
     template_name = 'includes/formulario generico.html'
     form_class = TelecreditoReciboPagoUpdateForm
@@ -2244,7 +2752,7 @@ class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('contabilidad_app:telecredito_recibos_inicio', kwargs={'pk':self.kwargs['telecredito_id']})
+        return reverse_lazy('contabilidad_app:telecredito_detalle', kwargs={'pk':self.kwargs['telecredito_id']})
 
     def get_context_data(self, **kwargs):
         context = super(TelecreditoRecibosUpdateView, self).get_context_data(**kwargs)
@@ -2268,3 +2776,45 @@ class TelecreditoRecibosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         telecredito.save()
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+
+class TelecreditoSolicitarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        telecredito = Telecredito.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_telecredito(telecredito)
+
+        titulo = 'Solicitud de Telecredito - %s' % telecredito.concepto
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = True
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarTelecreditoSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, telecredito, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta
+
+
+class TelecreditoCerrarPdfView(View):
+    def get(self, request, *args, **kwargs):
+        telecredito = Telecredito.objects.get(id = kwargs['pk'])
+        movimientos = movimientos_telecredito(telecredito)
+        
+        titulo = 'Rendición de Telecredito - %s' % telecredito.concepto
+        fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
+        vertical = False
+        sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        color = COLOR_DEFAULT
+        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        pie_pagina = PIE_DE_PAGINA_DEFAULT
+        buf = generarTelecreditoCerrarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, telecredito, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        return respuesta

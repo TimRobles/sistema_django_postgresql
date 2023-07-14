@@ -18,12 +18,12 @@ from applications.material.models import Material
 from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
 
-from applications.reportes.forms import ReportesFiltrosForm
+from applications.reportes.forms import ReporteStockSociedadPdfForm, ReportesFiltrosForm
 
 from applications.reportes.funciones import *
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.pdf import*
-from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, reporte_cobranza
+from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, generarReporteStockSociedad, reporte_cobranza
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
 
@@ -3807,6 +3807,27 @@ class ReporteResumenStockProductosPDF(TemplateView):
 
 
         buf = generarReporteResumenStockProductos(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta
+
+
+class ReporteStockSociedadPdf(FormView):
+    form_class = ReporteStockSociedadPdfForm
+    template_name = 'reportes/reporte stock sociedad.html'
+
+    def post(self,request, *args,**kwargs):
+        sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+
+        titulo = f'Reporte Stock por Sociedad - {sociedad.abreviatura}'
+        vertical = True
+        logo = [sociedad.logo.url]
+        pie_pagina = sociedad.pie_pagina
+        color = sociedad.color
+
+        buf = generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
