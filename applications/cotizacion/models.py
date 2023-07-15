@@ -146,18 +146,20 @@ class CotizacionVenta(models.Model):
                     self.save()
 
 def cotizacion_venta_post_save(*args, **kwargs):
+    print('cotizacion_venta_post_save')
     obj = kwargs['instance']
     if obj.estado > 1:
         applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
 
 def cotizacion_venta_pre_save(*args, **kwargs):
+    print('cotizacion_venta_pre_save')
     obj = kwargs['instance']
     if obj.estado > 1:
         obj2 = CotizacionVenta.objects.get(id=obj.id)
         applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
 
-# post_save.connect(cotizacion_venta_post_save, sender=CotizacionVenta)
-# pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
+post_save.connect(cotizacion_venta_post_save, sender=CotizacionVenta)
+pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
         
 
 class CotizacionVentaDetalle(models.Model):

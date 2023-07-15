@@ -1102,7 +1102,12 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
                 created_by=self.request.user,
                 updated_by=self.request.user,
             )
+
+            sociedades = []
+            for sociedad in Sociedad.objects.all():
+                sociedades.append(sociedad)
             
+            sociedades_descuento = []
             for descuento_global in descuento_globales:
                 CotizacionDescuentoGlobal.objects.create(
                     cotizacion_venta=nueva_cotizacion,
@@ -1111,7 +1116,9 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
+                sociedades_descuento.append(descuento_global.sociedad)
             
+            sociedades_otro_cargo = []
             for otro_cargo in otros_cargos:
                 CotizacionOtrosCargos.objects.create(
                     cotizacion_venta=nueva_cotizacion,
@@ -1120,7 +1127,9 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
+                sociedades_otro_cargo.append(otro_cargo.sociedad)
             
+            sociedades_observacion = []
             for observacion in observaciones:
                 CotizacionObservacion.objects.create(
                     cotizacion_venta=nueva_cotizacion,
@@ -1129,6 +1138,35 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
+                sociedades_observacion.append(observacion.sociedad)
+
+            for sociedad in sociedades:
+                if not sociedad in sociedades_descuento:
+                    CotizacionDescuentoGlobal.objects.create(
+                        cotizacion_venta=nueva_cotizacion,
+                        sociedad=sociedad,
+                        descuento_global_cotizacion=Decimal('0.00'),
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                
+                if not sociedad in sociedades_otro_cargo:
+                    CotizacionOtrosCargos.objects.create(
+                        cotizacion_venta=nueva_cotizacion,
+                        sociedad=sociedad,
+                        otros_cargos=Decimal('0.00'),
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                
+                if not sociedad in sociedades_observacion:
+                    CotizacionObservacion.objects.create(
+                        cotizacion_venta=nueva_cotizacion,
+                        sociedad=sociedad,
+                        observacion='',
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
 
             for detalle in detalles:
                 cotizacion_venta_detalle = CotizacionVentaDetalle.objects.create(
