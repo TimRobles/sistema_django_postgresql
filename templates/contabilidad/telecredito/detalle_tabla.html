@@ -33,7 +33,14 @@
                 <td class="px-4"></td>
                 <td><b>Fecha de Cobro</b></td>
                 <td class="px-2">:</td>
-                <td colspan="4">{% if contexto_telecredito.fecha_cobro %} {{ contexto_telecredito.fecha_cobro|date:'d/m/Y' }} {% endif %} </td>
+                <td>{% if contexto_telecredito.fecha_cobro %} {{ contexto_telecredito.fecha_cobro|date:'d/m/Y' }} {% endif %} </td>
+                <td><b>Imagen</b></td>
+                <td class="px-2">:</td>
+                <td>
+                    {% if contexto_telecredito.foto %}
+                    <a href="{{ MEDIA_URL }}{{ contexto_telecredito.foto }}">Foto</a>
+                    {% endif %}
+                </td>
             </tr>
         </tbody>
     </table>
