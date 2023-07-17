@@ -146,11 +146,13 @@ class CotizacionVenta(models.Model):
                     self.save()
 
 def cotizacion_venta_post_save(*args, **kwargs):
+    print('cotizacion_venta_post_save')
     obj = kwargs['instance']
     if obj.estado > 1:
         applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
 
 def cotizacion_venta_pre_save(*args, **kwargs):
+    print('cotizacion_venta_pre_save')
     obj = kwargs['instance']
     if obj.estado > 1:
         obj2 = CotizacionVenta.objects.get(id=obj.id)
@@ -508,7 +510,7 @@ class CotizacionSociedad(models.Model):
         verbose_name = 'Cotizacion Sociedad'
         verbose_name_plural = 'Cotizacion Sociedades'
         ordering = [
-            'sociedad',
+            'id',
         ]
     
     @property

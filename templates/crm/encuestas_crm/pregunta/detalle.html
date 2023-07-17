@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Pregunta CRM
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>{{ contexto_pregunta_crm.texto}}
+        <a href="{% url 'crm_app:pregunta_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
+    <div id="tabla">
+        {% include 'crm/encuestas_crm/pregunta/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

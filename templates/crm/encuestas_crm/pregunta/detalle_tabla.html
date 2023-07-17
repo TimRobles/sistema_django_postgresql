@@ -1,0 +1,54 @@
+{% load funciones_propias %}
+{% load humanize %}
+<br>
+<h3>Alternativas
+    <button data-form-url="{% url 'crm_app:alternativa_registrar' contexto_pregunta_crm.id %}"
+        data-table-url="{% url 'crm_app:pregunta_crm_detalle_tabla' contexto_pregunta_crm.id %}"
+        class="create badge bg-primary">
+        Registrar
+    </button>
+</h3>
+<br>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Orden</th>
+                <th>Texto</th>
+                <th>Valor</th>
+                <th>Mostrar</th>
+                <th>F. Registro</th>
+                <th>Creado por</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alternativa in alternativas %}
+            <tr>
+                <td>{{ alternativa.orden }}</td>
+                <td>{{ alternativa.texto }}</td>
+                <td>{{ alternativa.valor }}</td>
+                <td>{{ alternativa.mostrar }}</td>
+                <td>{{ alternativa.created_at|date:'d/m/Y'}}</td>
+                <td>{{ alternativa.created_by }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'crm_app:alternativa_actualizar' alternativa.id %}"
+                        data-table-url="{% url 'crm_app:pregunta_crm_detalle_tabla' contexto_pregunta_crm.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'crm_app:alternativa_eliminar' alternativa.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<br>

@@ -7,20 +7,32 @@ from applications.material.funciones import stock, ver_tipo_stock
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.datos_globales.models import SeriesComprobante, Unidad
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
-from applications.crm.forms import (
-    ClienteCRMBuscarForm, 
-    ClienteCRMDetalleForm, 
-    ClienteCRMForm,
-    EventoCRMActualizarForm,
-    EventoCRMDetalleActualizarForm,
-    EventoCRMDetalleForm,
-    EventoCRMDetalleInformacionAdicionalForm, 
-    ProveedorCRMForm, 
-    EventoCRMForm, 
-    EventoCRMBuscarForm, 
-    EventoCRMDetalleDescripcionForm,
+from applications.funciones import slug_aleatorio
+from django.urls import reverse
+from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, ClienteCRMForm, 
+                                    EventoCRMForm, EventoCRMBuscarForm,EventoCRMDetalleDescripcionForm,
+                                    EventoCRMActualizarForm, EventoCRMDetalleActualizarForm, EventoCRMDetalleForm,
+                                    EventoCRMDetalleInformacionAdicionalForm, ProveedorCRMForm, 
+                                    PreguntaCRMBuscarForm, PreguntaCRMForm,
+                                    AlternativaCRMForm,
+                                    EncuestaCRMBuscarForm, EncuestaCRMForm, EncuestaPreguntaCRMForm,
+                                    RespuestaCRMBuscarForm, RespuestaCRMForm)
+
+from applications.crm.models import (
+    ClienteCRM, 
+    ClienteCRMDetalle,
+    EventoCRM,
+    EventoCRMDetalle,
+    EventoCRMDetalleInformacionAdicional,
+    ProveedorCRM,
+    PreguntaCRM,
+    AlternativaCRM,
+    EncuestaCRM,
+    RespuestaCRM,
+    RespuestaDetalleCRM,
     )
-from applications.crm.models import ClienteCRM, ClienteCRMDetalle, EventoCRMDetalle, EventoCRMDetalleInformacionAdicional, ProveedorCRM, EventoCRM
+
+from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 class ClienteCRMListView(PermissionRequiredMixin, FormView):
     permission_required = ('crm.view_clientecrm')
@@ -87,7 +99,7 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
                 context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  15 # Show 10 objects per page.
+        objectsxpage =  15 # Show 15 objects per page.
 
         if len(clientes_crm) > objectsxpage:
             paginator = Paginator(clientes_crm, objectsxpage)
@@ -150,7 +162,7 @@ def ClienteCRMTabla(request):
                 context['pagina_filtro'] = f'page={request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  15 # Show 10 objects per page.
+        objectsxpage =  15 # Show 15 objects per page.
 
         if len(clientes_crm) > objectsxpage:
             paginator = Paginator(clientes_crm, objectsxpage)
@@ -190,7 +202,6 @@ class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
         context['titulo']="Cliente CRM"
         return context
 
-
 class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('crm.change_clientecrm')
     model = ClienteCRM
@@ -213,7 +224,6 @@ class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion'] = "Actualizar"
         context['titulo'] = "Cliente CRM"
         return context
-
 
 class ClienteCRMDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('crm.view_clientecrmdetalle')
@@ -359,7 +369,6 @@ class ProveedorCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
-
 
 class EventoCRMListView(FormView):
     template_name = "crm/eventos_crm/inicio.html"
@@ -510,6 +519,7 @@ class EventoCRMUpdateView(BSModalUpdateView):
         context['titulo'] = "Evento CRM"
         return context
 
+
 # class EventoCRMGuardarView(PermissionRequiredMixin, BSModalDeleteView):
 #     permission_required = ('crm.change_eventocrm')
 #     model = EventoCRM
@@ -584,6 +594,7 @@ class EventoCRMUpdateView(BSModalUpdateView):
 #         context['titulo'] = "Envio"
 #         context['dar_baja'] = True
 #         return context
+
 
 class EventoCRMDetailView(DetailView):
     model = EventoCRM
@@ -809,7 +820,7 @@ class  EventoCRMDetalleMerchandisingUpdateView(PermissionRequiredMixin, BSModalU
         if error_sede:
             context['texto'] = 'Ingrese una sede de origen.'
             return render(request, 'includes/modal sin permiso.html', context)
-    
+        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -865,11 +876,12 @@ class  EventoCRMDetalleMerchandisingUpdateView(PermissionRequiredMixin, BSModalU
         context['url_unidad'] = reverse_lazy('merchandising_app:unidad_merchandising', kwargs={'id_merchandising':1})[:-2]
         return context
 
+
 class EventoCRMDetalleMerchandisingDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('crm.change_eventocrmdetalle')
     model = EventoCRMDetalle
     template_name = "includes/eliminar generico.html"
-    
+
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
@@ -900,8 +912,8 @@ class EventoCRMDetalleMerchandisingDeleteView(PermissionRequiredMixin, BSModalDe
         context['accion'] = "Eliminar"
         context['titulo'] = "Merchandising"
         context['item'] = self.get_object().content_type.get_object_for_this_type(id = self.get_object().id_registro)
-
         return context
+
 
 class EventoCRMDetalleInformacionAdicionalCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_eventocrmdetalle')
@@ -954,7 +966,7 @@ class EventoCRMDetalleInformacionAdicionalDeleteView(PermissionRequiredMixin, BS
     permission_required = ('crm.delete_eventocrmdetalle')
     model = EventoCRMDetalleInformacionAdicional
     template_name = "includes/eliminar generico.html"
-    
+
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
@@ -976,7 +988,7 @@ class EventoCRMGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('logistica.change_despachodetalle')
     model = EventoCRM
     template_name = "includes/eliminar generico.html"
-    
+
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
@@ -1035,3 +1047,778 @@ class EventoCRMGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         context['dar_baja'] = "true"
         context['item'] = self.get_object()
         return context
+    
+
+class PreguntaCRMListView(FormView):
+    template_name = "crm/encuestas_crm/pregunta/inicio.html"
+    form_class = PreguntaCRMBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(PreguntaCRMListView, self).get_form_kwargs()
+        kwargs['filtro_tipo_pregunta'] = self.request.GET.get('tipo_pregunta')
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(PreguntaCRMListView,self).get_context_data(**kwargs)
+        pregunta_crm = PreguntaCRM.objects.all()
+        
+        filtro_tipo_pregunta = self.request.GET.get('tipo_pregunta')
+        
+        contexto_filtro = []
+
+        if filtro_tipo_pregunta:
+            condicion = Q(tipo_pregunta = filtro_tipo_pregunta)
+            pregunta_crm = pregunta_crm.filter(condicion)
+            contexto_filtro.append(f"tipo_pregunta={filtro_tipo_pregunta}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(pregunta_crm) > objectsxpage:
+            paginator = Paginator(pregunta_crm, objectsxpage)
+            page_number = self.request.GET.get('page')
+            pregunta_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = pregunta_crm
+        context['contexto_pregunta_crm'] = pregunta_crm
+
+        return context
+
+
+def PreguntaCRMTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/encuestas_crm/pregunta/inicio_tabla.html'
+        context = {}
+        pregunta_crm = PreguntaCRM.objects.all()
+
+        filtro_tipo_pregunta = request.GET.get('tipo_pregunta')
+
+        contexto_filtro = []
+
+        if filtro_tipo_pregunta:
+            condicion = Q(tipo_pregunta = filtro_tipo_pregunta)
+            pregunta_crm = pregunta_crm.filter(condicion)
+            contexto_filtro.append(f"tipo_pregunta={filtro_tipo_pregunta}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(pregunta_crm) > objectsxpage:
+            paginator = Paginator(pregunta_crm, objectsxpage)
+            page_number = request.GET.get('page')
+            pregunta_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = pregunta_crm
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class PreguntaCRMCreateView(BSModalCreateView):
+# class PreguntaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    # permission_required = ('crm.add_preguntacrm')
+    model = PreguntaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = PreguntaCRMForm
+    success_url = reverse_lazy('crm_app:pregunta_crm_inicio')
+
+    # def dispatch(self, request, *args, **kwargs):
+    #     if not self.has_permission():
+    #         return render(request, 'includes/modal sin permiso.html')
+    #     return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(PreguntaCRMCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Pregunta CRM"
+        return context
+
+
+class PreguntaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_preguntacrm')
+    model = PreguntaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = PreguntaCRMForm
+    success_url = reverse_lazy('crm_app:pregunta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(PreguntaCRMUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Pregunta CRM"
+        return context
+
+
+class PreguntaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_preguntacrm')
+    model = PreguntaCRM
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('crm_app:pregunta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(PreguntaCRMDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Pregunta"
+        context['item'] = self.object.texto
+        return context
+
+
+class PreguntaCRMDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_preguntacrm')
+    model = PreguntaCRM
+    template_name = "crm/encuestas_crm/pregunta/detalle.html"
+    context_object_name = 'contexto_pregunta_crm'
+
+    def get_context_data(self, **kwargs):
+        pregunta_crm = PreguntaCRM.objects.get(id = self.kwargs['pk'])
+        context = super(PreguntaCRMDetailView, self).get_context_data(**kwargs)
+        context['contexto_pregunta_crm'] = pregunta_crm
+        context['alternativas'] = AlternativaCRM.objects.filter(pregunta_crm = pregunta_crm)
+        return context
+
+
+def PreguntaCRMDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/encuestas_crm/pregunta/detalle_tabla.html'
+        context = {}
+        pregunta_crm = PreguntaCRM.objects.get(id = pk)
+
+        context['contexto_pregunta_crm'] = pregunta_crm
+        context['alternativas'] = AlternativaCRM.objects.filter(pregunta_crm = pregunta_crm)
+
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class AlternativaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_preguntacrm')
+    model = AlternativaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = AlternativaCRMForm
+    success_url = reverse_lazy('crm_app:pregunta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.pregunta_crm = PreguntaCRM.objects.get(id = self.kwargs['pregunta_id'])
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(AlternativaCRMCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Alternativa CRM"
+        return context
+
+
+class AlternativaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_preguntacrm')
+    model = AlternativaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = AlternativaCRMForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+
+        return reverse_lazy('crm_app:pregunta_crm_detalle', kwargs={'pk':self.object.pregunta_crm.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(AlternativaCRMUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Alternativa"
+        return context
+
+
+class AlternativaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_preguntacrm')
+    model = AlternativaCRM
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:pregunta_crm_detalle', kwargs={'pk':self.object.pregunta_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(AlternativaCRMDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Alternativa"
+        context['item'] = self.object.texto
+        return context
+
+
+class EncuestaCRMListView(PermissionRequiredMixin, FormView):
+    permission_required = ('crm.view_encuestacrm')
+    template_name = "crm/encuestas_crm/encuesta/inicio.html"
+    form_class = EncuestaCRMBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(EncuestaCRMListView, self).get_form_kwargs()
+        kwargs['filtro_tipo_encuesta'] = self.request.GET.get('tipo_encuesta')
+        kwargs['filtro_pais'] = self.request.GET.get('pais')
+        kwargs['filtro_titulo'] = self.request.GET.get('titulo')
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(EncuestaCRMListView,self).get_context_data(**kwargs)
+        encuesta_crm = EncuestaCRM.objects.all()
+
+        filtro_tipo_encuesta = self.request.GET.get('tipo_encuesta')
+        filtro_pais = self.request.GET.get('pais')
+        filtro_titulo = self.request.GET.get('titulo')
+        
+        contexto_filtro = []
+
+        if filtro_tipo_encuesta:
+            condicion = Q(tipo_encuesta = filtro_tipo_encuesta)
+            encuesta_crm = encuesta_crm.filter(condicion)
+            contexto_filtro.append(f"tipo_encuesta={filtro_tipo_encuesta}")
+
+        if filtro_pais:
+            condicion = Q(pais = filtro_pais)
+            encuesta_crm = encuesta_crm.filter(condicion)
+            contexto_filtro.append(f"pais={filtro_pais}")
+
+        if filtro_titulo:
+            condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
+            for palabra in filtro_titulo.split(" ")[1:]:
+                condicion &= Q(titulo__unaccent__icontains = palabra)
+            encuesta_crm = encuesta_crm.filter(condicion)
+            contexto_filtro.append(f"titulo={filtro_titulo}")
+
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(encuesta_crm) > objectsxpage:
+            paginator = Paginator(encuesta_crm, objectsxpage)
+            page_number = self.request.GET.get('page')
+            encuesta_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = encuesta_crm
+        context['contexto_encuesta_crm'] = encuesta_crm
+        return context
+
+
+def EncuestaCRMTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/encuestas_crm/encuesta/inicio_tabla.html'
+        context = {}
+        encuesta_crm = EncuestaCRM.objects.all()
+
+        filtro_tipo_encuesta = request.GET.get('tipo_encuesta')
+        filtro_pais = request.GET.get('pais')
+        filtro_titulo = request.GET.get('titulo')
+
+        contexto_filtro = []
+
+        if filtro_tipo_encuesta:
+            condicion = Q(tipo_encuesta = filtro_tipo_encuesta)
+            encuesta_crm = encuesta_crm.filter(condicion)
+            contexto_filtro.append(f"tipo_encuesta={filtro_tipo_encuesta}")
+
+        if filtro_pais:
+            condicion = Q(pais = filtro_pais)
+            encuesta_crm = encuesta_crm.filter(condicion)
+            contexto_filtro.append(f"pais={filtro_pais}")
+
+        if filtro_titulo:
+            condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
+            for palabra in filtro_titulo.split(" ")[1:]:
+                condicion &= Q(titulo__unaccent__icontains = palabra)
+            encuesta_crm = encuesta_crm.filter(condicion)
+            contexto_filtro.append(f"titulo={filtro_titulo}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(encuesta_crm) > objectsxpage:
+            paginator = Paginator(encuesta_crm, objectsxpage)
+            page_number = request.GET.get('page')
+            encuesta_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = encuesta_crm
+        context['contexto_encuesta_crm'] = encuesta_crm
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class EncuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_preguntacrm')
+    model = EncuestaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = EncuestaCRMForm
+    success_url = reverse_lazy('crm_app:encuesta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.slug = slug_aleatorio(EncuestaCRM)
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EncuestaCRMCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Encuesta CRM"
+        return context
+
+
+class EncuestaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_preguntacrm')
+    model = EncuestaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = EncuestaCRMForm
+    success_url = reverse_lazy('crm_app:encuesta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EncuestaCRMUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Encuesta CRM"
+        return context
+
+
+class EncuestaCRMDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.add_preguntacrm')
+    model = EncuestaCRM
+    template_name = "crm/encuestas_crm/encuesta/detalle.html"
+    context_object_name = 'contexto_encuesta_crm'
+
+    def get_context_data(self, **kwargs):
+        encuesta = EncuestaCRM.objects.get(slug = self.kwargs['slug'])
+        preguntas = PreguntaCRM.objects.all()
+        alternativas = AlternativaCRM.objects.all()
+        content_type = ContentType.objects.get_for_model(encuesta)
+
+        context = super(EncuestaCRMDetailView, self).get_context_data(**kwargs)
+        context['contexto_encuesta_crm'] = encuesta
+        context['alternativas'] = alternativas
+        return context
+
+
+class EncuestaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_encuestacrm')
+    model = EncuestaCRM
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('crm_app:encuesta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(EncuestaCRMDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Encuesta"
+        context['item'] = self.object.titulo
+        return context
+
+
+def EncuestaCRMDetailTabla(request, slug):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/encuestas_crm/encuesta/detalle_tabla.html'
+        context = {}
+        encuesta = EncuestaCRM.objects.get(slug=slug)
+        preguntas = PreguntaCRM.objects.all()
+        alternativas = AlternativaCRM.objects.all()
+
+        content_type = ContentType.objects.get_for_model(encuesta)
+
+        context['contexto_encuesta_crm'] = encuesta
+        context['alternativas'] = alternativas
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class EncuestaPreguntaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_encuestacrm')
+    model = EncuestaCRM
+    template_name = "crm/encuestas_crm/encuesta/form añadir pregunta.html"
+    form_class = EncuestaPreguntaCRMForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:encuesta_crm_detalle', kwargs={'slug':self.get_object().slug})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EncuestaPreguntaCRMUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Añadir"
+        context['titulo'] = "pregunta"
+        return context
+    
+
+class RespuestaCRMListView(FormView):
+    template_name = "crm/encuestas_crm/respuesta/inicio.html"
+    form_class = RespuestaCRMBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(RespuestaCRMListView, self).get_form_kwargs()
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        kwargs['filtro_encuesta'] = self.request.GET.get('encuesta')
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(RespuestaCRMListView,self).get_context_data(**kwargs)
+        respuesta_crm = RespuestaCRM.objects.all()
+
+        filtro_cliente = self.request.GET.get('cliente')
+        filtro_encuesta = self.request.GET.get('encuesta')
+        
+        contexto_filtro = []
+
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            respuesta_crm = respuesta_crm.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+
+        if filtro_encuesta:
+            condicion = Q(cliente = filtro_cliente)
+            respuesta_crm = respuesta_crm.filter(condicion)
+            contexto_filtro.append("encuesta=" + filtro_encuesta)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(respuesta_crm) > objectsxpage:
+            paginator = Paginator(respuesta_crm, objectsxpage)
+            page_number = self.request.GET.get('page')
+            respuesta_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = respuesta_crm
+        context['contexto_respuesta_crm'] = respuesta_crm
+        return context
+
+
+def RespuestaCRMTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/encuestas_crm/respuesta/inicio_tabla.html'
+        context = {}
+        respuesta_crm = RespuestaCRM.objects.all()
+
+        filtro_cliente = request.GET.get('cliente')
+        filtro_encuesta = request.GET.get('encuesta')
+
+        contexto_filtro = []
+
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            respuesta_crm = respuesta_crm.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+
+        if filtro_encuesta:
+            condicion = Q(cliente = filtro_cliente)
+            respuesta_crm = respuesta_crm.filter(condicion)
+            contexto_filtro.append("encuesta=" + filtro_encuesta)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(respuesta_crm) > objectsxpage:
+            paginator = Paginator(respuesta_crm, objectsxpage)
+            page_number = request.GET.get('page')
+            respuesta_crm = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = respuesta_crm
+        context['contexto_respuesta_crm'] = respuesta_crm
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class RespuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_respuestacrm')
+    model = RespuestaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = RespuestaCRMForm
+    success_url = reverse_lazy('crm_app:respuesta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def form_valid(self, form):
+        form.instance.slug = slug_aleatorio(RespuestaCRM)
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RespuestaCRMCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Respuesta CRM"
+        return context
+
+
+class RespuestaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_respuestacrm')
+    model = RespuestaCRM
+    template_name = "includes/formulario generico.html"
+    form_class = RespuestaCRMForm
+    success_url = reverse_lazy('crm_app:respuesta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(RespuestaCRMUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Respuesta CRM"
+        return context
+
+
+class RespuestaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_respuestacrm')
+    model = RespuestaCRM
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('crm_app:respuesta_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(RespuestaCRMDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Respuesta"
+        return context
+
+
+class RespuestaCRMDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_respuestadetallecrm')
+    model = RespuestaCRM
+    template_name = "crm/encuestas_crm/respuesta/detalle.html"
+    context_object_name = 'contexto_encuesta_crm'
+
+    def get_context_data(self, **kwargs):
+        respuesta = RespuestaCRM.objects.get(slug = self.kwargs['slug'])
+        respuesta_detalle = RespuestaDetalleCRM.objects.ver_respuestas(respuesta)
+
+        context = super(RespuestaCRMDetailView, self).get_context_data(**kwargs)
+        context['contexto_respuesta'] = respuesta       
+        context['contexto_respuesta'] = respuesta       
+        context['respuesta_detalle'] = respuesta_detalle       
+        return context
+
+
+def RespuestaCRMDetailTabla(request, slug):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/encuestas_crm/respuesta/detalle_tabla.html'
+        context = {}
+        respuesta = RespuestaCRM.objects.get(slug=slug)
+        respuesta_detalle = RespuestaDetalleCRM.objects.ver_respuestas(respuesta)
+
+        context['contexto_respuesta'] = respuesta
+        context['respuesta_detalle'] = respuesta_detalle       
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class RespuestaVerView(TemplateView): #respuesta_del_cliente
+    template_name = "crm/encuestas_crm/respuesta/respuesta_ver.html"
+
+    def get_context_data(self, **kwargs):
+        respuesta = RespuestaCRM.objects.get(slug = self.kwargs['slug'])
+        encuesta = respuesta.encuesta_crm
+        preguntas = encuesta.pregunta_crm.all()
+        print(preguntas)
+
+        context = super(RespuestaVerView, self).get_context_data(**kwargs)
+        context['respuesta'] = respuesta
+        context['encuesta'] = encuesta
+        context['preguntas'] = preguntas
+        return context
+
+
+class EncuestaRespuesta(PermissionRequiredMixin, View): #encuesta
+    permission_required = ('crm.view_encuestacrm')
+
+    def post(self, request, *args, **kwargs):
+        respuesta_id = int(request.POST.get('respuesta'))
+        created_by = None
+        updated_by = None
+        respuesta_crm = RespuestaCRM.objects.get(id=respuesta_id)
+        respuesta_crm.RespuestaDetalleCRM_respuesta_crm.update(borrador=False)
+        for k,v in request.POST.items():
+            respuesta = v.split(',')
+            print(k, respuesta)
+            if k != 'respuesta':
+                if "texto" in k:
+                    alternativa_crm = None
+                    pregunta_crm = PreguntaCRM.objects.get(id=int(respuesta[0]))
+                    texto = ",".join(respuesta[2:])
+                    borrador = False
+                    if respuesta[1] == "true":
+                        borrador = True
+                else:
+                    alternativa_crm = AlternativaCRM.objects.get(id=int(respuesta[0]))
+                    pregunta_crm = PreguntaCRM.objects.get(id=int(respuesta[1]))
+                    texto = None
+                    borrador = False
+                    if respuesta[2] == "true":
+                        borrador = True
+
+                RespuestaDetalleCRM.objects.create(
+                    alternativa_crm = alternativa_crm,
+                    pregunta_crm = pregunta_crm,
+                    respuesta_crm = respuesta_crm,
+                    texto = texto,
+                    borrador = borrador,
+                    created_by = created_by,
+                    updated_by = updated_by,
+                )
+        respuesta_crm.estado = 2
+        respuesta_crm.save()
+        return HttpResponse('Hola')

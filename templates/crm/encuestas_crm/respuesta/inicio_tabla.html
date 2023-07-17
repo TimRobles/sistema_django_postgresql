@@ -1,0 +1,74 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Encuesta</th>
+            <th>Estado</th>
+            <th>Fecha Vencimiento</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for respuesta in contexto_pagina %}
+        <tr>
+            <td>{{ respuesta.cliente_crm}}</td>
+            <td>{{ respuesta.encuesta_crm}}</td>
+            <td>{{ respuesta.get_estado_display}}</td>
+            <td>{{ respuesta.fecha_vencimiento}}</td>
+            <td class="text-center text-nowrap">
+                <button data-form-url="{% url 'crm_app:respuesta_crm_actualizar' respuesta.slug %}"
+                    data-table-url="{% url 'crm_app:respuesta_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button data-form-url="{% url 'crm_app:respuesta_crm_eliminar' respuesta.slug %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                
+                
+                {% if respuesta.estado > 1 %}
+                <a href="{% url 'crm_app:respuesta_crm_detalle' respuesta.slug %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'crm_app:encuesta_ver' respuesta.slug  %}" 
+                    class="btn btn-secondary btn-sm"
+                    title="Encuesta">
+                    <i class="bi bi-file-ruled"></i>
+                </a>
+                <button onclick="copyToClipboard(url)"
+                class="btn btn-success btn-sm"
+                >URL</button>
+            </td>
+        </tr>
+        <div id="ruta-url" data-url="{% url 'crm_app:encuesta_ver' respuesta.slug  %}"></div>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% block js %}
+<script>
+    var ruta = document.getElementById('ruta-url'); // necesito la ruta completa :'c
+    var url = ruta.dataset.url;
+
+    function copyToClipboard(text) {
+      var input = document.createElement('input'); //crea un nuevo elemento, almacenamiento temporal
+      input.setAttribute('value', text); //valor es el texto ingresado
+      document.body.appendChild(input); // body aprende el texto
+      input.select(); //resaltado de texto
+      document.execCommand('copy');//copiado de texto
+      document.body.removeChild(input);//elimina el texto
+      alert('¡Texto copiado al portapapeles!'); //alterta para ventanas de navegadores
+    }
+  </script>
+    
+{% endblock js %}
+    
