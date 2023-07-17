@@ -739,6 +739,7 @@ class TelecreditoCobrarForm(BSModalModelForm):
         model = Telecredito
         fields = (
             'fecha_cobro',
+            'foto',
             )
         widgets = {
             'fecha_cobro' : forms.DateInput(
