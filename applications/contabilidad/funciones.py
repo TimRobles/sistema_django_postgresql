@@ -70,7 +70,7 @@ def movimientos_cheque(cheque):
         tipo = 'BOLETA DE PAGO'
         foto = False
         fecha = recibo_bp.fecha_pagar
-        concepto = recibo_bp.boleta_pago
+        concepto = recibo_bp.__str__()
         monto = recibo_bp.monto
         mora = Decimal('0.00')
         redondeo = recibo_bp.redondeo
@@ -99,7 +99,7 @@ def movimientos_cheque(cheque):
         tipo = 'SERVICIO'
         foto = recibo_s.foto
         fecha = recibo_s.fecha_vencimiento
-        concepto = recibo_s.servicio
+        concepto = recibo_s.__str__()
         monto = recibo_s.monto
         mora = Decimal('0.00')
         redondeo = recibo_s.redondeo
@@ -208,7 +208,7 @@ def movimientos_telecredito(telecredito):
         tipo = 'BOLETA DE PAGO'
         foto = False
         fecha = recibo_bp.fecha_pagar
-        concepto = recibo_bp.boleta_pago
+        concepto = recibo_bp.__str__()
         monto = recibo_bp.monto
         mora = Decimal('0.00')
         redondeo = recibo_bp.redondeo
