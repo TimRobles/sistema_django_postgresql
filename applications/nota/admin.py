@@ -71,7 +71,7 @@ class NotaDevolucionDetalleAdmin(admin.ModelAdmin):
         'content_type',
         'id_registro',
         'cantidad_conteo',
-        'proveedor',
+        'cliente',
         'almacen',
         'nota_devolucion',
         'created_at',

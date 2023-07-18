@@ -249,7 +249,7 @@ class NotaDevolucionDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #NotaCredito
     id_registro = models.IntegerField()
     cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
     #Control Calidad y Sede?
     nota_devolucion = models.ForeignKey(NotaDevolucion, on_delete=models.PROTECT, related_name='NotaDevolucionDetalle_nota_devolucion')

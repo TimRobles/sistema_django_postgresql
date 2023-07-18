@@ -6,7 +6,7 @@ from applications.nota.models import NotaCredito, NotaCreditoDetalle
 from django.contrib.contenttypes.models import ContentType
 
 from applications.sociedad.models import Sociedad
-from applications.variables import CHOICE_VACIO
+from applications.variables import CHOICE_VACIO, TIPO_NOTA_CREDITO
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
 
@@ -14,6 +14,7 @@ class NotaCreditoBuscarForm(forms.Form):
     cliente = forms.CharField(max_length=150, required=False)
     numero_nota = forms.CharField(max_length=10, required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    tipo_nota_credito = forms.ChoiceField(choices=CHOICE_VACIO + TIPO_NOTA_CREDITO, required=False)
     fecha = forms.DateField(
         required=False,
         widget = forms.DateInput(
@@ -28,11 +29,13 @@ class NotaCreditoBuscarForm(forms.Form):
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_numero_nota = kwargs.pop('filtro_numero_nota')
         filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_tipo_nota_credito = kwargs.pop('filtro_tipo_nota_credito')
         filtro_fecha = kwargs.pop('filtro_fecha')
         super(NotaCreditoBuscarForm, self).__init__(*args, **kwargs)
         self.fields['cliente'].initial = filtro_cliente
         self.fields['numero_nota'].initial = filtro_numero_nota
         self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['tipo_nota_credito'].initial = filtro_tipo_nota_credito
         self.fields['fecha'].initial = filtro_fecha
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

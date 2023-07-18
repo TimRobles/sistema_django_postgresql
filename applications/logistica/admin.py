@@ -194,6 +194,10 @@ class NotaSalidaDocumentoAdmin(admin.ModelAdmin):
         'updated_by',
         )
 
+    list_filter = (
+        'content_type',
+        )
+
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user

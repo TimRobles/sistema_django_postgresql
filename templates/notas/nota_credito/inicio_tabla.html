@@ -11,6 +11,7 @@
             <th>N° de Nota de Crédito</th>
             <th>Observaciones</th>
             <th>Motivo de Anulación</th>
+            <th>Tipo</th>
             <th>Usuario</th>
             <th>Estado</th>  
             <th class="text-center">Acciones</th>      
@@ -40,6 +41,7 @@
                     -
                 {% endif %}
             </td>
+            <td>{{ nota_credito.get_tipo_nota_credito_display }}</td>
             <td>{{ nota_credito.created_by }}</td>
             <td>{{ nota_credito.get_estado_display }}</td>
             <td class="text-nowrap text-center">

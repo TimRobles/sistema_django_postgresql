@@ -9,7 +9,7 @@ from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm
-from applications.nota.models import NotaCredito, NotaCreditoDetalle
+from applications.nota.models import NotaCredito, NotaCreditoDetalle, NotaDevolucion
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
 
@@ -24,6 +24,7 @@ class NotaCreditoView(PermissionRequiredMixin, FormView):
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_numero_nota'] = self.request.GET.get('numero_nota')
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_tipo_nota_credito'] = self.request.GET.get('tipo_nota_credito')
         kwargs['filtro_fecha'] = self.request.GET.get('fecha')
         return kwargs
 
@@ -34,6 +35,7 @@ class NotaCreditoView(PermissionRequiredMixin, FormView):
         filtro_cliente = self.request.GET.get('cliente')
         filtro_numero_nota = self.request.GET.get('numero_nota')
         filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_tipo_nota_credito = self.request.GET.get('tipo_nota_credito')
         filtro_fecha = self.request.GET.get('fecha')
 
         contexto_filtro = []
@@ -59,6 +61,11 @@ class NotaCreditoView(PermissionRequiredMixin, FormView):
             condicion = Q(sociedad__id = filtro_sociedad)
             notas_credito = notas_credito.filter(condicion)
             contexto_filtro.append("sociedad=" + filtro_sociedad)
+
+        if filtro_tipo_nota_credito:
+            condicion = Q(tipo_nota_credito = int(filtro_tipo_nota_credito))
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("tipo_nota_credito=" + filtro_tipo_nota_credito)
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -93,6 +100,7 @@ def NotaCreditoTabla(request):
         filtro_cliente = request.GET.get('cliente')
         filtro_numero_nota = request.GET.get('numero_nota')
         filtro_sociedad = request.GET.get('sociedad')
+        filtro_tipo_nota_credito = request.GET.get('tipo_nota_credito')
         filtro_fecha = request.GET.get('fecha')
 
         contexto_filtro = []
@@ -118,6 +126,11 @@ def NotaCreditoTabla(request):
             condicion = Q(sociedad__id = filtro_sociedad)
             notas_credito = notas_credito.filter(condicion)
             contexto_filtro.append("sociedad=" + filtro_sociedad)
+
+        if filtro_tipo_nota_credito:
+            condicion = Q(tipo_nota_credito__id = int(filtro_tipo_nota_credito))
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("tipo_nota_credito=" + filtro_tipo_nota_credito)
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -467,41 +480,41 @@ class NotaCreditoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             #Se necesita un documento anterior para generar el saldo a favor y el movimiento
             if not obj.tipo_nota_credito in TIPO_NOTA_CREDITO_SIN_NADA:
                 generarNota(obj, self.request)
-            if obj.tipo_nota_credito in TIPO_NOTA_CREDITO_CON_DEVOLUCION:
-                movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
-                for detalle in obj.detalles:
-                    movimiento_uno = MovimientosAlmacen.objects.create(
-                        content_type_producto = detalle.content_type,
-                        id_registro_producto = detalle.id_registro,
-                        cantidad = detalle.cantidad,
-                        tipo_movimiento = movimiento_final,
-                        tipo_stock = movimiento_final.tipo_stock_inicial,
-                        signo_factor_multiplicador = -1,
-                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
-                        id_registro_documento_proceso = obj.id,
-                        almacen = None,
-                        sociedad = obj.sociedad,
-                        movimiento_anterior = None,
-                        movimiento_reversion = False,
-                        created_by = self.request.user,
-                        updated_by = self.request.user,
-                    )
-                    movimiento_dos = MovimientosAlmacen.objects.create(
-                        content_type_producto = detalle.content_type,
-                        id_registro_producto = detalle.id_registro,
-                        cantidad = detalle.cantidad,
-                        tipo_movimiento = movimiento_final,
-                        tipo_stock = movimiento_final.tipo_stock_final,
-                        signo_factor_multiplicador = +1,
-                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
-                        id_registro_documento_proceso = obj.id,
-                        almacen = Almacen.objects.get(id=1),
-                        sociedad = obj.sociedad,
-                        movimiento_anterior = movimiento_uno,
-                        movimiento_reversion = False,
-                        created_by = self.request.user,
-                        updated_by = self.request.user,
-                    )
+            # if obj.tipo_nota_credito in TIPO_NOTA_CREDITO_CON_DEVOLUCION:
+            #     movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
+            #     for detalle in obj.detalles:
+            #         movimiento_uno = MovimientosAlmacen.objects.create(
+            #             content_type_producto = detalle.content_type,
+            #             id_registro_producto = detalle.id_registro,
+            #             cantidad = detalle.cantidad,
+            #             tipo_movimiento = movimiento_final,
+            #             tipo_stock = movimiento_final.tipo_stock_inicial,
+            #             signo_factor_multiplicador = -1,
+            #             content_type_documento_proceso = ContentType.objects.get_for_model(obj),
+            #             id_registro_documento_proceso = obj.id,
+            #             almacen = None,
+            #             sociedad = obj.sociedad,
+            #             movimiento_anterior = None,
+            #             movimiento_reversion = False,
+            #             created_by = self.request.user,
+            #             updated_by = self.request.user,
+            #         )
+            #         movimiento_dos = MovimientosAlmacen.objects.create(
+            #             content_type_producto = detalle.content_type,
+            #             id_registro_producto = detalle.id_registro,
+            #             cantidad = detalle.cantidad,
+            #             tipo_movimiento = movimiento_final,
+            #             tipo_stock = movimiento_final.tipo_stock_final,
+            #             signo_factor_multiplicador = +1,
+            #             content_type_documento_proceso = ContentType.objects.get_for_model(obj),
+            #             id_registro_documento_proceso = obj.id,
+            #             almacen = Almacen.objects.get(id=1),
+            #             sociedad = obj.sociedad,
+            #             movimiento_anterior = movimiento_uno,
+            #             movimiento_reversion = False,
+            #             created_by = self.request.user,
+            #             updated_by = self.request.user,
+            #         )
             obj.fecha_emision = date.today()
             obj.estado = 2
             obj.numero_nota = NotaCredito.objects.nuevo_numero(obj)
@@ -754,6 +767,90 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
         context['titulo'] = 'Nota de Crédito a NubeFact'
         context['texto'] = '¿Seguro de consultar la Nota de Crédito a NubeFact?'
         context['item'] = self.get_object()
+        return context
+
+#PENDIENTE
+
+class GenerarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota.add_notadevolucion')
+    model = NotaCredito
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('logistica_app:nota_devolucion_detalle', kwargs={'pk':self.nota_devolucion.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        item = len(NotaDevolucion.objects.all())
+        try:
+            if self.request.session['primero']:
+                nota_credito = self.get_object()
+                confirmacion_venta = self.get_object()
+                nota_devolucion = NotaDevolucion.objects.create(
+                    numero_salida=item + 1,
+                    observacion_adicional=confirmacion_venta.observacion_adicional,
+                    motivo_anulacion="",
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                
+                movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
+                for detalle in nota_credito.detalles:
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.content_type,
+                        id_registro_producto = detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador = -1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
+                        id_registro_documento_proceso = obj.id,
+                        almacen = None,
+                        sociedad = obj.sociedad,
+                        movimiento_anterior = None,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto = detalle.content_type,
+                        id_registro_producto = detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        tipo_movimiento = movimiento_final,
+                        tipo_stock = movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador = +1,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
+                        id_registro_documento_proceso = obj.id,
+                        almacen = Almacen.objects.get(id=1),
+                        sociedad = obj.sociedad,
+                        movimiento_anterior = movimiento_uno,
+                        movimiento_reversion = False,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+
+                self.request.session['primero'] = False
+                registro_guardar(self.object, self.request)
+                self.object.save()
+                messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        self.nota_devolucion = nota_devolucion
+        return HttpResponseRedirect(reverse_lazy('logistica_app:nota_devolucion_detalle', kwargs={'pk': nota_devolucion.id}))
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(GenerarNotaDevolucionView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Nota Salida"
+        context['dar_baja'] = "true"
         return context
 
 

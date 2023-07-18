@@ -20,6 +20,8 @@ urlNotaCredito = [
     path('nota-credito/nubefact/detalle/<pk>/', views.NotaCreditoNubefactRespuestaDetailView.as_view(), name='nota_credito_nubefact_detalle'),
     path('nota-credito/nubefact/consultar/<pk>/', views.NotaCreditoNubefactConsultarView.as_view(), name='nota_credito_nubefact_consultar'),
     path('nota-credito/observacion/<pk>/', views.NotaCreditoObservacionUpdateView.as_view(), name='nota_credito_observacion'),
+
+    path('nota-devolucion/generar/<pk>/',views.GenerarNotaDevolucionView.as_view(),name='nota_devolucion_generar'),
 ]
 
 urlNotaCreditoDetalle = [
