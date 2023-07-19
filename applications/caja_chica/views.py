@@ -540,9 +540,10 @@ class RequerimientoRetrocederRendicionView(PermissionRequiredMixin, BSModalDelet
     def dispatch(self, request, *args, **kwargs):
         context = {}
         requerimiento = self.get_object()
-        if not requerimiento.cheque.estado == 1:
-            context['texto'] = 'El cheque está procesado.'
-            return render(request, 'includes/modal sin permiso.html', context)
+        if requerimiento.cheque:
+            if not requerimiento.cheque.estado == 1:
+                context['texto'] = 'El cheque está procesado.'
+                return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
