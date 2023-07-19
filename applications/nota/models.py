@@ -88,6 +88,10 @@ class NotaCredito(models.Model):
     def content_type(self):
         return ContentType.objects.get_for_model(self)
 
+    @property
+    def notas_devolucion(self):
+        return NotaDevolucion.objects.filter(content_type=self.content_type, id_registro=self.id)
+
     def __str__(self):
         if self.numero_nota:
             return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_nota, 6), self.cliente, self.moneda.simbolo, self.total)
@@ -208,11 +212,11 @@ class NotaDebito(models.Model):
 
 
 class NotaDevolucion(models.Model):
-    nro_nota_devolucion = models.IntegerField('Número de Nota de Devolucion', help_text='Correlativo', blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicial / NotaDevolucionMuestra
+    numero_devolucion = models.IntegerField('Número de Nota de Devolucion', help_text='Correlativo', blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #NotaCredito
     id_registro = models.IntegerField()
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
-    fecha_devolucion = models.DateField('Fecha de Devolucion', auto_now=False, auto_now_add=False)
+    fecha_devolucion = models.DateField('Fecha de Devolucion', auto_now=False, auto_now_add=False, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADO_NOTA_DEVOLUCION, default=1)
@@ -237,22 +241,28 @@ class NotaDevolucion(models.Model):
         return self.NotaDevolucionDetalle_nota_devolucion.all()
     
     @property
-    def recepcion_compra(self):
+    def nota_credito(self):
+        if self.content_type == ContentType.objects.get_for_model(NotaCredito):
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
+        return False
+    
+    @property
+    def documento(self):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "NOTA DE DEVOLUCIÓN %s%s - %s %s %s" % (self.sociedad.abreviatura, numeroXn(self.nro_nota_devolucion, 6), self.fecha_devolucion.strftime('%d/%m/%Y'), self.created_by, self.recepcion_compra)
+        return "NOTA DE DEVOLUCIÓN %s%s - %s %s" % (self.sociedad.abreviatura, numeroXn(self.numero_devolucion, 6), self.created_by, self.recepcion_compra)
 
 
 class NotaDevolucionDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #NotaCredito
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Material
     id_registro = models.IntegerField()
     cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
     #Control Calidad y Sede?
-    nota_devolucion = models.ForeignKey(NotaDevolucion, on_delete=models.PROTECT, related_name='NotaDevolucionDetalle_nota_devolucion')
+    nota_devolucion = models.ForeignKey(NotaDevolucion, on_delete=models.CASCADE, related_name='NotaDevolucionDetalle_nota_devolucion')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaDevolucionDetalle_created_by', editable=False)
@@ -273,15 +283,11 @@ class NotaDevolucionDetalle(models.Model):
     
     @property
     def sociedad(self):
-        return self.comprobante_compra_detalle.sociedad
+        return self.nota_devolucion.sociedad
     
     @property
     def producto(self):
-        return self.comprobante_compra_detalle.producto
-
-    @property
-    def comprobante_compra_detalle(self):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "%s - %s" % (self.comprobante_compra_detalle, self.almacen)
+        return "%s - %s" % (self.nota_devolucion, self.almacen)

@@ -43,7 +43,7 @@ class NotaCreditoDetalleAdmin(admin.ModelAdmin):
 @admin.register(NotaDevolucion)
 class NotaDevolucionAdmin(admin.ModelAdmin):
     list_display = (
-        'nro_nota_devolucion',
+        'numero_devolucion',
         'content_type',
         'id_registro',
         'sociedad',

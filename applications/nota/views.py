@@ -9,7 +9,7 @@ from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
 from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm
-from applications.nota.models import NotaCredito, NotaCreditoDetalle, NotaDevolucion
+from applications.nota.models import NotaCredito, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
 
@@ -186,6 +186,10 @@ class NotaCreditoDetailView(PermissionRequiredMixin, DetailView):
         if nota_credito.nubefact:
             context['url_nubefact'] = nota_credito.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(nota_credito)
+        permiso_logistica = False
+        if 'nota.add_notadevolucion' in self.request.user.get_all_permissions():
+            permiso_logistica = True
+        context['permiso_logistica'] = permiso_logistica
         return context
 
 
@@ -214,6 +218,10 @@ def NotaCreditoDetailTabla(request, id):
             context['url_nubefact'] = nota_credito.nubefact
         context['respuestas_nubefact'] = NubefactRespuesta.objects.respuestas(nota_credito)
         context['contexto_nota_credito'] = nota_credito
+        permiso_logistica = False
+        if 'nota.add_notadevolucion' in request.user.get_all_permissions():
+            permiso_logistica = True
+        context['permiso_logistica'] = permiso_logistica
         data['table'] = render_to_string(
             template,
             context,
@@ -769,7 +777,32 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
         context['item'] = self.get_object()
         return context
 
-#PENDIENTE
+class NotaDevolucionDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('nota.view_notadevolucion')
+    model = NotaDevolucion
+    template_name = "notas/nota_devolucion/detalle.html"
+    context_object_name = 'contexto_nota_devolucion'
+
+    def get_context_data(self, **kwargs):
+        nota_devolucion = self.object
+        context = super(NotaDevolucionDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = NotaDevolucion.objects.ver_detalle(nota_devolucion.id)
+        return context
+
+
+def NotaDevolucionDetailTabla(request, id):
+    data = dict()
+    if request.method == 'GET':
+        template = 'notas/nota_devolucion/detalle_tabla.html'
+        context = {}
+        nota_devolucion = NotaDevolucion.objects.get(id = id)
+        context['materiales'] = NotaDevolucion.objects.ver_detalle(nota_devolucion.id)
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
 
 class GenerarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('nota.add_notadevolucion')
@@ -782,26 +815,74 @@ class GenerarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy('logistica_app:nota_devolucion_detalle', kwargs={'pk':self.nota_devolucion.id})
+        return reverse_lazy('nota_app:nota_devolucion_detalle', kwargs={'pk':self.nota_devolucion.id})
 
-    @transaction.atomic
     def delete(self, request, *args, **kwargs):
-        sid = transaction.savepoint()
         item = len(NotaDevolucion.objects.all())
-        try:
-            if self.request.session['primero']:
-                nota_credito = self.get_object()
-                confirmacion_venta = self.get_object()
-                nota_devolucion = NotaDevolucion.objects.create(
-                    numero_salida=item + 1,
-                    observacion_adicional=confirmacion_venta.observacion_adicional,
-                    motivo_anulacion="",
+        if self.request.session['primero']:
+            nota_credito = self.get_object()
+            nota_devolucion = NotaDevolucion.objects.create(
+                numero_devolucion=item + 1,
+                content_type=ContentType.objects.get_for_model(nota_credito),
+                id_registro=nota_credito.id,
+                observaciones=nota_credito.observaciones,
+                motivo_anulacion="",
+                sociedad=nota_credito.sociedad,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+            
+            item = 0
+            for detalle in nota_credito.detalles:
+                item += 1
+                NotaDevolucionDetalle.objects.create(
+                    item=item,
+                    content_type=detalle.content_type,
+                    id_registro=detalle.id_registro,
+                    cantidad_conteo=detalle.cantidad,
+                    cliente=nota_credito.cliente,
+                    almacen=None,
+                    nota_devolucion=nota_devolucion,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
                 
+
+            self.request.session['primero'] = False
+            messages.success(request, MENSAJE_GENERAR_NOTA_DEVOLUCION)
+        self.nota_devolucion = nota_devolucion
+        return HttpResponseRedirect(reverse_lazy('nota_app:nota_devolucion_detalle', kwargs={'pk': nota_devolucion.id}))
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(GenerarNotaDevolucionView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Nota Devolución"
+        context['dar_baja'] = "true"
+        return context
+
+
+class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota.add_notadevolucion')
+    model = NotaDevolucion
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('nota_app:nota_devolucion_detalle', kwargs={'pk':self.nota_devolucion.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                nota_devolucion = self.get_object()
                 movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
-                for detalle in nota_credito.detalles:
+                for detalle in nota_devolucion.detalles:
                     movimiento_uno = MovimientosAlmacen.objects.create(
                         content_type_producto = detalle.content_type,
                         id_registro_producto = detalle.id_registro,
@@ -809,10 +890,10 @@ class GenerarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                         tipo_movimiento = movimiento_final,
                         tipo_stock = movimiento_final.tipo_stock_inicial,
                         signo_factor_multiplicador = -1,
-                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
-                        id_registro_documento_proceso = obj.id,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(nota_devolucion),
+                        id_registro_documento_proceso = nota_devolucion.id,
                         almacen = None,
-                        sociedad = obj.sociedad,
+                        sociedad = nota_devolucion.sociedad,
                         movimiento_anterior = None,
                         movimiento_reversion = False,
                         created_by = self.request.user,
@@ -825,31 +906,32 @@ class GenerarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                         tipo_movimiento = movimiento_final,
                         tipo_stock = movimiento_final.tipo_stock_final,
                         signo_factor_multiplicador = +1,
-                        content_type_documento_proceso = ContentType.objects.get_for_model(obj),
-                        id_registro_documento_proceso = obj.id,
-                        almacen = Almacen.objects.get(id=1),
-                        sociedad = obj.sociedad,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(nota_devolucion),
+                        id_registro_documento_proceso = nota_devolucion.id,
+                        almacen = detalle.almacen,
+                        sociedad = nota_devolucion.sociedad,
                         movimiento_anterior = movimiento_uno,
                         movimiento_reversion = False,
                         created_by = self.request.user,
                         updated_by = self.request.user,
                     )
+                    
 
                 self.request.session['primero'] = False
                 registro_guardar(self.object, self.request)
                 self.object.save()
-                messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
+                messages.success(request, MENSAJE_GENERAR_NOTA_DEVOLUCION)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
         self.nota_devolucion = nota_devolucion
-        return HttpResponseRedirect(reverse_lazy('logistica_app:nota_devolucion_detalle', kwargs={'pk': nota_devolucion.id}))
+        return HttpResponseRedirect(reverse_lazy('nota_app:nota_devolucion_detalle', kwargs={'pk': nota_devolucion.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
-        context = super(GenerarNotaDevolucionView, self).get_context_data(**kwargs)
-        context['accion'] = "Generar"
-        context['titulo'] = "Nota Salida"
+        context = super(FinalizarNotaDevolucionView, self).get_context_data(**kwargs)
+        context['accion'] = "Finalizar"
+        context['titulo'] = "Nota Devolución"
         context['dar_baja'] = "true"
         return context
 

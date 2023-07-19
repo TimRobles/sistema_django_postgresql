@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Nota de Devolución Detalle
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Nota de Devolución Detalle</h3>
+    <div id="tabla">
+        {% include 'notas/nota_devolucion/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

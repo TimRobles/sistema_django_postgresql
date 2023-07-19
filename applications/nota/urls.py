@@ -22,6 +22,16 @@ urlNotaCredito = [
     path('nota-credito/observacion/<pk>/', views.NotaCreditoObservacionUpdateView.as_view(), name='nota_credito_observacion'),
 
     path('nota-devolucion/generar/<pk>/',views.GenerarNotaDevolucionView.as_view(),name='nota_devolucion_generar'),
+    path('nota-devolucion/finalizar/<pk>/',views.FinalizarNotaDevolucionView.as_view(),name='nota_devolucion_finalizar'),
+    path('nota-devolucion/inicio/',views.NotaDevolucionDetailView.as_view(),name='nota_devolucion_inicio'),
+    path('nota-devolucion/lista/<pk>/',views.NotaDevolucionDetailView.as_view(),name='nota_devolucion_lista'),
+    path('nota-devolucion/detalle/<pk>/', views.NotaDevolucionDetailView.as_view(), name='nota_devolucion_detalle'),
+    path('nota-devolucion/detalle/tabla/<int:id>/', views.NotaDevolucionDetailTabla, name='nota_devolucion_detalle_tabla'),
+    path('nota-devolucion/observacion/<pk>/',views.NotaDevolucionDetailView.as_view(),name='nota_devolucion_observacion'),
+    path('nota-devolucion/eliminar/<pk>/',views.NotaDevolucionDetailView.as_view(),name='nota_devolucion_eliminar'),
+    
+    path('nota-devolucion/detalle/actualizar/<pk>/',views.NotaDevolucionDetailView.as_view(),name='nota_devolucion_detalle_actualizar'),
+    
 ]
 
 urlNotaCreditoDetalle = [

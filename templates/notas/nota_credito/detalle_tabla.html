@@ -93,6 +93,25 @@
             </button>
         </div>
         {% endif %}
+        {% if permiso_logistica %}
+            {% if contexto_nota_credito.estado != 3 %}
+            <div class="col-auto">
+                <button data-form-url="{% url 'nota_app:nota_devolucion_generar' contexto_nota_credito.id %}"
+                    class="delete btn btn-primary">
+                    Generar Nota de Devolucion
+                </button>
+            </div>
+            {% endif %}
+            
+            {% if contexto_nota_credito.notas_devolucion %}
+            <div class="col-auto">
+                <a href="{% url 'nota_app:nota_devolucion_lista' contexto_nota_credito.id %}" class="btn btn-primary">
+                    Ver Notas de Devolucion
+                </a>
+            </div>
+            {% endif %}
+
+        {% endif %}
     </div>
 </div>
 
