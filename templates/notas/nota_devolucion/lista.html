@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load funciones_propias %}
+
+{% block titulo %}
+    Notas de Devolución 
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Notas de Devolución </h3>
+
+    <div class="table-responsive" id="tabla">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sociedad</th>
+                    <th>Fecha Devolución</th>
+                    <th>Número de Devolución</th>
+                    <th>Observaciones</th>
+                    <th>Motivo de Anulación</th>
+                    <th>Usuario</th>
+                    <th>Estado</th>  
+                    <th class="text-center">Acciones</th>      
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for nota_devolucion in notas_devolucion %}
+                <tr> 
+                    <td class="fondo-personalizado" style="--color-fondo: {{ nota_devolucion.sociedad.color }};">{{ nota_devolucion.sociedad }}</td>
+                    <td>{{ nota_devolucion.fecha_devolucion|date:'d/m/Y' }}</td>
+                    <td>{{ nota_devolucion.numero_devolucion|numeroXn:6 }}</td>
+                    <td>
+                        {% if nota_devolucion.observaciones %}
+                            {{ nota_devolucion.observaciones }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if nota_devolucion.motivo_anulacion %}
+                            {{ nota_devolucion.motivo_anulacion }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ nota_devolucion.created_by }}</td>
+                    <td>{{ nota_devolucion.get_estado_display }}</td>
+                    <td class="text-nowrap text-center">
+                        <a href="{% url 'nota_app:nota_devolucion_detalle' nota_devolucion.id %}"
+                            class="btn btn-info btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>    
+                        {% if nota_devolucion.estado == 1 %}
+                        <button data-form-url="{% url 'nota_app:nota_devolucion_eliminar' nota_devolucion.id %}"
+                            class="delete btn btn-danger btn-sm">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+{% endblock contenido %}

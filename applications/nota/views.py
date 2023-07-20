@@ -777,6 +777,18 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
         context['item'] = self.get_object()
         return context
 
+class NotaDevolucionListaView(PermissionRequiredMixin, DetailView):
+    permission_required = ('nota.view_notadevolucion')
+    model = NotaCredito
+    template_name = "notas/nota_devolucion/lista.html"
+    context_object_name = 'contexto_nota_credito'
+
+    def get_context_data(self, **kwargs):
+        nota_credito = self.object
+        context = super(NotaDevolucionListaView, self).get_context_data(**kwargs)
+        context['notas_devolucion'] = nota_credito.notas_devolucion
+        return context
+
 class NotaDevolucionDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('nota.view_notadevolucion')
     model = NotaDevolucion
