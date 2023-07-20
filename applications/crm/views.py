@@ -9,7 +9,7 @@ from applications.datos_globales.models import SeriesComprobante, Unidad
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.funciones import slug_aleatorio
 from django.urls import reverse
-from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, ClienteCRMForm, 
+from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, ClienteCRMForm, EventoCRMFinalizarForm, 
                                     EventoCRMForm, EventoCRMBuscarForm,EventoCRMDetalleDescripcionForm,
                                     EventoCRMActualizarForm, EventoCRMDetalleActualizarForm, EventoCRMDetalleForm,
                                     EventoCRMDetalleInformacionAdicionalForm, ProveedorCRMForm, 
@@ -520,81 +520,100 @@ class EventoCRMUpdateView(BSModalUpdateView):
         return context
 
 
-# class EventoCRMGuardarView(PermissionRequiredMixin, BSModalDeleteView):
-#     permission_required = ('crm.change_eventocrm')
-#     model = EventoCRM
-#     template_name = "includes/eliminar generico.html"
+class EventoCRMGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.change_eventocrm')
+    model = EventoCRM
+    template_name = "includes/eliminar generico.html"
     
-#     def dispatch(self, request, *args, **kwargs):        
-#         if not self.has_permission():
-#             return render(request, 'includes/modal sin permiso.html')
+    def dispatch(self, request, *args, **kwargs):        
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
 
-#     def get_success_url(self, **kwargs):
-#         return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.object.id})
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.object.id})
 
-#     @transaction.atomic
-#     def delete(self, request, *args, **kwargs):
-#         sid = transaction.savepoint()
-#         try:
-#             self.object = self.get_object()
-#             movimiento_final = TipoMovimiento.objects.get(codigo=139)  # Salida por traslado
-#             for detalle in self.object.EnvioTrasladoProductoDetalle_envio_traslado_producto.all():
-#                 movimiento_uno = MovimientosAlmacen.objects.create(
-#                     content_type_producto=detalle.content_type,
-#                     id_registro_producto=detalle.id_registro,
-#                     cantidad=detalle.cantidad_envio,
-#                     tipo_movimiento=movimiento_final,
-#                     tipo_stock=detalle.tipo_stock,
-#                     signo_factor_multiplicador=-1,
-#                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-#                     id_registro_documento_proceso=self.object.id,
-#                     almacen=detalle.almacen_origen,
-#                     sociedad=self.object.sociedad,
-#                     movimiento_anterior=None,
-#                     movimiento_reversion=False,
-#                     created_by=self.request.user,
-#                     updated_by=self.request.user,
-#                 )
-#                 movimiento_dos = MovimientosAlmacen.objects.create(
-#                     content_type_producto=detalle.content_type,
-#                     id_registro_producto=detalle.id_registro,
-#                     cantidad=detalle.cantidad_envio,
-#                     tipo_movimiento=movimiento_final,
-#                     tipo_stock=movimiento_final.tipo_stock_final,
-#                     signo_factor_multiplicador=+1,
-#                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-#                     id_registro_documento_proceso=self.object.id,
-#                     sociedad=self.object.sociedad,
-#                     movimiento_anterior=movimiento_uno,
-#                     movimiento_reversion=False,
-#                     created_by=self.request.user,
-#                     updated_by=self.request.user,
-#                 )
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            movimiento_final = TipoMovimiento.objects.get(codigo=139)  # Salida por traslado
+            for detalle in self.object.EventoCRMDetalle_evento_crm.all():
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad_asignada,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=detalle.tipo_stock,
+                    signo_factor_multiplicador=-1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    almacen=detalle.almacen_origen,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto=detalle.content_type,
+                    id_registro_producto=detalle.id_registro,
+                    cantidad=detalle.cantidad_asignada,
+                    tipo_movimiento=movimiento_final,
+                    tipo_stock=movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                    id_registro_documento_proceso=self.object.id,
+                    sociedad=self.object.sociedad,
+                    movimiento_anterior=movimiento_uno,
+                    movimiento_reversion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
 
-#                 for validar in detalle.ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle.all():
-#                     validar.serie.serie_movimiento_almacen.add(movimiento_uno)
-#                     validar.serie.serie_movimiento_almacen.add(movimiento_dos)
+            self.object.estado = 2
 
-#             numero_envio_traslado = EnvioTrasladoProducto.objects.all().aggregate(Count('numero_envio_traslado'))['numero_envio_traslado__count'] + 1
-#             self.object.numero_envio_traslado = numero_envio_traslado
-#             self.object.estado = 2
-#             self.object.fecha_traslado = datetime.now()
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_GUARDAR_EVENTO_DETALLE)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
-#             registro_guardar(self.object, self.request)
-#             self.object.save()
-#             messages.success(request, MENSAJE_GUARDAR_ENVIO)
-#         except Exception as ex:
-#             transaction.savepoint_rollback(sid)
-#             registrar_excepcion(self, ex, __file__)
-#         return HttpResponseRedirect(self.get_success_url())
+    def get_context_data(self, **kwargs):
+        context = super(EventoCRMGuardarView, self).get_context_data(**kwargs)
+        context['accion'] = "Guardar"
+        context['titulo'] = "Detalle Evento"
+        context['dar_baja'] = True
+        return context
 
-#     def get_context_data(self, **kwargs):
-#         context = super(EnvioTrasladoProductoGuardarView, self).get_context_data(**kwargs)
-#         context['accion'] = "Guardar"
-#         context['titulo'] = "Envio"
-#         context['dar_baja'] = True
-#         return context
 
+class EventoCRMFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_eventocrm')
+    model = EventoCRM
+    template_name = "includes/formulario generico.html"
+    form_class = EventoCRMFinalizarForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:evento_crm_inicio')
+
+    def form_valid(self, form):
+        form.instance.estado = 3
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EventoCRMFinalizarView, self).get_context_data(**kwargs)
+        context['accion']="Finalizar"
+        context['titulo']="Evento CRM"
+        return context
 
 class EventoCRMDetailView(DetailView):
     model = EventoCRM
@@ -1822,3 +1841,24 @@ class EncuestaRespuesta(PermissionRequiredMixin, View): #encuesta
         respuesta_crm.estado = 2
         respuesta_crm.save()
         return HttpResponse('Hola')
+
+    
+class ClienteCRMDetalleVerView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "crm/clientes_crm/detalle_reporte_visita.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteCRMDetalleVerView, self).get_context_data(**kwargs)
+        detalle_reporte = ClienteCRMDetalle.objects.get(id = self.kwargs['pk'])
+        context['contexto_detalle_reporte'] = detalle_reporte
+        context['titulo']="Reporte Visita"
+        return context

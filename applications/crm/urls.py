@@ -13,6 +13,7 @@ urlCliente = [
     path('cliente-crm/detalle/registrar/<int:cliente_crm_id>/', views.ClienteCRMDetalleCreateView.as_view(), name='cliente_crm_detalle_registrar'),
     path('cliente-crm/detalle/actualizar/<pk>/', views.ClienteCRMDetalleUpdateView.as_view(), name='cliente_crm_detalle_actualizar'),
     path('cliente-crm/detalle/eliminar/<pk>/', views.ClienteCRMDetalleDeleteView.as_view(), name='cliente_crm_detalle_eliminar'),
+    path('cliente-crm/detalle/ver/<pk>/', views.ClienteCRMDetalleVerView.as_view(), name='cliente_crm_detalle_ver'),
     ]
 
 urlEvento = [
@@ -30,7 +31,9 @@ urlEvento = [
     path('evento-crm/detalle/agregar-merchandising/<int:evento_crm_id>/', views.EventoCRMDetalleMerchandisingCreateView.as_view(), name='evento_crm_detalle_agregar_merchandising'),
     path('evento-crm/detalle/actualizar-merchandising/<pk>/', views.EventoCRMDetalleMerchandisingUpdateView.as_view(), name='evento_crm_detalle_actualizar_merchandising'),
     path('evento-crm/detalle/eliminar-merchandising/<pk>/', views.EventoCRMDetalleMerchandisingDeleteView.as_view(), name='evento_crm_detalle_eliminar_merchandising'),
+    path('evento-crm/guardar/<pk>/', views.EventoCRMGuardarView.as_view(), name='evento_crm_guardar'),
     path('evento-crm/generar-guia/<pk>/', views.EventoCRMGenerarGuiaView.as_view(), name='evento_crm_generar_guia'),
+    path('evento-crm/finalizar/<pk>/', views.EventoCRMFinalizarView.as_view(), name='evento_crm_finalizar'),
     ]
 
 urlEncuesta = [

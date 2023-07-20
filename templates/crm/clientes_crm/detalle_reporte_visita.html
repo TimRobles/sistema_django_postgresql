@@ -1,0 +1,61 @@
+
+{% extends 'includes/modal generico.html' %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block content %}
+<h4>{{ contexto_detalle_reporte.cliente_crm }}</h4>
+<div class="table-responsive mb-3">
+    <table class="table">
+        <thead>
+            <tr>
+                {% if contexto_detalle_reporte.fecha %}
+                <th class="text-rigth">Fecha</th>
+                {% endif %}
+
+                {% if contexto_detalle_reporte.objetivo %}
+                <th class="text-rigth">Objetivo</th>
+                {% endif %}
+                
+                {% if contexto_detalle_reporte.compromiso %}
+                <th class="text-rigth">Compromiso</th>
+                {% endif %}
+                
+                {% if contexto_detalle_reporte.mejoras %}
+                <th class="text-rigth">Mejoras</th>
+                {% endif %}                        
+                                        
+                {% if contexto_detalle_reporte.quejas %}
+                <th class="text-rigth">Quejas</th>
+                {% endif %}                        
+                
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% if contexto_detalle_reporte.fecha %}
+                <td style="min-width: 250px;">{{ contexto_detalle_reporte.fecha|date:'d/m/Y'}}</td>
+                {% endif %}
+
+                {% if contexto_detalle_reporte.objetivo %}
+                <td style="min-width: 250px;">{{ contexto_detalle_reporte.objetivo }}</td>
+                {% endif %}
+
+                {% if contexto_detalle_reporte.compromiso %}
+                <td style="min-width: 250px;">{{ contexto_detalle_reporte.compromiso}}</td>
+                {% endif %}
+                                
+                {% if contexto_detalle_reporte.mejoras %}
+                <td style="min-width: 250px;">{{ contexto_detalle_reporte.mejoras}}</td>
+                {% endif %}
+
+                {% if contexto_detalle_reporte.quejas %}
+                <td style="min-width: 250px;">{{ contexto_detalle_reporte.quejas}}</td>
+                {% endif %}
+            
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}

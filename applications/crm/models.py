@@ -45,10 +45,14 @@ class ClienteCRM(models.Model):
 class ClienteCRMDetalle(models.Model):
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False, blank=True, null=True)
+    objetivo = models.TextField('Objetivo', blank=True, null=True)
+    compromiso = models.TextField('Compromiso', blank=True, null=True)
+    mejoras = models.TextField('Mejoras', blank=True, null=True)
+    quejas = models.TextField('Quejas', blank=True, null=True)
     comentario = models.TextField('Comentario', blank=True, null=True)
     monto = models.DecimalField('Monto', max_digits=14, decimal_places=2, default=Decimal('0.00'))
-    archivo_recibido = models.FileField('Archivo Recibido', upload_to=CLIENTE_CRM_ARCHIVO_RECIBIDO, max_length=100, blank=True, null=True)
-    archivo_enviado = models.FileField('Archivo Enviado', upload_to=CLIENTE_CRM_ARCHIVO_ENVIADO, max_length=100, blank=True, null=True)
+    archivo_recibido = models.ImageField('Archivo Recibido', upload_to=CLIENTE_CRM_ARCHIVO_RECIBIDO, max_length=100, blank=True, null=True)
+    archivo_enviado = models.ImageField('Archivo Enviado', upload_to=CLIENTE_CRM_ARCHIVO_ENVIADO, max_length=100, blank=True, null=True)
     cliente_crm =  models.ForeignKey(ClienteCRM, on_delete=models.CASCADE)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -111,13 +115,13 @@ def actualizar_estado_cliente_crm(id_cliente=None):
 class EventoCRM(models.Model):
     
     titulo = models.CharField('Titulo Evento', max_length=50)
-    pais = models.ForeignKey(Pais, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
+    pais = models.ForeignKey(Pais, on_delete=models.PROTECT,blank=True, null=True)
     ubicacion = models.CharField('Ubicación', max_length=100,blank=True, null=True)
     encargado = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Encargado', on_delete=models.PROTECT, blank=True, null=True)
     fecha_inicio = models.DateField('Fecha Inicio', blank=True, null=True)
     fecha_cierre = models.DateField('Fecha Cierre', blank=True, null=True)
-    presupuesto_asignado = models.DecimalField('Presupuesto asignado', max_digits=6, decimal_places=3, blank=True, null=True)
-    presupuesto_utilizado = models.DecimalField('Presupuesto utilizado', max_digits=6, decimal_places=3, blank=True, null=True)
+    presupuesto_asignado = models.DecimalField('Presupuesto asignado', max_digits=14, decimal_places=2, blank=True, null=True)
+    presupuesto_utilizado = models.DecimalField('Presupuesto utilizado', max_digits=14, decimal_places=2, blank=True, null=True)
     total_merchandising = models.DecimalField('Total Merchandising', max_digits=22, decimal_places=10, blank=True, null=True)
     descripcion = models.TextField('Descripción', blank=True, null=True)
     sorteo = models.ForeignKey(Sorteo, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)

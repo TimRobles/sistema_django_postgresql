@@ -30,10 +30,10 @@
     </div>
 </div>
 
-<h3>Información Adicional
+<h3>Información de Actividad
     <button data-form-url="{% url 'crm_app:cliente_crm_detalle_registrar' contexto_cliente_crm.id %}"
         data-table-url="{% url 'crm_app:cliente_crm_detalle_tabla' contexto_cliente_crm.id %}"
-        class="create badge bg-primary">
+        class="create badge bg-success">
         Registrar
     </button>
     <a href="{% url 'crm_app:cliente_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
@@ -79,6 +79,12 @@
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi-x-lg"></i>
+                    </button>
+                    <button data-form-url="{% url 'crm_app:cliente_crm_detalle_ver' cliente_crm.id  %}"
+                        data-table-url="{% url 'crm_app:cliente_crm_detalle_tabla' contexto_cliente_crm.id %}"
+                        class="update btn btn-info btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Ver">
+                        <i class="bi bi-eye-fill"></i>
                     </button>
                 </td>
             </tr>

@@ -68,6 +68,10 @@ class ClienteCRMDetalleForm(BSModalModelForm):
         model = ClienteCRMDetalle
         fields = (
             'fecha',
+            'objetivo',
+            'compromiso',
+            'mejoras',
+            'quejas',
             'comentario',
             'monto',
             'archivo_recibido',
@@ -111,6 +115,7 @@ class EventoCRMForm(BSModalModelForm):
             'fecha_cierre',
             'pais',
             'encargado',
+            'presupuesto_asignado',
             )
         
         widgets = {
@@ -408,3 +413,16 @@ class RespuestaCRMForm(BSModalModelForm):
         super(RespuestaCRMForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class EventoCRMFinalizarForm(BSModalModelForm):
+    class Meta:
+        model = EventoCRM
+        fields=(
+            'presupuesto_utilizado',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(EventoCRMFinalizarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True

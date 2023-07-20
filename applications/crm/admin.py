@@ -37,6 +37,10 @@ class ClienteCRMAdmin(admin.ModelAdmin):
 class ClienteCRMDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'fecha',
+        'objetivo',
+        'compromiso',
+        'mejoras',
+        'quejas',
         'comentario',
         'monto',
         'archivo_recibido',

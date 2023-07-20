@@ -5,12 +5,26 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>{{ contexto_evento_crm.titulo}}
+    <h3>{{ contexto_evento_crm.titulo}} - {{ contexto_evento_crm.pais}} ({{ contexto_evento_crm.fecha_inicio|date:'d/m/Y'}} ~ {{ contexto_evento_crm.fecha_cierre|date:'d/m/Y'}})
         <a href="{% url 'crm_app:evento_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+        {% if contexto_evento_crm.estado == 2 %}
         <button data-form-url="{% url 'crm_app:evento_crm_generar_guia' contexto_evento_crm.id %}"
             class="delete btn btn-primary">
             Generar Guia
         </button>
+        <button data-form-url="{% url 'crm_app:evento_crm_finalizar' contexto_evento_crm.id %}"
+            data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+            class="delete badge bg-success">
+            Finalizar Evento
+        </button>
+        {% endif %}
+        {% if contexto_evento_crm.estado == 1 %}
+        <button data-form-url="{% url 'crm_app:evento_crm_guardar' contexto_evento_crm.id %}"
+            data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+            class="delete badge bg-success">
+            Guardar Detalle
+        </button>
+        {% endif %}
     </h3>
     <div id="tabla">
         {% include 'crm/eventos_crm/detalle_tabla.html' %}
