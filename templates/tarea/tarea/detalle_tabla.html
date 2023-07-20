@@ -4,23 +4,18 @@
 <h3> Detalle Tarea
     <a href="{% url 'tarea_app:tarea_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 
-    
-    {% if contexto_tarea.content_type == None %}
-
+    {% if contexto_tarea.content_type != content_cliente %}
     <button data-form-url="{% url 'tarea_app:tarea_detalle_asignar' contexto_tarea.id %}"
         class="delete btn btn-success">
-        Asignar
+        Asignar Evento
     </button>
-        
     {% endif %}    
 
     {% if contexto_tarea.estado == 2 %}
-
     <button data-form-url="{% url 'tarea_app:tarea_detalle_finalizar' contexto_tarea.id %}"
         class="delete btn btn-danger">
         Finalizar Tarea
     </button>
-
     {% endif %}
         
 </h3>
@@ -29,7 +24,6 @@
     <div class="col-lg-6 table-responsive mb-3">
         <table>
             <tbody>
-
                 <tr>
                     <th>Tipo tarea : </th>
                     <td> 
@@ -67,11 +61,11 @@
                 </tr>
 
                 <tr>
-                    
                     {% if contexto_tarea.content_type %}
                         
                     {% if contexto_tarea.content_type ==  content_cliente %}
                     <th>CLIENTE : </th>
+
                     {% endif %}                    
                     
                     {% if contexto_tarea.content_type ==  content_evento %}
@@ -135,10 +129,12 @@
 <br>
 
 <h4>Descripción
+    {% if contexto_tarea.estado < 3 %}  
     <button data-form-url="{% url 'tarea_app:tarea_detalle_descripcion' contexto_tarea.id %}"
         class="delete btn btn-primary">
         +  
     </button>
+    {% endif %}
 </h4>
 <div class="table-responsive">
     <table class="table">
@@ -162,10 +158,12 @@
 <br>
 
 <h4>Comentarios
+    {% if contexto_tarea.estado < 3 %}      
     <button data-form-url="{% url 'tarea_app:tarea_detalle_comentario' contexto_tarea.id %}"
         class="delete btn btn-primary">
         +
-    </button>    
+    </button>   
+    {% endif %}
 </h4>
 <div class="table-responsive">
     <table class="table">

@@ -388,11 +388,11 @@ class RespuestaCRMBuscarForm(forms.Form):
         filtro_encuesta = kwargs.pop('filtro_encuesta')
 
         super(RespuestaCRMBuscarForm, self).__init__(*args, **kwargs)
-        self.fields['encuesta'].initial = filtro_encuesta
         self.fields['cliente'].initial = filtro_cliente
+        self.fields['encuesta'].initial = filtro_encuesta
         
         for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'
 
 class RespuestaCRMForm(BSModalModelForm):
     class Meta:

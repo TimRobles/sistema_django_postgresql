@@ -1049,7 +1049,8 @@ class EventoCRMGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
         return context
     
 
-class PreguntaCRMListView(FormView):
+class PreguntaCRMListView(PermissionRequiredMixin, FormView):
+    permission_required = ('crm.view_preguntacrm')
     template_name = "crm/encuestas_crm/pregunta/inicio.html"
     form_class = PreguntaCRMBuscarForm
     success_url = '.'
@@ -1139,18 +1140,17 @@ def PreguntaCRMTabla(request):
         return JsonResponse(data)
 
 
-class PreguntaCRMCreateView(BSModalCreateView):
-# class PreguntaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
-    # permission_required = ('crm.add_preguntacrm')
+class PreguntaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_preguntacrm')
     model = PreguntaCRM
     template_name = "includes/formulario generico.html"
     form_class = PreguntaCRMForm
     success_url = reverse_lazy('crm_app:pregunta_crm_inicio')
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     if not self.has_permission():
-    #         return render(request, 'includes/modal sin permiso.html')
-    #     return super().dispatch(request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -1562,7 +1562,9 @@ class EncuestaPreguntaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return context
     
 
-class RespuestaCRMListView(FormView):
+class RespuestaCRMListView(PermissionRequiredMixin, FormView):
+    permission_required = ('crm.view_respuestacrm')
+
     template_name = "crm/encuestas_crm/respuesta/inicio.html"
     form_class = RespuestaCRMBuscarForm
     success_url = '.'
@@ -1571,7 +1573,6 @@ class RespuestaCRMListView(FormView):
         kwargs = super(RespuestaCRMListView, self).get_form_kwargs()
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_encuesta'] = self.request.GET.get('encuesta')
-
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -1584,12 +1585,12 @@ class RespuestaCRMListView(FormView):
         contexto_filtro = []
 
         if filtro_cliente:
-            condicion = Q(cliente = filtro_cliente)
+            condicion = Q(cliente_crm = filtro_cliente)
             respuesta_crm = respuesta_crm.filter(condicion)
             contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_encuesta:
-            condicion = Q(cliente = filtro_cliente)
+            condicion = Q(encuesta_crm = filtro_encuesta)
             respuesta_crm = respuesta_crm.filter(condicion)
             contexto_filtro.append("encuesta=" + filtro_encuesta)
 
@@ -1610,8 +1611,8 @@ class RespuestaCRMListView(FormView):
             page_number = self.request.GET.get('page')
             respuesta_crm = paginator.get_page(page_number)
    
-        context['contexto_pagina'] = respuesta_crm
         context['contexto_respuesta_crm'] = respuesta_crm
+        context['contexto_pagina'] = respuesta_crm
         return context
 
 
@@ -1633,7 +1634,7 @@ def RespuestaCRMTabla(request):
             contexto_filtro.append("cliente=" + filtro_cliente)
 
         if filtro_encuesta:
-            condicion = Q(cliente = filtro_cliente)
+            condicion = Q(encuesta = filtro_encuesta)
             respuesta_crm = respuesta_crm.filter(condicion)
             contexto_filtro.append("encuesta=" + filtro_encuesta)
 
@@ -1766,7 +1767,7 @@ def RespuestaCRMDetailTabla(request, slug):
         return JsonResponse(data)
 
 
-class RespuestaVerView(TemplateView): #respuesta_del_cliente
+class RespuestaVerView(TemplateView): #respuesta_del_cliente | encuesta para el cliente
     template_name = "crm/encuestas_crm/respuesta/respuesta_ver.html"
 
     def get_context_data(self, **kwargs):
@@ -1822,3 +1823,4 @@ class EncuestaRespuesta(PermissionRequiredMixin, View): #encuesta
         respuesta_crm.estado = 2
         respuesta_crm.save()
         return HttpResponse('Hola')
+

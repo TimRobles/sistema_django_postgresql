@@ -2,11 +2,12 @@ from django import forms
 from django.contrib.auth import get_user_model
 from .models import TipoTarea, Tarea, HistorialComentarioTarea
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.crm.models import ClienteCRM, EventoCRM
+from applications.crm.models import EventoCRM
 from applications.datos_globales.models import Area
 from applications.variables import ESTADO_TAREA, PRIORIDAD_TAREA
 from applications.variables import CHOICE_VACIO
 from django.conf import settings
+from applications.clientes.models import Cliente
 
 class TipoTareaForm(BSModalModelForm):
     class Meta:
@@ -46,6 +47,7 @@ class TareaBuscarForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class TareaForm(BSModalModelForm):
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
     class Meta:
         model = Tarea
         fields = (
@@ -56,6 +58,7 @@ class TareaForm(BSModalModelForm):
             'area',
             'prioridad',
             'encargado',
+            'cliente',
             'apoyo',
             )
         
@@ -150,31 +153,36 @@ class HistorialComentarioTareaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class TareaAsignarForm(BSModalModelForm):
-    cliente = forms.ModelChoiceField(queryset=ClienteCRM.objects.all(), required=False)
     evento = forms.ModelChoiceField(queryset=EventoCRM.objects.all(), required=False)
 
     class Meta:
         model = Tarea
         fields = (
-            'cliente',
             'evento',
         )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        cliente = cleaned_data.get('cliente')
-        evento = cleaned_data.get('evento')
-
-        if cliente and evento:
-            self.add_error('cliente', 'Solo puedes asignar una sola opción.')
-            self.add_error('evento', 'Solo puedes asignar una sola opción.')
-            cliente = self.fields['cliente']
-            evento = self.fields['evento']
-        return cleaned_data
         
     def __init__(self, *args, **kwargs):
         super(TareaAsignarForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class TareaActualizarClienteForm(BSModalModelForm):
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+
+    class Meta:
+        model = Tarea
+        fields = (
+            'cliente',
+        )
+
+    def clean_cliente(self):
+        cliente = self.cleaned_data.get('cliente')
+        return cliente
+
+    def __init__(self, *args, **kwargs):
+        super(TareaActualizarClienteForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 
 

@@ -51,6 +51,11 @@ class GuiaListView(PermissionRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super(GuiaListView, self).get_context_data(**kwargs)
         guias = Guia.objects.all()
+
+        print('********guiassss***************')
+        print(guias)
+        print('***********************')
+
         filtro_fecha_emision = self.request.GET.get('fecha_emision')
         filtro_numero_guia = self.request.GET.get('numero_guia')
         filtro_cliente = self.request.GET.get('cliente')
@@ -77,7 +82,11 @@ class GuiaListView(PermissionRequiredMixin, FormView):
             condicion = Q(estado = filtro_estado)
             guias = guias.filter(condicion)
             contexto_filtro.append("estado=" + filtro_estado)
-        
+
+        print('-------------------guia---------------------------')
+        print(filtro_cliente)
+        print('----------------------------------------------')
+
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
         context['pagina_filtro'] = ""
