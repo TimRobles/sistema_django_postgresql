@@ -2,7 +2,10 @@
 from django.shortcuts import render
 from applications.importaciones import *
 from django.core.paginator import Paginator
-from applications.crm.models import ClienteCRM, EventoCRM
+from applications.crm.models import EventoCRM
+from applications.clientes.models import Cliente
+
+
 from applications.funciones import registrar_excepcion
 
 from .forms import(
@@ -13,6 +16,7 @@ from .forms import(
     TareaBuscarForm,
     TareaActualizarForm,
     TareaAsignarForm,
+    TareaActualizarClienteForm,
     )
            
 from .models import(
@@ -21,7 +25,9 @@ from .models import(
     HistorialComentarioTarea,
 )
 
-class TipoTareaListView(ListView):
+
+class TipoTareaListView(PermissionRequiredMixin, ListView):
+    permission_required = ('tarea.view_tipotarea')
     model = TipoTarea
     template_name = "tarea/tipo_tarea/inicio.html"
     
@@ -64,11 +70,17 @@ def TipoTareaTabla(request):
         )
         return JsonResponse(data)
 
-class TipoTareaCreateView(BSModalCreateView):
+class TipoTareaCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('tarea.add_tipotarea')
     model = TipoTarea
     template_name = "includes/formulario generico.html"
     form_class = TipoTareaForm
     success_url = reverse_lazy('tarea_app:tipo_tarea_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(TipoTareaCreateView, self).get_context_data(**kwargs)
@@ -82,12 +94,18 @@ class TipoTareaCreateView(BSModalCreateView):
 
         return super().form_valid(form)
 
-class TipoTareaUpdateView(BSModalUpdateView):
+class TipoTareaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('tarea.change_tipotarea')
     model = TipoTarea
     template_name ="includes/formulario generico.html"
     form_class =  TipoTareaForm
     success_url = reverse_lazy('tarea_app:tipo_tarea_inicio')
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(TipoTareaUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
@@ -99,7 +117,8 @@ class TipoTareaUpdateView(BSModalUpdateView):
         return super().form_valid(form)
 
 
-class TareaListView(FormView):
+class TareaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('tarea.view_tarea')
     template_name = "tarea/tarea/inicio.html"
     form_class = TareaBuscarForm
     success_url = '.'
@@ -208,15 +227,26 @@ def TareaTabla(request):
         return JsonResponse(data)
 
     
-class TareaCreateView(BSModalCreateView):
+class TareaCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('tarea.add_tarea')
     model = Tarea
     template_name = "tarea/tarea/crear.html"
     form_class = TareaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('tarea_app:tarea_inicio')
     
     def form_valid(self, form):
+        cliente = form.cleaned_data.get('cliente')
+
+        form.instance.content_type = ContentType.objects.get_for_model(cliente)
+        form.instance.id_registro = cliente.id
+
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -226,12 +256,18 @@ class TareaCreateView(BSModalCreateView):
         context['titulo']="Tarea"
         return context
     
-class TareaUpdateView(BSModalUpdateView):
+class TareaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('tarea.change_tarea')
     model = Tarea
     template_name ="tarea/tarea/actualizar.html"
     form_class =  TareaActualizarForm
     success_url = reverse_lazy('tarea_app:tarea_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)        
         return super().form_valid(form)
@@ -251,9 +287,8 @@ class TareaDetailView(DetailView):
         tarea = Tarea.objects.get(id = self.kwargs['pk'])
         try:
             asignados = tarea.content_type.get_object_for_this_type(id = tarea.id_registro)
-            content_cliente = ContentType.objects.get_for_model(ClienteCRM)
+            content_cliente = ContentType.objects.get_for_model(Cliente)
             content_evento =ContentType.objects.get_for_model(EventoCRM)
-
         except:
             pass
         context = super(TareaDetailView, self).get_context_data(**kwargs)
@@ -276,7 +311,7 @@ def TareaDetailTabla(request, pk):
         tarea = Tarea.objects.get(id = pk)
         try:
             asignados = tarea.content_type.get_object_for_this_type(id = tarea.id_registro)
-            content_cliente = ContentType.objects.get_for_model(ClienteCRM)
+            content_cliente = ContentType.objects.get_for_model(Cliente)
             content_evento =ContentType.objects.get_for_model(EventoCRM)
 
         except:
@@ -354,7 +389,7 @@ class TareaDetalleHistorialComentarioUpdateView(BSModalUpdateView):
         context['titulo']="Comentarios"
         return context
 
-class TareaDetalleHistorialComentarioDeleteView(BSModalDeleteView): #Falta redireccionar :(
+class TareaDetalleHistorialComentarioDeleteView(BSModalDeleteView):
     model = HistorialComentarioTarea
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('tarea_app:tarea_detalle')
@@ -378,14 +413,9 @@ class TareaAsignarView(BSModalUpdateView):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
     
     def form_valid(self, form):
-        cliente = form.cleaned_data.get('cliente')
         evento = form.cleaned_data.get('evento')
 
-        if cliente:
-            form.instance.content_type = ContentType.objects.get_for_model(cliente)
-            form.instance.id_registro = cliente.id
-
-        elif evento:
+        if evento:
             form.instance.content_type = ContentType.objects.get_for_model(evento)
             form.instance.id_registro = evento.id
 
@@ -396,9 +426,8 @@ class TareaAsignarView(BSModalUpdateView):
         context = super(TareaAsignarView, self).get_context_data(**kwargs)
 
         context['accion']="Asignar"
-        context['titulo']="Cliente o Evento"
+        context['titulo']="Evento"
         return context
-
 
 class TareaFinalizarUpdateView(BSModalDeleteView):
     model = Tarea
@@ -429,7 +458,6 @@ class TareaFinalizarUpdateView(BSModalDeleteView):
         context['item'] = self.get_object()
         return context
 
-
 class TareaIniciarUpdateView(BSModalDeleteView):
     model = Tarea
     template_name ="includes/form generico.html"
@@ -459,4 +487,71 @@ class TareaIniciarUpdateView(BSModalDeleteView):
         context['item'] = self.get_object()
         return context
 
+class TareaRegistrarTipoTareaCreateView(BSModalCreateView):
+    model = TipoTarea
+    template_name = "includes/formulario generico.html"
+    form_class = TipoTareaForm
+    success_url = reverse_lazy('tarea_app:tarea_inicio')
 
+    def get_context_data(self, **kwargs):
+        context = super(TareaRegistrarTipoTareaCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Tipo Tarea"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+    
+class TareaActualizarClienteView(BSModalUpdateView):
+    model = Tarea
+    template_name = "tarea/tarea/asignar.html"
+    form_class = TareaActualizarClienteForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
+    
+    def form_valid(self, form):
+        cliente = form.cleaned_data.get('cliente')
+
+        if cliente:
+            form.instance.content_type = ContentType.objects.get_for_model(cliente)
+            form.instance.id_registro = cliente.id
+
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(TareaActualizarClienteView, self).get_context_data(**kwargs)
+
+        context['accion']="Actualizar"
+        context['titulo']="Clientes"
+        return context
+
+
+# class TareaActualizarClienteView(BSModalUpdateView):
+#     model = Tarea
+#     template_name = "tarea/tarea/asignar.html"
+#     form_class = TareaActualizarClienteForm
+
+#     def get_success_url(self, **kwargs):
+#         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
+    
+#     def form_valid(self, form):
+#         evento = form.cleaned_data.get('evento')
+
+#         if evento:
+#             form.instance.content_type = ContentType.objects.get_for_model(evento)
+#             form.instance.id_registro = evento.id
+
+#         registro_guardar(form.instance, self.request)
+#         return super().form_valid(form)
+    
+#     def get_context_data(self, **kwargs):
+#         context = super(TareaAsignarView, self).get_context_data(**kwargs)
+
+#         context['accion']="Asignar"
+#         context['titulo']="Evento"
+#         return context

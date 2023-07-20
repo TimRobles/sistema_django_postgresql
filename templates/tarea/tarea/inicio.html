@@ -12,7 +12,13 @@
             class="create badge bg-primary">
             Registrar 
         </button>
+        <button data-form-url="{% url 'tarea_app:tarea_registrar_tipo_tarea' %}"
+            data-table-url="{% url 'tarea_app:tarea_tabla' %}"
+            class="create badge bg-secondary">
+            Tipo Tarea 
+        </button>
     </h3>
+
     <br>
     <form action="" method="get" autocomplete="off">
         {% include 'includes/formulario lineal.html' %}

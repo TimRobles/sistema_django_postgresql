@@ -16,6 +16,7 @@
             <td>{{ respuesta.get_estado_display}}</td>
             <td>{{ respuesta.fecha_vencimiento}}</td>
             <td class="text-center text-nowrap">
+                {% if respuesta.estado <= 1 %}
                 <button data-form-url="{% url 'crm_app:respuesta_crm_actualizar' respuesta.slug %}"
                     data-table-url="{% url 'crm_app:respuesta_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     data-keep-open="true"
@@ -28,7 +29,8 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                     <i class="bi bi-x-lg"></i>
                 </button>
-                
+                {% endif %}
+
                 
                 {% if respuesta.estado > 1 %}
                 <a href="{% url 'crm_app:respuesta_crm_detalle' respuesta.slug %}"
@@ -43,9 +45,9 @@
                     title="Encuesta">
                     <i class="bi bi-file-ruled"></i>
                 </a>
-                <button onclick="copyToClipboard(url)"
+                <!-- <button onclick="copyToClipboard(url)"
                 class="btn btn-success btn-sm"
-                >URL</button>
+                >URL</button> -->
             </td>
         </tr>
         <div id="ruta-url" data-url="{% url 'crm_app:encuesta_ver' respuesta.slug  %}"></div>

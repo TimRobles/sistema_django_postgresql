@@ -41,7 +41,7 @@ urlEncuesta = [
     path('encuesta-crm/eliminar/<slug>/', views.EncuestaCRMDeleteView.as_view(), name='encuesta_crm_eliminar'),
     path('encuesta-crm/detalle/<slug>/', views.EncuestaCRMDetailView.as_view(), name='encuesta_crm_detalle'),
     path('encuesta-crm/detalle-tabla/<slug>/', views.EncuestaCRMDetailTabla, name='encuesta_crm_detalle_tabla'),
-    path('encuesta-crm/pregunta/<slug>/', views.EncuestaPreguntaCRMUpdateView.as_view(), name='encuesta_crm_pregunta'),
+    path('encuesta-crm/pregunta/<slug>/', views.EncuestaPreguntaCRMUpdateView.as_view(), name='encuesta_crm_pregunta'), #Añadir pregunta
     path('encuesta-crm/ver/<slug>/', views.RespuestaVerView.as_view(), name='encuesta_ver'),
     path('encuesta-respuesta/', views.EncuestaRespuesta.as_view(), name='encuesta_respuesta'),
     ]

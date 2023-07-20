@@ -35,12 +35,14 @@
                     
             </td>
             <td>{{ tarea.fecha_inicio|date:'d/m/Y' }}</td>
-            <td>{{ tarea.encargado.first_name }}</td>
+            <td>{{ tarea.encargado|nombre_usuario }}</td>
             <td>{{ tarea.tipo_tarea }}</td>
             <td>{{ tarea.fecha_limite|date:'d/m/Y' }}</td>
             <td>{{ tarea.descripcion }}</td>
             <td>{{ tarea.created_by|nombre_usuario }}</td>
-            <td>
+            <td class="text-center text-nowrap">
+                
+                {% if tarea.estado < 3 %}                    
                 <button data-form-url="{% url 'tarea_app:tarea_actualizar' tarea.id %}"
                     data-table-url="{% url 'tarea_app:tarea_tabla' %}"
                     data-keep-open="true"
@@ -48,6 +50,7 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+                {% endif %}
 
                 <a href="{% url 'tarea_app:tarea_detalle' tarea.id %}"
                     class="btn btn-info btn-sm"
@@ -56,7 +59,6 @@
                 </a>
 
                 {% if tarea.estado == 1 %}
-
                 <button data-form-url="{% url 'tarea_app:tarea_iniciar' tarea.id %}"
                     data-table-url="{% url 'tarea_app:tarea_tabla' %}"
                     data-keep-open="true"
