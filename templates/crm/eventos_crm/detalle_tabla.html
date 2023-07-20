@@ -39,7 +39,7 @@
                         {% endif %}
                     </td>              
                 </tr>
-                <tr>
+                <!-- <tr>
                     <th class="pe-2">Fecha Inicio : </th>
                     <td>
                         {% if contexto_evento_crm.fecha_inicio %}
@@ -62,7 +62,7 @@
                         {{ contexto_evento_crm.pais }} 
                         {% endif %}
                     </td>
-                </tr>
+                </tr> -->
             </tbody>
         </table>
     </div>
@@ -74,7 +74,7 @@
                     <th class="pe-2">Presupuesto Asignado: </th>
                     <td>
                         {% if contexto_evento_crm.presupuesto_asignado %}
-                        {{ contexto_evento_crm.presupuesto_asignado }}
+                        {{ contexto_evento_crm.presupuesto_asignado|redondear|intcomma }}
                         {% endif %}
                     </td>
                 </tr>
@@ -83,7 +83,7 @@
                     <th class="pe-2">Presupuesto Utilizado: </th>
                     <td>
                         {% if contexto_evento_crm.presupuesto_utilizado %}
-                        {{ contexto_evento_crm.presupuesto_utilizado }}
+                        {{ contexto_evento_crm.presupuesto_utilizado|redondear|intcomma }}
                         {% endif %}
                     </td>
                 </tr>
@@ -100,12 +100,15 @@
     </div>
 </div>
 <br>
+{% if contexto_evento_crm.estado == 1 %}
 <h3>Descripción
     <button data-form-url="{% url 'crm_app:evento_crm_detalle_descripcion' contexto_evento_crm.id %}"
         data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
         class="delete badge bg-success">
         +  
     </button>
+{% endif %}
+    
 </h3>
 <div class="table-responsive">
     <table class="table">
@@ -125,17 +128,18 @@
     </table>
 </div>
 <br>
-{% if contexto_evento_crm.estado == 1 %}
 <h3>Merchandising
+    {% if contexto_evento_crm.estado == 1 %}
     <button data-form-url="{% url 'crm_app:evento_crm_detalle_agregar_merchandising' contexto_evento_crm.id %}"
         data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
         data-keep-open="True"
         class="update badge bg-success">
         Agregar
     </button>
+    {% endif %}
     <a href="{% url 'crm_app:evento_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
-{% endif %}
+
 
 <div class="table-responsive">
     <table class="table">
@@ -207,18 +211,20 @@
                 <td>{{ evento_crm.fecha|date:'d/m/Y' }}</td>
                 <td>{{ evento_crm.comentario}}</td>
                 <td class="text-center text-nowrap">
-                    <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_actualizar' evento_crm.id %}"
-                        data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
-                        data-keep-open="true"
-                        class="update btn btn-warning btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                        <i class="bi bi-pencil-fill"></i>
-                    </button>
-                    <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_eliminar' evento_crm.id  %}"
-                        class="delete btn btn-danger btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                        <i class="bi-x-lg"></i>
-                    </button>
+                    {% if contexto_evento_crm.estado != 3 %}
+                        <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_actualizar' evento_crm.id %}"
+                            data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_eliminar' evento_crm.id  %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

@@ -561,7 +561,7 @@ MENSAJE_EDITAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Abierto.'
 MENSAJE_POR_CERRAR_CHEQUE = 'Operación exitosa: El Cheque paso a estado Por Cerrar.'
 
 MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO = 'Operación exitosa: El Documento de Reclamo fue Confirmado.'
-
+MENSAJE_GUARDAR_EVENTO_DETALLE = 'Operación exitosa: El detalle evento fue guardado con éxito.'
 
 COLOR_DEFAULT = '#04fb1d'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY

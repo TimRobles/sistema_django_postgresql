@@ -26,6 +26,7 @@
             </td>
             <td>{{ evento.get_estado_display }}</td>
             <td class="text-center text-nowrap">
+                {% if evento.estado == 1 %}
                 <button data-form-url="{% url 'crm_app:evento_crm_actualizar' evento.id %}"
                     data-table-url="{% url 'crm_app:evento_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     data-keep-open="true"
@@ -33,6 +34,7 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+                {% endif %}
                 <a href="{% url 'crm_app:evento_crm_detalle' evento.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
