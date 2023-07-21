@@ -10,7 +10,7 @@ from openpyxl.chart import Reference, Series,LineChart
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.plotarea import DataTable
 
-from applications.datos_globales.models import CuentaBancariaSociedad
+from applications.datos_globales.models import CuentaBancariaSociedad, Departamento
 from applications.sociedad.models import Sociedad
 from applications.cobranza.models import Nota, Pago
 from applications.nota.models import NotaCredito
@@ -18,12 +18,12 @@ from applications.material.models import Material
 from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
 
-from applications.reportes.forms import ReporteStockSociedadPdfForm, ReportesFiltrosForm
+from applications.reportes.forms import ReporteStockSociedadPdfForm, ReporteVentasDepartamentoPdfForm, ReportesFiltrosForm
 
 from applications.reportes.funciones import *
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.pdf import*
-from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, generarReporteStockMalogradoSociedad, generarReporteStockSociedad, reporte_cobranza
+from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, generarReporteStockMalogradoSociedad, generarReporteStockSociedad, generarReporteVentasDepartamento, reporte_cobranza
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
 from applications.crm.models import ClienteCRM
@@ -3816,30 +3816,62 @@ class ReporteResumenStockProductosPDF(TemplateView):
         return respuesta
 
 
-class ReporteStockSociedadPdf(FormView):
-    form_class = ReporteStockSociedadPdfForm
+class ReporteStockSociedadPdf(TemplateView):
     template_name = 'reportes/reporte stock sociedad.html'
 
     def post(self,request, *args,**kwargs):
-        sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
-        tipo = self.request.POST.get('tipo')
+        formulario = self.request.POST.get('formulario')
+        if formulario == 'formulario1':
+            sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+            tipo = self.request.POST.get('tipo')
 
-        vertical = True
-        logo = [sociedad.logo.url]
-        pie_pagina = sociedad.pie_pagina
-        color = sociedad.color
+            vertical = True
+            logo = [sociedad.logo.url]
+            pie_pagina = sociedad.pie_pagina
+            color = sociedad.color
 
-        if tipo == '1':
-            titulo = f'Reporte Stock Disponible por Sociedad - {sociedad.abreviatura}'
-            buf = generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
-        elif tipo == '2':
-            titulo = f'Reporte Stock Malogrado por Sociedad - {sociedad.abreviatura}'
-            buf = generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
+            if tipo == '1':
+                titulo = f'Reporte Stock Disponible por Sociedad - {sociedad.abreviatura}'
+                buf = generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
+            elif tipo == '2':
+                titulo = f'Reporte Stock Malogrado por Sociedad - {sociedad.abreviatura}'
+                buf = generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
+        elif formulario == 'formulario2':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+            departamento = self.request.POST.get('departamento')
+            tipo = self.request.POST.get('tipo')
 
+            vertical = True
+            vertical = False
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            pie_pagina = PIE_DE_PAGINA_DEFAULT
+            color = COLOR_DEFAULT
+
+            if tipo == '1':
+                if departamento:
+                    titulo = f'Reporte Ventas por Departamento - {departamento}'
+                else:
+                    titulo = f'Reporte Ventas por Departamento - TODOS'
+
+                buf = generarReporteVentasDepartamento(titulo, vertical, logo, pie_pagina, fecha_inicio, fecha_fin, departamento, color)
+            
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
         return respuesta
+
+    
+    def get_context_data(self, **kwargs):
+        context = super(ReporteStockSociedadPdf, self).get_context_data(**kwargs)
+        context['form'] = ReporteStockSociedadPdfForm()
+        context['form2'] = ReporteVentasDepartamentoPdfForm()
+        return context
+    
+
+    
 
 #########################################################################################################
 

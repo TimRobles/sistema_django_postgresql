@@ -1,4 +1,5 @@
 from django import forms
+from applications.datos_globales.models import Departamento
 from bootstrap_modal_forms.forms import BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente
@@ -51,5 +52,36 @@ class ReporteStockSociedadPdfForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ReporteStockSociedadPdfForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteVentasDepartamentoPdfForm(forms.Form):
+    CHOICES_TIPO = [
+        (1, 'VENTA POR DEPARTAMENTO'),
+    ]
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    departamento = forms.ModelChoiceField(queryset=Departamento.objects.all(), required=False)
+    tipo = forms.ChoiceField(choices=CHOICES_TIPO, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteVentasDepartamentoPdfForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

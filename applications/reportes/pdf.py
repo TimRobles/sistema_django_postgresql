@@ -1,13 +1,16 @@
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from datetime import date, datetime
+from applications.clientes.models import Cliente
 from applications.cobranza.models import Nota
-from applications.comprobante_venta.models import FacturaVenta
+from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.cotizacion.models import PrecioListaMaterial
+from applications.datos_globales.models import Departamento, Moneda
 from applications.funciones import registrar_excepcion_sin_user
 from applications.home.templatetags.funciones_propias import redondear
 from applications.material.funciones import malogrado, stock
 from applications.material.models import Material
+from applications.nota.models import NotaCredito
 from applications.pdf import *
 from applications.reportes.funciones import DICT_CONTENT_TYPE, DICT_SOCIEDAD, FECHA_HOY, StrToDate, formatoFechaTexto
 from applications import reportes
@@ -649,6 +652,120 @@ def generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, soc
 
     elementos = []
     elementos.append(data_stock)
+    
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+
+    return buf
+
+#############################################################
+
+def dataReporteVentasDepartamento(fecha_inicio, fecha_fin, departamento, fuenteBase, color):
+    moneda_base = Moneda.objects.get(simbolo='$')
+    
+    encabezado = []
+    encabezado.append(parrafoCentro('CLIENTE', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('DOCUMENTO', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('DIRECCIÓN', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('TOTAL FACTURAS', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('TOTAL BOLETAS', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('TOTAL NOTAS DE CRÉDITO', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('TOTAL', fuenteBase, 8, 'Bold'))
+    
+    total_total = Decimal('0.00')
+
+    data = []
+    
+    for cliente in Cliente.objects.filter(distrito__provincia__departamento=departamento):
+        total = Decimal('0.00')
+        total_factura = Decimal('0.00')
+        for factura in FacturaVenta.objects.filter(cliente=cliente, estado=4, fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin):
+            if factura.moneda == moneda_base:
+                total_factura += factura.total
+            else:
+                total_factura += (factura.total / factura.tipo_cambio).quantize(Decimal('0.01'))
+
+        total_boleta = Decimal('0.00')
+        for boleta in BoletaVenta.objects.filter(cliente=cliente, estado=4, fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin):
+            if boleta.moneda == moneda_base:
+                total_boleta += boleta.total
+            else:
+                total_boleta += (boleta.total / boleta.tipo_cambio).quantize(Decimal('0.01'))
+
+        total_nota_credito = Decimal('0.00')
+        for nota_credito in NotaCredito.objects.filter(cliente=cliente, estado=4, fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin):
+            if nota_credito.moneda == moneda_base:
+                total_nota_credito += nota_credito.total
+            else:
+                total_nota_credito += (nota_credito.total / nota_credito.tipo_cambio).quantize(Decimal('0.01'))
+
+        total = total_factura + total_boleta - total_nota_credito
+        total_total += total
+        
+        fila = []
+        fila.append(parrafoIzquierda(cliente.razon_social, fuenteBase))
+        fila.append(parrafoIzquierda(f"{cliente.documento} - {cliente.numero_documento}", fuenteBase))
+        fila.append(parrafoIzquierda(cliente.direccion_fiscal, fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (moneda_base.simbolo, intcomma(redondear(total_factura))), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (moneda_base.simbolo, intcomma(redondear(total_boleta))), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (moneda_base.simbolo, intcomma(redondear(total_nota_credito))), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (moneda_base.simbolo, intcomma(redondear(total))), fuenteBase))
+        fila.append(total)
+        data.append(fila)
+
+    data.sort(key = lambda i: i[7], reverse=True) #Total
+    for dato in data:
+        dato.pop(7)
+    
+    data.insert(0, encabezado)
+
+    fila = []
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(parrafoDerecha("%s %s" % (moneda_base.simbolo, intcomma(redondear(total_total))), fuenteBase))
+    data.append(fila)
+
+    t_items=Table(
+        data,
+        style=[
+            ('GRID',(0,0),(-1,-2),1,colors.black),
+            ('BOX',(0,0),(-1,-2),2,colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), color),
+            ('VALIGN',(0,0),(-1,-1),'TOP'),
+            ('ALIGN',(0,0),(-1,-1),'CENTER')
+            ],
+        repeatRows=1
+        )
+    t_items._argW[0]=cmToPx(5)
+    t_items._argW[1]=cmToPx(3.5)
+    t_items._argW[3]=cmToPx(2.5)
+    t_items._argW[4]=cmToPx(2.5)
+    t_items._argW[5]=cmToPx(2.5)
+    t_items._argW[6]=cmToPx(2.5)
+
+    return t_items
+
+
+def generarReporteVentasDepartamento(titulo, vertical, logo, pie_pagina, fecha_inicio, fecha_fin, departamento_codigo, color):
+    fuenteBase = "ComicNeue"
+    if departamento_codigo:
+        departamentos = Departamento.objects.filter(codigo=departamento_codigo)
+    else:
+        departamentos = Departamento.objects.all()
+    
+    elementos = []
+    for departamento in departamentos:
+        data_ventas = dataReporteVentasDepartamento(fecha_inicio, fecha_fin, departamento, fuenteBase, color)
+
+        elementos.append(parrafoCentro(departamento.nombre, fuenteBase, 12, 'Bold'))
+        elementos.append(parrafoCentro(f"{fecha_inicio.strftime('%d/%m/%Y')} - {fecha_fin.strftime('%d/%m/%Y')}", fuenteBase, 12, 'Bold'))
+        elementos.append(vacio())
+        elementos.append(data_ventas)
+        if len(departamentos)>1:
+            elementos.append(PageBreak())
     
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
