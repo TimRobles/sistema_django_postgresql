@@ -2,7 +2,7 @@ from django import forms
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.datos_globales.models import SeriesComprobante
 from applications.material.models import Material
-from applications.nota.models import NotaCredito, NotaCreditoDetalle
+from applications.nota.models import NotaCredito, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
 from django.contrib.contenttypes.models import ContentType
 
 from applications.sociedad.models import Sociedad
@@ -37,6 +37,60 @@ class NotaCreditoBuscarForm(forms.Form):
         self.fields['sociedad'].initial = filtro_sociedad
         self.fields['tipo_nota_credito'].initial = filtro_tipo_nota_credito
         self.fields['fecha'].initial = filtro_fecha
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class NotaDevolucionBuscarForm(forms.Form):
+    cliente = forms.CharField(max_length=150, required=False)
+    numero_devolucion = forms.CharField(max_length=10, required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    fecha = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        filtro_cliente = kwargs.pop('filtro_cliente')
+        filtro_numero_devolucion = kwargs.pop('filtro_numero_devolucion')
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_fecha = kwargs.pop('filtro_fecha')
+        super(NotaDevolucionBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['cliente'].initial = filtro_cliente
+        self.fields['numero_devolucion'].initial = filtro_numero_devolucion
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['fecha'].initial = filtro_fecha
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class NotaDevolucionDetalleForm(BSModalModelForm):
+    class Meta:
+        model = NotaDevolucionDetalle
+        fields = (
+            'almacen',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaDevolucionDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class NotaDevolucionObservacionForm(BSModalModelForm):
+    class Meta:
+        model = NotaDevolucion
+        fields = (
+            'observaciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaDevolucionObservacionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

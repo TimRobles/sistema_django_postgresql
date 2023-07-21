@@ -8,7 +8,7 @@ from applications.datos_globales.models import DocumentoFisico, NubefactRespuest
 from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
-from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm
+from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm, NotaDevolucionBuscarForm, NotaDevolucionDetalleForm, NotaDevolucionObservacionForm
 from applications.nota.models import NotaCredito, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
@@ -777,6 +777,142 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
         context['item'] = self.get_object()
         return context
 
+
+class NotaDevolucionView(PermissionRequiredMixin, FormView):
+    permission_required = ('nota.view_notacredito')
+    template_name = "notas/nota_devolucion/inicio.html"
+    form_class = NotaDevolucionBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+        kwargs['filtro_numero_devolucion'] = self.request.GET.get('numero_devolucion')
+        kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
+        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaDevolucionView, self).get_context_data(**kwargs)
+        notas_credito = NotaDevolucion.objects.all()
+
+        filtro_cliente = self.request.GET.get('cliente')
+        filtro_numero_devolucion = self.request.GET.get('numero_devolucion')
+        filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_fecha = self.request.GET.get('fecha')
+
+        contexto_filtro = []
+
+        if filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+
+        if filtro_numero_devolucion:
+            condicion = Q(numero_devolucion__unaccent__icontains = filtro_numero_devolucion)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("numero_devolucion=" + filtro_cliente)
+
+        if filtro_fecha:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("fecha=" + filtro_fecha)
+
+        if filtro_sociedad:
+            condicion = Q(sociedad__id = filtro_sociedad)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(notas_credito) > objectsxpage:
+            paginator = Paginator(notas_credito, objectsxpage)
+            page_number = self.request.GET.get('page')
+            notas_credito = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = notas_credito
+        context['contexto_nota_devolucion'] = notas_credito
+        context['regresar'] = reverse_lazy('nota_app:nota_credito_inicio')
+        
+        return context 
+
+
+def NotaDevolucionTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'notas/nota_devolucion/inicio_tabla.html'
+        context = {}
+        notas_credito = NotaDevolucion.objects.all()
+
+        filtro_cliente = request.GET.get('cliente')
+        filtro_numero_devolucion = request.GET.get('numero_devolucion')
+        filtro_sociedad = request.GET.get('sociedad')
+        filtro_fecha = request.GET.get('fecha')
+
+        contexto_filtro = []
+
+        if filtro_cliente:
+            condicion = Q(cliente__razon_social__unaccent__icontains = filtro_cliente.split(" ")[0])
+            for palabra in filtro_cliente.split(" ")[1:]:
+                condicion &= Q(cliente__razon_social__unaccent__icontains = palabra)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+
+        if filtro_numero_devolucion:
+            condicion = Q(numero_devolucion__unaccent__icontains = filtro_numero_devolucion)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("numero_devolucion=" + filtro_cliente)
+
+        if filtro_fecha:
+            condicion = Q(fecha_cotizacion = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("fecha=" + filtro_fecha)
+
+        if filtro_sociedad:
+            condicion = Q(sociedad__id = filtro_sociedad)
+            notas_credito = notas_credito.filter(condicion)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(notas_credito) > objectsxpage:
+            paginator = Paginator(notas_credito, objectsxpage)
+            page_number = request.GET.get('page')
+            notas_credito = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = notas_credito
+        context['contexto_nota_devolucion'] = notas_credito
+        context['regresar'] = reverse_lazy('nota_app:nota_credito_inicio')
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
 class NotaDevolucionListaView(PermissionRequiredMixin, DetailView):
     permission_required = ('nota.view_notadevolucion')
     model = NotaCredito
@@ -787,7 +923,9 @@ class NotaDevolucionListaView(PermissionRequiredMixin, DetailView):
         nota_credito = self.object
         context = super(NotaDevolucionListaView, self).get_context_data(**kwargs)
         context['notas_devolucion'] = nota_credito.notas_devolucion
+        context['regresar'] = reverse_lazy('nota_app:nota_credito_inicio')
         return context
+
 
 class NotaDevolucionDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('nota.view_notadevolucion')
@@ -809,6 +947,7 @@ def NotaDevolucionDetailTabla(request, id):
         context = {}
         nota_devolucion = NotaDevolucion.objects.get(id = id)
         context['materiales'] = NotaDevolucion.objects.ver_detalle(nota_devolucion.id)
+        context['contexto_nota_devolucion'] = nota_devolucion
         data['table'] = render_to_string(
             template,
             context,
@@ -839,6 +978,7 @@ class GenerarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                 id_registro=nota_credito.id,
                 observaciones=nota_credito.observaciones,
                 motivo_anulacion="",
+                cliente=nota_credito.cliente,
                 sociedad=nota_credito.sociedad,
                 created_by=self.request.user,
                 updated_by=self.request.user,
@@ -880,8 +1020,18 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     
     def dispatch(self, request, *args, **kwargs):
+        context = {}
+        context['titulo'] = 'Error de guardar'
+        error_almacen = False
+        for detalle in self.get_object().detalles:
+            if not detalle.almacen:
+                error_almacen = True
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+        if error_almacen:
+            context['texto'] = 'Hay productos sin Código de Sunat.'
+            return render(request, 'includes/modal sin permiso.html', context)
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -946,6 +1096,77 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
         context['titulo'] = "Nota Devolución"
         context['dar_baja'] = "true"
         return context
+
+
+class NotaDevolucionDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota.delete_notadevolucion')
+    model = NotaDevolucion
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('nota_app:nota_devolucion_inicio')
+        
+    def get_context_data(self, **kwargs):
+        context = super(NotaDevolucionDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Nota de Devolución"
+        context['item'] = self.get_object()
+
+        return context
+
+
+class NotaDevolucionDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaDevolucionDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = NotaDevolucionDetalleForm
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaDevolucionDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Almacén'
+        return context
+
+
+class NotaDevolucionObservacionesUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaDevolucion
+    template_name = "includes/formulario generico.html"
+    form_class = NotaDevolucionObservacionForm
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaDevolucionObservacionesUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Actualizar'
+        context['titulo'] = 'Observaciones'
+        return context
+
+
+#########################################################
 
 
 class NotaCreditoDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):

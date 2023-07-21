@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Notas de Devolución 
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Notas de Devolución </h3>
+    <a href="{{ regresar }}" class="btn btn-danger mb-3">Regresar</a>
+    
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'nota_app:nota_devolucion_inicio' %}">Limpiar</a>
+    </form>
+
+    {% include 'includes/paginador.html' %}
+    
+    <div class="table-responsive" id="tabla">
+        {% include 'notas/nota_devolucion/inicio_tabla.html' %}
+    </div>
+
+    {% include 'includes/paginador inferior.html' %}
+{% endblock contenido %}

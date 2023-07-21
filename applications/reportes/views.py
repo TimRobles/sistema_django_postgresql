@@ -23,7 +23,7 @@ from applications.reportes.forms import ReporteStockSociedadPdfForm, ReportesFil
 from applications.reportes.funciones import *
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.pdf import*
-from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, generarReporteStockSociedad, reporte_cobranza
+from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, generarReporteStockMalogradoSociedad, generarReporteStockSociedad, reporte_cobranza
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
 from applications.crm.models import ClienteCRM
@@ -3822,14 +3822,19 @@ class ReporteStockSociedadPdf(FormView):
 
     def post(self,request, *args,**kwargs):
         sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+        tipo = self.request.POST.get('tipo')
 
-        titulo = f'Reporte Stock por Sociedad - {sociedad.abreviatura}'
         vertical = True
         logo = [sociedad.logo.url]
         pie_pagina = sociedad.pie_pagina
         color = sociedad.color
 
-        buf = generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
+        if tipo == '1':
+            titulo = f'Reporte Stock Disponible por Sociedad - {sociedad.abreviatura}'
+            buf = generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
+        elif tipo == '2':
+            titulo = f'Reporte Stock Malogrado por Sociedad - {sociedad.abreviatura}'
+            buf = generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo

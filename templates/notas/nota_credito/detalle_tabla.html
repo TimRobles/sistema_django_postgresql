@@ -94,7 +94,7 @@
         </div>
         {% endif %}
         {% if permiso_logistica %}
-            {% if contexto_nota_credito.estado != 3 %}
+            {% if contexto_nota_credito.estado != 3 and contexto_nota_credito.tipo_nota_credito == 6 or contexto_nota_credito.estado != 3 and contexto_nota_credito.tipo_nota_credito == 7 %}
             <div class="col-auto">
                 <button data-form-url="{% url 'nota_app:nota_devolucion_generar' contexto_nota_credito.id %}"
                     class="delete btn btn-primary">

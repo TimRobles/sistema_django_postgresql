@@ -42,7 +42,12 @@ class ReportesFiltrosForm(forms.Form):
 
 
 class ReporteStockSociedadPdfForm(forms.Form):
-    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
+    CHOICES_TIPO = [
+        (1, 'STOCK DISPONIBLE'),
+        (2, 'STOCK MALOGRADO'),
+    ]
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=True)
+    tipo = forms.ChoiceField(choices=CHOICES_TIPO, required=True)
 
     def __init__(self, *args, **kwargs):
         super(ReporteStockSociedadPdfForm, self).__init__(*args, **kwargs)

@@ -6,7 +6,7 @@ from applications.comprobante_venta.models import FacturaVenta
 from applications.cotizacion.models import PrecioListaMaterial
 from applications.funciones import registrar_excepcion_sin_user
 from applications.home.templatetags.funciones_propias import redondear
-from applications.material.funciones import stock
+from applications.material.funciones import malogrado, stock
 from applications.material.models import Material
 from applications.pdf import *
 from applications.reportes.funciones import DICT_CONTENT_TYPE, DICT_SOCIEDAD, FECHA_HOY, StrToDate, formatoFechaTexto
@@ -569,6 +569,83 @@ def generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, co
     fuenteBase = "ComicNeue"
 
     data_stock = dataReporteStockSociedad(sociedad, fuenteBase, color)
+
+    elementos = []
+    elementos.append(data_stock)
+    
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+
+    return buf
+
+#############################################################
+
+def dataReporteStockMalogradoSociedad(sociedad, fuenteBase, color):
+    encabezado = []
+    encabezado.append(parrafoCentro('PRODUCTO', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('UNIDAD', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('CANTIDAD', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('PRECIO DE COMPRA', fuenteBase, 8, 'Bold'))
+    encabezado.append(parrafoCentro('TOTAL', fuenteBase, 8, 'Bold'))
+    
+    total_total = Decimal('0.00')
+
+    data = []
+    data.append(encabezado)
+    
+    for material in Material.objects.all():
+        content_type = ContentType.objects.get_for_model(material)
+        id_registro = material.id
+        id_sociedad = sociedad.id
+        precio_lista = PrecioListaMaterial.objects.filter(content_type_producto=content_type, id_registro_producto=id_registro)
+        if not precio_lista:
+            continue
+        stock_material = malogrado(content_type, id_registro, id_sociedad, id_almacen=None)
+        if stock_material <= 0:
+            continue
+        precio_lista = precio_lista.latest('created_at')
+        precio_compra = precio_lista.precio_compra
+        simbolo = precio_lista.moneda.simbolo
+        total = precio_compra * stock_material
+        total_total += total
+        
+        fila = []
+        fila.append(parrafoIzquierda(material.descripcion_venta, fuenteBase))
+        fila.append(parrafoIzquierda(material.unidad_base, fuenteBase))
+        fila.append(parrafoDerecha(intcomma(redondear(stock_material)), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (simbolo, intcomma(redondear(precio_compra))), fuenteBase))
+        fila.append(parrafoDerecha("%s %s" % (simbolo, intcomma(redondear(total))), fuenteBase))
+        data.append(fila)
+
+    fila = []
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(vacio())
+    fila.append(parrafoDerecha("%s %s" % (simbolo, intcomma(redondear(total_total))), fuenteBase))
+    data.append(fila)
+
+    t_items=Table(
+        data,
+        style=[
+            ('GRID',(0,0),(-1,-2),1,colors.black),
+            ('BOX',(0,0),(-1,-2),2,colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), color),
+            ('VALIGN',(0,0),(-1,-1),'TOP'),
+            ('ALIGN',(0,0),(-1,-1),'CENTER')
+            ]
+        )
+    t_items._argW[1]=cmToPx(2.5)
+    t_items._argW[2]=cmToPx(2.5)
+    t_items._argW[3]=cmToPx(3)
+    t_items._argW[4]=cmToPx(3)
+
+    return t_items
+
+
+def generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, sociedad, color):
+    fuenteBase = "ComicNeue"
+
+    data_stock = dataReporteStockMalogradoSociedad(sociedad, fuenteBase, color)
 
     elementos = []
     elementos.append(data_stock)

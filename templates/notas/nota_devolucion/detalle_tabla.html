@@ -10,7 +10,7 @@
     <div class="col-auto">
         <button data-form-url="{% url 'nota_app:nota_devolucion_finalizar' contexto_nota_devolucion.id %}"
             class="delete btn btn-danger">
-            Guardar
+            Finalizar
         </button>
     </div>
     {% endif %}
@@ -18,7 +18,8 @@
     {% if contexto_nota_devolucion.estado == 1 %}
     <div class="col-auto">
         <button data-form-url="{% url 'nota_app:nota_devolucion_observacion' contexto_nota_devolucion.id %}"
-            class="delete btn btn-primary">
+        data-table-url="{% url 'nota_app:nota_devolucion_detalle_tabla' contexto_nota_devolucion.id %}"
+            class="update btn btn-primary">
             Observaciones
         </button>
     </div>

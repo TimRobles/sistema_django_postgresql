@@ -8,6 +8,26 @@ from applications.nota_ingreso.models import NotaIngresoDetalle
 from applications.calidad.models import SalidaTransformacionProductos, TransformacionProductos
 from applications.sede.models import Sede
 
+def malogrado(content_type, id_registro, id_sociedad, id_almacen=None):
+    disponible = TipoStock.objects.get(codigo=6)
+    total = Decimal('0.00')
+    try:
+        movimientos = MovimientosAlmacen.objects.filter(
+                        content_type_producto = content_type,
+                        id_registro_producto = id_registro,
+                        sociedad__id = id_sociedad,
+                    ).filter(
+                        tipo_stock = disponible,
+                    )
+        if id_almacen:
+            movimientos = movimientos.filter(almacen__id=id_almacen)
+        for movimiento in movimientos:
+            total += movimiento.cantidad * movimiento.signo_factor_multiplicador
+    except:
+        pass
+
+    return total
+
 def disponible(content_type, id_registro, id_sociedad, id_almacen=None):
     disponible = TipoStock.objects.get(codigo=3)
     total = Decimal('0.00')

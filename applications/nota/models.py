@@ -216,6 +216,7 @@ class NotaDevolucion(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #NotaCredito
     id_registro = models.IntegerField()
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
     fecha_devolucion = models.DateField('Fecha de Devolucion', auto_now=False, auto_now_add=False, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
@@ -251,7 +252,7 @@ class NotaDevolucion(models.Model):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "NOTA DE DEVOLUCIÓN %s%s - %s %s" % (self.sociedad.abreviatura, numeroXn(self.numero_devolucion, 6), self.created_by, self.recepcion_compra)
+        return "NOTA DE DEVOLUCIÓN %s%s - %s %s" % (self.sociedad.abreviatura, numeroXn(self.numero_devolucion, 6), self.created_by, self.documento)
 
 
 class NotaDevolucionDetalle(models.Model):
