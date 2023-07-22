@@ -1948,6 +1948,7 @@ class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
             if self.request.session['primero']:
                 self.object = self.get_object()
                 self.object.fecha_salida = date.today()
+                almacen_ingreso = self.object.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.almacen
 
                 #Generar salidas
                 for control in self.object.control_calidad_reclamo_garantia.ControlCalidadReclamoGarantiaDetalle_control_calidad_reclamo_garantia.all():
@@ -1972,7 +1973,7 @@ class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
                             signo_factor_multiplicador=-1,
                             content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                             id_registro_documento_proceso=self.object.id,
-                            almacen=None,
+                            almacen=almacen_ingreso,
                             sociedad=self.object.sociedad,
                             movimiento_anterior=None,
                             movimiento_reversion=False,
@@ -2020,7 +2021,7 @@ class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
                             signo_factor_multiplicador=-1,
                             content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                             id_registro_documento_proceso=self.object.id,
-                            almacen=None,
+                            almacen=almacen_ingreso,
                             sociedad=self.object.sociedad,
                             movimiento_anterior=None,
                             movimiento_reversion=False,
@@ -2119,7 +2120,7 @@ class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
                             signo_factor_multiplicador=-1,
                             content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                             id_registro_documento_proceso=self.object.id,
-                            almacen=None,
+                            almacen=almacen_ingreso,
                             sociedad=self.object.sociedad,
                             movimiento_anterior=None,
                             movimiento_reversion=False,
