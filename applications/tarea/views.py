@@ -243,10 +243,12 @@ class TareaCreateView(PermissionRequiredMixin, BSModalCreateView):
     
     def form_valid(self, form):
         cliente = form.cleaned_data.get('cliente')
-
-        form.instance.content_type = ContentType.objects.get_for_model(cliente)
-        form.instance.id_registro = cliente.id
-
+        try:
+            form.instance.content_type = ContentType.objects.get_for_model(cliente)
+            form.instance.id_registro = cliente.id
+        except:
+            pass
+        
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
