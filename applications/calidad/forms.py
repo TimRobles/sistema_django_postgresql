@@ -1,6 +1,7 @@
 from django import forms
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.movimiento_almacen.models import TipoStock
+from applications.nota.models import NotaDevolucion
 from applications.nota_ingreso.models import NotaIngreso
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Unidad
@@ -89,6 +90,20 @@ class NotaControlCalidadStockTransformacionProductosForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(NotaControlCalidadStockTransformacionProductosForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class NotaControlCalidadStockNotaDevolucionForm(BSModalModelForm):
+    nota_devolucion_temp = forms.ModelChoiceField(queryset=NotaDevolucion.objects.filter(estado=2))
+    class Meta:
+        model = NotaControlCalidadStock
+        fields=(
+            'nota_devolucion_temp',
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaControlCalidadStockNotaDevolucionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

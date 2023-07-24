@@ -66,14 +66,6 @@
                             {{ contexto_nota_devolucion.cliente.direccion_fiscal }}   
                             {% endif %}
                         </td>
-                        <td class="ps-2" rowspan="2">
-                            {% if contexto_nota_devolucion.estado == 1 and contexto_nota_devolucion.cliente.direccion_anterior != contexto_nota_devolucion.cliente.direccion_nueva %}
-                            <button data-form-url="{% url 'nota_app:nota_devolucion_direccion' contexto_nota_devolucion.id contexto_nota_devolucion.cliente.id %}"
-                                class="delete btn btn-primary text-nowrap">
-                                Actualizar Dirección
-                            </button>
-                            {% endif %}
-                        </td>
                     </tr>
                     <tr>
                         <th class="pe-2">Interlocutor:</th>

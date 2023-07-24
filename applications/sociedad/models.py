@@ -30,7 +30,7 @@ class Sociedad(models.Model):
     class Meta:
         verbose_name = 'Sociedad'
         verbose_name_plural = 'Sociedades'
-        ordering = ['estado_sunat', 'razon_social']
+        ordering = ['estado_sunat', 'id']
 
     def save(self, *args, **kwargs):
         if self.ubigeo:
