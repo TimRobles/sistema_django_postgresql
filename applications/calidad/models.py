@@ -184,6 +184,7 @@ class SerieCalidad(models.Model):
     ESTADOS_SERIE_CALIDAD = (
         (1, 'DISPONIBLE'),
         (2, 'DUPLICADO'),
+        (3, 'DEVOLUCIÓN'),
     )
     serie = models.CharField('Nro. Serie', max_length=200)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Material

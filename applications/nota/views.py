@@ -1078,6 +1078,7 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                         updated_by = self.request.user,
                     )
                     
+                self.nota_devolucion.fecha_devolucion = date.today()
                 self.nota_devolucion.estado = 2
                 registro_guardar(self.nota_devolucion, self.request)
                 self.nota_devolucion.save()
