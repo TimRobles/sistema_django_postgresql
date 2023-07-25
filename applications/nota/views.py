@@ -779,7 +779,7 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
 
 
 class NotaDevolucionView(PermissionRequiredMixin, FormView):
-    permission_required = ('nota.view_notacredito')
+    permission_required = ('nota.view_notadevolucion')
     template_name = "notas/nota_devolucion/inicio.html"
     form_class = NotaDevolucionBuscarForm
     success_url = '.'
@@ -1120,7 +1120,7 @@ class NotaDevolucionDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class NotaDevolucionDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('nota.change_notacredito')
+    permission_required = ('nota.change_notadevolucion')
     model = NotaDevolucionDetalle
     template_name = "includes/formulario generico.html"
     form_class = NotaDevolucionDetalleForm
@@ -1143,7 +1143,7 @@ class NotaDevolucionDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView
 
 
 class NotaDevolucionObservacionesUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('nota.change_notacredito')
+    permission_required = ('nota.change_notadevolucion')
     model = NotaDevolucion
     template_name = "includes/formulario generico.html"
     form_class = NotaDevolucionObservacionForm
