@@ -262,7 +262,7 @@ class SalidaReclamoGarantia(models.Model):
         return self.control_calidad_reclamo_garantia.ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.cliente}"
 
 
 class CondicionesGarantia(models.Model):
