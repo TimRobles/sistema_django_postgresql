@@ -1601,7 +1601,8 @@ class ValidarSeriesTraspasoStockDetailView(PermissionRequiredMixin, FormView):
                     return super().form_invalid(form)
 
                 if buscar.estado != 'DISPONIBLE' and buscar.estado != 'REPARADO':
-                    form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
+                    if traspaso_stock_detalle.tipo_stock_inicial.id != 6:
+                        form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
                     return super().form_invalid(form)
             except:
                 form.add_error('serie', "Serie no encontrada: %s" % serie)
