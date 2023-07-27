@@ -78,66 +78,66 @@
             <tr>
                 {% if totales.descuento_global %}
                 <td colspan="11" class="text-end">Descuento Global:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.descuento_global|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.descuento_global|intcomma }}</td>
                 {% endif %}
             </tr>            
             <tr>                
                 {% if totales.total_descuento %}
                 <td colspan="11" class="text-end">Descuento Total:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_descuento|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_descuento|intcomma }}</td>
                 {% endif %}
             </tr>           
              <tr>
                 {% if totales.total_anticipo %}
                 <td colspan="11" class="text-end">Anticipo:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>                  
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>                  
                 {% endif %}   
             </tr>
             <tr>
                 {% if totales.total_exonerada %}
                 <td colspan="11" class="text-end">Exonerada:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_exonerada|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_exonerada|intcomma }}</td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_inafecta %}
                 <td colspan="11" class="text-end">Inafecta:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_gravada %}
                 <td colspan="11" class="text-end">Gravada:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_igv %}
                 <td colspan="11" class="text-end">IGV:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_gratuita %}
                 <td colspan="11" class="text-end">Gratuita:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_otros_cargos %}
                 <td colspan="11" class="text-end">Otros Cargos:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
                 {% endif %}
             </tr>
             <tr>
                 {% if totales.total_icbper %}
                 <td colspan="11" class="text-end">ICBPER:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
                 {% endif %}
             </tr>
             <tr>
                 <td colspan="11" class="text-end">Total:</td>
-                <td class="text-end">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ totales.total|intcomma }}</td>
             </tr>
         </tfoot>
 
