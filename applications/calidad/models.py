@@ -116,35 +116,35 @@ class Serie(models.Model):
     @property
     def estado(self):
         if self.HistorialEstadoSerie_serie.all():
-            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.descripcion
+            return self.HistorialEstadoSerie_serie.latest('updated_at').estado_serie.descripcion
         else:
             return ""
 
     @property
     def estado_serie(self):
         try:
-            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie
+            return self.HistorialEstadoSerie_serie.latest('updated_at').estado_serie
         except:
             return None
 
     @property
     def numero_estado(self):
         if self.HistorialEstadoSerie_serie.all():
-            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.numero_estado
+            return self.HistorialEstadoSerie_serie.latest('updated_at').estado_serie.numero_estado
         else:
             return ""
 
     @property
     def ultimo_estado(self):
         if self.HistorialEstadoSerie_serie.all():
-            return self.HistorialEstadoSerie_serie.latest('created_at')
+            return self.HistorialEstadoSerie_serie.latest('updated_at')
         else:
             return ""
 
     @property
     def ultimo_movimiento(self):
         if self.serie_movimiento_almacen.all():
-            return self.serie_movimiento_almacen.latest('created_at')
+            return self.serie_movimiento_almacen.latest('updated_at')
         else:
             return ""
 
@@ -225,7 +225,9 @@ class HistorialEstadoSerie(models.Model):
         verbose_name = 'Historial Estado Serie'
         verbose_name_plural = 'Historial Estado Series'
         ordering = [
+            '-updated_at',
             '-created_at',
+            '-id',
             ]
 
     def __str__(self):
