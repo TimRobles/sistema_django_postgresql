@@ -4,7 +4,7 @@
 <h3> Detalle Tarea
     <a href="{% url 'tarea_app:tarea_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 
-    {% if contexto_tarea.content_type != content_cliente %}
+    {% if contexto_tarea.content_type != content_cliente or contexto_tarea.content_type == None %}
     <button data-form-url="{% url 'tarea_app:tarea_detalle_asignar' contexto_tarea.id %}"
         class="delete btn btn-success">
         Asignar Evento

@@ -170,7 +170,7 @@ def slug_aleatorio(modelo):
 def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, anticipo_regularizacion=False, tipo_cambio=Decimal('1')):
     respuesta = {}
 
-    if tipo_igv==17:
+    if tipo_igv==17 or tipo_igv==8:
         precio_unitario_con_igv = precio_final_con_igv
         precio_unitario_sin_igv = precio_unitario_con_igv
         precio_final_sin_igv = precio_final_con_igv
@@ -182,7 +182,7 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
     descuento = (descuento_unitario * Decimal(cantidad)).quantize(Decimal('0.01'))
 
     total = (Decimal(cantidad) * precio_final_con_igv).quantize(Decimal('0.01'))
-    if tipo_igv==17:
+    if tipo_igv==17 or tipo_igv==8:
         subtotal = total
     else:
         subtotal = (Decimal(cantidad) * precio_final_sin_igv).quantize(Decimal('0.01'))

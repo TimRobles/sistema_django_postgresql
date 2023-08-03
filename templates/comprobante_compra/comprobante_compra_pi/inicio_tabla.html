@@ -7,6 +7,7 @@
             <th>Proveedor</th>
             <th>Interlocutor</th>
             <th>Fecha Estimada de Llegada</th>
+            <th>Logistico</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
 
@@ -26,6 +27,7 @@
                 {{ comprobante_compra_pi.fecha_estimada_llegada|date:'d/m/Y' }}
                 {% endif %}    
             </td>
+            <td>{{ comprobante_compra_pi.logistico}}</td>
             <td>{{ comprobante_compra_pi.get_estado_display}}</td>
             <td class="text-nowrap text-center">
                 <a href="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle' comprobante_compra_pi.slug %}"

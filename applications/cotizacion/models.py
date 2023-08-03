@@ -510,7 +510,7 @@ class CotizacionSociedad(models.Model):
         verbose_name = 'Cotizacion Sociedad'
         verbose_name_plural = 'Cotizacion Sociedades'
         ordering = [
-            'id',
+            'sociedad__id',
         ]
     
     @property

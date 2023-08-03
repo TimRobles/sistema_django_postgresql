@@ -116,35 +116,35 @@ class Serie(models.Model):
     @property
     def estado(self):
         if self.HistorialEstadoSerie_serie.all():
-            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.descripcion
+            return self.HistorialEstadoSerie_serie.latest('updated_at').estado_serie.descripcion
         else:
             return ""
 
     @property
     def estado_serie(self):
         try:
-            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie
+            return self.HistorialEstadoSerie_serie.latest('updated_at').estado_serie
         except:
             return None
 
     @property
     def numero_estado(self):
         if self.HistorialEstadoSerie_serie.all():
-            return self.HistorialEstadoSerie_serie.latest('created_at').estado_serie.numero_estado
+            return self.HistorialEstadoSerie_serie.latest('updated_at').estado_serie.numero_estado
         else:
             return ""
 
     @property
     def ultimo_estado(self):
         if self.HistorialEstadoSerie_serie.all():
-            return self.HistorialEstadoSerie_serie.latest('created_at')
+            return self.HistorialEstadoSerie_serie.latest('updated_at')
         else:
             return ""
 
     @property
     def ultimo_movimiento(self):
         if self.serie_movimiento_almacen.all():
-            return self.serie_movimiento_almacen.latest('created_at')
+            return self.serie_movimiento_almacen.latest('updated_at')
         else:
             return ""
 
@@ -184,6 +184,7 @@ class SerieCalidad(models.Model):
     ESTADOS_SERIE_CALIDAD = (
         (1, 'DISPONIBLE'),
         (2, 'DUPLICADO'),
+        (3, 'DEVOLUCIÓN'),
     )
     serie = models.CharField('Nro. Serie', max_length=200)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #Material
@@ -224,7 +225,9 @@ class HistorialEstadoSerie(models.Model):
         verbose_name = 'Historial Estado Serie'
         verbose_name_plural = 'Historial Estado Series'
         ordering = [
+            '-updated_at',
             '-created_at',
+            '-id',
             ]
 
     def __str__(self):
@@ -232,7 +235,7 @@ class HistorialEstadoSerie(models.Model):
 
 class NotaControlCalidadStock(models.Model):
     nro_nota_calidad = models.CharField('Nro. Nota Calidad', max_length=50, blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #NotaIngreso / Transformacion SIN QA
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #NotaIngreso / Transformacion SIN QA / NotaDevolucion
     id_registro = models.IntegerField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
@@ -288,7 +291,7 @@ class NotaControlCalidadStockDetalle(models.Model):
     (2, 'DAÑADO'),
     ]
     item = models.IntegerField(blank=True, null=True)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #NotaIngresoDetalle / SalidaTransformacionProductos
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT,blank=True, null=True) #NotaIngresoDetalle / SalidaTransformacionProductos / NotaDevolucionDetalle
     id_registro = models.IntegerField(blank=True, null=True)
     cantidad_calidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     inspeccion = models.IntegerField('Estado Inspección',choices=ESTADOS_INSPECCION, default=1)

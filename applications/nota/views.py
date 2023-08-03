@@ -779,7 +779,7 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
 
 
 class NotaDevolucionView(PermissionRequiredMixin, FormView):
-    permission_required = ('nota.view_notacredito')
+    permission_required = ('nota.view_notadevolucion')
     template_name = "notas/nota_devolucion/inicio.html"
     form_class = NotaDevolucionBuscarForm
     success_url = '.'
@@ -1029,7 +1029,7 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         if error_almacen:
-            context['texto'] = 'Hay productos sin Código de Sunat.'
+            context['texto'] = 'Hay productos sin un almacén.'
             return render(request, 'includes/modal sin permiso.html', context)
 
         return super().dispatch(request, *args, **kwargs)
@@ -1042,9 +1042,9 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
-                nota_devolucion = self.get_object()
+                self.nota_devolucion = self.get_object()
                 movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
-                for detalle in nota_devolucion.detalles:
+                for detalle in self.nota_devolucion.detalles:
                     movimiento_uno = MovimientosAlmacen.objects.create(
                         content_type_producto = detalle.content_type,
                         id_registro_producto = detalle.id_registro,
@@ -1052,10 +1052,10 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                         tipo_movimiento = movimiento_final,
                         tipo_stock = movimiento_final.tipo_stock_inicial,
                         signo_factor_multiplicador = -1,
-                        content_type_documento_proceso = ContentType.objects.get_for_model(nota_devolucion),
-                        id_registro_documento_proceso = nota_devolucion.id,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(self.nota_devolucion),
+                        id_registro_documento_proceso = self.nota_devolucion.id,
                         almacen = None,
-                        sociedad = nota_devolucion.sociedad,
+                        sociedad = self.nota_devolucion.sociedad,
                         movimiento_anterior = None,
                         movimiento_reversion = False,
                         created_by = self.request.user,
@@ -1068,26 +1068,26 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                         tipo_movimiento = movimiento_final,
                         tipo_stock = movimiento_final.tipo_stock_final,
                         signo_factor_multiplicador = +1,
-                        content_type_documento_proceso = ContentType.objects.get_for_model(nota_devolucion),
-                        id_registro_documento_proceso = nota_devolucion.id,
+                        content_type_documento_proceso = ContentType.objects.get_for_model(self.nota_devolucion),
+                        id_registro_documento_proceso = self.nota_devolucion.id,
                         almacen = detalle.almacen,
-                        sociedad = nota_devolucion.sociedad,
+                        sociedad = self.nota_devolucion.sociedad,
                         movimiento_anterior = movimiento_uno,
                         movimiento_reversion = False,
                         created_by = self.request.user,
                         updated_by = self.request.user,
                     )
                     
-
+                self.nota_devolucion.fecha_devolucion = date.today()
+                self.nota_devolucion.estado = 2
+                registro_guardar(self.nota_devolucion, self.request)
+                self.nota_devolucion.save()
                 self.request.session['primero'] = False
-                registro_guardar(self.object, self.request)
-                self.object.save()
                 messages.success(request, MENSAJE_GENERAR_NOTA_DEVOLUCION)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
-        self.nota_devolucion = nota_devolucion
-        return HttpResponseRedirect(reverse_lazy('nota_app:nota_devolucion_detalle', kwargs={'pk': nota_devolucion.id}))
+        return HttpResponseRedirect(reverse_lazy('nota_app:nota_devolucion_detalle', kwargs={'pk': self.nota_devolucion.id}))
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -1121,7 +1121,7 @@ class NotaDevolucionDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 
 
 class NotaDevolucionDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('nota.change_notacredito')
+    permission_required = ('nota.change_notadevolucion')
     model = NotaDevolucionDetalle
     template_name = "includes/formulario generico.html"
     form_class = NotaDevolucionDetalleForm
@@ -1144,7 +1144,7 @@ class NotaDevolucionDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView
 
 
 class NotaDevolucionObservacionesUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('nota.change_notacredito')
+    permission_required = ('nota.change_notadevolucion')
     model = NotaDevolucion
     template_name = "includes/formulario generico.html"
     form_class = NotaDevolucionObservacionForm

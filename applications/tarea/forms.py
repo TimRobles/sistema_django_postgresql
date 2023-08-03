@@ -87,6 +87,7 @@ class TareaForm(BSModalModelForm):
             visible.field.required = True
         self.fields['apoyo'].widget.attrs['class'] = 'nobull'
         self.fields['apoyo'].required = False
+        self.fields['cliente'].required = False
         # self.fields['apoyo'].widget.attrs['class'] = 'form-check-input'
 
 

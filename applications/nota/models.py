@@ -291,4 +291,4 @@ class NotaDevolucionDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id = self.id_registro)
 
     def __str__(self):
-        return "%s - %s" % (self.nota_devolucion, self.almacen)
+        return f"{self.producto}, {self.almacen} - {self.cantidad}"
