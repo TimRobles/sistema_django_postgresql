@@ -18,18 +18,39 @@ from applications.material.models import Material
 from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
 
-from applications.reportes.forms import ReporteStockSociedadPdfForm, ReporteVentasDepartamentoPdfForm, ReportesFiltrosForm
-
+from applications.reportes.forms import (
+    ReporteComportamientoClienteExcelForm,
+    ReporteFacturacionAsesorComercialExcelForm,
+    ReporteFacturacionGeneralExcelForm, 
+    ReporteStockSociedadPdfForm, 
+    ReporteVentasDepartamentoPdfForm, 
+    ReportesFiltrosForm, 
+    ReporteVentasDepartamentoExcelForm
+    )
 from applications.reportes.funciones import *
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.pdf import*
-from applications.reportes.pdf import generar_reporte_cobranza, generarReporteCobranza, generarReporteDeudas, generarReporteResumenStockProductos, generarReporteStockMalogradoSociedad, generarReporteStockSociedad, generarReporteVentasDepartamento, reporte_cobranza
+from applications.reportes.pdf import (
+    generar_reporte_cobranza, 
+    generarReporteCobranza, 
+    generarReporteDeudas, 
+    generarReporteResumenStockProductos, 
+    generarReporteStockMalogradoSociedad, 
+    generarReporteStockSociedad, 
+    generarReporteVentasDepartamento, 
+    reporte_cobranza
+    )
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
 from applications.crm.models import ClienteCRM
 from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM
-
-
+from applications.reportes.excel import (
+    ReporteClienteCRMExcel,
+    ReporteComportamientoCliente, 
+    ReporteFacturacionAsesorComercial, 
+    ReporteFacturacionGeneral, 
+    ReporteVentasDepartamento
+    )
 class ReportesView(FormView):
     template_name = "reportes/inicio.html"
     form_class = ReportesFiltrosForm
@@ -41,11 +62,6 @@ class ReportesView(FormView):
         kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
         kwargs['filtro_fecha_fin'] = self.request.GET.get('fecha_fin')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
-        # global global_sociedad, global_fecha_inicio, global_fecha_fin, global_cliente 
-        # global_sociedad = self.request.GET.get('sociedad')
-        # global_fecha_inicio = self.request.GET.get('fecha_inicio')
-        # global_fecha_fin = self.request.GET.get('fecha_fin')
-        # global_cliente = self.request.GET.get('cliente')
         return kwargs
     
     def get_context_data(self, **kwargs):
@@ -3869,378 +3885,88 @@ class ReporteStockSociedadPdf(TemplateView):
         context['form'] = ReporteStockSociedadPdfForm()
         context['form2'] = ReporteVentasDepartamentoPdfForm()
         return context
-    
 
-    
+####################################################  REPORTES CRM  ####################################################   
 
-#########################################################################################################
+class ReportesCRM(TemplateView):
+    template_name = 'reportes/reportes_crm.html'
 
-class ReportesCRMView(TemplateView):
-    template_name = "reportes/inicio_crm.html"
+    def post(self,request, *args,**kwargs):
+        formulario = self.request.POST.get('formulario')
+        if formulario == 'formulario1':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+            asesor_comercial = self.request.POST.get('asesor_comercial')
 
-class ReporteClienteCRM(TemplateView):
-    def get(self,request, *args,**kwargs):
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
 
-        def consulta_clientes_crm():
+            if asesor_comercial:
+                titulo = f'Reporte Facturación por Asesor Comercial - {asesor_comercial}'
+            else:
+                titulo = f'Reporte Facturación por Asesor Comercial - TODOS'
 
-            sql_clientes_crm = ''' SELECT
-                MAX(cc.id) AS id,
-                MAX(cc.id) AS id_cliente_crm,
-                to_char(MAX(cc.fecha_registro), 'DD/MM/YYYY') AS fecha_registro,
-                MAX(ccl.razon_social) AS razon_social,
-                MAX(cc.estado) AS estado,
-                MAX(cc.medio) AS medio,
-                MAX(ccl.numero_documento) AS ruc,
-                MAX(dgp.nombre) AS pais,
-                MAX(dgd.nombre) AS distrito,
-                to_char(MAX(ccd.fecha), 'DD/MM/YYYY') AS fecha,
-                MAX(cti.numero) AS telefono,
-                MAX(cci.correo) AS correo
-                FROM crm_clientecrm cc
-                LEFT JOIN clientes_cliente ccl
-                    ON ccl.id=cc.cliente_crm_id
-                LEFT JOIN crm_clientecrmdetalle ccd
-                    ON ccd.cliente_crm_id=cc.id
-                LEFT JOIN datos_globales_pais dgp
-                    ON dgp.id=ccl.pais_id
-                LEFT JOIN datos_globales_distrito dgd
-                    ON dgd.codigo=ccl.ubigeo 
-                LEFT JOIN clientes_representantelegalcliente crl
-                    ON crl.cliente_id=cc.cliente_crm_id
-                LEFT JOIN clientes_telefonointerlocutorcliente cti
-                    ON cti.id=crl.interlocutor_id
-                LEFT JOIN clientes_correointerlocutorcliente cci
-                    ON cci.id=crl.interlocutor_id
-                GROUP BY cc.id
-                ORDER BY cc.fecha_registro;'''
-            query_info = ClienteCRM.objects.raw(sql_clientes_crm)
+            wb = ReporteFacturacionAsesorComercial(fecha_inicio, fecha_fin, asesor_comercial)
+        
+        elif formulario == 'formulario2':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+            departamento = self.request.POST.get('departamento')
 
-            list_estado = ESTADOS_CLIENTE_CRM
-            DICT_ESTADO = dict(list_estado)
-            list_medio = MEDIO
-            DICT_MEDIO = dict(list_medio)
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
 
+            if departamento:
+                titulo = f'Reporte Ventas por Departamento - {departamento}'
+            else:
+                titulo = f'Reporte Ventas por Departamento - TODOS'
 
-            info = []
-            for fila in query_info:
-                lista_datos = []
-                lista_datos.append(fila.fecha_registro)
-                lista_datos.append(fila.razon_social)
-                lista_datos.append(DICT_ESTADO[fila.estado])
-                lista_datos.append(DICT_MEDIO[fila.medio])
-                lista_datos.append(fila.ruc)
-                lista_datos.append(fila.pais)
-                lista_datos.append(fila.distrito)
-                lista_datos.append(fila.fecha)
-                lista_datos.append(fila.telefono)
-                lista_datos.append(fila.correo)
-                info.append(lista_datos)
-
-            return info
-
-        def generar_reporte():
-
-            info = consulta_clientes_crm()
-
-            list_encabezado = [
-                'Fecha de Registro',
-                'Razón Social',
-                'Estado',
-                'Medio',
-                'RUC',
-                'País',
-                'Distrito',
-                'Fecha de Última Actividad',
-                'Teléfono',
-                'Correo Electrónico',
-                ]
-
-            color_relleno = rellenoSociedad('None')
-
-            wb = Workbook()
-            hoja = wb.active
-            hoja.title = 'Cliente CRM'
-            hoja.append(tuple(list_encabezado))
-
-            col_range = hoja.max_column  # get max columns in the worksheet
-            # cabecera de la tabla
-            for col in range(1, col_range + 1):
-                cell_header = hoja.cell(1, col)
-                cell_header.fill = color_relleno
-                cell_header.font = NEGRITA
-
-            for fila in info:
-                hoja.append(fila)
-
-            for row in hoja.rows:
-                for col in range(hoja.max_column):
-                    row[col].border = BORDE_DELGADO
-                    if col == 0 or col == 7:
-                        row[col].alignment = ALINEACION_CENTRO
-
-            ajustarColumnasSheet(hoja)
-            return wb
-    
-        wb=generar_reporte()
-        nombre_archivo = "Reporte Clientes CRM - " + FECHA_HOY + ".xlsx"
-        respuesta = HttpResponse(content_type='application/ms-excel')
-        content = "attachment; filename ={0}".format(nombre_archivo)
-        respuesta['content-disposition']= content
-        wb.save(respuesta)
-        return respuesta
-
-
-class ReporteFacturacionAnual(TemplateView):
-    def get(self,request, *args,**kwargs):
-
-        def consulta_facturacion_crm():
-
-            sql_facturas = ''' (SELECT 
-                MAX(cvf.id) AS id,
-                MAX(cc.razon_social) AS cliente_denominacion,
-                COUNT(DISTINCT cvf.id) AS numero_transacciones,
-                SUM(cvf.total) AS monto_facturado,
-                '' AS fecha_actual,
-                to_char(MAX(cc.created_at), 'YYYY-MM-DD') AS dias,
-                to_char(MAX(cc.created_at), 'YYYY-MM-DD') AS meses,
-                to_char(MAX(cc.created_at), 'YYYY-MM-DD') AS years,
-                MAX(ccc.correo) AS correo
-                FROM comprobante_venta_facturaventa cvf
-                LEFT JOIN clientes_cliente cc
-                    ON cc.id=cvf.cliente_id
-                LEFT JOIN clientes_correocliente ccc
-                    ON ccc.cliente_id=cvf.cliente_id
-                WHERE cvf.fecha_emision <= '%s' AND cvf.estado = 4
-                GROUP BY cc.razon_social
-                ORDER BY cc.razon_social DESC)
-                UNION
-                (SELECT 
-                MAX(cvb.id) AS id,
-                MAX(cc.razon_social) AS cliente_denominacion,
-                COUNT(DISTINCT cvb.id) AS numero_transacciones,
-                SUM(cvb.total) AS monto_facturado,
-                '' AS fecha_actual,
-                to_char(MAX(cc.created_at), 'YYYY-MM-DD') AS dias,
-                to_char(MAX(cc.created_at), 'YYYY-MM-DD') AS meses,
-                to_char(MAX(cc.created_at), 'YYYY-MM-DD') AS years,
-                MAX(ccc.correo) AS correo
-                FROM comprobante_venta_facturaventa cvb
-                LEFT JOIN clientes_cliente cc
-                    ON cc.id=cvb.cliente_id
-                LEFT JOIN clientes_correocliente ccc
-                    ON ccc.cliente_id=cvb.cliente_id
-                WHERE cvb.fecha_emision <= '%s' AND cvb.estado = 4
-                GROUP BY cc.razon_social
-                ORDER BY cc.razon_social DESC) ; ''' %(FECHA_HOY, FECHA_HOY)
-            query_info_facturas = FacturaVenta.objects.raw(sql_facturas)
+            wb = ReporteVentasDepartamento(titulo, fecha_inicio, fecha_fin, departamento)
             
-            info_facturas = []
+        elif formulario == 'formulario3':
 
-            for fila in query_info_facturas:
-                lista_datos = []
-                lista_datos.append(fila.cliente_denominacion)
-                lista_datos.append(fila.numero_transacciones)
-                lista_datos.append(fila.monto_facturado)
-                lista_datos.append(fila.fecha_actual)
-                lista_datos.append(fila.dias)
-                lista_datos.append(fila.meses)
-                lista_datos.append(fila.years)
-                lista_datos.append(fila.correo)
-                info_facturas.append(lista_datos)
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            titulo = 'Reporte Cliente CRM' + '_' + str(FECHA_HOY)
 
+            wb = ReporteClienteCRMExcel()
+        
+        elif formulario == 'formulario4':
+            fecha_cierre = datetime.strptime(self.request.POST.get('fecha_cierre'),"%Y-%m-%d")
 
-            for fila in info_facturas:
-                if fila[3] == '':
-                    fila[3] = datetime.now().strftime("%d/%m/%Y")
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            titulo = 'Reporte Facturación General' + '_' + str(fecha_cierre.date())
 
-                if fila[4] != '':
-                    fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-                    fecha1 = datetime.strptime(fecha_hoy, '%Y-%m-%d')
-                    fecha2 = datetime.strptime(fila[4], '%Y-%m-%d')
-                    dias = (fecha1 - fecha2) / timedelta(days=1)
-                    fila[4] = str(dias)
+            wb = ReporteFacturacionGeneral(fecha_cierre)
 
-                if fila[5] != '':
-                    fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-                    fecha1 = datetime.strptime(fecha_hoy, '%Y-%m-%d')
-                    fecha2 = datetime.strptime(fila[5], '%Y-%m-%d')
-                    meses = (fecha1.year - fecha2.year)* 12 + (fecha1.month - fecha2.month)
-                    fila[5] = str(meses)
+        elif formulario == 'formulario5':
+            cliente = self.request.POST.get('cliente')
 
-                if fila[6] != '':
-                    fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-                    fecha1 = datetime.strptime(fecha_hoy, '%Y-%m-%d')
-                    fecha2 = datetime.strptime(fila[6], '%Y-%m-%d')
-                    years = (fecha1.year - fecha2.year) + (fecha1.month - fecha2.month)/12
-                    fila[6] = str(years)
-                
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            titulo = 'Reporte Comportamiento Cliente' + '_' + str(FECHA_HOY)
 
-            return info_facturas
-
-        def generar_reporte():
-
-            info = consulta_facturacion_crm()
-
-            list_encabezado = [
-                'Razón Social',
-                'Nro. Transacciones',
-                'Monto Total',
-                'Fecha de Cierre',
-                'Dias desde Registro',
-                'Meses desde registro',
-                'Años desde registro',
-                'Correo Electrónico',
-                ]
-
-            color_relleno = rellenoSociedad('None')
-
-            wb = Workbook()
-            hoja = wb.active
-            hoja.title = 'Facturación'
-            hoja.append(tuple(list_encabezado))
-
-            col_range = hoja.max_column  # get max columns in the worksheet
-            # cabecera de la tabla
-            for col in range(1, col_range + 1):
-                cell_header = hoja.cell(1, col)
-                cell_header.fill = color_relleno
-                cell_header.font = NEGRITA
-
-            for fila in info:
-                hoja.append(fila)
-
-            for row in hoja.rows:
-                for col in range(hoja.max_column):
-                    row[col].border = BORDE_DELGADO
-                    if col == 1:
-                        row[col].alignment = ALINEACION_DERECHA
-                    elif col == 2:
-                        row[col].alignment = ALINEACION_DERECHA
-                        row[col].number_format = FORMATO_DOLAR
-                    elif col == 3:
-                        row[col].alignment = ALINEACION_CENTRO
-                    elif 4 <= col <=6:
-                        row[col].alignment = ALINEACION_DERECHA
-
-            ajustarColumnasSheet(hoja)
-            return wb
-    
-        wb=generar_reporte()
-        nombre_archivo = "Reporte Facturación General - " + FECHA_HOY + ".xlsx"
+            wb = ReporteComportamientoCliente(cliente)
+            
         respuesta = HttpResponse(content_type='application/ms-excel')
-        content = "attachment; filename ={0}".format(nombre_archivo)
+        content = "attachment; filename ={0}".format(titulo + '.xlsx')
         respuesta['content-disposition']= content
+
         wb.save(respuesta)
         return respuesta
 
+    def get_context_data(self, **kwargs):
+        context = super(ReportesCRM, self).get_context_data(**kwargs)
+        context['form'] = ReporteFacturacionAsesorComercialExcelForm()
+        context['form2'] = ReporteVentasDepartamentoExcelForm()
+        context['form4'] = ReporteFacturacionGeneralExcelForm()
+        context['form5'] = ReporteComportamientoClienteExcelForm()
 
-# class ReporteEncuestaCRM(TemplateView):
-#     def get(self,request, *args,**kwargs):
-
-#         def consulta_encuesta_crm():
-
-#             sql_clientes_crm = ''' SELECT
-#                 MAX(cc.id) AS id,
-#                 MAX(cc.id) AS id_cliente_crm,
-#                 to_char(MAX(cc.fecha_registro), 'DD/MM/YYYY') AS fecha_registro,
-#                 MAX(ccl.razon_social) AS razon_social,
-#                 MAX(cc.estado) AS estado,
-#                 MAX(cc.medio) AS medio,
-#                 MAX(ccl.numero_documento) AS ruc,
-#                 MAX(dgp.nombre) AS pais,
-#                 MAX(dgd.nombre) AS distrito,
-#                 to_char(MAX(ccd.fecha), 'DD/MM/YYYY') AS fecha,
-#                 MAX(cti.numero) AS telefono,
-#                 MAX(cci.correo) AS correo
-#                 FROM crm_clientecrm cc
-#                 LEFT JOIN clientes_cliente ccl
-#                     ON ccl.id=cc.cliente_crm_id
-#                 LEFT JOIN crm_clientecrmdetalle ccd
-#                     ON ccd.cliente_crm_id=cc.id
-#                 LEFT JOIN datos_globales_pais dgp
-#                     ON dgp.id=ccl.pais_id
-#                 LEFT JOIN datos_globales_distrito dgd
-#                     ON dgd.codigo=ccl.ubigeo 
-#                 LEFT JOIN clientes_representantelegalcliente crl
-#                     ON crl.cliente_id=cc.cliente_crm_id
-#                 LEFT JOIN clientes_telefonointerlocutorcliente cti
-#                     ON cti.id=crl.interlocutor_id
-#                 LEFT JOIN clientes_correointerlocutorcliente cci
-#                     ON cci.id=crl.interlocutor_id
-#                 GROUP BY cc.id
-#                 ORDER BY cc.fecha_registro;'''
-#             query_info = ClienteCRM.objects.raw(sql_clientes_crm)
-
-#             list_estado = ESTADOS_CLIENTE_CRM
-#             DICT_ESTADO = dict(list_estado)
-#             list_medio = MEDIO
-#             DICT_MEDIO = dict(list_medio)
-
-
-#             info = []
-#             for fila in query_info:
-#                 lista_datos = []
-#                 lista_datos.append(fila.pregunta)
-#                 lista_datos.append(fila.razon_social)
-#                 lista_datos.append(DICT_ESTADO[fila.estado])
-#                 lista_datos.append(DICT_MEDIO[fila.medio])
-#                 lista_datos.append(fila.ruc)
-#                 lista_datos.append(fila.pais)
-#                 lista_datos.append(fila.distrito)
-#                 lista_datos.append(fila.fecha)
-#                 lista_datos.append(fila.telefono)
-#                 lista_datos.append(fila.correo)
-#                 info.append(lista_datos)
-
-#             return info
-
-#         def generar_reporte():
-
-#             info = consulta_encuesta_crm()
-
-#             list_encabezado = [
-#                 'Fecha de Registro',
-#                 'Razón Social',
-#                 'Estado',
-#                 'Medio',
-#                 'RUC',
-#                 'País',
-#                 'Distrito',
-#                 'Fecha de Última Actividad',
-#                 'Teléfono',
-#                 'Correo Electrónico',
-#                 ]
-
-#             color_relleno = rellenoSociedad('None')
-
-#             wb = Workbook()
-#             hoja = wb.active
-#             hoja.title = 'Cliente CRM'
-#             hoja.append(tuple(list_encabezado))
-
-#             col_range = hoja.max_column  # get max columns in the worksheet
-#             # cabecera de la tabla
-#             for col in range(1, col_range + 1):
-#                 cell_header = hoja.cell(1, col)
-#                 cell_header.fill = color_relleno
-#                 cell_header.font = NEGRITA
-
-#             for fila in info:
-#                 hoja.append(fila)
-
-#             for row in hoja.rows:
-#                 for col in range(hoja.max_column):
-#                     row[col].border = BORDE_DELGADO
-#                     if col == 0 or col == 7:
-#                         row[col].alignment = ALINEACION_CENTRO
-
-#             ajustarColumnasSheet(hoja)
-#             return wb
+        return context
     
-#         wb=generar_reporte()
-#         nombre_archivo = "Reporte Clientes CRM - " + FECHA_HOY + ".xlsx"
-#         respuesta = HttpResponse(content_type='application/ms-excel')
-#         content = "attachment; filename ={0}".format(nombre_archivo)
-#         respuesta['content-disposition']= content
-#         wb.save(respuesta)
-#         return respuesta

@@ -1,8 +1,10 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from applications.datos_globales.models import Departamento
 from bootstrap_modal_forms.forms import BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente
+from applications.crm.models import ClienteCRM
 
 class ReportesFiltrosForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
@@ -83,5 +85,86 @@ class ReporteVentasDepartamentoPdfForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ReporteVentasDepartamentoPdfForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+####################################################  REPORTES CRM  ####################################################   
+
+class ReporteFacturacionAsesorComercialExcelForm(forms.Form):
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    asesor_comercial = forms.ModelChoiceField(queryset=get_user_model().objects.filter(is_active=1), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteFacturacionAsesorComercialExcelForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteVentasDepartamentoExcelForm(forms.Form):
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    departamento = forms.ModelChoiceField(queryset=Departamento.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteVentasDepartamentoExcelForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteFacturacionGeneralExcelForm(forms.Form):
+    fecha_cierre = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteFacturacionGeneralExcelForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteComportamientoClienteExcelForm(forms.Form):
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteComportamientoClienteExcelForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
