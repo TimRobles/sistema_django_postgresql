@@ -107,6 +107,7 @@ def generarDocumento(tipo_de_comprobante, serie, numero, sunat_transaction, clie
         data["venta_al_credito"]=[]
         contador = 1
         for cuota in cuotas:
+            if cuota.fecha == fecha_de_emision: continue
             item={}
             item["cuota"] = contador
             item["fecha_de_pago"] = cuota.fecha.strftime("%d-%m-%Y")

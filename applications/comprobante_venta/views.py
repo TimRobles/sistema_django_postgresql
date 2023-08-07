@@ -670,13 +670,13 @@ class FacturaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
-        error_tipo_cambio = False
+        # error_tipo_cambio = False
         context['titulo'] = 'Error de guardar'
-        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
-            error_tipo_cambio = True
-        if error_tipo_cambio:
-            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
-            return render(request, 'includes/modal sin permiso.html', context)
+        # if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+        #     error_tipo_cambio = True
+        # if error_tipo_cambio:
+        #     context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+        #     return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1531,14 +1531,14 @@ class BoletaVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         context = {}
-        error_tipo_cambio = False
+        # error_tipo_cambio = False
         context['titulo'] = 'Error de guardar'
-        if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
-            error_tipo_cambio = True
+        # if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
+        #     error_tipo_cambio = True
 
-        if error_tipo_cambio:
-            context['texto'] = 'Ingrese un tipo de cambio para hoy.'
-            return render(request, 'includes/modal sin permiso.html', context)
+        # if error_tipo_cambio:
+        #     context['texto'] = 'Ingrese un tipo de cambio para hoy.'
+        #     return render(request, 'includes/modal sin permiso.html', context)
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
