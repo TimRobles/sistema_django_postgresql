@@ -12,6 +12,7 @@ import random
 import string
 from applications.soporte_sistema.models import Excepcion
 from django.contrib import messages
+from django.db import models
 import sys
 
 def consulta_ruc(ruc):
@@ -503,3 +504,49 @@ def buscar_diccionario(diccionario, objeto):
         if v.upper() == objeto.upper():
             return k
     return None
+
+
+def consulta_totales_ventas(factura_venta, boleta_venta, nota_credito, fecha_inicio, fecha_fin): #Ingresar el Model FacturaVenta, BoletaVenta, NotaCredito (no se puede registrar de frente porque habría una consulta circular)
+    facturas = factura_venta.objects.filter(fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin).values('cliente').annotate(suma_total=models.Sum('total')).order_by('suma_total')
+    boletas = boleta_venta.objects.filter(fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin).values('cliente').annotate(suma_total=models.Sum('total')).order_by('suma_total')
+    notas = nota_credito.objects.filter(fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin).values('cliente').annotate(suma_total=models.Sum('total')).order_by('suma_total')
+
+    totales = {}
+    for factura in facturas:
+        if not factura['cliente'] in totales: totales[factura['cliente']] = Decimal('0.00')
+        totales[factura['cliente']] = totales[factura['cliente']] + factura['suma_total']
+    for boleta in boletas:
+        if not boleta['cliente'] in totales: totales[boleta['cliente']] = Decimal('0.00')
+        totales[boleta['cliente']] = totales[boleta['cliente']] + boleta['suma_total']
+    for nota in notas:
+        if not nota['cliente'] in totales: totales[nota['cliente']] = Decimal('0.00')
+        totales[nota['cliente']] = totales[nota['cliente']] - nota['suma_total']
+
+    totales = list(totales.items())
+    totales.sort(key=lambda x:x[1], reverse=True)
+    print(totales)
+    return totales
+
+
+def consulta_pareto(totales, id_cliente):
+    acumulado = Decimal('0.00')
+    existe = False
+    for total in totales:
+        if id_cliente == total[1]: existe = True
+        acumulado += total[1]
+
+    if not existe: return False
+    
+    clientes_pareto = []
+    porcentaje = Decimal(0.00)
+    for total in totales:
+        porcentaje += total[1]/acumulado
+        if porcentaje < Decimal('0.2'):
+            clientes_pareto.append(total[0])
+
+    if id_cliente in totales:
+        return True
+    return False
+
+
+    
