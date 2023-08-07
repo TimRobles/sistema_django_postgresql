@@ -536,13 +536,17 @@ def consulta_pareto(totales, id_cliente):
         acumulado += total[1]
 
     if not existe: return False
-    
+
     clientes_pareto = []
-    porcentaje = Decimal(0.00)
+    porcentaje_acumulado = Decimal(0.00)
     for total in totales:
-        porcentaje += total[1]/acumulado
-        if porcentaje < Decimal('0.2'):
+        porcentaje = total[1]/acumulado
+        porcentaje_acumulado += porcentaje
+        print(total[0], total[1], porcentaje, porcentaje_acumulado)
+        if porcentaje_acumulado < Decimal('0.2'):
             clientes_pareto.append(total[0])
+    print(porcentaje_acumulado)
+    print(clientes_pareto)
 
     if id_cliente in totales:
         return True
