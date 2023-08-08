@@ -1,0 +1,126 @@
+{% load funciones_propias %}
+{% load humanize %}
+<div class="row mt-3">
+    <div class="col-auto">
+        <a href="{% url 'nota_app:nota_credito_detalle' nota_credito.id %}" class="btn btn-primary">Regresar</a>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2 text-nowrap">Razón Social:</th>
+                    <td>{{ nota_credito.cliente.razon_social }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ nota_credito.cliente.documento }}:</th>
+                    <td>
+                        {% if nota_credito.cliente.numero_documento %}
+                        {{ nota_credito.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Interlocutor:</th>
+                    <td>
+                        {% if nota_credito.cliente_interlocutor %}
+                        {{ nota_credito.cliente_interlocutor }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">N° Cotización:</th>
+                    <td>{{ nota_credito.sociedad.abreviatura }}{{ nota_credito.documento.confirmacion.cotizacion_venta.numero_cotizacion|numeroXn:6 }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Solicitud de Crédito:</th>
+                    <td>{{ nota_credito.moneda.simbolo }} {{ nota_credito.documento.confirmacion.monto_solicitado|intcomma }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Condición de Pago:</th>
+                    <td>
+                    {% if nota_credito.documento.confirmacion.condiciones_pago %}    
+                    {{ nota_credito.documento.confirmacion.condiciones_pago }}
+                    {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if nota_credito.estado == 1 or nota_credito.estado == 5 %}
+<button data-form-url="{% url 'nota_app:nota_credito_cuota_agregar' nota_credito.id %}"
+    data-table-url="{% url 'nota_app:nota_credito_cuotas_tabla' nota_credito.id  %}"
+    data-keep-open="True"
+    class="create btn btn-primary" title="Agregar Cuota">
+    Agregar Cuota
+</button>
+<button data-form-url="{% url 'nota_app:nota_credito_cuota_generar' nota_credito.id %}"
+    data-table-url="{% url 'nota_app:nota_credito_cuotas_tabla' nota_credito.id  %}"
+    data-keep-open="True"
+    class="create btn btn-primary" title="Agregar Cuota">
+    Generar Cuotas
+</button>
+{% endif %}
+
+<div class="table-responsive mt-3">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-end">#</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">Días de pago</th>
+                <th class="text-center">Fecha de pago</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cuota in nota_credito.NotaCreditoCuota_nota_credito.all %}
+                <tr>
+                    <td class="text-end">{{ forloop.counter }}</td>
+                    <td class="text-end text-nowrap">{{ nota_credito.moneda.simbolo }} {{ cuota.monto }}</td>
+                    <td class="text-end">{{ cuota.dias_mostrar }}</td>
+                    <td class="text-center">{{ cuota.fecha_mostrar|date:'d/m/Y' }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if nota_credito.estado == 1 or nota_credito.estado == 5 %}
+                        <button data-form-url="{% url 'nota_app:nota_credito_cuota_actualizar' cuota.id %}"
+                            data-table-url="{% url 'nota_app:nota_credito_cuotas_tabla' nota_credito.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+
+                        <button data-form-url="{% url 'nota_app:nota_credito_cuota_eliminar' cuota.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="text-end">Total:</th>
+                <td class="text-end text-nowrap">
+                    {% if total %}
+                    {{ nota_credito.moneda.simbolo }} {{ total|redondear|intcomma }}
+                    {% endif %}
+                </td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

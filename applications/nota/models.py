@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from django.db import models
 from decimal import Decimal
 from applications.almacenes.models import Almacen
@@ -292,3 +293,52 @@ class NotaDevolucionDetalle(models.Model):
 
     def __str__(self):
         return f"{self.producto}, {self.almacen} - {self.cantidad}"
+
+
+class NotaCreditoCuota(models.Model):
+    nota_credito = models.ForeignKey(NotaCredito, on_delete=models.CASCADE, related_name='NotaCreditoCuota_nota_credito')
+    monto = models.DecimalField(max_digits=14, decimal_places=2)
+    dias_pago = models.IntegerField('Días de pago', blank=True, null=True)
+    fecha_pago = models.DateField('Fecha de pago', auto_now=False, auto_now_add=False, blank=True, null=True)
+    dias_calculo = models.IntegerField('Días de calculo', blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NotaCreditoCuota_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='NotaCreditoCuota_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Nota de Crédito Cuota'
+        verbose_name_plural = 'Nota de Crédito Cuotas'
+        ordering = [
+            'nota_credito',
+            'dias_calculo',
+            ]
+
+    @property
+    def fecha(self):
+        return date.today()
+
+    @property
+    def fecha_mostrar(self):
+        if self.fecha_pago:
+            return self.fecha_pago
+        return date.today() + timedelta(self.dias_calculo)
+
+    @property
+    def dias_mostrar(self):
+        return (self.fecha_mostrar - date.today()).days
+
+    def save(self, **kwargs):
+        if self.dias_pago:
+            self.dias_calculo = self.dias_pago
+        else:
+            if self.fecha_pago:
+                self.dias_calculo = (self.fecha_pago - self.fecha).days
+            else:
+                self.dias_calculo = 0
+        
+        return super().save(**kwargs)
+
+    def __str__(self):
+        return "%s - %s - %s - %s" % (self.nota_credito, self.monto, self.dias_pago, self.fecha_pago)

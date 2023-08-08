@@ -1,0 +1,21 @@
+{% extends 'includes/formulario generico.html' %}
+{% load funciones_propias %}
+{% load static %}
+
+{% block arriba %}
+<div class="input-group flex-nowrap mt-3">
+    <label class="input-group-text">Saldo:</label>
+    <input class="form-control" type="text" id="saldo" value="{{ saldo }}" disabled>
+</div>
+{% endblock arriba %}
+
+{% block abajo %}
+<div class="input-group flex-nowrap mt-3">
+    <label class="input-group-text">Pendiente:</label>
+    <input class="form-control" type="text" id="pendiente" disabled>
+</div>
+{% endblock abajo %}
+
+{% block js %}
+<script src="{% static 'js/cotizacion/cotizacion_venta/form_cuotas.js' %}?{{ cache_bust }}"></script> 
+{% endblock js %}

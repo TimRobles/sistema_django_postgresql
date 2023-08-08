@@ -2,7 +2,7 @@ from django import forms
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.datos_globales.models import SeriesComprobante
 from applications.material.models import Material
-from applications.nota.models import NotaCredito, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
+from applications.nota.models import NotaCredito, NotaCreditoCuota, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
 from django.contrib.contenttypes.models import ContentType
 
 from applications.sociedad.models import Sociedad
@@ -246,3 +246,49 @@ class NotaCreditoMaterialDetalleForm(BSModalForm):
         self.fields['material'].queryset = Material.objects.filter(id__in = lista_materiales)
         self.fields['cantidad'].widget.attrs['min'] = 0
         self.fields['cantidad'].widget.attrs['step'] = 0.001
+
+
+class NotaCreditoCuotaForm(BSModalModelForm):
+    class Meta:
+        model = NotaCreditoCuota
+        fields = (
+            'monto',
+            'dias_pago',
+            'fecha_pago',
+            )
+        widgets = {
+            'fecha_pago' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(NotaCreditoCuotaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['monto'].widget.attrs['min'] = 0
+        self.fields['dias_pago'].widget.attrs['min'] = 0
+
+
+class NotaCreditoGenerarCuotasForm(BSModalForm):
+    monto_total = forms.DecimalField(required=True)
+    numero_cuotas = forms.IntegerField(required=True)
+    intervalo_cuotas = forms.IntegerField(required=True)
+
+    class Meta:
+        fields = (
+            'monto_total',
+            'numero_cuotas',
+            'intervalo_cuotas',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaCreditoGenerarCuotasForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['monto_total'].widget.attrs['min'] = 0
+        self.fields['numero_cuotas'].widget.attrs['min'] = 0
+        self.fields['intervalo_cuotas'].widget.attrs['min'] = 0

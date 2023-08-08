@@ -401,6 +401,7 @@ class ConfirmacionVentaCuotaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['monto'].widget.attrs['min'] = 0
         self.fields['dias_pago'].widget.attrs['min'] = 0
+        
 
 class ConfirmacionOrdenCompraForm(BSModalModelForm):
     class Meta:

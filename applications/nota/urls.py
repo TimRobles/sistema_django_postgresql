@@ -21,6 +21,14 @@ urlNotaCredito = [
     path('nota-credito/nubefact/consultar/<pk>/', views.NotaCreditoNubefactConsultarView.as_view(), name='nota_credito_nubefact_consultar'),
     path('nota-credito/observacion/<pk>/', views.NotaCreditoObservacionUpdateView.as_view(), name='nota_credito_observacion'),
 
+    path('nota-credito/ver/cuotas/<pk>/', views.NotaCreditoVerCuotaView.as_view(), name='nota_credito_ver_cuotas'),
+    path('nota-credito/cuotas/<int:id_nota_credito>/', views.NotaCreditoCuotaView.as_view(), name='nota_credito_cuotas'),
+    path('nota-credito/cuotas/tabla/<int:id_nota_credito>/', views.NotaCreditoCuotaTabla, name='nota_credito_cuotas_tabla'),
+    path('nota-credito/cuota/generar/<int:id_nota_credito>/',views.NotaCreditoGenerarCuotasFormView.as_view(),name='nota_credito_cuota_generar'),
+    path('nota-credito/cuota/agregar/<int:id_nota_credito>/',views.NotaCreditoCuotaCreateView.as_view(),name='nota_credito_cuota_agregar'),
+    path('nota-credito/cuota/actualizar/<pk>/',views.NotaCreditoCuotaUpdateView.as_view(),name='nota_credito_cuota_actualizar'),
+    path('nota-credito/cuota/eliminar/<pk>/',views.NotaCreditoCuotaDeleteView.as_view(),name='nota_credito_cuota_eliminar'),
+
     path('nota-devolucion/generar/<pk>/',views.GenerarNotaDevolucionView.as_view(),name='nota_devolucion_generar'),
     path('nota-devolucion/finalizar/<pk>/',views.FinalizarNotaDevolucionView.as_view(),name='nota_devolucion_finalizar'),
     path('nota-devolucion/inicio/',views.NotaDevolucionView.as_view(),name='nota_devolucion_inicio'),

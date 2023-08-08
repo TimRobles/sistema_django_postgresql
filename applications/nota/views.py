@@ -1,4 +1,6 @@
+from datetime import timedelta
 from decimal import Decimal
+from applications import cobranza
 from applications.almacenes.models import Almacen
 from applications.clientes.models import Cliente
 from applications.cobranza.funciones import eliminarNota, generarNota
@@ -8,8 +10,8 @@ from applications.datos_globales.models import DocumentoFisico, NubefactRespuest
 from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
-from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm, NotaDevolucionBuscarForm, NotaDevolucionDetalleForm, NotaDevolucionObservacionForm
-from applications.nota.models import NotaCredito, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
+from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoCuotaForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoGenerarCuotasForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm, NotaDevolucionBuscarForm, NotaDevolucionDetalleForm, NotaDevolucionObservacionForm
+from applications.nota.models import NotaCredito, NotaCreditoCuota, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
 
 
@@ -485,45 +487,37 @@ class NotaCreditoGuardarView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             obj = self.get_object()
-            #Se necesita un documento anterior para generar el saldo a favor y el movimiento
             if not obj.tipo_nota_credito in TIPO_NOTA_CREDITO_SIN_NADA:
                 generarNota(obj, self.request)
-            # if obj.tipo_nota_credito in TIPO_NOTA_CREDITO_CON_DEVOLUCION:
-            #     movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
-            #     for detalle in obj.detalles:
-            #         movimiento_uno = MovimientosAlmacen.objects.create(
-            #             content_type_producto = detalle.content_type,
-            #             id_registro_producto = detalle.id_registro,
-            #             cantidad = detalle.cantidad,
-            #             tipo_movimiento = movimiento_final,
-            #             tipo_stock = movimiento_final.tipo_stock_inicial,
-            #             signo_factor_multiplicador = -1,
-            #             content_type_documento_proceso = ContentType.objects.get_for_model(obj),
-            #             id_registro_documento_proceso = obj.id,
-            #             almacen = None,
-            #             sociedad = obj.sociedad,
-            #             movimiento_anterior = None,
-            #             movimiento_reversion = False,
-            #             created_by = self.request.user,
-            #             updated_by = self.request.user,
-            #         )
-            #         movimiento_dos = MovimientosAlmacen.objects.create(
-            #             content_type_producto = detalle.content_type,
-            #             id_registro_producto = detalle.id_registro,
-            #             cantidad = detalle.cantidad,
-            #             tipo_movimiento = movimiento_final,
-            #             tipo_stock = movimiento_final.tipo_stock_final,
-            #             signo_factor_multiplicador = +1,
-            #             content_type_documento_proceso = ContentType.objects.get_for_model(obj),
-            #             id_registro_documento_proceso = obj.id,
-            #             almacen = Almacen.objects.get(id=1),
-            #             sociedad = obj.sociedad,
-            #             movimiento_anterior = movimiento_uno,
-            #             movimiento_reversion = False,
-            #             created_by = self.request.user,
-            #             updated_by = self.request.user,
-            #         )
             obj.fecha_emision = date.today()
+            if obj.tipo_nota_credito == 13: #Ajuste de montos y/o fecha de pago
+                deuda = cobranza.models.Deuda.objects.get(content_type=ContentType.objects.get_for_model(obj.documento), id_registro=obj.documento.id)
+                print(deuda.Cuota_deuda.all())
+                for cuota in deuda.Cuota_deuda.all():
+                    cuota.delete()
+                print(deuda.Cuota_deuda.all())
+                for cuota in obj.NotaCreditoCuota_nota_credito.all():
+                    if cuota.fecha_pago:
+                        fecha = cuota.fecha_pago
+                    else:
+                        fecha = date.today() + timedelta(cuota.dias_pago)
+                    cobranza.models.Cuota.objects.create(
+                        deuda=deuda,
+                        fecha=fecha,
+                        monto=cuota.monto,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+                print(deuda.Cuota_deuda.all())
+                for detalle in obj.NotaCreditoDetalle_nota_credito.all():
+                    detalle.precio_unitario_sin_igv = Decimal('0.00')
+                    detalle.precio_unitario_con_igv = Decimal('0.00')
+                    detalle.precio_final_con_igv = Decimal('0.00')
+                    detalle.descuento = Decimal('0.00')
+                    detalle.sub_total = Decimal('0.00')
+                    detalle.igv = Decimal('0.00')
+                    detalle.total = Decimal('0.00')
+                    detalle.save()
             obj.estado = 2
             obj.numero_nota = NotaCredito.objects.nuevo_numero(obj)
             registro_guardar(obj, self.request)
@@ -776,6 +770,211 @@ class NotaCreditoNubefactConsultarView(PermissionRequiredMixin, BSModalDeleteVie
         context['texto'] = '¿Seguro de consultar la Nota de Crédito a NubeFact?'
         context['item'] = self.get_object()
         return context
+
+
+######################################################################################################
+
+
+class NotaCreditoVerCuotaView(PermissionRequiredMixin, BSModalReadView):
+    permission_required = ('nota.view_notacredito')
+    model = NotaCredito
+    template_name = "notas/nota_credito/modal cuotas.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoVerCuotaView, self).get_context_data(**kwargs)
+        nota_credito = self.object
+        total = nota_credito.NotaCreditoCuota_nota_credito.all().aggregate(Sum('monto'))['monto__sum']
+        disponible = nota_credito.cliente.disponible_monto
+        if disponible < 0:
+            disponible = Decimal('0.00')
+        context['nota_credito'] = nota_credito
+        context['disponible'] = disponible
+        context['total'] = total
+        context['titulo'] = 'Cuotas'
+        return context
+
+
+class NotaCreditoCuotaView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('nota.view_notacredito')
+    template_name = "notas/nota_credito/cuotas.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoCuotaView, self).get_context_data(**kwargs)
+        nota_credito = NotaCredito.objects.get(id=self.kwargs['id_nota_credito'])
+        total = nota_credito.NotaCreditoCuota_nota_credito.all().aggregate(Sum('monto'))['monto__sum']
+        disponible = nota_credito.cliente.disponible_monto
+        if disponible < 0:
+            disponible = Decimal('0.00')
+        context['nota_credito'] = nota_credito
+        context['disponible'] = disponible
+        context['total'] = total
+        return context
+
+
+def NotaCreditoCuotaTabla(request, id_nota_credito):
+    data = dict()
+    if request.method == 'GET':
+        template = "notas/nota_credito/cuotas_tabla.html"
+        context = {}
+        nota_credito = NotaCredito.objects.get(id=id_nota_credito)
+        total = nota_credito.NotaCreditoCuota_nota_credito.all().aggregate(Sum('monto'))['monto__sum']
+        disponible = nota_credito.cliente.disponible_monto
+        if disponible < 0:
+            disponible = Decimal('0.00')
+        context['nota_credito'] = nota_credito
+        context['disponible'] = disponible
+        context['total'] = total
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class NotaCreditoGenerarCuotasFormView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('nota.change_notacredito')
+    template_name = "includes/formulario generico.html"
+    form_class = NotaCreditoGenerarCuotasForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('nota_app:nota_credito_detalle', kwargs={'pk': self.kwargs['id_nota_credito']})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                nota_credito = NotaCredito.objects.get(id=self.kwargs['id_nota_credito'])
+                monto_total = form.cleaned_data['monto_total']
+                numero_cuotas = form.cleaned_data['numero_cuotas']
+                intervalo_cuotas = form.cleaned_data['intervalo_cuotas']
+                dias_pago = 0
+                suma = 0
+                for i in range(numero_cuotas):
+                    if i+1 == numero_cuotas:
+                        monto = monto_total - suma
+                    else:
+                        monto = (monto_total/numero_cuotas).quantize(Decimal('0.01'))
+                    suma += monto
+                    dias_pago += intervalo_cuotas
+                    NotaCreditoCuota.objects.create(
+                        nota_credito = nota_credito,
+                        monto = monto,
+                        dias_pago = dias_pago,
+                        fecha_pago = None,
+                        dias_calculo = None,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                    )
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaCreditoGenerarCuotasFormView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Cuotas"
+        return context
+
+
+class NotaCreditoCuotaCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaCreditoCuota
+    template_name = "cotizacion/cotizacion_venta/form_cuotas.html"
+    form_class = NotaCreditoCuotaForm
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def form_valid(self, form):
+        form.instance.nota_credito = NotaCredito.objects.get(id=self.kwargs['id_nota_credito'])
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        obj = NotaCredito.objects.get(id=self.kwargs['id_nota_credito'])
+        solicitado = obj.monto_solicitado
+        if obj.NotaCreditoCuota_nota_credito.all():
+            suma = obj.NotaCreditoCuota_nota_credito.all().aggregate(Sum('monto'))['monto__sum']
+        else:
+            suma = Decimal('0.00')
+        context = super(NotaCreditoCuotaCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Agregar"
+        context['titulo'] = "Cuota"
+        context['saldo'] = solicitado - suma
+        return context
+
+
+class NotaCreditoCuotaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaCreditoCuota
+    template_name = "notas/nota_credito/form_cuotas.html"
+    form_class = NotaCreditoCuotaForm
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        obj = self.object.nota_credito
+        solicitado = obj.documento.confirmacion.monto_solicitado
+        suma = obj.NotaCreditoCuota_nota_credito.exclude(id=self.object.id).aggregate(Sum('monto'))['monto__sum']
+        if not suma:
+            suma = Decimal('0.00')
+        context = super(NotaCreditoCuotaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Cuota"
+        context['saldo'] = solicitado - suma
+        return context
+    
+
+class NotaCreditoCuotaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('nota.change_notacredito')
+    model = NotaCreditoCuota
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('nota_app:nota_credito_cuotas', kwargs={'id_nota_credito':self.get_object().nota_credito.id})
+    
+    def get_context_data(self, **kwargs):
+        context = super(NotaCreditoCuotaDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Cuota"
+        context['item'] = self.get_object()
+        return context
+
+
+######################################################################################################
 
 
 class NotaDevolucionView(PermissionRequiredMixin, FormView):
