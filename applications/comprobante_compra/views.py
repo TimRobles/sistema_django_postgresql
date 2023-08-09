@@ -1,12 +1,13 @@
 from decimal import Decimal
 from django.core.paginator import Paginator
 from applications.cobranza.models import DeudaProveedor
-from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPIForm, ComprobanteCompraPILlegadaForm, RecepcionComprobanteCompraPIForm, ComprobanteCompraPIBuscarForm
+from applications.comprobante_compra.forms import ArchivoComprobanteCompraPIForm, ComprobanteCompraCIDetalleUpdateForm, ComprobanteCompraCIForm, ComprobanteCompraPICorregirForm, ComprobanteCompraPIForm, ComprobanteCompraPILlegadaForm, RecepcionComprobanteCompraPIForm, ComprobanteCompraPIBuscarForm
 from applications.comprobante_compra.models import ArchivoComprobanteCompraPI, ComprobanteCompraCI, ComprobanteCompraCIDetalle, ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import igv, obtener_totales, registrar_excepcion, tipo_de_cambio
+from applications.funciones import igv, numeroXn, obtener_totales, registrar_excepcion, tipo_de_cambio
 from applications.home.templatetags.funciones_propias import filename
 from applications.importaciones import *
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.orden_compra.models import OrdenCompra
 from applications.recepcion_compra.models import RecepcionCompra
 
 # Create your views here.
@@ -297,6 +298,72 @@ class ComprobanteCompraPIGuardarView(PermissionRequiredMixin, BSModalDeleteView)
         context['titulo'] = "Comprobante"
         context['dar_baja'] = True
         context['item'] = self.get_object()
+        return context
+
+
+class ComprobanteCompraPICorregirUpdateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('comprobante_compra.change_comprobantecomprapi')
+    template_name = "includes/formulario generico.html"
+    form_class = ComprobanteCompraPICorregirForm
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('comprobante_compra_app:comprobante_compra_pi_detalle', kwargs={'slug':self.kwargs['slug']})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        comprobante_compra_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
+        kwargs['fecha_comprobante'] = comprobante_compra_pi.fecha_comprobante
+        kwargs['numero_comprobante_compra'] = comprobante_compra_pi.numero_comprobante_compra
+        kwargs['logistico'] = comprobante_compra_pi.logistico
+        kwargs['sociedad'] = comprobante_compra_pi.sociedad
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                comprobante_compra_pi = ComprobanteCompraPI.objects.get(slug=self.kwargs['slug'])
+                fecha_comprobante = form.cleaned_data.get('fecha_comprobante')
+                numero_comprobante_compra = form.cleaned_data.get('numero_comprobante_compra')
+                logistico = form.cleaned_data.get('logistico')
+                sociedad = form.cleaned_data.get('sociedad')
+                
+                if sociedad != comprobante_compra_pi.sociedad:
+                    movimientos = MovimientosAlmacen.objects.filter(
+                        content_type_documento_proceso=ContentType.objects.get_for_model(comprobante_compra_pi),
+                        id_registro_documento_proceso=comprobante_compra_pi.id,
+                    )
+                    for movimiento in movimientos:
+                        movimiento.sociedad = sociedad
+                        registro_guardar(movimiento, self.request)
+                        movimiento.save()
+                    
+                    orden_compra = comprobante_compra_pi.orden_compra
+                    numero_orden_compra = sociedad.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = sociedad ))+1, 6)
+                    orden_compra.numero_orden_compra = numero_orden_compra
+                    orden_compra.sociedad = sociedad
+                    registro_guardar(orden_compra, self.request)
+                    orden_compra.save()
+                
+                comprobante_compra_pi.fecha_comprobante = fecha_comprobante
+                comprobante_compra_pi.numero_comprobante_compra = numero_comprobante_compra
+                comprobante_compra_pi.logistico = logistico
+                comprobante_compra_pi.sociedad = sociedad
+                registro_guardar(comprobante_compra_pi, self.request)
+                comprobante_compra_pi.save()
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(ComprobanteCompraPICorregirUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Corregir"
+        context['titulo'] = "Comprobante"
         return context
 
 

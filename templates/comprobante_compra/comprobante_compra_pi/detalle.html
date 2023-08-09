@@ -25,6 +25,14 @@
                 Guardar
             </button>
         {% endif %}
+        
+        {% if contexto_comprobante_compra_pi.orden_compra %}
+        <a href="{% url 'orden_compra_app:orden_compra_detalle' contexto_comprobante_compra_pi.orden_compra.slug %}"
+        class="btn btn-success">
+            Orden de Compra
+        </a>    
+        {% endif %}
+            
     {% endif %}
     
     {% if permiso_logistica %}    
@@ -38,6 +46,11 @@
 
     {% if permiso_compras %}
         {% if contexto_comprobante_compra_pi.estado == 1 %}
+            <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_corregir' contexto_comprobante_compra_pi.slug %}"
+                data-table-url="{% url 'comprobante_compra_app:comprobante_compra_pi_detalle_tabla' contexto_comprobante_compra_pi.slug %}"
+                class="update btn btn-warning">
+                Corregir
+            </button>
             <button data-form-url="{% url 'comprobante_compra_app:comprobante_compra_pi_anular' contexto_comprobante_compra_pi.slug %}"
                 class="delete btn btn-danger">
                 Anular PI
