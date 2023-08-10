@@ -54,6 +54,7 @@
                 <th class="text-end">Ultimo Precio</th>
                 <th class="text-end">Mínimo Precio</th>
                 <th>Comentario</th>
+                <th>En Stock</th>
                 <th>En Tránsito</th>
                 <th>Acciones</th>
             </tr>
@@ -95,6 +96,7 @@
                         -
                         {% endif %}
                     </td>
+                    <td class="text-end">{{ material.material.stock|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.material.transito|redondear|intcomma }}</td>
 
                     <td>
