@@ -88,14 +88,14 @@
                     </td>
                     <td class="text-end">{{ material.material.ultimo_precio|redondear|intcomma }}</td>
                     <td class="text-end">{{ material.material.minimo_precio|redondear|intcomma }}</td>
-                    <td class="text-end">{{ material.material.transito|redondear|intcomma }}</td>
                     <td>
                         {% if material.comentario  != None %}
-                            {{ material.comentario }}
+                        {{ material.comentario }}
                         {% else %}
-                            -
+                        -
                         {% endif %}
                     </td>
+                    <td class="text-end">{{ material.material.transito|redondear|intcomma }}</td>
 
                     <td>
                         <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_actualizar_material' material.id %}"
