@@ -717,7 +717,10 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
             finalizar = True
             for detalle in detalles:
                 if detalle.inspeccion == 2:
-                    movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
+                    if self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                        movimiento_final = TipoMovimiento.objects.get(codigo=168) #Devolución, material dañado
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
                     finalizar &= False
                 elif detalle.nota_ingreso_detalle.producto.control_serie:
                     if self.object.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
