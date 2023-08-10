@@ -731,7 +731,7 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                     if self.object.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
                         movimiento_final = TipoMovimiento.objects.get(codigo=149) #Inspección, muestra buena, no requiere serie
                     elif self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion):
-                        movimiento_final = TipoMovimiento.objects.get(codigo=149) #Inspección, muestra buena, no requiere serie
+                        movimiento_final = TipoMovimiento.objects.get(codigo=167) #Inspección, devolucion buena, no requiere serie
                     else:
                         movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
 

@@ -647,7 +647,7 @@ class ComprobanteCompraCIRegistrarView(PermissionRequiredMixin, BSModalFormView)
                 
                 for detalle in detalles:
                     ComprobanteCompraCIDetalle.objects.create(
-                        item = detalle.item,
+                        item = 0,
                         content_type = detalle.orden_compra_detalle.content_type,
                         id_registro = detalle.orden_compra_detalle.id_registro,
                         descripcion = detalle.descripcion_proveedor,
