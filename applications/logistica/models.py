@@ -162,6 +162,7 @@ class DevolucionPrestamoMateriales(models.Model):
     fecha_devolucion = models.DateField('Fecha Devolución', auto_now=False, auto_now_add=False)
     comentario = models.TextField(blank=True, null=True)
     motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
+    solicitud_prestamo = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS_PRESTAMO_MATERIALES, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
