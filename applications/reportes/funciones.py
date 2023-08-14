@@ -64,6 +64,7 @@ RELLENO_MC = PatternFill(start_color='FFCA0B', end_color='FFCA0B', fill_type='so
 RELLENO_MP = PatternFill(start_color='8FC6EA', end_color='8FC6EA', fill_type='solid')
 # relleno_mp_mc = PatternFill(start_color='00BB2D', end_color='00BB2D', fill_type='solid')
 RELLENO_MP_MC = PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')
+RELLENO_EXCEL = PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')
 
 def rellenoSociedad(id_sociedad):
     if id_sociedad != 'None':
@@ -92,7 +93,9 @@ def ajustarColumnasSheet(hoja):
                 dims[cell.column_letter] = max((dims.get(cell.column_letter, 0), round((len(str(cell.value))+2)*1.2,0) ))
     for col, value in dims.items():
         hoja.column_dimensions[col].width = value
+
 FECHA_HOY = datetime.now().strftime("%Y-%m-%d")
+fecha_doc = datetime.now().strftime("%d-%m-%Y")
 
 def formatearFecha3(fecha):
     # if fecha=="":

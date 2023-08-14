@@ -8,17 +8,17 @@
 {% block contenido %}
 <h1>Reportes CRM</h1>
 <br>
-<h3>Facturación x Asesor Comercial</h3>
+<h3> Ventas x Departamento</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
     <div class="input-group">
-        {% for field in form %}
+        {% for field in form1 %}
             <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
             {% if field.help_text %}
             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
             {% endif %}
             >
-                {% if field in form.visible_fields %}
+                {% if field in form1.visible_fields %}
                 <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {% endif %}
                 {{ field }}
@@ -37,7 +37,7 @@
     </div>
 </form>
 <br>
-<h3> Ventas x Departamento</h3>
+<h3>Clientes CRM</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
     <div class="input-group">
@@ -66,7 +66,7 @@
     </div>
 </form>
 <br>
-<h3>Clientes CRM</h3>
+<h3>Comportamiento Cliente</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
     <div class="input-group">
@@ -76,7 +76,7 @@
             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
             {% endif %}
             >
-                {% if field in form.visible_fields %}
+                {% if field in form3.visible_fields %}
                 <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {% endif %}
                 {{ field }}
@@ -95,7 +95,7 @@
     </div>
 </form>
 <br>
-<h3>Facturación General</h3>
+<h3>Estado Clientes</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
     <div class="input-group">
@@ -118,35 +118,6 @@
             {% endfor %}
         {% endfor %}
         <input type="hidden" value="formulario4" name="formulario">
-        <button type="submit" class="btn btn-success" title="Descargar">
-            <i class="bi bi-download"></i>
-        </button>
-    </div>
-</form>
-<br>
-<h3>Comportamiento Cliente</h3>
-<form action="" method="post" autocomplete="off">
-    {% csrf_token %}
-    <div class="input-group">
-        {% for field in form5 %}
-            <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
-            {% if field.help_text %}
-            data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
-            {% endif %}
-            >
-                {% if field in form5.visible_fields %}
-                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {% endif %}
-                {{ field }}
-            </div>
-            {% if field.help_text %}
-            <p class="mt-0">Pista:{{ field.help_text }}</p>
-            {% endif %}
-            {% for error in field.errors %}
-            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
-            {% endfor %}
-        {% endfor %}
-        <input type="hidden" value="formulario5" name="formulario">
         <button type="submit" class="btn btn-success" title="Descargar">
             <i class="bi bi-download"></i>
         </button>
