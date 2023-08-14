@@ -456,6 +456,7 @@ ESTADO_TAREA = (
     (1, 'ASIGNADO'),
     (2, 'EN PROCESO'),
     (3, 'FINALIZADO'),
+    (4, 'REAPERTURADO'),
     )
     
 MOTIVO_INASISTENCIA = (

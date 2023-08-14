@@ -16,9 +16,9 @@ for fila in query_content_type:
 
 DICT_CLIENTE = {}
 query_cliente = Cliente.objects.all()
-for dato in query_cliente:
-    c_id = str(dato.id)
-    DICT_CLIENTE[c_id] = dato.razon_social
+# for dato in query_cliente:
+#     c_id = str(dato.id)
+#     DICT_CLIENTE[c_id] = dato.razon_social
 
 DICT_SOCIEDAD = {}
 query_sociedad = Sociedad.objects.all()

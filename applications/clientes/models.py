@@ -9,6 +9,9 @@ from applications.variables import CONDICION_SUNAT, DICCIONARIO_TIPO_DOCUMENTO_S
 
 from django.db.models.signals import pre_save, post_save
 
+from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO
+
+
 class Cliente(models.Model):
 
     tipo_documento = models.CharField('Tipo de Documento', max_length=1, choices=TIPO_DOCUMENTO_SUNAT)
@@ -26,6 +29,8 @@ class Cliente(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cliente_updated_by', editable=False)
     cliente_id_erp = models.CharField(max_length=5, null=True, blank=True)
+    medio = models.IntegerField('Medio', choices=MEDIO, null=True, blank=True) 
+    estado_crm = models.IntegerField('Estado', choices=ESTADOS_CLIENTE_CRM, default=1, null=True, blank=True)
 
     class Meta:
 

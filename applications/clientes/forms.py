@@ -438,3 +438,58 @@ class ClienteAnexoDarBajaForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+
+#ClienteExtranjero
+
+# class ClienteExtranjeroForm(BSModalModelForm):
+#     class Meta:
+#         model = Cliente
+#         fields = (
+#             'tipo_documento',
+#             'numero_documento',
+#             'razon_social',
+#             'nombre_comercial',
+#             'pais',
+#             'direccion_fiscal',
+#             'distrito',
+#             'ubigeo',
+#             'estado_sunat',
+#             'condicion_sunat',
+#             )
+        
+#     def clean_direccion_fiscal(self):
+#         direccion_fiscal = self.cleaned_data.get('direccion_fiscal')
+#         self.fields['distrito'].queryset = Distrito.objects.all()
+#         return direccion_fiscal
+
+#     def __init__(self, *args, **kwargs):
+#         super(ClienteExtranjeroForm, self).__init__(*args, **kwargs)
+#         try:
+#             distrito = kwargs['instance'].distrito
+#             self.fields['distrito'].queryset = Distrito.objects.filter(codigo = distrito.codigo)
+#             self.fields['distrito'].initial = distrito
+#         except:
+#             self.fields['distrito'].queryset = Distrito.objects.none()
+#         for visible in self.visible_fields():
+#             visible.field.widget.attrs['class'] = 'form-control'
+#         self.fields['pais'].required = True
+
+#     def clean_tipo_documento(self):
+#         tipo_documento = self.cleaned_data.get('tipo_documento')
+#         if tipo_documento == '-' or tipo_documento == '0' or tipo_documento == '4':
+#             self.fields['numero_documento'].required = False
+#             self.fields['ubigeo'].required = False
+#         else:
+#             self.fields['numero_documento'].required = True
+#             self.fields['ubigeo'].required = True
+    
+#         return tipo_documento
+    
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         numero_documento = cleaned_data.get('numero_documento')
+#         filtro = Cliente.objects.filter(numero_documento__unaccent__iexact = numero_documento).exclude(numero_documento=None).exclude(numero_documento="")
+#         if numero_documento != self.instance.numero_documento:
+#             if len(filtro)>0:
+#                 self.add_error('numero_documento', 'Ya existe un Cliente con este Número de documento')
