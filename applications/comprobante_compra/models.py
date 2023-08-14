@@ -53,7 +53,7 @@ class ComprobanteCompraPI(models.Model):
         verbose_name_plural = 'Comprobantes de Compra PIs'
         ordering = [
             'estado',
-            '-fecha_estimada_llegada',
+            '-fecha_comprobante',
         ]
 
     @property

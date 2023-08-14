@@ -7,6 +7,25 @@ from applications.material.models import Material
 
 from .models import ComprobanteCompraCIDetalle, ComprobanteCompraPI, ArchivoComprobanteCompraPI
 
+class ComprobanteCompraPICorregirForm(BSModalForm):
+    fecha_comprobante = forms.DateField(widget=forms.DateInput(attrs ={'type':'date',},format = '%Y-%m-%d',), required=True)
+    numero_comprobante_compra = forms.CharField(max_length=50, required=True)
+    logistico = forms.DecimalField(required=True)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=True)
+    
+    def __init__(self, *args, **kwargs):
+        fecha_comprobante = kwargs.pop('fecha_comprobante')
+        numero_comprobante_compra = kwargs.pop('numero_comprobante_compra')
+        logistico = kwargs.pop('logistico')
+        sociedad = kwargs.pop('sociedad')
+        super(ComprobanteCompraPICorregirForm, self).__init__(*args, **kwargs)
+        self.fields['fecha_comprobante'].initial = fecha_comprobante
+        self.fields['numero_comprobante_compra'].initial = numero_comprobante_compra
+        self.fields['logistico'].initial = logistico
+        self.fields['sociedad'].initial = sociedad
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 class ComprobanteCompraPIForm(BSModalModelForm):
     class Meta:
         model = ComprobanteCompraPI

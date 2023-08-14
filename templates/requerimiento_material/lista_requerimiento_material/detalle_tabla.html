@@ -54,6 +54,8 @@
                 <th class="text-end">Ultimo Precio</th>
                 <th class="text-end">Mínimo Precio</th>
                 <th>Comentario</th>
+                <th>En Stock</th>
+                <th>En Tránsito</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -89,11 +91,13 @@
                     <td class="text-end">{{ material.material.minimo_precio|redondear|intcomma }}</td>
                     <td>
                         {% if material.comentario  != None %}
-                            {{ material.comentario }}
+                        {{ material.comentario }}
                         {% else %}
-                            -
+                        -
                         {% endif %}
                     </td>
+                    <td class="text-end">{{ material.material.stock|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.material.transito|redondear|intcomma }}</td>
 
                     <td>
                         <button data-form-url="{% url 'requerimiento_material_app:lista_requerimiento_material_actualizar_material' material.id %}"

@@ -15,6 +15,7 @@ urlpatterns = [
     path('comprobante-compra-pi/actualizar/<slug>/', views.ComprobanteCompraPIUpdateView.as_view(), name='comprobante_compra_pi_actualizar'),
     path('comprobante-compra-pi/actualizar/fecha-llegada/<slug>/', views.ComprobanteCompraPILlegadaUpdateView.as_view(), name='comprobante_compra_pi_actualizar_fecha_llegada'),
     path('comprobante-compra-pi/anular/<slug>/', views.ComprobanteCompraPIAnularView.as_view(), name='comprobante_compra_pi_anular'),
+    path('comprobante-compra-pi/corregir/<slug>/', views.ComprobanteCompraPICorregirUpdateView.as_view(), name='comprobante_compra_pi_corregir'),
     
     path('comprobante-compra-pi/registrar/<str:slug>/', views.ComprobanteCompraCIRegistrarView.as_view(), name='comprobante_compra_ci_registrar'),
     

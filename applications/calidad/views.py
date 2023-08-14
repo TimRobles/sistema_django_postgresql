@@ -717,7 +717,10 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
             finalizar = True
             for detalle in detalles:
                 if detalle.inspeccion == 2:
-                    movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
+                    if self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                        movimiento_final = TipoMovimiento.objects.get(codigo=168) #Devolución, material dañado
+                    else:
+                        movimiento_final = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
                     finalizar &= False
                 elif detalle.nota_ingreso_detalle.producto.control_serie:
                     if self.object.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
@@ -731,7 +734,7 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                     if self.object.content_type == ContentType.objects.get_for_model(NotaIngresoMuestra):
                         movimiento_final = TipoMovimiento.objects.get(codigo=149) #Inspección, muestra buena, no requiere serie
                     elif self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion):
-                        movimiento_final = TipoMovimiento.objects.get(codigo=149) #Inspección, muestra buena, no requiere serie
+                        movimiento_final = TipoMovimiento.objects.get(codigo=167) #Inspección, devolucion buena, no requiere serie
                     else:
                         movimiento_final = TipoMovimiento.objects.get(codigo=107) #Inspección, material bueno, no requiere serie
 
@@ -3881,6 +3884,7 @@ class RegistrarSerieAntiguaView(PermissionRequiredMixin, BSModalFormView):
                 serie_antigua = SerieConsulta.objects.get(id=self.kwargs['id_serie_antigua'])
                 material = serie_antigua.material
                 tipo_movimiento = TipoMovimiento.objects.get(codigo=777) #Serie Antigua a Serie Nueva
+                tipo_stock = TipoStock.objects.get(codigo=15) #DESPACHADO
                 estado_serie = EstadoSerie.objects.get(numero_estado=3) #Vendido
                 factura_id = form.cleaned_data.get('factura')
                 boleta_id = form.cleaned_data.get('boleta')
@@ -3897,12 +3901,30 @@ class RegistrarSerieAntiguaView(PermissionRequiredMixin, BSModalFormView):
                         return super().form_invalid(form)
                 
                 
-                movimiento_unico = MovimientosAlmacen.objects.create(
+                movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto=ContentType.objects.get_for_model(material),
                     id_registro_producto=material.id,
                     cantidad=1,
                     tipo_movimiento=tipo_movimiento,
                     tipo_stock=tipo_movimiento.tipo_stock_final,
+                    signo_factor_multiplicador=+1,
+                    content_type_documento_proceso=ContentType.objects.get_for_model(documento),
+                    id_registro_documento_proceso=documento.id,
+                    almacen=None,
+                    sociedad=serie_antigua.sociedad,
+                    movimiento_anterior=None,
+                    movimiento_reversion=False,
+                    transformacion=False,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto=ContentType.objects.get_for_model(material),
+                    id_registro_producto=material.id,
+                    cantidad=1,
+                    tipo_movimiento=tipo_movimiento,
+                    tipo_stock=tipo_stock,
                     signo_factor_multiplicador=+1,
                     content_type_documento_proceso=ContentType.objects.get_for_model(documento),
                     id_registro_documento_proceso=documento.id,
@@ -3933,7 +3955,8 @@ class RegistrarSerieAntiguaView(PermissionRequiredMixin, BSModalFormView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-                serie.serie_movimiento_almacen.add(movimiento_unico)
+                serie.serie_movimiento_almacen.add(movimiento_uno)
+                serie.serie_movimiento_almacen.add(movimiento_dos)
                 serie_antigua.delete()
 
                 self.request.session['primero'] = False

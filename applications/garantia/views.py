@@ -406,7 +406,8 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
                         id_registro_producto=detalle.id_registro,
                         cantidad=1,
                         tipo_movimiento=movimiento_final,
-                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        # tipo_stock=movimiento_final.tipo_stock_inicial,
+                        tipo_stock=serie.serie.ultimo_movimiento.tipo_stock,
                         signo_factor_multiplicador=-1,
                         content_type_documento_proceso=ContentType.objects.get_for_model(ingreso_reclamo_garantia),
                         id_registro_documento_proceso=ingreso_reclamo_garantia.id,
@@ -1841,7 +1842,7 @@ class SalidaReclamoGarantiaListView(FormView):
             contexto_salida_garantia = contexto_salida_garantia.filter(condicion)
             contexto_filtro.append("estado=" + filtro_estado)
         if filtro_cliente:
-            condicion = Q(cliente = filtro_cliente)
+            condicion = Q(control_calidad_reclamo_garantia__ingreso_reclamo_garantia__cliente = filtro_cliente)
             contexto_salida_garantia = contexto_salida_garantia.filter(condicion)
             contexto_filtro.append("cliente=" + filtro_cliente)
         

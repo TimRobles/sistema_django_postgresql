@@ -434,6 +434,10 @@ class Cuota(models.Model):
         else:
             return '%s DÍAS PARA VENCER' % ((self.fecha - date.today()).days)
 
+    @property
+    def dias_pago(self):
+        return (self.fecha - self.deuda.fecha_deuda).days
+
     def __str__(self):
         return "%s - %s" % (self.fecha, self.monto)
 

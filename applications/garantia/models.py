@@ -33,7 +33,7 @@ class IngresoReclamoGarantia(models.Model):
         verbose_name = 'Ingreso Reclamo Garantia'
         verbose_name_plural = 'Ingresos Reclamo Garantia'
         ordering = [
-            'fecha_ingreso',
+            '-fecha_ingreso',
             ]
 
     @property
@@ -45,7 +45,7 @@ class IngresoReclamoGarantia(models.Model):
         return self.IngresoReclamoGarantiaDetalle_ingreso_reclamo_garantia.all()
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.cliente}"
 
 class IngresoReclamoGarantiaDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
@@ -63,7 +63,7 @@ class IngresoReclamoGarantiaDetalle(models.Model):
         verbose_name = 'Ingreso Reclamo Garantia Detalle'
         verbose_name_plural = 'Ingresos Reclamo Garantia Detalle'
         ordering = [
-            'ingreso_reclamo_garantia',
+            '-ingreso_reclamo_garantia',
             'item',
             ]
 
@@ -119,8 +119,8 @@ class SerieIngresoReclamoGarantiaDetalle(models.Model):
         verbose_name = 'Serie Ingreso Reclamo Garantia Detalle'
         verbose_name_plural = 'Serie Ingreso Reclamo Garantia Detalles'
         ordering = [
-            'ingreso_reclamo_garantia_detalle',
-            '-created_at',
+            '-ingreso_reclamo_garantia_detalle',
+            'created_at',
         ]
 
     @property
@@ -154,6 +154,10 @@ class ControlCalidadReclamoGarantia(models.Model):
     class Meta:
         verbose_name = 'Control Calidad Reclamo Garantia'
         verbose_name_plural = 'Control Calidad Reclamos Garantia'
+        ordering = [
+            '-ingreso_reclamo_garantia',
+            'created_at',
+        ]
 
     @property
     def fecha(self):
@@ -201,6 +205,9 @@ class ControlCalidadReclamoGarantiaDetalle(models.Model):
     class Meta:
         verbose_name = 'Control Calidad Reclamo Garantia Detalle'
         verbose_name_plural = 'Control Calidad Reclamo Garantia Detalles'
+        ordering = [
+            '-created_at',
+        ]
 
     def __str__(self):
         return str(self.id)
@@ -240,6 +247,9 @@ class SalidaReclamoGarantia(models.Model):
     class Meta:
         verbose_name = 'Salida Reclamo Garantia'
         verbose_name_plural = 'Salida Reclamos Garantia'
+        ordering = [
+            '-fecha_salida',
+        ]
 
     @property
     def fecha(self):
@@ -276,6 +286,9 @@ class CondicionesGarantia(models.Model):
     class Meta:
         verbose_name = 'Condiciones Garantia'
         verbose_name_plural = 'Condiciones Garantias'
+        ordering = [
+            'created_at',
+        ]
 
     def __str__(self):
         return self.condicion
