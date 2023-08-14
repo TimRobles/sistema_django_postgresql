@@ -46,7 +46,8 @@ from applications.crm.models import ClienteCRM
 from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM
 from applications.reportes.excel import (
     ReporteClienteCRMExcel,
-    ReporteComportamientoCliente, 
+    ReporteComportamientoCliente,
+    ReporteEstadosClienteExcel, 
     ReporteFacturacionAsesorComercial, 
     ReporteFacturacionGeneral, 
     ReporteVentasDepartamento
@@ -3896,6 +3897,71 @@ class ReportesCRM(TemplateView):
         if formulario == 'formulario1':
             fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
             fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+            departamento = self.request.POST.get('departamento')
+
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+
+            if departamento:
+                titulo = f'Reporte Ventas por Departamento - {departamento}'
+            else:
+                titulo = f'Reporte Ventas por Departamento - TODOS'
+
+            wb = ReporteVentasDepartamento(titulo, fecha_inicio, fecha_fin, departamento)
+            
+        elif formulario == 'formulario2':
+            
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            titulo = 'Reporte Cliente CRM' + '_' + str(fecha_doc)
+
+            wb = ReporteClienteCRMExcel()
+
+        elif formulario == 'formulario3':
+            cliente = self.request.POST.get('cliente')
+
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            titulo = 'Reporte Comportamiento Cliente' + '_' + str(fecha_doc)
+
+            wb = ReporteComportamientoCliente(cliente)
+        
+        elif formulario == 'formulario4':
+            
+            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
+            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            titulo = 'Reporte Estados Cliente' + '_' + str(fecha_doc)
+
+            wb = ReporteEstadosClienteExcel()
+            
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename ={0}".format(titulo + '.xlsx')
+        respuesta['content-disposition']= content
+
+        wb.save(respuesta)
+        return respuesta
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportesCRM, self).get_context_data(**kwargs)
+        context['form1'] = ReporteVentasDepartamentoExcelForm()
+        context['form3'] = ReporteComportamientoClienteExcelForm()
+
+        return context
+    
+####################################################  REPORTES GERENCIA  ####################################################   
+
+class ReportesGerencia(TemplateView):
+    template_name = 'reportes/reportes_gerencia.html'
+
+    def post(self,request, *args,**kwargs):
+        formulario = self.request.POST.get('formulario')
+        if formulario == 'formulario1':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
             asesor_comercial = self.request.POST.get('asesor_comercial')
 
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
@@ -3911,49 +3977,15 @@ class ReportesCRM(TemplateView):
         
         elif formulario == 'formulario2':
             fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
-            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
-            departamento = self.request.POST.get('departamento')
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d")
 
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
             sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
             logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            titulo = 'Reporte Facturación General' + '_' + str(fecha_fin.date())
 
-            if departamento:
-                titulo = f'Reporte Ventas por Departamento - {departamento}'
-            else:
-                titulo = f'Reporte Ventas por Departamento - TODOS'
+            wb = ReporteFacturacionGeneral(fecha_inicio, fecha_fin)
 
-            wb = ReporteVentasDepartamento(titulo, fecha_inicio, fecha_fin, departamento)
-            
-        elif formulario == 'formulario3':
-
-            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
-            titulo = 'Reporte Cliente CRM' + '_' + str(FECHA_HOY)
-
-            wb = ReporteClienteCRMExcel()
-        
-        elif formulario == 'formulario4':
-            fecha_cierre = datetime.strptime(self.request.POST.get('fecha_cierre'),"%Y-%m-%d")
-
-            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
-            titulo = 'Reporte Facturación General' + '_' + str(fecha_cierre.date())
-
-            wb = ReporteFacturacionGeneral(fecha_cierre)
-
-        elif formulario == 'formulario5':
-            cliente = self.request.POST.get('cliente')
-
-            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
-            titulo = 'Reporte Comportamiento Cliente' + '_' + str(FECHA_HOY)
-
-            wb = ReporteComportamientoCliente(cliente)
-            
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
         respuesta['content-disposition']= content
@@ -3962,11 +3994,8 @@ class ReportesCRM(TemplateView):
         return respuesta
 
     def get_context_data(self, **kwargs):
-        context = super(ReportesCRM, self).get_context_data(**kwargs)
-        context['form'] = ReporteFacturacionAsesorComercialExcelForm()
-        context['form2'] = ReporteVentasDepartamentoExcelForm()
-        context['form4'] = ReporteFacturacionGeneralExcelForm()
-        context['form5'] = ReporteComportamientoClienteExcelForm()
+        context = super(ReportesGerencia, self).get_context_data(**kwargs)
+        context['form1'] = ReporteFacturacionAsesorComercialExcelForm()
+        context['form2'] = ReporteFacturacionGeneralExcelForm()
 
         return context
-    

@@ -5,6 +5,7 @@ from bootstrap_modal_forms.forms import BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente
 from applications.crm.models import ClienteCRM
+from applications.cotizacion.models import CotizacionVenta
 
 class ReportesFiltrosForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
@@ -109,7 +110,7 @@ class ReporteFacturacionAsesorComercialExcelForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    asesor_comercial = forms.ModelChoiceField(queryset=get_user_model().objects.filter(is_active=1), required=False)
+    asesor_comercial = forms.ModelChoiceField(queryset=get_user_model().objects.filter(id__in = [cotizacion.vendedor.id for cotizacion in CotizacionVenta.objects.all()]), required=False)
 
     def __init__(self, *args, **kwargs):
         super(ReporteFacturacionAsesorComercialExcelForm, self).__init__(*args, **kwargs)
@@ -145,7 +146,16 @@ class ReporteVentasDepartamentoExcelForm(forms.Form):
 
 
 class ReporteFacturacionGeneralExcelForm(forms.Form):
-    fecha_cierre = forms.DateField(
+    fecha_inicio = forms.DateField(
+    required=True,
+    widget = forms.DateInput(
+            attrs ={
+                'type':'date',
+                },
+            format = '%Y-%m-%d',
+            )
+    )
+    fecha_fin = forms.DateField(
         required=True,
         widget = forms.DateInput(
                 attrs ={
