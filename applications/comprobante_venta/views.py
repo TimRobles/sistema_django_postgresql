@@ -864,7 +864,7 @@ class FacturaVentaNubeFactAnularView(PermissionRequiredMixin, BSModalUpdateView)
         context = {}
         error_fecha = False
         context['titulo'] = 'Error de guardar'
-        if (date.today() - self.get_object().fecha_emision).days > 1:
+        if (date.today() - self.get_object().fecha_emision).days > 7:
             error_fecha = True
 
         if error_fecha:
@@ -1727,7 +1727,7 @@ class BoletaVentaNubeFactAnularView(PermissionRequiredMixin, BSModalUpdateView):
         context = {}
         error_fecha = False
         context['titulo'] = 'Error de guardar'
-        if (date.today() - self.get_object().fecha_emision).days > 1:
+        if (date.today() - self.get_object().fecha_emision).days > 7:
             error_fecha = True
 
         if error_fecha:
