@@ -12,6 +12,7 @@
             <th>Fecha Limite</th>
             <th>Descripcion</th>
             <th>Asignado por</th>
+            <th>Creación</th>
 
             <th class="text-center">Acciones</th>
         </tr>
@@ -40,9 +41,10 @@
             <td>{{ tarea.fecha_limite|date:'d/m/Y' }}</td>
             <td>{{ tarea.descripcion }}</td>
             <td>{{ tarea.created_by|nombre_usuario }}</td>
+            <td>{{ tarea.created_at|date:'d/m/Y' }}</td>
             <td class="text-center text-nowrap">
                 
-                {% if tarea.estado < 3 %}                    
+                {% if tarea.estado < 3 or tarea.estado == 4 %}                    
                 <button data-form-url="{% url 'tarea_app:tarea_actualizar' tarea.id %}"
                     data-table-url="{% url 'tarea_app:tarea_tabla' %}"
                     data-keep-open="true"
@@ -62,12 +64,26 @@
                 <button data-form-url="{% url 'tarea_app:tarea_iniciar' tarea.id %}"
                     data-table-url="{% url 'tarea_app:tarea_tabla' %}"
                     data-keep-open="true"
-                    class="update btn btn-success btn-sm"
+                    class="delete btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Iniciar">
                     <i class="bi bi-stopwatch"></i>
                 </button>                
-
+                <button data-form-url="{% url 'tarea_app:tarea_eliminar' tarea.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>                
                 {% endif %}
+
+                
+                {% if tarea.estado == 3 %}
+                <button data-form-url="{% url 'tarea_app:tarea_reapertura' tarea.id %}"
+                    class="delete btn btn-dark btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Reaperturar">
+                    <i class="bi bi-envelope-open"></i>
+                </button>                
+                {% endif %}
+                    
                     
             </td>
 

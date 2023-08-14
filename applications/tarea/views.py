@@ -15,8 +15,8 @@ from .forms import(
     HistorialComentarioTareaForm,
     TareaBuscarForm,
     TareaActualizarForm,
-    TareaAsignarForm,
-    TareaActualizarClienteForm,
+    TareaAsignarEventoForm,
+    TareaAsignarClienteForm,
     )
            
 from .models import(
@@ -406,10 +406,10 @@ class TareaDetalleHistorialComentarioDeleteView(BSModalDeleteView):
         return context
 
 
-class TareaAsignarView(BSModalUpdateView):
+class TareaAsignarEventoView(BSModalUpdateView):
     model = Tarea
     template_name = "tarea/tarea/asignar.html"
-    form_class = TareaAsignarForm
+    form_class = TareaAsignarEventoForm
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
@@ -425,7 +425,7 @@ class TareaAsignarView(BSModalUpdateView):
         return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
-        context = super(TareaAsignarView, self).get_context_data(**kwargs)
+        context = super(TareaAsignarEventoView, self).get_context_data(**kwargs)
 
         context['accion']="Asignar"
         context['titulo']="Evento"
@@ -506,11 +506,50 @@ class TareaRegistrarTipoTareaCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
-    
-class TareaActualizarClienteView(BSModalUpdateView):
+
+class TareaEliminarDeleteView(BSModalDeleteView):
     model = Tarea
-    template_name = "tarea/tarea/asignar.html"
-    form_class = TareaActualizarClienteForm
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('tarea_app:tarea_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(TareaEliminarDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Tarea"
+        return context
+
+class TareaReaperturaUpdateView(BSModalDeleteView):
+    model = Tarea
+    template_name ="includes/form generico.html"
+    success_url = reverse_lazy('tarea_app:tarea_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+ 
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(TareaReaperturaUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Reaperturar"
+        context['titulo'] = "Tarea"
+        context['texto'] = '¿Está seguro de REAPERTURAR la tarea?'
+        context['item'] = self.get_object()
+        return context
+    
+
+class TareaAsignarClienteView(BSModalUpdateView):
+    model = Tarea
+    template_name ="includes/formulario generico.html"
+    form_class = TareaAsignarClienteForm
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
@@ -524,36 +563,10 @@ class TareaActualizarClienteView(BSModalUpdateView):
 
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
-
+    
     def get_context_data(self, **kwargs):
-        context = super(TareaActualizarClienteView, self).get_context_data(**kwargs)
+        context = super(TareaAsignarClienteView, self).get_context_data(**kwargs)
 
-        context['accion']="Actualizar"
-        context['titulo']="Clientes"
+        context['accion']="Asignar"
+        context['titulo']="Cliente"
         return context
-
-
-# class TareaActualizarClienteView(BSModalUpdateView):
-#     model = Tarea
-#     template_name = "tarea/tarea/asignar.html"
-#     form_class = TareaActualizarClienteForm
-
-#     def get_success_url(self, **kwargs):
-#         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
-    
-#     def form_valid(self, form):
-#         evento = form.cleaned_data.get('evento')
-
-#         if evento:
-#             form.instance.content_type = ContentType.objects.get_for_model(evento)
-#             form.instance.id_registro = evento.id
-
-#         registro_guardar(form.instance, self.request)
-#         return super().form_valid(form)
-    
-#     def get_context_data(self, **kwargs):
-#         context = super(TareaAsignarView, self).get_context_data(**kwargs)
-
-#         context['accion']="Asignar"
-#         context['titulo']="Evento"
-#         return context

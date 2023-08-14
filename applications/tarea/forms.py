@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import TipoTarea, Tarea, HistorialComentarioTarea
@@ -16,11 +17,19 @@ class TipoTareaForm(BSModalModelForm):
             'nombre',
             )
 
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre')
+        nombre_minuscula = nombre.lower()
+        if TipoTarea.objects.filter(nombre__iexact=nombre_minuscula).exists():
+            raise forms.ValidationError('Tipo de tarea ya existe.')
+        return nombre       
+
     def __init__(self, *args, **kwargs):
         super(TipoTareaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+            
 
 class TareaBuscarForm(forms.Form):
     fecha_inicio = forms.DateField(
@@ -47,7 +56,7 @@ class TareaBuscarForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class TareaForm(BSModalModelForm):
-    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(estado_sunat = 1))
     class Meta:
         model = Tarea
         fields = (
@@ -78,8 +87,17 @@ class TareaForm(BSModalModelForm):
                 ),
             'apoyo' : forms.CheckboxSelectMultiple(),
             }
-        
-        
+
+    def clean_fecha_limite(self):
+        fecha_inicio = self.cleaned_data.get('fecha_inicio')
+        fecha_limite = self.cleaned_data.get('fecha_limite')
+
+        if fecha_limite > fecha_inicio:
+            self.add_error('fecha_limite', 'La fecha final debe ser igual o mayor que la fecha inicial')
+            # raise forms.ValidationError("La fecha final debe ser igual o mayor que la fecha inicial.")              
+        return fecha_inicio
+
+
     def __init__(self, *args, **kwargs):
         super(TareaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -153,7 +171,7 @@ class HistorialComentarioTareaForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-class TareaAsignarForm(BSModalModelForm):
+class TareaAsignarEventoForm(BSModalModelForm):
     evento = forms.ModelChoiceField(queryset=EventoCRM.objects.all(), required=False)
 
     class Meta:
@@ -163,11 +181,11 @@ class TareaAsignarForm(BSModalModelForm):
         )
         
     def __init__(self, *args, **kwargs):
-        super(TareaAsignarForm, self).__init__(*args, **kwargs)
+        super(TareaAsignarEventoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-class TareaActualizarClienteForm(BSModalModelForm):
+class TareaAsignarClienteForm(BSModalModelForm):
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
 
     class Meta:
@@ -181,7 +199,7 @@ class TareaActualizarClienteForm(BSModalModelForm):
         return cliente
 
     def __init__(self, *args, **kwargs):
-        super(TareaActualizarClienteForm, self).__init__(*args, **kwargs)
+        super(TareaAsignarClienteForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

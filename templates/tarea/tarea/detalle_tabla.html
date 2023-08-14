@@ -4,19 +4,29 @@
 <h3> Detalle Tarea
     <a href="{% url 'tarea_app:tarea_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 
-    {% if contexto_tarea.content_type != content_cliente or contexto_tarea.content_type == None %}
-    <button data-form-url="{% url 'tarea_app:tarea_detalle_asignar' contexto_tarea.id %}"
-        class="delete btn btn-success">
-        Asignar Evento
-    </button>
-    {% endif %}    
+    {% if contexto_tarea.estado != 3 %}  
+        {% if contexto_tarea.content_type != content_cliente or contexto_tarea.content_type == None %}
+        <button data-form-url="{% url 'tarea_app:tarea_detalle_asignar_evento' contexto_tarea.id %}"
+            class="delete btn btn-success">
+            Asignar Evento
+        </button>
+        {% endif %}         
 
-    {% if contexto_tarea.estado == 2 %}
+        {% if contexto_tarea.content_type != content_cliente or contexto_tarea.content_type == None %}
+        <button data-form-url="{% url 'tarea_app:tarea_detalle_asignar_cliente' contexto_tarea.id %}"
+            class="delete btn btn-warning">
+            Asignar Cliente
+        </button>
+        {% endif %}    
+    {% endif %}
+
+    {% if contexto_tarea.estado == 2 or contexto_tarea.estado == 4%}
     <button data-form-url="{% url 'tarea_app:tarea_detalle_finalizar' contexto_tarea.id %}"
         class="delete btn btn-danger">
         Finalizar Tarea
     </button>
     {% endif %}
+
         
 </h3>
 
