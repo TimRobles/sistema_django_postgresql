@@ -33,6 +33,7 @@ class IngresoReclamoGarantia(models.Model):
         verbose_name = 'Ingreso Reclamo Garantia'
         verbose_name_plural = 'Ingresos Reclamo Garantia'
         ordering = [
+            'estado',
             '-fecha_ingreso',
             ]
 
@@ -155,6 +156,7 @@ class ControlCalidadReclamoGarantia(models.Model):
         verbose_name = 'Control Calidad Reclamo Garantia'
         verbose_name_plural = 'Control Calidad Reclamos Garantia'
         ordering = [
+            'estado',
             '-ingreso_reclamo_garantia',
             'created_at',
         ]
@@ -248,6 +250,7 @@ class SalidaReclamoGarantia(models.Model):
         verbose_name = 'Salida Reclamo Garantia'
         verbose_name_plural = 'Salida Reclamos Garantia'
         ordering = [
+            'estado',
             '-fecha_salida',
         ]
 

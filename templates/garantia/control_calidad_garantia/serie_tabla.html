@@ -100,7 +100,7 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="accordion-{{ serie.id }}">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#target-{{ serie.id }}" aria-expanded="false" aria-controls="target-{{ serie.id }}">
-                                <strong>Historial de Serie {{ serie.serie }}</strong>
+                                <strong>Historial de Serie {{ serie.serie }}{% if serie.serie_cambio %} -> {{ serie.serie_cambio }}{% endif %}</strong>
                             </button>
                         </h2>
                         <div id="target-{{ serie.id }}" class="accordion-collapse collapse" aria-labelledby="accordion-{{ serie.id }}" data-bs-parent="#parent-{{ serie.id }}">
