@@ -2,11 +2,15 @@
 {% load humanize %}
 <br>
 <h3>Alternativas
+    
+    {% if contexto_pregunta_crm.id not in lista_preguntas and contexto_pregunta_crm.id not in lista_alternativas  %}
     <button data-form-url="{% url 'crm_app:alternativa_registrar' contexto_pregunta_crm.id %}"
         data-table-url="{% url 'crm_app:pregunta_crm_detalle_tabla' contexto_pregunta_crm.id %}"
         class="create badge bg-primary">
         Registrar
-    </button>
+    </button>    
+    {% endif %}
+    
 </h3>
 <br>
 
@@ -18,8 +22,10 @@
                 <th>Texto</th>
                 <th>Valor</th>
                 <th>Mostrar</th>
-                <th>F. Registro</th>
-                <th>Creado por</th>
+                <th>Fecha Registro</th>
+                <th>Registrado por</th>
+                <th>Fecha Modificación</th>
+                <th>Modificado por</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -31,7 +37,9 @@
                 <td>{{ alternativa.valor }}</td>
                 <td>{{ alternativa.mostrar }}</td>
                 <td>{{ alternativa.created_at|date:'d/m/Y'}}</td>
-                <td>{{ alternativa.created_by }}</td>
+                <td>{{ alternativa.created_by|nombre_usuario }}</td>
+                <td>{{ alternativa.updated_at|date:'d/m/Y'}}</td>
+                <td>{{ alternativa.updated_by|nombre_usuario }}</td>
                 <td class="text-center text-nowrap">
                     <button data-form-url="{% url 'crm_app:alternativa_actualizar' alternativa.id %}"
                         data-table-url="{% url 'crm_app:pregunta_crm_detalle_tabla' contexto_pregunta_crm.id %}"

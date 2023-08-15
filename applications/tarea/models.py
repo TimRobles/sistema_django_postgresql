@@ -17,7 +17,7 @@ class TipoTarea(models.Model):
         verbose_name = 'Tipo de Tarea'
         verbose_name_plural = 'Tipos de Tarea'
         ordering = [
-            'nombre',
+            '-created_at',
         ]
 
     def __str__(self):

@@ -8,6 +8,7 @@ urlpatterns = [
     path('tipo-tarea-tabla/', views.TipoTareaTabla, name='tipo_tarea_tabla'),
     path('tipo-tarea/registrar/', views.TipoTareaCreateView.as_view(), name='tipo_tarea_registrar'),
     path('tipo-tarea/actualizar/<pk>/', views.TipoTareaUpdateView.as_view(), name='tipo_tarea_actualizar'),
+    path('tipo-tarea/eliminar/<pk>', views.TipoTareaEliminarDeleteView.as_view(), name='tipo_tarea_eliminar'),
 
     path('tarea/', views.TareaListView.as_view(), name='tarea_inicio'),
     path('tarea-tabla/', views.TareaTabla, name='tarea_tabla'),

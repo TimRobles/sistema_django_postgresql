@@ -8,6 +8,7 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovim
 from applications.datos_globales.models import SeriesComprobante, Unidad
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.funciones import slug_aleatorio
+from applications.home.templatetags.funciones_propias import nombre_usuario
 from django.urls import reverse
 from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, ClienteCRMForm, EventoCRMFinalizarForm, 
                                     EventoCRMForm, EventoCRMBuscarForm,EventoCRMDetalleDescripcionForm,
@@ -1112,6 +1113,8 @@ class PreguntaCRMListView(PermissionRequiredMixin, FormView):
    
         context['contexto_pagina'] = pregunta_crm
         context['contexto_pregunta_crm'] = pregunta_crm
+        context['lista_preguntas'] = EncuestaCRM.objects.values_list('pregunta_crm', flat=True)
+        context['lista_alternativas'] = AlternativaCRM.objects.values_list('pregunta_crm', flat=True)
 
         return context
 
@@ -1150,6 +1153,9 @@ def PreguntaCRMTabla(request):
             pregunta_crm = paginator.get_page(page_number)
    
         context['contexto_pagina'] = pregunta_crm
+        context['contexto_pregunta_crm'] = pregunta_crm
+        context['lista_preguntas'] = EncuestaCRM.objects.values_list('pregunta_crm', flat=True)
+        context['lista_alternativas'] = AlternativaCRM.objects.values_list('pregunta_crm', flat=True)
 
         data['table'] = render_to_string(
             template,
@@ -1235,6 +1241,9 @@ class PreguntaCRMDetailView(PermissionRequiredMixin, DetailView):
         context = super(PreguntaCRMDetailView, self).get_context_data(**kwargs)
         context['contexto_pregunta_crm'] = pregunta_crm
         context['alternativas'] = AlternativaCRM.objects.filter(pregunta_crm = pregunta_crm)
+        context['lista_preguntas'] = EncuestaCRM.objects.values_list('pregunta_crm', flat=True)
+        context['lista_alternativas'] = AlternativaCRM.objects.values_list('pregunta_crm', flat=True)
+
         return context
 
 
@@ -1247,7 +1256,8 @@ def PreguntaCRMDetailTabla(request, pk):
 
         context['contexto_pregunta_crm'] = pregunta_crm
         context['alternativas'] = AlternativaCRM.objects.filter(pregunta_crm = pregunta_crm)
-
+        context['lista_preguntas'] = EncuestaCRM.objects.values_list('pregunta_crm', flat=True)
+        context['lista_alternativas'] = AlternativaCRM.objects.values_list('pregunta_crm', flat=True)
 
         data['table'] = render_to_string(
             template,
@@ -1389,6 +1399,8 @@ class EncuestaCRMListView(PermissionRequiredMixin, FormView):
    
         context['contexto_pagina'] = encuesta_crm
         context['contexto_encuesta_crm'] = encuesta_crm
+        context['lista_encuestas'] = RespuestaCRM.objects.values_list('encuesta_crm', flat=True)
+
         return context
 
 
@@ -1441,6 +1453,7 @@ def EncuestaCRMTabla(request):
    
         context['contexto_pagina'] = encuesta_crm
         context['contexto_encuesta_crm'] = encuesta_crm
+        context['lista_encuestas'] = RespuestaCRM.objects.values_list('encuesta_crm', flat=True)
 
         data['table'] = render_to_string(
             template,
@@ -1496,25 +1509,6 @@ class EncuestaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         context['titulo'] = "Encuesta CRM"
         return context
 
-
-class EncuestaCRMDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('crm.add_preguntacrm')
-    model = EncuestaCRM
-    template_name = "crm/encuestas_crm/encuesta/detalle.html"
-    context_object_name = 'contexto_encuesta_crm'
-
-    def get_context_data(self, **kwargs):
-        encuesta = EncuestaCRM.objects.get(slug = self.kwargs['slug'])
-        preguntas = PreguntaCRM.objects.all()
-        alternativas = AlternativaCRM.objects.all()
-        content_type = ContentType.objects.get_for_model(encuesta)
-
-        context = super(EncuestaCRMDetailView, self).get_context_data(**kwargs)
-        context['contexto_encuesta_crm'] = encuesta
-        context['alternativas'] = alternativas
-        return context
-
-
 class EncuestaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('crm.delete_encuestacrm')
     model = EncuestaCRM
@@ -1533,6 +1527,25 @@ class EncuestaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['item'] = self.object.titulo
         return context
 
+class EncuestaCRMDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.add_preguntacrm')
+    model = EncuestaCRM
+    template_name = "crm/encuestas_crm/encuesta/detalle.html"
+    context_object_name = 'contexto_encuesta_crm'
+
+    def get_context_data(self, **kwargs):
+        encuesta = EncuestaCRM.objects.get(slug = self.kwargs['slug'])
+        preguntas = PreguntaCRM.objects.all()
+        alternativas = AlternativaCRM.objects.all()
+        content_type = ContentType.objects.get_for_model(encuesta)
+
+        context = super(EncuestaCRMDetailView, self).get_context_data(**kwargs)
+        context['contexto_encuesta_crm'] = encuesta
+        context['alternativas'] = alternativas
+        context['lista_encuestas'] = RespuestaCRM.objects.values_list('encuesta_crm', flat=True)
+
+        return context
+
 
 def EncuestaCRMDetailTabla(request, slug):
     data = dict()
@@ -1547,6 +1560,7 @@ def EncuestaCRMDetailTabla(request, slug):
 
         context['contexto_encuesta_crm'] = encuesta
         context['alternativas'] = alternativas
+        context['lista_encuestas'] = RespuestaCRM.objects.values_list('encuesta_crm', flat=True)
 
         data['table'] = render_to_string(
             template,

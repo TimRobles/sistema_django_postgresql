@@ -2359,3 +2359,7 @@ class AjusteInventarioMerchandisingDetalleDeleteView(PermissionRequiredMixin, BS
         context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
+
+
+########################################Nuevo MERCHANDISING########################################################################
+
