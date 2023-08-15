@@ -4,7 +4,6 @@ from applications.datos_globales.models import Departamento
 from bootstrap_modal_forms.forms import BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente
-from applications.crm.models import ClienteCRM
 from applications.cotizacion.models import CotizacionVenta
 
 class ReportesFiltrosForm(forms.Form):

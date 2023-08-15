@@ -431,7 +431,7 @@ MEDIO = (
     (5, 'EVENTO ISP'),
 )
 
-ESTADOS_CLIENTE_CRM = (
+ESTADOS_CLIENTE = (
     (1, 'NUEVO'),
     (2, 'POTENCIAL'),
     (3, 'INTERESADO'),

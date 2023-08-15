@@ -16,7 +16,7 @@ from applications.datos_globales.models import DocumentoFisico, Moneda
 from applications.home.templatetags.funciones_propias import redondear
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.nota.models import NotaCredito
-from applications.crm.models import ClienteCRM, ClienteCRMDetalle
+from applications.crm.models import ClienteCRMDetalle
 from applications.clientes.models import CorreoInterlocutorCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
 from applications.cotizacion.models import CotizacionVenta
@@ -478,7 +478,7 @@ def ReporteVentasDepartamento(titulo, fecha_inicio, fecha_fin, departamento_codi
 
 def dataClienteCRM():
 
-    list_estado = ESTADOS_CLIENTE_CRM
+    list_estado = ESTADOS_CLIENTE
     DICT_ESTADO = dict(list_estado)
     list_medio = MEDIO
     DICT_MEDIO = dict(list_medio)
@@ -764,7 +764,7 @@ def ReporteComportamientoCliente(cliente):
 
 def dataEstadosCliente():
 
-    list_estado = ESTADOS_CLIENTE_CRM
+    list_estado = ESTADOS_CLIENTE
     DICT_ESTADO = dict(list_estado)
     list_medio = MEDIO
     DICT_MEDIO = dict(list_medio)
