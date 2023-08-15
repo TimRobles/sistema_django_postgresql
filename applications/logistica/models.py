@@ -129,6 +129,7 @@ class SolicitudPrestamoMaterialesDetalle(models.Model):
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
 
+
 class DocumentoPrestamoMateriales(models.Model):
     comentario = models.TextField(blank=True, null=True)
     documento = models.FileField('Documento', blank=True, null=True)
@@ -146,6 +147,105 @@ class DocumentoPrestamoMateriales(models.Model):
 
     def __str__(self):
         return str(self.documento)
+
+
+class DevolucionPrestamoMateriales(models.Model):
+    ESTADOS_PRESTAMO_MATERIALES = (
+        (1, 'BORRADOR'),
+        (2, 'CONFIRMADO'),
+        (3, 'ANULADO'),
+    )
+    numero_devolucion = models.IntegerField('Número Devolución', blank=True, null=True)
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    interlocutor_cliente = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT,blank=True, null=True, related_name='DevolucionPrestamoMateriales_interlocutor_cliente')
+    fecha_devolucion = models.DateField('Fecha Devolución', auto_now=False, auto_now_add=False)
+    comentario = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField('Motivo Anulación', blank=True, null=True)
+    solicitud_prestamo = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True)
+    estado = models.IntegerField(choices=ESTADOS_PRESTAMO_MATERIALES, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionPrestamoMateriales_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionPrestamoMateriales_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Devolucion Prestamo Materiales'
+        verbose_name_plural = 'Devoluciones Prestamo Materiales'
+        ordering = ['numero_devolucion',]
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    @property
+    def cotizacion_venta(self):
+        return self
+
+    @property
+    def fecha(self):
+        return self.fecha_devolucion
+
+    def __str__(self):
+        return "%s - %s" % (numeroXn(self.numero_devolucion, 6), self.cliente)
+
+class DevolucionPrestamoMaterialesDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #Material
+    id_registro = models.IntegerField(blank=True, null=True)
+    cantidad_devolucion = models.DecimalField('Cantidad Devuelta', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    observacion = models.TextField(blank=True, null=True)
+    devolucion_materiales = models.ForeignKey(DevolucionPrestamoMateriales, blank=True, null=True, on_delete=models.CASCADE, related_name='DevolucionPrestamoMaterialesDetalle_devolucion_materiales')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionPrestamoMaterialesDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='DevolucionPrestamoMaterialesDetalle_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Devolucion Prestamo Materiales Detalle'
+        verbose_name_plural = 'Devoluciones Prestamo Materiales Detalle'
+        ordering = [
+            'devolucion_materiales',
+            'item',
+            ]
+
+    @property
+    def NotaSalidaDetalle_devolucion_materiales_detalle(self):
+        notas_salida_detalle = NotaSalidaDetalle.objects.filter(
+            content_type_detalle = ContentType.objects.get_for_model(self),
+            id_registro_detalle = self.id,
+        )
+        return notas_salida_detalle
+
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id=self.id_registro)
+
+    @property
+    def cantidad_salida(self):
+        total = Decimal('0.00')
+        try:
+            for detalle in self.NotaSalidaDetalle_devolucion_materiales_detalle.exclude(nota_salida__estado=3):
+                if detalle.producto == self.producto:
+                    total += detalle.cantidad_salida
+        except:
+            pass
+        return total
+
+    @property
+    def pendiente(self):
+        return self.cantidad_devolucion - self.cantidad_salida
+
+    @property
+    def unidad(self):
+        return self.producto.unidad_base
+
+    def __str__(self):
+        return "%s - %s" % (self.item, self.producto)
 
 # from applications.logistica.models import NotaSalida, NotaSalidaDocumento
 # from django.contrib.contenttypes.models import ContentType

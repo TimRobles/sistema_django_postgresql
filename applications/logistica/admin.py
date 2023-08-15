@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DespachoDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalida, NotaSalidaDetalle, NotaSalidaDocumento, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, ValidarSerieNotaSalidaDetalle
+from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DespachoDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalida, NotaSalidaDetalle, NotaSalidaDocumento, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, ValidarSerieNotaSalidaDetalle, DevolucionPrestamoMateriales, DevolucionPrestamoMaterialesDetalle
 
 class SolicitudPrestamoMaterialesAdmin(admin.ModelAdmin):
     list_display = (
@@ -53,6 +53,54 @@ class DocumentoPrestamoMaterialesAdmin(admin.ModelAdmin):
         'comentario',
         'documento',
         'solicitud_prestamo_materiales',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(DevolucionPrestamoMateriales)
+class DevolucionPrestamoMaterialesAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'numero_devolucion',
+        'sociedad',
+        'cliente',
+        'interlocutor_cliente',
+        'fecha_devolucion',
+        'comentario',
+        'motivo_anulacion',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(DevolucionPrestamoMaterialesDetalle)
+class DevolucionPrestamoMaterialesDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'content_type',
+        'id_registro',
+        'cantidad_devolucion',
+        'observacion',
+        'devolucion_materiales',
         'created_at',
         'created_by',
         'updated_at',
