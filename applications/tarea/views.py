@@ -44,6 +44,7 @@ class TipoTareaListView(PermissionRequiredMixin, ListView):
         context['contexto_tipo_tarea'] = tipo_tarea
         context['contexto_pagina'] = tipo_tarea
         context['contexto_filtro'] = '?'
+        context['lista_tipotarea'] = Tarea.objects.values_list('tipo_tarea', flat=True)
         return context
 
 def TipoTareaTabla(request):
@@ -62,6 +63,7 @@ def TipoTareaTabla(request):
         context['contexto_tipo_tarea'] = tipo_tarea
         context['contexto_pagina'] = tipo_tarea
         context['contexto_filtro'] = '?'
+        context['lista_tipotarea'] = Tarea.objects.values_list('tipo_tarea', flat=True)
 
         data['table'] = render_to_string(
             template,
@@ -242,6 +244,7 @@ class TareaCreateView(PermissionRequiredMixin, BSModalCreateView):
         return reverse_lazy('tarea_app:tarea_inicio')
     
     def form_valid(self, form):
+
         cliente = form.cleaned_data.get('cliente')
         try:
             form.instance.content_type = ContentType.objects.get_for_model(cliente)
@@ -569,4 +572,15 @@ class TareaAsignarClienteView(BSModalUpdateView):
 
         context['accion']="Asignar"
         context['titulo']="Cliente"
+        return context
+    
+class TipoTareaEliminarDeleteView(BSModalDeleteView):
+    model = TipoTarea
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('tarea_app:tipo_tarea_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(TipoTareaEliminarDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Tipo Tarea"
         return context

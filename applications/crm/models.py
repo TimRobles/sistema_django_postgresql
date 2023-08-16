@@ -197,9 +197,9 @@ class EventoCRMDetalleInformacionAdicional(models.Model):
 
 class PreguntaCRM(models.Model):
     tipo_pregunta = models.IntegerField('Tipo Pregunta', choices=TIPO_PREGUNTA_CRM)
-    texto = models.CharField('Pregunta', max_length=100)
+    texto = models.CharField('Pregunta', max_length=150)
     orden = models.IntegerField()
-    mostrar = models.BooleanField('Mostrar', default=False)
+    mostrar = models.BooleanField('Mostrar', default=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='PreguntaCRM_created_by', editable=False)
@@ -223,7 +223,7 @@ class EncuestaCRM(models.Model):
     tipo_encuesta = models.IntegerField('Tipo Encuesta', choices=TIPO_ENCUESTA_CRM, blank=True, null=True)
     titulo = models.CharField('Titulo Encuesta', max_length=50)
     pregunta_crm = models.ManyToManyField(PreguntaCRM, blank=True)
-    mostrar = models.BooleanField('Mostrar', default=False)
+    mostrar = models.BooleanField('Mostrar', default=True)
     pais = models.ForeignKey(Pais, on_delete=models.PROTECT, related_name='Pais',blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
 
@@ -246,7 +246,7 @@ class AlternativaCRM(models.Model):
     orden = models.IntegerField()
     texto = models.CharField('Alternativa', max_length=100)
     valor = models.CharField('Valor', max_length=100)
-    mostrar = models.BooleanField('Mostrar', default=False)
+    mostrar = models.BooleanField('Mostrar', default=True)
     pregunta_crm = models.ForeignKey(PreguntaCRM, on_delete=models.PROTECT, blank=True, null=True, related_name='AlternativaCRM_pregunta_crm')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

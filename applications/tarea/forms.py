@@ -92,11 +92,9 @@ class TareaForm(BSModalModelForm):
         fecha_inicio = self.cleaned_data.get('fecha_inicio')
         fecha_limite = self.cleaned_data.get('fecha_limite')
 
-        if fecha_limite > fecha_inicio:
-            self.add_error('fecha_limite', 'La fecha final debe ser igual o mayor que la fecha inicial')
-            # raise forms.ValidationError("La fecha final debe ser igual o mayor que la fecha inicial.")              
-        return fecha_inicio
-
+        if fecha_limite < fecha_inicio:
+            self.add_error('fecha_limite', 'La Fecha Limite debe ser igual o mayor a la Fecha Inicio')
+        return fecha_limite
 
     def __init__(self, *args, **kwargs):
         super(TareaForm, self).__init__(*args, **kwargs)

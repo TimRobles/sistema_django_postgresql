@@ -15,6 +15,8 @@ from applications.material.models import Idioma
 from applications.sociedad.models import Sociedad
 from applications.sede.models import Sede
 from applications.almacenes.models import Almacen
+from applications.datos_globales.models import Moneda
+
 
 class ClaseMerchandising(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -676,3 +678,107 @@ class AjusteInventarioMerchandisingDetalle(models.Model):
 
     def __str__(self):
         return str(self.merchandising)
+
+########################################Nuevo MERCHANDISING########################################################################
+
+class ListaRequerimientoMerchandising(models.Model):
+    titulo = models.CharField('Titulo', max_length=150,blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ListaRequerimientoMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ListaRequerimientoMerchandising_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Lista de Requerimiento Merchandising'
+        verbose_name_plural = 'Listas de Requerimiento Merchandising'
+        ordering = [
+            '-created_at',
+        ]
+
+    def __str__(self):
+        return str(self.titulo)
+
+class ListaRequerimientoMerchandisingDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    merchandising = models.TextField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Merchandising registrado
+    id_registro = models.IntegerField()
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
+    comentario = models.TextField(blank=True, null=True)
+    lista_requerimiento_merchandising = models.ForeignKey(ListaRequerimientoMerchandising, on_delete=models.CASCADE, related_name='ListaRequerimientoMerchandisingDetalle_requerimiento_material')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ListaRequerimientoMerchandisingDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ListaRequerimientoMerchandisingDetalle_updated_by', editable=False)
+
+
+    class Meta:
+        verbose_name = 'Lista de Requerimiento Merchandising Detalle'
+        verbose_name_plural = 'Listas de Requerimiento Merchandising Detalle'
+        ordering = [
+            'item',
+        ]
+
+
+class OfertaProveedorMerchandising(models.Model):
+    ESTADOS_OFERTA_PROVEEDOR = (
+        (1, 'PENDIENTE'),
+        (2, 'APROBADO'),
+        (3, 'RECHAZADO'),
+    )
+
+    fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
+    lista_requerimiento_merchandising = models.OneToOneField(ListaRequerimientoMerchandising, on_delete=models.CASCADE, related_name='OfertaProveedorMerchandising_lista_requerimiento_merchandising')
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    tiempo_estimado_entrega = models.IntegerField('Tiempo estimado de entrega (dias)', blank=True, null=True)
+    forma_pago = models.TextField('Forma de pago', null=True, blank=True)
+    condiciones = models.TextField('Condiciones', null=True, blank=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS_OFERTA_PROVEEDOR, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OfertaProveedorMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OfertaProveedorMerchandising_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Oferta Proveedor Merchandising'
+        verbose_name_plural = 'Ofertas Proveedor Merchandising'
+        ordering = [
+            '-fecha',
+            '-created_at',
+        ]
+
+    def __str__(self):
+        return str(self.id)
+
+class OfertaProveedorMerchandisingDetalle(models.Model):
+
+    item = models.IntegerField(blank=True, null=True)
+    proveedor_material = models.TextField()
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario = models.DecimalField('Precio Unitario', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    oferta_proveedor_merchandising = models.ForeignKey(OfertaProveedorMerchandising, on_delete=models.CASCADE, related_name='OfertaProveedorMerchandisingDetalle_oferta_proveedor')
+    archivo = models.FileField('Archivo', blank=True, null=True)
+    
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OfertaProveedorMerchandisingDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OfertaProveedorMerchandisingDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Oferta Proveedor Detalle Merchandising'
+        verbose_name_plural = 'Ofertas Proveedor Detalle Merchandising'
+        ordering = [
+            'oferta_proveedor_merchandising',
+            'item',
+            ]
+    
+    def __str__(self):
+        return str(self.id)

@@ -1,20 +1,30 @@
+{% load funciones_propias %}
+{% load humanize %}
 <table class="table">
     <thead>
         <tr>
-            <th>Cliente</th>
-            <th>Encuesta</th>
             <th>Estado</th>
+            <th>Encuesta</th>
+            <th>Cliente</th>
             <th>Fecha Vencimiento</th>
+            <th>Registrado por</th>
+            <th>Fecha Modificación
+            <th>Modificado por</th>
+            <th>Fecha Registro</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
         {% for respuesta in contexto_pagina %}
         <tr>
-            <td>{{ respuesta.cliente_crm}}</td>
-            <td>{{ respuesta.encuesta_crm}}</td>
             <td>{{ respuesta.get_estado_display}}</td>
+            <td>{{ respuesta.encuesta_crm}}</td>
+            <td>{{ respuesta.cliente_crm}}</td>
             <td>{{ respuesta.fecha_vencimiento}}</td>
+            <td>{{ respuesta.created_by|nombre_usuario }}</td>
+            <td>{{ respuesta.created_at|date:'d/m/Y'}}</td>
+            <td>{{ respuesta.updated_by|nombre_usuario }}</td>
+            <td>{{ respuesta.updated_at|date:'d/m/Y'}}</td>
             <td class="text-center text-nowrap">
                 {% if respuesta.estado <= 1 %}
                 <button data-form-url="{% url 'crm_app:respuesta_crm_actualizar' respuesta.slug %}"

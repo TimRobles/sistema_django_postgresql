@@ -2,6 +2,7 @@
 {% load humanize %}
 
 <h3>
+    {% if contexto_encuesta_crm.id not in lista_encuestas %}        
     <button data-form-url="{% url 'crm_app:encuesta_crm_pregunta' contexto_encuesta_crm.slug %}"
         data-table-url="{% url 'crm_app:encuesta_crm_detalle_tabla' contexto_encuesta_crm.slug%}"
         data-keep-open="true"
@@ -10,6 +11,8 @@
         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
         Añadir Pregunta
     </button>
+    {% endif %}
+
 </h3>
 
 

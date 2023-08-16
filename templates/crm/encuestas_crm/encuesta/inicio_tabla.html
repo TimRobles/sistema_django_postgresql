@@ -20,6 +20,7 @@
             <td>{{ encuesta.created_at|date:'d/m/Y'}}</td>
             <td>{{ encuesta.created_by}}</td>
             <td class="text-center text-nowrap">
+                {% if encuesta.id not in lista_encuestas %}
                 <button data-form-url="{% url 'crm_app:encuesta_crm_actualizar' encuesta.slug %}"
                     data-table-url="{% url 'crm_app:encuesta_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     data-keep-open="true"
@@ -27,16 +28,19 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
-                <a href="{% url 'crm_app:encuesta_crm_detalle' encuesta.slug %}"
-                    class="btn btn-info btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
-                    <i class="bi bi-eye-fill"></i>
-                </a>
+                                    
                 <button data-form-url="{% url 'crm_app:encuesta_crm_eliminar' encuesta.slug %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                     <i class="bi bi-x-lg"></i>
                 </button>
+                {% endif %}
+                    
+                <a href="{% url 'crm_app:encuesta_crm_detalle' encuesta.slug %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
             </td>
         </tr>
         {% endfor %}

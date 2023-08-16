@@ -1,3 +1,6 @@
+{% load funciones_propias %}
+{% load humanize %}
+
 <table class="table">
     <thead>
         <tr>
@@ -5,8 +8,10 @@
             <th>Texto</th>
             <th>Tipo de Pregunta</th>
             <th>Mostrar</th>
-            <th>F. Registro</th>
-            <th>Creado por</th>
+            <th>Fecha Registro</th>
+            <th>Registrado por</th>            
+            <th>Fecha Modificación</th>
+            <th>Modificado por</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -18,8 +23,12 @@
             <td>{{ pregunta.get_tipo_pregunta_display}}</td>
             <td>{{ pregunta.mostrar}}</td>
             <td>{{ pregunta.created_at|date:'d/m/Y'}}</td>
-            <td>{{ pregunta.created_by }}</td>
+            <td>{{ pregunta.created_by|nombre_usuario }}</td>    
+            <td>{{ pregunta.updated_at|date:'d/m/Y'}}</td>
+            <td>{{ pregunta.updated_by|nombre_usuario }}</td>
             <td class="text-center text-nowrap">
+                {% if pregunta.id not in lista_preguntas and pregunta.id not in lista_alternativas %}
+                
                 <button data-form-url="{% url 'crm_app:pregunta_crm_actualizar' pregunta.id %}"
                     data-table-url="{% url 'crm_app:pregunta_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
                     data-keep-open="true"
@@ -27,11 +36,14 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+
                 <button data-form-url="{% url 'crm_app:pregunta_crm_eliminar' pregunta.id %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                     <i class="bi bi-x-lg"></i>
                 </button>
+                {% endif %}
+
                 <a href="{% url 'crm_app:pregunta_crm_detalle' pregunta.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Alternativas">
