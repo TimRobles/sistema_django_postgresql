@@ -31,6 +31,7 @@ class ClienteForm(BSModalModelForm):
             'ubigeo',
             'estado_sunat',
             'condicion_sunat',
+            'medio',
             )
         
     def clean_direccion_fiscal(self):

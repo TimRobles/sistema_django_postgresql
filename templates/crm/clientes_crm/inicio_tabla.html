@@ -15,18 +15,22 @@
     <tbody>
         {% for cliente in contexto_pagina %}
         <tr>
-            <td>{{ cliente.cliente_crm.razon_social }}</td>
-            <td>{{ cliente.cliente_crm.numero_documento }}</td>
+            <td>{{ cliente.razon_social }}</td>
+            <td>{{ cliente.numero_documento }}</td>
             <td>{{ cliente.representante.interlocutor }}</td>
             <td>{{ cliente.representante.get_tipo_representante_legal_display }}</td>
-            <td>{{ cliente.get_medio_display }}</td>
             <td>
-                {% if cliente.pais %}
-                {{ cliente.cliente_crm.pais }}
+                {% if cliente.medio %}
+                {{ cliente.get_medio_display }}
                 {% endif %}
             </td>
-            <td class="text-center">{{ cliente.fecha_registro|date:'d/m/Y'}}</td>
-            <td class="text-center">{{ cliente.get_estado_display }}</td>
+            <td>
+                {% if cliente.pais %}
+                {{ cliente.pais }}
+                {% endif %}
+            </td>
+            <td class="text-center">{{ cliente.created_at|date:'d/m/Y'}}</td>
+            <td class="text-center">{{ cliente.get_estado_cliente_display }}</td>
             <td class="text-center text-nowrap">
                 <button data-form-url="{% url 'crm_app:cliente_crm_actualizar' cliente.id %}"
                     data-table-url="{% url 'crm_app:cliente_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"

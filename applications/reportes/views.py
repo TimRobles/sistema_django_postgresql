@@ -42,8 +42,7 @@ from applications.reportes.pdf import (
     )
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
-from applications.crm.models import ClienteCRM
-from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM
+from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM
 from applications.reportes.excel import (
     ReporteClienteCRMExcel,
     ReporteComportamientoCliente,

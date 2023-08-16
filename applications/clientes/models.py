@@ -9,7 +9,7 @@ from applications.variables import CONDICION_SUNAT, DICCIONARIO_TIPO_DOCUMENTO_S
 
 from django.db.models.signals import pre_save, post_save
 
-from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO
+from applications.variables import ESTADOS_CLIENTE, MEDIO
 
 
 class Cliente(models.Model):
@@ -29,8 +29,8 @@ class Cliente(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cliente_updated_by', editable=False)
     cliente_id_erp = models.CharField(max_length=5, null=True, blank=True)
-    medio = models.IntegerField('Medio', choices=MEDIO, null=True, blank=True) 
-    estado_crm = models.IntegerField('Estado', choices=ESTADOS_CLIENTE_CRM, default=1, null=True, blank=True)
+    medio = models.IntegerField('Medio', choices=MEDIO, null=True, blank=True)
+    estado_cliente = models.IntegerField('Estado', choices=ESTADOS_CLIENTE, default=1, null=True, blank=True)
 
     class Meta:
 
@@ -142,6 +142,35 @@ class Cliente(models.Model):
             return self.linea_credito_monto - self.deuda_monto + self.nota_credito_monto
         except:
             return Decimal('0.00')
+        
+    # @property
+    # def descripcion_estado(self):
+    #     if self.HistorialEstadoCliente_cliente.all():
+    #         return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente.descripcion
+    #     else:
+    #         return ""
+
+    @property
+    def estado_cliente(self):
+        try:
+            return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente
+        except:
+            return None
+
+    # @property
+    # def numero_estado(self):
+    #     if self.HistorialEstadoCliente_cliente.all():
+    #         return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente.numero_estado
+    #     else:
+    #         return ""
+
+    @property
+    def ultimo_estado(self):
+        if self.HistorialEstadoCliente_cliente.all():
+            return self.HistorialEstadoCliente_cliente.latest('updated_at')
+        else:
+            return ""
+
 
     def __str__(self):
         return self.razon_social
@@ -313,6 +342,28 @@ class ClienteAnexo(models.Model):
     def __str__(self):
         return str(self.direccion) + ' - ' + str(self.cliente)
 
+
+class HistorialEstadoCliente(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='HistorialEstadoCliente_cliente')
+    estado_cliente = models.IntegerField(choices=ESTADOS_CLIENTE, default=1, null=True, blank=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='HistorialEstadoCliente_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='HistorialEstadoCliente_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Historial Estado Cliente'
+        verbose_name_plural = 'Historial Estado Clientes'
+        ordering = [
+            '-updated_at',
+            '-created_at',
+            '-id',
+            ]
+
+    def __str__(self):
+        return f"{self.cliente} - {self.estado_cliente}"
+    
 
 # def interlocutor_cliente_pre_save(*args, **kwargs):
 #     print('pre save')

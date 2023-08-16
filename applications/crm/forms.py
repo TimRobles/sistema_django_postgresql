@@ -1,6 +1,5 @@
 from django import forms
 from applications.crm.models import (
-    ClienteCRM,
     ClienteCRMDetalle, 
     ProveedorCRM,
     EventoCRM,
@@ -16,28 +15,29 @@ from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import Pais
 from applications.sede.models import Sede
 from applications.merchandising.models import Merchandising
-from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM, TIPO_PREGUNTA_CRM, TIPO_ENCUESTA_CRM
+from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_PREGUNTA_CRM, TIPO_ENCUESTA_CRM
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
 
 
-class ClienteCRMForm(BSModalModelForm):
-    class Meta:
-        model = ClienteCRM
-        fields = (
-            'cliente_crm',
-            'medio',
-            )
+# class ClienteCRMForm(BSModalModelForm):
+#     class Meta:
+#         model = ClienteCRM
+#         fields = (
+#             'cliente_crm',
+#             'medio',
+#             )
 
-    def __init__(self, *args, **kwargs):
-        super(ClienteCRMForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
+#     def __init__(self, *args, **kwargs):
+#         super(ClienteCRMForm, self).__init__(*args, **kwargs)
+#         for visible in self.visible_fields():
+#             visible.field.widget.attrs['class'] = 'form-control'
 
 class ClienteCRMBuscarForm(forms.Form):
     razon_social = forms.CharField(label = 'Razón Social', max_length=100, required=False)
     medio = forms.ChoiceField(choices=((None, '--------------------'),) + MEDIO, required=False)
     pais = forms.ModelChoiceField(queryset=Pais.objects.all(), required=False)
-    fecha_registro = forms.DateField(
+    created_at = forms.DateField(
+        label = 'Fecha Registro',
         required=False,
         widget = forms.DateInput(
                 attrs ={
@@ -46,19 +46,19 @@ class ClienteCRMBuscarForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_CLIENTE_CRM, required=False)
+    estado_cliente = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_CLIENTE, required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
         filtro_medio = kwargs.pop('filtro_medio')
-        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_estado_cliente = kwargs.pop('filtro_estado_cliente')
         filtro_pais = kwargs.pop('filtro_pais')
         filtro_fecha_registro = kwargs.pop('filtro_fecha_registro')
         super(ClienteCRMBuscarForm, self).__init__(*args, **kwargs)
         self.fields['razon_social'].initial = filtro_razon_social
         self.fields['medio'].initial = filtro_medio
-        self.fields['estado'].initial = filtro_estado
-        self.fields['fecha_registro'].initial = filtro_fecha_registro
+        self.fields['estado_cliente'].initial = filtro_estado_cliente
+        self.fields['created_at'].initial = filtro_fecha_registro
         self.fields['pais'].initial = filtro_pais
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

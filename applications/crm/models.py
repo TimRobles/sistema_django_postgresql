@@ -4,7 +4,7 @@ from django.conf import settings
 from applications.rutas import CLIENTE_CRM_ARCHIVO_ENVIADO, CLIENTE_CRM_ARCHIVO_RECIBIDO
 from applications.comprobante_venta.models import FacturaVenta
 from applications.proveedores.models import Proveedor
-from applications.variables import ESTADOS_CLIENTE_CRM, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
+from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
 from applications.clientes.models import Cliente, RepresentanteLegalCliente, CorreoInterlocutorCliente, InterlocutorCliente, TelefonoInterlocutorCliente
 from applications.sorteo.models import Sorteo
 from applications.datos_globales.models import Pais, Unidad
@@ -15,31 +15,31 @@ from applications.sede.models import Sede
 from applications.sociedad.models import Sociedad
 from .managers import RespuestaDetalleCRMManager
 
-class ClienteCRM(models.Model):
+# class ClienteCRM(models.Model):
 
-    cliente_crm = models.OneToOneField(Cliente, on_delete=models.CASCADE)
-    medio = models.IntegerField('Medio', choices=MEDIO)
-    fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
-    estado = models.IntegerField('Estado', choices=ESTADOS_CLIENTE_CRM, default=1)
-    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRM_created_by', editable=False)
-    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRM_updated_by', editable=False)
+#     cliente_crm = models.OneToOneField(Cliente, on_delete=models.CASCADE)
+#     medio = models.IntegerField('Medio', choices=MEDIO)
+#     fecha_registro = models.DateField('Fecha de Registro', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
+#     estado = models.IntegerField('Estado', choices=ESTADOS_CLIENTE, default=1)
+#     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRM_created_by', editable=False)
+#     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+#     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRM_updated_by', editable=False)
 
-    class Meta:
-        verbose_name = 'Cliente CRM'
-        verbose_name_plural = 'Clientes CRM'
+#     class Meta:
+#         verbose_name = 'Cliente CRM'
+#         verbose_name_plural = 'Clientes CRM'
 
-    @property
-    def representante(self):
-        return RepresentanteLegalCliente.objects.get(cliente = self.cliente_crm)
+#     @property
+#     def representante(self):
+#         return RepresentanteLegalCliente.objects.get(cliente = self.cliente_crm)
     
-    @property
-    def nro_factura(self):
-        return FacturaVenta.objects.filter(cliente = self.cliente_crm).order_by('-fecha_emision').latest('fecha_emision')
+#     @property
+#     def nro_factura(self):
+#         return FacturaVenta.objects.filter(cliente = self.cliente_crm).order_by('-fecha_emision').latest('fecha_emision')
 
-    def __str__(self):
-        return str(self.cliente_crm)
+#     def __str__(self):
+#         return str(self.cliente_crm)
 
 
 class ClienteCRMDetalle(models.Model):
@@ -53,7 +53,7 @@ class ClienteCRMDetalle(models.Model):
     monto = models.DecimalField('Monto', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     archivo_recibido = models.ImageField('Archivo Recibido', upload_to=CLIENTE_CRM_ARCHIVO_RECIBIDO, max_length=100, blank=True, null=True)
     archivo_enviado = models.ImageField('Archivo Enviado', upload_to=CLIENTE_CRM_ARCHIVO_ENVIADO, max_length=100, blank=True, null=True)
-    cliente_crm =  models.ForeignKey(ClienteCRM, on_delete=models.CASCADE)
+    cliente_crm =  models.ForeignKey(Cliente, on_delete=models.CASCADE)
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRMDetalle_created_by', editable=False)
@@ -88,24 +88,20 @@ from applications import cotizacion, comprobante_venta, cobranza
 
 def actualizar_estado_cliente_crm(id_cliente=None):
     if id_cliente:
-        try:
-            clientes = ClienteCRM.objects.filter(cliente_crm__id=id_cliente)
-        except:
-            return False
-
+        clientes = Cliente.objects.all()
     else:
-        clientes = ClienteCRM.objects.all()
+        return False
 
     for cliente in clientes:
-        if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente.cliente_crm, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10)) > 0:
+        if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10)) > 0:
             cliente.estado = 3
         else:
             cliente.estado = 1
-        if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente.cliente_crm, estado__gte=2).exclude(estado=3))>0:
+        if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
             cliente.estado == 4
         else:
             cliente.estado == 1
-        if len(cobranza.models.Deuda.objects.filter(cliente=cliente.cliente_crm))>0:
+        if len(cobranza.models.Deuda.objects.filter(cliente=cliente))>0:
             cliente.estado == 6
         else:
             cliente.estado == 1

@@ -10,7 +10,7 @@ from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.funciones import slug_aleatorio
 from applications.home.templatetags.funciones_propias import nombre_usuario
 from django.urls import reverse
-from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, ClienteCRMForm, EventoCRMFinalizarForm, 
+from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, EventoCRMFinalizarForm, 
                                     EventoCRMForm, EventoCRMBuscarForm,EventoCRMDetalleDescripcionForm,
                                     EventoCRMActualizarForm, EventoCRMDetalleActualizarForm, EventoCRMDetalleForm,
                                     EventoCRMDetalleInformacionAdicionalForm, ProveedorCRMForm, 
@@ -20,7 +20,6 @@ from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, 
                                     RespuestaCRMBuscarForm, RespuestaCRMForm)
 
 from applications.crm.models import (
-    ClienteCRM, 
     ClienteCRMDetalle,
     EventoCRM,
     EventoCRMDetalle,
@@ -33,7 +32,8 @@ from applications.crm.models import (
     RespuestaDetalleCRM,
     )
 
-from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
+from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
+from applications.clientes.forms import ClienteForm
 
 class ClienteCRMListView(PermissionRequiredMixin, FormView):
     permission_required = ('crm.view_clientecrm')
@@ -45,28 +45,28 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
         kwargs = super(ClienteCRMListView, self).get_form_kwargs()
         kwargs['filtro_razon_social'] = self.request.GET.get('razon_social')
         kwargs['filtro_medio'] = self.request.GET.get('medio')
-        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_estado_cliente'] = self.request.GET.get('estado_cliente')
         kwargs['filtro_pais'] = self.request.GET.get('pais')
-        kwargs['filtro_fecha_registro'] = self.request.GET.get('fecha_registro')
+        kwargs['filtro_fecha_registro'] = self.request.GET.get('created_at')
 
         return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(ClienteCRMListView,self).get_context_data(**kwargs)
-        clientes_crm = ClienteCRM.objects.all()
+        clientes_crm = Cliente.objects.all()
         
         filtro_razon_social = self.request.GET.get('razon_social')
         filtro_medio = self.request.GET.get('medio')
-        filtro_estado = self.request.GET.get('estado')
+        filtro_estado_cliente = self.request.GET.get('estado_cliente')
         filtro_pais = self.request.GET.get('pais')
-        filtro_fecha_registro = self.request.GET.get('fecha_registro')
+        filtro_fecha_registro = self.request.GET.get('created_at')
         
         contexto_filtro = []
 
         if filtro_razon_social:
-            condicion = Q(cliente_crm__razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
+            condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
             for palabra in filtro_razon_social.split(" ")[1:]:
-                condicion &= Q(cliente_crm__razon_social__unaccent__icontains = palabra)
+                condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"razon_social={filtro_razon_social}")
 
@@ -75,20 +75,20 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"medio={filtro_medio}")
 
-        if filtro_estado:
-            condicion = Q(estado__icontains = filtro_estado)
+        if filtro_estado_cliente:
+            condicion = Q(estado_cliente__icontains = filtro_estado_cliente)
             clientes_crm = clientes_crm.filter(condicion)
-            contexto_filtro.append(f"estado={filtro_estado}")
+            contexto_filtro.append(f"estado_cliente={filtro_estado_cliente}")
 
         if filtro_pais:
-            condicion = Q(cliente_crm__pais = filtro_pais)
+            condicion = Q(pais = filtro_pais)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"pais={filtro_pais}")        
         
         if filtro_fecha_registro:
-            condicion = Q(fecha_registro = filtro_fecha_registro)
+            condicion = Q(created_at = filtro_fecha_registro)
             clientes_crm = clientes_crm.filter(condicion)
-            contexto_filtro.append(f"fecha_registro={filtro_fecha_registro}")
+            contexto_filtro.append(f"created_at={filtro_fecha_registro}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -116,20 +116,20 @@ def ClienteCRMTabla(request):
     if request.method == 'GET':
         template = 'crm/clientes_crm/inicio_tabla.html'
         context = {}
-        clientes_crm = ClienteCRM.objects.all()
+        clientes_crm = Cliente.objects.all()
 
         filtro_razon_social = request.GET.get('razon_social')
         filtro_medio = request.GET.get('medio')
-        filtro_estado = request.GET.get('estado')
+        filtro_estado_cliente = request.GET.get('estado_cliente')
         filtro_pais = request.GET.get('pais')
-        filtro_fecha_registro = request.GET.get('fecha_registro')
+        filtro_fecha_registro = request.GET.get('created_at')
 
         contexto_filtro = []
 
         if filtro_razon_social:
-            condicion = Q(cliente_crm__razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
+            condicion = Q(razon_social__unaccent__icontains = filtro_razon_social.split(" ")[0])
             for palabra in filtro_razon_social.split(" ")[1:]:
-                condicion &= Q(cliente_crm__razon_social__unaccent__icontains = palabra)
+                condicion &= Q(razon_social__unaccent__icontains = palabra)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"razon_social={filtro_razon_social}")
 
@@ -138,20 +138,20 @@ def ClienteCRMTabla(request):
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"medio={filtro_medio}")
 
-        if filtro_estado:
-            condicion = Q(estado__icontains = filtro_estado)
+        if filtro_estado_cliente:
+            condicion = Q(estado_cliente__icontains = filtro_estado_cliente)
             clientes_crm = clientes_crm.filter(condicion)
-            contexto_filtro.append(f"estado={filtro_estado}")
+            contexto_filtro.append(f"estado_cliente={filtro_estado_cliente}")
 
         if filtro_pais:
-            condicion = Q(cliente_crm__pais = filtro_pais)
+            condicion = Q(pais = filtro_pais)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"pais={filtro_pais}")
 
         if filtro_fecha_registro:
-            condicion = Q(fecha_registro = filtro_fecha_registro)
+            condicion = Q(created_at = filtro_fecha_registro)
             clientes_crm = clientes_crm.filter(condicion)
-            contexto_filtro.append(f"fecha_registro={filtro_fecha_registro}")
+            contexto_filtro.append(f"created_at={filtro_fecha_registro}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -182,9 +182,9 @@ def ClienteCRMTabla(request):
 
 class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_clientecrm')
-    model = ClienteCRM
+    model = Cliente
     template_name = "crm/clientes_crm/form_cliente.html"
-    form_class = ClienteCRMForm
+    form_class = ClienteForm
     success_url = reverse_lazy('crm_app:cliente_crm_inicio')
     
     def dispatch(self, request, *args, **kwargs):
@@ -205,9 +205,9 @@ class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('crm.change_clientecrm')
-    model = ClienteCRM
+    model = Cliente
     template_name = "crm/clientes_crm/form_cliente.html"
-    form_class = ClienteCRMForm
+    form_class = ClienteForm
     success_url = reverse_lazy('crm_app:cliente_crm_inicio')
 
     def dispatch(self, request, *args, **kwargs):
@@ -228,12 +228,12 @@ class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 class ClienteCRMDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('crm.view_clientecrmdetalle')
-    model = ClienteCRM
+    model = Cliente
     template_name = "crm/clientes_crm/detalle.html"
     context_object_name = 'contexto_cliente_crm'
 
     def get_context_data(self, **kwargs):
-        cliente_crm = ClienteCRM.objects.get(id = self.kwargs['pk'])
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(ClienteCRMDetailView, self).get_context_data(**kwargs)
         context['cliente_crm_detalle'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm)
         return context
@@ -244,7 +244,7 @@ def ClienteCRMDetailTabla(request, pk):
     if request.method == 'GET':
         template = 'crm/clientes_crm/detalle_tabla.html'
         context = {}
-        cliente_crm = ClienteCRM.objects.get(id = pk)
+        cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['cliente_crm_detalle'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm)
         
@@ -266,7 +266,7 @@ class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
         return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
     def form_valid(self, form):
-        form.instance.cliente_crm = ClienteCRM.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
