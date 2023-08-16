@@ -1,5 +1,6 @@
 from django import forms
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
+from applications.logistica.models import DevolucionPrestamoMateriales
 from applications.movimiento_almacen.models import TipoStock
 from applications.nota.models import NotaDevolucion
 from applications.nota_ingreso.models import NotaIngreso
@@ -94,16 +95,30 @@ class NotaControlCalidadStockTransformacionProductosForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 class NotaControlCalidadStockNotaDevolucionForm(BSModalModelForm):
-    nota_devolucion_temp = forms.ModelChoiceField(queryset=NotaDevolucion.objects.filter(estado=2))
+    nota_devolucion = forms.ModelChoiceField(queryset=NotaDevolucion.objects.filter(estado=2))
     class Meta:
         model = NotaControlCalidadStock
         fields=(
-            'nota_devolucion_temp',
+            'nota_devolucion',
             'comentario',
             )
 
     def __init__(self, *args, **kwargs):
         super(NotaControlCalidadStockNotaDevolucionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class NotaControlCalidadStockNotaDevolucionPrestamoForm(BSModalModelForm):
+    devolucion_prestamo = forms.ModelChoiceField(queryset=DevolucionPrestamoMateriales.objects.filter(estado=2))
+    class Meta:
+        model = NotaControlCalidadStock
+        fields=(
+            'devolucion_prestamo',
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaControlCalidadStockNotaDevolucionPrestamoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

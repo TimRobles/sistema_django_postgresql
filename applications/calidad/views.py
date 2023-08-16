@@ -28,6 +28,7 @@ from applications.calidad.forms import(
     NotaControlCalidadStockAgregarMaloSinFallaCreateForm,
     NotaControlCalidadStockAgregarMaloSinSerieCreateForm,
     NotaControlCalidadStockNotaDevolucionForm,
+    NotaControlCalidadStockNotaDevolucionPrestamoForm,
     NotaControlCalidadStockTransformacionProductosForm,
     RegistrarSerieAntiguaForm,
     ReparacionMaterialDetalleSeriesActualizarForm,
@@ -411,9 +412,37 @@ class NotaControlCalidadStockNotaDevolucionCreateView(PermissionRequiredMixin, B
     def form_valid(self, form):
         nro_nota_control_calidad = len(NotaControlCalidadStock.objects.all()) + 1
         form.instance.nro_nota_calidad = numeroXn(nro_nota_control_calidad, 6)
-        nota_devolucion_temp = form.cleaned_data.get('nota_devolucion_temp')
-        form.instance.content_type = ContentType.objects.get_for_model(nota_devolucion_temp)
-        form.instance.id_registro = nota_devolucion_temp.id
+        nota_devolucion = form.cleaned_data.get('nota_devolucion')
+        form.instance.content_type = ContentType.objects.get_for_model(nota_devolucion)
+        form.instance.id_registro = nota_devolucion.id
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+
+class NotaControlCalidadStockNotaDevolucionPrestamoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('calidad.add_notacontrolcalidadstock')
+    model = NotaControlCalidadStock
+    template_name = "calidad/nota_control_calidad_stock/form.html"
+    form_class = NotaControlCalidadStockNotaDevolucionPrestamoForm
+    success_url = reverse_lazy('calidad_app:nota_control_calidad_stock_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaControlCalidadStockNotaDevolucionPrestamoCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Nota Control Calidad Stock de Devolución de Préstamo"
+        return context
+
+    def form_valid(self, form):
+        nro_nota_control_calidad = len(NotaControlCalidadStock.objects.all()) + 1
+        form.instance.nro_nota_calidad = numeroXn(nro_nota_control_calidad, 6)
+        devolucion_prestamo = form.cleaned_data.get('devolucion_prestamo')
+        form.instance.content_type = ContentType.objects.get_for_model(devolucion_prestamo)
+        form.instance.id_registro = devolucion_prestamo.id
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
