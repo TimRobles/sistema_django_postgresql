@@ -44,7 +44,10 @@ class SolicitudPrestamoMateriales(models.Model):
 
         verbose_name = 'Solicitud Prestamo Materiales'
         verbose_name_plural = 'Solicitudes Prestamo Materiales'
-        ordering = ['numero_prestamo',]
+        ordering = [
+            'estado',
+            '-numero_prestamo',
+            ]
 
     @property
     def content_type(self):
