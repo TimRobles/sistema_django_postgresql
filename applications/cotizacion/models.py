@@ -212,26 +212,30 @@ def cotizacion_venta_detalle_pre_save(*args, **kwargs):
     obj = kwargs['instance']
     print(obj.cantidad)
     print(obj.precio_final_con_igv)
-    if not kwargs['created']:
-        antes = CotizacionVentaDetalle.objects.get(id=obj.id)
-        print(antes.cantidad)
-        print(antes.precio_final_con_igv)
-        if obj.cantidad != antes.cantidad or obj.precio_final_con_igv != antes.precio_final_con_igv:
-            respuesta = obtener_totales(obj.cotizacion_venta)
-            obj.cotizacion_venta.total_descuento = respuesta['total_descuento']
-            obj.cotizacion_venta.total_anticipo = respuesta['total_anticipo']
-            obj.cotizacion_venta.total_gravada = respuesta['total_gravada']
-            obj.cotizacion_venta.total_inafecta = respuesta['total_inafecta']
-            obj.cotizacion_venta.total_exonerada = respuesta['total_exonerada']
-            obj.cotizacion_venta.total_igv = respuesta['total_igv']
-            obj.cotizacion_venta.total_gratuita = respuesta['total_gratuita']
-            obj.cotizacion_venta.total = respuesta['total']
-            obj.cotizacion_venta.save()
+    if 'created' in kwargs:
+        if not kwargs['created']:
+            try:
+                antes = CotizacionVentaDetalle.objects.get(id=obj.id)
+            except:
+                return
+            print(antes.cantidad)
+            print(antes.precio_final_con_igv)
+            if obj.cantidad != antes.cantidad or obj.precio_final_con_igv != antes.precio_final_con_igv:
+                respuesta = obtener_totales(obj.cotizacion_venta)
+                obj.cotizacion_venta.total_descuento = respuesta['total_descuento']
+                obj.cotizacion_venta.total_anticipo = respuesta['total_anticipo']
+                obj.cotizacion_venta.total_gravada = respuesta['total_gravada']
+                obj.cotizacion_venta.total_inafecta = respuesta['total_inafecta']
+                obj.cotizacion_venta.total_exonerada = respuesta['total_exonerada']
+                obj.cotizacion_venta.total_igv = respuesta['total_igv']
+                obj.cotizacion_venta.total_gratuita = respuesta['total_gratuita']
+                obj.cotizacion_venta.total = respuesta['total']
+                obj.cotizacion_venta.save()
 
 def cotizacion_venta_detalle_post_save(*args, **kwargs):
     print('cotizacion_venta_detalle_post_save')
+    print(kwargs)
     obj = kwargs['instance']
-    antes = CotizacionVentaDetalle.objects.get(id=obj.id)
     if kwargs['created']:
         respuesta = obtener_totales(obj.cotizacion_venta)
         obj.cotizacion_venta.total_descuento = respuesta['total_descuento']
