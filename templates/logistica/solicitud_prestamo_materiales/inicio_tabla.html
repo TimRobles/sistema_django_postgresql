@@ -10,6 +10,7 @@
             <th>Fecha Prestamo</th>
             <th>Comentario</th>
             <th>Motivo Anulación</th>
+            <th>Solicitado Por</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>  
         </tr>
@@ -37,6 +38,7 @@
                         {{ solicitud.motivo_anulacion }}    
                     {% endif %}  
                 </td>
+                <td>{{ solicitud.created_by|nombre_usuario }}</td>
                 <td class="text-center">{{ solicitud.get_estado_display }}</td>
                 <td class="text-center text-nowrap">
                     {% if solicitud.estado == 1 %}
