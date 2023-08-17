@@ -89,7 +89,11 @@ from applications import cotizacion, comprobante_venta, cobranza
 def actualizar_estado_cliente_crm(id_cliente=None):
     print('actualizar_estado_cliente_crm')
     if id_cliente:
-        cliente = Cliente.objects.get(id=id_cliente)
+        clientes = Cliente.objects.filter(id=id_cliente)
+    else:
+        clientes = Cliente.objects.all()
+
+    for cliente in clientes:
         if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10)) > 0:
             cliente.estado = 3
         else:
@@ -103,8 +107,6 @@ def actualizar_estado_cliente_crm(id_cliente=None):
         else:
             cliente.estado == 1
         cliente.save()
-    else:
-        return False    
 
 
 class EventoCRM(models.Model):
