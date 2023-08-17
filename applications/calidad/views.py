@@ -2531,7 +2531,7 @@ def ReparacionMaterialDetailTabla(request, pk):
         
 
 class ReparacionMaterialDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('calidad.add_solicitudconsumointernodetalle')
+    permission_required = ('calidad.add_reparacionmaterial')
     model = ReparacionMaterialDetalle
     template_name = "calidad/reparacion/form.html"
     form_class = ReparacionMaterialDetalleForm
