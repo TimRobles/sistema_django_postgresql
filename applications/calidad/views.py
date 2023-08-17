@@ -2642,7 +2642,7 @@ class ReparacionMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalUpdate
 
 
 class ValidarSeriesReparacionMaterialDetailView(PermissionRequiredMixin, FormView):
-    permission_required = ('calidad.view_solicitudconsumointernodetalle')
+    permission_required = ('calidad.view_reparacionmaterialdetalle')
     template_name = "calidad/reparacion/validar_serie/detalle.html"
     form_class = ReparacionMaterialDetalleSeriesForm
     success_url = '.'
