@@ -256,6 +256,10 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
     def unidad(self):
         return self.producto.unidad_base
 
+    @property
+    def sociedad(self):
+        return self.devolucion_materiales.sociedad
+
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
 
