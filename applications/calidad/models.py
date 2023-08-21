@@ -158,12 +158,15 @@ class Serie(models.Model):
     @property
     def cliente(self):
         try:
-            if self.serie_movimiento_almacen.all():
+            movimientos = self.serie_movimiento_almacen.all()
+            if movimientos:
                 ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
                 if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO' or ultimo_movimiento.tipo_stock.descripcion == 'CORRECCION DE SERIE':
                     return self.serie_movimiento_almacen.latest('id').documento_proceso.cliente
                 elif ultimo_movimiento.tipo_stock.descripcion == 'BLOQUEO RECLAMO CLIENTE':
-                    return self.serie_movimiento_almacen.all().order_by('-id')[2].documento_proceso.cliente
+                    return movimientos.order_by('-id')[2].documento_proceso.cliente
+                elif ultimo_movimiento.tipo_movimiento.descripcion == 'Devolución de préstamo':
+                    return movimientos.order_by('-id')[2].documento_proceso.cliente
             return ""
         except:
             return ""

@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.importaciones import *
+from applications.logistica.models import DevolucionPrestamoMateriales
 from applications.logistica.pdf import generarSeries
 from applications.material.funciones import stock_tipo_stock
 from applications.material.models import SubFamilia
@@ -404,6 +405,7 @@ class NotaControlCalidadStockNotaDevolucionCreateView(PermissionRequiredMixin, B
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        print("NotaControlCalidadStockNotaDevolucionCreateView")
         context = super(NotaControlCalidadStockNotaDevolucionCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Nota Control Calidad Stock de Nota de Devolución"
@@ -432,6 +434,7 @@ class NotaControlCalidadStockNotaDevolucionPrestamoCreateView(PermissionRequired
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        print('NotaControlCalidadStockNotaDevolucionPrestamoCreateView')
         context = super(NotaControlCalidadStockNotaDevolucionPrestamoCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
         context['titulo']="Nota Control Calidad Stock de Devolución de Préstamo"
@@ -653,7 +656,7 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                     )
 
                     for serie_calidad in detalle.SerieCalidad_nota_control_calidad_stock_detalle.all():
-                        if self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                        if self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion) or self.object.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
                             serie = Serie.objects.get(
                                 serie_base = serie_calidad.serie.upper(),
                                 content_type = serie_calidad.content_type,
@@ -734,6 +737,8 @@ class NotaControlCalidadStockConcluirView(PermissionRequiredMixin, BSModalDelete
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=147) #Ingreso por Muestra, c/QA
             elif self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion):
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito	
+            elif self.object.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=135) #Devolución de préstamo
             else:
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
 
@@ -1130,6 +1135,10 @@ class NotaControlCalidadStockBuenoCreateView(PermissionRequiredMixin, BSModalFor
                         if len(buscar2) == 1:
                             if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
                                 estado = 3
+                    elif nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
+                        if len(buscar2) == 1:
+                            if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                                estado = 3
                     else:
                         estado = 2
 
@@ -1434,7 +1443,7 @@ class NotaControlCalidadStockAgregarMaloSinSerieCreateView(PermissionRequiredMix
         context['titulo'] = 'Serie'
         return context
 
-class NotaControlCalidadStockBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+class   NotaControlCalidadStockBuenoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_seriecalidad')
     model = SerieCalidad
     template_name = "includes/formulario generico.html"
@@ -1468,7 +1477,17 @@ class NotaControlCalidadStockBuenoUpdateView(PermissionRequiredMixin, BSModalUpd
             ).exclude(id=form.instance.id)
 
             if len(buscar2) > 0:
-                estado = 2
+                nota_control_calidad_stock_detalle = form.instance.nota_control_calidad_stock_detalle
+                if nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                    if len(buscar2) == 1:
+                        if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                            estado = 3
+                elif nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
+                    if len(buscar2) == 1:
+                        if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                            estado = 3
+                else:
+                    estado = 2
             
             form.instance.estado = estado
             registro_guardar(form.instance, self.request)
@@ -1518,7 +1537,17 @@ class NotaControlCalidadStockMaloUpdateView(PermissionRequiredMixin, BSModalUpda
             ).exclude(id=form.instance.id)
 
             if len(buscar2) > 0:
-                estado = 2
+                nota_control_calidad_stock_detalle = form.instance.nota_control_calidad_stock_detalle
+                if nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                    if len(buscar2) == 1:
+                        if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                            estado = 3
+                elif nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
+                    if len(buscar2) == 1:
+                        if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                            estado = 3
+                else:
+                    estado = 2
             
             form.instance.estado = estado
             registro_guardar(form.instance, self.request)
@@ -1576,7 +1605,17 @@ class NotaControlCalidadStockMaloSinSerieUpdateView(PermissionRequiredMixin, BSM
             ).exclude(id=form.instance.id)
 
             if len(buscar2) > 0:
-                estado = 2
+                nota_control_calidad_stock_detalle = form.instance.nota_control_calidad_stock_detalle
+                if nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                    if len(buscar2) == 1:
+                        if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                            estado = 3
+                elif nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
+                    if len(buscar2) == 1:
+                        if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                            estado = 3
+                else:
+                    estado = 2
             
             form.instance.estado = estado
             registro_guardar(form.instance, self.request)

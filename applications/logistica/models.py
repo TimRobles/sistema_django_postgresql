@@ -191,6 +191,10 @@ class DevolucionPrestamoMateriales(models.Model):
     def fecha(self):
         return self.fecha_devolucion
 
+    @property
+    def detalles(self):
+        return self.DevolucionPrestamoMaterialesDetalle_devolucion_materiales.all()
+
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_devolucion, 6), self.cliente)
 
@@ -199,6 +203,7 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     cantidad_devolucion = models.DecimalField('Cantidad Devuelta', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
     devolucion_materiales = models.ForeignKey(DevolucionPrestamoMateriales, blank=True, null=True, on_delete=models.CASCADE, related_name='DevolucionPrestamoMaterialesDetalle_devolucion_materiales')
 
@@ -223,6 +228,10 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
             id_registro_detalle = self.id,
         )
         return notas_salida_detalle
+
+    @property
+    def cantidad(self):
+        return self.cantidad_devolucion
 
     @property
     def producto(self):
