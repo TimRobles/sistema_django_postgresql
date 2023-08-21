@@ -1209,7 +1209,16 @@ class NotaControlCalidadStockAgregarMaloCreateView(PermissionRequiredMixin, BSMo
                 )
 
                 if len(buscar2) > 0:
-                    estado = 2
+                    if nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                        if len(buscar2) == 1:
+                            if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                                estado = 3
+                    elif nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
+                        if len(buscar2) == 1:
+                            if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                                estado = 3
+                    else:
+                        estado = 2
                 
                 serie = SerieCalidad.objects.create(
                     serie = serie_base,
@@ -1285,7 +1294,16 @@ class NotaControlCalidadStockAgregarMaloSinFallaCreateView(PermissionRequiredMix
                 )
 
                 if len(buscar2) > 0:
-                    estado = 2
+                    if nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                        if len(buscar2) == 1:
+                            if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                                estado = 3
+                    elif nota_control_calidad_stock_detalle.nota_control_calidad_stock.content_type == ContentType.objects.get_for_model(DevolucionPrestamoMateriales):
+                        if len(buscar2) == 1:
+                            if buscar2.first().cliente == nota_control_calidad_stock_detalle.nota_control_calidad_stock.nota_ingreso.cliente:
+                                estado = 3
+                    else:
+                        estado = 2
                 
                 serie = SerieCalidad.objects.create(
                     serie = serie_base,
