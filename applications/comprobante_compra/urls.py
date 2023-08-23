@@ -27,6 +27,7 @@ urlpatterns = [
     path('comprobante-compra-ci/detalle/<slug>/', views.ComprobanteCompraCIDetailView.as_view(), name='comprobante_compra_ci_detalle'),
     path('comprobante-compra-ci/detalle/tabla/<slug>/', views.ComprobanteCompraCIDetailTabla, name='comprobante_compra_ci_detalle_tabla'),
     path('comprobante-compra-ci/traduccion/<slug>/', views.ComprobanteCompraCITraduccionView.as_view(), name='comprobante_compra_ci_traduccion'),
+    path('comprobante-compra-ci/traduccion-tabla/<slug>/', views.ComprobanteCompraCITraduccionTabla, name='comprobante_compra_ci_traduccion_tabla'),
     path('comprobante-compra-ci/finalizar/<slug>/', views.ComprobanteCompraCIFinalizarView.as_view(), name='comprobante_compra_ci_finalizar'),
     path('comprobante-compra-ci/actualizar-material/<pk>/', views.ComprobanteCompraCIDetalleUpdateView.as_view(), name='comprobante_compra_ci_actualizar_material'),
 

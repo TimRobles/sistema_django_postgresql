@@ -733,6 +733,23 @@ class ComprobanteCompraCITraduccionView(PermissionRequiredMixin, DetailView):
         context = super(ComprobanteCompraCITraduccionView, self).get_context_data(**kwargs)
         context['materiales'] = ComprobanteCompraCIDetalle.objects.ver_detalle(self.get_object())
         return context
+
+
+def ComprobanteCompraCITraduccionTabla(request, slug):
+    data = dict()
+    if request.method == 'GET':
+        template = 'comprobante_compra/comprobante_compra_ci/traduccion tabla.html'
+        context = {}
+        comprobante_compra = ComprobanteCompraCI.objects.get(slug = slug)
+        context['contexto_comprobante_compra_ci'] = comprobante_compra
+        context['materiales'] = ComprobanteCompraCIDetalle.objects.ver_detalle(comprobante_compra)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
     
 
 class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
