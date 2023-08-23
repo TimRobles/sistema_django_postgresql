@@ -55,7 +55,13 @@
                 <td>CHINA</td>
                 <td>{{ material.material.uso_funcion }}</td>
                 <td>{{ material.material.compuesto_por }}</td>
-                <td>{{ material.material.es_componente }}</td>
+                <td>
+                    {% if material.material.es_componente %}
+                    SI
+                    {% else %}
+                    NO
+                    {% endif %}
+                </td>
                 <td>
                     <button data-form-url="{% url 'material_app:datos_importacion_actualizar' material.material.id %}"
                     data-table-url="{% url 'comprobante_compra_app:comprobante_compra_ci_traduccion_tabla' contexto_comprobante_compra_ci.slug %}"
