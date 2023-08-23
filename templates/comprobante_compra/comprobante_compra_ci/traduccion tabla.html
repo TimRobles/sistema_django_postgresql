@@ -31,8 +31,20 @@
                     {{ material.descripcion }}
                     ({{ material.material.traduccion }})
                 </td>
-                <td>{{ material.material.marca }}</td>
-                <td>{{ material.material.modelo }}</td>
+                <td>
+                    {% if material.material.marca %}
+                    {{ material.material.marca }}    
+                    {% else %}
+                    S/Marca
+                    {% endif %}
+                </td>
+                <td>
+                    {% if material.material.modelo %}
+                    {{ material.material.modelo }}
+                    {% else %} 
+                    S/Modelo   
+                    {% endif %}
+                </td>
                 <td>NUEVO</td>
                 <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
                 <td>{{ material.material.unidad_base }}</td>
