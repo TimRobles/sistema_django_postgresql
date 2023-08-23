@@ -26,7 +26,11 @@
         {% if material.cantidad %}
             <tr>
                 <td>{{ material.item}}</td>
-                <td>{{ material.material.partida }}</td>
+                <td>
+                    {% if material.material.partida %}
+                    {{ material.material.partida }}
+                    {% endif %}
+                </td>
                 <td>
                     {{ material.descripcion }}
                     ({{ material.material.traduccion }})
