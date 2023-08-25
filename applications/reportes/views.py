@@ -2712,6 +2712,11 @@ class ReporteClientesProductos(TemplateView):
 
 class ReporteDeudas(TemplateView):
     def get(self,request, *args,**kwargs):
+        DICT_CLIENTE = {}
+        query_cliente = Cliente.objects.all()
+        for dato in query_cliente:
+            c_id = str(dato.id)
+            DICT_CLIENTE[c_id] = dato.razon_social
         global_sociedad = self.request.GET.get('filtro_sociedad')
         global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
         global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
