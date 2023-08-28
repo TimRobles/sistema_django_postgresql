@@ -61,6 +61,7 @@ urlCheque = [
     path('cheque/detalle/cheque-fisico/actualizar/<pk>/', views.ChequeFisicoUpdateView.as_view(), name='cheque_fisico_actualizar'),
     path('cheque/detalle/cheque-fisico/eliminar/<pk>/', views.ChequeFisicoDeleteView.as_view(), name='cheque_fisico_eliminar'),
     path('cheque/detalle/cheque-fisico/cobrar/<pk>/', views.ChequeFisicoCobrarView.as_view(), name='cheque_fisico_cobrar'),
+    path('cheque/detalle/cheque-fisico/cobrar/editar/<pk>/', views.ChequeFisicoCobrarEditarView.as_view(), name='cheque_fisico_cobrar_editar'),
 
     path('cheque/vuelto-extra/agregar/<int:cheque_id>/', views.ChequeVueltoExtraCreateView.as_view(), name='cheque_vuelto_extra_agregar'),
     path('cheque/vuelto-extra/editar/<pk>/', views.ChequeVueltoExtraUpdateView.as_view(), name='cheque_vuelto_extra_editar'),
