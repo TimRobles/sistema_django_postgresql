@@ -6,7 +6,7 @@ from django.shortcuts import render
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.importaciones import *
 from applications.logistica.models import DevolucionPrestamoMateriales
-from applications.logistica.pdf import generarSeries
+from applications.logistica.pdf import generarSeriesNotaSalida
 from applications.material.funciones import stock_tipo_stock
 from applications.material.models import SubFamilia
 from applications.datos_globales.models import Unidad
@@ -1727,7 +1727,7 @@ class NotaControlCalidadStockSeriesPdf(View):
             TablaDatos.append("")
             TablaDatos.append("")
 
-        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo

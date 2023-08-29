@@ -1,0 +1,96 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<div class="row mt-3">
+    <div class=" table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2 text-nowrap">Razón Social:</th>
+                    <td>{{ contexto_devolucion_materiales.cliente.razon_social }}</td>
+                    <th class="px-2">Nota de Devolución:</th>
+                    <td>{{ contexto_devolucion_materiales.numero_devolucion|numeroXn:6 }}</td>
+                    <th class="px-2">Fecha:</th>
+                    <td>{{ contexto_devolucion_materiales.fecha_devolucion|date:'d/m/Y' }}</td>
+                    <th class="px-2">Motivo de Anulación:</th>
+                    <td>
+                        {% if contexto_devolucion_materiales.motivo_anulacion %}    
+                        {{ contexto_devolucion_materiales.motivo_anulacion }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="pe-2">{{ contexto_devolucion_materiales.cliente.documento }}:</th>
+                    <td>
+                        {% if contexto_devolucion_materiales.cliente.numero_documento %}
+                            {{ contexto_devolucion_materiales.cliente.numero_documento }}
+                        {% endif %}
+                    </td>
+                    <th class="px-2">Número de Préstamo:</th>
+                    <td>{{ contexto_devolucion_materiales.solicitud_prestamo }}</td>
+                    <th class="px-2">Estado:</th>
+                    <td>{{ contexto_devolucion_materiales.get_estado_display }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="row mt-3">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="fondo-personalizado" style="--color-fondo: {{ contexto_devolucion_materiales.sociedad.color }};">COMENTARIOS {{ contexto_devolucion_materiales.sociedad.razon_social }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if contexto_devolucion_materiales.comentario %}
+                            {{ contexto_devolucion_materiales.comentario|linebreaks }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Almacén</th>
+                <th>Unidad</th>
+                <th class="text-end">Cantidad Devuelta</th>
+                <th class="text-center text-nowrap">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.producto }}</td>
+                    <td>{{ material.almacen }}</td>
+                    <td>{{ material.unidad }}</td>
+                    <td class="text-end">{{ material.cantidad_devolucion|redondear|intcomma }}</td>
+                    <td class="text-center text-nowrap">
+                        <a href="{% url 'logistica_app:validar_series_devolucion_prestamo_detalle' material.id %}"
+                        class="btn btn-sm btn-success">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                        <button data-form-url="{% url 'logistica_app:devolucion_prestamo_detalle_actualizar' material.id %}"
+                            data-table-url="{% url 'logistica_app:devolucion_prestamo_detalle_tabla' contexto_devolucion_materiales.id %}"
+                            class="update btn btn-sm btn-warning">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button> 
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

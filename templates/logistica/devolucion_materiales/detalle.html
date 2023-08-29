@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Devolución
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Devolución
+        {% if contexto_devolucion_materiales.estado == 1 %}
+            <button data-form-url="{% url 'logistica_app:devolucion_prestamo_concluir' contexto_devolucion_materiales.id %}"
+                class="delete badge bg-primary">
+                Concluir Devolución
+            </button> 
+            <button data-form-url="{% url 'logistica_app:devolucion_prestamo_actualizar' contexto_devolucion_materiales.id %}"
+                data-table-url="{% url 'logistica_app:devolucion_prestamo_detalle_tabla' contexto_devolucion_materiales.id %}"
+                class="update badge bg-primary">
+                Fecha de Devolución
+            </button> 
+        {% endif %}
+        {% if contexto_devolucion_materiales.estado == 2 %}
+            <button data-form-url="{% url 'logistica_app:despacho_anular' contexto_devolucion_materiales.id %}"
+                class="delete badge bg-danger">
+                Anular Devolución
+            </button>
+        {% endif %}
+        
+        <a href="{% url 'logistica_app:devolucion_prestamo_series_pdf' contexto_devolucion_materiales.id %}" target="_blank"><span class="badge bg-info">Ver Series</span></a>
+        <a href="{% url 'logistica_app:solicitud_prestamo_materiales_detalle' contexto_devolucion_materiales.solicitud_prestamo.id %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
+
+    <div id="tabla">
+        {% include 'logistica/devolucion_materiales/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

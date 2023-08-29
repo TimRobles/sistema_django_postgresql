@@ -25,6 +25,7 @@ class SolicitudPrestamoMateriales(models.Model):
         (3, 'CONFIRMADO'),
         (4, 'ANULADO'),
         (5, 'CONCLUIDO'),
+        (6, 'DEVUELTO'),
     )
     numero_prestamo = models.IntegerField('Número Prestamo', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
@@ -262,6 +263,27 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
+
+
+class ValidarSerieDevolucionPrestamoMaterialesDetalle(models.Model):
+    devolucion_materiales_detalle = models.ForeignKey(DevolucionPrestamoMaterialesDetalle, on_delete=models.CASCADE, related_name='ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieDevolucionPrestamoMaterialesDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieDevolucionPrestamoMaterialesDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Devoluciones Prestamo Materiales Detalle'
+        verbose_name_plural = 'Validar Series Devoluciones Prestamo Materiales Detalle'
+        ordering = [
+            'created_at',
+            ]
+
+    def __str__(self):
+        return "%s - %s" % (self.devolucion_materiales_detalle , str(self.serie))
+
 
 # from applications.logistica.models import NotaSalida, NotaSalidaDocumento
 # from django.contrib.contenttypes.models import ContentType

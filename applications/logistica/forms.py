@@ -3,7 +3,7 @@ from applications.material.funciones import stock, stock_disponible, stock_sede_
 from applications.sociedad.models import Sociedad
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
-from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
+from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DevolucionPrestamoMateriales, DevolucionPrestamoMaterialesDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from applications.sede.models import Sede
 from django import forms
 from django.contrib.contenttypes.models import ContentType
@@ -407,3 +407,64 @@ class AjusteInventarioMaterialesDetalleForm(BSModalModelForm):
         self.fields['producto'].queryset = lista_materiales
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+class DevolucionPrestamoMaterialesForm(BSModalModelForm):
+    class Meta:
+        model = DevolucionPrestamoMateriales
+        fields = (
+            'fecha_devolucion',
+            'comentario',
+            )
+
+        widgets = {
+            'fecha_devolucion' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(DevolucionPrestamoMaterialesForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DevolucionPrestamoMaterialesDetalleForm(BSModalModelForm):
+    class Meta:
+        model = DevolucionPrestamoMaterialesDetalle
+        fields = (
+            'almacen',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(DevolucionPrestamoMaterialesDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class DevolucionPrestamoMaterialesDetalleSeriesForm(BSModalModelForm):
+    cantidad_ingresada = forms.DecimalField(label='Cantidad Ingresada', max_digits=22, decimal_places=10, required=False)
+    serie = forms.CharField(required=False)
+    class Meta:
+        model = DevolucionPrestamoMaterialesDetalle
+        fields=(
+            'serie',
+            'cantidad_devolucion',
+            'cantidad_ingresada',
+            )
+
+    def __init__(self, *args, **kwargs):
+        cantidad_devolucion = kwargs.pop('cantidad_devolucion')
+        cantidad_ingresada = kwargs.pop('cantidad_ingresada')
+        super(DevolucionPrestamoMaterialesDetalleSeriesForm, self).__init__(*args, **kwargs)
+        self.fields['cantidad_devolucion'].initial = cantidad_devolucion
+        self.fields['cantidad_ingresada'].initial = cantidad_ingresada
+        if cantidad_ingresada == cantidad_devolucion:
+            self.fields['serie'].disabled = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad_devolucion'].disabled = True
+        self.fields['cantidad_ingresada'].disabled = True
+        self.fields['cantidad_ingresada'].widget.attrs['class'] = 'form-control fondo-personalizado'

@@ -5,7 +5,7 @@ from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.datos_globales.models import SeriesComprobante, Unidad
 from applications.funciones import numeroXn, registrar_excepcion
 from applications.importaciones import *
-from applications.logistica.pdf import generarSeries
+from applications.logistica.pdf import generarSeriesNotaSalida
 from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
@@ -162,7 +162,7 @@ class EnvioTrasladoProductoSeriesPdf(View):
         TablaDatos.append(obj.motivo_traslado)
         TablaDatos.append(obj.observaciones)
 
-        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
@@ -1688,7 +1688,7 @@ class ValidarSeriesTraspasoStockSeriesPdf(View):
         TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
         TablaDatos.append(obj.encargado)
         
-        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
