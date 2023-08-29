@@ -67,6 +67,7 @@
                 <th>Almacén</th>
                 <th>Unidad</th>
                 <th class="text-end">Cantidad Devuelta</th>
+                <th class="text-end">Cantidad Series</th>
                 <th class="text-center text-nowrap">Acciones</th>
             </tr>
         </thead>
@@ -78,6 +79,7 @@
                     <td>{{ material.almacen }}</td>
                     <td>{{ material.unidad }}</td>
                     <td class="text-end">{{ material.cantidad_devolucion|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.cantidad_series|redondear|intcomma }}</td>
                     <td class="text-center text-nowrap">
                         <a href="{% url 'logistica_app:validar_series_devolucion_prestamo_detalle' material.id %}"
                         class="btn btn-sm btn-success">

@@ -239,15 +239,11 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     @property
-    def cantidad_salida(self):
-        total = Decimal('0.00')
+    def cantidad_series(self):
         try:
-            for detalle in self.NotaSalidaDetalle_devolucion_materiales_detalle.exclude(nota_salida__estado=3):
-                if detalle.producto == self.producto:
-                    total += detalle.cantidad_salida
+            return len(self.ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle.all())
         except:
-            pass
-        return total
+            return Decimal('0.00')
 
     @property
     def pendiente(self):

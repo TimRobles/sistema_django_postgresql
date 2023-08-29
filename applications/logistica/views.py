@@ -2667,14 +2667,13 @@ class SolicitudPrestamoMaterialesGenerarDevolucionPrestamoMaterialesView(Permiss
                     )
 
                 self.request.session['primero'] = False
-                self.object.estado = 6
                 registro_guardar(self.object, self.request)
                 self.object.save()
                 messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
-        return self.get_success_url()
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
@@ -2797,9 +2796,23 @@ class DevolucionPrestamoMaterialesConcluirView(PermissionRequiredMixin, BSModalD
         context['titulo'] = 'Error de guardar'
         if not self.get_object().fecha_devolucion:
             error_fecha = True
+        error_almacen = False
+        for detalle in self.get_object().detalles:
+            if detalle.almacen == None:
+                error_almacen = True
+        error_serie = False
+        for detalle in self.get_object().detalles:
+            if len(detalle.ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle.all()) != detalle.cantidad_devolucion:
+                error_serie = True
         
         if error_fecha:
             context['texto'] = 'Ingrese una fecha de despacho.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_almacen:
+            context['texto'] = 'Falta registrar el almacén.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_serie:
+            context['texto'] = 'Falta registrar series.'
             return render(request, 'includes/modal sin permiso.html', context)
         return super().dispatch(request, *args, **kwargs)
 
@@ -2901,17 +2914,26 @@ class ValidarSeriesDevolucionPrestamoMaterialesDetailView(PermissionRequiredMixi
                     id_registro=devolucion_materiales_detalle.id_registro,
                 )
                 print(buscar)
+                print(buscar.cliente)
+                print(devolucion_materiales_detalle.devolucion_materiales.cliente)
                 buscar2 = ValidarSerieDevolucionPrestamoMaterialesDetalle.objects.filter(serie = buscar)
                 print(buscar2)
-
                 if len(buscar2) != 0:
                     form.add_error('serie', "Serie ya ha sido registrada")
                     return super().form_invalid(form)
 
-                print(buscar.ultimo_movimiento.tipo_stock)
                 if buscar.ultimo_movimiento.tipo_stock != TipoStock.objects.get(codigo=24): #EN PRÉSTAMO
                     form.add_error('serie', "La serie no corresponde al tipo de stock: %s" % buscar.ultimo_movimiento.tipo_stock)
                     return super().form_invalid(form)
+
+                if buscar.cliente != devolucion_materiales_detalle.devolucion_materiales.cliente:
+                    form.add_error('serie', "La serie no corresponde al Cliente: %s" % devolucion_materiales_detalle.devolucion_materiales.cliente)
+                    return super().form_invalid(form)
+
+                if buscar.sociedad != devolucion_materiales_detalle.sociedad:
+                    form.add_error('serie', "La serie no corresponde al Sociedad: %s" % devolucion_materiales_detalle.sociedad)
+                    return super().form_invalid(form)
+
             except Exception as ex:
                 print(ex)
                 form.add_error('serie', "Serie no encontrada: %s" % serie)
@@ -3007,3 +3029,14 @@ class ValidarSeriesDevolucionPrestamoMaterialesDetalleDeleteView(PermissionRequi
         context['item'] = self.get_object().serie
         context['dar_baja'] = "true"
         return context
+
+
+# CFTC08130099
+# CFTC08130209
+# CFTC08130217
+# CFTC08130292
+# CFTC08130334
+# CFTC08130336
+# CFTC08130338
+# CFTC08130356
+# CFTC08130370
