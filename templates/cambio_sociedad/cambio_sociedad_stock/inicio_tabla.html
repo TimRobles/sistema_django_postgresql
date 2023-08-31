@@ -1,0 +1,38 @@
+{% load funciones_propias %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nro. Cambio</th>
+            <th>Encargado</th>
+            <th>Sede</th>
+            <th>Observaciones</th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for cambio in contexto_cambio_sociedad_stock %}
+        <tr>
+            <td> {{ cambio.nro_cambio|numeroXn:6 }} </td>
+            <td> {{ cambio.encargado  }} </td>
+            <td> {{ cambio.sede }} </td>
+            <td>
+                {% if cambio.observaciones %}  
+                    {{ cambio.observaciones }}    
+                {% endif %}  
+            </td>
+            <td>{{ cambio.get_estado_display }} </td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'cambio_sociedad_app:cambio_sociedad_stock_detalle' cambio.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr> 
+        {% endfor %}
+            
+    </tbody>
+</table>
