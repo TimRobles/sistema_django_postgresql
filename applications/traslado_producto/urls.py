@@ -15,6 +15,10 @@ urlSeries = [
     path('validar-series/traspaso-stock/detalle-tabla/<pk>/', views.ValidarSeriesTraspasoStockDetailTabla, name='validar_series_traspaso_stock_detalle_tabla'),
     path('validar-series/traspaso-stock/pdf/<pk>/', views.ValidarSeriesTraspasoStockSeriesPdf.as_view(), name='validar_series_traspaso_stock_pdf'),
     path('validar-series-detalle/traspaso-stock/eliminar/<pk>/', views.ValidarSeriesTraspasoStockDetalleDeleteView.as_view(), name='validar_series_traspaso_stock_detalle_eliminar'),
+
+    path('historial-series/traspaso-stock/detalle/<pk>/', views.HistorialSeriesTraspasoStockDetailView.as_view(), name='historial_series_traspaso_stock_detalle'),
+    path('historial-series/traspaso-stock/detalle-tabla/<pk>/', views.HistorialSeriesTraspasoStockDetailTabla, name='historial_series_traspaso_stock_detalle_tabla'),
+    path('historial-series/traspaso-stock/agregar/<int:id_serie>/<int:id_historial_detalle>/', views.HistorialSeriesTraspasoStockCreateView.as_view(), name='historial_series_traspaso_stock_agregar'),
 ]
 
 urlpatterns = urlSeries + [

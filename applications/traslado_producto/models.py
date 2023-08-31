@@ -210,7 +210,7 @@ class TraspasoStock(models.Model):
         (2, 'CONCLUIDO'),
         (3, 'ANULADO'),
         )
-    nro_traspaso = models.CharField('Nro. Traspaso', max_length=100,blank=True, null=True)
+    nro_traspaso = models.IntegerField('Nro. Traspaso', blank=True, null=True)
     encargado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT,blank=True, null=True)
     sede = models.ForeignKey(Sede, on_delete=models.PROTECT, blank=True, null=True)
@@ -225,7 +225,10 @@ class TraspasoStock(models.Model):
     class Meta:
         verbose_name = 'Traspaso Stock'
         verbose_name_plural = 'Traspasos Stock'
-        ordering = ['-nro_traspaso',]
+        ordering = [
+            'estado',
+            '-nro_traspaso',
+            ]
 
     @property
     def fecha(self):

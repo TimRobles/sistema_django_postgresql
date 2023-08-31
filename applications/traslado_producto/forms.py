@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from applications.calidad.models import FallaMaterial, HistorialEstadoSerie, SolucionMaterial
 from applications.sede.models import Sede
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import EnvioTrasladoProducto, EnvioTrasladoProductoDetalle, MotivoTraslado, RecepcionTrasladoProducto, RecepcionTrasladoProductoDetalle, TraspasoStock, TraspasoStockDetalle 
@@ -361,3 +362,20 @@ class TraspasoStockDetalleSeriesForm(BSModalModelForm):
             self.fields['cantidad_registrada'].disabled = True
 
 
+class HistorialSeriesTraspasoStockCreateForm(BSModalModelForm):
+    class Meta:
+        model = HistorialEstadoSerie
+        fields=(
+            'estado_serie',
+            'falla_material',
+            'solucion',
+            'observacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        self.subfamilia = kwargs.pop('subfamilia')
+        super(HistorialSeriesTraspasoStockCreateForm, self).__init__(*args, **kwargs)
+        self.fields['falla_material'].queryset = FallaMaterial.objects.filter(sub_familia = self.subfamilia)
+        self.fields['solucion'].queryset = SolucionMaterial.objects.filter(falla_material__sub_familia = self.subfamilia)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

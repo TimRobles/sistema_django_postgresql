@@ -1,0 +1,65 @@
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ contexto_traspaso_stock_detalle.traspaso_stock.sociedad}}</td>
+                    <th class="px-2">Almacén:</th>
+                    <td>{{ contexto_traspaso_stock_detalle.almacen }}</td>
+                    <th class="px-2">Producto:</th>
+                    <td>{{ contexto_traspaso_stock_detalle.producto}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nro. de Serie</th>         
+                <th>Estado</th>    
+                <th>Almacén</th>    
+                <th class="text-center">Acciones</th>    
+            </tr>
+        </thead>
+        <tbody>
+            {% for serie in contexto_series %}
+                <tr>
+                    <td>{{ serie }}</td>
+                    <td>{{ serie.estado }}</td>
+                    <td>{{ serie.almacen }}</td>
+                    <td class="text-center text-nowrap">
+                        <button class="read btn btn-primary"
+                            data-form-url="{% url 'calidad_app:falla_material_detalle_modal' serie.producto.subfamilia.id %}">
+                            Ver Fallas
+                        </button>
+                        <button class="create btn btn-primary"
+                            data-form-url="{% url 'calidad_app:falla_material_detalle_registrar' serie.producto.subfamilia.id %}"
+                            data-table-url="{% url 'traslado_producto_app:historial_series_traspaso_stock_detalle_tabla' contexto_traspaso_stock_detalle.id %}">
+                            Agregar Falla
+                        </button>
+                        <button class="read btn btn-primary"
+                            data-form-url="{% url 'calidad_app:solucion_material_detalle_modal' serie.producto.subfamilia.id %}">
+                            Ver Soluciones
+                        </button>
+                        <button class="create btn btn-primary"
+                            data-form-url="{% url 'calidad_app:solucion_material_general_registrar' serie.producto.subfamilia.id %}"
+                            data-table-url="{% url 'traslado_producto_app:historial_series_traspaso_stock_detalle_tabla' contexto_traspaso_stock_detalle.id %}">
+                            Agregar Solución
+                        </button>
+                        <button data-form-url="{% url 'traslado_producto_app:historial_series_traspaso_stock_agregar' serie.id contexto_traspaso_stock_detalle.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+                           
+        </tbody>
+    </table>
+</div>
