@@ -1,0 +1,114 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h3>Detalle Cambio Sociedad Stock
+    <a href="{% url 'cambio_sociedad_app:cambio_sociedad_stock_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    <a href="{% url 'cambio_sociedad_app:validar_series_cambio_sociedad_stock_pdf' contexto_cambio_sociedad_stock.id %}"><span class="badge bg-primary">Ver Series</span></a>
+</h3>
+
+
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">Número de Cambio: </th>
+                    <td>{{ contexto_cambio_sociedad_stock.nro_cambio|numeroXn:6 }}</td>
+                    <td rowspan="2" class="text-center">
+                        {% if contexto_cambio_sociedad_stock.estado == 1 %}
+                            <button data-form-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_actualizar' contexto_cambio_sociedad_stock.id %}"
+                                data-table-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_detalle_tabla' contexto_cambio_sociedad_stock.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                Actualizar Cambio Sociedad
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="px-2">Encargado: </th>
+                    <td>{{ contexto_cambio_sociedad_stock.encargado }}</td>
+                </tr>
+                <tr>
+                    <th class="px-2">Sociedad Inicial: </th>
+                    <td>{{ contexto_cambio_sociedad_stock.sociedad_inicial }}</td>
+                    <td rowspan="2" class="text-center">
+                        {% if contexto_cambio_sociedad_stock.estado == 1 %}
+                        <button data-form-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_concluir' contexto_cambio_sociedad_stock.id %}"
+                            class="delete btn btn-primary">
+                            Concluir Cambio Sociedad Stock
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="px-2">Sociedad Final: </th>
+                    <td>{{ contexto_cambio_sociedad_stock.sociedad_final }}</td>
+                </tr>
+                <tr>
+                    <th class="px-2">Sede: </th>
+                    <td>{{ contexto_cambio_sociedad_stock.sede }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if contexto_cambio_sociedad_stock.estado == 1 %}
+    <button data-form-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_detalle_registrar' contexto_cambio_sociedad_stock.id %}"
+        data-table-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_detalle_tabla' contexto_cambio_sociedad_stock.id %}"
+        class="create btn btn-primary">
+        Agregar Material
+    </button>
+{% endif %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Almacén</th>
+                <th>Tipo Stock</th>
+                <th class="text-end">Cantidad</th>
+                <th class="text-end">Series Registradas</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in contexto_cambio_sociedad_stock_detalle %}
+                <tr>
+                    <td>{{ material.item }}</td>
+                    <td>{{ material.producto }}</td>
+                    <td>{{ material.almacen }}</td>
+                    <td>{{ material.tipo_stock }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">
+                        {% if material.tipo_stock.serie_registrada %}
+                        {{ material.series_validar }}
+                        {% endif %}
+                    </td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_cambio_sociedad_stock.estado == 1 %}
+                        <button data-form-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_detalle_actualizar' contexto_cambio_sociedad_stock.id material.id %}"
+                            data-table-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_detalle_tabla' contexto_cambio_sociedad_stock.id %}"
+                            class="update btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        {% if material.tipo_stock.serie_registrada %}
+                            {% if material.producto.control_serie %}
+                                <a href="{% url 'cambio_sociedad_app:validar_series_cambio_sociedad_stock_detalle' material.id %}"
+                                    class="btn btn-dark btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                    <i class="bi bi-upc-scan"></i>
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
