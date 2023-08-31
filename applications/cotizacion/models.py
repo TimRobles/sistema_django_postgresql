@@ -91,6 +91,15 @@ class CotizacionVenta(models.Model):
         return sociedades
 
     @property
+    def sociedades_objeto(self):
+        sociedades = []
+        for detalle in self.CotizacionVentaDetalle_cotizacion_venta.all():
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                if not cotizacion_sociedad.sociedad in sociedades:
+                    sociedades.append(cotizacion_sociedad.sociedad.id)
+        return Sociedad.objects.filter(id__in=sociedades)
+
+    @property
     def internacional_nacional(self):
         return 2
     
@@ -541,6 +550,7 @@ class CotizacionSociedad(models.Model):
         verbose_name = 'Cotizacion Sociedad'
         verbose_name_plural = 'Cotizacion Sociedades'
         ordering = [
+            'sociedad__estado_sunat',
             'sociedad__id',
         ]
     

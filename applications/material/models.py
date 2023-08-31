@@ -242,6 +242,7 @@ class Material(models.Model):
                             id_registro_producto = self.id,
                         ).filter(
                             tipo_stock = disponible,
+                            sociedad__estado_sunat = 1,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador
@@ -264,6 +265,7 @@ class Material(models.Model):
                             id_registro_producto = self.id,
                         ).filter(
                             tipo_stock = reservado,
+                            sociedad__estado_sunat = 1,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador
@@ -283,6 +285,7 @@ class Material(models.Model):
                             id_registro_producto = self.id,
                         ).filter(
                             tipo_stock__in = [transito, recibido],
+                            sociedad__estado_sunat = 1,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador
@@ -301,6 +304,7 @@ class Material(models.Model):
                             id_registro_producto = self.id,
                         ).filter(
                             tipo_stock = confirmado,
+                            sociedad__estado_sunat = 1,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador
@@ -319,6 +323,7 @@ class Material(models.Model):
                             id_registro_producto = self.id,
                         ).filter(
                             tipo_stock = prestamo,
+                            sociedad__estado_sunat = 1,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador
@@ -337,6 +342,7 @@ class Material(models.Model):
                             id_registro_producto = self.id,
                         ).filter(
                             tipo_stock = confirmado,
+                            sociedad__estado_sunat = 1,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador
@@ -355,7 +361,8 @@ class Material(models.Model):
                             content_type_producto = ContentType.objects.get_for_model(self),
                             id_registro_producto = self.id,
                         ).filter(
-                            Q(tipo_stock=bloqueo_sin_serie) | Q(tipo_stock=bloqueo_sin_qa)
+                            Q(tipo_stock=bloqueo_sin_serie) | Q(tipo_stock=bloqueo_sin_qa),
+                            sociedad__estado_sunat = 1,
                         )
             for movimiento in movimientos:
                 total += movimiento.cantidad * movimiento.signo_factor_multiplicador

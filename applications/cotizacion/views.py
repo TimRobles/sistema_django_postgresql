@@ -205,7 +205,7 @@ def CotizacionVentaCreateView(request):
         updated_by=request.user,
     )
     obj.save()
-    sociedades = Sociedad.objects.all()
+    sociedades = Sociedad.objects.filter(estado_sunat=1)
     
     for sociedad in sociedades:
         obj2 = CotizacionDescuentoGlobal.objects.create(
@@ -257,7 +257,9 @@ class CotizacionVentaVerView(PermissionRequiredMixin, TemplateView):
         except:
             pass
 
-        sociedades = Sociedad.objects.filter(estado_sunat=1)
+        sociedades = obj.sociedades_objeto
+        for sociedad in sociedades:
+            sociedad.observacion = observacion(obj, sociedad)
 
         context = super(CotizacionVentaVerView, self).get_context_data(**kwargs)
         context['cotizacion'] = obj
@@ -307,7 +309,8 @@ def CotizacionVentaVerTabla(request, id_cotizacion):
         except:
             pass
 
-        sociedades = Sociedad.objects.filter(estado_sunat=1)
+        sociedades = obj.sociedades_objeto
+
         for sociedad in sociedades:
             sociedad.observacion = observacion(obj, sociedad)
 
@@ -458,7 +461,7 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
 
                 cantidad_total = obj.cantidad
                 cantidades = {}
-                sociedades = Sociedad.objects.all()
+                sociedades = Sociedad.objects.filter(estado_sunat=1)
                 for sociedad in sociedades:
                     cantidades[sociedad.abreviatura] = stock_vendible(obj.content_type, obj.id_registro, sociedad.id)
 
@@ -511,7 +514,7 @@ class CotizacionSociedadUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         for sociedad in self.object.CotizacionSociedad_cotizacion_venta_detalle.all():
             texto.append(str(sociedad.cantidad))
 
-        sociedades = Sociedad.objects.all()
+        sociedades = Sociedad.objects.filter(estado_sunat=1)
         for sociedad in sociedades:
             sociedad.vendible = vendible(self.object.content_type, self.object.id_registro, sociedad.id)
             sociedad.calidad = calidad(self.object.content_type, self.object.id_registro, sociedad.id)
@@ -899,7 +902,7 @@ class CotizacionVentaMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalU
 
             cantidad_total = form.instance.cantidad
             cantidades = {}
-            sociedades = Sociedad.objects.all()
+            sociedades = Sociedad.objects.filter(estado_sunat=1)
             for sociedad in sociedades:
                 cantidades[sociedad.abreviatura] = stock_vendible(form.instance.content_type, form.instance.id_registro, sociedad.id)
 
@@ -1089,9 +1092,9 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
         try:
             self.object = self.get_object()
             detalles = self.object.CotizacionVentaDetalle_cotizacion_venta.all()
-            descuento_globales = self.object.CotizacionDescuentoGlobal_cotizacion_venta.all()
-            otros_cargos = self.object.CotizacionOtrosCargos_cotizacion_venta.all()
-            observaciones = self.object.CotizacionObservacion_cotizacion_venta.all()
+            descuento_globales = self.object.CotizacionDescuentoGlobal_cotizacion_venta.filter(sociedad__estado_sunat=1)
+            otros_cargos = self.object.CotizacionOtrosCargos_cotizacion_venta.filter(sociedad__estado_sunat=1)
+            observaciones = self.object.CotizacionObservacion_cotizacion_venta.filter(sociedad__estado_sunat=1)
             self.nueva_cotizacion = CotizacionVenta.objects.create(
                 cliente=self.object.cliente,
                 cliente_interlocutor=self.object.cliente_interlocutor,
@@ -1104,7 +1107,7 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
             )
 
             sociedades = []
-            for sociedad in Sociedad.objects.all():
+            for sociedad in Sociedad.objects.filter(estado_sunat=1):
                 sociedades.append(sociedad)
             
             sociedades_descuento = []
@@ -1158,7 +1161,7 @@ class CotizacionVentaClonarView(PermissionRequiredMixin, BSModalDeleteView):
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-                cotizacion_sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.all()
+                cotizacion_sociedades = detalle.CotizacionSociedad_cotizacion_venta_detalle.filter(sociedad__estado_sunat=1)
                 
                 sociedades_detalle = []
                 for cotizacion_sociedad in cotizacion_sociedades:
@@ -2184,7 +2187,7 @@ class CotizacionVentaSociedadCuentasPdfView(View):
         tipo_de_cambio_final = tipo_de_cambio(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
         for moneda in monedas:
             cotizacion_sociedad = []
-            sociedades = Sociedad.objects.all()
+            sociedades = Sociedad.objects.filter(estado_sunat=1)
             for sociedad in sociedades:
                 total = obtener_totales(obj, sociedad)['total']
                 if total > 0:
@@ -2310,7 +2313,7 @@ class CotizacionVentaSociedadCuentasSolesPdfView(View):
         tipo_de_cambio_final = tipo_de_cambio(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
         for moneda in monedas:
             cotizacion_sociedad = []
-            sociedades = Sociedad.objects.all()
+            sociedades = Sociedad.objects.filter(estado_sunat=1)
             for sociedad in sociedades:
                 total = obtener_totales(obj, sociedad)['total']
                 if total > 0:
@@ -2577,7 +2580,7 @@ class CotizacionVentaSolesSociedadCuentasSolesPdfView(View):
         tipo_de_cambio_final = tipo_de_cambio(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
         for moneda in monedas:
             cotizacion_sociedad = []
-            sociedades = Sociedad.objects.all()
+            sociedades = Sociedad.objects.filter(estado_sunat=1)
             for sociedad in sociedades:
                 total = obtener_totales(obj, sociedad)['total']
                 if total > 0:
@@ -2624,7 +2627,7 @@ class CotizacionVentaResumenView(PermissionRequiredMixin, BSModalReadView):
         tipo_de_cambio_final = tipo_de_cambio(tipo_de_cambio_cotizacion, tipo_de_cambio_hoy)
         for moneda in monedas:
             cotizacion_sociedad = []
-            sociedades = Sociedad.objects.all()
+            sociedades = Sociedad.objects.filter(estado_sunat=1)
             for sociedad in sociedades:
                 total = obtener_totales(self.object, sociedad)['total']
                 if total > 0:
