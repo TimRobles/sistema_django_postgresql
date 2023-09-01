@@ -115,7 +115,7 @@ class CambioSociedadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView
             for validar_serie in detalle.ValidarSerieCambioSociedadStockDetalle_cambio_sociedad_stock_detalle.all():
                 if detalle.control_serie and detalle.almacen != validar_serie.serie.almacen:
                     error_almacen_series = True
-            if detalle.control_serie and detalle.series_validar != detalle.cantidad:
+            if detalle.control_serie and detalle.series_validar != detalle.cantidad and detalle.tipo_stock.serie_registrada:
                 error_cantidad_series = True
         
         if not self.has_permission():
