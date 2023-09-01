@@ -20,7 +20,7 @@ class CambioSociedadStock(models.Model):
         (2, 'CONCLUIDO'),
         (3, 'ANULADO'),
         )
-    nro_cambio = models.CharField('Nro. Cambio', max_length=100,blank=True, null=True)
+    nro_cambio = models.IntegerField('Nro. Cambio', blank=True, null=True)
     encargado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True)
     sociedad_inicial = models.ForeignKey(Sociedad, related_name = 'CambioSociedadStock_sociedad_inicial', on_delete=models.PROTECT,blank=True, null=True)
     sociedad_final = models.ForeignKey(Sociedad, related_name = 'CambioSociedadStock_sociedad_final', on_delete=models.PROTECT,blank=True, null=True)
@@ -63,6 +63,9 @@ class CambioSociedadStockDetalle(models.Model):
     class Meta:
         verbose_name = 'Cambio Sociedad Stock Detalle'
         verbose_name_plural = 'Cambios Sociedad Stock Detalle'
+        ordering = (
+            'item',
+            )
 
     @property
     def producto(self):
