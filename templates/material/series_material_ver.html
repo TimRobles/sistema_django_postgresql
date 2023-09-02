@@ -16,7 +16,12 @@
     <a class="btn btn-success" href="{% url 'material_app:series_ver' material.id %}">Limpiar</a>
 </form>
 
-<h4>Cantidad Total: {{ cantidad_objetos }}</h4>
+<h4>Cantidad Total: {{ cantidad_objetos }} <button onclick="myFunction()" class="badge bg-primary">Copiar series</button>
+<textarea id="myInput" style="width: 5px; height: 5px; background-color: transparent; border-color: transparent;" cols="30" rows="10">
+{{ lista_series }}
+</textarea>
+</h4>
+
 {% include 'includes/paginador.html' %}
 
 <div class="table-responsive">
@@ -51,3 +56,22 @@
 {% include 'includes/paginador inferior.html' %}
 
 {% endblock contenido %}
+
+{% block extrajs %}
+<script>
+    function myFunction() {
+        // Get the text field
+        var copyText = document.getElementById("myInput");
+        console.log(copyText.value);
+        // Copy the text inside the text field
+        if (window.isSecureContext && navigator.clipboard) {
+            navigator.clipboard.writeText(copyText.value);
+        } else {
+            copyText.select();
+            document.execCommand("copy");
+        }
+    }
+
+</script>    
+{% endblock extrajs %}
+    

@@ -351,30 +351,66 @@ class ValidarSeriesCambioSociedadStockDetailView(PermissionRequiredMixin, FormVi
     def form_valid(self, form):
         if self.request.session['primero']:
             serie = form.cleaned_data['serie']
+            serie_bulk = form.cleaned_data['serie_bulk']
             cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
-            try:
-                buscar = Serie.objects.get(
-                    serie_base=serie,
-                    content_type=ContentType.objects.get_for_model(cambio_sociedad_stock_detalle.producto),
-                    id_registro=cambio_sociedad_stock_detalle.producto.id,
-                )
-                buscar2 = ValidarSerieCambioSociedadStockDetalle.objects.filter(serie = buscar)
+            if serie:
+                try:
+                    buscar = Serie.objects.get(
+                        serie_base=serie,
+                        content_type=ContentType.objects.get_for_model(cambio_sociedad_stock_detalle.producto),
+                        id_registro=cambio_sociedad_stock_detalle.producto.id,
+                    )
+                    buscar2 = ValidarSerieCambioSociedadStockDetalle.objects.filter(serie = buscar)
 
-                if len(buscar2) != 0:
-                    form.add_error('serie', "Serie ya ha sido registrada")
+                    if len(buscar2) != 0:
+                        form.add_error('serie', "Serie ya ha sido registrada")
+                        return super().form_invalid(form)
+
+                except:
+                    form.add_error('serie', "Serie no encontrada: %s" % serie)
                     return super().form_invalid(form)
 
-            except:
-                form.add_error('serie', "Serie no encontrada: %s" % serie)
-                return super().form_invalid(form)
+                cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
+                obj, created = ValidarSerieCambioSociedadStockDetalle.objects.get_or_create(
+                    cambio_sociedad_stock_detalle=cambio_sociedad_stock_detalle,
+                    serie=buscar,
+                )
+                if created:
+                    obj.estado = 1
+            if serie_bulk:
+                error_bulk = False
+                series_registradas = []
+                series_no_encontradas = []
+                for serie in serie_bulk.splitlines():
+                    try:
+                        buscar = Serie.objects.get(
+                            serie_base=serie,
+                            content_type=ContentType.objects.get_for_model(cambio_sociedad_stock_detalle.producto),
+                            id_registro=cambio_sociedad_stock_detalle.producto.id,
+                        )
+                        buscar2 = ValidarSerieCambioSociedadStockDetalle.objects.filter(serie = buscar)
 
-            cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
-            obj, created = ValidarSerieCambioSociedadStockDetalle.objects.get_or_create(
-                cambio_sociedad_stock_detalle=cambio_sociedad_stock_detalle,
-                serie=buscar,
-            )
-            if created:
-                obj.estado = 1
+                        if len(buscar2) != 0:
+                            series_registradas.append(serie)
+                            error_bulk = True
+                            continue
+
+                    except:
+                        series_no_encontradas.append(serie)
+                        error_bulk = True
+                        continue
+
+                    cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
+                    obj, created = ValidarSerieCambioSociedadStockDetalle.objects.get_or_create(
+                        cambio_sociedad_stock_detalle=cambio_sociedad_stock_detalle,
+                        serie=buscar,
+                    )
+                    if created:
+                        obj.estado = 1
+                if error_bulk:
+                    messages.warning(self.request, series_registradas)
+                    messages.error(self.request, series_no_encontradas)
+
             self.request.session['primero'] = False
         return super().form_valid(form)
 
