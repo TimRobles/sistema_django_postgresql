@@ -448,7 +448,7 @@ class NotaSalida(models.Model):
         return guias
 
     def __str__(self):
-        return "%s" % (numeroXn(self.numero_salida, 6))
+        return "%s - %s" % (numeroXn(self.numero_salida, 6), self.cliente)
 
 
 # from applications.logistica.models import NotaSalidaDetalle, SolicitudPrestamoMaterialesDetalle
