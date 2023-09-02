@@ -1843,6 +1843,7 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
         objectsxpage =  20 # Show 10 objects per page.
+        cantidad_objetos = len(series)
 
         if len(series) > objectsxpage:
             paginator = Paginator(series, objectsxpage)
@@ -1853,6 +1854,7 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
         context['material'] = material
         context['series'] = series
         context['contexto_pagina'] = series
+        context['cantidad_objetos'] = cantidad_objetos
         return context
 
 
