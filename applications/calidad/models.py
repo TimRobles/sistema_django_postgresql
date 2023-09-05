@@ -165,7 +165,7 @@ class Serie(models.Model):
     @property
     def ultimo_almacen(self):
         if self.serie_movimiento_almacen.all():
-            disponibles = self.serie_movimiento_almacen.filter(tipo_stock__codigo=3)
+            disponibles = self.serie_movimiento_almacen.filter(tipo_stock__codigo=3, signo_factor_multiplicador=1)
             if disponibles:
                 return disponibles.latest('id').almacen
         else:
