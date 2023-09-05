@@ -149,6 +149,13 @@ class Serie(models.Model):
             return ""
 
     @property
+    def almacen_salida(self):
+        if self.serie_movimiento_almacen.filter(tipo_stock__codigo=3, signo_factor_multiplicador=-1):
+            return self.serie_movimiento_almacen.latest('id').almacen
+        else:
+            return ""
+
+    @property
     def almacen(self):
         if self.serie_movimiento_almacen.all():
             return self.serie_movimiento_almacen.latest('id').almacen
