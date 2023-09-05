@@ -584,6 +584,7 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super(NotaSalidaListView, self).get_form_kwargs()
+        kwargs['filtro_numero_salida'] = self.request.GET.get('numero_salida')
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_estado'] = self.request.GET.get('estado')
@@ -616,11 +617,17 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
                 id__in=lista_nota_salida,
             )
 
+        filtro_numero_salida = self.request.GET.get('numero_salida')
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_estado = self.request.GET.get('estado')
         
         contexto_filtro = []
+
+        if filtro_numero_salida:
+            condicion = Q(numero_salida = filtro_numero_salida)
+            nota_salida = nota_salida.filter(condicion)
+            contexto_filtro.append(f"numero_salida={filtro_numero_salida}")
 
         if filtro_sociedad:
             lista_notas = []
@@ -695,11 +702,17 @@ def NotaSalidaTabla(request, **kwargs):
                 id__in=lista_nota_salida,
             )
 
+        filtro_numero_salida = request.GET.get('numero_salida')
         filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_estado = request.GET.get('estado')
         
         contexto_filtro = []
+
+        if filtro_numero_salida:
+            condicion = Q(numero_salida = filtro_numero_salida)
+            nota_salida = nota_salida.filter(condicion)
+            contexto_filtro.append(f"numero_salida={filtro_numero_salida}")
 
         if filtro_sociedad:
             lista_notas = []

@@ -2714,7 +2714,7 @@ class ValidarSeriesReparacionMaterialDetailView(PermissionRequiredMixin, FormVie
                 content_type=ContentType.objects.get_for_model(reparacion_detalle.material),
                 id_registro=reparacion_detalle.material.id,
             )
-            buscar2 = ValidarSerieReparacionMaterialDetalle.objects.filter(serie = buscar)
+            buscar2 = ValidarSerieReparacionMaterialDetalle.objects.filter(serie = buscar).exclude(reparacion_detalle__reparacion__estado=3).exclude(reparacion_detalle__reparacion__estado=4)
 
             if len(buscar2) != 0:
                 form.add_error('serie', "Serie ya ha sido registrada")

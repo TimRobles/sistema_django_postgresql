@@ -296,15 +296,18 @@ class ImagenesDespachoForm(BSModalModelForm):
 
 
 class NotaSalidaBuscarForm(forms.Form):
+    numero_salida = forms.CharField(required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(estado_sunat=1), required=False)
     estado = forms.ChoiceField(choices=((None, '---------'),) + ESTADOS_NOTA_CALIDAD_STOCK, required=False)
     
     def __init__(self, *args, **kwargs):
+        filtro_numero_salida = kwargs.pop('filtro_numero_salida')
         filtro_sociedad = kwargs.pop('filtro_sociedad')
         filtro_cliente = kwargs.pop('filtro_cliente')
         filtro_estado = kwargs.pop('filtro_estado')
         super(NotaSalidaBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['numero_salida'].initial = filtro_numero_salida
         self.fields['sociedad'].initial = filtro_sociedad
         self.fields['cliente'].initial = filtro_cliente
         self.fields['estado'].initial = filtro_estado
