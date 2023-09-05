@@ -156,6 +156,13 @@ class Serie(models.Model):
             return ""
 
     @property
+    def ultimo_almacen(self):
+        if self.serie_movimiento_almacen.all():
+            return self.serie_movimiento_almacen.filter(tipo_stock__codigo=3).latest('id').almacen
+        else:
+            return ""
+
+    @property
     def cliente(self):
         try:
             movimientos = self.serie_movimiento_almacen.all()
