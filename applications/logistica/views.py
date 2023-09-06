@@ -2443,6 +2443,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                         movimiento_final = TipoMovimiento.objects.get(codigo=153) # Correcion por Inventario, disminuir stock, s/Serie
                     tipo_stock_inicial = detalle.tipo_stock
                     tipo_stock_final = movimiento_final.tipo_stock_final
+                    factor = 1
                 else:
                     # AJUSTE POR INVENTARIO AUMENTAR STOCK
                     if detalle.material.control_serie and tipo_stock_disponible == detalle.tipo_stock:
@@ -2451,11 +2452,12 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                         movimiento_final = TipoMovimiento.objects.get(codigo=156) #	Correcion por Inventario, aumentar stock, s/Serie
                     tipo_stock_inicial = movimiento_final.tipo_stock_final
                     tipo_stock_final = detalle.tipo_stock
+                    factor = -1
 
                 movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.material.content_type,
                     id_registro_producto = detalle.material.id,
-                    cantidad = cantidad,
+                    cantidad = cantidad * factor,
                     tipo_movimiento = movimiento_final,
                     tipo_stock = tipo_stock_inicial,
                     signo_factor_multiplicador = -1,
@@ -2470,7 +2472,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                 movimiento_dos = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.material.content_type,
                     id_registro_producto = detalle.material.id,
-                    cantidad = cantidad,
+                    cantidad = cantidad * factor,
                     tipo_movimiento = movimiento_final,
                     tipo_stock = tipo_stock_final,
                     signo_factor_multiplicador = +1,
