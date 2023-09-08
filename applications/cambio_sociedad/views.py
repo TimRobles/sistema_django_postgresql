@@ -208,6 +208,8 @@ class CambioSociedadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView
                     validar.serie.serie_movimiento_almacen.add(movimiento_dos)
                     validar.serie.serie_movimiento_almacen.add(movimiento_tres)
                     validar.serie.serie_movimiento_almacen.add(movimiento_cuatro)
+                    validar.serie.sociedad = self.object.sociedad_final
+                    validar.serie.sociedad.save()
                     validar.delete()
             
             self.object.estado = 2
