@@ -699,7 +699,7 @@ class TransformacionProductos(models.Model):
         return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.fecha_transformacion.strftime('%d/%m/%Y'), numeroXn(self.id, 6), self.responsable)
+        return "%s - %s - %s" % (self.fecha_transformacion.strftime('%d/%m/%Y'), numeroXn(self.numero_transformacion, 6), self.responsable)
 
 
 class EntradaTransformacionProductos(models.Model):

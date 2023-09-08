@@ -31,7 +31,6 @@
             <td>{{ transformacion.observacion }}</td>
             <td>{{ transformacion.get_estado_display }}</td>
             <td class="text-center text-nowrap">
-                
                 {% if transformacion.estado == 1 %} 
                     <button data-form-url="{% url 'calidad_app:transformacion_productos_actualizar' transformacion.id %}"
                         data-table-url="{% url 'calidad_app:transformacion_productos_tabla' %}"
