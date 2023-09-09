@@ -79,7 +79,8 @@ class ReportesView(FormView):
         return context
 
 import asyncio
-from asgiref.sync import async_to_sync, sync_to_async
+from concurrent.futures import ThreadPoolExecutor
+from asgiref.sync import async_to_sync
 
 def consultaNotasContador(global_sociedad, global_fecha_inicio, global_fecha_fin):
     sql = ''' (SELECT
@@ -413,7 +414,6 @@ def reporte_facturas_contador(global_sociedad, global_fecha_inicio, global_fecha
     ajustarColumnasSheet(hoja)
     return wb
 
-@sync_to_async
 def get_sociedad(global_sociedad):
     return Sociedad.objects.filter(id=int(global_sociedad))[0]
 
@@ -429,7 +429,8 @@ class ReporteContador(TemplateView):
         query_sociedad = await get_sociedad(global_sociedad)
         abreviatura = query_sociedad.abreviatura
         
-        wb = await asyncio.to_thread(reporte_facturas_contador, global_sociedad, global_fecha_inicio, global_fecha_fin)
+        loop = asyncio.get_event_loop()
+        wb = await loop.run_in_executor(None, lambda: reporte_facturas_contador(global_sociedad, global_fecha_inicio, global_fecha_fin))
 
         nombre_archivo = "Reporte Contador - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
