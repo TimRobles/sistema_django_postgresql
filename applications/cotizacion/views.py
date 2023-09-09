@@ -839,10 +839,12 @@ class CotizacionVentaCosteadorDetalleView(PermissionRequiredMixin, BSModalUpdate
         context['cotizaciones'] = CotizacionVentaDetalle.objects.filter(
             content_type=self.object.content_type,
             id_registro=self.object.id_registro,
+            cotizacion_venta__estado__in=[4, 5, 6, 7, 12],
         )
         context['documentos'] = FacturaVentaDetalle.objects.filter(
             content_type=self.object.content_type,
             id_registro=self.object.id_registro,
+            factura_venta__estado=4,
         )
         return context
 
