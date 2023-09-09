@@ -78,10 +78,6 @@ class ReportesView(FormView):
         context["contexto_filtros"] = "&".join(contexto_filtros)
         return context
 
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from asgiref.sync import async_to_sync
-
 def consultaNotasContador(global_sociedad, global_fecha_inicio, global_fecha_fin):
     sql = ''' (SELECT
         MAX(nnc.id) AS id,
@@ -414,30 +410,31 @@ def reporte_facturas_contador(global_sociedad, global_fecha_inicio, global_fecha
     ajustarColumnasSheet(hoja)
     return wb
 
-def get_sociedad(global_sociedad):
-    return Sociedad.objects.filter(id=int(global_sociedad))[0]
+from django.http import HttpResponse
+from django.views.generic import TemplateView
 
 class ReporteContador(TemplateView):
-    @async_to_sync
-    async def get(self,request, *args,**kwargs):
-
+    def get(self, request, *args, **kwargs):
         global_sociedad = self.request.GET.get('filtro_sociedad')
         global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
         global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
         global_cliente = self.request.GET.get('filtro_cliente')
         
-        query_sociedad = await get_sociedad(global_sociedad)
-        abreviatura = query_sociedad.abreviatura
-        
-        loop = asyncio.get_event_loop()
-        wb = await loop.run_in_executor(None, lambda: reporte_facturas_contador(global_sociedad, global_fecha_inicio, global_fecha_fin))
+        query_sociedad = Sociedad.objects.filter(id=int(global_sociedad)).first()
 
-        nombre_archivo = "Reporte Contador - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
-        respuesta = HttpResponse(content_type='application/ms-excel')
-        content = "attachment; filename ={0}".format(nombre_archivo)
-        respuesta['content-disposition'] = content
-        wb.save(respuesta)
-        return respuesta
+        if query_sociedad:
+            abreviatura = query_sociedad.abreviatura
+            wb = reporte_facturas_contador(global_sociedad, global_fecha_inicio, global_fecha_fin)
+
+            nombre_archivo = "Reporte Contador - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+            respuesta = HttpResponse(content_type='application/ms-excel')
+            content = "attachment; filename ={0}".format(nombre_archivo)
+            respuesta['content-disposition'] = content
+            wb.save(respuesta)
+            return respuesta
+
+        # En caso de que no se encuentre la sociedad, devolver una respuesta adecuada
+        return HttpResponse("No se encontró la sociedad o alguna otra respuesta adecuada aquí.")
 
 
 class ReporteVentasFacturadas(TemplateView):
