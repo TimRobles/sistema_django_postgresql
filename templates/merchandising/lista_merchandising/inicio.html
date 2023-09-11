@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Lista Requerimiento Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Lista Requerimiento Merchandising
+        <a href="{% url 'merchandising_app:lista_requerimiento_merchandising_registrar' %}"
+        class="badge btn btn-primary" title="Nueva Lista">
+        Nueva Lista
+        </a>
+    </h3>
+    <br>
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'merchandising_app:lista_requerimiento_merchandising_inicio' %}">Limpiar</a>
+    </form>
+    <br>
+
+    {% include 'includes/paginador.html' %}
+
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/lista_merchandising/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

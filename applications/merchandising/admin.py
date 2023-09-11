@@ -30,6 +30,14 @@ from .models import (
     ProveedorMerchandising,
     EquivalenciaUnidadMerchandising,
     IdiomaMerchandising,
+    ListaRequerimientoMerchandising,
+    ListaRequerimientoMerchandisingDetalle,
+    OfertaProveedorMerchandising,
+    OfertaProveedorMerchandisingDetalle,
+    OrdenCompraMerchandising,
+    OrdenCompraMerchandisingDetalle,
+    ComprobanteCompraMerchandising,
+    ComprobanteCompraMerchandisingDetalle,
 )
 
 @admin.register(ClaseMerchandising)
@@ -474,4 +482,224 @@ class AjusteInventarioMerchandisingDetalleAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+@admin.register(ListaRequerimientoMerchandising)
+class ListaRequerimientoMerchandisingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'titulo',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
 
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(ListaRequerimientoMerchandisingDetalle)
+class ListaRequerimientoMerchandisingDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'merchandising',
+        'cantidad',
+        'comentario',
+        'lista_requerimiento_merchandising',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(OfertaProveedorMerchandising)
+class OfertaProveedorMerchandisingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'fecha',
+        'numero_oferta',
+        'moneda',
+        'total',
+        'tiempo_estimado_entrega',
+        'forma_pago',
+        'condiciones',
+        'proveedor',
+        'estado',
+        'evaluada',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(OfertaProveedorMerchandisingDetalle)
+class OfertaProveedorMerchandisingDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'merchandising',
+        'content_type',
+        'id_registro',
+        'cantidad',
+        'precio_unitario_sin_igv',
+        'precio_unitario_con_igv',
+        'precio_final_con_igv',
+        'descuento',
+        'sub_total',
+        'igv',
+        'total',
+        'tipo_igv',
+        'oferta_proveedor_merchandising',
+        'archivo',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(OrdenCompraMerchandising)
+class OrdenCompraMerchandisingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'numero_orden_compra',
+        'oferta_proveedor_merchandising',
+        'orden_compra_anterior',
+        'sociedad',
+        'fecha_orden',
+        'moneda',
+        'descuento_global',
+        'total_descuento',
+        'total_anticipo',
+        'total_igv',
+        'total_otros_cargos',
+        'total',
+        'archivo',
+        'condiciones',
+        'motivo_anulacion',
+        'proveedor_temporal',
+        'interlocutor_temporal',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(OrdenCompraMerchandisingDetalle)
+class OrdenCompraMerchandisingDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        # 'item',
+        # 'content_type',
+        # 'id_registro',
+        # 'cantidad',
+        # 'precio_unitario_con_igv',
+        # 'precio_final_con_igv',
+        # 'descuento',
+        # 'sub_total',
+        # 'igv',
+        # 'total',
+        # 'tipo_igv',
+        # 'orden_compra_merchandising',
+        # 'proveedor_merchandising',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(ComprobanteCompraMerchandising)
+class ComprobanteCompraMerchandisingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'numero_comprobante_compra',
+        'orden_compra_merchandising',
+        'sociedad',
+        'fecha_comprobante',
+        'fecha_estimada_llegada',
+        'moneda',
+        'descuento_global',
+        'total_descuento',
+        'total_anticipo',
+        'total_gravada',
+        'total_igv',
+        'total_otros_cargos',
+        'total',
+        'slug',
+        'condiciones',
+        'estado',
+        'motivo_anulacion',
+        'logistico',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(ComprobanteCompraMerchandisingDetalle)
+class ComprobanteCompraMerchandisingDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'orden_compra_merchandising_detalle',
+        'cantidad',
+        'precio_unitario_sin_igv',
+        'precio_unitario_con_igv',
+        'precio_final_con_igv',
+        'descuento',
+        'sub_total',
+        'igv',
+        'total',
+        'tipo_igv',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)

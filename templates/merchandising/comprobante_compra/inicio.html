@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Comprobante Compra Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Comprobante Compra Merchandising</h3>
+
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+    {% include 'includes/paginador.html' %}
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/comprobante_compra/inicio_tabla.html' %}
+    </div>
+    {% include 'includes/paginador inferior.html' %}
+{% endblock contenido %}

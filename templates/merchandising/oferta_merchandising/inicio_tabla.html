@@ -1,0 +1,60 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Titulo</th>
+            <th>Proveedor</th>
+            <th>Estado</th>
+            <th>Evaluada</th>
+            <th class="text-center">Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for oferta_proveedor in contexto_oferta_proveedor_merchandising %}
+        <tr>
+            <td>{{ oferta_proveedor.fecha|date:'d/m/Y' }}</td>
+            <td>
+                {% if oferta_proveedor.lista_requerimiento_merchandising.titulo != None %}
+                    {{ oferta_proveedor.lista_requerimiento_merchandising.titulo}}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if oferta_proveedor.proveedor != None %}
+                    {{ oferta_proveedor.proveedor }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ oferta_proveedor.get_estado_display}}</td>
+            <td>
+                {% if oferta_proveedor.evaluada == True %}
+                    Sí
+                {% else %}
+                    No
+                {% endif %}
+            </td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle' oferta_proveedor.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+
+
+                <button data-form-url="{% url 'merchandising_app:ofertaproveedor_eliminar' oferta_proveedor.id %}"
+                    class="delete btn btn-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+
+                
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>

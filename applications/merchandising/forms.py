@@ -2,6 +2,7 @@ from django import forms
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from applications.proveedores.models import Proveedor
+from applications.sociedad.models import Sociedad
 from .models import (
     AjusteInventarioMerchandising,
     AjusteInventarioMerchandisingDetalle,
@@ -23,6 +24,13 @@ from .models import (
     ProveedorMerchandising,
     EquivalenciaUnidadMerchandising,
     IdiomaMerchandising,
+    ListaRequerimientoMerchandising,
+    ListaRequerimientoMerchandisingDetalle,
+    OfertaProveedorMerchandising,
+    OfertaProveedorMerchandisingDetalle,
+    ComprobanteCompraMerchandising,
+    ComprobanteCompraMerchandisingDetalle,
+    OrdenCompraMerchandising,
     )
 from applications.cotizacion.models import PrecioListaMaterial
 from applications.comprobante_compra.models import ComprobanteCompraPI
@@ -178,18 +186,10 @@ class MerchandisingForm(BSModalModelForm):
     class Meta:
         model = Merchandising
         fields=(
-            'descripcion_venta',
             'descripcion_corta',
             'familia',
             'subfamilia',
             'unidad_base',
-            'peso_unidad_base',
-            'marca',
-            'modelo',
-            'clase',
-            'control_serie',
-            'control_lote',
-            'control_calidad',
             'mostrar',
             )
 
@@ -201,24 +201,24 @@ class MerchandisingForm(BSModalModelForm):
     
     def clean_subfamilia(self):
         subfamilia = self.cleaned_data.get('subfamilia')
-        unidad= self.fields['unidad_base']
-        unidad.queryset = subfamilia.unidad.all()
+        # unidad= self.fields['unidad_base']
+        # unidad.queryset = subfamilia.unidad.all()
         return subfamilia
 
-    def clean_marca(self):
-        marca = self.cleaned_data.get('marca')
-        modelo = self.fields['modelo']
-        if marca:
-            modelo.queryset = marca.modelos.all()
-        return marca
+    # def clean_marca(self):
+    #     marca = self.cleaned_data.get('marca')
+    #     modelo = self.fields['modelo']
+    #     if marca:
+    #         modelo.queryset = marca.modelos.all()
+    #     return marca
         
-    def clean_descripcion_venta(self):
-        descripcion_venta = self.cleaned_data.get('descripcion_venta')
-        filtro = Merchandising.objects.filter(descripcion_venta__unaccent__iexact = descripcion_venta)
-        if descripcion_venta != self.instance.descripcion_venta:
-            if len(filtro)>0:
-                self.add_error('descripcion_venta', 'Ya existe un merchandising con esa descripción de venta')
-        return descripcion_venta
+    # def clean_descripcion_venta(self):
+    #     descripcion_venta = self.cleaned_data.get('descripcion_venta')
+    #     filtro = Merchandising.objects.filter(descripcion_venta__unaccent__iexact = descripcion_venta)
+    #     if descripcion_venta != self.instance.descripcion_venta:
+    #         if len(filtro)>0:
+    #             self.add_error('descripcion_venta', 'Ya existe un merchandising con esa descripción de venta')
+    #     return descripcion_venta
 
     def clean_descripcion_corta(self):
         descripcion_corta = self.cleaned_data.get('descripcion_corta')
@@ -245,11 +245,11 @@ class MerchandisingForm(BSModalModelForm):
             pass
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-        self.fields['control_serie'].widget.attrs['class'] = 'form-check-input'
-        self.fields['control_lote'].widget.attrs['class'] = 'form-check-input'
-        self.fields['control_calidad'].widget.attrs['class'] = 'form-check-input'
+            # self.fields['familia'].disabled = True
+            visible.field.required = False
+            
         self.fields['mostrar'].widget.attrs['class'] = 'form-check-input'
-        self.fields['peso_unidad_base'].widget.attrs['min'] = 0
+
 
         
 class RelacionMerchandisingComponenteForm(BSModalModelForm):
@@ -549,5 +549,379 @@ class AjusteInventarioMerchandisingDetalleForm(BSModalModelForm):
         lista_merchandising = kwargs.pop('merchandising')
         super(AjusteInventarioMerchandisingDetalleForm, self).__init__(*args, **kwargs)
         self.fields['producto'].queryset = lista_merchandising
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+########################Nuevo Merchandising#########################################################
+class ListaRequerimientoMerchandisingBuscarForm(forms.Form):
+    titulo = forms.CharField(max_length=150)
+
+    def __init__(self, *args, **kwargs):
+        filtro_titulo = kwargs.pop('filtro_titulo')
+        super(ListaRequerimientoMerchandisingBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['titulo'].initial = filtro_titulo
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ListaRequerimientoMerchandisingForm(BSModalForm):
+    titulo = forms.CharField(max_length=150, required=True)
+
+    class Meta:
+        fields = (
+            'titulo',
+        )
+    
+    def __init__(self, *args, **kwargs):
+        try:
+            kwargs_2 = kwargs.pop('instance')
+            titulo = kwargs_2.pop('titulo')
+
+        except:
+            try:
+                titulo = kwargs.pop('titulo')
+            except:
+                titulo = None
+
+        super(ListaRequerimientoMerchandisingForm, self).__init__(*args, **kwargs)
+        if titulo:
+            self.fields['titulo'].initial = titulo
+        else:
+            self.fields['titulo'].initial = titulo
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ListaRequerimientoMerchandisingDetalleForm(BSModalForm):
+    merchandising = forms.CharField(max_length=150, required=True)
+    cantidad = forms.DecimalField(max_digits=22, decimal_places=10)
+    comentario = forms.CharField(widget=forms.Textarea, required=False)
+    class Meta:
+        model = ListaRequerimientoMerchandisingDetalle
+        fields=(
+            'merchandising',
+            'cantidad',
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ListaRequerimientoMerchandisingDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
+
+class ListaRequerimientoMerchandisingDetalleUpdateForm(BSModalModelForm):
+    class Meta:
+        model = ListaRequerimientoMerchandisingDetalle
+        fields=(
+            'merchandising',
+            'cantidad',
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ListaRequerimientoMerchandisingDetalleUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
+
+
+
+class OfertaProveedorMerchandisingCrearForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandising
+        fields=(
+            'proveedor',
+            )
+    
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMerchandisingCrearForm, self).__init__(*args, **kwargs)
+        
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+class OfertaProveedorMerchandisingUpdateForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandising
+        fields=(
+            'forma_pago',
+            'tiempo_estimado_entrega',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMerchandisingUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+class OfertaProveedorMerchandisingMonedaForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandising
+        fields=(
+            'moneda',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMerchandisingMonedaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class OfertaProveedorMerchandisingDetalleUpdateForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandisingDetalle
+        fields=(
+            'cantidad',
+            'tipo_igv',
+            'precio_unitario_sin_igv',
+            'precio_unitario_con_igv',
+            'precio_final_con_igv',
+            'descuento',
+            'sub_total',
+            'igv',
+            'total',
+            'archivo',
+            )
+
+    def clean_precio_final_con_igv(self):
+        precio_final_con_igv = self.cleaned_data.get('precio_final_con_igv')
+        precio_unitario_con_igv = self.cleaned_data.get('precio_unitario_con_igv')
+        if precio_final_con_igv > precio_unitario_con_igv:
+            self.add_error('precio_final_con_igv', 'El precio final no puede ser mayor al precio unitario.')
+    
+        return precio_final_con_igv
+    
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMerchandisingDetalleUpdateForm, self).__init__(*args, **kwargs)
+        internacional_nacional = self.instance.oferta_proveedor_merchandising.internacional_nacional
+        if internacional_nacional == 1:
+            self.fields['tipo_igv'].widget = forms.HiddenInput()
+            self.fields['precio_unitario_sin_igv'].widget = forms.HiddenInput()
+            self.fields['sub_total'].widget = forms.HiddenInput()
+            self.fields['igv'].widget = forms.HiddenInput()
+            self.fields['precio_unitario_con_igv'].label = "Precio Unitario"
+            self.fields['precio_final_con_igv'].label = "Precio Final"
+            
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['cantidad'].widget.attrs['min'] = 0
+        self.fields['cantidad'].widget.attrs['step'] = 0.001
+        self.fields['precio_unitario_con_igv'].widget.attrs['min'] = 0
+        self.fields['precio_final_con_igv'].widget.attrs['min'] = 0
+
+class OfertaProveedorMerchandisingCondicionesForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandising
+        fields=(
+            'condiciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMerchandisingCondicionesForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class OfertaProveedorMerchandisingEvaluarForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandising
+        fields=(
+            'evaluada',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMerchandisingEvaluarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['evaluada'].widget.attrs['class'] = 'form-check-input'
+
+
+
+
+class AgregarMerchandisingOfertaProveedorForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandisingDetalle
+        fields=(
+            'merchandising',
+            'cantidad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(AgregarMerchandisingOfertaProveedorForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class UnirMerchandisingDetalleForm(BSModalModelForm):
+    merch = forms.ModelChoiceField(queryset=Merchandising.objects.all())
+    class Meta:
+        model = OfertaProveedorMerchandisingDetalle
+        fields=(
+            'merch',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(UnirMerchandisingDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class OfertaProveedorMerchandisingForm(BSModalModelForm):
+    class Meta:
+        model = OfertaProveedorMerchandising
+        fields=(
+            'numero_oferta',
+            'condiciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OfertaProveedorMerchandisingForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            visible.field.required = True
+
+class OrdenCompraSociedadForm(BSModalForm):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1))
+    class Meta:
+        fields=(
+            'sociedad',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(OrdenCompraSociedadForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+#_______________________
+class ComprobanteCompraMerchandisingBuscarForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    proveedor = forms.ModelChoiceField(queryset= Proveedor.objects.all(), required=False)
+    merchandising = forms.ModelChoiceField(queryset= Merchandising.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_sociedad = kwargs.pop('filtro_sociedad')
+        filtro_proveedor = kwargs.pop('filtro_proveedor')
+        filtro_merchandising = kwargs.pop('filtro_merchandising')
+
+        super(ComprobanteCompraMerchandisingBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['sociedad'].initial = filtro_sociedad
+        self.fields['proveedor'].initial = filtro_proveedor
+        self.fields['merchandising'].initial = filtro_merchandising
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+#_______________________
+
+
+class OrdenCompraMerchandisingEnviarCorreoForm(BSModalForm):
+    CHOICES = (
+        (1, 'a'),
+        (2, 'b'),
+        (3, 'c'),
+    )
+    correos_proveedor = forms.MultipleChoiceField(choices=CHOICES, required=False, widget=forms.CheckboxSelectMultiple())
+    correos_internos = forms.MultipleChoiceField(choices=[None], required=False, widget=forms.CheckboxSelectMultiple())
+
+    class Meta:
+        fields=(
+            'correos_proveedor',
+            'correos_internos',
+            )
+
+    def __init__(self, *args, **kwargs):
+        proveedor = kwargs.pop('proveedor')
+
+        CORREOS_PROVEEDOR = []
+        for interlocutor_proveedor in proveedor.ProveedorInterlocutor_proveedor.all():
+            for correo_interlocutor in interlocutor_proveedor.interlocutor.CorreoInterlocutorProveedor_interlocutor.filter(estado=1):
+                CORREOS_PROVEEDOR.append((correo_interlocutor.correo, '%s %s (%s)' % (interlocutor_proveedor.interlocutor.nombres, interlocutor_proveedor.interlocutor.apellidos, correo_interlocutor.correo)))
+
+        CORREOS_INTERNOS = []
+        usuarios = get_user_model().objects.exclude(email='')
+        for usuario in usuarios:
+            CORREOS_INTERNOS.append((usuario.email, '%s (%s)' % (usuario.username, usuario.email)))
+
+        super(OrdenCompraMerchandisingEnviarCorreoForm, self).__init__(*args, **kwargs)
+        self.fields['correos_internos'].choices = CORREOS_INTERNOS
+        self.fields['correos_proveedor'].choices = CORREOS_PROVEEDOR
+        self.fields['correos_internos'].widget.attrs['class'] = 'nobull'
+        self.fields['correos_proveedor'].widget.attrs['class'] = 'nobull'
+
+class OrdenCompraMerchandisingProveedorForm(BSModalModelForm):
+    class Meta:
+        model = OrdenCompraMerchandising
+        fields=(
+            'proveedor_temporal',
+            'interlocutor_temporal',
+            )
+        
+    def __init__(self, *args, **kwargs):
+        super(OrdenCompraMerchandisingProveedorForm, self).__init__(*args, **kwargs)   
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ComprobanteCompraMerchandisingForm(BSModalModelForm):
+    class Meta:
+        model = ComprobanteCompraMerchandising
+        fields=(
+            'fecha_comprobante',
+            'numero_comprobante_compra',
+            'logistico',
+            )
+        widgets = {
+            'fecha_comprobante' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ComprobanteCompraMerchandisingForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ComprobanteCompraMerchandisingLlegadaForm(BSModalModelForm):
+    class Meta:
+        model = ComprobanteCompraMerchandising
+        fields=(
+            'fecha_estimada_llegada',
+            )
+        widgets = {
+            'fecha_estimada_llegada' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+            }
+
+    def __init__(self, *args, **kwargs):
+        super(ComprobanteCompraMerchandisingLlegadaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RecepcionComprobanteCompraMerchandisingForm(BSModalForm):
+    fecha_recepcion = forms.DateField(
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+    )
+    usuario_recepcion = forms.ModelChoiceField(queryset=get_user_model().objects.all())
+    nro_bultos = forms.IntegerField()
+    observaciones = forms.CharField(
+        widget=forms.Textarea(),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(RecepcionComprobanteCompraMerchandisingForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

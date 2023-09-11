@@ -74,7 +74,7 @@
                     <th class="pe-2">Presupuesto Asignado: </th>
                     <td>
                         {% if contexto_evento_crm.presupuesto_asignado %}
-                        {{ contexto_evento_crm.presupuesto_asignado|redondear|intcomma }}
+                        {{ contexto_evento_crm.moneda.simbolo }} {{ contexto_evento_crm.presupuesto_asignado|redondear|intcomma }}
                         {% endif %}
                     </td>
                 </tr>
@@ -159,7 +159,7 @@
             {% for merchandising in merchandisings  %}
             <tr>
                 <td>{{ merchandising.item }}</td>
-                <td style="min-width: 500px;">{{ merchandising.merchandising.descripcion_documento }}</td>
+                <td style="min-width: 500px;">{{ merchandising.merchandising.descripcion_corta }}</td>
                 <td class="text-nowrap">{{ merchandising.almacen_origen.nombre }}</td>
                 <td class="text-nowrap">{{ merchandising.tipo_stock.descripcion }}</td>
                 <td class="text-end text-nowrap">{{ merchandising.cantidad_asignada }}</td>

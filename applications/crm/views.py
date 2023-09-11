@@ -17,7 +17,7 @@ from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, 
                                     PreguntaCRMBuscarForm, PreguntaCRMForm,
                                     AlternativaCRMForm,
                                     EncuestaCRMBuscarForm, EncuestaCRMForm, EncuestaPreguntaCRMForm,
-                                    RespuestaCRMBuscarForm, RespuestaCRMForm)
+                                    RespuestaCRMBuscarForm, RespuestaCRMForm, RespuestaCrearCRMForm)
 
 from applications.crm.models import (
     ClienteCRMDetalle,
@@ -719,6 +719,18 @@ class  EventoCRMActualizarView(PermissionRequiredMixin, BSModalUpdateView):
         context['url_sede'] = reverse_lazy('sociedad_app:sociedad_sede', kwargs={'id_sociedad':1})[:-2]
         return context
 
+
+class EventoCRMEliminarDeleteView(BSModalDeleteView):
+    model = EventoCRM
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('crm_app:evento_crm_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(EventoCRMEliminarDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Evento"
+        context['item']= self.object.titulo
+        return context
 
 class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('crm.change_eventocrmdetalle')
@@ -1703,7 +1715,8 @@ class RespuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_respuestacrm')
     model = RespuestaCRM
     template_name = "includes/formulario generico.html"
-    form_class = RespuestaCRMForm
+    # form_class = RespuestaCRMForm
+    form_class = RespuestaCrearCRMForm
     success_url = reverse_lazy('crm_app:respuesta_crm_inicio')
 
     def dispatch(self, request, *args, **kwargs):
@@ -1715,7 +1728,7 @@ class RespuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
         form.instance.slug = slug_aleatorio(RespuestaCRM)
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
-
+    
     def get_context_data(self, **kwargs):
         context = super(RespuestaCRMCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
@@ -1726,7 +1739,8 @@ class RespuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
 class RespuestaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('crm.change_respuestacrm')
     model = RespuestaCRM
-    template_name = "includes/formulario generico.html"
+    # template_name = "includes/formulario generico.html"
+    template_name = "crm/clientes_crm/form_cliente.html"
     form_class = RespuestaCRMForm
     success_url = reverse_lazy('crm_app:respuesta_crm_inicio')
 
@@ -1738,6 +1752,18 @@ class RespuestaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        respuesta = kwargs['instance']
+        lista = []
+        relaciones = ClienteInterlocutor.objects.filter(cliente = respuesta.cliente_crm)
+        for relacion in relaciones:
+            lista.append(relacion.interlocutor.id)
+
+        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+        kwargs['interlocutor'] = respuesta.interlocutor
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(RespuestaCRMUpdateView, self).get_context_data(**kwargs)
@@ -1807,7 +1833,6 @@ class RespuestaVerView(TemplateView): #respuesta_del_cliente | encuesta para el 
         respuesta = RespuestaCRM.objects.get(slug = self.kwargs['slug'])
         encuesta = respuesta.encuesta_crm
         preguntas = encuesta.pregunta_crm.all()
-        print(preguntas)
 
         context = super(RespuestaVerView, self).get_context_data(**kwargs)
         context['respuesta'] = respuesta
@@ -1816,8 +1841,8 @@ class RespuestaVerView(TemplateView): #respuesta_del_cliente | encuesta para el 
         return context
 
 
-class EncuestaRespuesta(PermissionRequiredMixin, View): #encuesta
-    permission_required = ('crm.view_encuestacrm')
+class EncuestaRespuesta(View): #encuesta
+    # permission_required = ('crm.view_encuestacrm')
 
     def post(self, request, *args, **kwargs):
         respuesta_id = int(request.POST.get('respuesta'))
@@ -1853,6 +1878,7 @@ class EncuestaRespuesta(PermissionRequiredMixin, View): #encuesta
                     created_by = created_by,
                     updated_by = updated_by,
                 )
+
         respuesta_crm.estado = 2
         respuesta_crm.save()
         return HttpResponse('Hola')

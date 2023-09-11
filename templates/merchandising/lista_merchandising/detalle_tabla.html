@@ -1,0 +1,87 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<h2> {{lista.titulo}}
+    <a href="{% url 'merchandising_app:lista_requerimiento_merchandising_inicio' %}"
+    class="create btn btn-primary" title="Regresar a Lista Requerimiento Merchandising">
+        Regresar
+    </a>
+    
+    <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_inicio' %}"
+    class="create btn btn-primary" title="Oferta Proveedores">
+        Ver Ofertas
+    </a>
+
+    <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_crear' lista.id %}"
+        data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_tabla' %}"
+        class="delete btn btn-success">
+        Registrar Oferta
+    </button>    
+</h2>
+
+<div>
+    <form action="" method="post" autocomplete="off">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" class="create btn btn-primary"  value="Guardar">
+        <br>
+    </form>
+</div>
+
+<br>
+
+<div class="table-responsive">
+    <h2 >Merchandising
+    <button data-form-url="{% url 'merchandising_app:lista_requerimiento_merchandising_detalle_agregar' lista.id %}"
+        data-table-url="{% url 'merchandising_app:lista_requerimiento_merchandising_detalle_tabla' lista.id  %}"
+        data-keep-open="True"
+        class="update btn btn-primary">
+        Agregar
+    </button>
+    </h2>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Merchandising</th>
+                <th>Comentario</th>
+                <th class="text-end">Cantidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for merchandising in lista_detalle %}
+                <tr>
+                    <td>{{ merchandising.item }}</td>
+                    <td>{{ merchandising.merchandising }}</td>
+                    <td>
+                        {% if merchandising.comentario  != None %}
+                        {{ merchandising.comentario }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td class="text-end">{{ merchandising.cantidad|redondear|intcomma }}</td>
+
+                    <td>
+                        <button data-form-url="{% url 'merchandising_app:lista_requerimiento_merchandising_detalle_actualizar' merchandising.id %}"
+                            data-table-url="{% url 'merchandising_app:lista_requerimiento_merchandising_detalle_tabla' lista.id  %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'merchandising_app:lista_requerimiento_merchandising_eliminar' merchandising.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi-x-lg"></i>
+                        </button>
+                    </td>
+
+
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

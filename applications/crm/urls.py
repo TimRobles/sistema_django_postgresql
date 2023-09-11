@@ -21,6 +21,7 @@ urlEvento = [
     path('evento-crm-tabla/', views.EventoCRMTabla, name='evento_crm_tabla'),
     path('evento-crm/registrar/', views.EventoCRMCreateView.as_view(), name='evento_crm_registrar'),
     path('evento-crm/actualizar/<pk>/', views.EventoCRMUpdateView.as_view(), name='evento_crm_actualizar'),
+    path('evento-crm/eliminar/<pk>', views.EventoCRMEliminarDeleteView.as_view(), name='evento_crm_eliminar'),
     path('evento-crm/detalle/<pk>/', views.EventoCRMDetailView.as_view(), name='evento_crm_detalle'),
     path('evento-crm/detalle-tabla/<pk>/', views.EventoCRMDetailTabla, name='evento_crm_detalle_tabla'),
     path('evento-crm/detalle/descripcion/<pk>/', views.EventoCRMDetalleDescripcionView.as_view(), name='evento_crm_detalle_descripcion'),
@@ -46,6 +47,7 @@ urlEncuesta = [
     path('encuesta-crm/detalle-tabla/<slug>/', views.EncuestaCRMDetailTabla, name='encuesta_crm_detalle_tabla'),
     path('encuesta-crm/agregar-pregunta/<slug>/', views.EncuestaPreguntaCRMUpdateView.as_view(), name='encuesta_crm_pregunta'), #Añadir pregunta
     path('encuesta-crm/ver/<slug>/', views.RespuestaVerView.as_view(), name='encuesta_ver'),
+    # path('<slug>/', views.RespuestaVerView.as_view(), name='encuesta_ver'),
     path('encuesta-respuesta/', views.EncuestaRespuesta.as_view(), name='encuesta_respuesta'),
     ]
 

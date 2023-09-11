@@ -7,7 +7,7 @@ from applications.proveedores.models import Proveedor
 from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
 from applications.clientes.models import Cliente, RepresentanteLegalCliente, CorreoInterlocutorCliente, InterlocutorCliente, TelefonoInterlocutorCliente
 from applications.sorteo.models import Sorteo
-from applications.datos_globales.models import Pais, Unidad
+from applications.datos_globales.models import Pais, Unidad, Moneda
 from django.contrib.contenttypes.models import ContentType
 from applications.almacenes.models import Almacen
 from applications.movimiento_almacen.models import TipoStock
@@ -118,6 +118,7 @@ class EventoCRM(models.Model):
     fecha_cierre = models.DateField('Fecha Cierre', blank=True, null=True)
     presupuesto_asignado = models.DecimalField('Presupuesto asignado', max_digits=14, decimal_places=2, blank=True, null=True)
     presupuesto_utilizado = models.DecimalField('Presupuesto utilizado', max_digits=14, decimal_places=2, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
     total_merchandising = models.DecimalField('Total Merchandising', max_digits=22, decimal_places=10, blank=True, null=True)
     descripcion = models.TextField('Descripción', blank=True, null=True)
     sorteo = models.ForeignKey(Sorteo, on_delete=models.PROTECT, related_name='Sorteo',blank=True, null=True)
@@ -133,6 +134,11 @@ class EventoCRM(models.Model):
     class Meta:
         verbose_name = 'Evento CRM'
         verbose_name_plural = 'Eventos CRM'
+        ordering = [
+            '-created_at',
+            '-fecha_inicio',
+        ]
+
 
     def __str__(self):
         return str(self.titulo)

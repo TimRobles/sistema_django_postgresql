@@ -1,0 +1,21 @@
+{% load widget_tweaks %}
+{% load static %}
+
+<form id="formulario" action="" enctype="multipart/form-data" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {{ material }}
+        {% include 'includes/formulario.html' %}    
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-primary-submit">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+    <span id="valor_igv" hidden>{{ valor_igv }}</span>
+</form>
+
+<script src="{% static 'js/orden_compra/orden_compra/proveedor.js' %}?{{ cache_bust }}"></script>

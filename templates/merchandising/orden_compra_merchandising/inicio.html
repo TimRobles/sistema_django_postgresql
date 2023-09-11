@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Orden Compra Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>
+        Orden Compra Merchandising
+
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/orden_compra_merchandising/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

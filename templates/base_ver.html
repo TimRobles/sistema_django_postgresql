@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es-MX" class="h-100">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap-icons-1.9.1/bootstrap-icons.css' %}">
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <link rel="stylesheet" href="{% static 'css/docs.css' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}?{{ cache_bust }}">
+        <title>
+            {% block titulo %}
+            
+            {% endblock titulo %}
+        </title>
+        {% block css %}
+        
+        {% endblock css %}
+    </head>
+    <body class="d-flex flex-column h-100 position-relative">
+        <div>
+            {% if messages %}   
+                {% for message in messages %}
+                    <div {% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible fade show mb-0" role="alert" {% endif %}>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% include "includes/modals.html" %}
+        {% include "includes/header_ver.html" %}
+        <main class="container-fluid pb-5">
+            <div class="row my-2">
+                <div class="col-lg-10 mx-auto">
+                {% block contenido %}
+                {% endblock contenido %}
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer fixed-bottom py-3 bg-dark">
+            {% include 'includes/footer.html' %}
+        </footer>
+        
+        <script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/jquery.bootstrap.modal.forms.js' %}"></script>
+        <script src="{% static 'js/jscolor.js' %}"></script> 
+        <script src="{% static 'js/funciones.js' %}?{{ cache_bust }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        
+        {% block extrajs %}
+        {% endblock extrajs %}
+        
+    </body>
+</html>

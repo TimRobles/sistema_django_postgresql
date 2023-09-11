@@ -1,10 +1,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Descripción Venta</th>
             <th>Descripción Corta</th>
-            <th>Marca</th>
-            <th>Modelo</th>
             <th class="text-center">Mostrar</th>
             <th class="text-center text-nowrap">Acciones</th>
 
@@ -13,10 +10,7 @@
 
     <tbody>
         {% for merchandising in contexto_merchandising %}
-            <td>{{ merchandising.descripcion_venta }}</td>
             <td>{{ merchandising.descripcion_corta }}</td>
-            <td>{{ merchandising.marca }}</td>
-            <td>{{ merchandising.modelo }}</td>
             <td class="text-center">
                 {% if merchandising.mostrar %}
                     SI

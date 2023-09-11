@@ -1,0 +1,62 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>Fecha</th>
+            <th>N° de Orden</th>
+            <th>Sociedad</th>
+            <th>Proveedor</th>
+            <th>Interlocutor</th>
+            <th>Estado</th>  
+            <th class="text-center">Acciones</th>      
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for orden_compra in contexto_orden_compra %}
+        <tr> 
+            <td>{{ orden_compra.id }}</td>
+            <td>{{ orden_compra.fecha_orden|date:'d/m/Y' }}</td>
+            <td>
+                {% if orden_compra.numero_orden_compra != None %}
+                    {{ orden_compra.numero_orden_compra}}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>
+                {{ orden_compra.sociedad.abreviatura }}
+            </td> 
+
+            <td>
+                {{ orden_compra.proveedor }}
+            </td> 
+
+            <td>
+                {{ orden_compra.interlocutor }}
+            </td>
+
+            <td>{{ orden_compra.get_estado_display }}</td>
+            
+            <td class="text-nowrap">
+
+                <a href="{% url 'merchandising_app:orden_compra_merchandising_detalle' orden_compra.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>       
+                
+                <button data-form-url="{% url 'merchandising_app:ordendecompra_eliminar' orden_compra.id %}"
+                class="delete btn btn-danger btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+

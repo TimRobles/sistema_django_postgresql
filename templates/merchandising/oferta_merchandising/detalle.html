@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Oferta Proveedor
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Oferta Proveedor Merchandising - {{ contexto_oferta_proveedor.proveedor }} - {{ contexto_oferta_proveedor.id }}
+        <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    
+        {% if contexto_oferta_proveedor.evaluada == True %}
+        <a href="{% url 'merchandising_app:ver_ofertas_evaluadas' contexto_oferta_proveedor.id %}" class="btn btn-primary">Evaluación de Ofertas</a>
+        {% endif %}
+
+        {% if contexto_oferta_proveedor.estado == 1 %}
+            <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_finalizar' contexto_oferta_proveedor.id %}"
+                data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
+                class="delete badge bg-primary">
+                Finalizar Oferta
+            </button>
+        {% endif %}
+            
+    </h3>
+    <br>
+    {% if contexto_oferta_proveedor.estado == 1 %}
+    <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_actualizar_moneda' contexto_oferta_proveedor.id %}"
+        data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
+        class="update btn btn-primary">
+        Actualizar Moneda
+    </button>
+
+    <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_evaluar' contexto_oferta_proveedor.id %}"
+        data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
+        class="delete btn btn-primary">
+        Evaluar Oferta
+    </button>
+    {% endif %}
+
+    {% if contexto_oferta_proveedor.estado != 1 and contexto_oferta_proveedor.estado != 3 %}
+    <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_generar_orden_compra' contexto_oferta_proveedor.id %}"
+        class="delete btn btn-primary">
+        Generar Orden de Compra
+    </button>
+    {% endif %}
+            
+    <br>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha Oferta</th>
+                    <th>Proveedor</th>
+                    <th>Estado</th>
+                    <th>Evaluada</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ contexto_oferta_proveedor.fecha|date:'d/m/Y' }}</td>
+                    <td>{{ contexto_oferta_proveedor.proveedor }}</td>
+                    <td>{{ contexto_oferta_proveedor.get_estado_display }}</td>
+                    <td>
+                        {% if contexto_oferta_proveedor.evaluada == True %}
+                            Sí
+                        {% else %}
+                            No
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div id="tabla">
+        {% include 'merchandising/oferta_merchandising/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

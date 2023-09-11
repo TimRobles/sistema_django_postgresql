@@ -1,0 +1,282 @@
+{% load humanize %}
+{% load funciones_propias %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Forma de Pago</th>
+                <th class="text-center">Tiempo estimado de Entrega (días)</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if contexto_oferta_proveedor.forma_pago %}
+                        {{contexto_oferta_proveedor.forma_pago}}
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if contexto_oferta_proveedor.tiempo_estimado_entrega %}
+                        {{contexto_oferta_proveedor.tiempo_estimado_entrega}}
+                    {% endif %}
+                </td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_actualizar_datos' contexto_oferta_proveedor.id %}"
+                        data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
+                        class="create btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Condiciones</th>
+                <th class="text-end">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if contexto_oferta_proveedor.condiciones %}
+                        {{ contexto_oferta_proveedor.condiciones|linebreaks }}
+                    {% endif %}
+                </td>
+                <td class="text-end text-nowrap">
+                    <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_actualizar_condiciones' contexto_oferta_proveedor.id %}"
+                        data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+            </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h3>Merchandising
+    {% if contexto_oferta_proveedor.estado == 1 %}
+        <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_agregar' contexto_oferta_proveedor.id %}"
+            data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id  %}"
+            data-keep-open="True"
+            class="update btn btn-primary">
+            Agregar
+        </button>
+    {% endif %}
+
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Item</th>
+                <td> Merchandising </td>
+                <td> Merchandising Oficial </td>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <th>Tipo IGV</th>
+                {% endif %}
+                <th class="text-nowrap text-end">Cantidad</th>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <th class="text-nowrap text-end">Prec. Unit.<br>sin IGV</th>
+                <th class="text-nowrap text-end">Prec. Unit.<br>con IGV</th>
+                <th class="text-nowrap text-end">Prec. Final<br>con IGV</th>
+                {% else %}
+                <th class="text-nowrap text-end">Prec. Unit.</th>
+                <th class="text-nowrap text-end">Prec. Final</th>
+                {% endif %}
+                <th>Descuento</th>
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <th class="text-nowrap text-end">Sub Total</th>
+                <th class="text-nowrap text-end">IGV</th>
+                {% endif %}
+                <th class="text-nowrap text-end">Total</th>
+                <th>Archivo</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in merchandising %}
+                <tr>
+                    <td>{{ detalle.id }}</td>
+                    <td>{{ detalle.item }}</td>
+                    <td>{{ detalle.merchandising }}</td>
+                    <td>{{ detalle.merch.descripcion_corta }}</td>
+
+                    {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                    <td>{{ detalle.get_tipo_igv_display }}</td>
+                    {% endif %}
+                    <td class="text-end text-nowrap">{{ detalle.cantidad|redondear|intcomma }}</td>
+                    {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                    <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
+                    {% endif %}
+                    <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.precio_unitario_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.descuento|redondear|intcomma }}</td>
+                    {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                    <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.sub_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.igv|redondear|intcomma }}</td>
+                    {% endif %}
+                    <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.total|redondear|intcomma }}</td>
+                    <td>{{ merchandising.archivo }}</td>
+
+                    <td class="text-center text-nowrap">
+                        {% if contexto_oferta_proveedor.estado == 1 %}
+                            <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_actualizar' detalle.id %}"
+                                data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
+                                data-modal="modal-xl"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar Precios">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+
+                            <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_unir' detalle.id %}"
+                                data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id  %}"
+                                data-keep-open="true"
+                                class="update btn btn-success btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Merchandising">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        {% endif %}
+                    </td>
+
+                </tr>
+            {% endfor %}
+                   
+        </tbody>
+        <tfoot>
+            <tr>
+                {% if totales.descuento_global %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Descuento Global:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Descuento Global:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.descuento_global|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}     
+            </tr>            
+            <tr>
+                {% if totales.total_descuento %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Descuento Total:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Descuento Total:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_descuento|intcomma }}</td>   
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>           
+             <tr>
+                {% if totales.total_anticipo %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Anticipo:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Anticipo:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_anticipo|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total_exonerada %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Exonerada:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Exonerada:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_exonerada|intcomma }}</td>   
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total_inafecta %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Inafecta:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Inafecta:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_inafecta|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total_gravada %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Gravada:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Gravada:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gravada|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total_igv %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">IGV:</td>
+                {% else %}
+                <td colspan="9" class="text-end">IGV:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_igv|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total_gratuita %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Gratuita:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Gratuita:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_gratuita|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total_otros_cargos %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Otros Cargos:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Otros Cargos:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_otros_cargos|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total_icbper %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">ICBPER:</td>
+                {% else %}
+                <td colspan="9" class="text-end">ICBPER:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total_icbper|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+            <tr>
+                {% if totales.total %}
+                {% if contexto_oferta_proveedor.internacional_nacional == 2 %}
+                <td colspan="11" class="text-end">Total:</td>
+                {% else %}
+                <td colspan="9" class="text-end">Total:</td>
+                {% endif %}
+                <td class="text-end">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ totales.total|intcomma }}</td>
+                <td colspan="5"></td>
+                {% endif %}
+            </tr>
+        </tfoot>
+    </table>
+</div>

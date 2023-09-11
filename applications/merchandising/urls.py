@@ -28,6 +28,74 @@ urlAjusteInventarioMerchandising = [
     path('ajuste-inventario-merchandising/detalle/eliminar/<pk>/', views.AjusteInventarioMerchandisingDetalleDeleteView.as_view(), name='ajuste_inventario_merchandising_detalle_eliminar'),
 ]
 
+urlMerchandising = [
+    path('lista-requerimiento-merchandising/', views.ListaRequerimientoMerchandisingListView.as_view(), name='lista_requerimiento_merchandising_inicio'),
+    path('lista-requerimiento-merchandising-tabla/', views.ListaRequerimientoMerchandisingTabla, name='lista_requerimiento_merchandising_tabla'),
+    path('lista-requerimiento-merchandising/registrar/', views.ListaRequerimientoMerchandisingCreateView.as_view(), name='lista_requerimiento_merchandising_registrar'),
+    path('lista-requerimiento-merchandising/detalle-tabla/<pk>/', views.ListaRequerimientoMerchandisingDetalleTabla, name='lista_requerimiento_merchandising_detalle_tabla'),
+    path('lista-requerimiento-merchandising/actualizar/<pk>/', views.ListaRequerimientoMerchandisingUpdateView.as_view(), name='lista_requerimiento_merchandising_actualizar'),
+    path('lista-requerimiento-merchandising/eliminar/<pk>/', views.ListaRequerimientoMerchandisingDetalleDeleteView.as_view(), name='lista_requerimiento_merchandising_eliminar'),
+    
+    path('lista-requerimiento-merchandising/detalle/agregar/<pk>/', views.ListaRequerimientoMerchandisingDetalleAgregarView.as_view(), name='lista_requerimiento_merchandising_detalle_agregar'),
+    path('lista-requerimiento-merchandising/detalle/actualizar-merchandising/<pk>/', views.ListaRequerimientoMerchandisingDetalleUpdateView.as_view(), name='lista_requerimiento_merchandising_detalle_actualizar'),
+]
+
+urlOfertaProveedorMerchandising = [
+    path('oferta-proveedor-merchandising/', views.OfertaProveedorMerchandisingListView.as_view(), name='oferta_proveedor_merchandising_inicio'),
+    path('oferta-proveedor-merchandising-tabla/', views.OfertaProveedorMerchandisingTabla, name='oferta_proveedor_merchandising_tabla'),
+
+    path('oferta-proveedor-merchandising/detalle/<pk>/', views.OfertaProveedorMerchandisingDetailView.as_view(), name='oferta_proveedor_merchandising_detalle'),
+    path('oferta-proveedor-merchandising/detalle-tabla/<pk>/', views.OfertaProveedorMerchandisingDetailTabla, name='oferta_proveedor_merchandising_detalle_tabla'),
+    path('oferta-proveedor-merchandising/crear/<int:lista_id>/', views.OfertaProveedorMerchandisingCrearView.as_view(), name='oferta_proveedor_merchandising_crear'),
+    path('oferta-proveedor-merchandising/actualizar-moneda/<pk>/', views.OfertaProveedorMerchandisingMonedaView.as_view(), name='oferta_proveedor_merchandising_actualizar_moneda'),
+    path('oferta-proveedor-merchandising/actualizar-condiciones/<pk>/', views.OfertaProveedorMerchandisingCondicionesView.as_view(), name='oferta_proveedor_merchandising_actualizar_condiciones'),
+    path('oferta-proveedor-merchandising/actualizar/<pk>/', views.OfertaProveedorMerchandisingUpdateView.as_view(), name='oferta_proveedor_merchandising_actualizar_datos'),
+    path('oferta-proveedor-merchandising/evaluar/<pk>/', views.OfertaProveedorEvaluarDetalleUpdateView.as_view(), name='oferta_proveedor_merchandising_evaluar'),
+
+    path('oferta-proveedor-merchandising/agregar-merchandising/<pk>/', views.MerchandisingOfertaProveedorAgregarView.as_view(), name='oferta_proveedor_merchandising_agregar'),
+    path('oferta-proveedor-merchandising/actualizar-merchandising/<pk>/', views.OfertaProveedorMerchandisingDetalleUpdateView.as_view(), name='oferta_proveedor_merchandising_actualizar'),
+    path('oferta-proveedor-merchandising/unir-merchandising/<pk>/', views.UnirMerchandisingDetalleUpdateView.as_view(), name='oferta_proveedor_merchandising_unir'),
+    path('oferta-proveedor-merchandising/finalizar/<pk>/', views.OfertaProveedorMerchandisingFinalizarView.as_view(), name='oferta_proveedor_merchandising_finalizar'),
+
+    path('oferta-proveedor-merchandising/generar-orden-compra/<pk>/', views.OfertaProveedorGenerarOrdenCompraView.as_view(), name='oferta_proveedor_merchandising_generar_orden_compra'),
+
+
+    path('evaluacion-ofertas/<pk>/', views.ver_ofertas_evaluadas, name='ver_ofertas_evaluadas'),
+
+    path('oferta-proveedor-merchandising/eliminar/<pk>/', views.OfertaProveedorMerchandisingDeleteView.as_view(), name='ofertaproveedor_eliminar'),
+
+]
+
+urlOrdenCompraMerchandising = [
+    path('orden-compra-merchandising/', views.OrdenCompraMerchandisingListView.as_view(), name='orden_compra_merchandising_inicio'),
+    path('orden-compra-merchandising-tabla/', views.OrdenCompraMerchandisingTabla, name='orden_compra_merchandising_tabla'),
+
+    path('orden-compra-merchandising/detalle/<pk>/', views.OrdenCompraMerchandisingDetailView.as_view(), name='orden_compra_merchandising_detalle'),
+    path('orden-compra-merchandising/detalle-tabla/<pk>/', views.OrdenCompraMerchandisingDetailTabla, name='orden_compra_merchandising_detalle_tabla'),
+    path('orden-compra-merchandising/enviar-correo/<pk>/', views.OrdenCompraMerchandisingEnviarCorreoView.as_view(), name='orden_compra_merchandising_enviar_correo'),
+    path('orden-compra-merchandising/actualizar/<pk>/', views.OrdenCompraMerchandisingProveedorView.as_view(), name='orden_compra_merchandising_actualizar'),
+
+    path('orden-compra-merchandising/generar-comprobante-compra-total/<pk>/', views.OrdenCompraGenerarComprobanteMerchandisingTotalView.as_view(), name='orden_compra_merchandising_generar_comprobante_compra_total'),
+
+    path('orden-compra-merchandising/eliminar/<pk>/', views.OrdenCompraMerchandisingDeleteView.as_view(), name='ordendecompra_eliminar'),
+
+]
+
+urlComprobanteCompraMerchandising = [
+    path('comprobante-compra-merchandising/lista/', views.ComprobanteCompraMerchandisingListView.as_view(), name='comprobante_compra_merchandising_lista'),
+    path('comprobante-compra-merchandising-tabla/', views.ComprobanteCompraMerchandisingTabla, name='comprobante_compra_merchandising_tabla'),
+    
+    path('comprobante-compra-merchandising/detalle/<pk>/', views.ComprobanteCompraMerchandisingDetailView.as_view(), name='comprobante_compra_merchandising_detalle'),
+    path('comprobante-compra-merchandising/detalle/tabla/<pk>/', views.ComprobanteCompraMerchandisingDetailTabla, name='comprobante_compra_merchandising_detalle_tabla'),
+    path('comprobante-compra-merchandising/guardar/<pk>/', views.ComprobanteCompraMerchandisingGuardarView.as_view(), name='comprobante_compra_merchandising_guardar'),
+    path('comprobante-compra-merchandising/actualizar/<pk>/', views.ComprobanteCompraMerchandisingUpdateView.as_view(), name='comprobante_compra_merchandising_actualizar'),
+
+    path('comprobante-compra-merchandising/actualizar/fecha-llegada/<pk>/', views.ComprobanteCompraMerchandisingLlegadaUpdateView.as_view(), name='comprobante_compra_merchandising_actualizar_fecha_llegada'),
+
+    path('recepcion-comprobante-compra-pi/<pk>/', views.RecepcionComprobanteCompraMerchandisingView.as_view(), name='recepcion_comprobante_compra_merchandising'),
+
+]
+
 urlpatterns = [
     path('modelo-merchandising/', views.ModeloMerchandisingListView.as_view(), name='modelo_merchandising_inicio'),
     path('modelo-merchandising-tabla/', views.ModeloMerchandisingTabla, name='modelo_merchandising_tabla'),
@@ -126,4 +194,4 @@ urlpatterns = [
     path('stock/tipo_stock/<int:id_merchandising>/<int:id_sociedad>/<int:id_almacen>/<int:id_tipo_stock>/', views.StockTipoStockView, name='stock_tipo_stock'),
 
     # path('series/<pk>/', views.MerchandisingSeriesView.as_view(), name='series'),
-] + urlInventarioMerchandising + urlAjusteInventarioMerchandising
+] + urlInventarioMerchandising + urlAjusteInventarioMerchandising + urlMerchandising + urlOfertaProveedorMerchandising + urlOrdenCompraMerchandising + urlComprobanteCompraMerchandising

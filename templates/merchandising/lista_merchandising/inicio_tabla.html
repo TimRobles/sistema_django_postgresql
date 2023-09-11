@@ -1,0 +1,36 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha de Registro</th>
+            <th>Titulo</th>
+            <th>Creado por</th>
+            <th>Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for lista_requerimiento_merchandising in contexto_lista_merchandising %}
+            <td>{{ lista_requerimiento_merchandising.created_at|date:'d/m/Y' }}</td>
+            <td>
+                {% if lista_requerimiento_merchandising.titulo != None %}
+                    {{ lista_requerimiento_merchandising.titulo}}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ lista_requerimiento_merchandising.created_by}}</td>
+
+            <td>
+
+            <a href="{% url 'merchandising_app:lista_requerimiento_merchandising_actualizar' lista_requerimiento_merchandising.id %}"
+                class="btn btn-info btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                <i class="bi bi-eye-fill"></i>
+            </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>

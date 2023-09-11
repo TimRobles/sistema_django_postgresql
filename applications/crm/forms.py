@@ -116,6 +116,7 @@ class EventoCRMForm(BSModalModelForm):
             'pais',
             'encargado',
             'presupuesto_asignado',
+            'moneda',
             )
         
         widgets = {
@@ -133,6 +134,14 @@ class EventoCRMForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 ),   
             }
+        
+    def clean_fecha_cierre(self):
+        fecha_inicio = self.cleaned_data.get('fecha_inicio')
+        fecha_cierre = self.cleaned_data.get('fecha_cierre')
+
+        if fecha_cierre < fecha_inicio:
+            self.add_error('fecha_cierre', 'La Fecha Cierre debe ser igual o mayor a la Fecha Inicio')
+        return fecha_cierre
 
     def __init__(self, *args, **kwargs):
         super(EventoCRMForm, self).__init__(*args, **kwargs)
@@ -399,7 +408,7 @@ class RespuestaCRMBuscarForm(forms.Form):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
 
-class RespuestaCRMForm(BSModalModelForm):
+class RespuestaCrearCRMForm(BSModalModelForm):
     class Meta:
         model = RespuestaCRM
         fields=(
@@ -410,7 +419,40 @@ class RespuestaCRMForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
+        super(RespuestaCrearCRMForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class RespuestaCRMForm(BSModalModelForm):
+    class Meta:
+        model = RespuestaCRM
+        fields=(
+            'cliente_crm',
+            'interlocutor',
+            'nombre_interlocutor',
+            'encuesta_crm',
+            )
+        
+    def clean_cliente(self):
+        cliente_crm = self.cleaned_data.get('cliente_crm')
+        if cliente_crm:
+            interlocutor = self.fields['interlocutor']
+            lista = []
+            relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm.id)
+            for relacion in relaciones:
+                lista.append(relacion.interlocutor.id)
+
+            interlocutor.queryset = InterlocutorCliente.objects.filter(id__in = lista)
+
+        return cliente_crm
+
+    def __init__(self, *args, **kwargs):
+        interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        interlocutor = kwargs.pop('interlocutor')
         super(RespuestaCRMForm, self).__init__(*args, **kwargs)
+        self.fields['interlocutor'].queryset = interlocutor_queryset
+        if interlocutor:
+            self.fields['interlocutor'].initial = interlocutor
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
