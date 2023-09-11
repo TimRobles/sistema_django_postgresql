@@ -8,9 +8,14 @@
 {% block contenido %}
     <h3>Clientes
         <button class="create badge bg-primary"
-            data-form-url="{% url 'clientes_app:cliente_registrar' %}"
+            data-form-url="{% url 'clientes_app:cliente_nacional_registrar' %}"
             data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}">
-            Registrar Cliente
+            Registrar Nacional
+        </button>
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'clientes_app:cliente_extranjero_registrar' %}"
+            data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}">
+            Registrar Extranjero
         </button>
     </h3>
     <br>

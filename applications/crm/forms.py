@@ -46,20 +46,20 @@ class ClienteCRMBuscarForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    estado_cliente = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_CLIENTE, required=False)
+    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADOS_CLIENTE, required=False)
 
     def __init__(self, *args, **kwargs):
         filtro_razon_social = kwargs.pop('filtro_razon_social')
         filtro_medio = kwargs.pop('filtro_medio')
-        filtro_estado_cliente = kwargs.pop('filtro_estado_cliente')
         filtro_pais = kwargs.pop('filtro_pais')
         filtro_fecha_registro = kwargs.pop('filtro_fecha_registro')
+        filtro_estado = kwargs.pop('filtro_estado')
         super(ClienteCRMBuscarForm, self).__init__(*args, **kwargs)
         self.fields['razon_social'].initial = filtro_razon_social
         self.fields['medio'].initial = filtro_medio
-        self.fields['estado_cliente'].initial = filtro_estado_cliente
         self.fields['created_at'].initial = filtro_fecha_registro
         self.fields['pais'].initial = filtro_pais
+        self.fields['estado'].initial = filtro_estado
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -67,13 +67,17 @@ class ClienteCRMDetalleForm(BSModalModelForm):
     class Meta:
         model = ClienteCRMDetalle
         fields = (
+            'tipo_actividad',
+            'interlocutor',
+            'direccion',
             'fecha',
+            'hora_inicio',
+            'hora_fin',
             'objetivo',
             'compromiso',
             'mejoras',
             'quejas',
             'comentario',
-            'monto',
             'archivo_recibido',
             'archivo_enviado',
             )
@@ -86,9 +90,11 @@ class ClienteCRMDetalleForm(BSModalModelForm):
                 format = '%Y-%m-%d',
                 ),
         }
-
+    
     def __init__(self, *args, **kwargs):
+        interlocutor_queryset = kwargs.pop('interlocutor_queryset')
         super(ClienteCRMDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['interlocutor'].queryset = interlocutor_queryset
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

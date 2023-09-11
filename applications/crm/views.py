@@ -33,7 +33,9 @@ from applications.crm.models import (
     )
 
 from applications.clientes.models import Cliente, ClienteInterlocutor, InterlocutorCliente
-from applications.clientes.forms import ClienteForm
+from applications.clientes.forms import ClienteNacionalForm, ClienteExtranjeroForm
+from applications.cotizacion.models import CotizacionVenta
+from applications.comprobante_venta.models import FacturaVenta
 
 class ClienteCRMListView(PermissionRequiredMixin, FormView):
     permission_required = ('crm.view_clientecrm')
@@ -45,9 +47,9 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
         kwargs = super(ClienteCRMListView, self).get_form_kwargs()
         kwargs['filtro_razon_social'] = self.request.GET.get('razon_social')
         kwargs['filtro_medio'] = self.request.GET.get('medio')
-        kwargs['filtro_estado_cliente'] = self.request.GET.get('estado_cliente')
         kwargs['filtro_pais'] = self.request.GET.get('pais')
         kwargs['filtro_fecha_registro'] = self.request.GET.get('created_at')
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
 
         return kwargs
 
@@ -57,9 +59,9 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
         
         filtro_razon_social = self.request.GET.get('razon_social')
         filtro_medio = self.request.GET.get('medio')
-        filtro_estado_cliente = self.request.GET.get('estado_cliente')
         filtro_pais = self.request.GET.get('pais')
         filtro_fecha_registro = self.request.GET.get('created_at')
+        filtro_estado = self.request.GET.get('estado')
         
         contexto_filtro = []
 
@@ -75,11 +77,6 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"medio={filtro_medio}")
 
-        if filtro_estado_cliente:
-            condicion = Q(estado_cliente__icontains = filtro_estado_cliente)
-            clientes_crm = clientes_crm.filter(condicion)
-            contexto_filtro.append(f"estado_cliente={filtro_estado_cliente}")
-
         if filtro_pais:
             condicion = Q(pais = filtro_pais)
             clientes_crm = clientes_crm.filter(condicion)
@@ -89,6 +86,11 @@ class ClienteCRMListView(PermissionRequiredMixin, FormView):
             condicion = Q(created_at = filtro_fecha_registro)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"created_at={filtro_fecha_registro}")
+
+        if filtro_estado:
+            condicion = Q(estado_cliente__icontains = filtro_estado)
+            clientes_crm = clientes_crm.filter(condicion)
+            contexto_filtro.append(f"estado_cliente={filtro_estado}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -120,9 +122,9 @@ def ClienteCRMTabla(request):
 
         filtro_razon_social = request.GET.get('razon_social')
         filtro_medio = request.GET.get('medio')
-        filtro_estado_cliente = request.GET.get('estado_cliente')
         filtro_pais = request.GET.get('pais')
         filtro_fecha_registro = request.GET.get('created_at')
+        filtro_estado = request.GET.get('estado')
 
         contexto_filtro = []
 
@@ -138,11 +140,6 @@ def ClienteCRMTabla(request):
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"medio={filtro_medio}")
 
-        if filtro_estado_cliente:
-            condicion = Q(estado_cliente__icontains = filtro_estado_cliente)
-            clientes_crm = clientes_crm.filter(condicion)
-            contexto_filtro.append(f"estado_cliente={filtro_estado_cliente}")
-
         if filtro_pais:
             condicion = Q(pais = filtro_pais)
             clientes_crm = clientes_crm.filter(condicion)
@@ -152,6 +149,11 @@ def ClienteCRMTabla(request):
             condicion = Q(created_at = filtro_fecha_registro)
             clientes_crm = clientes_crm.filter(condicion)
             contexto_filtro.append(f"created_at={filtro_fecha_registro}")
+
+        if filtro_estado:
+            condicion = Q(estado_cliente__icontains = filtro_estado)
+            clientes_crm = clientes_crm.filter(condicion)
+            contexto_filtro.append(f"estado_cliente={filtro_estado}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -180,11 +182,11 @@ def ClienteCRMTabla(request):
         return JsonResponse(data)
 
 
-class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+class ClienteCRMNacionalCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_clientecrm')
     model = Cliente
-    template_name = "crm/clientes_crm/form_cliente.html"
-    form_class = ClienteForm
+    template_name = "crm/clientes_crm/form.html"
+    form_class = ClienteNacionalForm
     success_url = reverse_lazy('crm_app:cliente_crm_inicio')
     
     def dispatch(self, request, *args, **kwargs):
@@ -193,21 +195,44 @@ class ClienteCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteCRMCreateView, self).get_context_data(**kwargs)
+        context = super(ClienteCRMNacionalCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
-        context['titulo']="Cliente CRM"
+        context['titulo']="Cliente Nacional"
         return context
 
-class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+
+class ClienteCRMExtranjeroCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrm')
+    model = Cliente
+    template_name = "crm/clientes_crm/form.html"
+    form_class = ClienteExtranjeroForm
+    success_url = reverse_lazy('crm_app:cliente_crm_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteCRMExtranjeroCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Cliente Extranjero"
+        return context
+
+
+class ClienteCRMNacionalUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('crm.change_clientecrm')
     model = Cliente
-    template_name = "crm/clientes_crm/form_cliente.html"
-    form_class = ClienteForm
+    template_name = "crm/clientes_crm/form.html"
+    form_class = ClienteNacionalForm
     success_url = reverse_lazy('crm_app:cliente_crm_inicio')
 
     def dispatch(self, request, *args, **kwargs):
@@ -221,10 +246,35 @@ class ClienteCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteCRMUpdateView, self).get_context_data(**kwargs)
+        context = super(ClienteCRMNacionalUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
-        context['titulo'] = "Cliente CRM"
+        context['titulo'] = "Cliente Nacional"
         return context
+
+
+class ClienteCRMExtranjeroUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_clientecrm')
+    model = Cliente
+    template_name = "crm/clientes_crm/form.html"
+    form_class = ClienteExtranjeroForm
+    success_url = reverse_lazy('crm_app:cliente_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteCRMExtranjeroUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Cliente Extranjero"
+        return context
+    
 
 class ClienteCRMDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('crm.view_clientecrmdetalle')
@@ -236,6 +286,7 @@ class ClienteCRMDetailView(PermissionRequiredMixin, DetailView):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(ClienteCRMDetailView, self).get_context_data(**kwargs)
         context['cliente_crm_detalle'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm)
+
         return context
 
 
@@ -265,6 +316,17 @@ class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        lista = []
+        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
+        for relacion in relaciones:
+            lista.append(relacion.interlocutor.id)
+
+        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+        return kwargs
+
     def form_valid(self, form):
         form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
         registro_guardar(form.instance, self.request)
@@ -274,7 +336,7 @@ class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
     def get_context_data(self, **kwargs):
         context = super(ClienteCRMDetalleCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
-        context['titulo']="Información Adicional"
+        context['titulo']="Información de Actividad"
         return context
     
 
@@ -292,6 +354,18 @@ class ClienteCRMDetalleUpdateView(PermissionRequiredMixin,BSModalUpdateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.object.cliente_crm.id})
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        cliente_crm = Cliente.objects.get(id = self.object.cliente_crm.id)
+        lista = []
+        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
+        for relacion in relaciones:
+            lista.append(relacion.interlocutor.id)
+
+        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+
+        return kwargs
+    
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -299,7 +373,7 @@ class ClienteCRMDetalleUpdateView(PermissionRequiredMixin,BSModalUpdateView):
     def get_context_data(self, **kwargs):
         context = super(ClienteCRMDetalleUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="Información Adicional"
+        context['titulo']="Información de Actividad"
         return context
     
 
@@ -319,8 +393,8 @@ class ClienteCRMDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     def get_context_data(self, **kwargs):
         context = super(ClienteCRMDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
-        context['titulo'] = "Información Adicional"
-        context['item'] = self.get_object().comentario
+        context['titulo'] = "Información de Actividad"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
         context['dar_baja'] = "true"
         return context
     
@@ -370,6 +444,57 @@ class ProveedorCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
+    
+
+class ClienteCRMCotizacionesView(DetailView):
+    model = Cliente
+    template_name = "crm/clientes_crm/cotizaciones.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(ClienteCRMCotizacionesView, self).get_context_data(**kwargs)
+        cotizaciones = CotizacionVenta.objects.filter(cliente = cliente_crm)
+        # context['cotizaciones'] = CotizacionVenta.objects.filter(cliente = cliente_crm)
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(cotizaciones) > objectsxpage:
+            paginator = Paginator(cotizaciones, objectsxpage)
+            page_number = self.request.GET.get('page')
+            cotizaciones = paginator.get_page(page_number)
+   
+        context['contexto_cotizaciones'] = cotizaciones
+        context['contexto_pagina'] = cotizaciones
+        context['contexto_filtro'] = '?' 
+
+        return context
+    
+
+class ClienteCRMFacturasView(DetailView):
+    model = Cliente
+    template_name = "crm/clientes_crm/facturas.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(ClienteCRMFacturasView, self).get_context_data(**kwargs)
+        facturas = FacturaVenta.objects.filter(cliente = cliente_crm)
+        # context['facturas'] = FacturaVenta.objects.filter(cliente = cliente_crm)
+
+        objectsxpage =  15 # Show 15 objects per page.
+
+        if len(facturas) > objectsxpage:
+            paginator = Paginator(facturas, objectsxpage)
+            page_number = self.request.GET.get('page')
+            facturas = paginator.get_page(page_number)
+   
+        context['contexto_facturas'] = facturas
+        context['contexto_pagina'] = facturas
+        context['contexto_filtro'] = '?'  
+
+        return context
+       
 
 class EventoCRMListView(FormView):
     template_name = "crm/eventos_crm/inicio.html"
@@ -1861,7 +1986,7 @@ class EncuestaRespuesta(PermissionRequiredMixin, View): #encuesta
 class ClienteCRMDetalleVerView(PermissionRequiredMixin, BSModalReadView):
     permission_required = ('crm.view_clientecrmdetalle')
     model = ClienteCRMDetalle
-    template_name = "crm/clientes_crm/detalle_reporte_visita.html"
+    template_name = "crm/clientes_crm/detalle_reporte_actividad.html"
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1875,5 +2000,7 @@ class ClienteCRMDetalleVerView(PermissionRequiredMixin, BSModalReadView):
         context = super(ClienteCRMDetalleVerView, self).get_context_data(**kwargs)
         detalle_reporte = ClienteCRMDetalle.objects.get(id = self.kwargs['pk'])
         context['contexto_detalle_reporte'] = detalle_reporte
-        context['titulo']="Reporte Visita"
+        context['titulo']=detalle_reporte.get_tipo_actividad_display()
         return context
+    
+

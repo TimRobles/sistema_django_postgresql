@@ -10,6 +10,7 @@ from applications.variables import CONDICION_SUNAT, DICCIONARIO_TIPO_DOCUMENTO_S
 from django.db.models.signals import pre_save, post_save
 
 from applications.variables import ESTADOS_CLIENTE, MEDIO
+import applications
 
 
 class Cliente(models.Model):
@@ -22,7 +23,7 @@ class Cliente(models.Model):
     pais = models.ForeignKey(Pais, on_delete=models.CASCADE, blank=True, null=True)
     ubigeo = models.CharField('Ubigeo', max_length=6, blank=True, null=True)
     distrito = models.ForeignKey('datos_globales.Distrito', on_delete=models.CASCADE, blank=True, null=True)
-    estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT)
+    estado_sunat = models.IntegerField('Estado SUNAT', choices=ESTADO_SUNAT, default=1)
     condicion_sunat = models.IntegerField('Condición SUNAT', choices=CONDICION_SUNAT, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Cliente_created_by', editable=False)
@@ -143,26 +144,26 @@ class Cliente(models.Model):
         except:
             return Decimal('0.00')
         
-    # @property
-    # def descripcion_estado(self):
-    #     if self.HistorialEstadoCliente_cliente.all():
-    #         return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente.descripcion
-    #     else:
-    #         return ""
+    @property
+    def descripcion_estado(self):
+        if self.HistorialEstadoCliente_cliente.all():
+            return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente.descripcion
+        else:
+            return ""
 
     @property
-    def estado_cliente(self):
+    def actual_estado_cliente(self):
         try:
             return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente
         except:
             return None
 
-    # @property
-    # def numero_estado(self):
-    #     if self.HistorialEstadoCliente_cliente.all():
-    #         return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente.numero_estado
-    #     else:
-    #         return ""
+    @property
+    def numero_estado(self):
+        if self.HistorialEstadoCliente_cliente.all():
+            return self.HistorialEstadoCliente_cliente.latest('updated_at').estado_cliente.numero_estado
+        else:
+            return ""
 
     @property
     def ultimo_estado(self):
@@ -171,6 +172,13 @@ class Cliente(models.Model):
         else:
             return ""
 
+    @property
+    def representante(self):
+        return RepresentanteLegalCliente.objects.get(cliente = self.id)
+    
+    @property
+    def nro_factura(self):
+        return applications.comprobante_venta.models.FacturaVenta.objects.filter(cliente = self.id).order_by('-fecha_emision').latest('fecha_emision')
 
     def __str__(self):
         return self.razon_social

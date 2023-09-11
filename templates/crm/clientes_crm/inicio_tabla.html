@@ -3,8 +3,6 @@
         <tr>
             <th>Razón Social</th>
             <th>RUC</th>
-            <th>Representante</th>
-            <th>Tipo Representante</th>
             <th>Medio</th>
             <th>País</th>
             <th class="text-center">Fecha Registro</th>
@@ -16,9 +14,11 @@
         {% for cliente in contexto_pagina %}
         <tr>
             <td>{{ cliente.razon_social }}</td>
-            <td>{{ cliente.numero_documento }}</td>
-            <td>{{ cliente.representante.interlocutor }}</td>
-            <td>{{ cliente.representante.get_tipo_representante_legal_display }}</td>
+            <td>
+                {% if cliente.numero_documento %}
+                {{ cliente.numero_documento }}
+                {% endif %}
+            </td>
             <td>
                 {% if cliente.medio %}
                 {{ cliente.get_medio_display }}
@@ -32,17 +32,28 @@
             <td class="text-center">{{ cliente.created_at|date:'d/m/Y'}}</td>
             <td class="text-center">{{ cliente.get_estado_cliente_display }}</td>
             <td class="text-center text-nowrap">
-                <button data-form-url="{% url 'crm_app:cliente_crm_actualizar' cliente.id %}"
-                    data-table-url="{% url 'crm_app:cliente_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
-                    data-keep-open="true"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
+              
+                {% if cliente.pais.nombre == 'PERÚ' %}
+                    <button data-form-url="{% url 'crm_app:cliente_crm_nacional_actualizar' cliente.id %}"
+                        data-table-url="{% url 'crm_app:cliente_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                {% else %}
+                    <button data-form-url="{% url 'crm_app:cliente_crm_extranjero_actualizar' cliente.id %}"
+                        data-table-url="{% url 'crm_app:cliente_crm_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                {% endif %}
                 <a href="{% url 'crm_app:cliente_crm_detalle' cliente.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
-                <i class="bi bi-eye-fill"></i>
+                    <i class="bi bi-eye-fill"></i>
                 </a>
             </td>
         </tr>

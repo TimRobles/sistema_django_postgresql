@@ -9,10 +9,6 @@
     <table class="table">
         <thead>
             <tr>
-                {% if contexto_detalle_reporte.fecha %}
-                <th class="text-rigth">Fecha</th>
-                {% endif %}
-
                 {% if contexto_detalle_reporte.objetivo %}
                 <th class="text-rigth">Objetivo</th>
                 {% endif %}
@@ -29,14 +25,13 @@
                 <th class="text-rigth">Quejas</th>
                 {% endif %}                        
                 
+                {% if contexto_detalle_reporte.comentario %}
+                <th class="text-rigth">Comentario</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             <tr>
-                {% if contexto_detalle_reporte.fecha %}
-                <td style="min-width: 250px;">{{ contexto_detalle_reporte.fecha|date:'d/m/Y'}}</td>
-                {% endif %}
-
                 {% if contexto_detalle_reporte.objetivo %}
                 <td style="min-width: 250px;">{{ contexto_detalle_reporte.objetivo }}</td>
                 {% endif %}
@@ -52,7 +47,10 @@
                 {% if contexto_detalle_reporte.quejas %}
                 <td style="min-width: 250px;">{{ contexto_detalle_reporte.quejas}}</td>
                 {% endif %}
-            
+
+                {% if contexto_detalle_reporte.comentario %}
+                <td style="min-width: 250px;">{{ contexto_detalle_reporte.comentario}}</td>
+                {% endif %}
             </tr>
         </tbody>
     </table>

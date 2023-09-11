@@ -1,0 +1,69 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<form id="formulario" action="" enctype="multipart/form-data" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {% block arriba %}
+        {% endblock arriba %}
+            
+        {% for field in form %}
+            <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %}
+                >
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if  field.label == "Número de Documento" %}
+                    <button type="button" id="consultar-documento" class="input-group-text bg-success">
+                        Consultar
+                    </button>
+                {% endif %}
+            </div>
+            {% for error in field.errors %}
+                <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+
+        {% block abajo %}
+        {% endblock abajo %}            
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-primary-submit">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+</form>
+
+{% block js %}
+    <script>
+        $(function () {
+            $("#id_distrito").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2,
+                ajax: {
+                    url: "{% url 'datos_globales_app:distrito_json' %}",
+                    dataType: 'json',
+                    type: "GET",
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {id: item.id, text: item.nombre}
+                            })
+                        };
+                    }
+                },
+                minimumInputLength: 3,
+            });
+            });
+    </script>
+
+    <script src="{% static 'js/clientes/cliente/registrar.js' %}?{{ cache_bust }}"></script>
+{% endblock js %}
+
+    

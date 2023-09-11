@@ -22,4 +22,6 @@ urlpatterns = urlSeries + [
     path('cambio-sociedad-stock/detalle-tabla/<pk>/', views.CambioSociedadStockDetailTabla, name='cambio_sociedad_stock_detalle_tabla'),
     path('cambio-sociedad-stock-detalle/registrar/<int:cambio_sociedad_stock_id>/', views.CambioSociedadStockDetalleCreateView.as_view(), name='cambio_sociedad_stock_detalle_registrar'),
     path('cambio-sociedad-stock-detalle/actualizar/<int:cambio_sociedad_stock_id>/<pk>/', views.CambioSociedadStockDetalleUpdateView.as_view(), name='cambio_sociedad_stock_detalle_actualizar'),
+
+    path('cambio-sociedad-stock/generar-orden-compra/<pk>/', views.CambioSociedadGenerarOrdenCompraView.as_view(), name='cambio_sociedad_stock_generar_orden_compra'),
  ]

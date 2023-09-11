@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block titulo %}
+    {{ contexto_cliente_crm}}
+{% endblock titulo %}
+
+{% block contenido %}
+<h3>Facturas
+    <a href="{% url 'crm_app:cliente_crm_detalle' contexto_cliente_crm.id %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+{% include 'includes/paginador.html' %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sociedad</th>
+            <th>Nro. Factura</th>
+            <th>Fecha Emision</th>
+            <th class="text-end">Total</th>
+            <th>Estado</th>
+            <th>Transacción</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for factura_venta in contexto_pagina %}
+        <tr class="{% if factura_venta.estado == 3 %}text-danger text-decoration-line-through{% endif %}">
+            <td class="fondo-personalizado" style="--color-fondo: {{ factura_venta.sociedad.color }};">{{ factura_venta.sociedad.abreviatura }}</td>
+            <td class="text-nowrap">{{ factura_venta.serie_comprobante.serie }}-{{ factura_venta.numero_factura|numeroXn:6 }}</td>
+            <td>{{ factura_venta.fecha_emision|date:'d/m/Y' }}</td>
+            <td class="text-end text-nowrap">{{ factura_venta.moneda.simbolo }} {{ factura_venta.total|redondear|intcomma }}</td>
+            <td>{{ factura_venta.get_estado_display }}</td>
+            <td>{{ factura_venta.confirmacion.get_sunat_transaction_display }}</td>
+            <td class="text-center text-nowrap">
+                <a href="{% url 'comprobante_venta_app:factura_venta_detalle' factura_venta.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% include 'includes/paginador inferior.html' %}
+{% endblock contenido %}

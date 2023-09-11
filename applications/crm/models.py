@@ -4,7 +4,7 @@ from django.conf import settings
 from applications.rutas import CLIENTE_CRM_ARCHIVO_ENVIADO, CLIENTE_CRM_ARCHIVO_RECIBIDO
 from applications.comprobante_venta.models import FacturaVenta
 from applications.proveedores.models import Proveedor
-from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
+from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ACTIVIDAD, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
 from applications.clientes.models import Cliente, RepresentanteLegalCliente, CorreoInterlocutorCliente, InterlocutorCliente, TelefonoInterlocutorCliente
 from applications.sorteo.models import Sorteo
 from applications.datos_globales.models import Pais, Unidad
@@ -44,13 +44,17 @@ from .managers import RespuestaDetalleCRMManager
 
 class ClienteCRMDetalle(models.Model):
 
+    tipo_actividad = models.IntegerField('Tipo de Actividad', choices=TIPO_ACTIVIDAD)
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ClienteCRMDetalle_interlocutor', blank=True, null=True)  
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False, blank=True, null=True)
+    hora_inicio = models.TimeField('Hora Inicio', auto_now=False, auto_now_add=False, blank=True, null=True)
+    hora_fin = models.TimeField('Hora Fin', auto_now=False, auto_now_add=False, blank=True, null=True)
+    direccion = models.CharField('Dirección', max_length=100, blank=True, null=True)
     objetivo = models.TextField('Objetivo', blank=True, null=True)
     compromiso = models.TextField('Compromiso', blank=True, null=True)
     mejoras = models.TextField('Mejoras', blank=True, null=True)
     quejas = models.TextField('Quejas', blank=True, null=True)
     comentario = models.TextField('Comentario', blank=True, null=True)
-    monto = models.DecimalField('Monto', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     archivo_recibido = models.ImageField('Archivo Recibido', upload_to=CLIENTE_CRM_ARCHIVO_RECIBIDO, max_length=100, blank=True, null=True)
     archivo_enviado = models.ImageField('Archivo Enviado', upload_to=CLIENTE_CRM_ARCHIVO_ENVIADO, max_length=100, blank=True, null=True)
     cliente_crm =  models.ForeignKey(Cliente, on_delete=models.CASCADE)
@@ -61,8 +65,8 @@ class ClienteCRMDetalle(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRMDetalle_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'Cliente CRM Detalle '
-        verbose_name_plural = 'Clientes CRM Detalle '
+        verbose_name = 'Cliente CRM Detalle'
+        verbose_name_plural = 'Clientes CRM Detalle'
 
     def __str__(self):
         return str(self.cliente_crm)
@@ -157,7 +161,7 @@ class EventoCRMDetalle(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EventoCRMDetalle_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'Evento CRM Detalle '
+        verbose_name = 'Evento CRM Detalle'
         verbose_name_plural = 'Eventos CRM Detalle'
         ordering = [
             'evento_crm',

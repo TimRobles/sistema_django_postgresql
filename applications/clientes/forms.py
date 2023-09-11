@@ -1,7 +1,7 @@
 from datetime import date
 from django import forms
 from applications.datos_globales.models import Distrito, Pais
-from applications.variables import TIPO_DOCUMENTO_CHOICES, TIPO_REPRESENTANTE_LEGAL_SUNAT
+from applications.variables import TIPO_DOCUMENTO_CHOICES, TIPO_DOCUMENTO_SUNAT_EXTRANJERO, TIPO_DOCUMENTO_SUNAT_NACIONAL, TIPO_REPRESENTANTE_LEGAL_SUNAT
 from applications import datos_globales
 from .models import (
     Cliente,
@@ -17,7 +17,7 @@ from .models import (
 
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
-class ClienteForm(BSModalModelForm):
+class ClienteNacionalForm(BSModalModelForm):
     class Meta:
         model = Cliente
         fields = (
@@ -25,7 +25,6 @@ class ClienteForm(BSModalModelForm):
             'numero_documento',
             'razon_social',
             'nombre_comercial',
-            'pais',
             'direccion_fiscal',
             'distrito',
             'ubigeo',
@@ -40,16 +39,16 @@ class ClienteForm(BSModalModelForm):
         return direccion_fiscal
 
     def __init__(self, *args, **kwargs):
-        super(ClienteForm, self).__init__(*args, **kwargs)
+        super(ClienteNacionalForm, self).__init__(*args, **kwargs)
         try:
             distrito = kwargs['instance'].distrito
             self.fields['distrito'].queryset = Distrito.objects.filter(codigo = distrito.codigo)
             self.fields['distrito'].initial = distrito
         except:
             self.fields['distrito'].queryset = Distrito.objects.none()
+        self.fields['tipo_documento'].choices = ((None, '--------------'),) + TIPO_DOCUMENTO_SUNAT_NACIONAL
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-        self.fields['pais'].required = True
 
     def clean_tipo_documento(self):
         tipo_documento = self.cleaned_data.get('tipo_documento')
@@ -71,6 +70,49 @@ class ClienteForm(BSModalModelForm):
                 self.add_error('ubigeo', 'Usar un ubigeo válido')
     
         return ubigeo
+
+    def clean(self):
+        cleaned_data = super().clean()
+        numero_documento = cleaned_data.get('numero_documento')
+        filtro = Cliente.objects.filter(numero_documento__unaccent__iexact = numero_documento).exclude(numero_documento=None).exclude(numero_documento="")
+        if numero_documento != self.instance.numero_documento:
+            if len(filtro)>0:
+                self.add_error('numero_documento', 'Ya existe un Cliente con este Número de documento')
+
+
+class ClienteExtranjeroForm(BSModalModelForm):
+    class Meta:
+        model = Cliente
+        fields = (
+            'tipo_documento',
+            'numero_documento',
+            'razon_social',
+            'nombre_comercial',
+            'pais',
+            'direccion_fiscal',
+            'medio',
+            )
+        
+    def clean_direccion_fiscal(self):
+        direccion_fiscal = self.cleaned_data.get('direccion_fiscal')
+        return direccion_fiscal
+
+    def __init__(self, *args, **kwargs):
+        super(ClienteExtranjeroForm, self).__init__(*args, **kwargs)
+        self.fields['tipo_documento'].choices = ((None, '--------------'),) + TIPO_DOCUMENTO_SUNAT_EXTRANJERO
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['pais'].queryset = Pais.objects.all().exclude(id = 1)
+        self.fields['pais'].required = True
+
+    def clean_tipo_documento(self):
+        tipo_documento = self.cleaned_data.get('tipo_documento')
+        if tipo_documento == '-' or tipo_documento == '0' or tipo_documento == '4':
+            self.fields['numero_documento'].required = False
+        else:
+            self.fields['numero_documento'].required = True
+    
+        return tipo_documento
 
     def clean(self):
         cleaned_data = super().clean()
