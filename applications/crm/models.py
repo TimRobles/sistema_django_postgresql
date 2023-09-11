@@ -112,9 +112,9 @@ def actualizar_estado_cliente_crm(id_cliente=None):
             if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
                 filtro = False
                 estado_cliente = 3
-            # if len(tarea.models.Tarea.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
-            #     filtro = False
-            #     estado_cliente = 2
+            if len(tarea.models.Tarea.objects.filter(content_type=ContentType.objects.get_for_model(Cliente), id_registro = cliente.id, estado__gte=2)) > 0:
+                filtro = False
+                estado_cliente = 2
             if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
                 filtro = False
                 estado_cliente = 4

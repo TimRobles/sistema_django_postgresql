@@ -4,6 +4,8 @@ from applications.datos_globales.models import Area
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from applications.variables import ESTADO_TAREA, PRIORIDAD_TAREA
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+import applications
 
 class TipoTarea(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -54,6 +56,16 @@ class Tarea(models.Model):
     def __str__(self):
         return str(self.descripcion)
 
+def tarea_post_save(*args, **kwargs):
+    print('tarea_post_save')
+    obj = kwargs['instance']
+    applications.crm.models.actualizar_estado_cliente_crm(obj.id_registro)
+
+def tarea_pre_save(*args, **kwargs):
+    print('tarea_pre_save')
+
+post_save.connect(tarea_post_save, sender=Tarea)
+pre_save.connect(tarea_pre_save, sender=Tarea)
 
 class HistorialComentarioTarea(models.Model):
     tarea = models.ForeignKey(Tarea, on_delete=models.PROTECT, related_name='Tarea',blank=True, null=True)
