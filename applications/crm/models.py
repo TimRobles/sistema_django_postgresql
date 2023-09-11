@@ -91,10 +91,11 @@ class ProveedorCRM(models.Model):
 from applications import cotizacion, comprobante_venta, cobranza
 
 def actualizar_estado_cliente_crm(id_cliente=None):
+    print('actualizar_estado_cliente_crm')
     if id_cliente:
-        clientes = Cliente.objects.all()
+        clientes = Cliente.objects.filter(id=id_cliente)
     else:
-        return False
+        clientes = Cliente.objects.all()
 
     for cliente in clientes:
         if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10)) > 0:

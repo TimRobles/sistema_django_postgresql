@@ -9,6 +9,19 @@ def retornar_fecha(movimiento):
     fecha = movimiento.content_type_documento_proceso.model_class().objects.get(id=movimiento.id_registro_documento_proceso).fecha
     return fecha
 
+def ordenar_movimientos(consulta, movimientos_fuera=[]):
+    total = 0
+    lista = []
+    for dato in consulta:
+        lista.append(dato)
+        if not dato.tipo_stock.codigo in movimientos_fuera:
+            total += dato.cantidad * dato.signo_factor_multiplicador
+
+    lista.sort(key=retornar_signo)
+    lista.sort(key=retornar_fecha)
+
+    return lista, total
+
 class MovimientoAlmacenManager(models.Manager):
     def buscar_movimiento(self, obj, content_type):
         consulta = self.filter(
@@ -23,15 +36,7 @@ class MovimientoAlmacenManager(models.Manager):
             content_type_producto = content_type,
             id_registro_producto = id_registro,
         )
-        total = 0
-        lista = []
-        for dato in consulta:
-            lista.append(dato)
-            if not dato.tipo_stock.codigo in movimientos_fuera:
-                total += dato.cantidad * dato.signo_factor_multiplicador
-
-        lista.sort(key=retornar_signo)
-        lista.sort(key=retornar_fecha)
+        lista, total = ordenar_movimientos(consulta, movimientos_fuera)
         
         return lista, total
 

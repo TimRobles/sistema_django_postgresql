@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Envío Traslado Producto Validar Series
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>
+        <a href="{% url 'logistica_app:devolucion_prestamo_detalle' contexto_devolucion_materiales_detalle.devolucion_materiales.id %}"><span class="badge bg-primary">Regresar</span></a>   
+    </h3>
+    <br>
+    <form action="" method="post" autocomplete="off">
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+                <div class="col-lg-4">
+                    <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                    {% if field.help_text %}
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                    {% endif %}
+                    >
+                    <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    
+                    {% if field.label == 'Cantidad Ingresada' %}
+                    <span style="
+                    {% if contexto_devolucion_materiales_detalle.series_validar != contexto_devolucion_materiales_detalle.cantidad_devolucion %}
+                    --color-fondo:red;
+                    {% else %}
+                    --color-fondo:green;
+                    {% endif %}
+                    ">
+                    {{ field }}
+                    </span>
+                    {% else %}
+                    {{ field }}
+                    {% endif %}
+                    </div>
+                    {% for error in field.errors %}
+                        <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+            {% endfor %}
+            <div class="col-lg-4 my-auto">
+                {% if contexto_devolucion_materiales_detalle.devolucion_materiales.estado == 1 %}
+                <button type="submit" class="btn btn-success" title="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% endif %}
+                <a class="btn btn-success" href="{% url 'logistica_app:validar_series_devolucion_prestamo_detalle' contexto_devolucion_materiales_detalle.id %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+    <br>
+    <button data-form-url="{% url 'material_app:series' contexto_devolucion_materiales_detalle.producto.id %}"
+        class="read btn btn-primary">
+        Ver series
+    </button>
+    <div id="tabla">
+        {% include 'logistica/devolucion_materiales/validar_serie_devolucion_materiales/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
+
+
+{% block extrajs %}
+<script>
+    window.onload = function(){
+        setTimeout(() => {
+            document.getElementById("id_serie").focus();
+        }, 500);
+    }
+</script>    
+{% endblock extrajs %}
+    

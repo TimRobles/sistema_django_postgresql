@@ -26,7 +26,7 @@ urlNotaSalida = [
     path('nota-salida-detalle/generar-despacho/<pk>/', views.NotaSalidaGenerarDespachoView.as_view(), name='nota_salida_generar_despacho'),
     
     path('almacen/<str:id_sede>/', views.AlmacenView, name='almacen'),
-    path('series/pdf/<pk>/', views.NotaSalidaSeriesPdf.as_view(), name='series_pdf'),
+    path('nota-salida-series/pdf/<pk>/', views.NotaSalidaSeriesPdf.as_view(), name='nota_salida_series_pdf'),
 ]
 
 urlDespacho = [
@@ -70,6 +70,20 @@ urlAjusteInventarioMateriales = [
     path('ajuste-inventario-materiales/detalle/eliminar/<pk>/', views.AjusteInventarioMaterialesDetalleDeleteView.as_view(), name='ajuste_inventario_materiales_detalle_eliminar'),
 ]
 
+urlDevolucionPrestamo = [
+    path('devolucion-prestamo/actualizar/<pk>', views.DevolucionPrestamoMaterialesUpdateView.as_view(), name='devolucion_prestamo_actualizar'),
+    path('devolucion-prestamo/concluir/<pk>/', views.DevolucionPrestamoMaterialesConcluirView.as_view(), name='devolucion_prestamo_concluir'),
+    path('devolucion-prestamo/detalle/<pk>/', views.DevolucionPrestamoMaterialesDetailView.as_view(), name='devolucion_prestamo_detalle'),
+    path('devolucion-prestamo/detalle-tabla/<pk>/', views.DevolucionPrestamoMaterialesDetailTabla, name='devolucion_prestamo_detalle_tabla'),
+    path('devolucion-prestamo/detalle/actualizar/<pk>', views.DevolucionPrestamoMaterialesDetalleUpdateView.as_view(), name='devolucion_prestamo_detalle_actualizar'),
+    path('devolucion-prestamo-series/pdf/<pk>/', views.DevolucionPrestamoMaterialesSeriesPdf.as_view(), name='devolucion_prestamo_series_pdf'),
+
+    path('validar-series/devolucion-prestamo/detalle/<pk>/', views.ValidarSeriesDevolucionPrestamoMaterialesDetailView.as_view(), name='validar_series_devolucion_prestamo_detalle'),
+    path('validar-series/devolucion-prestamo/detalle-tabla/<pk>/', views.ValidarSeriesDevolucionPrestamoMaterialesDetailTabla, name='validar_series_devolucion_prestamo_detalle_tabla'),
+    path('validar-series/devolucion-prestamo/detalle-eliminar/<pk>/', views.ValidarSeriesDevolucionPrestamoMaterialesDetalleDeleteView.as_view(), name='validar_series_devolucion_prestamo_detalle_eliminar'),
+
+]
+
 urlpatterns = [
     path('solicitud-prestamo-materiales/', views.SolicitudPrestamoMaterialesListView.as_view(), name='solicitud_prestamo_materiales_inicio'),
     path('solicitud-prestamo-materiales-tabla/', views.SolicitudPrestamoMaterialesTabla, name='solicitud_prestamo_materiales_tabla'),
@@ -87,4 +101,5 @@ urlpatterns = [
     path('solicitud-prestamo-materiales-detalle/archivo/agregar/<int:solicitud_prestamo_materiales_id>/', views.DocumentoSolicitudPrestamoMaterialesCreateView.as_view(), name='solicitud_prestamo_materiales_documento_agregar'),
     path('solicitud-prestamo-materiales-detalle/archivo/eliminar/<pk>/', views.DocumentoSolicitudPrestamoMaterialesDeleteView.as_view(), name='solicitud_prestamo_materiales_documento_eliminar'),
     path('solicitud-prestamo-materiales-detalle/generar-nota-salida/<pk>/', views.SolicitudPrestamoMaterialesGenerarNotaSalidaView.as_view(), name='solicitud_prestamo__materiales_generar_nota_salida'),
-] + urlSeries + urlNotaSalida + urlDespacho + urlInventarioMateriales + urlAjusteInventarioMateriales
+    path('solicitud-prestamo-materiales-detalle/generar-devolucion-prestamo/<pk>/', views.SolicitudPrestamoMaterialesGenerarDevolucionPrestamoMaterialesView.as_view(), name='solicitud_prestamo__materiales_generar_devolucion_prestamo'),
+] + urlSeries + urlNotaSalida + urlDespacho + urlInventarioMateriales + urlAjusteInventarioMateriales + urlDevolucionPrestamo

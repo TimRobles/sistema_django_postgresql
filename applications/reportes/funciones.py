@@ -14,12 +14,6 @@ for fila in query_content_type:
     c_type = str(fila.app_label)+' | '+str(fila.model)
     DICT_CONTENT_TYPE[c_type] = fila.id
 
-DICT_CLIENTE = {}
-query_cliente = Cliente.objects.all()
-# for dato in query_cliente:
-#     c_id = str(dato.id)
-#     DICT_CLIENTE[c_id] = dato.razon_social
-
 DICT_SOCIEDAD = {}
 query_sociedad = Sociedad.objects.all()
 for dato in query_sociedad:

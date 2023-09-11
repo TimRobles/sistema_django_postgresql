@@ -91,6 +91,15 @@ class CotizacionVenta(models.Model):
         return sociedades
 
     @property
+    def sociedades_objeto(self):
+        sociedades = []
+        for detalle in self.CotizacionVentaDetalle_cotizacion_venta.all():
+            for cotizacion_sociedad in detalle.CotizacionSociedad_cotizacion_venta_detalle.all():
+                if not cotizacion_sociedad.sociedad in sociedades:
+                    sociedades.append(cotizacion_sociedad.sociedad.id)
+        return Sociedad.objects.filter(id__in=sociedades)
+
+    @property
     def internacional_nacional(self):
         return 2
     
@@ -206,27 +215,58 @@ class CotizacionVentaDetalle(models.Model):
     def __str__(self):
         return str(self.id)
 
-def cotizacion_venta_detalle_post_save(*args, **kwargs):
+def cotizacion_venta_detalle_pre_save(*args, **kwargs):
+    print('cotizacion_venta_detalle_pre_save')
+    print(kwargs)
     obj = kwargs['instance']
-    respuesta = obtener_totales(obj.cotizacion_venta)
-    obj.cotizacion_venta.total_descuento = respuesta['total_descuento']
-    obj.cotizacion_venta.total_anticipo = respuesta['total_anticipo']
-    obj.cotizacion_venta.total_gravada = respuesta['total_gravada']
-    obj.cotizacion_venta.total_inafecta = respuesta['total_inafecta']
-    obj.cotizacion_venta.total_exonerada = respuesta['total_exonerada']
-    obj.cotizacion_venta.total_igv = respuesta['total_igv']
-    obj.cotizacion_venta.total_gratuita = respuesta['total_gratuita']
-    obj.cotizacion_venta.total = respuesta['total']
-    obj.cotizacion_venta.save()
+    print(obj.cantidad)
+    print(obj.precio_final_con_igv)
+    if 'created' in kwargs:
+        if not kwargs['created']:
+            try:
+                antes = CotizacionVentaDetalle.objects.get(id=obj.id)
+            except:
+                return
+            print(antes.cantidad)
+            print(antes.precio_final_con_igv)
+            if obj.cantidad != antes.cantidad or obj.precio_final_con_igv != antes.precio_final_con_igv:
+                respuesta = obtener_totales(obj.cotizacion_venta)
+                obj.cotizacion_venta.total_descuento = respuesta['total_descuento']
+                obj.cotizacion_venta.total_anticipo = respuesta['total_anticipo']
+                obj.cotizacion_venta.total_gravada = respuesta['total_gravada']
+                obj.cotizacion_venta.total_inafecta = respuesta['total_inafecta']
+                obj.cotizacion_venta.total_exonerada = respuesta['total_exonerada']
+                obj.cotizacion_venta.total_igv = respuesta['total_igv']
+                obj.cotizacion_venta.total_gratuita = respuesta['total_gratuita']
+                obj.cotizacion_venta.total = respuesta['total']
+                obj.cotizacion_venta.save()
+
+def cotizacion_venta_detalle_post_save(*args, **kwargs):
+    print('cotizacion_venta_detalle_post_save')
+    print(kwargs)
+    obj = kwargs['instance']
+    if kwargs['created']:
+        respuesta = obtener_totales(obj.cotizacion_venta)
+        obj.cotizacion_venta.total_descuento = respuesta['total_descuento']
+        obj.cotizacion_venta.total_anticipo = respuesta['total_anticipo']
+        obj.cotizacion_venta.total_gravada = respuesta['total_gravada']
+        obj.cotizacion_venta.total_inafecta = respuesta['total_inafecta']
+        obj.cotizacion_venta.total_exonerada = respuesta['total_exonerada']
+        obj.cotizacion_venta.total_igv = respuesta['total_igv']
+        obj.cotizacion_venta.total_gratuita = respuesta['total_gratuita']
+        obj.cotizacion_venta.total = respuesta['total']
+        obj.cotizacion_venta.save()
 
 def cotizacion_venta_material_detalle_post_delete(sender, instance, *args, **kwargs):
     materiales = CotizacionVentaDetalle.objects.filter(cotizacion_venta=instance.cotizacion_venta)
     contador = 1
     for material in materiales:
-        material.item = contador
-        material.save()
+        if material.item != contador:
+            material.item = contador
+            material.save()
         contador += 1
 
+pre_save.connect(cotizacion_venta_detalle_pre_save, sender=CotizacionVentaDetalle)
 post_save.connect(cotizacion_venta_detalle_post_save, sender=CotizacionVentaDetalle)
 post_delete.connect(cotizacion_venta_material_detalle_post_delete, sender=CotizacionVentaDetalle)
 
@@ -510,6 +550,7 @@ class CotizacionSociedad(models.Model):
         verbose_name = 'Cotizacion Sociedad'
         verbose_name_plural = 'Cotizacion Sociedades'
         ordering = [
+            'sociedad__estado_sunat',
             'sociedad__id',
         ]
     

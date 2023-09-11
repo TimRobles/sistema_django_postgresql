@@ -307,7 +307,7 @@ class OrdenCompraPdfView(View):
         orden = obj
         proveedor = obj.proveedor
         interlocutor = obj.interlocutor
-        usuario = request.user
+        usuario = obj.updated_by
 
         TablaEncabezado = ['Item',
                             'Material',

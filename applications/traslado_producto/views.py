@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django import forms
-from applications.calidad.models import Serie
+from applications.calidad.models import HistorialEstadoSerie, Serie
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.datos_globales.models import SeriesComprobante, Unidad
 from applications.funciones import numeroXn, registrar_excepcion
 from applications.importaciones import *
-from applications.logistica.pdf import generarSeries
+from applications.logistica.pdf import generarSeriesNotaSalida
 from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
@@ -29,6 +29,7 @@ from .forms import (
     EnvioTrasladoProductoMaterialDetalleForm,
     EnvioTrasladoProductoObservacionesForm,
     EnvioTrasladoProductoMaterialActualizarDetalleForm,
+    HistorialSeriesTraspasoStockCreateForm,
     MotivoTrasladoForm,
     RecepcionTrasladoProductoActualizarForm,
     RecepcionTrasladoProductoForm,
@@ -162,7 +163,7 @@ class EnvioTrasladoProductoSeriesPdf(View):
         TablaDatos.append(obj.motivo_traslado)
         TablaDatos.append(obj.observaciones)
 
-        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
@@ -1289,7 +1290,9 @@ class TraspasoStockCreateView(PermissionRequiredMixin, BSModalCreateView):
     model = TraspasoStock
     template_name = "traslado_producto/traspaso_stock/form_actualizar.html"
     form_class = TraspasoStockForm
-    success_url = reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
+    
+    def get_success_url(self) -> str:
+        return reverse_lazy('traslado_producto_app:traspaso_stock_inicio')
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -1688,7 +1691,7 @@ class ValidarSeriesTraspasoStockSeriesPdf(View):
         TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
         TablaDatos.append(obj.encargado)
         
-        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
@@ -1716,3 +1719,82 @@ class ValidarSeriesTraspasoStockDetalleDeleteView(PermissionRequiredMixin, BSMod
         context['item'] = self.get_object().serie
         context['dar_baja'] = "true"
         return context
+
+
+####################################################
+
+class HistorialSeriesTraspasoStockDetailView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('traslado_producto.view_traspasostockdetalle')
+    template_name = "traslado_producto/historial_serie_traspaso_stock/detalle.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        traspaso_stock_detalle = TraspasoStockDetalle.objects.get(id = self.kwargs['pk'])
+        context = super(HistorialSeriesTraspasoStockDetailView, self).get_context_data(**kwargs)
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(traspaso_stock_detalle.traspaso_stock, ContentType.objects.get_for_model(TraspasoStock))
+        series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        context['contexto_traspaso_stock_detalle'] = traspaso_stock_detalle
+        context['contexto_series'] = series_unicas
+        return context
+
+def HistorialSeriesTraspasoStockDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'traslado_producto/historial_serie_traspaso_stock/detalle_tabla.html'
+        context = {}
+        traspaso_stock_detalle = TraspasoStockDetalle.objects.get(id = pk)
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(traspaso_stock_detalle.traspaso_stock, ContentType.objects.get_for_model(TraspasoStock))
+        series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        context['contexto_traspaso_stock_detalle'] = traspaso_stock_detalle
+        context['contexto_series'] = series_unicas
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class HistorialSeriesTraspasoStockCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('calidad.change_reparacionmaterialdetalle')
+    model = HistorialEstadoSerie
+    template_name = "includes/formulario generico.html"
+    form_class = HistorialSeriesTraspasoStockCreateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('traslado_producto_app:historial_series_traspaso_stock_detalle', kwargs={'pk':self.kwargs['id_historial_detalle']})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        self.serie = Serie.objects.get(id=self.kwargs['id_serie'])
+        kwargs = super(HistorialSeriesTraspasoStockCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['subfamilia'] = self.serie.producto.subfamilia
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(HistorialSeriesTraspasoStockCreateView, self).get_context_data(**kwargs)
+        self.serie = Serie.objects.get(id=self.kwargs['id_serie'])
+        context['accion'] = "Actualizar"
+        context['titulo'] = f"Validar Serie Detalle Reparación de Material - {self.serie}"
+        return context
+
+    def form_valid(self, form):
+        form.instance.serie = self.serie
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Traspaso Stock Historial Series
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>
+        <a href="{% url 'traslado_producto_app:traspaso_stock_detalle' contexto_traspaso_stock_detalle.traspaso_stock.id %}"><span class="badge bg-primary">Regresar</span></a>   
+    </h3>
+    <div id="tabla">
+        {% include 'traslado_producto/historial_serie_traspaso_stock/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

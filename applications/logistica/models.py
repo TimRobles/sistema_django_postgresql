@@ -25,6 +25,7 @@ class SolicitudPrestamoMateriales(models.Model):
         (3, 'CONFIRMADO'),
         (4, 'ANULADO'),
         (5, 'CONCLUIDO'),
+        (6, 'DEVUELTO'),
     )
     numero_prestamo = models.IntegerField('Número Prestamo', blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
@@ -191,6 +192,10 @@ class DevolucionPrestamoMateriales(models.Model):
     def fecha(self):
         return self.fecha_devolucion
 
+    @property
+    def detalles(self):
+        return self.DevolucionPrestamoMaterialesDetalle_devolucion_materiales.all()
+
     def __str__(self):
         return "%s - %s" % (numeroXn(self.numero_devolucion, 6), self.cliente)
 
@@ -199,6 +204,7 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE) #Material
     id_registro = models.IntegerField(blank=True, null=True)
     cantidad_devolucion = models.DecimalField('Cantidad Devuelta', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
     observacion = models.TextField(blank=True, null=True)
     devolucion_materiales = models.ForeignKey(DevolucionPrestamoMateriales, blank=True, null=True, on_delete=models.CASCADE, related_name='DevolucionPrestamoMaterialesDetalle_devolucion_materiales')
 
@@ -225,19 +231,19 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
         return notas_salida_detalle
 
     @property
+    def cantidad(self):
+        return self.cantidad_devolucion
+
+    @property
     def producto(self):
         return self.content_type.get_object_for_this_type(id=self.id_registro)
 
     @property
-    def cantidad_salida(self):
-        total = Decimal('0.00')
+    def cantidad_series(self):
         try:
-            for detalle in self.NotaSalidaDetalle_devolucion_materiales_detalle.exclude(nota_salida__estado=3):
-                if detalle.producto == self.producto:
-                    total += detalle.cantidad_salida
+            return len(self.ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle.all())
         except:
-            pass
-        return total
+            return Decimal('0.00')
 
     @property
     def pendiente(self):
@@ -247,8 +253,33 @@ class DevolucionPrestamoMaterialesDetalle(models.Model):
     def unidad(self):
         return self.producto.unidad_base
 
+    @property
+    def sociedad(self):
+        return self.devolucion_materiales.sociedad
+
     def __str__(self):
         return "%s - %s" % (self.item, self.producto)
+
+
+class ValidarSerieDevolucionPrestamoMaterialesDetalle(models.Model):
+    devolucion_materiales_detalle = models.ForeignKey(DevolucionPrestamoMaterialesDetalle, on_delete=models.CASCADE, related_name='ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle')
+    serie = models.ForeignKey(Serie, on_delete=models.CASCADE, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieDevolucionPrestamoMaterialesDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ValidarSerieDevolucionPrestamoMaterialesDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Validar Series Devoluciones Prestamo Materiales Detalle'
+        verbose_name_plural = 'Validar Series Devoluciones Prestamo Materiales Detalle'
+        ordering = [
+            'created_at',
+            ]
+
+    def __str__(self):
+        return "%s - %s" % (self.devolucion_materiales_detalle , str(self.serie))
+
 
 # from applications.logistica.models import NotaSalida, NotaSalidaDocumento
 # from django.contrib.contenttypes.models import ContentType
@@ -417,7 +448,7 @@ class NotaSalida(models.Model):
         return guias
 
     def __str__(self):
-        return "%s" % (numeroXn(self.numero_salida, 6))
+        return "%s - %s" % (numeroXn(self.numero_salida, 6), self.cliente)
 
 
 # from applications.logistica.models import NotaSalidaDetalle, SolicitudPrestamoMaterialesDetalle

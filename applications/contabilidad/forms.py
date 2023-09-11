@@ -551,6 +551,7 @@ class ChequeFisicoForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+        self.fields['banco'].required = False
 
 
 class ChequeFisicoCobrarForm(BSModalModelForm):

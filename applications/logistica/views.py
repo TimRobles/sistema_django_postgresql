@@ -5,14 +5,14 @@ from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaD
 from applications.importaciones import *
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.calidad.models import EstadoSerie, HistorialEstadoSerie, Serie
-from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DespachoDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalidaDocumento, \
-    SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieNotaSalidaDetalle
-from applications.logistica.forms import AjusteInventarioMaterialesDetalleForm, AjusteInventarioMaterialesForm, DespachoAnularForm, DespachoBuscarForm, DespachoForm, DocumentoPrestamoMaterialesForm, ImagenesDespachoForm, InventarioMaterialesForm, InventarioMaterialesDetalleForm, InventarioMaterialesUpdateForm, \
+from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DespachoDetalle, DevolucionPrestamoMateriales, DevolucionPrestamoMaterialesDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalidaDocumento, \
+    SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle, NotaSalida, NotaSalidaDetalle, ValidarSerieDevolucionPrestamoMaterialesDetalle, ValidarSerieNotaSalidaDetalle
+from applications.logistica.forms import AjusteInventarioMaterialesDetalleForm, AjusteInventarioMaterialesForm, DespachoAnularForm, DespachoBuscarForm, DespachoForm, DevolucionPrestamoMaterialesDetalleForm, DevolucionPrestamoMaterialesDetalleSeriesForm, DevolucionPrestamoMaterialesForm, DocumentoPrestamoMaterialesForm, ImagenesDespachoForm, InventarioMaterialesForm, InventarioMaterialesDetalleForm, InventarioMaterialesUpdateForm, \
     NotaSalidaAnularForm, NotaSalidaBuscarForm, NotaSalidaDetalleForm, NotaSalidaDetalleSeriesForm, NotaSalidaDetalleUpdateForm, SolicitudPrestamoMaterialesDetalleForm, \
     SolicitudPrestamoMaterialesDetalleUpdateForm, SolicitudPrestamoMaterialesForm, NotaSalidaForm, \
     SolicitudPrestamoMaterialesAnularForm
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
-from applications.logistica.pdf import generarSeries, generarSolicitudPrestamoMateriales
+from applications.logistica.pdf import generarSeriesDevolucion, generarSeriesNotaSalida, generarSolicitudPrestamoMateriales
 from applications.funciones import fecha_en_letras, numeroXn, registrar_excepcion
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import SeriesComprobante
@@ -249,6 +249,10 @@ class SolicitudPrestamoMaterialesDetailView(PermissionRequiredMixin, DetailView)
 
         context['materiales'] = materiales
         context['documentos'] = DocumentoPrestamoMateriales.objects.filter(solicitud_prestamo_materiales=obj)
+        try:
+            context['devolucion'] = DevolucionPrestamoMateriales.objects.get(solicitud_prestamo=obj)
+        except:
+            pass
         return context
 
 
@@ -270,6 +274,10 @@ def SolicitudPrestamoMaterialesDetailTabla(request, pk):
         context['contexto_solicitud_prestamo_materiales_detalle'] = obj
         context['materiales'] = materiales
         context['documentos'] = DocumentoPrestamoMateriales.objects.filter(solicitud_prestamo_materiales=obj)
+        try:
+            context['devolucion'] = DevolucionPrestamoMateriales.objects.get(solicitud_prestamo=obj)
+        except:
+            pass
 
         data['table'] = render_to_string(
             template,
@@ -576,6 +584,7 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super(NotaSalidaListView, self).get_form_kwargs()
+        kwargs['filtro_numero_salida'] = self.request.GET.get('numero_salida')
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_cliente'] = self.request.GET.get('cliente')
         kwargs['filtro_estado'] = self.request.GET.get('estado')
@@ -608,11 +617,17 @@ class NotaSalidaListView(PermissionRequiredMixin, FormView):
                 id__in=lista_nota_salida,
             )
 
+        filtro_numero_salida = self.request.GET.get('numero_salida')
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_cliente = self.request.GET.get('cliente')
         filtro_estado = self.request.GET.get('estado')
         
         contexto_filtro = []
+
+        if filtro_numero_salida:
+            condicion = Q(numero_salida = filtro_numero_salida)
+            nota_salida = nota_salida.filter(condicion)
+            contexto_filtro.append(f"numero_salida={filtro_numero_salida}")
 
         if filtro_sociedad:
             lista_notas = []
@@ -687,11 +702,17 @@ def NotaSalidaTabla(request, **kwargs):
                 id__in=lista_nota_salida,
             )
 
+        filtro_numero_salida = request.GET.get('numero_salida')
         filtro_sociedad = request.GET.get('sociedad')
         filtro_cliente = request.GET.get('cliente')
         filtro_estado = request.GET.get('estado')
         
         contexto_filtro = []
+
+        if filtro_numero_salida:
+            condicion = Q(numero_salida = filtro_numero_salida)
+            nota_salida = nota_salida.filter(condicion)
+            contexto_filtro.append(f"numero_salida={filtro_numero_salida}")
 
         if filtro_sociedad:
             lista_notas = []
@@ -2028,7 +2049,7 @@ class NotaSalidaSeriesPdf(View):
         TablaDatos.append(obj.cliente.razon_social)
         TablaDatos.append(obj.cliente.numero_documento)
 
-        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
@@ -2422,6 +2443,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                         movimiento_final = TipoMovimiento.objects.get(codigo=153) # Correcion por Inventario, disminuir stock, s/Serie
                     tipo_stock_inicial = detalle.tipo_stock
                     tipo_stock_final = movimiento_final.tipo_stock_final
+                    factor = 1
                 else:
                     # AJUSTE POR INVENTARIO AUMENTAR STOCK
                     if detalle.material.control_serie and tipo_stock_disponible == detalle.tipo_stock:
@@ -2430,11 +2452,12 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                         movimiento_final = TipoMovimiento.objects.get(codigo=156) #	Correcion por Inventario, aumentar stock, s/Serie
                     tipo_stock_inicial = movimiento_final.tipo_stock_final
                     tipo_stock_final = detalle.tipo_stock
+                    factor = -1
 
                 movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.material.content_type,
                     id_registro_producto = detalle.material.id,
-                    cantidad = cantidad,
+                    cantidad = cantidad * factor,
                     tipo_movimiento = movimiento_final,
                     tipo_stock = tipo_stock_inicial,
                     signo_factor_multiplicador = -1,
@@ -2449,7 +2472,7 @@ class AjusteInventarioMaterialesConcluirView(PermissionRequiredMixin, BSModalDel
                 movimiento_dos = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.material.content_type,
                     id_registro_producto = detalle.material.id,
-                    cantidad = cantidad,
+                    cantidad = cantidad * factor,
                     tipo_movimiento = movimiento_final,
                     tipo_stock = tipo_stock_final,
                     signo_factor_multiplicador = +1,
@@ -2613,3 +2636,422 @@ class AjusteInventarioMaterialesDetalleDeleteView(PermissionRequiredMixin, BSMod
         context['item'] = self.get_object()
         context['dar_baja'] = "true"
         return context
+
+
+class SolicitudPrestamoMaterialesGenerarDevolucionPrestamoMaterialesView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.change_solicitudprestamomaterialesdetalle')
+    model = SolicitudPrestamoMateriales
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('logistica_app:devolucion_prestamo_detalle', kwargs={'pk':self.devolucion_materiales.id})
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        item = len(DevolucionPrestamoMateriales.objects.all())
+        try:
+            if self.request.session['primero']:
+                self.object = self.get_object()
+                prestamo = self.get_object()
+                self.devolucion_materiales = DevolucionPrestamoMateriales.objects.create(
+                    numero_devolucion = item + 1,
+                    sociedad = prestamo.sociedad,
+                    cliente = prestamo.cliente,
+                    interlocutor_cliente = prestamo.interlocutor_cliente,
+                    fecha_devolucion = date.today(),
+                    solicitud_prestamo = prestamo,
+                    created_by=self.request.user,
+                    updated_by=self.request.user,
+                )
+                for detalle in prestamo.SolicitudPrestamoMaterialesDetalle_solicitud_prestamo_materiales.all():
+                    DevolucionPrestamoMaterialesDetalle.objects.create(
+                        item=detalle.item,
+                        content_type=detalle.content_type,
+                        id_registro=detalle.id_registro,
+                        cantidad_devolucion=detalle.cantidad_prestamo,
+                        observacion=detalle.observacion,
+                        devolucion_materiales=self.devolucion_materiales,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+
+                self.request.session['primero'] = False
+                registro_guardar(self.object, self.request)
+                self.object.save()
+                messages.success(request, MENSAJE_GENERAR_NOTA_SALIDA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(SolicitudPrestamoMaterialesGenerarDevolucionPrestamoMaterialesView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Nota Salida"
+        context['dar_baja'] = "true"
+        return context
+
+
+#######################################################################
+
+class DevolucionPrestamoMaterialesDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('logistica.view_devolucionprestamomateriales')
+    model = DevolucionPrestamoMateriales
+    template_name = "logistica/devolucion_materiales/detalle.html"
+    context_object_name = 'contexto_devolucion_materiales'
+
+    def get_context_data(self, **kwargs):
+        context = super(DevolucionPrestamoMaterialesDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = self.object.detalles
+        return context
+
+
+def DevolucionPrestamoMaterialesDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/devolucion_materiales/detalle_tabla.html'
+        context = {}
+        devolucion_materiales = DevolucionPrestamoMateriales.objects.get(id=pk)
+        context['contexto_devolucion_materiales'] = devolucion_materiales
+        context['materiales'] = devolucion_materiales.detalles
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class DevolucionPrestamoMaterialesSeriesPdf(View):
+    def get(self, request, *args, **kwargs):
+        obj = DevolucionPrestamoMateriales.objects.get(id=self.kwargs['pk'])
+
+        color = obj.sociedad.color
+        titulo = 'SERIES DE EQUIPOS'
+        vertical = True
+        logo = [obj.sociedad.logo.url]
+        pie_pagina = obj.sociedad.pie_pagina
+
+        titulo = "%s - %s - %s" % (titulo, numeroXn(obj.numero_devolucion, 6), obj.cliente)
+
+        movimientos = MovimientosAlmacen.objects.buscar_movimiento(obj, ContentType.objects.get_for_model(DevolucionPrestamoMateriales))
+        series = Serie.objects.buscar_series(movimientos)
+        series_unicas = []
+        if series:
+            series_unicas = series.order_by('id_registro', 'serie_base').distinct()
+        
+        texto_cabecera = '''La empresa %s certifica la entrega a la empresa indicada en el presente documento de los equipos con sus respectivos números de serie enlistados a continuación:''' %(obj.sociedad.razon_social)
+        
+        series_final = {}
+        for serie in series_unicas:
+            if not serie.producto in series_final:
+                series_final[serie.producto] = []
+            series_final[serie.producto].append(serie.serie_base)
+
+        TablaEncabezado = ['FECHA',
+                           'RAZÓN SOCIAL',
+                           DICCIONARIO_TIPO_DOCUMENTO_SUNAT[obj.cliente.tipo_documento],
+                           ]
+
+        TablaDatos = []
+        TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
+        TablaDatos.append(obj.cliente.razon_social)
+        TablaDatos.append(obj.cliente.numero_documento)
+
+        buf = generarSeriesDevolucion(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo
+
+        return respuesta
+
+
+class DevolucionPrestamoMaterialesUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_devolucionprestamomateriales')
+    model = DevolucionPrestamoMateriales
+    template_name = "includes/formulario generico.html"
+    form_class = DevolucionPrestamoMaterialesForm
+    success_url = reverse_lazy('logistica_app:despacho_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(DevolucionPrestamoMaterialesUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Devolucion Prestamo"
+        return context
+
+
+class DevolucionPrestamoMaterialesConcluirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_devolucionprestamomateriales')
+    model = DevolucionPrestamoMateriales
+    template_name = "logistica/despacho/boton.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        context = {}
+        error_fecha = False
+        context['titulo'] = 'Error de guardar'
+        if not self.get_object().fecha_devolucion:
+            error_fecha = True
+        error_almacen = False
+        for detalle in self.get_object().detalles:
+            if detalle.almacen == None:
+                error_almacen = True
+        error_serie = False
+        for detalle in self.get_object().detalles:
+            if len(detalle.ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle.all()) != detalle.cantidad_devolucion:
+                error_serie = True
+        
+        if error_fecha:
+            context['texto'] = 'Ingrese una fecha de despacho.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_almacen:
+            context['texto'] = 'Falta registrar el almacén.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        if error_serie:
+            context['texto'] = 'Falta registrar series.'
+            return render(request, 'includes/modal sin permiso.html', context)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:devolucion_prestamo_detalle', kwargs={'pk': self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                self.object = self.get_object()
+
+                detalles = self.object.detalles
+                
+                documento_anterior = self.object.solicitud_prestamo
+                movimiento_final = TipoMovimiento.objects.get(codigo=135)  # Devolución de préstamo
+                    
+                for detalle in detalles:
+                    movimiento_uno = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_devolucion,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador=-1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        sociedad=self.object.sociedad,
+                        movimiento_anterior=None,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+
+                    movimiento_dos = MovimientosAlmacen.objects.create(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_devolucion,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        sociedad=self.object.sociedad,
+                        almacen=detalle.almacen,
+                        movimiento_anterior=movimiento_uno,
+                        movimiento_reversion=False,
+                        created_by=self.request.user,
+                        updated_by=self.request.user,
+                    )
+
+                    for serie in detalle.ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle.all():
+                        serie.serie.serie_movimiento_almacen.add(movimiento_uno)
+                        serie.serie.serie_movimiento_almacen.add(movimiento_dos)
+
+                documento_anterior.estado = 6
+                registro_guardar(documento_anterior, self.request)
+                documento_anterior.save()
+                self.object.estado = 2
+                registro_guardar(self.object, self.request)
+                self.object.save()
+                messages.success(request, MENSAJE_CONCLUIR_DESPACHO)
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(DevolucionPrestamoMaterialesConcluirView, self).get_context_data(**kwargs)
+        context['accion'] = "Concluir"
+        context['titulo'] = "Devolucion Prestamo"
+        context['dar_baja'] = "true"
+        context['item'] = self.object
+        return context
+
+
+class ValidarSeriesDevolucionPrestamoMaterialesDetailView(PermissionRequiredMixin, FormView):
+    permission_required = ('traslado_producto.view_enviotrasladoproductodetalle')
+    template_name = "logistica/devolucion_materiales/validar_serie_devolucion_materiales/detalle.html"
+    form_class = DevolucionPrestamoMaterialesDetalleSeriesForm
+    success_url = '.'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            serie = form.cleaned_data['serie']
+            devolucion_materiales_detalle = DevolucionPrestamoMaterialesDetalle.objects.get(id = self.kwargs['pk'])
+            try:
+                buscar = Serie.objects.get(
+                    serie_base=serie,
+                    content_type=devolucion_materiales_detalle.content_type,
+                    id_registro=devolucion_materiales_detalle.id_registro,
+                )
+                print(buscar)
+                print(buscar.cliente)
+                print(devolucion_materiales_detalle.devolucion_materiales.cliente)
+                buscar2 = ValidarSerieDevolucionPrestamoMaterialesDetalle.objects.filter(serie = buscar)
+                print(buscar2)
+                if len(buscar2) != 0:
+                    form.add_error('serie', "Serie ya ha sido registrada")
+                    return super().form_invalid(form)
+
+                if buscar.ultimo_movimiento.tipo_stock != TipoStock.objects.get(codigo=24): #EN PRÉSTAMO
+                    form.add_error('serie', "La serie no corresponde al tipo de stock: %s" % buscar.ultimo_movimiento.tipo_stock)
+                    return super().form_invalid(form)
+
+                if buscar.cliente != devolucion_materiales_detalle.devolucion_materiales.cliente:
+                    form.add_error('serie', "La serie no corresponde al Cliente: %s" % devolucion_materiales_detalle.devolucion_materiales.cliente)
+                    return super().form_invalid(form)
+
+                if buscar.sociedad != devolucion_materiales_detalle.sociedad:
+                    form.add_error('serie', "La serie no corresponde al Sociedad: %s" % devolucion_materiales_detalle.sociedad)
+                    return super().form_invalid(form)
+
+            except Exception as ex:
+                print(ex)
+                form.add_error('serie', "Serie no encontrada: %s" % serie)
+                return super().form_invalid(form)
+
+            devolucion_materiales_detalle = DevolucionPrestamoMaterialesDetalle.objects.get(id = self.kwargs['pk'])
+            obj, created = ValidarSerieDevolucionPrestamoMaterialesDetalle.objects.get_or_create(
+                devolucion_materiales_detalle=devolucion_materiales_detalle,
+                serie=buscar,
+            )
+            if created:
+                obj.estado = 1
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        devolucion_materiales_detalle = DevolucionPrestamoMaterialesDetalle.objects.get(id = self.kwargs['pk'])
+        cantidad_devolucion = devolucion_materiales_detalle.cantidad_devolucion
+        cantidad_ingresada = len(ValidarSerieDevolucionPrestamoMaterialesDetalle.objects.filter(devolucion_materiales_detalle=devolucion_materiales_detalle))
+        kwargs = super().get_form_kwargs()
+        kwargs['cantidad_devolucion'] = cantidad_devolucion
+        kwargs['cantidad_ingresada'] = cantidad_ingresada
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        devolucion_materiales_detalle = DevolucionPrestamoMaterialesDetalle.objects.get(id = self.kwargs['pk'])
+        context = super(ValidarSeriesDevolucionPrestamoMaterialesDetailView, self).get_context_data(**kwargs)
+        context['contexto_devolucion_materiales_detalle'] = devolucion_materiales_detalle
+        context['contexto_series'] = ValidarSerieDevolucionPrestamoMaterialesDetalle.objects.filter(devolucion_materiales_detalle = devolucion_materiales_detalle)
+        return context
+
+def ValidarSeriesDevolucionPrestamoMaterialesDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'logistica/devolucion_materiales/validar_serie_devolucion_materiales/detalle_tabla.html'
+        context = {}
+        devolucion_materiales_detalle = DevolucionPrestamoMaterialesDetalle.objects.get(id = pk)
+        context['contexto_devolucion_materiales_detalle'] = devolucion_materiales_detalle
+        context['contexto_series'] = ValidarSerieDevolucionPrestamoMaterialesDetalle.objects.filter(devolucion_materiales_detalle = devolucion_materiales_detalle)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class DevolucionPrestamoMaterialesDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('logistica.change_devolucionprestamomateriales')
+    model = DevolucionPrestamoMaterialesDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = DevolucionPrestamoMaterialesDetalleForm
+    success_url = reverse_lazy('logistica_app:despacho_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.request.session['primero']:
+            registro_guardar(form.instance, self.request)
+            self.request.session['primero'] = False
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(DevolucionPrestamoMaterialesDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Devolucion Prestamo"
+        return context
+
+
+class ValidarSeriesDevolucionPrestamoMaterialesDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('traslado_producto.delete_validarseriesenviotrasladoproductodetalle')
+    model = ValidarSerieDevolucionPrestamoMaterialesDetalle
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('logistica_app:validar_series_devolucion_prestamo_detalle', kwargs={'pk': self.get_object().devolucion_materiales_detalle.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(ValidarSeriesDevolucionPrestamoMaterialesDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Serie"
+        context['item'] = self.get_object().serie
+        context['dar_baja'] = "true"
+        return context
+
+
+# CFTC08130099
+# CFTC08130209
+# CFTC08130217
+# CFTC08130292
+# CFTC08130334
+# CFTC08130336
+# CFTC08130338
+# CFTC08130356
+# CFTC08130370

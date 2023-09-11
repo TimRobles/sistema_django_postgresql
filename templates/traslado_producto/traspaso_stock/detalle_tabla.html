@@ -90,20 +90,29 @@
                     <td>{{ material.tipo_stock_final }}</td>
                     <td class="text-center text-nowrap">
                         {% if contexto_traspaso_stock.estado == 1 %}
-                        <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_detalle_actualizar' contexto_traspaso_stock.id material.id %}"
-                            data-table-url="{% url 'traslado_producto_app:traspaso_stock_detalle_tabla' contexto_traspaso_stock.id %}"
-                            class="update btn btn-warning btn-sm">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        {% if material.tipo_stock_inicial.serie_registrada %}
+                            <button data-form-url="{% url 'traslado_producto_app:traspaso_stock_detalle_actualizar' contexto_traspaso_stock.id material.id %}"
+                                data-table-url="{% url 'traslado_producto_app:traspaso_stock_detalle_tabla' contexto_traspaso_stock.id %}"
+                                class="update btn btn-warning btn-sm">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            {% if material.tipo_stock_inicial.serie_registrada %}
+                                {% if material.producto.control_serie %}
+                                    <a href="{% url 'traslado_producto_app:validar_series_traspaso_stock_detalle' material.id %}"
+                                        class="btn btn-dark btn-sm"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                        <i class="bi bi-upc-scan"></i>
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                        {% if contexto_traspaso_stock.estado == 2 %}
                             {% if material.producto.control_serie %}
-                                <a href="{% url 'traslado_producto_app:validar_series_traspaso_stock_detalle' material.id %}"
+                                <a href="{% url 'traslado_producto_app:historial_series_traspaso_stock_detalle' material.id %}"
                                     class="btn btn-dark btn-sm"
-                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver/Registrar Series">
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Series">
                                     <i class="bi bi-upc-scan"></i>
                                 </a>
                             {% endif %}
-                        {% endif %}
                         {% endif %}
                     </td>
                 </tr>

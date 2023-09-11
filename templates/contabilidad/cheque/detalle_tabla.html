@@ -422,6 +422,14 @@
                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Cobrar">
                                     <i class="bi bi-wallet2"></i>
                                 </button>
+                                
+                                {% if cheque_fisico.estado == 2 %}
+                                <button data-form-url="{% url 'contabilidad_app:cheque_fisico_cobrar_editar' cheque_fisico.id %}"
+                                    class="delete btn btn-warning btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Deshacer">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                                {% endif %}
                             {% endif %}
                             {% if cheque_fisico.foto %}
                                 <a class="btn btn-info btn-sm" href="{{ MEDIA_URL }}{{ cheque_fisico.foto }}" target="_blank" role="button" title="Ver foto"><i class="bi bi-image-fill"></i></a>

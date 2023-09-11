@@ -171,7 +171,7 @@ def dataSerieNotaSalidaSeries(series, fuenteBase):
     
     return t
 
-def generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color):
+def generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color):
     fuenteBase = "ComicNeue"
     data_cabecera = dataCabeceraNotaSalidaSeries(TablaEncabezado, TablaDatos, fuenteBase, color)
     elementos = []
@@ -185,6 +185,89 @@ def generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncab
         elementos.append(parrafoCentro(f"{producto} / Cantidad: {len(series)}", fuenteBase, 10, 'Bold'))
         elementos.append(vacio())
         elementos.append(dataSerieNotaSalidaSeries(series, fuenteBase))
+        elementos.append(vacio(1.5))
+    
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+
+    return buf
+
+
+#############################################################
+
+def dataCabeceraDevolucionSeries(TablaEncabezado, TablaDatos, fuenteBase, color):
+    encabezado = []
+    for encab in TablaEncabezado:
+        encabezado.append(parrafoCentro(encab, fuenteBase, 8, 'Bold'))
+    
+    data = []
+    data.append(encabezado)
+    
+    fila = []
+    for dato in TablaDatos:
+        fila.append(parrafoCentro(dato, fuenteBase))
+        
+    data.append(fila)  
+
+    t=Table(
+        data,
+        style=[
+            ('GRID',(0,0),(-1,-1),1,colors.black),
+            ('BOX',(0,0),(-1,-1),2,colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), color),
+            ('VALIGN',(0,0),(-1,-1),'TOP'),
+            ('ALIGN',(0,0),(-1,-1),'CENTER')
+            ]
+        )
+    t._argW[1]=cmToPx(2.5)
+    try:
+        t._argW[3]=cmToPx(3)
+    except:
+        pass
+
+    return t
+
+def dataSerieDevolucionSeries(series, fuenteBase):
+    data = []
+    
+    if len(series) % 3 != 0:
+        for i in range(3 - (len(series) % 3)):
+            series.append("")
+        
+
+    fila = []
+    for dato in series:
+        if len(fila) % 3 == 0 and len(fila) > 2:
+            data.append(fila)
+            fila = []
+        fila.append(parrafoCentro(dato, fuenteBase))
+    data.append(fila)
+
+    t=Table(
+        data,
+        style=[
+            ('GRID',(0,0),(-1,-1),1,colors.black),
+            ('BOX',(0,0),(-1,-1),2,colors.black),
+            ('VALIGN',(0,0),(-1,-1),'TOP'),
+            ('ALIGN',(0,0),(-1,-1),'CENTER')
+            ]
+        )
+    
+    return t
+
+def generarSeriesDevolucion(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color):
+    fuenteBase = "ComicNeue"
+    data_cabecera = dataCabeceraDevolucionSeries(TablaEncabezado, TablaDatos, fuenteBase, color)
+    elementos = []
+    elementos.append(parrafoCentro(titulo, fuenteBase, 12, 'Bold'))
+    elementos.append(vacio())
+    elementos.append(parrafoIzquierda(texto_cabecera, fuenteBase, 10))
+    elementos.append(vacio())
+    elementos.append(data_cabecera)
+    elementos.append(vacio())
+    for producto, series in series_final.items():
+        elementos.append(parrafoCentro(f"{producto} / Cantidad: {len(series)}", fuenteBase, 10, 'Bold'))
+        elementos.append(vacio())
+        elementos.append(dataSerieDevolucionSeries(series, fuenteBase))
         elementos.append(vacio(1.5))
     
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)

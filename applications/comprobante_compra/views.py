@@ -31,6 +31,7 @@ class ComprobanteCompraPIListView(PermissionRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super(ComprobanteCompraPIListView, self).get_form_kwargs()
+        kwargs['filtro_numero_comprobante_compra'] = self.request.GET.get('numero_comprobante_compra')
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_proveedor'] = self.request.GET.get('proveedor')
         kwargs['filtro_material'] = self.request.GET.get('material')
@@ -41,11 +42,17 @@ class ComprobanteCompraPIListView(PermissionRequiredMixin, FormView):
         context = super(ComprobanteCompraPIListView,self).get_context_data(**kwargs)
         comprobante_compra_pi = ComprobanteCompraPI.objects.all()
 
+        filtro_numero_comprobante_compra = self.request.GET.get('numero_comprobante_compra')
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_proveedor = self.request.GET.get('proveedor')
         filtro_material = self.request.GET.get('material')
 
         contexto_filtro = []
+
+        if filtro_numero_comprobante_compra:
+            condicion = Q(numero_comprobante_compra__unaccent__icontains = filtro_numero_comprobante_compra)
+            comprobante_compra_pi = comprobante_compra_pi.filter(condicion)
+            contexto_filtro.append(f"numero_comprobante_compra={filtro_numero_comprobante_compra}")
 
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
@@ -100,11 +107,17 @@ def ComprobanteCompraPITabla(request):
         context = {}
         comprobante_compra_pi = ComprobanteCompraPI.objects.all()
 
+        filtro_numero_comprobante_compra = request.GET.get('numero_comprobante_compra')
         filtro_sociedad = request.GET.get('sociedad')
         filtro_proveedor = request.GET.get('proveedor')
         filtro_material = request.GET.get('material')
         
         contexto_filtro = []
+
+        if filtro_numero_comprobante_compra:
+            condicion = Q(numero_comprobante_compra__unaccent__icontains = filtro_numero_comprobante_compra)
+            comprobante_compra_pi = comprobante_compra_pi.filter(condicion)
+            contexto_filtro.append(f"numero_comprobante_compra={filtro_numero_comprobante_compra}")
 
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad)
@@ -720,6 +733,23 @@ class ComprobanteCompraCITraduccionView(PermissionRequiredMixin, DetailView):
         context = super(ComprobanteCompraCITraduccionView, self).get_context_data(**kwargs)
         context['materiales'] = ComprobanteCompraCIDetalle.objects.ver_detalle(self.get_object())
         return context
+
+
+def ComprobanteCompraCITraduccionTabla(request, slug):
+    data = dict()
+    if request.method == 'GET':
+        template = 'comprobante_compra/comprobante_compra_ci/traduccion tabla.html'
+        context = {}
+        comprobante_compra = ComprobanteCompraCI.objects.get(slug = slug)
+        context['contexto_comprobante_compra_ci'] = comprobante_compra
+        context['materiales'] = ComprobanteCompraCIDetalle.objects.ver_detalle(comprobante_compra)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
     
 
 class ComprobanteCompraCIDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):

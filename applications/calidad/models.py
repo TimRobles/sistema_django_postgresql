@@ -149,6 +149,41 @@ class Serie(models.Model):
             return ""
 
     @property
+    def almacen_salida(self):
+        try:
+            if self.serie_movimiento_almacen.all():
+                confirmado_venta = self.serie_movimiento_almacen.filter(tipo_stock__codigo=17, signo_factor_multiplicador=-1)
+                if confirmado_venta:
+                    confirmado_venta = confirmado_venta.latest('id')
+                    disponible_salida = MovimientosAlmacen.objects.filter(
+                        content_type_producto=confirmado_venta.content_type_producto,
+                        id_registro_producto=confirmado_venta.id_registro_producto,
+                        tipo_movimiento=confirmado_venta.tipo_movimiento,
+                        tipo_stock__codigo=3,
+                        signo_factor_multiplicador=confirmado_venta.signo_factor_multiplicador,
+                        content_type_documento_proceso=confirmado_venta.content_type_documento_proceso,
+                        id_registro_documento_proceso=confirmado_venta.id_registro_documento_proceso,
+                        sociedad=confirmado_venta.sociedad,
+                    )
+                    return disponible_salida
+            else:
+                return ""
+        except Exception as ex:
+            print("*******************************")
+            print(ex)
+            print(self.serie_base)
+            print(confirmado_venta.content_type_producto)
+            print(confirmado_venta.id_registro_producto)
+            print(confirmado_venta.cantidad)
+            print(confirmado_venta.tipo_movimiento)
+            print(3)
+            print(confirmado_venta.signo_factor_multiplicador)
+            print(confirmado_venta.content_type_documento_proceso)
+            print(confirmado_venta.id_registro_documento_proceso)
+            print(confirmado_venta.sociedad)
+            print("*******************************")
+
+    @property
     def almacen(self):
         if self.serie_movimiento_almacen.all():
             return self.serie_movimiento_almacen.latest('id').almacen
@@ -156,14 +191,26 @@ class Serie(models.Model):
             return ""
 
     @property
+    def ultimo_almacen(self):
+        if self.serie_movimiento_almacen.all():
+            disponibles = self.serie_movimiento_almacen.filter(tipo_stock__codigo=3, signo_factor_multiplicador=1)
+            if disponibles:
+                return disponibles.latest('id').almacen
+        else:
+            return ""
+
+    @property
     def cliente(self):
         try:
-            if self.serie_movimiento_almacen.all():
+            movimientos = self.serie_movimiento_almacen.all()
+            if movimientos:
                 ultimo_movimiento = self.serie_movimiento_almacen.latest('id')
-                if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO' or ultimo_movimiento.tipo_stock.descripcion == 'CORRECCION DE SERIE':
+                if ultimo_movimiento.tipo_stock.descripcion == 'DESPACHADO' or ultimo_movimiento.tipo_stock.descripcion == 'CORRECCION DE SERIE' or ultimo_movimiento.tipo_movimiento.descripcion == 'Despacho por préstamo':
                     return self.serie_movimiento_almacen.latest('id').documento_proceso.cliente
                 elif ultimo_movimiento.tipo_stock.descripcion == 'BLOQUEO RECLAMO CLIENTE':
-                    return self.serie_movimiento_almacen.all().order_by('-id')[2].documento_proceso.cliente
+                    return movimientos.order_by('-id')[2].documento_proceso.cliente
+                elif ultimo_movimiento.tipo_movimiento.descripcion == 'Devolución de préstamo':
+                    return movimientos.order_by('-id')[2].documento_proceso.cliente
             return ""
         except:
             return ""
@@ -652,7 +699,7 @@ class TransformacionProductos(models.Model):
         return ContentType.objects.get_for_model(self)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.fecha_transformacion.strftime('%d/%m/%Y'), numeroXn(self.id, 6), self.responsable)
+        return "%s - %s - %s" % (self.fecha_transformacion.strftime('%d/%m/%Y'), numeroXn(self.numero_transformacion, 6), self.responsable)
 
 
 class EntradaTransformacionProductos(models.Model):

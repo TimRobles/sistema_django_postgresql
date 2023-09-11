@@ -276,11 +276,14 @@ def en_camino(content_type, id_registro, id_sociedad):
     return transito(content_type, id_registro, id_sociedad) - confirmado_anticipo(content_type, id_registro, id_sociedad)
 
 def observacion(cotizacion, sociedad):
-    busqueda = CotizacionObservacion.objects.get(
-        cotizacion_venta = cotizacion,
-        sociedad = sociedad,
-    )
-    return busqueda.observacion
+    try:
+        busqueda = CotizacionObservacion.objects.get(
+            cotizacion_venta = cotizacion,
+            sociedad = sociedad,
+        )
+        return busqueda.observacion
+    except:
+        return ""
 
 def NotaIngresoDetalle_comprobante_compra_detalle(obj):
     if ContentType.objects.get_for_model(obj) == ContentType.objects.get_for_model(TransformacionProductos): #TransformacionProductos

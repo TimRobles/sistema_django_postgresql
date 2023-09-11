@@ -6,7 +6,7 @@ from applications.datos_globales.models import SeriesComprobante, Unidad
 from applications.funciones import numeroXn, registrar_excepcion, slug_aleatorio
 from applications.importaciones import *
 
-from applications.logistica.pdf import generarSeries
+from applications.logistica.pdf import generarSeriesNotaSalida
 from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
@@ -116,7 +116,7 @@ class CambioSociedadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView
             for validar_serie in detalle.ValidarSerieCambioSociedadStockDetalle_cambio_sociedad_stock_detalle.all():
                 if detalle.control_serie and detalle.almacen != validar_serie.serie.almacen:
                     error_almacen_series = True
-            if detalle.control_serie and detalle.series_validar != detalle.cantidad:
+            if detalle.control_serie and detalle.series_validar != detalle.cantidad and detalle.tipo_stock.serie_registrada:
                 error_cantidad_series = True
         
         if not self.has_permission():
@@ -209,6 +209,8 @@ class CambioSociedadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView
                     validar.serie.serie_movimiento_almacen.add(movimiento_dos)
                     validar.serie.serie_movimiento_almacen.add(movimiento_tres)
                     validar.serie.serie_movimiento_almacen.add(movimiento_cuatro)
+                    validar.serie.sociedad = self.object.sociedad_final
+                    validar.serie.sociedad.save()
                     validar.delete()
             
             self.object.estado = 2
@@ -352,34 +354,66 @@ class ValidarSeriesCambioSociedadStockDetailView(PermissionRequiredMixin, FormVi
     def form_valid(self, form):
         if self.request.session['primero']:
             serie = form.cleaned_data['serie']
+            serie_bulk = form.cleaned_data['serie_bulk']
             cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
-            try:
-                buscar = Serie.objects.get(
-                    serie_base=serie,
-                    content_type=ContentType.objects.get_for_model(cambio_sociedad_stock_detalle.producto),
-                    id_registro=cambio_sociedad_stock_detalle.producto.id,
-                )
-                buscar2 = ValidarSerieCambioSociedadStockDetalle.objects.filter(serie = buscar)
+            if serie:
+                try:
+                    buscar = Serie.objects.get(
+                        serie_base=serie,
+                        content_type=ContentType.objects.get_for_model(cambio_sociedad_stock_detalle.producto),
+                        id_registro=cambio_sociedad_stock_detalle.producto.id,
+                    )
+                    buscar2 = ValidarSerieCambioSociedadStockDetalle.objects.filter(serie = buscar)
 
-                if len(buscar2) != 0:
-                    form.add_error('serie', "Serie ya ha sido registrada")
+                    if len(buscar2) != 0:
+                        form.add_error('serie', "Serie ya ha sido registrada")
+                        return super().form_invalid(form)
+
+                except:
+                    form.add_error('serie', "Serie no encontrada: %s" % serie)
                     return super().form_invalid(form)
 
-                if buscar.estado != 'DISPONIBLE' and buscar.estado != 'REPARADO':
-                    if cambio_sociedad_stock_detalle.tipo_stock_inicial.id != 6:
-                        form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
-                        return super().form_invalid(form)
-            except:
-                form.add_error('serie', "Serie no encontrada: %s" % serie)
-                return super().form_invalid(form)
+                cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
+                obj, created = ValidarSerieCambioSociedadStockDetalle.objects.get_or_create(
+                    cambio_sociedad_stock_detalle=cambio_sociedad_stock_detalle,
+                    serie=buscar,
+                )
+                if created:
+                    obj.estado = 1
+            if serie_bulk:
+                error_bulk = False
+                series_registradas = []
+                series_no_encontradas = []
+                for serie in serie_bulk.splitlines():
+                    try:
+                        buscar = Serie.objects.get(
+                            serie_base=serie,
+                            content_type=ContentType.objects.get_for_model(cambio_sociedad_stock_detalle.producto),
+                            id_registro=cambio_sociedad_stock_detalle.producto.id,
+                        )
+                        buscar2 = ValidarSerieCambioSociedadStockDetalle.objects.filter(serie = buscar)
 
-            cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
-            obj, created = ValidarSerieCambioSociedadStockDetalle.objects.get_or_create(
-                cambio_sociedad_stock_detalle=cambio_sociedad_stock_detalle,
-                serie=buscar,
-            )
-            if created:
-                obj.estado = 1
+                        if len(buscar2) != 0:
+                            series_registradas.append(serie)
+                            error_bulk = True
+                            continue
+
+                    except:
+                        series_no_encontradas.append(serie)
+                        error_bulk = True
+                        continue
+
+                    cambio_sociedad_stock_detalle = CambioSociedadStockDetalle.objects.get(id = self.kwargs['pk'])
+                    obj, created = ValidarSerieCambioSociedadStockDetalle.objects.get_or_create(
+                        cambio_sociedad_stock_detalle=cambio_sociedad_stock_detalle,
+                        serie=buscar,
+                    )
+                    if created:
+                        obj.estado = 1
+                if error_bulk:
+                    messages.warning(self.request, series_registradas)
+                    messages.error(self.request, series_no_encontradas)
+
             self.request.session['primero'] = False
         return super().form_valid(form)
 
@@ -453,7 +487,7 @@ class ValidarSeriesCambioSociedadStockSeriesPdf(View):
         TablaDatos.append(obj.fecha.strftime('%d/%m/%Y'))
         TablaDatos.append(obj.encargado)
         
-        buf = generarSeries(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
+        buf = generarSeriesNotaSalida(titulo, vertical, logo, pie_pagina, texto_cabecera, TablaEncabezado, TablaDatos, series_final, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition'] = 'inline; filename=%s.pdf' % titulo

@@ -155,7 +155,7 @@ class MaterialBuscarForm(forms.Form):
  
 class MaterialSeriesBuscarForm(forms.Form): 
     serie = forms.CharField(max_length=150, required=False) 
-    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(), required=False)
     estado = forms.ModelChoiceField(queryset=EstadoSerie.objects.all(), required=False)
     almacen = forms.ModelChoiceField(queryset=Almacen.objects.filter(estado_alta_baja=1), required=False)
  

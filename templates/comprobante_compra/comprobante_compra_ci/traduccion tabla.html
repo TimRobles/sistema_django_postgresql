@@ -1,0 +1,82 @@
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Partida</th>
+            <th>Traducción</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Estado</th>
+            <th class="text-end">Cantidad</th>
+            <th>Unidad</th>
+            <th>Origen</th>
+            <th>Uso o función</th>
+            <th>Compuesto por</th>
+            <th>Es componente</th>
+            <th class="text-center text-nowrap">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for material in materiales %}
+        
+        {% if material.cantidad %}
+            <tr>
+                <td>{{ material.item}}</td>
+                <td>
+                    {% if material.material.partida %}
+                    {{ material.material.partida }}
+                    {% endif %}
+                </td>
+                <td>
+                    {{ material.descripcion }}
+                    ({{ material.material.traduccion }})
+                </td>
+                <td>
+                    {% if material.material.marca %}
+                    {{ material.material.marca }}    
+                    {% else %}
+                    S/Marca
+                    {% endif %}
+                </td>
+                <td>
+                    {% if material.material.modelo %}
+                    {{ material.material.modelo }}
+                    {% else %} 
+                    S/Modelo   
+                    {% endif %}
+                </td>
+                <td>NUEVO</td>
+                <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                <td>{{ material.material.unidad_base }}</td>
+                <td>CHINA</td>
+                <td>{{ material.material.uso_funcion }}</td>
+                <td>{{ material.material.compuesto_por }}</td>
+                <td>
+                    {% if material.material.es_componente %}
+                    SI
+                    {% else %}
+                    NO
+                    {% endif %}
+                </td>
+                <td>
+                    <button data-form-url="{% url 'material_app:datos_importacion_actualizar' material.material.id %}"
+                    data-table-url="{% url 'comprobante_compra_app:comprobante_compra_ci_traduccion_tabla' contexto_comprobante_compra_ci.slug %}"
+                        class="update btn btn-sm btn-warning">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </td>
+            </tr>
+
+        {% else %}
+            <tr>
+                <td colspan="12">{{ material.item}}</td>
+            </tr>
+        {% endif %}
+
+        {% endfor %}    
+    </tbody>
+</table>

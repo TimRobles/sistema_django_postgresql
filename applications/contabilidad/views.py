@@ -2150,6 +2150,36 @@ class ChequeFisicoCobrarView(PermissionRequiredMixin,BSModalUpdateView):
         context['accion']="Cobrar"
         context['titulo']="Cheque Fisico"
         return context
+    
+class ChequeFisicoCobrarEditarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('contabilidad.change_chequefisico')
+    model = ChequeFisico
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('contabilidad_app:cheque_detalle', kwargs={'pk':self.object.cheque.id})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.comision = Decimal('0.00')
+        self.object.monto_recibido = Decimal('0.00')
+        self.object.fecha_cobro = None
+        self.object.estado = 1
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+    
+    def get_context_data(self, **kwargs):
+        context = super(ChequeFisicoCobrarEditarView, self).get_context_data(**kwargs)
+        context['accion']="Editar"
+        context['titulo']="Cheque Fisico"
+        context['dar_baja']=True
+        return context
 
 
 class ChequeVueltoExtraCreateView(PermissionRequiredMixin, BSModalCreateView):

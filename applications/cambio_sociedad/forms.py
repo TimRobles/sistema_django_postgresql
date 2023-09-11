@@ -81,6 +81,7 @@ class CambioSociedadStockDetalleActualizarForm(BSModalModelForm):
 class CambioSociedadStockDetalleSeriesForm(BSModalModelForm):
     cantidad_registrada = forms.DecimalField(label='Cantidad Registrada', max_digits=22, decimal_places=10, required=False)
     serie = forms.CharField(required=False)
+    serie_bulk = forms.CharField(widget=forms.Textarea, required=False)
     class Meta:
         model = CambioSociedadStockDetalle
         fields=(
