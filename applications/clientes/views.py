@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from applications.datos_globales.models import Distrito
+from applications.datos_globales.models import Distrito, Pais
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from .forms import (
@@ -177,8 +177,7 @@ class ClienteNacionalCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        # form.instance.usuario = self.request.user
-        form.instance.pais_id = 1
+        form.instance.pais = Pais.objects.get(nombre='PERÚ')
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
@@ -202,7 +201,6 @@ class ClienteExtranjeroCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

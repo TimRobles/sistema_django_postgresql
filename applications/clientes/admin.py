@@ -17,6 +17,7 @@ from .models import (
 
 class ClienteAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'razon_social',
         'tipo_documento',
         'numero_documento',
@@ -233,6 +234,7 @@ class ClienteAnexoAdmin(admin.ModelAdmin):
 @admin.register(HistorialEstadoCliente)
 class HistorialEstadoClienteAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'cliente',
         'estado_cliente',
         'created_by',

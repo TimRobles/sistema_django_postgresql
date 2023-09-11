@@ -2,10 +2,11 @@ from django.core.paginator import Paginator
 from django import forms
 from django.shortcuts import render
 from applications.importaciones import *
+from applications.clientes.models import HistorialEstadoCliente
 from applications.funciones import numeroXn, registrar_excepcion
 from applications.material.funciones import stock, ver_tipo_stock
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
-from applications.datos_globales.models import SeriesComprobante, Unidad
+from applications.datos_globales.models import Pais, SeriesComprobante, Unidad
 from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.funciones import slug_aleatorio
 from applications.home.templatetags.funciones_propias import nombre_usuario
@@ -195,6 +196,7 @@ class ClienteCRMNacionalCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        form.instance.pais = Pais.objects.get(nombre='PERÚ')
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 

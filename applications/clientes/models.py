@@ -183,6 +183,32 @@ class Cliente(models.Model):
     def __str__(self):
         return self.razon_social
 
+def cliente_pre_save(*args, **kwargs):
+    print('cliente_pre_save')
+    instance = kwargs['instance']
+    if instance.id:
+        cliente = Cliente.objects.get(id=instance.id)
+        if cliente.estado_cliente != instance.estado_cliente:
+            HistorialEstadoCliente.objects.create(
+                cliente=instance,
+                estado_cliente=instance.estado_cliente,
+                created_by=instance.created_by,
+                updated_by=instance.updated_by,
+            )
+
+def cliente_post_save(*args, **kwargs):
+    print('cliente_post_save')
+    instance = kwargs['instance']
+    if kwargs['created']:
+        HistorialEstadoCliente.objects.create(
+            cliente=instance,
+            created_by=instance.created_by,
+            updated_by=instance.updated_by,
+        )
+
+pre_save.connect(cliente_pre_save, Cliente)
+post_save.connect(cliente_post_save, Cliente)
+
 
 class TipoInterlocutorCliente(models.Model):
     '''Solo por Admin'''

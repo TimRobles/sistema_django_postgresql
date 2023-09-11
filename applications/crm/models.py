@@ -1,8 +1,10 @@
+from datetime import date, timedelta
 from django.db import models
 from decimal import Decimal
 from django.conf import settings
 from applications.rutas import CLIENTE_CRM_ARCHIVO_ENVIADO, CLIENTE_CRM_ARCHIVO_RECIBIDO
-from applications.comprobante_venta.models import FacturaVenta
+from applications.comprobante_venta.models import FacturaVenta, BoletaVenta
+from applications.nota.models import NotaCredito
 from applications.proveedores.models import Proveedor
 from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ACTIVIDAD, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
 from applications.clientes.models import Cliente, RepresentanteLegalCliente, CorreoInterlocutorCliente, InterlocutorCliente, TelefonoInterlocutorCliente
@@ -13,6 +15,7 @@ from applications.almacenes.models import Almacen
 from applications.movimiento_almacen.models import TipoStock
 from applications.sede.models import Sede
 from applications.sociedad.models import Sociedad
+from applications.funciones import consulta_totales_ventas, consulta_pareto, registrar_excepcion_sin_user
 from .managers import RespuestaDetalleCRMManager
 
 # class ClienteCRM(models.Model):
@@ -88,29 +91,49 @@ class ProveedorCRM(models.Model):
     def __str__(self):
         return str(self.proveedor_crm)
     
-from applications import cotizacion, comprobante_venta, cobranza
+from applications import cotizacion, comprobante_venta, cobranza, tarea
+
+def ver_pareto(id_cliente):
+    fecha_fin = date.today()
+    fecha_inicio = fecha_fin - timedelta(6*30)
+    totales = consulta_totales_ventas(FacturaVenta, BoletaVenta, NotaCredito, fecha_inicio, fecha_fin)
+    return consulta_pareto(totales, id_cliente)
 
 def actualizar_estado_cliente_crm(id_cliente=None):
-    print('actualizar_estado_cliente_crm')
-    if id_cliente:
-        clientes = Cliente.objects.filter(id=id_cliente)
-    else:
-        clientes = Cliente.objects.all()
+    try:
+        print('actualizar_estado_cliente_crm')
+        if id_cliente:
+            clientes = Cliente.objects.filter(id=id_cliente)
+        else:
+            clientes = Cliente.objects.all()
 
-    for cliente in clientes:
-        if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10)) > 0:
-            cliente.estado = 3
-        else:
-            cliente.estado = 1
-        if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
-            cliente.estado == 4
-        else:
-            cliente.estado == 1
-        if len(cobranza.models.Deuda.objects.filter(cliente=cliente))>0:
-            cliente.estado == 6
-        else:
-            cliente.estado == 1
-        cliente.save()
+        for cliente in clientes:
+            filtro = True
+            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
+                filtro = False
+                estado_cliente = 3
+            # if len(tarea.models.Tarea.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
+            #     filtro = False
+            #     estado_cliente = 2
+            if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
+                filtro = False
+                estado_cliente = 4
+            if len(comprobante_venta.models.BoletaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
+                filtro = False
+                estado_cliente = 4
+            if ver_pareto(id_cliente):
+                filtro = False
+                estado_cliente = 5
+            if len(cobranza.models.Deuda.objects.filter(cliente=cliente, estado_cancelado=False))>0:
+                filtro = False
+                estado_cliente = 6
+            if filtro:
+                estado_cliente = 1
+            if cliente.estado_cliente != estado_cliente:
+                cliente.estado_cliente = estado_cliente
+                cliente.save()
+    except Exception as ex:
+        registrar_excepcion_sin_user(ex, __file__)
 
 
 class EventoCRM(models.Model):

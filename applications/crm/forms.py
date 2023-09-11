@@ -89,6 +89,16 @@ class ClienteCRMDetalleForm(BSModalModelForm):
                     },
                 format = '%Y-%m-%d',
                 ),
+            'hora_inicio' : forms.TimeInput(
+                attrs ={
+                    'type':'time',
+                    },
+                ),
+            'hora_fin' : forms.TimeInput(
+                attrs ={
+                    'type':'time',
+                    },
+                ),
         }
     
     def __init__(self, *args, **kwargs):
