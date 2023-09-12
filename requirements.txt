@@ -21,3 +21,4 @@ django-resized
 pandas
 plotly==5.8.0
 django_crontab
+django-background-tasks

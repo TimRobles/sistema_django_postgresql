@@ -88,6 +88,7 @@ THIRD_PARTY_APPS = (
     'colorfield',
     'django_cleanup.apps.CleanupConfig',
     'django_crontab',
+    'background_task',
 )
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
