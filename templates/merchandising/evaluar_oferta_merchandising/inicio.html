@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% load humanize %}
+{% load funciones_propias %}
+
+{% block contenido %}
+
+    <body>
+        <h1>Ofertas Evaluadas - {{ lista.titulo }}
+            <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle' oferta_proveedor.id %}"
+            title="Regresar Detalle Oferta"><span class="badge bg-primary">Regresar</span>
+            </a>
+        </h1>
+    </body>
+<br>
+    
+<div class="table-responsive">
+    {% if ofertas_evaluadas_detalle %}
+        {% regroup ofertas_evaluadas_detalle by oferta_proveedor_merchandising.proveedor as ofertas_por_proveedor %}
+        {% for grupo in ofertas_por_proveedor %}
+            <h2>{{ grupo.grouper }}</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Proveedor</th>
+                        <th>Merchandising</th>
+                        <th class="text-nowrap text-end">Cantidad</th>
+                        <th class="text-nowrap text-end">Prec. Unit.<br>con IGV</th>
+                        <th>Descuento</th>
+                        <th class="text-nowrap text-end">Sub Total</th>
+                        <th class="text-nowrap text-end">IGV</th>
+                        <th class="text-nowrap text-end">Total</th>
+                        <th>Imagen</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for merchandising in grupo.list %}
+                        <tr>
+                            <td>{{ merchandising.item }}</td>
+                            <td>{{ merchandising.oferta_proveedor_merchandising.proveedor }}</td>
+                            <td>{{ merchandising.merchandising }}</td>
+                            <td class="text-end text-nowrap">{{ merchandising.cantidad|redondear|intcomma }}</td>
+                            <td class="text-end text-nowrap">{{ ofertas_evaluadas_detalle.moneda.simbolo }} {{ merchandising.precio_unitario|redondear|intcomma }}</td>
+                            <td class="text-end text-nowrap">{{ ofertas_evaluadas_detalle.moneda.simbolo }} {{ merchandising.descuento|redondear|intcomma }}</td>
+                            <td class="text-end text-nowrap">{{ ofertas_evaluadas_detalle.moneda.simbolo }} {{ merchandising.sub_total|redondear|intcomma }}</td>
+                            <td class="text-end text-nowrap">{{ ofertas_evaluadas_detalle.moneda.simbolo }} {{ merchandising.igv|redondear|intcomma }}</td>
+                            <td class="text-end text-nowrap">{{ ofertas_evaluadas_detalle.moneda.simbolo }} {{ merchandising.total|redondear|intcomma }}</td>
+                            <td>{{ merchandising.archivo }}</td>
+                            <td> ACCIONES </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    {% else %}
+        <p>No hay ofertas evaluadas disponibles.</p>
+    {% endif %}
+</div>
+<br>
+
+
+{% endblock contenido %}
+

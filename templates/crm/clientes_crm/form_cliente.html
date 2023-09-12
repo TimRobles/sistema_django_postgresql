@@ -1,0 +1,28 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+{% block abajo %}
+{% endblock abajo %}
+    
+
+{% block js %}
+    <script src="{% static 'js/crm/cliente_crm/form_cliente.js' %}?{{ cache_bust }}"></script>
+
+    <script>
+        $(function () {
+            $("#id_cliente_crm").select2({
+                width: '100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+            });
+
+            $("#id_interlocutor").select2({
+                width:'100%',
+                dropdownParent: $(".modal-body"),
+                matcher: buscar_select2
+
+            });
+        });
+    </script>
+ 
+{% endblock js %}

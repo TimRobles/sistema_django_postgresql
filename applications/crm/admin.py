@@ -74,6 +74,7 @@ class EventoCRMAdmin(admin.ModelAdmin):
         'fecha_cierre',
         'presupuesto_asignado',
         'presupuesto_utilizado',
+        'moneda',
         'total_merchandising',
         'descripcion',
         'sorteo',

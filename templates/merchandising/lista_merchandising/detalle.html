@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Lista Requerimiento Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/lista_merchandising/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

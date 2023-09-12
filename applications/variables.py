@@ -509,6 +509,7 @@ MENSAJE_GENERAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Generar Comprobante
 MENSAJE_GUARDAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Comprobante de Compra PI Guardado.'
 MENSAJE_ANULAR_COMPROBANTE_COMPRA_PI = 'Operación exitosa: Comprobante de Compra PI Anulado.'
 MENSAJE_ERROR_ANULAR_COMPROBANTE_COMPRA_PI= 'No se puede anular el Comprobante de Compra PI, verifique los procesos siguientes.'
+MENSAJE_GENERAR_COMPROBANTE_COMPRA_MERCHANDISING = 'Operación exitosa: Generar Comprobante de Compra Merchandising.'
 
 MENSAJE_FINALIZAR_INVENTARIO_ACTIVO = 'Operación exitosa: El Inventario fue Finalizado.'
 
@@ -613,6 +614,14 @@ ESTADOS_NOTA_CALIDAD_STOCK = (
     (3, 'CONCLUIDA'),
     (4, 'ANULADA'),
 )
+
+ESTADO_COMPROBANTE_MERCHANDISING = (
+    (0, 'BORRADOR'),
+    (1, 'PENDIENTE'),
+    (2, 'RECIBIDO'),
+    (3, 'ANULADO'),
+    )
+
 
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
 

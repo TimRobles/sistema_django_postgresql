@@ -301,6 +301,10 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
         detalles = cabecera.BoletaVentaDetalle_boleta_venta.all()
     elif hasattr(cabecera, 'NotaCreditoDetalle_nota_credito'):
         detalles = cabecera.NotaCreditoDetalle_nota_credito.all()
+    elif hasattr(cabecera, 'OfertaProveedorMerchandisingDetalle_oferta_proveedor'):
+        detalles = cabecera.OfertaProveedorMerchandisingDetalle_oferta_proveedor.all()    
+    elif hasattr(cabecera, 'OrdenCompraMerchandisingDetalle_orden_compra'):
+        detalles = cabecera.OrdenCompraMerchandisingDetalle_orden_compra.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:

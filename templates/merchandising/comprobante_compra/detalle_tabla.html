@@ -1,0 +1,92 @@
+{% load humanize %}
+{% load funciones_propias %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Número de Comprobante</th>
+                <th>Proveedor</th>
+                <th>Interlocutor</th>
+                <th>Sociedad</th>
+                <th>Fecha Estimada de Llegada</th>
+                <th>Estado</th>
+                <th class="text-center">Logístico</th>  
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_comprobante_compra.fecha_comprobante|date:'d/m/Y' }}</td>
+                <td>{{ contexto_comprobante_compra.numero_comprobante_compra }}</td>
+                <td>{{ contexto_comprobante_compra.orden_compra.proveedor }}</td>
+                <td>{{ contexto_comprobante_compra.orden_compra.interlocutor }}</td>
+                <td>{{ contexto_comprobante_compra.sociedad }}</td>
+                <td>
+                    {% if contexto_comprobante_compra.fecha_estimada_llegada %}
+                    {{ contexto_comprobante_compra.fecha_estimada_llegada|date:'d/m/Y' }}
+                    {% endif %}    
+                </td>
+                <td>{{ contexto_comprobante_compra.get_estado_display }}</td>
+                <td class="text-center">{{ contexto_comprobante_compra.logistico }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+{% if permiso_compras %}
+<h4>Condiciones:</h4>
+<p>
+    {% if contexto_comprobante_compra.condiciones %}
+    {{ contexto_comprobante_compra.condiciones }}
+    {% endif %}
+</p>
+{% endif %}
+<br>
+<h3>Materiales</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th>Unidad</th>
+                <th>Tipo IGV</th>
+                <th class="text-end">Cantidad</th>
+                {% if permiso_compras %}
+                <th class="text-nowrap">Prec. Unit.<br>sin IGV </th>
+                <th class="text-nowrap">Prec. Unit.<br>con IGV </th>
+                <th class="text-nowrap">Prec. Final<br>con IGV</th>
+                <th>Descuento</th>
+                <th class="text-nowrap">Sub Total</th>
+                <th>IGV</th>
+                <th>Total</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for merch in merchandising %}
+                <tr>
+
+                    <td>{{ merch.item}}</td>
+                    <td>{{ merch.merch.descripcion_corta }}</td>
+                    <td>{{ merch.merch.unidad_base }}</td>
+                    <td>{{ merch.get_tipo_igv_display }}</td>
+                    <td class="text-end">{{ merch.cantidad|redondear|intcomma }}</td>
+                    {% if permiso_compras %}
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.precio_unitario_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.descuento|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.sub_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.total|redondear|intcomma }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}    
+        </tbody>
+
+    </table>
+</div>
+<br>
+
+

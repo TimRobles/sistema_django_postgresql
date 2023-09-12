@@ -1,81 +1,23 @@
 <h3>Datos de Merchandising</h3>
+<br>
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
-                <th class="text-rigth">Descripción venta</th>
                 <th class="text-rigth">Descripción corta</th>
                 <th class="text-rigth">Familia</th>
                 <th class="text-rigth">Subfamilia</th>
-                <th class="text-rigth">Unidad Base</th>
-                <th class="text-rigth">Peso Unidad Base</th>
-                <th class="text-rigth">Marca</th>
-                <th class="text-rigth">Modelo</th>
-                <th class="text-center">Clase</th>
-                <th class="text-center">Control Serie</th>
-                <th class="text-center">Control Lote</th>
-                <th class="text-center">Control Calidad</th>
+                <th class="text-rigth">Unidad</th>
                 <th class="text-center">Mostrar</th>
                 <th class="text-center">Acción</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>{{ contexto_merchandising.descripcion_venta }}</td>
                 <td>{{ contexto_merchandising.descripcion_corta }}</td>
                 <td>{{ contexto_merchandising.subfamilia.familia }}</td>
                 <td>{{ contexto_merchandising.subfamilia }}</td>
                 <td>{{ contexto_merchandising.unidad_base }}</td>
-                <td>{{ contexto_merchandising.peso_unidad_base }}</td>
-
-                <td class="text-center">
-                    {% if contexto_merchandising.marca != None %}
-                        {{ contexto_merchandising.marca }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-
-                <td class="text-center">
-                    {% if contexto_merchandising.modelo != None %}
-                        {{ contexto_merchandising.modelo }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-
-                <td class="text-center">
-                    {% if contexto_merchandising.clase != None %}
-                        {{ contexto_merchandising.clase }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-
-                <td class="text-center">
-                    {% if contexto_merchandising.control_serie == True %}
-                        Sí
-                    {% else %}
-                        No
-                    {% endif %}
-                </td>
-
-                <td class="text-center">
-                    {% if contexto_merchandising.control_lote == True %}
-                        Sí
-                    {% else %}
-                        No
-                    {% endif %}
-                </td>
-
-                <td class="text-center">
-                    {% if contexto_merchandising.control_calidad == True %}
-                        Sí
-                    {% else %}
-                        No
-                    {% endif %}
-                </td>
-
                 <td class="text-center">
                     {% if contexto_merchandising.mostrar == True %}
                         Sí
@@ -98,11 +40,9 @@
     </table>
 </div>
 
-<br>
+<!-- <br> -->
 
-</br>
-
-<h3>Datos de Importación</h3>
+<!-- <h3>Datos de Importación</h3>
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -141,13 +81,11 @@
             </tr>
         </tbody>
     </table>
-</div>
+</div> -->
 
-<br>
+<!-- <br> -->
 
-</br>
-
-<h3>Producto SUNAT</h3>
+<!-- <h3>Producto SUNAT</h3>
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -192,13 +130,11 @@
             </tr>
         </tbody>
     </table>
-</div>
+</div> -->
 
-<br>
+<!-- <br> -->
 
-</br>
-
-<h3>Componentes
+<!-- <h3>Componentes
     <button data-form-url="{% url 'merchandising_app:componente_merchandising_registrar' contexto_merchandising.id %}"
         data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
         class="create badge bg-primary">
@@ -241,10 +177,11 @@
         </tbody>
     </table>
 </div>
-<br>
+<br> -->
 
-</br>
-<h3>Especificaciones
+<!-- </br> -->
+
+<!-- <h3>Especificaciones
     <button data-form-url="{% url 'merchandising_app:especificacion_merchandising_registrar' contexto_merchandising.id %}"
         data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
         class="create badge bg-primary">
@@ -291,10 +228,9 @@
         </tbody>
     </table>
 </div>
-<br>
+<br> -->
 
-</br>
-<h3>Datasheet
+<!-- <h3>Datasheet
     <button data-form-url="{% url 'merchandising_app:datasheet_merchandising_registrar' contexto_merchandising.id %}"
         data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
         class="create badge bg-primary">
@@ -338,7 +274,7 @@
             {% endfor %}
         </tbody>
     </table>
-</div>
+</div> -->
 
 <br>
 
@@ -456,9 +392,8 @@
     </table>
 </div>
 
-<br>
+<!-- <br>
 
-</br>
 <h3>Equivalencia Unidad
     <button data-form-url="{% url 'merchandising_app:equivalencia_unidad_merchandising_registrar' contexto_merchandising.id %}"
         data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"
@@ -518,9 +453,8 @@
 </div>
 
 
-<br>
+<br> -->
 
-</br>
 <h3>Proveedor Merchandising
     <button data-form-url="{% url 'merchandising_app:proveedor_merchandising_registrar' contexto_merchandising.id %}"
         data-table-url="{% url 'merchandising_app:merchandising_detalle_tabla' contexto_merchandising.id %}"

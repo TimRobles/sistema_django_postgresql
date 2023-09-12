@@ -3,12 +3,12 @@ from decimal import Decimal
 import requests
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications import orden_compra
-from applications.variables import ESTADOS
+from applications.variables import ESTADOS, TIPO_IGV_CHOICES, ESTADOS_ORDEN_COMPRA, ESTADO_COMPROBANTE_MERCHANDISING, INTERNACIONAL_NACIONAL
 from django.db import models
 from django.conf import settings
 from django.db.models import Q
 from applications.datos_globales.models import Unidad,ProductoSunat
-from applications.proveedores.models import Proveedor
+from applications.proveedores.models import Proveedor, InterlocutorProveedor
 from django.contrib.contenttypes.models import ContentType
 from applications.variables import URL_MULTIPLAY
 from applications.material.models import Idioma
@@ -16,6 +16,11 @@ from applications.sociedad.models import Sociedad
 from applications.sede.models import Sede
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import Moneda
+from applications.material.models import ProveedorMaterial
+from applications.funciones import calculos_linea, igv, obtener_totales
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+
+
 
 
 class ClaseMerchandising(models.Model):
@@ -138,27 +143,27 @@ class MarcaMerchandising(models.Model):
         return self.nombre
 
 class Merchandising(models.Model):
-    descripcion_venta = models.CharField('Descripción Venta', max_length=150)
-    descripcion_corta = models.CharField('Descripción Corta', max_length=55)
-    unidad_base = models.ForeignKey(Unidad, on_delete=models.PROTECT, related_name='Merchandising_unidad_base')
-    peso_unidad_base = models.DecimalField('Peso Unidad Base', max_digits=6, decimal_places=2)
+    descripcion_venta = models.CharField('Descripción Venta', max_length=150, blank=True, null=True)
+    descripcion_corta = models.CharField('Descripción Corta', max_length=55,blank=True, null=True)
+    unidad_base = models.ForeignKey(Unidad, on_delete=models.PROTECT, related_name='Merchandising_unidad_base', max_length=55,blank=True, null=True )
+    peso_unidad_base = models.DecimalField('Peso Unidad Base', max_digits=6, decimal_places=2, max_length=55,blank=True, null=True)
     marca = models.ForeignKey(MarcaMerchandising, on_delete=models.PROTECT, related_name='Merchandising_marca', blank=True, null=True)
     modelo = models.ForeignKey(ModeloMerchandising, on_delete=models.PROTECT, related_name='Merchandising_modelo', blank=True, null=True)
-    subfamilia = models.ForeignKey(SubFamiliaMerchandising, on_delete=models.PROTECT, related_name='Merchandising_subfamilia')
+    subfamilia = models.ForeignKey(SubFamiliaMerchandising, on_delete=models.PROTECT, related_name='Merchandising_subfamilia', blank=True, null=True)
     clase = models.ForeignKey(ClaseMerchandising, on_delete=models.PROTECT, related_name='Merchandising_clase', blank=True, null=True)
     producto_sunat = models.ForeignKey(ProductoSunat, on_delete=models.PROTECT, related_name='Merchandising_producto_sunat', blank=True,null=True)
-    control_serie = models.BooleanField('Control Serie', default=False)
-    control_lote = models.BooleanField('Control Lote', default=False)
-    control_calidad = models.BooleanField('Control Calidad', default=False)
+    control_serie = models.BooleanField('Control Serie', default=False, max_length=55,blank=True, null=True)
+    control_lote = models.BooleanField('Control Lote', default=False, max_length=55,blank=True, null=True)
+    control_calidad = models.BooleanField('Control Calidad', default=False, max_length=55,blank=True, null=True)
     estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
-    mostrar = models.BooleanField('Mostrar',default=False)
+    mostrar = models.BooleanField('Mostrar',default=True)
     traduccion = models.CharField('Traducción', max_length=255, blank=True, null=True)
     partida =  models.CharField('Partida', max_length=30, blank=True, null=True)
     uso_funcion =  models.CharField('Uso función', max_length=500, blank=True, null=True)
     compuesto_por =  models.CharField('Compuesto por', max_length=255, blank=True, null=True)
     es_componente = models.BooleanField('Es componente', default=False)
-    atributo = models.ManyToManyField(AtributoMerchandising, verbose_name='Atributo', related_name='Merchandising_atributo')
-    componente = models.ManyToManyField(ComponenteMerchandising, verbose_name='Componente', related_name='Merchandising_componente', through='merchandising.RelacionMerchandisingComponente')
+    atributo = models.ManyToManyField(AtributoMerchandising, verbose_name='Atributo', related_name='Merchandising_atributo', max_length=55,blank=True)
+    componente = models.ManyToManyField(ComponenteMerchandising, verbose_name='Componente', related_name='Merchandising_componente', through='merchandising.RelacionMerchandisingComponente', max_length=55,blank=True)
     id_producto_temporal = models.IntegerField(blank=True, null=True)
     id_multiplay = models.IntegerField(blank=True, null=True)
 
@@ -172,7 +177,7 @@ class Merchandising(models.Model):
         verbose_name_plural = 'Merchandising'
         ordering = [
             'estado_alta_baja',
-            'descripcion_venta',
+            'descripcion_corta',
         ]
     
     @property
@@ -389,7 +394,7 @@ class Merchandising(models.Model):
             
 
     def __str__(self):
-        return self.descripcion_venta
+        return str(self.descripcion_corta)
 
 class RelacionMerchandisingComponente(models.Model):
     merchandising = models.ForeignKey(Merchandising, on_delete=models.CASCADE)
@@ -488,9 +493,9 @@ class ProveedorMerchandising(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Merchandising
     id_registro = models.IntegerField(blank=True, null=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    name = models.CharField('Name', max_length=100)
-    brand = models.CharField('Brand', max_length=100)
-    description = models.CharField('Description', max_length=255)
+    name = models.CharField('Name', max_length=100, blank=True, null=True)
+    brand = models.CharField('Brand', max_length=100, blank=True, null=True)
+    description = models.CharField('Description', max_length=255, blank=True, null=True)
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, null=True)
     estado_alta_baja = models.IntegerField('Estado', choices=ESTADOS, default=1)
 
@@ -701,18 +706,15 @@ class ListaRequerimientoMerchandising(models.Model):
 
 class ListaRequerimientoMerchandisingDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
-    merchandising = models.TextField()
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Merchandising registrado
-    id_registro = models.IntegerField()
-    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
+    merchandising= models.CharField('Merchandising', max_length=150)
+    cantidad = models.DecimalField('Cantidad', max_digits=10, decimal_places=3, blank=True, null=True)
     comentario = models.TextField(blank=True, null=True)
-    lista_requerimiento_merchandising = models.ForeignKey(ListaRequerimientoMerchandising, on_delete=models.CASCADE, related_name='ListaRequerimientoMerchandisingDetalle_requerimiento_material')
+    lista_requerimiento_merchandising = models.ForeignKey(ListaRequerimientoMerchandising, on_delete=models.CASCADE, related_name='ListaRequerimientoMerchandisingDetalle_lista_requerimiento_merchandising')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ListaRequerimientoMerchandisingDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ListaRequerimientoMerchandisingDetalle_updated_by', editable=False)
-
 
     class Meta:
         verbose_name = 'Lista de Requerimiento Merchandising Detalle'
@@ -721,6 +723,8 @@ class ListaRequerimientoMerchandisingDetalle(models.Model):
             'item',
         ]
 
+    def __str__(self):
+        return str(self.merchandising)
 
 class OfertaProveedorMerchandising(models.Model):
     ESTADOS_OFERTA_PROVEEDOR = (
@@ -730,13 +734,27 @@ class OfertaProveedorMerchandising(models.Model):
     )
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
-    lista_requerimiento_merchandising = models.OneToOneField(ListaRequerimientoMerchandising, on_delete=models.CASCADE, related_name='OfertaProveedorMerchandising_lista_requerimiento_merchandising')
+    internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=1)
+    numero_oferta = models.CharField('Número de Oferta', max_length=50, blank=True, null=True)
+    lista_requerimiento_merchandising = models.ForeignKey(ListaRequerimientoMerchandising, on_delete=models.CASCADE, related_name='OfertaProveedorMerchandising_lista_requerimiento_merchandising')
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_inafecta = models.DecimalField('Total Inafecta', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_exonerada = models.DecimalField('Total Exonerada', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_igv = models.DecimalField('Total IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_gratuita = models.DecimalField('Total Gratuita', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     tiempo_estimado_entrega = models.IntegerField('Tiempo estimado de entrega (dias)', blank=True, null=True)
     forma_pago = models.TextField('Forma de pago', null=True, blank=True)
     condiciones = models.TextField('Condiciones', null=True, blank=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_OFERTA_PROVEEDOR, default=1)
+    proveedor = models.CharField('Proveedor', max_length=50, null=True, blank=True)
+    evaluada = models.BooleanField(default=False)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OfertaProveedorMerchandising_created_by', editable=False)
@@ -752,18 +770,24 @@ class OfertaProveedorMerchandising(models.Model):
         ]
 
     def __str__(self):
-        return str(self.id)
+        return str(self.numero_oferta)
 
 class OfertaProveedorMerchandisingDetalle(models.Model):
 
     item = models.IntegerField(blank=True, null=True)
-    proveedor_material = models.TextField()
+    proveedor_material = models.ForeignKey(ProveedorMaterial, on_delete=models.PROTECT, blank=True, null=True)
+    merchandising= models.CharField('Merchandising', max_length=150)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True) #Merchandising registrado
+    id_registro = models.IntegerField(blank=True, null=True)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
-    precio_unitario = models.DecimalField('Precio Unitario', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_con_igv = models.DecimalField('Precio Unitario con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_final_con_igv = models.DecimalField('Precio Final con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))    
     descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, default=8)
     oferta_proveedor_merchandising = models.ForeignKey(OfertaProveedorMerchandising, on_delete=models.CASCADE, related_name='OfertaProveedorMerchandisingDetalle_oferta_proveedor')
     archivo = models.FileField('Archivo', blank=True, null=True)
     
@@ -781,4 +805,270 @@ class OfertaProveedorMerchandisingDetalle(models.Model):
             ]
     
     def __str__(self):
+        return str(self.oferta_proveedor_merchandising)
+    # def __str__(self):
+    #     try:
+    #         return "%s. %s - %s - %s" % (self.item, self.proveedor_material.name, self.proveedor_material.brand, self.proveedor_material.description)
+    #     except:
+    #         return "%s. %s" % (self.item, self.proveedor_material.content_type.get_object_for_this_type(id = self.proveedor_material.id_registro))
+
+
+def oferta_proveedor_merchandising_detalle_post_save(*args, **kwargs):
+    obj = kwargs['instance']
+    respuesta = obtener_totales(obj.oferta_proveedor_merchandising)
+    obj.oferta_proveedor_merchandising.total_descuento = respuesta['total_descuento']
+    obj.oferta_proveedor_merchandising.total_anticipo = respuesta['total_anticipo']
+    obj.oferta_proveedor_merchandising.total_gravada = respuesta['total_gravada']
+    obj.oferta_proveedor_merchandising.total_inafecta = respuesta['total_inafecta']
+    obj.oferta_proveedor_merchandising.total_exonerada = respuesta['total_exonerada']
+    obj.oferta_proveedor_merchandising.total_igv = respuesta['total_igv']
+    obj.oferta_proveedor_merchandising.total_gratuita = respuesta['total_gratuita']
+    obj.oferta_proveedor_merchandising.otros_cargos = respuesta['total_otros_cargos']
+    obj.oferta_proveedor_merchandising.total = respuesta['total']
+    obj.oferta_proveedor_merchandising.save()
+        
+post_save.connect(oferta_proveedor_merchandising_detalle_post_save, sender=OfertaProveedorMerchandisingDetalle)
+
+
+
+
+class OrdenCompraMerchandising(models.Model):
+    internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=1)
+    numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
+    oferta_proveedor_merchandising = models.OneToOneField(OfertaProveedorMerchandising, on_delete=models.PROTECT, blank=True, null=True, related_name='OrdenCompraMerchandising_oferta_proveedor')
+    orden_compra_anterior = models.OneToOneField('self', on_delete=models.PROTECT,blank=True, null=True, related_name='OrdenCompraMerchandising_orden_compra_anterior')
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT, related_name='OrdenCompraMerchandising_sociedad', blank=True, null=True)
+    fecha_orden = models.DateField('Fecha de Orden', auto_now=False, auto_now_add=False)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
+    descuento_global = models.DecimalField('Descuento global', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_descuento = models.DecimalField('Total descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_anticipo = models.DecimalField('Total anticipo', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_igv = models.DecimalField('Total igv', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_otros_cargos = models.DecimalField('Total otros cargos', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    archivo = models.FileField('Archivo',upload_to = 'file/orden_compra/', max_length=100, blank=True, null=True)
+    condiciones = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+    proveedor_temporal = models.ForeignKey(Proveedor, verbose_name='Proveedor', on_delete=models.CASCADE, blank=True, null=True)
+    interlocutor_temporal = models.ForeignKey(InterlocutorProveedor, on_delete=models.CASCADE, blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADOS_ORDEN_COMPRA,default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraMerchandising_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Orden Compra Merchandising'
+        verbose_name_plural = 'Ordenes Compra Merchandising'
+        ordering = [
+            '-numero_orden_compra',
+            '-created_at',
+            ]
+        
+    @property
+    def proveedor(self):
+        if self.proveedor_temporal:
+            return self.proveedor_temporal
+        try:
+            return self.OrdenCompraMerchandising_orden_compra_anterior.proveedor
+        except:
+            return None  
+
+    @property
+    def interlocutor(self):
+        if self.interlocutor_temporal:
+            return self.interlocutor_temporal
+        try:
+            return self.OrdenCompraMerchandising_orden_compra_anterior.interlocutor
+        except:
+            return None
+
+
+    def __str__(self):
+        # return "%s %s" % (self.id, self.numero_orden_compra)
+        return str(self.numero_orden_compra)
+    
+
+class OrdenCompraMerchandisingDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Merchandising
+    id_registro = models.IntegerField()
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
+    precio_unitario_sin_igv = models.DecimalField('Precio unitario sin igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    precio_unitario_con_igv = models.DecimalField('Precio unitario con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    precio_final_con_igv = models.DecimalField('Precio final con igv', max_digits=22, decimal_places=10,default=Decimal('0.00'))
+    descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2,default=Decimal('0.00'))
+    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True, blank=True)
+    orden_compra_merchandising = models.ForeignKey(OrdenCompraMerchandising, on_delete=models.CASCADE,related_name='OrdenCompraMerchandisingDetalle_orden_compra')
+    proveedor_merchandising = models.ForeignKey(ProveedorMaterial, on_delete=models.PROTECT, blank=True, null=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraMerchandisingDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompraMerchandisingDetalle_updated_by', editable=False)
+   
+    class Meta:
+        verbose_name = 'Orden Compra Merchandising Detalle'
+        verbose_name_plural = 'Ordenes Compra Merchandising Detalle'
+        ordering = [
+            'orden_compra_merchandising',
+            'item',
+            ]
+    
+    # @property
+    # def producto(self):
+    #     return self.content_type.get_object_for_this_type(id = self.id_registro)
+     
+    # def __str__(self):
+    #     # return "%s" % (str(self.content_type.get_object_for_this_type(id = self.id_registro)))
+    #     return str(self.id)
+
+    def __str__(self):
+        # return str(self.id) 
+        return ' '
+    
+
+
+class ComprobanteCompraMerchandising(models.Model):
+    numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50, blank=True, null=True)
+    orden_compra_merchandising = models.OneToOneField(OrdenCompraMerchandising, on_delete=models.PROTECT, related_name='ComprobanteCompraMerchandising_orden_compra_merchandising')
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    fecha_comprobante = models.DateField('Fecha del Comprobante', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_estimada_llegada = models.DateField('Fecha Estimada de Llegada', auto_now=False, auto_now_add=False, blank=True, null=True)
+    moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT)
+    descuento_global = models.DecimalField('Descuento Global', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_igv = models.DecimalField('Total IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    slug = models.SlugField(blank=True, null=True)
+    condiciones = models.TextField('Condiciones', blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE_MERCHANDISING, default=0)
+    motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)
+    logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=Decimal('0.00'))
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraMerchandising_updated_by', editable=False)
+
+    # objects = ComprobanteCompraMerchandisingManager()
+
+    class Meta:
+        verbose_name = 'Comprobante de Compra Merchandising'
+        verbose_name_plural = 'Comprobantes de Compra Merchandising'
+        ordering = [
+            'estado',
+            '-fecha_comprobante',
+        ]
+
+    @property
+    def fecha(self):
+        return self.fecha_comprobante
+
+    # @property
+    # def proveedor(self):
+    #     return self.orden_compra_merchandising.proveedor
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    # @property
+    # def id_registro(self):
+    #     return self.id
+
+    @property
+    def documento(self):
+        return self.numero_comprobante_compra
+        
+    def __str__(self):
+        return str(self.numero_comprobante_compra)
+
+
+
+class ComprobanteCompraMerchandisingDetalle(models.Model):
+    item = models.IntegerField()
+    orden_compra_merchandising_detalle = models.OneToOneField(OrdenCompraMerchandisingDetalle, on_delete=models.PROTECT, related_name='ComprobanteCompraMerchandisingDetalle_orden_compra_merchandising_detalle')
+    cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, blank=True, null=True)
+    precio_unitario_sin_igv = models.DecimalField('Precio Unitario Sin IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_con_igv = models.DecimalField('Precio Unitario Con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_final_con_igv = models.DecimalField('Precio Final Con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    tipo_igv = models.IntegerField(choices=TIPO_IGV_CHOICES)
+    comprobante_compra_merchandising = models.ForeignKey(ComprobanteCompraMerchandising, on_delete=models.CASCADE, related_name='ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraMerchandisingDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraMerchandisingDetalle_updated_by', editable=False)
+
+    # objects = ComprobanteCompraMerchandisingDetalleManager()
+
+    class Meta:
+        verbose_name = 'Comprobante de Compra Merchandising Detalle'
+        verbose_name_plural = 'Comprobantes de Compra Merchandising Detalles'
+        ordering = [
+            'comprobante_compra_merchandising',
+            'item',
+            ]
+
+    @property
+    def content_type(self):
+        return ContentType.objects.get_for_model(self)
+
+    @property
+    def id_registro(self):
+        return self.id
+
+    # @property
+    # def producto(self):
+    #     return self.orden_compra_merchandising_detalle.producto
+    
+    # @property
+    # def proveedor(self):
+    #     return self.comprobante_compra_merchandising.proveedor
+    
+    # @property
+    # def descripcion_proveedor(self):
+    #     proveedor_merchandising = ProveedorMerchandising.objects.get(
+    #         content_type = self.orden_compra_merchandising_detalle.content_type,
+    #         id_registro = self.orden_compra_merchandising.id_registro,
+    #         proveedor = self.proveedor,
+    #         estado_alta_baja = 1,
+    #     )
+    #     return "%s %s" % (proveedor_merchandising.name, proveedor_merchandising.description)
+
+    @property
+    def sociedad(self):
+        return self.comprobante_compra_merchandising.sociedad
+
+    def __str__(self):
+        # return "%s" % (str(self.orden_compra_merchandising_detalle))
         return str(self.id)
+    
+
+# class ArchivoComprobanteCompraMerchandising(models.Model):
+#     archivo = models.FileField('Archivo', upload_to=ARCHIVO_COMPROBANTE_COMPRA_PI_ARCHIVO, max_length=100)
+#     comprobante_compra_merchandising = models.ForeignKey(ComprobanteCompraMerchandising, on_delete=models.CASCADE)
+
+#     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoComprobanteCompraMerchandising_created_by', editable=False)
+#     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+#     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoComprobanteCompraMerchandising_updated_by', editable=False)
+
+#     class Meta:
+#         verbose_name = 'Archivo de Comprobante de Compra Merchandising'
+#         verbose_name_plural = 'Archivos de Comprobantes de Compra Merchandising'
+
+#     def __str__(self):
+#         return self.archivo

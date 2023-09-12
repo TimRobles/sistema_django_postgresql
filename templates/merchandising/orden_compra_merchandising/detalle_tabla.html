@@ -1,0 +1,45 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead class="fondo-personalizado" style="--color-fondo: {{ contexto_orden_compra.sociedad.color }};">
+            <tr>
+                <th>Item</th>
+                <th>Merchandising Oficial</th>
+                <th>Tipo IGV</th>
+                <th class="text-nowrap text-end">Cantidad</th>
+                <th class="text-nowrap text-end">Prec. Unit. con IGV</th>
+                <th class="text-nowrap text-end">Descuento</th>
+                <th class="text-nowrap text-end">Sub Total</th>
+                <th class="text-nowrap text-end">IGV</th>
+                <th class="text-nowrap text-end">Total</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in merchandising  %}
+            <tr>
+                <td> {{ detalle.item }} </td>
+                <td> {{ detalle.merch.descripcion_corta  }} </td>
+                <td> {{ detalle.get_tipo_igv_display }} </td>
+                <td class="text-end text-nowrap">{{ detalle.cantidad|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.precio_unitario_con_igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.descuento|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.sub_total|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.igv|redondear|intcomma }}</td>
+                <td class="text-end text-nowrap">{{ contexto_orden_compra.moneda.simbolo }} {{ detalle.total|redondear|intcomma }}</td>
+                <td class="text-center text-nowrap">
+                </td>
+            </tr>
+                
+            {% endfor %}
+                
+        </tbody>
+ 
+
+
+  
+    </table>
+</div>
+<br>

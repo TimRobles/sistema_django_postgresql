@@ -1,5 +1,6 @@
 respuesta = $('#respuesta_id')[0].innerHTML;
 url = $('#url')[0].innerHTML;
+
 function responder() {
     datos = new FormData();
     datos.append('respuesta', respuesta);
@@ -19,6 +20,7 @@ function responder() {
             fila.push(alternativa);
             fila.push(pregunta);
             fila.push(borrador);
+            console.log(fila);
             datos.append('opcion-' + index, fila);
         }
     }
@@ -68,6 +70,7 @@ function responder() {
     xhr.setRequestHeader('X-CSRFToken', csrftoken);
     xhr.onload = function(){
         if (this.status === 200) {
+            console.log(xhr.responseText);
             $respuesta = xhr.responseText;
         }else{
             $respuesta = false;

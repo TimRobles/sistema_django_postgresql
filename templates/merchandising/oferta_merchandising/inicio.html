@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Oferta Proveedor Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Oferta Proveedor Merchandising
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/oferta_merchandising/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Orden Compra Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Orden Compra
+        <a href="{% url 'merchandising_app:orden_compra_merchandising_inicio' %}"class="create btn btn-primary">Regresar</a>
+    </h3>
+
+    {% if contexto_orden_compra.estado == 1 and not contexto_orden_compra.proveedor_temporal %}
+    <button data-form-url="{% url 'merchandising_app:orden_compra_merchandising_actualizar' contexto_orden_compra.id %}"
+        class="delete btn btn-primary">
+        Proveedor
+    </button>
+    {% endif %}
+
+    {% if contexto_orden_compra.estado < 2 or contexto_orden_compra.estado == 5 %}
+    <button data-form-url="{% url 'merchandising_app:orden_compra_merchandising_enviar_correo' contexto_orden_compra.id %}"
+        class="delete btn btn-primary">
+        Enviar Correo
+    </button>
+    {% endif %}
+
+    {% if contexto_orden_compra.estado == 2 %}
+    <button data-form-url="{% url 'merchandising_app:orden_compra_merchandising_generar_comprobante_compra_total' contexto_orden_compra.id %}"
+        class="delete btn btn-primary">
+        Generar Comprobante Total
+    </button>
+    {% endif %}
+
+    <br>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>N° Orden Compra</th>
+                    <th>Sociedad</th>
+                    <th>Proveedor</th>
+                    <th>Interlocutor</th>
+                    <th>Estado</th>
+                    <th>Motivo de Anulación</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ contexto_orden_compra.fecha_orden|date:'d/m/Y' }}</td>
+                    <td>{{ contexto_orden_compra.numero_orden_compra }}</td>
+                    <td>{{ contexto_orden_compra.sociedad.abreviatura }}</td>
+                    <td>{{ contexto_orden_compra.proveedor }}</td>
+                    <td>{{ contexto_orden_compra.interlocutor }}</td>
+                    <td>{{ contexto_orden_compra.get_estado_display }}</td>
+
+                    {% if  contexto_orden_compra.motivo_anulacion  %}
+                    <td>{{ contexto_orden_compra.motivo_anulacion }}</td>
+
+                    {% endif %}
+                    <td> - </td>
+
+
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+
+    <div id="tabla">
+        {% include 'merchandising/orden_compra_merchandising/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

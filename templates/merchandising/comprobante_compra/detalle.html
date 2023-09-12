@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Comprobante de Compra Merchandising
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Detalle Comprobante de Compra Merchandising</h3>
+    <a href="{% url 'merchandising_app:comprobante_compra_merchandising_lista' %}" class="btn btn-primary">Regresar</a>
+
+    <button data-form-url="{% url 'merchandising_app:comprobante_compra_merchandising_actualizar_fecha_llegada'  contexto_comprobante_compra.id %}"
+        data-table-url="{% url 'merchandising_app:comprobante_compra_merchandising_detalle_tabla'  contexto_comprobante_compra.id %}"
+        class="update btn btn-primary">
+        Actualizar Fecha de Llegada
+    </button>
+
+    <button data-form-url="{% url 'merchandising_app:comprobante_compra_merchandising_actualizar' contexto_comprobante_compra.id %}"
+        data-table-url="{% url 'merchandising_app:comprobante_compra_merchandising_detalle_tabla' contexto_comprobante_compra.id %}"
+        class="update btn btn-primary">
+        Actualizar
+    </button>
+
+    <button data-form-url="{% url 'merchandising_app:comprobante_compra_merchandising_guardar' contexto_comprobante_compra.id %}"
+        class="delete btn btn-primary">
+        Guardar
+    </button>
+
+    {% if contexto_comprobante_compra.orden_compra_merchandising %}
+    <a href="{% url 'merchandising_app:orden_compra_merchandising_detalle' contexto_comprobante_compra.orden_compra_merchandising.id %}"
+    class="btn btn-success">
+        Orden de Compra
+    </a>    
+    {% endif %}
+
+    <!-- {% if permiso_logistica %}     -->
+        {% if contexto_comprobante_compra.estado == 1 %}
+            <button data-form-url="{% url 'merchandising_app:recepcion_comprobante_compra_merchandising' contexto_comprobante_compra.id %}"
+                class="delete btn btn-primary">
+                Recepción
+            </button>
+        {% endif %}
+    <!-- {% endif %} -->
+
+    {% if permiso_logistica %}    
+        {% if contexto_comprobante_compra.estado == 1 %}
+            <button data-form-url="{% url 'merchandising_app:recepcion_comprobante_compra_pi' contexto_comprobante_compra_pi.slug %}"
+                class="delete btn btn-primary">
+                Recepción
+            </button>
+        {% endif %}
+    {% endif %}
+
+
+    <br>
+    <div id="tabla">
+        {% include 'merchandising/comprobante_compra/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}
