@@ -20,6 +20,7 @@ from .models import (
 )
 
 from .forms import (
+    CambioSociedadForm,
     CambioSociedadStockDetalleActualizarForm,
     CambioSociedadStockDetalleForm,
     CambioSociedadStockDetalleSeriesForm,
@@ -516,69 +517,70 @@ class ValidarSeriesCambioSociedadStockDetalleDeleteView(PermissionRequiredMixin,
         return context
     
 
-# class CambioSociedadGenerarOrdenCompraView(PermissionRequiredMixin, BSModalFormView):
-#     permission_required = ('orden_compra.add_ordencompra')
+class CambioSociedadGenerarOrdenCompraView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('orden_compra.add_ordencompra')
 
-#     form_class = OrdenCompraSociedadForm
-#     template_name = "includes/formulario generico.html"
-#     success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
+    form_class = CambioSociedadForm
+    template_name = "includes/formulario generico.html"
+    success_url = reverse_lazy('orden_compra_app:orden_compra_inicio')
 
-#     def dispatch(self, request, *args, **kwargs):
-#         if not self.has_permission():
-#             return render(request, 'includes/modal sin permiso.html')
-#         return super().dispatch(request, *args, **kwargs)
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
-#     @transaction.atomic
-#     def form_valid(self, form):
-#         sid = transaction.savepoint()
-#         try:
-#             if self.request.session['primero']:
-#                 cambio_sociedad = CambioSociedadStock.objects.get(id=self.kwargs['id'])
-#                 numero_orden_compra = form.cleaned_data['sociedad'].abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = form.cleaned_data['sociedad']))+1, 6)
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                cambio_sociedad = CambioSociedadStock.objects.get(id=self.kwargs['pk'])
+                numero_orden_compra = cambio_sociedad.sociedad_final.abreviatura + numeroXn(len(OrdenCompra.objects.filter(sociedad = cambio_sociedad.sociedad_final))+1, 6)
 
-#                 orden_compra = OrdenCompra.objects.create(
-#                     internacional_nacional = oferta.internacional_nacional,
-#                     incoterms = oferta.incoterms,
-#                     numero_orden_compra = numero_orden_compra,
-#                     oferta_proveedor = oferta,
-#                     sociedad = form.cleaned_data['sociedad'],
-#                     fecha_orden = date.today(),
-#                     moneda = oferta.moneda,
-#                     slug = slug_aleatorio(OrdenCompra),
-#                     created_by = self.request.user,
-#                     updated_by = self.request.user,
-#                 )
+                orden_compra = OrdenCompra.objects.create(
+                    internacional_nacional = form.cleaned_data['internacional_nacional'],
+                    incoterms = form.cleaned_data['incoterms'],
+                    numero_orden_compra = numero_orden_compra,
+                    # oferta_proveedor = oferta,
+                    sociedad = cambio_sociedad.sociedad_final,
+                    fecha_orden = date.today(),
+                    moneda = form.cleaned_data['moneda'],
+                    slug = slug_aleatorio(OrdenCompra),
+                    estado = 2,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
 
-#                 oferta_detalle = oferta.OfertaProveedorDetalle_oferta_proveedor.all()
-#                 for detalle in oferta_detalle:
-#                     orden_compra_detalle = OrdenCompraDetalle.objects.create(
-#                         item = detalle.item,
-#                         content_type = detalle.proveedor_material.content_type,
-#                         id_registro = detalle.proveedor_material.id_registro,
-#                         cantidad = detalle.cantidad,
-#                         precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
-#                         precio_unitario_con_igv = detalle.precio_unitario_con_igv,
-#                         precio_final_con_igv = detalle.precio_final_con_igv,
-#                         descuento = detalle.descuento,
-#                         sub_total = detalle.sub_total,
-#                         igv = detalle.igv,
-#                         total = detalle.total,
-#                         tipo_igv = detalle.tipo_igv,
-#                         orden_compra = orden_compra,
-#                         created_by = self.request.user,
-#                         updated_by = self.request.user,
-#                         )
-#                 self.request.session['primero'] = False
+                cambio_sociedad_detalle = cambio_sociedad.CambioSociedadStockDetalle_cambio_sociedad_stock.all()
+                for detalle in cambio_sociedad_detalle:
+                    orden_compra_detalle = OrdenCompraDetalle.objects.create(
+                        item = detalle.item,
+                        content_type = detalle.content_type,
+                        id_registro = detalle.id_registro,
+                        cantidad = detalle.cantidad,
+                        # precio_unitario_sin_igv = detalle.precio_unitario_sin_igv,
+                        # precio_unitario_con_igv = detalle.precio_unitario_con_igv,
+                        # precio_final_con_igv = detalle.precio_final_con_igv,
+                        # descuento = detalle.descuento,
+                        # sub_total = detalle.sub_total,
+                        # igv = detalle.igv,
+                        # total = detalle.total,
+                        # tipo_igv = detalle.tipo_igv,
+                        orden_compra = orden_compra,
+                        created_by = self.request.user,
+                        updated_by = self.request.user,
+                        )
+                self.request.session['primero'] = False
 
-#             return super().form_valid(form)
-#         except Exception as ex:
-#             transaction.savepoint_rollback(sid)
-#             registrar_excepcion(self, ex, __file__)
-#         return HttpResponseRedirect(self.get_success_url())
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
-#     def get_context_data(self, **kwargs):
-#         self.request.session['primero'] = True
-#         context = super(CambioSociedadGenerarOrdenCompraView, self).get_context_data(**kwargs)
-#         context['accion'] = "Generar"
-#         context['titulo'] = "Orden de Compra"
-#         return context
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(CambioSociedadGenerarOrdenCompraView, self).get_context_data(**kwargs)
+        context['accion'] = "Generar"
+        context['titulo'] = "Orden de Compra"
+        return context

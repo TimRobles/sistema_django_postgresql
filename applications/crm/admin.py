@@ -36,13 +36,16 @@ from .models import (
 @admin.register(ClienteCRMDetalle)
 class ClienteCRMDetalleAdmin(admin.ModelAdmin):
     list_display = (
+        'tipo_actividad',
         'fecha',
+        'direccion',
+        'hora_inicio',
+        'hora_fin',
         'objetivo',
         'compromiso',
         'mejoras',
         'quejas',
         'comentario',
-        'monto',
         'archivo_recibido',
         'archivo_enviado',
         'cliente_crm',

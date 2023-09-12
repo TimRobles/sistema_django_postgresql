@@ -4,6 +4,12 @@
 <h3>Detalle Cambio Sociedad Stock
     <a href="{% url 'cambio_sociedad_app:cambio_sociedad_stock_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     <a href="{% url 'cambio_sociedad_app:validar_series_cambio_sociedad_stock_pdf' contexto_cambio_sociedad_stock.id %}"><span class="badge bg-primary">Ver Series</span></a>
+    {% if contexto_cambio_sociedad_stock.estado != 1 and contexto_cambio_sociedad_stock.estado != 3  %}
+    <button data-form-url="{% url 'cambio_sociedad_app:cambio_sociedad_stock_generar_orden_compra' contexto_cambio_sociedad_stock.id  %}"
+        class="delete btn btn-primary">
+        Generar Orden de Compra
+    </button>
+    {% endif %}
 </h3>
 
 

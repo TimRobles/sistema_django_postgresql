@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 from applications.sede.models import Sede
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
+from applications.datos_globales.models import Moneda
+from applications.variables import INCOTERMS, INTERNACIONAL_NACIONAL
 from .models import CambioSociedadStock, CambioSociedadStockDetalle 
 from applications.material.models import Material
 
@@ -100,3 +102,20 @@ class CambioSociedadStockDetalleSeriesForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
             self.fields['cantidad'].disabled = True
             self.fields['cantidad_registrada'].disabled = True
+
+
+class CambioSociedadForm(BSModalForm):
+    internacional_nacional = forms.ChoiceField(choices=((None, '-----------------'),) + INTERNACIONAL_NACIONAL, required=False)
+    incoterms = forms.ChoiceField(choices=((None, '-----------------'),) + INCOTERMS, required=False)
+    moneda = forms.ModelChoiceField(queryset=Moneda.objects.filter(estado=1))
+    class Meta:
+        fields=(
+            'internacional_nacional',
+            'incoterms',
+            'moneda',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(CambioSociedadForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

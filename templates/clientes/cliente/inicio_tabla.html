@@ -15,25 +15,43 @@
         {% for cliente in contexto_pagina %}
         <tr>
             <td>{{ cliente.razon_social }}</td>
-            <td>{{ cliente.numero_documento }}</td>
+            <td>
+                {% if cliente.numero_documento %}
+                {{ cliente.numero_documento }}
+                {% endif %}
+            </td>
             <td>{{ cliente.direccion_fiscal }}</td>
             <td>
                 {% if cliente.pais %}
                 {{ cliente.pais }}
                 {% endif %}
             </td>
-            <td>{{ cliente.ubigeo }}</td>
+            <td>
+                {% if cliente.ubigeo %}
+                {{ cliente.ubigeo }}
+                {% endif %}
+            </td>
             <td class="text-center">{{ cliente.get_estado_sunat_display }}</td>
             <td class="text-center">{{ cliente.get_condicion_sunat_display }}</td>
             <td class="text-center text-nowrap">
                 {% if cliente.estado_sunat == 1 %}
-                    <button data-form-url="{% url 'clientes_app:cliente_actualizar' cliente.id %}"
-                        data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
-                        data-keep-open="true"
-                        class="update btn btn-warning btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                        <i class="bi bi-pencil-fill"></i>
-                    </button>
+                    {% if cliente.pais.id == 1 %}
+                        <button data-form-url="{% url 'clientes_app:cliente_nacional_actualizar' cliente.id %}"
+                            data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    {% else %}
+                        <button data-form-url="{% url 'clientes_app:cliente_extranjero_actualizar' cliente.id %}"
+                            data-table-url="{% url 'clientes_app:cliente_tabla' %}{{ contexto_filtro }}{{ pagina_filtro }}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    {% endif %}
                     <button data-form-url="{% url 'clientes_app:cliente_baja' cliente.id %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">

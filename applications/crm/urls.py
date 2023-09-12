@@ -6,14 +6,18 @@ app_name='crm_app'
 urlCliente = [
     path('cliente-crm/', views.ClienteCRMListView.as_view(), name='cliente_crm_inicio'),
     path('cliente-crm-tabla/', views.ClienteCRMTabla, name='cliente_crm_tabla'),
-    path('cliente-crm/registrar/', views.ClienteCRMCreateView.as_view(), name='cliente_crm_registrar'),
-    path('cliente-crm/actualizar/<pk>/', views.ClienteCRMUpdateView.as_view(), name='cliente_crm_actualizar'),
+    path('cliente-crm/nacional/registrar/', views.ClienteCRMNacionalCreateView.as_view(), name='cliente_crm_nacional_registrar'),
+    path('cliente-crm/extranjero/registrar/', views.ClienteCRMExtranjeroCreateView.as_view(), name='cliente_crm_extranjero_registrar'),
+    path('cliente-crm/nacional/actualizar/<pk>/', views.ClienteCRMNacionalUpdateView.as_view(), name='cliente_crm_nacional_actualizar'),
+    path('cliente-crm/extranjero/actualizar/<pk>/', views.ClienteCRMExtranjeroUpdateView.as_view(), name='cliente_crm_extranjero_actualizar'),
     path('cliente-crm/detalle/<pk>/', views.ClienteCRMDetailView.as_view(), name='cliente_crm_detalle'),
     path('cliente-crm/detalle-tabla/<pk>/', views.ClienteCRMDetailTabla, name='cliente_crm_detalle_tabla'),
     path('cliente-crm/detalle/registrar/<int:cliente_crm_id>/', views.ClienteCRMDetalleCreateView.as_view(), name='cliente_crm_detalle_registrar'),
     path('cliente-crm/detalle/actualizar/<pk>/', views.ClienteCRMDetalleUpdateView.as_view(), name='cliente_crm_detalle_actualizar'),
     path('cliente-crm/detalle/eliminar/<pk>/', views.ClienteCRMDetalleDeleteView.as_view(), name='cliente_crm_detalle_eliminar'),
     path('cliente-crm/detalle/ver/<pk>/', views.ClienteCRMDetalleVerView.as_view(), name='cliente_crm_detalle_ver'),
+    path('cliente-crm/detalle/cotizaciones/<pk>/', views.ClienteCRMCotizacionesView.as_view(), name='cliente_crm_detalle_cotizaciones'),
+    path('cliente-crm/detalle/facturas/<pk>/', views.ClienteCRMFacturasView.as_view(), name='cliente_crm_detalle_facturas'),
     ]
 
 urlEvento = [

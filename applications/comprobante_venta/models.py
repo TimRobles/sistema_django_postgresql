@@ -106,17 +106,16 @@ class FacturaVenta(models.Model):
         else:
             return "%s %s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
 
-# def factura_venta_post_save(*args, **kwargs):
-#     obj = kwargs['instance']
-#     applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
+def factura_venta_post_save(*args, **kwargs):
+    print('factura_venta_post_save')
+    obj = kwargs['instance']
+    applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
 
-# def factura_venta_pre_save(*args, **kwargs):
-#     obj = kwargs['instance']
-#     obj2 = FacturaVenta.objects.get(id=obj.id)
-#     applications.crm.models.actualizar_estado_cliente_crm(obj2.cliente.id)
+def factura_venta_pre_save(*args, **kwargs):
+    print('factura_venta_pre_save')
 
-# post_save.connect(factura_venta_post_save, sender=FacturaVenta)
-# pre_save.connect(factura_venta_pre_save, sender=FacturaVenta)
+post_save.connect(factura_venta_post_save, sender=FacturaVenta)
+pre_save.connect(factura_venta_pre_save, sender=FacturaVenta)
 
 class FacturaVentaDetalle(models.Model):
     item = models.IntegerField()

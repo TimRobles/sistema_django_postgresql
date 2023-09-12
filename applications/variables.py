@@ -444,6 +444,13 @@ ESTADOS_CLIENTE = (
     (6, 'DEUDOR'),
 )
 
+TIPO_ACTIVIDAD = (
+    (1, 'REUNIÓN'),
+    (2, 'VISITA'),
+    (3, 'LLAMADA'),
+    (4, 'SOPORTE TÉCNICO'),
+)
+
 ESTADOS_EVENTO_CRM = (
     (1, 'ACTIVO'),
     (2, 'EN PROCESO'),

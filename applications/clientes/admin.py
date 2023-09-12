@@ -6,6 +6,7 @@ from .models import (
     Cliente,
     ClienteAnexo,
     CorreoCliente,
+    HistorialEstadoCliente,
     TipoInterlocutorCliente,
     InterlocutorCliente,
     ClienteInterlocutor,
@@ -16,6 +17,7 @@ from .models import (
 
 class ClienteAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'razon_social',
         'tipo_documento',
         'numero_documento',
@@ -228,3 +230,21 @@ class ClienteAnexoAdmin(admin.ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
     
+
+@admin.register(HistorialEstadoCliente)
+class HistorialEstadoClienteAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'cliente',
+        'estado_cliente',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',        
+        )
+        
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)

@@ -1,10 +1,12 @@
+from datetime import date, timedelta
 from django.db import models
 from decimal import Decimal
 from django.conf import settings
 from applications.rutas import CLIENTE_CRM_ARCHIVO_ENVIADO, CLIENTE_CRM_ARCHIVO_RECIBIDO
-from applications.comprobante_venta.models import FacturaVenta
+from applications.comprobante_venta.models import FacturaVenta, BoletaVenta
+from applications.nota.models import NotaCredito
 from applications.proveedores.models import Proveedor
-from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
+from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM, TIPO_ACTIVIDAD, TIPO_ENCUESTA_CRM, TIPO_PREGUNTA_CRM
 from applications.clientes.models import Cliente, RepresentanteLegalCliente, CorreoInterlocutorCliente, InterlocutorCliente, TelefonoInterlocutorCliente
 from applications.sorteo.models import Sorteo
 from applications.datos_globales.models import Pais, Unidad
@@ -13,6 +15,7 @@ from applications.almacenes.models import Almacen
 from applications.movimiento_almacen.models import TipoStock
 from applications.sede.models import Sede
 from applications.sociedad.models import Sociedad
+from applications.funciones import consulta_totales_ventas, consulta_pareto, registrar_excepcion_sin_user
 from .managers import RespuestaDetalleCRMManager
 
 # class ClienteCRM(models.Model):
@@ -44,13 +47,17 @@ from .managers import RespuestaDetalleCRMManager
 
 class ClienteCRMDetalle(models.Model):
 
+    tipo_actividad = models.IntegerField('Tipo de Actividad', choices=TIPO_ACTIVIDAD)
+    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ClienteCRMDetalle_interlocutor', blank=True, null=True)  
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False, blank=True, null=True)
+    hora_inicio = models.TimeField('Hora Inicio', auto_now=False, auto_now_add=False, blank=True, null=True)
+    hora_fin = models.TimeField('Hora Fin', auto_now=False, auto_now_add=False, blank=True, null=True)
+    direccion = models.CharField('Dirección', max_length=100, blank=True, null=True)
     objetivo = models.TextField('Objetivo', blank=True, null=True)
     compromiso = models.TextField('Compromiso', blank=True, null=True)
     mejoras = models.TextField('Mejoras', blank=True, null=True)
     quejas = models.TextField('Quejas', blank=True, null=True)
     comentario = models.TextField('Comentario', blank=True, null=True)
-    monto = models.DecimalField('Monto', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     archivo_recibido = models.ImageField('Archivo Recibido', upload_to=CLIENTE_CRM_ARCHIVO_RECIBIDO, max_length=100, blank=True, null=True)
     archivo_enviado = models.ImageField('Archivo Enviado', upload_to=CLIENTE_CRM_ARCHIVO_ENVIADO, max_length=100, blank=True, null=True)
     cliente_crm =  models.ForeignKey(Cliente, on_delete=models.CASCADE)
@@ -61,8 +68,8 @@ class ClienteCRMDetalle(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRMDetalle_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'Cliente CRM Detalle '
-        verbose_name_plural = 'Clientes CRM Detalle '
+        verbose_name = 'Cliente CRM Detalle'
+        verbose_name_plural = 'Clientes CRM Detalle'
 
     def __str__(self):
         return str(self.cliente_crm)
@@ -84,29 +91,49 @@ class ProveedorCRM(models.Model):
     def __str__(self):
         return str(self.proveedor_crm)
     
-from applications import cotizacion, comprobante_venta, cobranza
+from applications import cotizacion, comprobante_venta, cobranza, tarea
+
+def ver_pareto(id_cliente):
+    fecha_fin = date.today()
+    fecha_inicio = fecha_fin - timedelta(6*30)
+    totales = consulta_totales_ventas(FacturaVenta, BoletaVenta, NotaCredito, fecha_inicio, fecha_fin)
+    return consulta_pareto(totales, id_cliente)
 
 def actualizar_estado_cliente_crm(id_cliente=None):
-    print('actualizar_estado_cliente_crm')
-    if id_cliente:
-        clientes = Cliente.objects.filter(id=id_cliente)
-    else:
-        clientes = Cliente.objects.all()
+    try:
+        print('actualizar_estado_cliente_crm')
+        if id_cliente:
+            clientes = Cliente.objects.filter(id=id_cliente)
+        else:
+            clientes = Cliente.objects.all()
 
-    for cliente in clientes:
-        if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10)) > 0:
-            cliente.estado = 3
-        else:
-            cliente.estado = 1
-        if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
-            cliente.estado == 4
-        else:
-            cliente.estado == 1
-        if len(cobranza.models.Deuda.objects.filter(cliente=cliente))>0:
-            cliente.estado == 6
-        else:
-            cliente.estado == 1
-        cliente.save()
+        for cliente in clientes:
+            filtro = True
+            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
+                filtro = False
+                estado_cliente = 3
+            if len(tarea.models.Tarea.objects.filter(content_type=ContentType.objects.get_for_model(Cliente), id_registro = cliente.id, estado__gte=2)) > 0:
+                filtro = False
+                estado_cliente = 2
+            if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
+                filtro = False
+                estado_cliente = 4
+            if len(comprobante_venta.models.BoletaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
+                filtro = False
+                estado_cliente = 4
+            if ver_pareto(id_cliente):
+                filtro = False
+                estado_cliente = 5
+            if len(cobranza.models.Deuda.objects.filter(cliente=cliente, estado_cancelado=False))>0:
+                filtro = False
+                estado_cliente = 6
+            if filtro:
+                estado_cliente = 1
+            if cliente.estado_cliente != estado_cliente:
+                cliente.estado_cliente = estado_cliente
+                cliente.save()
+    except Exception as ex:
+        registrar_excepcion_sin_user(ex, __file__)
 
 
 class EventoCRM(models.Model):
@@ -158,7 +185,7 @@ class EventoCRMDetalle(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EventoCRMDetalle_updated_by', editable=False)
 
     class Meta:
-        verbose_name = 'Evento CRM Detalle '
+        verbose_name = 'Evento CRM Detalle'
         verbose_name_plural = 'Eventos CRM Detalle'
         ordering = [
             'evento_crm',

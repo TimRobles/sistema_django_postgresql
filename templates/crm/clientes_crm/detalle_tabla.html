@@ -7,29 +7,25 @@
             <tbody>
                 <tr>
                     <th class="pe-2">RUC: </th>
-                    <td>{{ contexto_cliente_crm.cliente_crm.numero_documento }}</td>
-                    <th class="px-2">Representante: </th>
-                    <td>{{ contexto_cliente_crm.representante.interlocutor }}</td>
-                    <th class="px-2">Tipo Representante: </th>
-                    <td>{{ contexto_cliente_crm.representante.get_tipo_representante_legal_display }}</td>
+                    <td>{{ contexto_cliente_crm.numero_documento }}</td>
                     <th class="px-2">Medio: </th>
                     <td>{{ contexto_cliente_crm.get_medio_display }}</td>
+                    <th class="px-2">Fecha Registro: </th>
+                    <td>{{ contexto_cliente_crm.created_at|date:'d/m/Y' }}</td>
                 </tr>
                 <tr>
-                    <th class="px-2">Fecha Registro: </th>
-                    <td>{{ contexto_cliente_crm.fecha_registro|date:'d/m/Y' }}</td>
                     <th class="pe-2">Última Factura: </th>
                     <td>{{ contexto_cliente_crm.nro_factura.serie_comprobante.serie }}-{{contexto_cliente_crm.nro_factura.numero_factura|numeroXn:6 }}</td>
                     <th class="px-2">Monto Total: </th>
                     <td>{{ contexto_cliente_crm.nro_factura.moneda.simbolo }} {{ contexto_cliente_crm.nro_factura.total|redondear|intcomma }}</td>
                     <th class="px-2">Estado: </th>
-                    <td>{{ contexto_cliente_crm.get_estado_display }}</td>
+                    <td>{{ contexto_cliente_crm.get_estado_cliente_display }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
-
+<br>
 <h3>Información de Actividad
     <button data-form-url="{% url 'crm_app:cliente_crm_detalle_registrar' contexto_cliente_crm.id %}"
         data-table-url="{% url 'crm_app:cliente_crm_detalle_tabla' contexto_cliente_crm.id %}"
@@ -43,9 +39,13 @@
     <table class="table">
         <thead>
             <tr>
+                <th>Actividad</th>
+                <th>Interlocutor</th>
+                <th>Dirección</th>
                 <th>Fecha</th>
-                <th>Comentario</th>
-                <th>Monto</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Usuario Registro</th>
                 <th>Archivo Recibido</th>
                 <th>Archivo Enviado</th>
                 <th class="text-center">Acciones</th>
@@ -54,9 +54,25 @@
         <tbody>
             {% for cliente_crm in cliente_crm_detalle %}
             <tr>
+                <td>{{ cliente_crm.get_tipo_actividad_display }}</td>
+                <td>{{ cliente_crm.interlocutor }}</td>
+                <td>
+                    {% if cliente_crm.direccion %}
+                        {{ cliente_crm.direccion}}
+                    {% endif %}
+                </td>
                 <td>{{ cliente_crm.fecha|date:'d/m/Y' }}</td>
-                <td>{{ cliente_crm.comentario}}</td>
-                <td>{{ cliente_crm.monto|intcomma}}</td>
+                <td>
+                    {% if cliente_crm.hora_inicio %}
+                        {{ cliente_crm.hora_inicio }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if cliente_crm.hora_fin %}
+                        {{ cliente_crm.hora_fin }}
+                    {% endif %}
+                </td>
+                <td>{{ cliente_crm.created_by}}</td>
                 <td class="text-center">
                     {% if cliente_crm.archivo_recibido %}
                         <a href="{{ MEDIA_URL }}{{ cliente_crm.archivo_recibido}}" target="_blank">Ver Archivo</a>

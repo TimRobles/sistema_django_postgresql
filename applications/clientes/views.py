@@ -1,13 +1,14 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from applications.datos_globales.models import Distrito
+from applications.datos_globales.models import Distrito, Pais
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from .forms import (
     ClienteAnexoDarBajaForm,
     ClienteAnexoForm,
     ClienteBuscarForm,
-    ClienteForm,
+    ClienteNacionalForm,
+    ClienteExtranjeroForm,
     ClienteInterlocutorCreateForm,
     ClienteInterlocutorUpdateForm,
     CorreoClienteDarBajaForm,
@@ -163,11 +164,11 @@ def ClienteTabla(request):
         )
         return JsonResponse(data)
 
-class ClienteCreateView(PermissionRequiredMixin, BSModalCreateView):
+class ClienteNacionalCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('clientes.add_cliente')
     model = Cliente
     template_name = "clientes/cliente/form.html"
-    form_class = ClienteForm
+    form_class = ClienteNacionalForm
     success_url = reverse_lazy('clientes_app:cliente_inicio')
     
     def dispatch(self, request, *args, **kwargs):
@@ -176,22 +177,45 @@ class ClienteCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
+        form.instance.pais = Pais.objects.get(nombre='PERÚ')
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteCreateView, self).get_context_data(**kwargs)
+        context = super(ClienteNacionalCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
-        context['titulo']="Cliente"
+        context['titulo']="Cliente Nacional"
+        return context
+    
+
+class ClienteExtranjeroCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('clientes.add_cliente')
+    model = Cliente
+    template_name = "clientes/cliente/form.html"
+    form_class = ClienteExtranjeroForm
+    success_url = reverse_lazy('clientes_app:cliente_inicio')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteExtranjeroCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Cliente Extranjero"
         return context
 
 
-class ClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+class ClienteNacionalUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('clientes.change_cliente')
     model = Cliente
     template_name = "clientes/cliente/form.html"
-    form_class = ClienteForm
+    form_class = ClienteNacionalForm
     success_url = reverse_lazy('clientes_app:cliente_inicio')
 
     def dispatch(self, request, *args, **kwargs):
@@ -205,9 +229,33 @@ class ClienteUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteUpdateView, self).get_context_data(**kwargs)
+        context = super(ClienteNacionalUpdateView, self).get_context_data(**kwargs)
         context['accion'] = "Actualizar"
-        context['titulo'] = "Cliente"
+        context['titulo'] = "Cliente Nacional"
+        return context
+    
+
+class ClienteExtranjeroUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('clientes.change_cliente')
+    model = Cliente
+    template_name = "clientes/cliente/form.html"
+    form_class = ClienteExtranjeroForm
+    success_url = reverse_lazy('clientes_app:cliente_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ClienteExtranjeroUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Cliente Extranjero"
         return context
 
 
