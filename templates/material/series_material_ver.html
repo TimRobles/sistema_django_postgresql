@@ -32,6 +32,7 @@
                 <th>Sociedad</th>
                 <th>Almacén</th>
                 <th>Cliente</th>
+                <th>Tipo Stock</th>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -47,6 +48,7 @@
                     {% endif %}
                 </td>
                 <td>{{ serie.cliente }}</td>
+                <td>{{ serie.tipo_stock }}</td>
                 <td>{{ serie.estado }}</td>
                 <td class="text-center text-nowrap">
                     <a href="{% url 'calidad_app:serie_ver' serie.id %}" class="btn btn-success btn-sm">
