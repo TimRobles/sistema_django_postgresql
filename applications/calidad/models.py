@@ -79,6 +79,10 @@ class Serie(models.Model):
     id_registro = models.IntegerField(blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE, blank=True, null=True)
+    almacen_temporal = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    cliente_temporal = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=True)
+    tipo_stock_temporal = models.ForeignKey(TipoStock, on_delete=models.CASCADE, blank=True, null=True)
+    estado_temporal = models.ForeignKey(EstadoSerie, on_delete=models.CASCADE, blank=True, null=True)
     serie_movimiento_almacen = models.ManyToManyField(MovimientosAlmacen, blank=True, related_name='Serie_serie_movimiento_almacen')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -171,22 +175,19 @@ class Serie(models.Model):
         except Exception as ex:
             print("*******************************")
             print(ex)
-            print(self.serie_base)
-            print(confirmado_venta.content_type_producto)
-            print(confirmado_venta.id_registro_producto)
-            print(confirmado_venta.cantidad)
-            print(confirmado_venta.tipo_movimiento)
-            print(3)
-            print(confirmado_venta.signo_factor_multiplicador)
-            print(confirmado_venta.content_type_documento_proceso)
-            print(confirmado_venta.id_registro_documento_proceso)
-            print(confirmado_venta.sociedad)
             print("*******************************")
 
     @property
     def almacen(self):
         if self.serie_movimiento_almacen.all():
             return self.serie_movimiento_almacen.latest('id').almacen
+        else:
+            return ""
+
+    @property
+    def tipo_stock(self):
+        if self.serie_movimiento_almacen.all():
+            return self.serie_movimiento_almacen.latest('id').tipo_stock
         else:
             return ""
 

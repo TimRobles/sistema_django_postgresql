@@ -1,5 +1,6 @@
 from django import forms
 from applications.almacenes.models import Almacen
+from applications.movimiento_almacen.models import TipoStock
 from applications.calidad.models import EstadoSerie
 from applications.sociedad.models import Sociedad
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
@@ -156,17 +157,20 @@ class MaterialBuscarForm(forms.Form):
 class MaterialSeriesBuscarForm(forms.Form): 
     serie = forms.CharField(max_length=150, required=False) 
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(), required=False)
+    tipo_stock = forms.ModelChoiceField(queryset=TipoStock.objects.all(), required=False)
     estado = forms.ModelChoiceField(queryset=EstadoSerie.objects.all(), required=False)
     almacen = forms.ModelChoiceField(queryset=Almacen.objects.filter(estado_alta_baja=1), required=False)
  
     def __init__(self, *args, **kwargs): 
         serie = kwargs.pop('serie') 
         sociedad = kwargs.pop('sociedad') 
+        tipo_stock = kwargs.pop('tipo_stock') 
         estado = kwargs.pop('estado') 
         almacen = kwargs.pop('almacen') 
         super(MaterialSeriesBuscarForm, self).__init__(*args, **kwargs) 
         self.fields['serie'].initial = serie 
         self.fields['sociedad'].initial = sociedad 
+        self.fields['tipo_stock'].initial = tipo_stock 
         self.fields['estado'].initial = estado 
         self.fields['almacen'].initial = almacen 
         for visible in self.visible_fields(): 
