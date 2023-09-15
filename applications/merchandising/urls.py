@@ -28,7 +28,7 @@ urlAjusteInventarioMerchandising = [
     path('ajuste-inventario-merchandising/detalle/eliminar/<pk>/', views.AjusteInventarioMerchandisingDetalleDeleteView.as_view(), name='ajuste_inventario_merchandising_detalle_eliminar'),
 ]
 
-urlMerchandising = [
+urlListaMerchandising = [
     path('lista-requerimiento-merchandising/', views.ListaRequerimientoMerchandisingListView.as_view(), name='lista_requerimiento_merchandising_inicio'),
     path('lista-requerimiento-merchandising-tabla/', views.ListaRequerimientoMerchandisingTabla, name='lista_requerimiento_merchandising_tabla'),
     path('lista-requerimiento-merchandising/registrar/', views.ListaRequerimientoMerchandisingCreateView.as_view(), name='lista_requerimiento_merchandising_registrar'),
@@ -76,9 +76,6 @@ urlOrdenCompraMerchandising = [
     path('orden-compra-merchandising/actualizar/<pk>/', views.OrdenCompraMerchandisingProveedorView.as_view(), name='orden_compra_merchandising_actualizar'),
 
     path('orden-compra-merchandising/generar-comprobante-compra-total/<pk>/', views.OrdenCompraGenerarComprobanteMerchandisingTotalView.as_view(), name='orden_compra_merchandising_generar_comprobante_compra_total'),
-
-    path('orden-compra-merchandising/eliminar/<pk>/', views.OrdenCompraMerchandisingDeleteView.as_view(), name='ordendecompra_eliminar'),
-
 ]
 
 urlComprobanteCompraMerchandising = [
@@ -194,4 +191,4 @@ urlpatterns = [
     path('stock/tipo_stock/<int:id_merchandising>/<int:id_sociedad>/<int:id_almacen>/<int:id_tipo_stock>/', views.StockTipoStockView, name='stock_tipo_stock'),
 
     # path('series/<pk>/', views.MerchandisingSeriesView.as_view(), name='series'),
-] + urlInventarioMerchandising + urlAjusteInventarioMerchandising + urlMerchandising + urlOfertaProveedorMerchandising + urlOrdenCompraMerchandising + urlComprobanteCompraMerchandising
+] + urlInventarioMerchandising + urlAjusteInventarioMerchandising + urlListaMerchandising + urlOfertaProveedorMerchandising + urlOrdenCompraMerchandising + urlComprobanteCompraMerchandising

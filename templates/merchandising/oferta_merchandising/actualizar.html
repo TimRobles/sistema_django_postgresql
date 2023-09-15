@@ -1,0 +1,52 @@
+{% load widget_tweaks %}
+{% load static %}
+
+<form id="formulario" action="" enctype="multipart/form-data" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="modal-header">
+        <h3>{{ accion }} {{ titulo }}</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {{ material }}
+        {% for field in form %}
+        
+            {% if field in form.hidden_fields %}
+                <div class="{% if field.errors %} invalid{% endif %}"
+                    {% if field.help_text %}
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                    {% endif %}
+                    >
+                    {% if field in form.visible_fields %}
+                    <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {% endif %}
+                    {{ field }}
+                </div>
+            {% else %}
+                <div class="input-group flex-nowrap mt-3{% if field.errors %} invalid{% endif %}"
+                    {% if field.help_text %}
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                    {% endif %}
+                    >
+                    {% if field in form.visible_fields %}
+                    <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {% endif %}
+                    {{ field }}
+                </div>
+            {% endif %}
+            {% if field.help_text %}
+            <p class="mt-0">Pista:{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+                <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}   
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-primary-submit">{{ accion }}</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+    <span id="valor_igv" hidden>{{ valor_igv }}</span>
+</form>
+
+<script src="{% static 'js/merchandising/oferta/actualizar.js' %}?{{ cache_bust }}"></script>
