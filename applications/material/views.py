@@ -1814,7 +1814,7 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad.upper())
             series = series.filter(condicion)
-            contexto_filtro.append("serie=" + filtro_sociedad)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
 
         if filtro_almacen:
             series_id = []
