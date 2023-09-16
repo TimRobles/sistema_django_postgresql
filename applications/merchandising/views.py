@@ -2787,11 +2787,14 @@ class OfertaProveedorMerchandisingCrearView(BSModalFormView):
                 print(lista)
                 print('lista')
                 proveedor = form.cleaned_data.get('proveedor')
-        
-                tipo_igv=8 #internacional_nacional=='1'
+                internacional_nacional = '2' #nacional
+                tipo_igv=1
+
+                # if internacional_nacional=='1':
+                #     tipo_igv=8
 
                 oferta = OfertaProveedorMerchandising.objects.create(
-                    internacional_nacional = 1,
+                    internacional_nacional = internacional_nacional,
                     lista_requerimiento_merchandising=lista,
                     proveedor = proveedor,
                 )
@@ -2900,7 +2903,8 @@ class OfertaProveedorMerchandisingMonedaView(BSModalUpdateView):
 
 class OfertaProveedorMerchandisingDetalleUpdateView(BSModalUpdateView):
     model = OfertaProveedorMerchandisingDetalle
-    template_name = "includes/formulario generico.html"
+    # template_name = "includes/formulario generico.html"
+    template_name = "merchandising/oferta_merchandising/actualizar.html"
     form_class = OfertaProveedorMerchandisingDetalleUpdateForm
 
     def get_success_url(self, **kwargs):
@@ -3036,17 +3040,18 @@ class OfertaProveedorMerchandisingFinalizarView(PermissionRequiredMixin, BSModal
 
         oferta_detalle =  self.get_object().OfertaProveedorMerchandisingDetalle_oferta_proveedor.all()
 
-        lista = []
+        lista_merch = []
         for detalle in oferta_detalle:
             content_type = detalle.content_type
             id_registro = detalle.id_registro
-            lista.append(content_type)
-            lista.append(id_registro)
+            lista_merch.append(content_type)
+            lista_merch.append(id_registro)
 
-        if lista :
-            for i in lista:
+        if lista_merch :
+            for i in lista_merch:
                 if i == None:
                     error_merchandising= True
+
 
         if error_moneda:
             context['texto'] = 'Actualizar la Moneda'
@@ -3059,8 +3064,8 @@ class OfertaProveedorMerchandisingFinalizarView(PermissionRequiredMixin, BSModal
             return render(request, 'includes/modal sin permiso.html', context)
         
         if error_merchandising:
-            context['texto'] = 'Actualiza todos los merchandising oficiales.'
-            return render(request, 'includes/modal sin permiso.html', context)
+            context['texto'] = 'Actualiza todos los merchandising oficiales de la oferta.'
+            return render(request, 'includes/modal sin permiso.html', context)        
         
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
@@ -3233,8 +3238,8 @@ class OrdenCompraMerchandisingDetailView(DetailView):
      
         context['contexto_orden_compra'] = orden_compra
         context['orden_compra_detalle'] = orden_detalle 
-        # context['totales'] = obtener_totales(OrdenCompra.objects.get(id=self.kwargs['pk']))
-        # context['ver_oferta'] = reverse_lazy('oferta_proveedor_app:oferta_proveedor_detalle', kwargs={'slug':orden_compra.oferta_proveedor.slug}) if orden_compra.oferta_proveedor else None
+        context['totales'] = obtener_totales(OrdenCompraMerchandising.objects.get(id=self.kwargs['pk']))
+        context['ver_oferta'] = reverse_lazy('merchandising_app:oferta_proveedor_merchandising_detalle', kwargs={'id':orden_compra.oferta_proveedor_merchandising.id}) if orden_compra.oferta_proveedor_merchandising else None
         context['merchandising'] = merchandising
 
         return context
@@ -3257,6 +3262,8 @@ def OrdenCompraMerchandisingDetailTabla(request, pk):
         context['contexto_orden_compra'] = orden_compra
         context['orden_compra_detalle'] = orden_detalle
         context['merchandising'] = merchandising
+        context['totales'] = obtener_totales(OrdenCompraMerchandising.objects.get(id=pk))
+        context['ver_oferta'] = reverse_lazy('merchandising_app:oferta_proveedor_merchandising_detalle', kwargs={'id':orden_compra.oferta_proveedor_merchandising.id}) if orden_compra.oferta_proveedor_merchandising else None
 
 
         data['table'] = render_to_string(
@@ -3872,7 +3879,7 @@ class RecepcionComprobanteCompraMerchandisingView(BSModalFormView):
 class OfertaProveedorMerchandisingDeleteView(BSModalDeleteView):
     model = OfertaProveedorMerchandising
     template_name = "includes/eliminar generico.html"
-    success_url = '.'
+    success_url = reverse_lazy('merchandising_app:oferta_proveedor_merchandising_inicio')
 
     def get_context_data(self, **kwargs):
         context = super(OfertaProveedorMerchandisingDeleteView, self).get_context_data(**kwargs)
@@ -3880,13 +3887,3 @@ class OfertaProveedorMerchandisingDeleteView(BSModalDeleteView):
         context['titulo']="oferta"
         return context
 
-class OrdenCompraMerchandisingDeleteView(BSModalDeleteView):
-    model = OrdenCompraMerchandising
-    template_name = "includes/eliminar generico.html"
-    success_url = '.'
-
-    def get_context_data(self, **kwargs):
-        context = super(OrdenCompraMerchandisingDeleteView, self).get_context_data(**kwargs)
-        context['accion']="Eliminar"
-        context['titulo']="Orden"
-        return context

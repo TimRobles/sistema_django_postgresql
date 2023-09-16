@@ -1,4 +1,7 @@
-<h3>Datos de Merchandising</h3>
+<h3>Datos de Merchandising -  {{ contexto_merchandising.descripcion_corta }}
+    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
 <br>
 <div class="table-responsive">
     <table class="table">
@@ -7,7 +10,6 @@
                 <th class="text-rigth">Descripción corta</th>
                 <th class="text-rigth">Familia</th>
                 <th class="text-rigth">Subfamilia</th>
-                <th class="text-rigth">Unidad</th>
                 <th class="text-center">Mostrar</th>
                 <th class="text-center">Acción</th>
             </tr>
@@ -17,7 +19,6 @@
                 <td>{{ contexto_merchandising.descripcion_corta }}</td>
                 <td>{{ contexto_merchandising.subfamilia.familia }}</td>
                 <td>{{ contexto_merchandising.subfamilia }}</td>
-                <td>{{ contexto_merchandising.unidad_base }}</td>
                 <td class="text-center">
                     {% if contexto_merchandising.mostrar == True %}
                         Sí
@@ -140,7 +141,6 @@
         class="create badge bg-primary">
         Relacionar Componentes
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -187,7 +187,6 @@
         class="create badge bg-primary">
         Relacionar Especificaciones
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -236,7 +235,6 @@
         class="create badge bg-primary">
         Relacionar Datasheet
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -285,7 +283,6 @@
         class="create badge bg-primary">
         Relacionar Imagen
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -342,7 +339,6 @@
         class="create badge bg-primary">
         Relacionar Video
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -400,7 +396,6 @@
         class="create badge bg-primary">
         Registrar
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -461,7 +456,6 @@
         class="create badge bg-primary">
         Registrar
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 <div class="table-responsive">
@@ -520,7 +514,6 @@
         class="create badge bg-primary">
         Registrar 
     </button>
-    <a href="{% url 'merchandising_app:merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 <div class="table-responsive">
     <table class="table">

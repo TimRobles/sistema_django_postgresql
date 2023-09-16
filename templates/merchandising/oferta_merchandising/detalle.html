@@ -6,14 +6,14 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle Oferta Proveedor Merchandising - {{ contexto_oferta_proveedor.proveedor }} - {{ contexto_oferta_proveedor.id }}
+    <h3>Detalle Oferta Proveedor Merchandising - {{ contexto_oferta_proveedor.proveedor }}
         <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     
         {% if contexto_oferta_proveedor.evaluada == True %}
         <a href="{% url 'merchandising_app:ver_ofertas_evaluadas' contexto_oferta_proveedor.id %}" class="btn btn-primary">Evaluación de Ofertas</a>
         {% endif %}
 
-        {% if contexto_oferta_proveedor.estado == 1 %}
+        {% if contexto_oferta_proveedor.estado == 1 and contexto_oferta_proveedor.evaluada == True %}
             <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_finalizar' contexto_oferta_proveedor.id %}"
                 data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
                 class="delete badge bg-primary">
@@ -53,6 +53,7 @@
                     <th>Proveedor</th>
                     <th>Estado</th>
                     <th>Evaluada</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -62,11 +63,13 @@
                     <td>{{ contexto_oferta_proveedor.get_estado_display }}</td>
                     <td>
                         {% if contexto_oferta_proveedor.evaluada == True %}
-                            Sí
+                        Sí
                         {% else %}
-                            No
+                        No
                         {% endif %}
                     </td>
+                    <td>{{ contexto_oferta_proveedor.get_internacional_nacional_display }}</td>
+                    
                 </tr>
             </tbody>
         </table>

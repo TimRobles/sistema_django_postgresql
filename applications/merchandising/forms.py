@@ -189,8 +189,6 @@ class MerchandisingForm(BSModalModelForm):
             'descripcion_corta',
             'familia',
             'subfamilia',
-            'unidad_base',
-            'mostrar',
             )
 
     def clean_familia(self):
@@ -231,7 +229,6 @@ class MerchandisingForm(BSModalModelForm):
     def __init__(self, *args, **kwargs):
         super(MerchandisingForm, self).__init__(*args, **kwargs)
         self.fields['subfamilia'].queryset = SubFamiliaMerchandising.objects.none()
-        self.fields['unidad_base'].queryset = Unidad.objects.none()
         try:
             subfamilia = self.instance.subfamilia 
             familia = subfamilia.familia
@@ -248,7 +245,6 @@ class MerchandisingForm(BSModalModelForm):
             # self.fields['familia'].disabled = True
             visible.field.required = False
             
-        self.fields['mostrar'].widget.attrs['class'] = 'form-check-input'
 
 
         

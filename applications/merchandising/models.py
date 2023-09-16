@@ -734,7 +734,7 @@ class OfertaProveedorMerchandising(models.Model):
     )
 
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=True, blank=True, null=True, editable=False)
-    internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=1)
+    internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=2)
     numero_oferta = models.CharField('Número de Oferta', max_length=50, blank=True, null=True)
     lista_requerimiento_merchandising = models.ForeignKey(ListaRequerimientoMerchandising, on_delete=models.CASCADE, related_name='OfertaProveedorMerchandising_lista_requerimiento_merchandising')
     moneda = models.ForeignKey(Moneda, on_delete=models.PROTECT, blank=True, null=True)
@@ -766,6 +766,7 @@ class OfertaProveedorMerchandising(models.Model):
         verbose_name_plural = 'Ofertas Proveedor Merchandising'
         ordering = [
             '-fecha',
+            '-updated_at',
             '-created_at',
         ]
 
@@ -833,7 +834,7 @@ post_save.connect(oferta_proveedor_merchandising_detalle_post_save, sender=Ofert
 
 
 class OrdenCompraMerchandising(models.Model):
-    internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=1)
+    internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=2)
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
     oferta_proveedor_merchandising = models.OneToOneField(OfertaProveedorMerchandising, on_delete=models.PROTECT, blank=True, null=True, related_name='OrdenCompraMerchandising_oferta_proveedor')
     orden_compra_anterior = models.OneToOneField('self', on_delete=models.PROTECT,blank=True, null=True, related_name='OrdenCompraMerchandising_orden_compra_anterior')
@@ -863,6 +864,7 @@ class OrdenCompraMerchandising(models.Model):
         verbose_name_plural = 'Ordenes Compra Merchandising'
         ordering = [
             '-numero_orden_compra',
+            '-updated_at',
             '-created_at',
             ]
         
