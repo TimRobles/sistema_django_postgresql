@@ -86,7 +86,10 @@ class DatosPlanilla(models.Model):
             ]
 
     def __str__(self):
-        return f"{self.usuario.username} - {self.sociedad.abreviatura}"
+        if self.sociedad:
+            return f"{self.usuario.username} - {self.sociedad.abreviatura}"
+        else:
+            return f"{self.usuario.username}"
         
 
 class EsSalud(models.Model):
