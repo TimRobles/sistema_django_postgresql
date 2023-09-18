@@ -24,7 +24,9 @@ def calcular_datos_boleta(obj):
     essalud = EsSalud.objects.filter(fecha_inicio__lte=fecha_boleta).latest('fecha_inicio')
     obj.haber_mensual = (datos_planilla.sueldo_bruto * obj.dias_trabajados / Decimal('30') + Decimal('0.001')).quantize(Decimal('.01'))
     obj.gratificacion = Decimal('0.00')
-    if datos_planilla.sociedad.TamañoEmpresa_sociedad.filter(fecha_inicio__lte=fecha_boleta).latest('fecha_inicio').tipo_empresa==1 and obj.tipo == 2: #MICRO EMPRESA Y GRATIFICACIÓN
+    if not datos_planilla.sociedad:
+        pass
+    elif datos_planilla.sociedad.TamañoEmpresa_sociedad.filter(fecha_inicio__lte=fecha_boleta).latest('fecha_inicio').tipo_empresa==1 and obj.tipo == 2: #MICRO EMPRESA Y GRATIFICACIÓN
         obj.haber_mensual = Decimal('0.00')
     elif datos_planilla.sociedad.TamañoEmpresa_sociedad.filter(fecha_inicio__lte=fecha_boleta).latest('fecha_inicio').tipo_empresa==2 and obj.tipo == 2: #PEQUEÑA EMPRESA Y GRATIFICACIÓN
         obj.haber_mensual = Decimal('0.00')
