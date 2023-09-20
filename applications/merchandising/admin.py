@@ -660,7 +660,6 @@ class ComprobanteCompraMerchandisingAdmin(admin.ModelAdmin):
         'total_igv',
         'total_otros_cargos',
         'total',
-        'slug',
         'condiciones',
         'estado',
         'motivo_anulacion',

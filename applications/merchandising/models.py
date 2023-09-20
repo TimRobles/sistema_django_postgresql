@@ -888,8 +888,8 @@ class OrdenCompraMerchandising(models.Model):
 
 
     def __str__(self):
-        # return "%s %s" % (self.id, self.numero_orden_compra)
-        return str(self.numero_orden_compra)
+        return "%s %s" % (self.id, self.numero_orden_compra)
+        # return str(self.numero_orden_compra)
     
 
 class OrdenCompraMerchandisingDetalle(models.Model):
@@ -925,17 +925,17 @@ class OrdenCompraMerchandisingDetalle(models.Model):
     # def producto(self):
     #     return self.content_type.get_object_for_this_type(id = self.id_registro)
      
-    # def __str__(self):
-    #     # return "%s" % (str(self.content_type.get_object_for_this_type(id = self.id_registro)))
-    #     return str(self.id)
-
     def __str__(self):
-        # return str(self.id) 
-        return ' '
+        return "%s" % (str(self.content_type.get_object_for_this_type(id = self.id_registro)))
+
+    # def __str__(self):
+    #     # return str(self.id) 
+    #     return ' '
     
 
 
 class ComprobanteCompraMerchandising(models.Model):
+    internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=2)
     numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50, blank=True, null=True)
     orden_compra_merchandising = models.OneToOneField(OrdenCompraMerchandising, on_delete=models.PROTECT, related_name='ComprobanteCompraMerchandising_orden_compra_merchandising')
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
@@ -946,10 +946,13 @@ class ComprobanteCompraMerchandising(models.Model):
     total_descuento = models.DecimalField('Total Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_anticipo = models.DecimalField('Total Anticipo', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_gravada = models.DecimalField('Total Gravada', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_inafecta = models.DecimalField('Total Inafecta', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_exonerada = models.DecimalField('Total Exonerada', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_igv = models.DecimalField('Total IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_gratuita = models.DecimalField('Total Gratuita', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total_otros_cargos = models.DecimalField('Total Otros Cargos', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    total_icbper = models.DecimalField('Total ICBPER', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
-    slug = models.SlugField(blank=True, null=True)
     condiciones = models.TextField('Condiciones', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE_MERCHANDISING, default=0)
     motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)
@@ -974,9 +977,9 @@ class ComprobanteCompraMerchandising(models.Model):
     def fecha(self):
         return self.fecha_comprobante
 
-    # @property
-    # def proveedor(self):
-    #     return self.orden_compra_merchandising.proveedor
+    @property
+    def proveedor(self):
+        return self.orden_compra_merchandising.proveedor_temporal
 
     @property
     def content_type(self):
@@ -1055,8 +1058,8 @@ class ComprobanteCompraMerchandisingDetalle(models.Model):
         return self.comprobante_compra_merchandising.sociedad
 
     def __str__(self):
-        # return "%s" % (str(self.orden_compra_merchandising_detalle))
-        return str(self.id)
+        return "%s" % (str(self.orden_compra_merchandising_detalle))
+        # return str(self.id)
     
 
 # class ArchivoComprobanteCompraMerchandising(models.Model):

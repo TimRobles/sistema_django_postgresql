@@ -2518,7 +2518,7 @@ class ListaRequerimientoMerchandisingCreateView(FormView):
             obj.titulo = form.cleaned_data['titulo']
             registro_guardar(obj, self.request)
             obj.save()
-            return HttpResponseRedirect(reverse_lazy('merchandising_app:lista_requerimiento_material_actualizar', kwargs={'pk':obj.id}))
+            return HttpResponseRedirect(reverse_lazy('merchandising_app:lista_requerimiento_merchandising_actualizar', kwargs={'pk':obj.id}))
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -3064,7 +3064,7 @@ class OfertaProveedorMerchandisingFinalizarView(PermissionRequiredMixin, BSModal
             return render(request, 'includes/modal sin permiso.html', context)
         
         if error_merchandising:
-            context['texto'] = 'Actualiza todos los merchandising oficiales de la oferta.'
+            context['texto'] = 'Actualiza todos los merchandising oficiales y precios de la oferta.'
             return render(request, 'includes/modal sin permiso.html', context)        
         
         if not self.has_permission():
@@ -3125,30 +3125,7 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
 
                 oferta_detalle = OfertaProveedorMerchandisingDetalle.objects.filter(oferta_proveedor_merchandising = oferta)
 
-                print('*********************************')
-                print('oferta')
-                print(oferta)
-                print('oferta_detalle')
-                print(oferta_detalle)
-                print('*********************************')
-
-
                 for detalle in oferta_detalle:
-
-                    print('*********************************')
-                    print(detalle.item)
-                    print(detalle.content_type)
-                    print(detalle.id_registro)
-                    print(detalle.cantidad)
-                    print(detalle.precio_unitario_sin_igv)
-                    print(detalle.precio_unitario_con_igv)
-                    print(detalle.precio_final_con_igv)
-                    print(detalle.descuento)
-                    print(detalle.sub_total)
-                    print(detalle.igv)
-                    print(detalle.total)
-                    print(detalle.tipo_igv)
-                    print('*********************************')
 
                     orden_compra_detalle = OrdenCompraMerchandisingDetalle.objects.create(
 
@@ -3321,17 +3298,18 @@ class OrdenCompraMerchandisingEnviarCorreoView(PermissionRequiredMixin,BSModalFo
         if CORREOS_PROVEEDOR == []:
             error_correo_proveedor = True
 
-        # error_tipo_igv = False
-        # for detalle in orden_compra.OrdenCompraDetalle_orden_compra.all():
-        #     if not detalle.tipo_igv:
-        #         error_tipo_igv = True
+        error_tipo_igv = False
+        for detalle in orden_compra.OrdenCompraMerchandisingDetalle_orden_compra.all():
+            if not detalle.tipo_igv:
+                error_tipo_igv = True
 
         if error_correo_proveedor:
             context['texto'] = 'Registrar correos del proveedor'
             return render(request, 'includes/modal sin permiso.html', context)
-        # if error_tipo_igv:
-        #     context['texto'] = 'Registrar los tipos de IGV de los materiales'
-        #     return render(request, 'includes/modal sin permiso.html', context)
+        if error_tipo_igv:
+            context['texto'] = 'Registrar los tipos de IGV de los materiales'
+            return render(request, 'includes/modal sin permiso.html', context)
+        
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -3364,9 +3342,6 @@ class OrdenCompraMerchandisingEnviarCorreoView(PermissionRequiredMixin,BSModalFo
                     messages.success(self.request, 'Correo enviado.')
                     self.request.session['primero'] = False
                 except Exception as e:
-                    print('_______________________________________')
-                    print(e)
-                    print('_______________________________________')
                     messages.warning(self.request, 'Hubo un error al enviar el correo.')
             
             return super().form_valid(form)
@@ -3401,7 +3376,17 @@ class OrdenCompraGenerarComprobanteMerchandisingTotalView(BSModalDeleteView):
             self.object = self.get_object()
             orden = self.get_object()
 
+
+            print('orden')
+            print(orden)
+            print('orden')
+
+            print('self.object')
+            print(self.object)
+            print('self.object')
+
             comprobante = ComprobanteCompraMerchandising.objects.create(
+                internacional_nacional = orden.internacional_nacional,
                 orden_compra_merchandising = orden,
                 sociedad = orden.sociedad,
                 moneda = orden.moneda,
@@ -3410,12 +3395,24 @@ class OrdenCompraGenerarComprobanteMerchandisingTotalView(BSModalDeleteView):
             )
 
             merchandising = orden.OrdenCompraMerchandisingDetalle_orden_compra.all()
+           
+           
+            print('merchandising')
+            print(merchandising)
+            print('merchandising')
+
             movimiento_final = TipoMovimiento.objects.get(codigo=100) #En tránsito
+        
             for merch in merchandising:
+                print('merch | orden.OrdenCompraMerchandisingDetalle_orden_compra')
+                print(merch)
+                print('merch | orden.OrdenCompraMerchandisingDetalle_orden_compra')
+
                 orden_detalle = ComprobanteCompraMerchandisingDetalle.objects.create(
                     item=merch.item,
                     orden_compra_merchandising_detalle = merch,
                     cantidad = merch.cantidad,
+                    precio_unitario_sin_igv = merch.precio_unitario_sin_igv,
                     precio_unitario_con_igv = merch.precio_unitario_con_igv,
                     precio_final_con_igv = merch.precio_final_con_igv,
                     descuento = merch.descuento,
@@ -3589,7 +3586,9 @@ def ComprobanteCompraMerchandisingTabla(request):
         return JsonResponse(data)
 
 
-class ComprobanteCompraMerchandisingDetailView(DetailView):
+class ComprobanteCompraMerchandisingDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('merchandising.view_comprobantecompramerchandising')
+
     model = ComprobanteCompraMerchandising
     template_name = "merchandising/comprobante_compra/detalle.html"
     context_object_name = 'contexto_comprobante_compra'
@@ -3601,28 +3600,27 @@ class ComprobanteCompraMerchandisingDetailView(DetailView):
 
         try:
             merchandising = comprobante_compra_detalle.all()
-            for merch in merchandising:
-                merch.merch = merch.content_type.get_object_for_this_type(id = merch.id_registro)
+            for dato in merchandising:
+                dato.merch = dato.orden_compra_merchandising_detalle.content_type.get_object_for_this_type(id = dato.orden_compra_merchandising_detalle.id_registro)
         except:
             pass
 
-
         context = super(ComprobanteCompraMerchandisingDetailView, self).get_context_data(**kwargs)
         context['merchandising'] = merchandising
+        context['totales'] = obtener_totales(self.get_object())
 
-        # context['totales'] = obtener_totales(self.get_object())
-        # try:
-        #     context['contexto_recepcion_compra'] = RecepcionCompra.objects.get(
-        #                                                 content_type=ContentType.objects.get_for_model(self.get_object()),
-        #                                                 id_registro=self.get_object().id,
-        #                                                 estado=1,
-        #                                             )
-        # except:
-        #     context['contexto_recepcion_compra'] = None
-        # if 'comprobante_compra.add_comprobantecomprapi' in self.request.user.get_all_permissions():
-        #     context['permiso_compras'] = True
-        # if 'recepcion_compra.add_recepcioncompra' in self.request.user.get_all_permissions():
-        #     context['permiso_logistica'] = True
+        try:
+            context['contexto_recepcion_compra'] = RecepcionCompra.objects.get(
+                                                        content_type=ContentType.objects.get_for_model(self.get_object()),
+                                                        id_registro=self.get_object().id,
+                                                        estado=1,
+                                                    )
+        except:
+            context['contexto_recepcion_compra'] = None
+        if 'merchandising.view_comprobantecompramerchandising' in self.request.user.get_all_permissions():
+            context['permiso_compras'] = True
+        if 'recepcion_compra.add_recepcioncompra' in self.request.user.get_all_permissions():
+            context['permiso_logistica'] = True
 
         return context
     
@@ -3636,20 +3634,19 @@ def ComprobanteCompraMerchandisingDetailTabla(request, pk):
 
         try:
             merchandising = comprobante_compra_detalle.all()
-            for merch in merchandising:
-                merch.merch = merch.content_type.get_object_for_this_type(id = merch.id_registro)
+            for dato in merchandising:
+                dato.merch = dato.orden_compra_merchandising_detalle.content_type.get_object_for_this_type(id = dato.orden_compra_merchandising_detalle.id_registro)
         except:
             pass
-
 
         context['contexto_comprobante_compra'] = comprobante_compra
         context['merchandising'] = merchandising
 
         # context['archivos'] = ArchivoComprobanteCompraPI.objects.filter(comprobante_compra=comprobante_compra)
-        # context['totales'] = obtener_totales(comprobante_compra)
+        context['totales'] = obtener_totales(comprobante_compra)
 
-        # if 'comprobante_compra.add_comprobantecomprapi' in request.user.get_all_permissions():
-        #     context['permiso_compras'] = True
+        if 'comprobante_compra.add_comprobantecomprapi' in request.user.get_all_permissions():
+            context['permiso_compras'] = True
 
 
         data['table'] = render_to_string(
@@ -3709,7 +3706,10 @@ class ComprobanteCompraMerchandisingGuardarView(PermissionRequiredMixin, BSModal
             self.object.total_descuento = totales['total_descuento']
             self.object.total_anticipo = totales['total_anticipo']
             self.object.total_gravada = totales['total_gravada']
+            self.object.total_inafecta = totales['total_inafecta']
+            self.object.total_exonerada = totales['total_exonerada']
             self.object.total_igv = totales['total_igv']
+            self.object.total_gratuita = totales['total_gratuita']
             self.object.otros_cargos = totales['total_otros_cargos']
             self.object.total = totales['total']
             self.object.estado = 1
@@ -3723,8 +3723,8 @@ class ComprobanteCompraMerchandisingGuardarView(PermissionRequiredMixin, BSModal
                 tipo_cambio=tipo_de_cambio(),
                 fecha_deuda=date.today(),
                 fecha_vencimiento=date.today(),
-                sociedad=self.object.orden_compra.sociedad,
-                proveedor=self.object.orden_compra.proveedor,
+                sociedad=self.object.orden_compra_merchandising.sociedad,
+                proveedor=self.object.orden_compra_merchandising.proveedor,
             )
 
             messages.success(request, MENSAJE_GENERAR_COMPROBANTE_COMPRA_MERCHANDISING)
@@ -3796,7 +3796,7 @@ class RecepcionComprobanteCompraMerchandisingView(BSModalFormView):
                 nro_bultos = form.cleaned_data['nro_bultos']
                 observaciones = form.cleaned_data['observaciones']
 
-                comprobante = ComprobanteCompraMerchandising.objects.get(id=self.kwargs['id'])
+                comprobante = ComprobanteCompraMerchandising.objects.get(id=self.kwargs['pk'])
                 detalles = comprobante.ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising.all()
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=100) #Tránsito
                 movimiento_final = TipoMovimiento.objects.get(codigo=101) #Disponible

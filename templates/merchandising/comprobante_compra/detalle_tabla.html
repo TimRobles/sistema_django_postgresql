@@ -18,8 +18,8 @@
             <tr>
                 <td>{{ contexto_comprobante_compra.fecha_comprobante|date:'d/m/Y' }}</td>
                 <td>{{ contexto_comprobante_compra.numero_comprobante_compra }}</td>
-                <td>{{ contexto_comprobante_compra.orden_compra.proveedor }}</td>
-                <td>{{ contexto_comprobante_compra.orden_compra.interlocutor }}</td>
+                <td>{{ contexto_comprobante_compra.orden_compra_merchandising.proveedor_temporal }}</td>
+                <td>{{ contexto_comprobante_compra.orden_compra_merchandising.interlocutor }}</td>
                 <td>{{ contexto_comprobante_compra.sociedad }}</td>
                 <td>
                     {% if contexto_comprobante_compra.fecha_estimada_llegada %}
@@ -64,22 +64,22 @@
             </tr>
         </thead>
         <tbody>
-            {% for merch in merchandising %}
+            {% for detalle in merchandising %}
                 <tr>
 
-                    <td>{{ merch.item}}</td>
-                    <td>{{ merch.merch.descripcion_corta }}</td>
-                    <td>{{ merch.merch.unidad_base }}</td>
-                    <td>{{ merch.get_tipo_igv_display }}</td>
-                    <td class="text-end">{{ merch.cantidad|redondear|intcomma }}</td>
+                    <td>{{ detalle.item}}</td>
+                    <td>{{ detalle.merch.descripcion_corta }}</td>
+                    <td>{{ detalle.merch.unidad_base }}</td>
+                    <td>{{ detalle.get_tipo_igv_display }}</td>
+                    <td class="text-end">{{ detalle.cantidad|redondear|intcomma }}</td>
                     {% if permiso_compras %}
-                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.precio_unitario_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.precio_final_con_igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.descuento|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.sub_total|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.igv|redondear|intcomma }}</td>
-                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ merch.total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ detalle.precio_unitario_sin_igv|redondear:3|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ detalle.precio_unitario_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ detalle.precio_final_con_igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ detalle.descuento|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ detalle.sub_total|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ detalle.igv|redondear|intcomma }}</td>
+                    <td class="text-end text-nowrap">{{ contexto_comprobante_compra.moneda.simbolo }} {{ detalle.total|redondear|intcomma }}</td>
                     {% endif %}
                 </tr>
             {% endfor %}    
