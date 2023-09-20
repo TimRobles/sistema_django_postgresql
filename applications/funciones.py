@@ -304,7 +304,9 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
     elif hasattr(cabecera, 'OfertaProveedorMerchandisingDetalle_oferta_proveedor'):
         detalles = cabecera.OfertaProveedorMerchandisingDetalle_oferta_proveedor.all()    
     elif hasattr(cabecera, 'OrdenCompraMerchandisingDetalle_orden_compra'):
-        detalles = cabecera.OrdenCompraMerchandisingDetalle_orden_compra.all()
+        detalles = cabecera.OrdenCompraMerchandisingDetalle_orden_compra.all()    
+    elif hasattr(cabecera, 'ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising'):
+        detalles = cabecera.ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising.all()
     lista_resultados_linea = []
     valor_igv = 0
     for detalle in detalles:

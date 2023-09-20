@@ -20,7 +20,7 @@
             <td class="fondo-personalizado" style="--color-fondo: {{ comprobante_compra.sociedad.color }};">{{ comprobante_compra.sociedad.abreviatura }}</td>
             <td>{{ comprobante_compra.fecha_comprobante|date:'d/m/Y' }}</td>
             <td>{{ comprobante_compra.numero_comprobante_compra }}</td>
-            <td>{{ comprobante_compra.orden_compra.proveedor }}</td>
+            <td>{{ comprobante_compra.orden_compra.proveedor_temporal }}</td>
             <td>{{ comprobante_compra.orden_compra.interlocutor }}</td>
             <td>
                 {% if comprobante_compra.fecha_estimada_llegada %}

@@ -63,7 +63,13 @@
             {% for material in materiales %}
                 <tr>
                     <td>{{ material.item }}</td>
+                    
+                    {% if material.material.descripcion_venta %}
                     <td>{{ material.material.descripcion_venta }}</td>
+                    {% else %}
+                    <td>{{ material.material.descripcion_corta}}</td>
+                    {% endif %}
+                        
                     <td>{{ material.material.unidad_base }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
                     <td>
