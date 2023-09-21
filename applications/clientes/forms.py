@@ -49,6 +49,7 @@ class ClienteNacionalForm(BSModalModelForm):
         self.fields['tipo_documento'].choices = ((None, '--------------'),) + TIPO_DOCUMENTO_SUNAT_NACIONAL
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['medio'].required = True
 
     def clean_tipo_documento(self):
         tipo_documento = self.cleaned_data.get('tipo_documento')
@@ -104,6 +105,7 @@ class ClienteExtranjeroForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['pais'].queryset = Pais.objects.all().exclude(id = 1)
         self.fields['pais'].required = True
+        self.fields['medio'].required = True
 
     def clean_tipo_documento(self):
         tipo_documento = self.cleaned_data.get('tipo_documento')

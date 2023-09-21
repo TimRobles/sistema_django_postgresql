@@ -17,6 +17,8 @@ from applications.sede.models import Sede
 from applications.sociedad.models import Sociedad
 from applications.funciones import consulta_totales_ventas, consulta_pareto, registrar_excepcion_sin_user
 from .managers import RespuestaDetalleCRMManager
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+import applications
 
 # class ClienteCRM(models.Model):
 
@@ -74,6 +76,17 @@ class ClienteCRMDetalle(models.Model):
     def __str__(self):
         return str(self.cliente_crm)
 
+def actividad_post_save(*args, **kwargs):
+    print('actividad_post_save')
+    obj = kwargs['instance']
+    applications.crm.models.actualizar_estado_cliente_crm(obj.cliente_crm.id)
+
+def actividad_pre_save(*args, **kwargs):
+    print('actividad_pre_save')
+
+post_save.connect(actividad_post_save, sender=ClienteCRMDetalle)
+pre_save.connect(actividad_pre_save, sender=ClienteCRMDetalle)
+
 
 class ProveedorCRM(models.Model):
 
@@ -91,7 +104,7 @@ class ProveedorCRM(models.Model):
     def __str__(self):
         return str(self.proveedor_crm)
     
-from applications import cotizacion, comprobante_venta, cobranza, tarea
+from applications import cotizacion, comprobante_venta, cobranza, tarea, crm
 
 def ver_pareto(id_cliente):
     fecha_fin = date.today()
@@ -109,12 +122,15 @@ def actualizar_estado_cliente_crm(id_cliente=None):
 
         for cliente in clientes:
             filtro = True
-            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
-                filtro = False
-                estado_cliente = 3
             if len(tarea.models.Tarea.objects.filter(content_type=ContentType.objects.get_for_model(Cliente), id_registro = cliente.id, estado__gte=2)) > 0:
                 filtro = False
                 estado_cliente = 2
+            if len(crm.models.ClienteCRMDetalle.objects.filter(cliente_crm=cliente, tipo_actividad__gte=1).exclude(tipo_actividad=4)) > 0:
+                filtro = False
+                estado_cliente = 2
+            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
+                filtro = False
+                estado_cliente = 3
             if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
                 filtro = False
                 estado_cliente = 4
@@ -124,7 +140,7 @@ def actualizar_estado_cliente_crm(id_cliente=None):
             if ver_pareto(id_cliente):
                 filtro = False
                 estado_cliente = 5
-            if len(cobranza.models.Deuda.objects.filter(cliente=cliente, estado_cancelado=False))>0:
+            if len(cobranza.models.Deuda.objects.filter(cliente=cliente, estado_cancelado=False, fecha_vencimiento__gt=date.today()))>0:
                 filtro = False
                 estado_cliente = 6
             if filtro:
