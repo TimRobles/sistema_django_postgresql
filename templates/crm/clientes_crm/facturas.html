@@ -9,7 +9,8 @@
 
 {% block contenido %}
 <h3>Facturas
-    <a href="{% url 'crm_app:cliente_crm_detalle' contexto_cliente_crm.id %}"><span class="badge bg-primary">Regresar</span></a>
+    <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+    <!-- <a href="{% url 'crm_app:cliente_crm_detalle' contexto_cliente_crm.id %}"><span class="badge bg-primary">Regresar</span></a> -->
 </h3>
 {% include 'includes/paginador.html' %}
 <table class="table">

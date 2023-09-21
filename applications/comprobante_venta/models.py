@@ -285,6 +285,17 @@ class BoletaVenta(models.Model):
         else:
             return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.cliente, self.moneda.simbolo, self.total)
 
+def boleta_venta_post_save(*args, **kwargs):
+    print('boleta_venta_post_save')
+    obj = kwargs['instance']
+    applications.crm.models.actualizar_estado_cliente_crm(obj.cliente.id)
+
+def boleta_venta_pre_save(*args, **kwargs):
+    print('boleta_venta_pre_save')
+
+post_save.connect(boleta_venta_post_save, sender=BoletaVenta)
+pre_save.connect(boleta_venta_pre_save, sender=BoletaVenta)
+
 class BoletaVentaDetalle(models.Model):
     item = models.IntegerField()
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT, blank=True, null=True)

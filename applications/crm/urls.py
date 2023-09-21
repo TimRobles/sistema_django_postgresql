@@ -16,8 +16,21 @@ urlCliente = [
     path('cliente-crm/detalle/actualizar/<pk>/', views.ClienteCRMDetalleUpdateView.as_view(), name='cliente_crm_detalle_actualizar'),
     path('cliente-crm/detalle/eliminar/<pk>/', views.ClienteCRMDetalleDeleteView.as_view(), name='cliente_crm_detalle_eliminar'),
     path('cliente-crm/detalle/ver/<pk>/', views.ClienteCRMDetalleVerView.as_view(), name='cliente_crm_detalle_ver'),
+
     path('cliente-crm/detalle/cotizaciones/<pk>/', views.ClienteCRMCotizacionesView.as_view(), name='cliente_crm_detalle_cotizaciones'),
     path('cliente-crm/detalle/facturas/<pk>/', views.ClienteCRMFacturasView.as_view(), name='cliente_crm_detalle_facturas'),
+
+    path('cliente-crm/detalle/llamada/<pk>/', views.ClienteCRMDetailLlamadasView.as_view(), name='cliente_crm_detalle_llamada'),
+    path('cliente-crm/detalle-tabla/llamada/<pk>/', views.ClienteCRMDetailLlamadasTabla, name='cliente_crm_detalle_tabla_llamada'),
+    path('cliente-crm/detalle/llamada/registrar/<int:cliente_crm_id>/', views.ClienteCRMDetalleLlamadaCreateView.as_view(), name='cliente_crm_detalle_llamada_registrar'),
+    path('cliente-crm/detalle/llamada/actualizar/<pk>/', views.ClienteCRMDetalleLlamadaUpdateView.as_view(), name='cliente_crm_detalle_llamada_actualizar'),
+    path('cliente-crm/detalle/llamada/eliminar/<pk>/', views.ClienteCRMDetalleLlamadaDeleteView.as_view(), name='cliente_crm_detalle_llamada_eliminar'),
+
+    path('cliente-crm/detalle/soporte/<pk>/', views.ClienteCRMDetailSoporteView.as_view(), name='cliente_crm_detalle_soporte'),
+    path('cliente-crm/detalle-tabla/soporte/<pk>/', views.ClienteCRMDetailSoporteTabla, name='cliente_crm_detalle_tabla_soporte'),
+    path('cliente-crm/detalle/soporte/registrar/<int:cliente_crm_id>/', views.ClienteCRMDetalleSoporteCreateView.as_view(), name='cliente_crm_detalle_soporte_registrar'),
+    path('cliente-crm/detalle/soporte/actualizar/<pk>/', views.ClienteCRMDetalleSoporteUpdateView.as_view(), name='cliente_crm_detalle_soporte_actualizar'),
+    path('cliente-crm/detalle/soporte/eliminar/<pk>/', views.ClienteCRMDetalleSoporteDeleteView.as_view(), name='cliente_crm_detalle_soporte_eliminar'),
     ]
 
 urlEvento = [

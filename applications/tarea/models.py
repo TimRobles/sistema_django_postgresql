@@ -6,6 +6,7 @@ from django.utils import timezone
 from applications.variables import ESTADO_TAREA, PRIORIDAD_TAREA
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 import applications
+from applications.clientes.models import Cliente
 
 class TipoTarea(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
@@ -59,7 +60,8 @@ class Tarea(models.Model):
 def tarea_post_save(*args, **kwargs):
     print('tarea_post_save')
     obj = kwargs['instance']
-    applications.crm.models.actualizar_estado_cliente_crm(obj.id_registro)
+    if obj.content_type==ContentType.objects.get_for_model(Cliente):
+        applications.crm.models.actualizar_estado_cliente_crm(obj.id_registro)
 
 def tarea_pre_save(*args, **kwargs):
     print('tarea_pre_save')
