@@ -23,7 +23,8 @@ from applications.reportes.forms import (
     ReporteFacturacionAsesorComercialExcelForm,
     ReporteFacturacionGeneralExcelForm, 
     ReporteStockSociedadPdfForm, 
-    ReporteVentasDepartamentoPdfForm, 
+    ReporteVentasDepartamentoPdfForm,
+    ReportesContadorForm, 
     ReportesFiltrosForm, 
     ReporteVentasDepartamentoExcelForm
     )
@@ -46,6 +47,7 @@ from applications.variables import ESTADOS_CLIENTE, MEDIO, ESTADOS_EVENTO_CRM
 from applications.reportes.excel import (
     ReporteClienteCRMExcel,
     ReporteComportamientoCliente,
+    ReporteContadorCorregido,
     ReporteEstadosClienteExcel, 
     ReporteFacturacionAsesorComercial, 
     ReporteFacturacionGeneral, 
@@ -4002,5 +4004,32 @@ class ReportesGerencia(TemplateView):
         context = super(ReportesGerencia, self).get_context_data(**kwargs)
         context['form1'] = ReporteFacturacionAsesorComercialExcelForm()
         context['form2'] = ReporteFacturacionGeneralExcelForm()
+
+        return context
+    
+####################################################  REPORTES CORREGIDOS  ####################################################   
+
+class ReportesCorregidos(TemplateView):
+    template_name = 'reportes/reportes_corregidos.html'
+
+    def post(self,request, *args,**kwargs):
+        formulario = self.request.POST.get('formulario')
+        if formulario == 'formulario1':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+            sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+            titulo = f'Reporte Contador - {sociedad.abreviatura} del {fecha_inicio} al {fecha_fin}'
+            wb = ReporteContadorCorregido(sociedad, fecha_inicio, fecha_fin)
+
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename ={0}".format(titulo + '.xlsx')
+        respuesta['content-disposition']= content
+
+        wb.save(respuesta)
+        return respuesta
+
+    def get_context_data(self, **kwargs):
+        context = super(ReportesCorregidos, self).get_context_data(**kwargs)
+        context['form1'] = ReportesContadorForm()
 
         return context

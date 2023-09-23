@@ -68,6 +68,13 @@ def rellenoSociedad(id_sociedad):
     else:
         return PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')
 
+def rellenoSociedadCorregido(sociedad):
+    if sociedad:
+        color_sociedad = str(sociedad.color)[1:]
+        return PatternFill(start_color=color_sociedad, end_color=color_sociedad, fill_type='solid')
+    else:
+        return PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')
+
 ALINEACION_DERECHA = Alignment(horizontal='right')
 ALINEACION_CENTRO = Alignment(horizontal='center')
 AJUSTAR_TEXTO = Alignment(wrap_text=True)
