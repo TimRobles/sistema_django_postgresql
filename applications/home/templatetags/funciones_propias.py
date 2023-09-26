@@ -106,3 +106,8 @@ def estado_garantia(fecha):
     if (date.today() - fecha).days > 365:
         return True
     return False
+
+@register.filter
+def detalle_permiso(permiso):
+    return type(permiso), dir(permiso)
+

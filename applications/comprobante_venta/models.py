@@ -3,12 +3,12 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from applications import cobranza
 from applications.comprobante_venta.managers import BoletaVentaManager, FacturaVentaManager
-from applications.datos_globales.models import Moneda, SeriesComprobante, TipoCambio, Unidad
+from applications.datos_globales.models import Moneda, NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.variables import ESTADOS_DOCUMENTO, TIPO_COMPROBANTE, TIPO_DOCUMENTO_SUNAT, TIPO_IGV_CHOICES, TIPO_ISC_CHOICES, TIPO_PERCEPCION, TIPO_RETENCION, TIPO_VENTA
 from django.conf import settings
-from applications.funciones import numeroXn, obtener_totales
+from applications.funciones import numeroXn, obtener_totales, tipo_de_cambio
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 
 from applications.cotizacion.models import ConfirmacionVenta
@@ -95,6 +95,25 @@ class FacturaVenta(models.Model):
             return cobranza.models.Deuda.objects.get(content_type=ContentType.objects.get_for_model(self), id_registro=self.id).Cuota_deuda.all()
         except:
             return []
+
+    @property
+    def contador(self):
+        productos = []
+        cantidades = []
+        precios_finales = []
+        for producto in self.FacturaVentaDetalle_factura_venta.all():
+            productos.append(producto.producto.descripcion_corta)
+            cantidades.append(f"{producto.cantidad.quantize(Decimal('0.01'))}")
+            precios_finales.append(f"{producto.precio_final_con_igv.quantize(Decimal('0.01'))}")
+        return " | ".join(productos), " | ".join(cantidades), " | ".join(precios_finales)
+
+    @property
+    def url_nubefact(self):
+        return NubefactRespuesta.objects.respuesta(self)
+
+    @property
+    def total_soles(self):
+        return self.total * self.tipo_cambio.tipo_cambio_venta
 
     @property
     def descripcion(self):
@@ -274,6 +293,25 @@ class BoletaVenta(models.Model):
             return cobranza.models.Deuda.objects.get(content_type=ContentType.objects.get_for_model(self), id_registro=self.id).Cuota_deuda.all()
         except:
             return []
+
+    @property
+    def contador(self):
+        productos = []
+        cantidades = []
+        precios_finales = []
+        for producto in self.BoletaVentaDetalle_boleta_venta.all():
+            productos.append(producto.producto.descripcion_corta)
+            cantidades.append(f"{producto.cantidad.quantize(Decimal('0.01'))}")
+            precios_finales.append(f"{producto.precio_final_con_igv.quantize(Decimal('0.01'))}")
+        return " | ".join(productos), " | ".join(cantidades), " | ".join(precios_finales)
+
+    @property
+    def url_nubefact(self):
+        return NubefactRespuesta.objects.respuesta(self)
+
+    @property
+    def total_soles(self):
+        return self.total * self.tipo_cambio.tipo_cambio_venta
 
     @property
     def descripcion(self):

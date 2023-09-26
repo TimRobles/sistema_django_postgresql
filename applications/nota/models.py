@@ -6,7 +6,7 @@ from applications.clientes.models import Cliente, InterlocutorCliente
 from applications.funciones import numeroXn, obtener_totales
 from applications.proveedores.models import Proveedor
 from applications.sociedad.models import Sociedad
-from applications.datos_globales.models import DocumentoFisico, Moneda, SeriesComprobante, TipoCambio, Unidad
+from applications.datos_globales.models import DocumentoFisico, Moneda, NubefactRespuesta, SeriesComprobante, TipoCambio, Unidad
 from django.contrib.contenttypes.models import ContentType
 from applications.nota.managers import NotaCreditoManager, NotaDevolucionManager
 
@@ -88,6 +88,21 @@ class NotaCredito(models.Model):
     @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
+
+    @property
+    def contador(self):
+        productos = []
+        cantidades = []
+        precios_finales = []
+        for producto in self.NotaCreditoDetalle_nota_credito.all():
+            productos.append(producto.producto.descripcion_corta)
+            cantidades.append(f"{producto.cantidad.quantize(Decimal('0.01'))}")
+            precios_finales.append(f"{producto.precio_unitario_sin_igv.quantize(Decimal('0.01'))}")
+        return " | ".join(productos), " | ".join(cantidades), " | ".join(precios_finales)
+
+    @property
+    def url_nubefact(self):
+        return NubefactRespuesta.objects.respuesta(self)
 
     @property
     def notas_devolucion(self):

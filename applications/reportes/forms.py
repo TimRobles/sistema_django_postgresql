@@ -177,3 +177,32 @@ class ReporteComportamientoClienteExcelForm(forms.Form):
         super(ReporteComportamientoClienteExcelForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+####################################################  REPORTES CORREGIDOS  ####################################################   
+
+class ReportesContadorForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=True)
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ReportesContadorForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

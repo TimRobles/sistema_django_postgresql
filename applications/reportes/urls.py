@@ -19,4 +19,5 @@ urlpatterns = [
     path('reporte-stock-sociedad-pdf/', views.ReporteStockSociedadPdf.as_view(), name='reporte_stock_sociedad_pdf'),
     path('reportes-crm-excel/', views.ReportesCRM.as_view(), name='reportes_crm_excel'),
     path('reportes-gerencia-excel/', views.ReportesGerencia.as_view(), name='reportes_gerencia_excel'),
+    path('reportes-corregidos/', views.ReportesCorregidos.as_view(), name='reportes_corregidos'),
  ]

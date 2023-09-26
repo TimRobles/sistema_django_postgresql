@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
+from applications.funciones import numeroXn
 from applications.importaciones import *
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Alignment
@@ -12,8 +13,8 @@ from openpyxl.chart import Reference, Series,LineChart
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.plotarea import DataTable
 from applications.reportes.funciones import *
-from applications.datos_globales.models import DocumentoFisico, Moneda
-from applications.home.templatetags.funciones_propias import redondear
+from applications.datos_globales.models import DocumentoFisico, Moneda, TipoCambioSunat
+from applications.home.templatetags.funciones_propias import get_enlace_nubefact, redondear
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.nota.models import NotaCredito
 from applications.crm.models import ClienteCRMDetalle
@@ -838,4 +839,222 @@ def dataEstadosCliente():
 def ReporteEstadosClienteExcel():
 
     wb=dataEstadosCliente()
+    return wb
+
+####################################################  FACTURACIÓN GENERAL  ####################################################   
+
+def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
+    moneda_base = Moneda.objects.get(simbolo='$')
+
+    list_encabezado = [
+        'FECHA',
+        'TIPO DE COMP.',
+        'N° COMPROB.',
+        'RAZON SOCIAL',
+        'RUC',
+        'PRODUCTOS',
+        'CANT.',
+        'PRECIO UNIT. (US$) CON IGV',
+        'MONTO (US$)',
+        'IGV (US$)',
+        'DESCUENTO GLOBAL',
+        'TOTAL (US$)',
+        'TIPO DE CAMBIO',
+        'MONTO SOLES (S/)',
+        'OBSERVACIONES',
+        'LINK',
+        ]
+
+    wb = Workbook()
+    hoja = wb.active
+    hoja.title = 'Reporte'
+    hoja.append(tuple(list_encabezado))
+
+    color_relleno = rellenoSociedadCorregido(sociedad)
+
+    col_range = hoja.max_column  # get max columns in the worksheet
+    # cabecera de la tabla
+    for col in range(1, col_range + 1):
+        cell_header = hoja.cell(1, col)
+        cell_header.fill = color_relleno
+        cell_header.font = NEGRITA
+
+    info = []
+    facturas = FacturaVenta.objects.filter(
+        fecha_emision__gte=fecha_inicio,
+        fecha_emision__lte=fecha_fin,
+        sociedad=sociedad,
+    )
+    boletas = BoletaVenta.objects.filter(
+        fecha_emision__gte=fecha_inicio,
+        fecha_emision__lte=fecha_fin,
+        sociedad=sociedad,
+    )
+
+    tipo_cambio_sunat = TipoCambioSunat.objects.filter(
+        fecha__gte=fecha_inicio,
+        fecha__lte=fecha_fin,
+    )
+
+    for factura in facturas:
+        tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=factura.fecha_emision)
+        fila = []
+        fila.append(factura.fecha_emision)  #0
+        fila.append(factura.get_tipo_comprobante_display()) #1
+        fila.append(f"{factura.serie_comprobante.serie}-{numeroXn(factura.numero_factura,6)}")    #2
+        fila.append(factura.cliente.razon_social)   #3
+        fila.append(factura.cliente.numero_documento)    #4
+        contador = factura.contador
+        fila.append(contador[0]) #5
+        fila.append(contador[1])  #6
+        fila.append(contador[2])  #7
+        fila.append(factura.total_gravada)  #8
+        fila.append(factura.total_igv)    #9
+        fila.append(factura.descuento_global)   #10
+        fila.append(factura.total)  #11
+        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta.quantize(Decimal('0.01')))    #12
+        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta * factura.total)    #13
+        fila.append(factura.observaciones)  #14
+        if factura.url_nubefact:
+            fila.append(get_enlace_nubefact(factura.url_nubefact))   #15
+        else:
+            fila.append("")   #15
+        fila.append(factura.estado) #16
+        info.append(fila)
+
+    for boleta in boletas:
+        tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=boleta.fecha_emision)
+        fila = []
+        fila.append(boleta.fecha_emision)  #0
+        fila.append(boleta.get_tipo_comprobante_display()) #1
+        fila.append(f"{boleta.serie_comprobante.serie}-{numeroXn(boleta.numero_boleta,6)}")    #2
+        fila.append(boleta.cliente.razon_social)   #3
+        fila.append(boleta.cliente.numero_documento)    #4
+        contador = boleta.contador
+        fila.append(contador[0]) #5
+        fila.append(contador[1])  #6
+        fila.append(contador[2])  #7
+        fila.append(boleta.total_gravada)  #8
+        fila.append(boleta.total_igv)    #9
+        fila.append(boleta.descuento_global)   #10
+        fila.append(boleta.total)    #11
+        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta.quantize(Decimal('0.01')))    #12
+        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta * boleta.total)    #13
+        fila.append(boleta.observaciones)  #14
+        if boleta.url_nubefact:
+            fila.append(get_enlace_nubefact(boleta.url_nubefact))   #15
+        else:
+            fila.append("")   #15
+        fila.append(boleta.estado) #16
+        info.append(fila)
+
+    info.sort(key = lambda i:i[2])
+    info.sort(key = lambda i:i[0])
+
+    for fila in info:
+        if fila[16] != 3:
+            try:
+                fila[8] = float(fila[8])
+                fila[9] = float(fila[9])
+                fila[10] =float(fila[10])
+                fila[11] =float(fila[11])
+                fila[12] = round(float(fila[12]),2)
+                fila[13] = float(fila[13])
+            except:
+                pass
+        else:
+            for i in range(16):
+                if i == 3:
+                    fila[i] = 'ANULADO'
+                elif i > 3:
+                    fila[i] = ''
+        fila.pop(-1)
+
+    for fila in info:
+        hoja.append(fila)
+
+    for row in hoja.rows:
+        for col in range(hoja.max_column):
+            row[col].border = BORDE_DELGADO
+            if 8 <= col <=11:
+                row[col].alignment = ALINEACION_DERECHA
+                row[col].number_format = FORMATO_DOLAR
+            elif col == 13:
+                row[col].alignment = ALINEACION_DERECHA
+                row[col].number_format = FORMATO_SOLES
+            elif col == 15:
+                if row[col].value != 'LINK':
+                    row[col].hyperlink =  row[col].value
+                    row[col].font =  COLOR_AZUL
+
+    info2 = []
+    notas = NotaCredito.objects.filter(
+        fecha_emision__gte=fecha_inicio,
+        fecha_emision__lte=fecha_fin,
+        sociedad=sociedad,
+    )
+
+    for nota in notas:
+        fila = []
+        fila.append(nota.fecha_emision) #0
+        fila.append(nota.get_tipo_comprobante_display())    #1
+        fila.append(f"{nota.serie_comprobante.serie}-{numeroXn(nota.numero_nota,6)}")    #2
+        fila.append(nota.cliente.razon_social)  #3
+        fila.append(nota.cliente.numero_documento)   #4
+        fila.append(nota.documento.documento)  #5
+        fila.append(nota.observaciones)   #6
+        contador = nota.contador
+        fila.append(contador[1])    #7
+        fila.append(contador[0])    #8
+        fila.append(contador[2])    #9
+        fila.append(nota.descuento_global)  #10
+        fila.append(nota.total_gravada)   #11
+        fila.append(nota.total_igv)   #12
+        fila.append(nota.total)   #13
+        fila.append(nota.get_tipo_nota_credito_display())  #14
+        if nota.url_nubefact:
+            fila.append(get_enlace_nubefact(nota.url_nubefact))   #15
+        else:
+            fila.append("")   #15
+        info2.append(fila)  
+
+    for fila in info2:
+        fila[10] = float(fila[10])
+        fila[11] = float(fila[11])
+        fila[12] = float(fila[12])
+        fila[13] = float(fila[13])
+
+    if info2 != []:
+        # cabecera de la tabla
+        hoja.append(('',)) # Crea la fila del encabezado con los títulos
+        hoja.append(('FECHA', 'TIPO DE COMP.', 'N° COMPROB.', 'RAZON SOCIAL', 'RUC', 'COMPROBANTE QUE SE MODIFICA', '', 'CANT.', 'DESCRIPCION', 'PRECIO UNIT. (US$) SIN IGV', 'DESCUENTO GLOBAL', 'VALOR DE VENTA (US$)', 'IGV (US$)', 'TOTAL (US$)', 'MOTIVO DE LA NOTA', 'LINK')) # Crea la fila del encabezado con los títulos
+        nueva_fila = hoja.max_row
+
+        for col in range(1, col_range + 1):
+            cell_header = hoja.cell(nueva_fila, col)
+            cell_header.fill = color_relleno
+            cell_header.font = NEGRITA
+
+        for fila in info2:
+            hoja.append(fila) # Crea la fila del encabezado con los títulos
+
+        for i in range(hoja.max_row):
+            if i >= nueva_fila-1:
+                row = list(hoja.rows)[i]
+                for col in range(hoja.max_column):
+                    row[col].border = BORDE_DELGADO
+                    if 10 <= col <=13:
+                        row[col].alignment = ALINEACION_DERECHA
+                        row[col].number_format = FORMATO_DOLAR
+                    elif col == 15:
+                        if row[col].value != 'LINK':
+                            row[col].hyperlink =  row[col].value
+                            row[col].font =  COLOR_AZUL
+
+    ajustarColumnasSheet(hoja)
+    return wb
+    
+def ReporteContadorCorregido(sociedad, fecha_inicio, fecha_fin):
+    
+    wb=dataReporteContador(sociedad, fecha_inicio, fecha_fin)
     return wb
