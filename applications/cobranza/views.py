@@ -602,7 +602,7 @@ class CuentaBancariaView(PermissionRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(CuentaBancariaView, self).get_context_data(**kwargs)
-        context['contexto_cuenta_bancaria'] = CuentaBancariaSociedad.objects.all()
+        context['contexto_cuenta_bancaria'] = CuentaBancariaSociedad.objects.filter(estado = 1)
         return context
 
 

@@ -24,6 +24,7 @@ class LineaCreditoForm(BSModalModelForm):
 
 
 class CuentaBancariaIngresoCambiarForm(BSModalModelForm):
+    cuenta_bancaria = forms.ModelChoiceField(queryset=CuentaBancariaSociedad.objects.filter(estado=1))
     class Meta:
         model = Ingreso
         fields=(
