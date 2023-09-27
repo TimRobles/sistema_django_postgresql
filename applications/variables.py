@@ -430,9 +430,14 @@ ESTADO_RECIBO_CAJA_CHICA = (
 MEDIO = (
     (1, 'FACEBOOK'),
     (2, 'INSTAGRAM'),
+    (5, 'TIKTOK'),
+    (6, 'YOUTUBE'),
+    (7, 'WHATSAPP'),
     (3, 'LLAMADA'),
-    (4, 'WEBINAR'),
-    (5, 'EVENTO ISP'),
+    (4, 'EVENTOS'),
+    (8, 'PÁGINA WEB'),
+    (9, 'POR RECOMENDACIÓN'),
+    (10, 'PENDIENTE'),
 )
 
 ESTADOS_CLIENTE = (

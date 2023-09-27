@@ -26,6 +26,7 @@ class ClienteAdmin(admin.ModelAdmin):
         'distrito',
         'estado_sunat',
         'condicion_sunat',
+        'medio',
         'created_by',
         'created_at',
         'updated_by',
