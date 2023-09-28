@@ -4312,7 +4312,7 @@ class NotaIngresoAnularConteoView(BSModalUpdateView):
     def form_valid(self, form):
         sid = transaction.savepoint()
         try:
-            detalles = form.instance.NotaIngresoDetalle_nota_ingreso.all()
+            detalles = form.instance.NotaIngresoMerchandisingDetalle_nota_ingreso.all()
 
             for detalle in detalles:
 
