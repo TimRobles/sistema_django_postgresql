@@ -1,0 +1,74 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="row">
+    <div class="table-responsive mb-3">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="pe-2">RUC: </th>
+                    <td>{{ contexto_cliente_crm.numero_documento }}</td>
+                    <th class="px-2">Medio: </th>
+                    <td>{{ contexto_cliente_crm.get_medio_display }}</td>
+                    <th class="px-2">Fecha Registro: </th>
+                    <td>{{ contexto_cliente_crm.created_at|date:'d/m/Y' }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Última Factura: </th>
+                    <td>{{ contexto_cliente_crm.nro_factura.serie_comprobante.serie }}-{{contexto_cliente_crm.nro_factura.numero_factura|numeroXn:6 }}</td>
+                    <th class="px-2">Monto Total: </th>
+                    <td>{{ contexto_cliente_crm.nro_factura.moneda.simbolo }} {{ contexto_cliente_crm.nro_factura.total|redondear|intcomma }}</td>
+                    <th class="px-2">Estado: </th>
+                    <td>{{ contexto_cliente_crm.get_estado_cliente_display }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<br>
+<h3>Información de Reunión
+    <button data-form-url="{% url 'crm_app:detalle_registrar_reuniones' contexto_cliente_crm.id %}"
+        data-table-url="{% url 'crm_app:detalle_tabla_reuniones' contexto_cliente_crm.id %}"
+        class="create badge bg-success">
+        Registrar
+    </button>
+    <a href="{% url 'crm_app:cliente_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+</h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Motivo</th>
+                <th>Descripción</th>
+                <th>Acuerdos</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente_crm in reuniones %}
+            <tr>
+                <td>{{ cliente_crm.fecha|date:'d/m/Y' }}</td>
+                <td>{{ cliente_crm.motivo }}</td>
+                <td>{{ cliente_crm.descripcion }}</td>
+                <td>{{ cliente_crm.acuerdos }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'crm_app:detalle_actualizar_reuniones' cliente_crm.id %}"
+                        data-table-url="{% url 'crm_app:detalle_tabla_reuniones' contexto_cliente_crm.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'crm_app:detalle_eliminar_reuniones' cliente_crm.id  %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

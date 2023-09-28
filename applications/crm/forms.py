@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from applications.crm.models import (
     ClienteCRMDetalle, 
     ProveedorCRM,
@@ -63,24 +64,14 @@ class ClienteCRMBuscarForm(forms.Form):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
-class ClienteCRMDetalleForm(BSModalModelForm):
-    tipo_actividad = forms.ChoiceField(choices=((1, 'REUNIÓN'), (2, 'VISITA'),), required=True)
+class ReunionesForm(BSModalModelForm):
     class Meta:
         model = ClienteCRMDetalle
         fields = (
-            'tipo_actividad',
-            'interlocutor',
-            'direccion',
             'fecha',
-            'hora_inicio',
-            'hora_fin',
-            'objetivo',
-            'compromiso',
-            'mejoras',
-            'quejas',
-            'comentario',
-            'archivo_recibido',
-            'archivo_enviado',
+            'motivo',
+            'descripcion',
+            'acuerdos',
             )
         
         widgets = {
@@ -90,38 +81,27 @@ class ClienteCRMDetalleForm(BSModalModelForm):
                     },
                 format = '%Y-%m-%d',
                 ),
-            'hora_inicio' : forms.TimeInput(
-                attrs ={
-                    'type':'time',
-                    },
-                ),
-            'hora_fin' : forms.TimeInput(
-                attrs ={
-                    'type':'time',
-                    },
-                ),
-        }
+            }
     
     def __init__(self, *args, **kwargs):
-        interlocutor_queryset = kwargs.pop('interlocutor_queryset')
-        super(ClienteCRMDetalleForm, self).__init__(*args, **kwargs)
-        self.fields['interlocutor'].queryset = interlocutor_queryset
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(ReunionesForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['fecha'].required = True
 
 
-class ClienteCRMDetalleLlamadaForm(BSModalModelForm):
+class VisitasForm(BSModalModelForm):
     class Meta:
         model = ClienteCRMDetalle
         fields = (
-            'interlocutor',
             'fecha',
-            'objetivo',
-            'compromiso',
-            'mejoras',
+            'lugar',
+            'motivo',
+            'descripcion',
+            'acuerdos',
             'quejas',
-            'comentario',
             )
         
         widgets = {
@@ -134,23 +114,23 @@ class ClienteCRMDetalleLlamadaForm(BSModalModelForm):
         }
     
     def __init__(self, *args, **kwargs):
-        interlocutor_queryset = kwargs.pop('interlocutor_queryset')
-        super(ClienteCRMDetalleLlamadaForm, self).__init__(*args, **kwargs)
-        self.fields['interlocutor'].queryset = interlocutor_queryset
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(VisitasForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['fecha'].required = True
 
 
-class ClienteCRMDetalleSoporteForm(BSModalModelForm):
+class LlamadasForm(BSModalModelForm):
+    motivo = forms.CharField(label = 'Asunto', widget=forms.Textarea(), required=False)
+    descripcion = forms.CharField(label = 'Detalle Conversación', widget=forms.Textarea(), required=False)
     class Meta:
         model = ClienteCRMDetalle
         fields = (
-            'interlocutor',
             'fecha',
-            'hora_inicio',
-            'hora_fin',
-            'comentario',
+            'motivo',
+            'descripcion',
             )
         
         widgets = {
@@ -160,22 +140,156 @@ class ClienteCRMDetalleSoporteForm(BSModalModelForm):
                     },
                 format = '%Y-%m-%d',
                 ),
-            'hora_inicio' : forms.TimeInput(
+        }
+    
+    def __init__(self, *args, **kwargs):
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(LlamadasForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].required = True
+
+
+class CorreosForm(BSModalModelForm):
+    motivo = forms.CharField(label = 'Asunto', widget=forms.Textarea(), required=False)
+    descripcion = forms.CharField(label = 'Contenido de Correo', widget=forms.Textarea(), required=False)
+    class Meta:
+        model = ClienteCRMDetalle
+        fields = (
+            'fecha',
+            'motivo',
+            'descripcion',
+            )
+        
+        widgets = {
+            'fecha' : forms.DateInput(
                 attrs ={
-                    'type':'time',
+                    'type':'date',
                     },
-                ),
-            'hora_fin' : forms.TimeInput(
-                attrs ={
-                    'type':'time',
-                    },
+                format = '%Y-%m-%d',
                 ),
         }
     
     def __init__(self, *args, **kwargs):
-        interlocutor_queryset = kwargs.pop('interlocutor_queryset')
-        super(ClienteCRMDetalleSoporteForm, self).__init__(*args, **kwargs)
-        self.fields['interlocutor'].queryset = interlocutor_queryset
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(CorreosForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].required = True
+
+
+class EventosForm(BSModalModelForm):
+    descripcion = forms.CharField(label = 'Resumen Conversación', widget=forms.Textarea(), required=False)
+    class Meta:
+        model = ClienteCRMDetalle
+        fields = (
+            'fecha',
+            'nombre',
+            'descripcion',
+            )
+        
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(EventosForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].required = True
+
+
+class SoporteTecnicoForm(BSModalModelForm):
+    # tecnico_asignado = forms.ModelChoiceField(queryset=get_user_model().objects.filter(id__in = [19, 12, 22, 24 ]), required=False)
+    tecnico_asignado = forms.ModelChoiceField(queryset=get_user_model().objects.filter(is_active=1).exclude(id__in = [1, 4, 13, 14, 16, 18]), required=False)
+    descripcion = forms.CharField(label = 'Descripción Problema', widget=forms.Textarea(), required=False)
+    acuerdos = forms.CharField(label = 'Siguientes Pasos', widget=forms.Textarea(), required=False)
+    class Meta:
+        model = ClienteCRMDetalle
+        fields = (
+            'fecha',
+            'numero_caso',
+            'tecnico_asignado',
+            'descripcion',
+            'acuerdos',
+            )
+        
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(SoporteTecnicoForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].required = True
+
+
+class CaracteristicasTecnicasForm(BSModalModelForm):
+    class Meta:
+        model = ClienteCRMDetalle
+        fields = (
+            'fecha',
+            'descripcion',
+            'archivo',
+            )
+        
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(CaracteristicasTecnicasForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['fecha'].required = True
+
+
+class NuevosProductosSolicitadosForm(BSModalModelForm):
+    descripcion = forms.CharField(label = 'Productos/Cantidades', widget=forms.Textarea(), required=False)
+    class Meta:
+        model = ClienteCRMDetalle
+        fields = (
+            'fecha',
+            'descripcion',
+            )
+        
+        widgets = {
+            'fecha' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        # interlocutor_queryset = kwargs.pop('interlocutor_queryset')
+        super(NuevosProductosSolicitadosForm, self).__init__(*args, **kwargs)
+        # self.fields['interlocutor'].queryset = interlocutor_queryset
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
         self.fields['fecha'].required = True

@@ -453,7 +453,11 @@ TIPO_ACTIVIDAD = (
     (1, 'REUNIÓN'),
     (2, 'VISITA'),
     (3, 'LLAMADA'),
-    (4, 'SOPORTE TÉCNICO'),
+    (4, 'CORREO'),
+    (5, 'EVENTO'),
+    (6, 'SOPORTE TÉCNICO'),
+    (7, 'CARACTERÍSTICAS TÉCNICAS'),
+    (8, 'NUEVOS PRODUCTOS SOLICITADOS'),
 )
 
 ESTADOS_EVENTO_CRM = (

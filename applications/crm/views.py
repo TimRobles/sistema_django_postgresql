@@ -11,14 +11,14 @@ from applications.comprobante_despacho.models import Guia, GuiaDetalle
 from applications.funciones import slug_aleatorio
 from applications.home.templatetags.funciones_propias import nombre_usuario
 from django.urls import reverse
-from applications.crm.forms import (ClienteCRMBuscarForm,ClienteCRMDetalleForm, ClienteCRMDetalleLlamadaForm, ClienteCRMDetalleSoporteForm, EventoCRMFinalizarForm, 
+from applications.crm.forms import (NuevosProductosSolicitadosForm, CaracteristicasTecnicasForm, ClienteCRMBuscarForm, CorreosForm, EventoCRMFinalizarForm, 
                                     EventoCRMForm, EventoCRMBuscarForm,EventoCRMDetalleDescripcionForm,
                                     EventoCRMActualizarForm, EventoCRMDetalleActualizarForm, EventoCRMDetalleForm,
-                                    EventoCRMDetalleInformacionAdicionalForm, ProveedorCRMForm, 
+                                    EventoCRMDetalleInformacionAdicionalForm, EventosForm, LlamadasForm, ProveedorCRMForm, 
                                     PreguntaCRMBuscarForm, PreguntaCRMForm,
                                     AlternativaCRMForm,
                                     EncuestaCRMBuscarForm, EncuestaCRMForm, EncuestaPreguntaCRMForm,
-                                    RespuestaCRMBuscarForm, RespuestaCRMForm, RespuestaCrearCRMForm)
+                                    RespuestaCRMBuscarForm, RespuestaCRMForm, RespuestaCrearCRMForm, ReunionesForm, SoporteTecnicoForm, VisitasForm)
 
 from applications.crm.models import (
     ClienteCRMDetalle,
@@ -276,30 +276,31 @@ class ClienteCRMExtranjeroUpdateView(PermissionRequiredMixin, BSModalUpdateView)
         context['accion'] = "Actualizar"
         context['titulo'] = "Cliente Extranjero"
         return context
-    
 
-class ClienteCRMDetailView(PermissionRequiredMixin, DetailView):
+########################################### Reuniones ########################################### 
+
+class ReunionesView(PermissionRequiredMixin, DetailView):
     permission_required = ('crm.view_clientecrmdetalle')
     model = Cliente
-    template_name = "crm/clientes_crm/detalle.html"
+    template_name = "crm/clientes_crm/reuniones/detalle.html"
     context_object_name = 'contexto_cliente_crm'
 
     def get_context_data(self, **kwargs):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
-        context = super(ClienteCRMDetailView, self).get_context_data(**kwargs)
-        context['cliente_crm_detalle'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad__lte=2).order_by('-fecha')
+        context = super(ReunionesView, self).get_context_data(**kwargs)
+        context['reuniones'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 1).order_by('-fecha')
 
         return context
 
 
-def ClienteCRMDetailTabla(request, pk):
+def ReunionesTabla(request, pk):
     data = dict()
     if request.method == 'GET':
-        template = 'crm/clientes_crm/detalle_tabla.html'
+        template = 'crm/clientes_crm/reuniones/detalle_tabla.html'
         context = {}
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
-        context['cliente_crm_detalle'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad__lte=2).order_by('-fecha')
+        context['reuniones'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 1).order_by('-fecha')
         
         data['table'] = render_to_string(
             template,
@@ -309,44 +310,45 @@ def ClienteCRMDetailTabla(request, pk):
         return JsonResponse(data)
 
 
-class ClienteCRMDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
+class ReunionesCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_clientecrmdetalle')
     model = ClienteCRMDetalle
     template_name = "includes/formulario generico.html"
-    form_class = ClienteCRMDetalleForm
+    form_class = ReunionesForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.kwargs['cliente_crm_id']})
+        return reverse_lazy('crm_app:detalle_reuniones', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
-        lista = []
-        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
-        for relacion in relaciones:
-            lista.append(relacion.interlocutor.id)
+    # def get_form_kwargs(self):
+    #     kwargs = super().get_form_kwargs()
+    #     cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+    #     lista = []
+    #     relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
+    #     for relacion in relaciones:
+    #         lista.append(relacion.interlocutor.id)
 
-        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
-        return kwargs
+    #     kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+    #     return kwargs
 
     def form_valid(self, form):
         form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 1
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleCreateView, self).get_context_data(**kwargs)
+        context = super(ReunionesCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
-        context['titulo']="Información de Actividad"
+        context['titulo']="Información de Reunión"
         return context
     
 
-class ClienteCRMDetalleUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+class ReunionesUpdateView(PermissionRequiredMixin,BSModalUpdateView):
     permission_required = ('crm.change_clientecrmdetalle')
     model = ClienteCRMDetalle
     template_name = "includes/formulario generico.html"
-    form_class = ClienteCRMDetalleForm
+    form_class = ReunionesForm
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -354,32 +356,32 @@ class ClienteCRMDetalleUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.object.cliente_crm.id})
+        return reverse_lazy('crm_app:detalle_reuniones', kwargs={'pk':self.object.cliente_crm.id})
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        cliente_crm = Cliente.objects.get(id = self.object.cliente_crm.id)
-        lista = []
-        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
-        for relacion in relaciones:
-            lista.append(relacion.interlocutor.id)
+    # def get_form_kwargs(self):
+    #     kwargs = super().get_form_kwargs()
+    #     cliente_crm = Cliente.objects.get(id = self.object.cliente_crm.id)
+    #     lista = []
+    #     relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
+    #     for relacion in relaciones:
+    #         lista.append(relacion.interlocutor.id)
 
-        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
+    #     kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
 
-        return kwargs
+    #     return kwargs
     
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleUpdateView, self).get_context_data(**kwargs)
+        context = super(ReunionesUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
-        context['titulo']="Información de Actividad"
+        context['titulo']="Información de Reunión"
         return context
     
 
-class ClienteCRMDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+class ReunionesDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('crm.delete_clientecrmdetalle')
     model = ClienteCRMDetalle
     template_name = "includes/eliminar generico.html"
@@ -390,30 +392,143 @@ class ClienteCRMDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.object.cliente_crm.id})
+        return reverse_lazy('crm_app:detalle_reuniones', kwargs={'pk':self.object.cliente_crm.id})
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleDeleteView, self).get_context_data(**kwargs)
+        context = super(ReunionesDeleteView, self).get_context_data(**kwargs)
         context['accion'] = "Eliminar"
-        context['titulo'] = "Información de Actividad"
+        context['titulo'] = "Información de Reunión"
         context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
         context['dar_baja'] = "true"
         return context
     
+########################################### Visitas ########################################### 
 
-class ProveedorCRMListView(PermissionRequiredMixin, ListView):
-    permission_required = ('crm.view_proveedorcrm')
-    model = ProveedorCRM
-    template_name = "crm/proveedor_crm/inicio.html"
-    context_object_name = 'contexto_proveedor_crm'
+class VisitasView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = Cliente
+    template_name = "crm/clientes_crm/visitas/detalle.html"
+    context_object_name = 'contexto_cliente_crm'
 
-def ProveedorCRMTabla(request):
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(VisitasView, self).get_context_data(**kwargs)
+        context['visitas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 2).order_by('-fecha')
+
+        return context
+
+
+def VisitasTabla(request, pk):
     data = dict()
     if request.method == 'GET':
-        template = 'crm/proveedor_crm/inicio_tabla.html'
+        template = 'crm/clientes_crm/visitas/detalle_tabla.html'
         context = {}
-        context['contexto_proveedor_crm'] = ProveedorCRM.objects.all()
+        cliente_crm = Cliente.objects.get(id = pk)
+        context['contexto_cliente_crm'] = cliente_crm
+        context['visitas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 2).order_by('-fecha')
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
 
+
+class VisitasCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = VisitasForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_visitas', kwargs={'pk':self.kwargs['cliente_crm_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 2
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(VisitasCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Información de Visita"
+        return context
+    
+
+class VisitasUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = VisitasForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_visitas', kwargs={'pk':self.object.cliente_crm.id})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(VisitasUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información de Visita"
+        return context
+    
+
+class VisitasDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_visitas', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(VisitasDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información de Visita"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
+        context['dar_baja'] = "true"
+        return context
+
+########################################### Llamadas ###########################################
+       
+class LlamadasView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = Cliente
+    template_name = "crm/clientes_crm/llamadas/detalle.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(LlamadasView, self).get_context_data(**kwargs)
+        context['llamadas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 3).order_by('-fecha')
+
+        return context
+
+
+def LlamadasTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/clientes_crm/llamadas/detalle_tabla.html'
+        context = {}
+        cliente_crm = Cliente.objects.get(id = pk)
+        context['contexto_cliente_crm'] = cliente_crm
+        context['llamadas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 3).order_by('-fecha')
+        
         data['table'] = render_to_string(
             template,
             context,
@@ -422,30 +537,582 @@ def ProveedorCRMTabla(request):
         return JsonResponse(data)
     
 
-class ProveedorCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('crm.add_proveedorcrm')
-    model = ProveedorCRM
-    template_name = "crm/proveedor_crm/form.html"
-    form_class = ProveedorCRMForm
-    success_url = reverse_lazy('crm_app:proveedor_crm_inicio')
+class LlamadasCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = LlamadasForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_llamadas', kwargs={'pk':self.kwargs['cliente_crm_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 3
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(LlamadasCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Información de Llamada"
+        return context
+    
+
+class LlamadasUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = LlamadasForm
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_llamadas', kwargs={'pk':self.object.cliente_crm.id})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
-        context = super(ProveedorCRMCreateView, self).get_context_data(**kwargs)
-        context['accion']="Registrar"
-        context['titulo']="Proveedor CRM"
+        context = super(LlamadasUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información de Llamada"
         return context
 
-    def form_valid(self, form):
 
-        form.instance.usuario = self.request.user
+class LlamadasDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_llamadas', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(LlamadasDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información de Llamada"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
+        context['dar_baja'] = "true"
+        return context
+
+########################################### Correos ###########################################
+       
+class CorreosView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = Cliente
+    template_name = "crm/clientes_crm/correos/detalle.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(CorreosView, self).get_context_data(**kwargs)
+        context['correos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 4).order_by('-fecha')
+
+        return context
+
+
+def CorreosTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/clientes_crm/correos/detalle_tabla.html'
+        context = {}
+        cliente_crm = Cliente.objects.get(id = pk)
+        context['contexto_cliente_crm'] = cliente_crm
+        context['correos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 4).order_by('-fecha')
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+    
+
+class CorreosCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = CorreosForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_correos', kwargs={'pk':self.kwargs['cliente_crm_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 4
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreosCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Información de Correo"
+        return context
+    
+
+class CorreosUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = CorreosForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_correos', kwargs={'pk':self.object.cliente_crm.id})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreosUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información de Correo"
+        return context
+
+
+class CorreosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_correos', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(CorreosDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información de Correo"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
+        context['dar_baja'] = "true"
+        return context
+
+########################################### Eventos ###########################################
+
+class EventosView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = Cliente
+    template_name = "crm/clientes_crm/eventos/detalle.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(EventosView, self).get_context_data(**kwargs)
+        context['eventos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 5).order_by('-fecha')
+
+        return context
+
+
+def EventosTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/clientes_crm/eventos/detalle_tabla.html'
+        context = {}
+        cliente_crm = Cliente.objects.get(id = pk)
+        context['contexto_cliente_crm'] = cliente_crm
+        context['eventos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 5).order_by('-fecha')
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+    
+
+class EventosCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = EventosForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_eventos', kwargs={'pk':self.kwargs['cliente_crm_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 5
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EventosCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Información de Evento/Webinar"
+        return context
+    
+
+class EventosUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = EventosForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_eventos', kwargs={'pk':self.object.cliente_crm.id})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(EventosUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información de Evento/Webinar"
+        return context
+    
+
+class EventosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_eventos', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(EventosDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información de Evento/Webinar"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
+        context['dar_baja'] = "true"
+        return context
+    
+########################################### Soporte Técnico ###########################################
+
+class SoporteTecnicoView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = Cliente
+    template_name = "crm/clientes_crm/soporte_tecnico/detalle.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(SoporteTecnicoView, self).get_context_data(**kwargs)
+        context['soporte_tecnico'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 6).order_by('-fecha')
+
+        return context
+
+
+def SoporteTecnicoTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/clientes_crm/soporte_tecnico/detalle_tabla.html'
+        context = {}
+        cliente_crm = Cliente.objects.get(id = pk)
+        context['contexto_cliente_crm'] = cliente_crm
+        context['soporte_tecnico'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 6).order_by('-fecha')
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class SoporteTecnicoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = SoporteTecnicoForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_soporte_tecnico', kwargs={'pk':self.kwargs['cliente_crm_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 6
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SoporteTecnicoCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Información de Soporte Técnico"
+        return context
+    
+
+class SoporteTecnicoUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = SoporteTecnicoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_soporte_tecnico', kwargs={'pk':self.object.cliente_crm.id})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SoporteTecnicoUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información de Soporte Técnico"
+        return context
+    
+
+class SoporteTecnicoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_soporte_tecnico', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(SoporteTecnicoDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información de Soporte Técnico"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
+        context['dar_baja'] = "true"
+        return context
+
+########################################### Características Técnicas ###########################################
+
+class CaracteristicasTecnicasView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = Cliente
+    template_name = "crm/clientes_crm/caracteristicas_tecnicas/detalle.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(CaracteristicasTecnicasView, self).get_context_data(**kwargs)
+        context['caracteristicas_tecnicas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 7).order_by('-fecha')
+
+        return context
+
+
+def CaracteristicasTecnicasTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/clientes_crm/caracteristicas_tecnicas/detalle_tabla.html'
+        context = {}
+        cliente_crm = Cliente.objects.get(id = pk)
+        context['contexto_cliente_crm'] = cliente_crm
+        context['caracteristicas_tecnicas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 7).order_by('-fecha')
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+    
+
+class CaracteristicasTecnicasCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = CaracteristicasTecnicasForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_caracteristicas_tecnicas', kwargs={'pk':self.kwargs['cliente_crm_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 7
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CaracteristicasTecnicasCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Información de Características Técnicas"
+        return context
+    
+
+class CaracteristicasTecnicasUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = CaracteristicasTecnicasForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_caracteristicas_tecnicas', kwargs={'pk':self.object.cliente_crm.id})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(CaracteristicasTecnicasUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información de Características Técnicas"
+        return context
+    
+
+class CaracteristicasTecnicasDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_caracteristicas_tecnicas', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(CaracteristicasTecnicasDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información de Características Técnicas"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
+        context['dar_baja'] = "true"
+        return context
+
+
+########################################### Nuevos Productos Solicitados ###########################################
+
+class NuevosProductosSolicitadosView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_clientecrmdetalle')
+    model = Cliente
+    template_name = "crm/clientes_crm/nuevos_productos_solicitados/detalle.html"
+    context_object_name = 'contexto_cliente_crm'
+
+    def get_context_data(self, **kwargs):
+        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
+        context = super(NuevosProductosSolicitadosView, self).get_context_data(**kwargs)
+        context['nuevos_productos_solicitados'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 8).order_by('-fecha')
+
+        return context
+
+
+def NuevosProductosSolicitadosTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'crm/clientes_crm/nuevos_productos_solicitados/detalle_tabla.html'
+        context = {}
+        cliente_crm = Cliente.objects.get(id = pk)
+        context['contexto_cliente_crm'] = cliente_crm
+        context['nuevos_productos_solicitados'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 8).order_by('-fecha')
+        
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+    
+class NuevosProductosSolicitadosCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = NuevosProductosSolicitadosForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_nuevos_productos_solicitados', kwargs={'pk':self.kwargs['cliente_crm_id']})
+
+    def form_valid(self, form):
+        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
+        form.instance.tipo_actividad = 8
+        registro_guardar(form.instance, self.request)
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(NuevosProductosSolicitadosCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Información de Nuevos Productos Solicitados"
+        return context
+    
+
+class NuevosProductosSolicitadosUpdateView(PermissionRequiredMixin,BSModalUpdateView):
+    permission_required = ('crm.change_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = NuevosProductosSolicitadosForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_nuevos_productos_solicitados', kwargs={'pk':self.object.cliente_crm.id})
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(NuevosProductosSolicitadosUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Información de Nuevos Productos Solicitados"
+        return context
+    
+
+class NuevosProductosSolicitadosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_clientecrmdetalle')
+    model = ClienteCRMDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('crm_app:detalle_nuevos_productos_solicitados', kwargs={'pk':self.object.cliente_crm.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(NuevosProductosSolicitadosDeleteView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Información de Nuevos Productos Solicitados"
+        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
+        context['dar_baja'] = "true"
+        return context
     
 
 class ClienteCRMCotizacionesView(DetailView):
@@ -496,30 +1163,21 @@ class ClienteCRMFacturasView(DetailView):
         context['contexto_filtro'] = '?'  
 
         return context
-       
-class ClienteCRMDetailLlamadasView(PermissionRequiredMixin, DetailView):
-    permission_required = ('crm.view_clientecrmdetalle')
-    model = Cliente
-    template_name = "crm/clientes_crm/detalle_llamada.html"
-    context_object_name = 'contexto_cliente_crm'
-
-    def get_context_data(self, **kwargs):
-        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
-        context = super(ClienteCRMDetailLlamadasView, self).get_context_data(**kwargs)
-        context['cliente_crm_detalle_llamadas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad=3).order_by('-fecha')
-
-        return context
 
 
-def ClienteCRMDetailLlamadasTabla(request, pk):
+class ProveedorCRMListView(PermissionRequiredMixin, ListView):
+    permission_required = ('crm.view_proveedorcrm')
+    model = ProveedorCRM
+    template_name = "crm/proveedor_crm/inicio.html"
+    context_object_name = 'contexto_proveedor_crm'
+
+def ProveedorCRMTabla(request):
     data = dict()
     if request.method == 'GET':
-        template = 'crm/clientes_crm/detalle_tabla_llamada.html'
+        template = 'crm/proveedor_crm/inicio_tabla.html'
         context = {}
-        cliente_crm = Cliente.objects.get(id = pk)
-        context['contexto_cliente_crm'] = cliente_crm
-        context['cliente_crm_detalle_llamadas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad=3).order_by('-fecha')
-        
+        context['contexto_proveedor_crm'] = ProveedorCRM.objects.all()
+
         data['table'] = render_to_string(
             template,
             context,
@@ -527,221 +1185,32 @@ def ClienteCRMDetailLlamadasTabla(request, pk):
         )
         return JsonResponse(data)
     
-class ClienteCRMDetalleLlamadaCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('crm.add_clientecrmdetalle')
-    model = ClienteCRMDetalle
-    template_name = "includes/formulario generico.html"
-    form_class = ClienteCRMDetalleLlamadaForm
-    
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle_llamada', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
-        lista = []
-        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
-        for relacion in relaciones:
-            lista.append(relacion.interlocutor.id)
+class ProveedorCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_proveedorcrm')
+    model = ProveedorCRM
+    template_name = "crm/proveedor_crm/form.html"
+    form_class = ProveedorCRMForm
+    success_url = reverse_lazy('crm_app:proveedor_crm_inicio')
 
-        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
-        return kwargs
-
-    def form_valid(self, form):
-        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
-        form.instance.tipo_actividad = 3
-        registro_guardar(form.instance, self.request)
-
-        return super().form_valid(form)
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleLlamadaCreateView, self).get_context_data(**kwargs)
+        context = super(ProveedorCRMCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
-        context['titulo']="Información de Llamada"
+        context['titulo']="Proveedor CRM"
         return context
-    
-
-class ClienteCRMDetalleLlamadaUpdateView(PermissionRequiredMixin,BSModalUpdateView):
-    permission_required = ('crm.change_clientecrmdetalle')
-    model = ClienteCRMDetalle
-    template_name = "includes/formulario generico.html"
-    form_class = ClienteCRMDetalleLlamadaForm
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle_llamada', kwargs={'pk':self.object.cliente_crm.id})
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        cliente_crm = Cliente.objects.get(id = self.object.cliente_crm.id)
-        lista = []
-        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
-        for relacion in relaciones:
-            lista.append(relacion.interlocutor.id)
-
-        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
-
-        return kwargs
-    
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleLlamadaUpdateView, self).get_context_data(**kwargs)
-        context['accion']="Actualizar"
-        context['titulo']="Información de Llamada"
-        return context
-
-
-class ClienteCRMDetalleLlamadaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('crm.delete_clientecrmdetalle')
-    model = ClienteCRMDetalle
-    template_name = "includes/eliminar generico.html"
-    
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle_llamada', kwargs={'pk':self.object.cliente_crm.id})
-
-    def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleLlamadaDeleteView, self).get_context_data(**kwargs)
-        context['accion'] = "Eliminar"
-        context['titulo'] = "Información de Llamada"
-        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
-        context['dar_baja'] = "true"
-        return context
-    
-
-class ClienteCRMDetailSoporteView(PermissionRequiredMixin, DetailView):
-    permission_required = ('crm.view_clientecrmdetalle')
-    model = Cliente
-    template_name = "crm/clientes_crm/detalle_soporte.html"
-    context_object_name = 'contexto_cliente_crm'
-
-    def get_context_data(self, **kwargs):
-        cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
-        context = super(ClienteCRMDetailSoporteView, self).get_context_data(**kwargs)
-        context['cliente_crm_detalle_soporte'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad=4).order_by('-fecha')
-
-        return context
-
-
-def ClienteCRMDetailSoporteTabla(request, pk):
-    data = dict()
-    if request.method == 'GET':
-        template = 'crm/clientes_crm/detalle_tabla_soporte.html'
-        context = {}
-        cliente_crm = Cliente.objects.get(id = pk)
-        context['contexto_cliente_crm'] = cliente_crm
-        context['cliente_crm_detalle_soporte'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad=4).order_by('-fecha')
-        
-        data['table'] = render_to_string(
-            template,
-            context,
-            request=request
-        )
-        return JsonResponse(data)
-    
-class ClienteCRMDetalleSoporteCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('crm.add_clientecrmdetalle')
-    model = ClienteCRMDetalle
-    template_name = "includes/formulario generico.html"
-    form_class = ClienteCRMDetalleSoporteForm
-    
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle_soporte', kwargs={'pk':self.kwargs['cliente_crm_id']})
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
-        lista = []
-        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
-        for relacion in relaciones:
-            lista.append(relacion.interlocutor.id)
-
-        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
-        return kwargs
 
     def form_valid(self, form):
-        form.instance.cliente_crm = Cliente.objects.get(id = self.kwargs['cliente_crm_id'])
-        form.instance.tipo_actividad = 4
+
+        form.instance.usuario = self.request.user
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleSoporteCreateView, self).get_context_data(**kwargs)
-        context['accion']="Registrar"
-        context['titulo']="Información de Soporte"
-        return context
     
-
-class ClienteCRMDetalleSoporteUpdateView(PermissionRequiredMixin,BSModalUpdateView):
-    permission_required = ('crm.change_clientecrmdetalle')
-    model = ClienteCRMDetalle
-    template_name = "includes/formulario generico.html"
-    form_class = ClienteCRMDetalleSoporteForm
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle_soporte', kwargs={'pk':self.object.cliente_crm.id})
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        cliente_crm = Cliente.objects.get(id = self.object.cliente_crm.id)
-        lista = []
-        relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm)
-        for relacion in relaciones:
-            lista.append(relacion.interlocutor.id)
-
-        kwargs['interlocutor_queryset'] = InterlocutorCliente.objects.filter(id__in = lista)
-
-        return kwargs
-    
-    def form_valid(self, form):
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleSoporteUpdateView, self).get_context_data(**kwargs)
-        context['accion']="Actualizar"
-        context['titulo']="Información de Soporte"
-        return context
-    
-
-class ClienteCRMDetalleSoporteDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('crm.delete_clientecrmdetalle')
-    model = ClienteCRMDetalle
-    template_name = "includes/eliminar generico.html"
-    
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle_soporte', kwargs={'pk':self.object.cliente_crm.id})
-
-    def get_context_data(self, **kwargs):
-        context = super(ClienteCRMDetalleSoporteDeleteView, self).get_context_data(**kwargs)
-        context['accion'] = "Eliminar"
-        context['titulo'] = "Información de Soporte"
-        context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
-        context['dar_baja'] = "true"
-        return context
-
 
 class EventoCRMListView(FormView):
     template_name = "crm/eventos_crm/inicio.html"
@@ -2259,7 +2728,7 @@ class EncuestaRespuesta(View): #encuesta
 class ClienteCRMDetalleVerView(PermissionRequiredMixin, BSModalReadView):
     permission_required = ('crm.view_clientecrmdetalle')
     model = ClienteCRMDetalle
-    template_name = "crm/clientes_crm/detalle_reporte_actividad.html"
+    template_name = "crm/clientes_crm/reuniones/detalle_reporte_actividad.html"
 
     def dispatch(self, request, *args, **kwargs):
         if not self.has_permission():
@@ -2267,7 +2736,7 @@ class ClienteCRMDetalleVerView(PermissionRequiredMixin, BSModalReadView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('crm_app:cliente_crm_detalle', kwargs={'pk':self.object.cliente_crm.id})
+        return reverse_lazy('crm_app:detalle_reuniones', kwargs={'pk':self.object.cliente_crm.id})
 
     def get_context_data(self, **kwargs):
         context = super(ClienteCRMDetalleVerView, self).get_context_data(**kwargs)
