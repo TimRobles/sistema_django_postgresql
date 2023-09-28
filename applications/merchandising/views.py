@@ -4189,7 +4189,7 @@ class NotaIngresoDetalleEliminarView(BSModalDeleteView):
     
     def get_success_url(self, **kwargs):
         nota_ingreso = self.object.nota_ingreso
-        return reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':nota_ingreso.id})
+        return reverse_lazy('merchandising_app:nota_ingreso_merchandising_detalle', kwargs={'pk':nota_ingreso.id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -4222,7 +4222,7 @@ class NotaIngresoFinalizarConteoView(BSModalUpdateView):
     form_class = NotaIngresoFinalizarConteoForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':self.object.id})
+        return reverse_lazy('merchandising_app:nota_ingreso_merchandising_detalle', kwargs={'pk':self.object.id})
 
     @transaction.atomic
     def form_valid(self, form):
@@ -4306,7 +4306,7 @@ class NotaIngresoAnularConteoView(BSModalUpdateView):
     form_class = NotaIngresoAnularConteoForm
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':self.object.id})
+        return reverse_lazy('merchandising_app:nota_ingreso_merchandising_detalle', kwargs={'pk':self.object.id})
 
     @transaction.atomic
     def form_valid(self, form):
