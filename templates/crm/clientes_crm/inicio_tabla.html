@@ -50,25 +50,45 @@
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                 {% endif %}
-                <a href="{% url 'crm_app:cliente_crm_detalle' cliente.id %}"
-                    class="btn btn-info btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Reuniones y Visitas">
+                <a href="{% url 'crm_app:detalle_reuniones' cliente.id %}"
+                    class="btn btn-outline-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Reuniones">
                     <i class="bi bi-people-fill"></i>
                 </a>
-                <a href="{% url 'crm_app:cliente_crm_detalle_llamada' cliente.id %}"
-                    class="btn btn-success btn-sm"
+                <a href="{% url 'crm_app:detalle_visitas' cliente.id %}"
+                    class="btn btn-outline-secondary btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Visitas">
+                    <i class="bi bi-person-walking"></i>
+                </a>
+                <a href="{% url 'crm_app:detalle_llamadas' cliente.id %}"
+                    class="btn btn-outline-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Llamadas">
                     <i class="bi bi-telephone-fill"></i>
+                    </a>
+                <a href="{% url 'crm_app:detalle_correos' cliente.id %}"
+                    class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Correos">
+                    <i class="bi bi-envelope-fill"></i>
                 </a>
-                <a href="{% url 'crm_app:cliente_crm_detalle_soporte' cliente.id %}"
-                    class="btn btn-dark btn-sm"
+                <a href="{% url 'crm_app:detalle_eventos' cliente.id %}"
+                    class="btn btn-outline-primary btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eventos/Webinar">
+                    <i class="bi bi-person-workspace"></i>
+                </a>
+                <a href="{% url 'crm_app:detalle_soporte_tecnico' cliente.id %}"
+                    class="btn btn-outline-dark btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Soporte Técnico">
                     <i class="bi bi-tools"></i>
                 </a>
-                <a href="{% url 'clientes_app:cliente_detalle' cliente.id %}"
-                    class="btn btn-danger btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Interlocutores y Correos">
-                    <i class="bi bi-envelope-fill"></i>
+                <a href="{% url 'crm_app:detalle_caracteristicas_tecnicas' cliente.id %}"
+                    class="btn btn-outline-success btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Características Técnicas">
+                    <i class="bi bi-list-check"></i>
+                </a>
+                <a href="{% url 'crm_app:detalle_nuevos_productos_solicitados' cliente.id %}"
+                    class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Nuevos Productos Solicitados">
+                    <i class="bi bi-router-fill"></i>
                 </a>
             </td>
         </tr>

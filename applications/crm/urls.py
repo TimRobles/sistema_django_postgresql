@@ -10,27 +10,58 @@ urlCliente = [
     path('cliente-crm/extranjero/registrar/', views.ClienteCRMExtranjeroCreateView.as_view(), name='cliente_crm_extranjero_registrar'),
     path('cliente-crm/nacional/actualizar/<pk>/', views.ClienteCRMNacionalUpdateView.as_view(), name='cliente_crm_nacional_actualizar'),
     path('cliente-crm/extranjero/actualizar/<pk>/', views.ClienteCRMExtranjeroUpdateView.as_view(), name='cliente_crm_extranjero_actualizar'),
-    path('cliente-crm/detalle/<pk>/', views.ClienteCRMDetailView.as_view(), name='cliente_crm_detalle'),
-    path('cliente-crm/detalle-tabla/<pk>/', views.ClienteCRMDetailTabla, name='cliente_crm_detalle_tabla'),
-    path('cliente-crm/detalle/registrar/<int:cliente_crm_id>/', views.ClienteCRMDetalleCreateView.as_view(), name='cliente_crm_detalle_registrar'),
-    path('cliente-crm/detalle/actualizar/<pk>/', views.ClienteCRMDetalleUpdateView.as_view(), name='cliente_crm_detalle_actualizar'),
-    path('cliente-crm/detalle/eliminar/<pk>/', views.ClienteCRMDetalleDeleteView.as_view(), name='cliente_crm_detalle_eliminar'),
-    path('cliente-crm/detalle/ver/<pk>/', views.ClienteCRMDetalleVerView.as_view(), name='cliente_crm_detalle_ver'),
+
+    path('cliente-crm/detalle/reuniones/<pk>/', views.ReunionesView.as_view(), name='detalle_reuniones'),
+    path('cliente-crm/detalle-tabla/reuniones/<pk>/', views.ReunionesTabla, name='detalle_tabla_reuniones'),
+    path('cliente-crm/detalle/reuniones/registrar/<int:cliente_crm_id>/', views.ReunionesCreateView.as_view(), name='detalle_registrar_reuniones'),
+    path('cliente-crm/detalle/reuniones/actualizar/<pk>/', views.ReunionesUpdateView.as_view(), name='detalle_actualizar_reuniones'),
+    path('cliente-crm/detalle/reuniones/eliminar/<pk>/', views.ReunionesDeleteView.as_view(), name='detalle_eliminar_reuniones'),
+
+    path('cliente-crm/detalle/visitas/<pk>/', views.VisitasView.as_view(), name='detalle_visitas'),
+    path('cliente-crm/detalle-tabla/visitas/<pk>/', views.VisitasTabla, name='detalle_tabla_visitas'),
+    path('cliente-crm/detalle/visitas/registrar/<int:cliente_crm_id>/', views.VisitasCreateView.as_view(), name='detalle_registrar_visitas'),
+    path('cliente-crm/detalle/visitas/actualizar/<pk>/', views.VisitasUpdateView.as_view(), name='detalle_actualizar_visitas'),
+    path('cliente-crm/detalle/visitas/eliminar/<pk>/', views.VisitasDeleteView.as_view(), name='detalle_eliminar_visitas'),
+
+    path('cliente-crm/detalle/llamadas/<pk>/', views.LlamadasView.as_view(), name='detalle_llamadas'),
+    path('cliente-crm/detalle-tabla/llamadas/<pk>/', views.LlamadasTabla, name='detalle_tabla_llamadas'),
+    path('cliente-crm/detalle/llamadas/registrar/<int:cliente_crm_id>/', views.LlamadasCreateView.as_view(), name='detalle_registrar_llamadas'),
+    path('cliente-crm/detalle/llamadas/actualizar/<pk>/', views.LlamadasUpdateView.as_view(), name='detalle_actualizar_llamadas'),
+    path('cliente-crm/detalle/llamadas/eliminar/<pk>/', views.LlamadasDeleteView.as_view(), name='detalle_eliminar_llamadas'),
+
+    path('cliente-crm/detalle/correos/<pk>/', views.CorreosView.as_view(), name='detalle_correos'),
+    path('cliente-crm/detalle-tabla/correos/<pk>/', views.CorreosTabla, name='detalle_tabla_correos'),
+    path('cliente-crm/detalle/correos/registrar/<int:cliente_crm_id>/', views.CorreosCreateView.as_view(), name='detalle_registrar_correos'),
+    path('cliente-crm/detalle/correos/actualizar/<pk>/', views.CorreosUpdateView.as_view(), name='detalle_actualizar_correos'),
+    path('cliente-crm/detalle/correos/eliminar/<pk>/', views.CorreosDeleteView.as_view(), name='detalle_eliminar_correos'),
+
+    path('cliente-crm/detalle/eventos/<pk>/', views.EventosView.as_view(), name='detalle_eventos'),
+    path('cliente-crm/detalle-tabla/eventos/<pk>/', views.EventosTabla, name='detalle_tabla_eventos'),
+    path('cliente-crm/detalle/eventos/registrar/<int:cliente_crm_id>/', views.EventosCreateView.as_view(), name='detalle_registrar_eventos'),
+    path('cliente-crm/detalle/eventos/actualizar/<pk>/', views.EventosUpdateView.as_view(), name='detalle_actualizar_eventos'),
+    path('cliente-crm/detalle/eventos/eliminar/<pk>/', views.EventosDeleteView.as_view(), name='detalle_eliminar_eventos'),
+
+    path('cliente-crm/detalle/soporte-tecnico/<pk>/', views.SoporteTecnicoView.as_view(), name='detalle_soporte_tecnico'),
+    path('cliente-crm/detalle-tabla/soporte-tecnico/<pk>/', views.SoporteTecnicoTabla, name='detalle_tabla_soporte_tecnico'),
+    path('cliente-crm/detalle/soporte-tecnico/registrar/<int:cliente_crm_id>/', views.SoporteTecnicoCreateView.as_view(), name='detalle_registrar_soporte_tecnico'),
+    path('cliente-crm/detalle/soporte-tecnico/actualizar/<pk>/', views.SoporteTecnicoUpdateView.as_view(), name='detalle_actualizar_soporte_tecnico'),
+    path('cliente-crm/detalle/soporte-tecnico/eliminar/<pk>/', views.SoporteTecnicoDeleteView.as_view(), name='detalle_eliminar_soporte_tecnico'),
+
+    path('cliente-crm/detalle/caracteristicas_tecnicas/<pk>/', views.CaracteristicasTecnicasView.as_view(), name='detalle_caracteristicas_tecnicas'),
+    path('cliente-crm/detalle-tabla/caracteristicas_tecnicas/<pk>/', views.CaracteristicasTecnicasTabla, name='detalle_tabla_caracteristicas_tecnicas'),
+    path('cliente-crm/detalle/caracteristicas_tecnicas/registrar/<int:cliente_crm_id>/', views.CaracteristicasTecnicasCreateView.as_view(), name='detalle_registrar_caracteristicas_tecnicas'),
+    path('cliente-crm/detalle/caracteristicas_tecnicas/actualizar/<pk>/', views.CaracteristicasTecnicasUpdateView.as_view(), name='detalle_actualizar_caracteristicas_tecnicas'),
+    path('cliente-crm/detalle/caracteristicas_tecnicas/eliminar/<pk>/', views.CaracteristicasTecnicasDeleteView.as_view(), name='detalle_eliminar_caracteristicas_tecnicas'),
+
+    path('cliente-crm/detalle/nuevos-productos-solicitados/<pk>/', views.NuevosProductosSolicitadosView.as_view(), name='detalle_nuevos_productos_solicitados'),
+    path('cliente-crm/detalle-tabla/nuevos-productos-solicitados/<pk>/', views.NuevosProductosSolicitadosTabla, name='detalle_tabla_nuevos_productos_solicitados'),
+    path('cliente-crm/detalle/nuevos-productos-solicitados/registrar/<int:cliente_crm_id>/', views.NuevosProductosSolicitadosCreateView.as_view(), name='detalle_registrar_nuevos_productos_solicitados'),
+    path('cliente-crm/detalle/nuevos-productos-solicitados/actualizar/<pk>/', views.NuevosProductosSolicitadosUpdateView.as_view(), name='detalle_actualizar_nuevos_productos_solicitados'),
+    path('cliente-crm/detalle/nuevos-productos-solicitados/eliminar/<pk>/', views.NuevosProductosSolicitadosDeleteView.as_view(), name='detalle_eliminar_nuevos_productos_solicitados'),
 
     path('cliente-crm/detalle/cotizaciones/<pk>/', views.ClienteCRMCotizacionesView.as_view(), name='cliente_crm_detalle_cotizaciones'),
     path('cliente-crm/detalle/facturas/<pk>/', views.ClienteCRMFacturasView.as_view(), name='cliente_crm_detalle_facturas'),
-
-    path('cliente-crm/detalle/llamada/<pk>/', views.ClienteCRMDetailLlamadasView.as_view(), name='cliente_crm_detalle_llamada'),
-    path('cliente-crm/detalle-tabla/llamada/<pk>/', views.ClienteCRMDetailLlamadasTabla, name='cliente_crm_detalle_tabla_llamada'),
-    path('cliente-crm/detalle/llamada/registrar/<int:cliente_crm_id>/', views.ClienteCRMDetalleLlamadaCreateView.as_view(), name='cliente_crm_detalle_llamada_registrar'),
-    path('cliente-crm/detalle/llamada/actualizar/<pk>/', views.ClienteCRMDetalleLlamadaUpdateView.as_view(), name='cliente_crm_detalle_llamada_actualizar'),
-    path('cliente-crm/detalle/llamada/eliminar/<pk>/', views.ClienteCRMDetalleLlamadaDeleteView.as_view(), name='cliente_crm_detalle_llamada_eliminar'),
-
-    path('cliente-crm/detalle/soporte/<pk>/', views.ClienteCRMDetailSoporteView.as_view(), name='cliente_crm_detalle_soporte'),
-    path('cliente-crm/detalle-tabla/soporte/<pk>/', views.ClienteCRMDetailSoporteTabla, name='cliente_crm_detalle_tabla_soporte'),
-    path('cliente-crm/detalle/soporte/registrar/<int:cliente_crm_id>/', views.ClienteCRMDetalleSoporteCreateView.as_view(), name='cliente_crm_detalle_soporte_registrar'),
-    path('cliente-crm/detalle/soporte/actualizar/<pk>/', views.ClienteCRMDetalleSoporteUpdateView.as_view(), name='cliente_crm_detalle_soporte_actualizar'),
-    path('cliente-crm/detalle/soporte/eliminar/<pk>/', views.ClienteCRMDetalleSoporteDeleteView.as_view(), name='cliente_crm_detalle_soporte_eliminar'),
+    # path('cliente-crm/detalle/ver/<pk>/', views.ClienteCRMDetalleVerView.as_view(), name='cliente_crm_detalle_ver'),
     ]
 
 urlEvento = [

@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from django.db import models
 from decimal import Decimal
 from django.conf import settings
-from applications.rutas import CLIENTE_CRM_ARCHIVO_ENVIADO, CLIENTE_CRM_ARCHIVO_RECIBIDO
+from applications.rutas import CLIENTE_CRM_ARCHIVO
 from applications.comprobante_venta.models import FacturaVenta, BoletaVenta
 from applications.nota.models import NotaCredito
 from applications.proveedores.models import Proveedor
@@ -50,20 +50,20 @@ import applications
 class ClienteCRMDetalle(models.Model):
 
     tipo_actividad = models.IntegerField('Tipo de Actividad', choices=TIPO_ACTIVIDAD)
-    interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ClienteCRMDetalle_interlocutor', blank=True, null=True)  
+    # interlocutor = models.ForeignKey(InterlocutorCliente, on_delete=models.PROTECT, related_name='ClienteCRMDetalle_interlocutor', blank=True, null=True)  
     fecha = models.DateField('Fecha', auto_now=False, auto_now_add=False, blank=True, null=True)
-    hora_inicio = models.TimeField('Hora Inicio', auto_now=False, auto_now_add=False, blank=True, null=True)
-    hora_fin = models.TimeField('Hora Fin', auto_now=False, auto_now_add=False, blank=True, null=True)
-    direccion = models.CharField('Dirección', max_length=100, blank=True, null=True)
-    objetivo = models.TextField('Objetivo', blank=True, null=True)
-    compromiso = models.TextField('Compromiso', blank=True, null=True)
-    mejoras = models.TextField('Mejoras', blank=True, null=True)
+    lugar = models.CharField('Lugar', max_length=100, blank=True, null=True)
+    motivo = models.TextField('Motivo', blank=True, null=True)
+    descripcion = models.TextField('Descripción', blank=True, null=True)
+    acuerdos = models.TextField('Acuerdos', blank=True, null=True)
     quejas = models.TextField('Quejas', blank=True, null=True)
-    comentario = models.TextField('Comentario', blank=True, null=True)
-    archivo_recibido = models.ImageField('Archivo Recibido', upload_to=CLIENTE_CRM_ARCHIVO_RECIBIDO, max_length=100, blank=True, null=True)
-    archivo_enviado = models.ImageField('Archivo Enviado', upload_to=CLIENTE_CRM_ARCHIVO_ENVIADO, max_length=100, blank=True, null=True)
+    numero_caso = models.IntegerField('Nro. Caso', blank=True, null=True)
+    tecnico_asignado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True)
+    nombre = models.CharField('Nombre Evento/Webinar', max_length=50)
+    archivo = models.FileField('Archivo', upload_to=CLIENTE_CRM_ARCHIVO, max_length=100, blank=True, null=True)
+    # cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     cliente_crm =  models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    
+
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ClienteCRMDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -125,7 +125,7 @@ def actualizar_estado_cliente_crm(id_cliente=None):
             if len(tarea.models.Tarea.objects.filter(content_type=ContentType.objects.get_for_model(Cliente), id_registro = cliente.id, estado__gte=2)) > 0:
                 filtro = False
                 estado_cliente = 2
-            if len(crm.models.ClienteCRMDetalle.objects.filter(cliente_crm=cliente, tipo_actividad__gte=1).exclude(tipo_actividad=4)) > 0:
+            if len(crm.models.ClienteCRMDetalle.objects.filter(cliente_crm=cliente, tipo_actividad__gte=1).exclude(tipo_actividad=6).exclude(tipo_actividad=7).exclude(tipo_actividad=8)) > 0:
                 filtro = False
                 estado_cliente = 2
             if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:

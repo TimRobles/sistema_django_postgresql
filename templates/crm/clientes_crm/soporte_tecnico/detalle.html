@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Detalle Cliente CRM
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>{{ contexto_cliente_crm}}
+        <a href="{% url 'crm_app:cliente_crm_detalle_cotizaciones' contexto_cliente_crm.id %}"><span class="badge bg-success">Ver Cotizaciones</span></a>
+        <a href="{% url 'crm_app:cliente_crm_detalle_facturas' contexto_cliente_crm.id %}"><span class="badge bg-success">Ver Facturas</span></a>
+        <a href="{% url 'crm_app:cliente_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    </h3>
+    <br>
+    <div id="tabla">
+        {% include 'crm/clientes_crm/soporte_tecnico/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}
