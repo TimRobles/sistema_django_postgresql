@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Notas de Ingreso - {{ recepcion }}
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Notas de Ingreso - {{ recepcion }}</h3>
+
+    <!-- <a href="{{ regresar }}" class="btn btn-danger">Regresar</a> -->
+
+    <div class="table-responsive" id="tabla">
+        {% include 'merchandising/nota_ingreso/nota_ingreso/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

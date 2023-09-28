@@ -276,7 +276,10 @@ def ver_proveedor(documento):
         interlocutor_proveedor = documento.orden_compra.interlocutor
     elif hasattr(documento, 'ComprobanteCompraCIDetalle_comprobante_compra'):
         proveedor = documento.comprobante_compra_PI.orden_compra.proveedor
-        interlocutor_proveedor = documento.comprobante_compra_PI.orden_compra.interlocutor
+        interlocutor_proveedor = documento.comprobante_compra_PI.orden_compra.interlocutor    
+    elif hasattr(documento, 'ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising'):
+        proveedor = documento.comprobante_compra_merchandising.orden_compra_merchandising.proveedor
+        interlocutor_proveedor = documento.comprobante_compra_merchandising.orden_compra_merchandising.interlocutor
     return proveedor, interlocutor_proveedor
 
 

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+    Recepción de Compra
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Recepción de Compra</h3>
+    <a href="{% url 'merchandising_app:nota_ingreso_merchandising_lista' contexto_recepcion_compra.id %}" class="btn btn-primary">Ver Notas de Ingreso</a>
+
+    <button data-form-url="{% url 'merchandising_app:recepcion_compra_generar_nota_ingreso' contexto_recepcion_compra.id %}"
+        class="delete btn btn-primary">
+        Generar Nota de Ingreso
+    </button>
+
+
+    <br>
+    <div id="tabla">
+        {% include 'merchandising/recepcion_compra/recepcion_compra/detalle_tabla.html' %}
+    </div>
+
+
+{% endblock contenido %}

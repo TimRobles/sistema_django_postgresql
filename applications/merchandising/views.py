@@ -15,7 +15,6 @@ from ..orden_compra.models import OrdenCompraDetalle
 from django.core.paginator import Paginator
 from django.core.mail import EmailMultiAlternatives
 from applications.cobranza.models import DeudaProveedor
-from applications.recepcion_compra.models import RecepcionCompra
 from django.db.models import Sum, Avg, Min, Max 
 from django.db import models
 
@@ -74,7 +73,11 @@ from .forms import (
     ComprobanteCompraMerchandisingForm,
     ComprobanteCompraMerchandisingLlegadaForm,
     RecepcionComprobanteCompraMerchandisingForm,
+    RecepcionCompraGenerarNotaIngresoForm,
     OfertaProveedorMerchandisingEvaluarForm,
+    NotaIngresoAgregarMerchandisingForm,
+    NotaIngresoFinalizarConteoForm,
+    NotaIngresoAnularConteoForm,
     )
 
 from .models import (
@@ -102,6 +105,11 @@ from .models import (
     OrdenCompraMerchandisingDetalle,
     ComprobanteCompraMerchandising,
     ComprobanteCompraMerchandisingDetalle,
+    RecepcionCompraMerchandising,
+    ArchivoRecepcionCompraMerchandising,
+    FotoRecepcionCompraMerchandising,
+    NotaIngresoMerchandising,
+    NotaIngresoMerchandisingDetalle,
     )
 
 class ModeloMerchandisingListView(PermissionRequiredMixin, ListView):
@@ -1714,7 +1722,7 @@ def ComprobanteView(request, id_comprobante, comprobante_content_type, id_mercha
 
     precio = Decimal('0.00')
     moneda = None
-    logistico = Decimal('0.00')
+    # logistico = Decimal('0.00')
     
     for detalle in orden_detalle:
         try:
@@ -1723,13 +1731,13 @@ def ComprobanteView(request, id_comprobante, comprobante_content_type, id_mercha
                 if detalle.id_registro == id_merchandising and detalle.content_type == merchandising_content_type:
                     precio = detalle.ComprobanteCompraPIDetalle_orden_compra_detalle.precio_final_con_igv
                     moneda = comprobante_compra.moneda
-                    logistico = comprobante_compra.logistico
+                    # logistico = comprobante_compra.logistico
         except:
             continue
 
     
-    return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
-    # return HttpResponse("%s|%s" % (moneda, logistico))
+    #return HttpResponse("%s|%s|%s" % (precio, moneda, logistico))
+    return HttpResponse("%s|%s" % (precio, moneda))
 
 
 def StockView(request, id_merchandising):
@@ -3160,7 +3168,19 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
         context['accion'] = "Generar"
         context['titulo'] = "Orden de Compra Merchandising"
         return context
-    
+
+class OfertaProveedorMerchandisingDeleteView(BSModalDeleteView):
+    model = OfertaProveedorMerchandising
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('merchandising_app:oferta_proveedor_merchandising_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(OfertaProveedorMerchandisingDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="oferta"
+        return context
+
+
 # Evaluar ofertas
 
 def ver_ofertas_evaluadas(request, pk):
@@ -3361,7 +3381,6 @@ class OrdenCompraMerchandisingEnviarCorreoView(PermissionRequiredMixin,BSModalFo
         context['accion']="Enviar"
         context['titulo']="Correos"
         return context
-
 
 class OrdenCompraGenerarComprobanteMerchandisingTotalView(BSModalDeleteView):
     model = OrdenCompraMerchandising
@@ -3610,7 +3629,7 @@ class ComprobanteCompraMerchandisingDetailView(PermissionRequiredMixin, DetailVi
         context['totales'] = obtener_totales(self.get_object())
 
         try:
-            context['contexto_recepcion_compra'] = RecepcionCompra.objects.get(
+            context['contexto_recepcion_compra'] = RecepcionCompraMerchandising.objects.get(
                                                         content_type=ContentType.objects.get_for_model(self.get_object()),
                                                         id_registro=self.get_object().id,
                                                         estado=1,
@@ -3619,7 +3638,7 @@ class ComprobanteCompraMerchandisingDetailView(PermissionRequiredMixin, DetailVi
             context['contexto_recepcion_compra'] = None
         if 'merchandising.view_comprobantecompramerchandising' in self.request.user.get_all_permissions():
             context['permiso_compras'] = True
-        if 'recepcion_compra.add_recepcioncompra' in self.request.user.get_all_permissions():
+        if 'merchandising.add_recepcioncompramerchandising' in self.request.user.get_all_permissions():
             context['permiso_logistica'] = True
 
         return context
@@ -3674,9 +3693,9 @@ class ComprobanteCompraMerchandisingGuardarView(PermissionRequiredMixin, BSModal
         if not obj.numero_comprobante_compra:
             error_numero_comprobante_compra = True
 
-        error_logistico = False
-        if obj.logistico == Decimal('0.00'):
-            error_logistico = True
+        # error_logistico = False
+        # if obj.logistico == Decimal('0.00'):
+        #     error_logistico = True
 
         if error_fecha:
             context['texto'] = 'No hay Fecha registrada.'
@@ -3686,9 +3705,9 @@ class ComprobanteCompraMerchandisingGuardarView(PermissionRequiredMixin, BSModal
             context['texto'] = 'No hay Numero de Comprobante de Compra registrada.'
             return render(request, 'includes/modal sin permiso.html', context)
 
-        if error_logistico:
-            context['texto'] = 'No hay Logístico registrado.'
-            return render(request, 'includes/modal sin permiso.html', context)
+        # if error_logistico:
+        #     context['texto'] = 'No hay Logístico registrado.'
+        #     return render(request, 'includes/modal sin permiso.html', context)
 
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
@@ -3801,7 +3820,7 @@ class RecepcionComprobanteCompraMerchandisingView(BSModalFormView):
                 movimiento_inicial = TipoMovimiento.objects.get(codigo=100) #Tránsito
                 movimiento_final = TipoMovimiento.objects.get(codigo=101) #Disponible
 
-                recepcion = RecepcionCompra.objects.create(
+                recepcion = RecepcionCompraMerchandising.objects.create(
                     numero_comprobante_compra = comprobante.numero_comprobante_compra,
                     content_type = ContentType.objects.get_for_model(comprobante),
                     id_registro = comprobante.id,
@@ -3875,15 +3894,459 @@ class RecepcionComprobanteCompraMerchandisingView(BSModalFormView):
         return context
 
 
-
-class OfertaProveedorMerchandisingDeleteView(BSModalDeleteView):
-    model = OfertaProveedorMerchandising
-    template_name = "includes/eliminar generico.html"
-    success_url = reverse_lazy('merchandising_app:oferta_proveedor_merchandising_inicio')
+class RecepcionCompraMerchandisingDetailView(DetailView):
+    model = RecepcionCompraMerchandising
+    template_name = "merchandising/recepcion_compra/recepcion_compra/detalle.html"
+    context_object_name = 'contexto_recepcion_compra'
 
     def get_context_data(self, **kwargs):
-        context = super(OfertaProveedorMerchandisingDeleteView, self).get_context_data(**kwargs)
-        context['accion']="Eliminar"
-        context['titulo']="oferta"
+
+        context = super(RecepcionCompraMerchandisingDetailView, self).get_context_data(**kwargs)
+        context['merchandising'] = self.get_object().content_type.model_class().objects.ver_detalle(self.get_object().id_registro)
+        context['archivos'] = ArchivoRecepcionCompraMerchandising.objects.filter(recepcion_compra=self.get_object())
+        context['fotos'] = FotoRecepcionCompraMerchandising.objects.filter(recepcion_compra=self.get_object())
+        # context['regresar'] = link_detalle(self.get_object().content_type, self.get_object().content_type.get_object_for_this_type(id=self.get_object().id_registro).slug)
+        return context
+    
+
+def RecepcionCompraMerchandisingDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'merchandising/recepcion_compra/recepcion_compra/detalle_tabla.html'
+        context = {}
+        recepcion_compra = RecepcionCompraMerchandising.objects.get(id = pk)
+        context['contexto_recepcion_compra'] = recepcion_compra
+        context['merchandising'] = recepcion_compra.content_type.model_class().objects.ver_detalle(recepcion_compra.id_registro)
+        context['archivos'] = ArchivoRecepcionCompraMerchandising.objects.filter(recepcion_compra=recepcion_compra)
+        context['fotos'] = FotoRecepcionCompraMerchandising.objects.filter(recepcion_compra=recepcion_compra)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class RecepcionCompraGenerarNotaIngresoView( BSModalFormView):
+    template_name = "includes/formulario generico.html"
+    form_class = RecepcionCompraGenerarNotaIngresoForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('merchandising_app:nota_ingreso_merchandising_detalle', kwargs={'pk':self.kwargs['nota'].id})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                recepcion_compra = RecepcionCompraMerchandising.objects.get(id=self.kwargs['pk'])
+                numero_nota = len(NotaIngresoMerchandising.objects.all()) + 1
+                nota = NotaIngresoMerchandising.objects.create(
+                    nro_nota_ingreso = numeroXn(numero_nota, 6),
+                    content_type=ContentType.objects.get_for_model(recepcion_compra),
+                    id_registro=recepcion_compra.id,
+                    sociedad = recepcion_compra.sociedad,
+                    fecha_ingreso = form.cleaned_data['fecha_ingreso'],
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                self.kwargs['nota']=nota
+                self.request.session['primero'] = False
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RecepcionCompraGenerarNotaIngresoView, self).get_context_data(**kwargs)
+        context['accion'] = "Recibir"
+        context['titulo'] = "Comprobante de Compra"
+        return context
+
+# Nota de Ingreso
+
+
+class NotaIngresoMerchandisingView(TemplateView):
+    template_name = "merchandising/nota_ingreso/nota_ingreso/inicio.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoMerchandisingView, self).get_context_data(**kwargs)
+        recepcion = RecepcionCompraMerchandising.objects.get(id=self.kwargs['recepcion_id'])
+        context['contexto_nota_ingreso'] = NotaIngresoMerchandising.objects.filter(
+            content_type=ContentType.objects.get_for_model(recepcion),
+            id_registro=recepcion.id,
+            )
+        context['recepcion'] = recepcion
+        context['regresar'] = reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':self.kwargs['recepcion_id']})
+        return context
+
+
+class NotaIngresoMerchandisingListaView(TemplateView):
+    template_name = "merchandising/nota_ingreso/nota_ingreso/inicio.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoMerchandisingListaView, self).get_context_data(**kwargs)
+        context['contexto_nota_ingreso'] = NotaIngresoMerchandising.objects.all()
+        return context
+
+
+class NotaIngresoMerchandisingDetailView(DetailView):
+    model = NotaIngresoMerchandising
+    template_name = "merchandising/nota_ingreso/nota_ingreso/detalle.html"
+    context_object_name = 'contexto_nota_ingreso'
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoMerchandisingDetailView, self).get_context_data(**kwargs)
+        context['materiales'] = NotaIngresoMerchandising.objects.ver_detalle_nota(self.get_object().id)
+        if self.get_object().content_type == ContentType.objects.get_for_model(RecepcionCompraMerchandising):
+            context['regresar'] = reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':self.get_object().id_registro})
+        return context
+    
+
+def NotaIngresoMerchandisingDetailTabla(request, recepcion_id):
+    data = dict()
+    if request.method == 'GET':
+        template = 'merchandising/nota_ingreso/nota_ingreso/detalle_tabla.html'
+        context = {}
+        nota_ingreso = NotaIngresoMerchandising.objects.get(id = recepcion_id)
+        context['contexto_nota_ingreso'] = nota_ingreso
+        context['materiales'] = NotaIngresoMerchandising.objects.ver_detalle_nota(recepcion_id)
+        if nota_ingreso.content_type == ContentType.objects.get_for_model(RecepcionCompraMerchandising):
+            context['regresar'] = reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':nota_ingreso.id_registro})
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class NotaIngresoAgregarMerchandisingView(BSModalFormView):
+    template_name = "merchandising/nota_ingreso/nota_ingreso/form.html"
+    form_class = NotaIngresoAgregarMerchandisingForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':self.kwargs['id_nota_ingreso']})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        nota_ingreso = NotaIngresoMerchandising.objects.get(id=self.kwargs['id_nota_ingreso'])
+        productos = []
+
+        for detalle in nota_ingreso.recepcion_compra.documento.detalle:
+            valor = "%s|%s" % (ContentType.objects.get_for_model(detalle).id, detalle.id)
+            productos.append((valor, detalle.producto))
+        kwargs = super(NotaIngresoAgregarMerchandisingView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['productos'] = productos
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                nota_ingreso = NotaIngresoMerchandising.objects.get(id=self.kwargs['id_nota_ingreso'])
+                nuevo_item = len(NotaIngresoMerchandisingDetalle.objects.filter(nota_ingreso = nota_ingreso)) + 1
+                cantidad = form.cleaned_data['cantidad']
+                producto = form.cleaned_data['producto'].split("|")
+                almacen = form.cleaned_data['almacen']
+                content_type = ContentType.objects.get(id = int(producto[0]))
+                id_registro = int(producto[1])
+                comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
+                
+                buscar = NotaIngresoMerchandisingDetalle.objects.filter(
+                    content_type=content_type,
+                    id_registro=id_registro,
+                ).exclude(nota_ingreso__estado=3)
+
+                if buscar:
+                    contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+                else:
+                    contar = 0
+
+                if comprobante_compra_detalle.cantidad < contar + cantidad:
+                    messages.warning(self.request, 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
+                
+                nota_ingreso_detalle, created = NotaIngresoMerchandisingDetalle.objects.get_or_create(
+                    content_type=content_type,
+                    id_registro=id_registro,
+                    almacen = almacen,
+                    nota_ingreso = nota_ingreso,
+                )
+                if created:
+                    nota_ingreso_detalle.item = nuevo_item
+                    nota_ingreso_detalle.cantidad_conteo = cantidad
+                    nota_ingreso_detalle.created_by = self.request.user
+                    nota_ingreso_detalle.updated_by = self.request.user
+                else:
+                    nota_ingreso_detalle.cantidad_conteo = nota_ingreso_detalle.cantidad_conteo + cantidad
+                    nota_ingreso_detalle.updated_by = self.request.user
+                nota_ingreso_detalle.save()
+                
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaIngresoAgregarMerchandisingView, self).get_context_data(**kwargs)
+        context['accion'] = "Contar"
+        context['titulo'] = "Merchandising"
+        context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        return context
+
+
+class NotaIngresoActualizarMerchandisingView(BSModalFormView):
+    template_name = "merchandising/nota_ingreso/nota_ingreso/form.html"
+    form_class = NotaIngresoAgregarMerchandisingForm
+
+    def get_success_url(self, **kwargs):
+        nota_ingreso_detalle = NotaIngresoMerchandisingDetalle.objects.get(id=self.kwargs['id_nota_ingreso_detalle'])
+        nota_ingreso = nota_ingreso_detalle.nota_ingreso
+        return reverse_lazy('merchandising_app:recepcion_compra_merchandising_detalle', kwargs={'pk':nota_ingreso.id})
+
+    def get_form_kwargs(self, *args, **kwargs):
+        nota_ingreso_detalle = NotaIngresoMerchandisingDetalle.objects.get(id=self.kwargs['id_nota_ingreso_detalle'])
+        nota_ingreso = nota_ingreso_detalle.nota_ingreso
+        productos = []
+        for detalle in nota_ingreso.recepcion_compra.documento.detalle:
+            valor = "%s|%s" % (ContentType.objects.get_for_model(detalle).id, detalle.id)
+            productos.append((valor, detalle.producto))
+        kwargs = super(NotaIngresoActualizarMerchandisingView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['productos'] = productos
+        kwargs['nota_ingreso_detalle'] = nota_ingreso_detalle
+        return kwargs
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                nota_ingreso_detalle = NotaIngresoMerchandisingDetalle.objects.get(id=self.kwargs['id_nota_ingreso_detalle'])
+                cantidad = form.cleaned_data['cantidad']
+                producto = form.cleaned_data['producto'].split("|")
+                almacen = form.cleaned_data['almacen']
+                content_type = ContentType.objects.get(id = int(producto[0]))
+                id_registro = int(producto[1])
+                comprobante_compra_detalle = content_type.model_class().objects.get(id = id_registro)
+
+                buscar = NotaIngresoMerchandisingDetalle.objects.filter(
+                    content_type=content_type,
+                    id_registro=id_registro,
+                    almacen = almacen,
+                    nota_ingreso = nota_ingreso_detalle.nota_ingreso,
+                ).exclude(id=nota_ingreso_detalle.id).exclude(nota_ingreso__estado=3)
+
+                if len(buscar)>0:
+                    form.add_error('almacen', 'Ya existe ese producto en ese almacén')
+                    return super().form_invalid(form)
+
+                buscar = NotaIngresoMerchandisingDetalle.objects.filter(
+                    content_type=content_type,
+                    id_registro=id_registro,
+                ).exclude(id=nota_ingreso_detalle.id).exclude(nota_ingreso__estado=3)
+
+                if buscar:
+                    contar = buscar.aggregate(Sum('cantidad_conteo'))['cantidad_conteo__sum']
+                else:
+                    contar = 0
+
+                if comprobante_compra_detalle.cantidad < contar + cantidad:
+                    messages.warning(self.request, 'Se superó la cantidad adquirida. Máximo: %s. Contado: %s.' % (comprobante_compra_detalle.cantidad, contar + cantidad))
+                    
+                nota_ingreso_detalle.content_type=content_type
+                nota_ingreso_detalle.id_registro=id_registro
+                nota_ingreso_detalle.cantidad_conteo = cantidad
+                nota_ingreso_detalle.almacen = almacen
+                nota_ingreso_detalle.updated_by = self.request.user
+                nota_ingreso_detalle.save()
+                
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(NotaIngresoActualizarMerchandisingView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Merchandising"
+        # context['url_sede'] = reverse_lazy('logistica_app:almacen', kwargs={'id_sede':1})[:-2]
+        return context
+
+
+class NotaIngresoDetalleEliminarView(BSModalDeleteView):
+    model = NotaIngresoMerchandisingDetalle
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self, **kwargs):
+        nota_ingreso = self.object.nota_ingreso
+        return reverse_lazy('merchandising_app:nota_ingreso_merchandising_detalle', kwargs={'pk':nota_ingreso.id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            materiales = NotaIngresoMerchandisingDetalle.objects.filter(nota_ingreso=self.get_object().nota_ingreso)
+            contador = 1
+            for material in materiales:
+                if material == self.get_object():continue
+                material.item = contador
+                material.save()
+                contador += 1
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoDetalleEliminarView, self).get_context_data(**kwargs)
+        context['accion'] = "Eliminar"
+        context['titulo'] = "Detalle"
+        context['item'] = "%s - %s" % (self.object.item, self.object)
+        return context
+
+
+class NotaIngresoFinalizarConteoView(BSModalUpdateView):
+    model = NotaIngresoMerchandising
+    template_name = "includes/formulario generico.html"
+    form_class = NotaIngresoFinalizarConteoForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('merchandising_app:nota_ingreso_merchandising_detalle', kwargs={'pk':self.object.id})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            detalles = form.instance.NotaIngresoMerchandisingDetalle_nota_ingreso.all()
+            if form.instance.content_type == ContentType.objects.get_for_model(RecepcionCompraMerchandising):
+                movimiento_inicial = TipoMovimiento.objects.get(codigo=101) #Recepción Compra
+
+            for detalle in detalles:
+
+                if detalle.comprobante_compra_detalle.producto.control_calidad or detalle.comprobante_compra_detalle.producto.control_serie:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=104) #Ingreso por compra, c/QA
+                else:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=102) #Ingreso por Compra, s/QA, s/Serie
+
+                movimiento_anterior = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.id_registro,
+                    tipo_movimiento = movimiento_inicial,
+                    tipo_stock = movimiento_inicial.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance.recepcion_compra),
+                    id_registro_documento_proceso = form.instance.recepcion_compra.id,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_reversion = False,
+                )
+
+                movimiento_uno = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.id_registro,
+                    cantidad = detalle.cantidad_conteo,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_inicial,
+                    signo_factor_multiplicador = -1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                    id_registro_documento_proceso = form.instance.id,
+                    almacen = None,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_anterior = movimiento_anterior,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+                movimiento_dos = MovimientosAlmacen.objects.create(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.id_registro,
+                    cantidad = detalle.cantidad_conteo,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                    id_registro_documento_proceso = form.instance.id,
+                    almacen = detalle.almacen,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_anterior = movimiento_uno,
+                    movimiento_reversion = False,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+            form.instance.estado = 2
+            registro_guardar(form.instance, self.request)
+                
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoFinalizarConteoView, self).get_context_data(**kwargs)
+        context['accion'] = "Finalizar"
+        context['titulo'] = "Conteo"
+        return context
+
+
+class NotaIngresoAnularConteoView(BSModalUpdateView):
+    model = NotaIngresoMerchandising
+    template_name = "includes/formulario generico.html"
+    form_class = NotaIngresoAnularConteoForm
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('merchandising_app:nota_ingreso_merchandising_detalle', kwargs={'pk':self.object.id})
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            detalles = form.instance.NotaIngresoMerchandisingDetalle_nota_ingreso.all()
+
+            for detalle in detalles:
+
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.content_type,
+                    id_registro_producto = detalle.comprobante_compra_detalle.orden_compra_merchandising_detalle.id_registro,
+                    cantidad = detalle.cantidad_conteo,
+                    # tipo_movimiento = movimiento_final,
+                    # tipo_stock = movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(form.instance),
+                    id_registro_documento_proceso = form.instance.id,
+                    almacen = detalle.almacen,
+                    sociedad = form.instance.recepcion_compra.documento.sociedad,
+                    movimiento_reversion = False,
+                )
+
+                movimiento_uno = movimiento_dos.movimiento_anterior
+
+                movimiento_dos.delete()
+                movimiento_uno.delete()
+
+            form.instance.estado = 3
+            registro_guardar(form.instance, self.request)
+            messages.success(self.request, MENSAJE_ANULAR_CONTEO)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+            return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(NotaIngresoAnularConteoView, self).get_context_data(**kwargs)
+        context['accion'] = "Anular"
+        context['titulo'] = "Conteo"
         return context
 

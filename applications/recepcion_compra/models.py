@@ -10,7 +10,7 @@ from applications.variables import ESTADO_COMPROBANTE, ESTADO_DOCUMENTO, TIPO_IG
 # Create your models here.
 class RecepcionCompra(models.Model):
     numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50)
-    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraPI / NotaStockInicial
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraPI / NotaStockInicial / ComprobanteCompraMerchandising
     id_registro = models.IntegerField()
     fecha_recepcion = models.DateField('Fecha de Recepción', auto_now=False, auto_now_add=False)
     usuario_recepcion = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='RecepcionCompra_usuario_recepcion')

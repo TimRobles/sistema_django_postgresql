@@ -1,0 +1,66 @@
+{% load humanize %}
+{% load funciones_propias %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Comprobante</th>
+                <th>Número de Comprobante</th>
+                <th>Proveedor</th>
+                <th>Interlocutor</th>
+                <th>Sociedad</th>
+                <th class="text-center">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_recepcion_compra.fecha_recepcion|date:'d/m/Y' }}</td>
+                <td>{{ contexto_recepcion_compra.content_type.name }}</td>
+                <td>{{ contexto_recepcion_compra.numero_comprobante_compra }}</td>
+                <td>{{ contexto_recepcion_compra.sociedad }}</td>
+                <td class="text-center">
+                    {{ contexto_recepcion_compra.get_estado_display }}
+                    {% if contexto_recepcion_compra.motivo_anulacion %}
+                        - {{ contexto_recepcion_compra.motivo_anulacion }}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h4>Observaciones:</h4>
+<p>{{ contexto_recepcion_compra.observaciones }}</p>
+<br>
+<h3>Merchandising</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Merchandising</th>
+                <th class="text-nowrap">Cantidad Adquirida</th>
+                <th class="text-nowrap">Cantidad Contada</th>
+                <th>Pendiente</th>
+                <th>Exceso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in merchandising %}
+                <tr>
+
+                    <td>{{ material.item}}</td>
+                    <td>{{ material.material.descripcion_corta }}</td>
+                    <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.contado|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.pendiente|redondear|intcomma }}</td>
+                    <td class="text-end">{{ material.exceso|redondear|intcomma }}</td>
+                </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
+<br>
+
+

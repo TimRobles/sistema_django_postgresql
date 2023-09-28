@@ -437,7 +437,6 @@ class EventoCRMDetalleForm(BSModalModelForm):
             'tipo_stock',
             'cantidad_asignada',
             'stock_disponible',
-            'unidad',
             )
 
     def __init__(self, *args, **kwargs):
@@ -447,7 +446,6 @@ class EventoCRMDetalleForm(BSModalModelForm):
         self.fields['stock_disponible'].disabled = True
         self.fields['almacen_origen'].required = True
         self.fields['cantidad_asignada'].required = True
-        self.fields['unidad'].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

@@ -59,7 +59,6 @@ urlOfertaProveedorMerchandising = [
 
     path('oferta-proveedor-merchandising/generar-orden-compra/<pk>/', views.OfertaProveedorGenerarOrdenCompraView.as_view(), name='oferta_proveedor_merchandising_generar_orden_compra'),
 
-
     path('evaluacion-ofertas/<pk>/', views.ver_ofertas_evaluadas, name='ver_ofertas_evaluadas'),
 
     path('oferta-proveedor-merchandising/eliminar/<pk>/', views.OfertaProveedorMerchandisingDeleteView.as_view(), name='ofertaproveedor_eliminar'),
@@ -86,12 +85,33 @@ urlComprobanteCompraMerchandising = [
     path('comprobante-compra-merchandising/detalle/tabla/<pk>/', views.ComprobanteCompraMerchandisingDetailTabla, name='comprobante_compra_merchandising_detalle_tabla'),
     path('comprobante-compra-merchandising/guardar/<pk>/', views.ComprobanteCompraMerchandisingGuardarView.as_view(), name='comprobante_compra_merchandising_guardar'),
     path('comprobante-compra-merchandising/actualizar/<pk>/', views.ComprobanteCompraMerchandisingUpdateView.as_view(), name='comprobante_compra_merchandising_actualizar'),
-
     path('comprobante-compra-merchandising/actualizar/fecha-llegada/<pk>/', views.ComprobanteCompraMerchandisingLlegadaUpdateView.as_view(), name='comprobante_compra_merchandising_actualizar_fecha_llegada'),
 
-    path('recepcion-comprobante-compra-pi/<pk>/', views.RecepcionComprobanteCompraMerchandisingView.as_view(), name='recepcion_comprobante_compra_merchandising'),
+    path('recepcion-comprobante-compra/<pk>/', views.RecepcionComprobanteCompraMerchandisingView.as_view(), name='recepcion_comprobante_compra_merchandising'),
 
 ]
+
+urlRecepcionCompraMerchandising = [
+    path('recepcion-compra/detalle/<pk>/', views.RecepcionCompraMerchandisingDetailView.as_view(), name='recepcion_compra_merchandising_detalle'),
+    path('recepcion-compra/detalle/tabla/<pk>/', views.RecepcionCompraMerchandisingDetailTabla, name='recepcion_compra_merchandising_detalle_tabla'),
+
+    path('recepcion-compra/generar-nota-ingreso/<pk>/', views.RecepcionCompraGenerarNotaIngresoView.as_view(), name='recepcion_compra_generar_nota_ingreso'),
+
+]
+
+urlNotaIngresoMerchandising  = [
+    path('nota-ingreso/lista/recepcion/<int:recepcion_id>/', views.NotaIngresoMerchandisingView.as_view(), name='nota_ingreso_merchandising_lista'),
+    path('nota-ingreso/lista/', views.NotaIngresoMerchandisingListaView.as_view(), name='nota_ingreso_merchandising_lista_total'),
+    path('nota-ingreso/detalle/<pk>/', views.NotaIngresoMerchandisingDetailView.as_view(), name='nota_ingreso_merchandising_detalle'),
+    path('nota-ingreso/detalle/tabla/<int:recepcion_id>/', views.NotaIngresoMerchandisingDetailTabla, name='nota_ingreso_merchandising_detalle_tabla'),
+    path('nota-ingreso/agregar-merchandising/<int:id_nota_ingreso>/', views.NotaIngresoAgregarMerchandisingView.as_view(), name='nota_ingreso_agregar_merchandising'),
+    path('nota-ingreso/actualizar-merchandising/<int:id_nota_ingreso_detalle>/', views.NotaIngresoActualizarMerchandisingView.as_view(), name='nota_ingreso_actualizar_merchandising'),
+    path('nota-ingreso/eliminar-merchandising/<pk>/', views.NotaIngresoDetalleEliminarView.as_view(), name='nota_ingreso_eliminar_merchandising'),
+    path('nota-ingreso/finalizar-conteo/<pk>/', views.NotaIngresoFinalizarConteoView.as_view(), name='nota_ingreso_finalizar_conteo'),
+    path('nota-ingreso/anular-conteo/<pk>/', views.NotaIngresoAnularConteoView.as_view(), name='nota_ingreso_anular_conteo'),
+
+]
+
 
 urlpatterns = [
     path('modelo-merchandising/', views.ModeloMerchandisingListView.as_view(), name='modelo_merchandising_inicio'),
@@ -191,4 +211,4 @@ urlpatterns = [
     path('stock/tipo_stock/<int:id_merchandising>/<int:id_sociedad>/<int:id_almacen>/<int:id_tipo_stock>/', views.StockTipoStockView, name='stock_tipo_stock'),
 
     # path('series/<pk>/', views.MerchandisingSeriesView.as_view(), name='series'),
-] + urlInventarioMerchandising + urlAjusteInventarioMerchandising + urlListaMerchandising + urlOfertaProveedorMerchandising + urlOrdenCompraMerchandising + urlComprobanteCompraMerchandising
+] + urlInventarioMerchandising + urlAjusteInventarioMerchandising + urlListaMerchandising + urlOfertaProveedorMerchandising + urlOrdenCompraMerchandising + urlComprobanteCompraMerchandising + urlRecepcionCompraMerchandising + urlNotaIngresoMerchandising

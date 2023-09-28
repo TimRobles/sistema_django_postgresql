@@ -1,0 +1,107 @@
+{% load humanize %}
+{% load funciones_propias %}
+<a href="{{ regresar }}" class="btn btn-danger">Regresar</a>
+
+{% if contexto_nota_ingreso.estado == 1 %}
+<button data-form-url="{% url 'merchandising_app:nota_ingreso_finalizar_conteo' contexto_nota_ingreso.id %}"
+    class="delete btn btn-primary">
+    Finalizar Conteo
+</button>
+{% endif %}
+
+{% if contexto_nota_ingreso.estado == 2 %}
+<button data-form-url="{% url 'merchandising_app:nota_ingreso_anular_conteo' contexto_nota_ingreso.id %}"
+    class="delete btn btn-danger">
+    Anular
+</button>
+{% endif %}
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Comprobante</th>
+                <th>Número de Ingreso</th>
+                <th>Proveedor</th>
+                <th>Interlocutor</th>
+                <th>Sociedad</th>
+                <th>Usuario</th>
+                <th class="text-center">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ contexto_nota_ingreso.fecha_ingreso|date:'d/m/Y' }}</td>
+                <td>{{ contexto_nota_ingreso.recepcion_compra }}</td>
+                <td>{{ contexto_nota_ingreso.nro_nota_ingreso|numeroXn:6 }}</td>
+                <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.proveedor }}</td>
+                <td>{{ contexto_nota_ingreso.recepcion_compra.documento.orden_compra.interlocutor }}</td>
+                <td>{{ contexto_nota_ingreso.sociedad }}</td>
+                <td>{{ contexto_nota_ingreso.created_by }}</td>
+                <td class="text-center">
+                    {{ contexto_nota_ingreso.get_estado_display }}
+                    {% if contexto_nota_ingreso.motivo_anulacion %}
+                        - {{ contexto_nota_ingreso.motivo_anulacion }}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+<h4>Observaciones:</h4>
+<p>
+    {% if contexto_nota_ingreso.observaciones %}
+    {{ contexto_nota_ingreso.observaciones }}
+    {% endif %}
+</p>
+<br>
+<h3>Merchandising</h3>
+
+{% if contexto_nota_ingreso.estado == 1 %}
+<button data-form-url="{% url 'merchandising_app:nota_ingreso_agregar_merchandising' contexto_nota_ingreso.id %}"
+    data-table-url="{% url 'merchandising_app:nota_ingreso_merchandising_detalle_tabla' contexto_nota_ingreso.id %}"
+    class="create btn btn-primary">
+    Agregar Merchandising
+</button>
+{% endif %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Material</th>
+                <th class="text-end">Cantidad</th>
+                <th>Almacén</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materiales %}
+                <tr>
+                    <td>{{ material.item}}</td>
+                    <td>{{ material.material.descripcion_corta }}</td>
+                    <td class="text-end">{{ material.cantidad_conteo|redondear|intcomma }}</td>
+                    <td>{{ material.almacen }}</td>
+                    <td class="text-center text-nowrap">
+                        {% if contexto_nota_ingreso.estado == 1 %}
+                        <button data-form-url="{% url 'merchandising_app:nota_ingreso_actualizar_merchandising' material.id %}"
+                            data-table-url="{% url 'merchandising_app:nota_ingreso_merchandising_detalle_tabla' contexto_nota_ingreso.id %}"
+                            data-keep-open="true"
+                            class="update btn btn-warning btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button data-form-url="{% url 'merchandising_app:nota_ingreso_eliminar_merchandising' material.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}    
+        </tbody>
+    </table>
+</div>
