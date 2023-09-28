@@ -206,3 +206,12 @@ class ReportesContadorForm(forms.Form):
         super(ReportesContadorForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReportesRotacionForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
+    
+    def __init__(self, *args, **kwargs):
+        super(ReportesRotacionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

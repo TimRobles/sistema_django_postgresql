@@ -12,6 +12,8 @@ from openpyxl.styles.borders import Border, Side
 from openpyxl.chart import Reference, Series,LineChart
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.plotarea import DataTable
+from applications.movimiento_almacen.managers import ordenar_movimientos
+from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.reportes.funciones import *
 from applications.datos_globales.models import DocumentoFisico, Moneda, TipoCambioSunat
 from applications.home.templatetags.funciones_propias import get_enlace_nubefact, redondear
@@ -841,7 +843,7 @@ def ReporteEstadosClienteExcel():
     wb=dataEstadosCliente()
     return wb
 
-####################################################  FACTURACIÓN GENERAL  ####################################################   
+####################################################  REPORTE CONTADOR  ####################################################   
 
 def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
     moneda_base = Moneda.objects.get(simbolo='$')
@@ -1057,4 +1059,223 @@ def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
 def ReporteContadorCorregido(sociedad, fecha_inicio, fecha_fin):
     
     wb=dataReporteContador(sociedad, fecha_inicio, fecha_fin)
+    return wb
+
+####################################################  REPORTE ROTACIÓN  ####################################################   
+
+def dataReporteRotacion(sociedad=None):
+    moneda_base = Moneda.objects.get(simbolo='$')
+
+    list_encabezado = [
+        'ID MAT.',
+        'FAMILIA',
+        'NOMBRE',
+        'DESCRIPCIÓN',
+        'PRECIO',
+        'STOCK',
+        'VENTA TOTAL',
+        'VENTAS MENSUALES DEL TOTAL',
+        'VENTA DESDE ÚLTIMOS 6 MESES (total/promedio)',
+        'VENTA DESDE ULTIMO INGRESO (total/promedio)',
+        'TIEMPO DURACION (APROX.)',
+        'PEDIDO PARA 5 MESES',
+        'SUGERENCIA',
+        ]
+
+    wb = Workbook()
+    hoja = wb.active
+    hoja.title = 'Reporte'
+    hoja.append(tuple(list_encabezado))
+
+    color_relleno = rellenoSociedadCorregido(sociedad)
+
+    col_range = hoja.max_column  # get max columns in the worksheet
+    # cabecera de la tabla
+    for col in range(1, col_range + 1):
+        cell_header = hoja.cell(1, col)
+        cell_header.fill = color_relleno
+        cell_header.font = NEGRITA
+
+    lista_tipo_stock = [2,3,4,5,16,17,22,]
+    # Recibido 2, Disponible 3, bloqueo sin serie 4, bloqueo sin qa 5, reservado 16, confirmado 17, prestado 22,
+    # Recepcion compra 101, confirmacion por venta 120
+    movimientos = MovimientosAlmacen.objects.filter(
+        tipo_stock__codigo__in=lista_tipo_stock,
+    )
+    if sociedad:
+        movimientos = movimientos.filter(
+            sociedad=sociedad,
+        )
+
+    resumen = {}
+    # id, familia, nombre, descripcion, precio, stock,
+    # venta_total, fecha_inicial, fecha_final, venta_desde_6_meses, fecha_inicio_6_meses, venta_desde_ultimo_ingreso, fecha_ultimo_ingreso
+    # tiempo_total = fecha_final - fecha_inicial
+    # ventas_mensuales_del_total = 30 * venta_total / tiempo_total
+    print("******************************************")
+    print(len(movimientos), datetime.now())
+    print("******************************************")
+    for movimiento in movimientos:
+        producto = movimiento.producto
+        if producto == 'Error': continue
+        if not producto in resumen:
+            resumen[producto] = {
+                'ID':producto.id,
+                'FAMILIA':producto.subfamilia.familia.nombre,
+                'NOMBRE':producto.descripcion_corta,
+                'DESCRIPCION':producto.descripcion_venta,
+                'PRECIO':producto.precio_lista,
+                'FECHA INICIAL':None,
+                'FECHA FINAL':None,
+                'VENTA TOTAL':0,
+                'FECHA INICIO 6 MESES':None,
+                'VENTA 6 MESES':0,
+                'FECHA ULTIMO INGRESO':None,
+                'VENTA ULTIMO INGRESO':0,
+                'INGRESOS':{},
+                'VENTAS':{},
+                'RECIBIDO':0,
+                'DISPONIBLE':0,
+                'BLOQUEO SIN SERIE':0,
+                'BLOQUEO SIN QA':0,
+                'RESERVADO':0,
+                'CONFIRMADO':0,
+                'PRESTADO':0,
+            }
+        if movimiento.tipo_movimiento.codigo == 101 and movimiento.tipo_stock.codigo == 2: #Recepción de compra : RECIBIDO
+            if not resumen[producto]['FECHA ULTIMO INGRESO']:
+                resumen[producto]['FECHA ULTIMO INGRESO'] = movimiento.fecha
+            elif resumen[producto]['FECHA ULTIMO INGRESO'] < movimiento.fecha:
+                resumen[producto]['FECHA ULTIMO INGRESO'] = movimiento.fecha
+            if not movimiento.fecha in resumen[producto]['INGRESOS']: resumen[producto]['INGRESOS'][movimiento.fecha] = 0
+            resumen[producto]['INGRESOS'][movimiento.fecha] = resumen[producto]['INGRESOS'][movimiento.fecha] + movimiento.cantidad
+        elif movimiento.tipo_movimiento.codigo == 120 and movimiento.tipo_stock.codigo == 17: #Confirmado por venta : CONFIRMADO
+            if not resumen[producto]['FECHA INICIAL']:
+                resumen[producto]['FECHA INICIAL'] = movimiento.fecha
+            elif resumen[producto]['FECHA INICIAL'] > movimiento.fecha:
+                resumen[producto]['FECHA INICIAL'] = movimiento.fecha
+            resumen[producto]['FECHA FINAL'] = movimiento.fecha
+            if movimiento.fecha > date.today() - timedelta(180):
+                resumen[producto]['VENTA 6 MESES'] = resumen[producto]['VENTA 6 MESES'] + movimiento.cantidad
+                if not resumen[producto]['FECHA INICIO 6 MESES']:
+                    resumen[producto]['FECHA INICIO 6 MESES'] = movimiento.fecha
+                elif resumen[producto]['FECHA INICIO 6 MESES'] < movimiento.fecha:
+                    resumen[producto]['FECHA INICIO 6 MESES'] = movimiento.fecha
+            resumen[producto]['VENTA TOTAL'] = resumen[producto]['VENTA TOTAL'] + movimiento.cantidad
+            if not movimiento.fecha in resumen[producto]['VENTAS']: resumen[producto]['VENTAS'][movimiento.fecha] = 0
+            resumen[producto]['VENTAS'][movimiento.fecha] = resumen[producto]['VENTAS'][movimiento.fecha] + movimiento.cantidad
+
+        if movimiento.tipo_stock.codigo == 2:
+            resumen[producto]['RECIBIDO'] = resumen[producto]['RECIBIDO'] + movimiento.cantidad
+        elif movimiento.tipo_stock.codigo == 3:
+            resumen[producto]['DISPONIBLE'] = resumen[producto]['DISPONIBLE'] + movimiento.cantidad
+        elif movimiento.tipo_stock.codigo == 4:
+            resumen[producto]['BLOQUEO SIN SERIE'] = resumen[producto]['BLOQUEO SIN SERIE'] + movimiento.cantidad
+        elif movimiento.tipo_stock.codigo == 5:
+            resumen[producto]['BLOQUEO SIN QA'] = resumen[producto]['BLOQUEO SIN QA'] + movimiento.cantidad
+        elif movimiento.tipo_stock.codigo == 16:
+            resumen[producto]['RESERVADO'] = resumen[producto]['RESERVADO'] + movimiento.cantidad
+        elif movimiento.tipo_stock.codigo == 17:
+            resumen[producto]['CONFIRMADO'] = resumen[producto]['CONFIRMADO'] + movimiento.cantidad
+        elif movimiento.tipo_stock.codigo == 22:
+            resumen[producto]['PRESTADO'] = resumen[producto]['PRESTADO'] + movimiento.cantidad
+            
+    print("******************************************")
+    print(len(resumen), datetime.now())
+    print("******************************************")
+    
+    for producto, valores in resumen.items():
+        fila = []
+        precio_compra = Decimal('0.00')
+        if valores['PRECIO']:
+            precio_compra = valores['PRECIO'].precio_compra
+        stock = valores['DISPONIBLE'] + valores['BLOQUEO SIN SERIE'] + valores['BLOQUEO SIN QA'] - valores['RESERVADO'] - valores['CONFIRMADO'] - valores['PRESTADO']
+        if not valores['FECHA INICIAL'] and not valores['FECHA FINAL']:
+            tiempo_total = None
+        else:
+            tiempo_total = (valores['FECHA FINAL'] - valores['FECHA INICIAL']).days
+        if tiempo_total:
+            ventas_mensuales = 30 * valores['VENTA TOTAL'] / tiempo_total
+        else:
+            ventas_mensuales = 30 * valores['VENTA TOTAL']
+
+        if valores['FECHA INICIO 6 MESES']:
+            tiempo_6_meses = (date.today() - valores['FECHA INICIO 6 MESES']).days
+        else:
+            tiempo_6_meses = 180
+        if tiempo_6_meses:
+            promedio_6_meses = 30 * valores['VENTA 6 MESES'] / tiempo_6_meses
+        else:
+            promedio_6_meses = 30 * valores['VENTA 6 MESES']
+
+        for fecha, cantidad in valores['VENTAS'].items():
+            if not valores['FECHA ULTIMO INGRESO']: valores['FECHA ULTIMO INGRESO'] = valores['FECHA INICIAL']
+            if fecha >= valores['FECHA ULTIMO INGRESO']:
+                valores['VENTA ULTIMO INGRESO'] = valores['VENTA ULTIMO INGRESO'] + cantidad
+        
+        tiempo_ultimo_ingreso = None
+        if valores['FECHA ULTIMO INGRESO']:
+            tiempo_ultimo_ingreso = (date.today() - valores['FECHA ULTIMO INGRESO']).days
+        if tiempo_ultimo_ingreso:
+            promedio_ultimo_ingreso = 30 * valores['VENTA ULTIMO INGRESO'] / tiempo_ultimo_ingreso
+        else:
+            promedio_ultimo_ingreso = 30 * valores['VENTA ULTIMO INGRESO']
+
+        venta_promedio_mensual = Decimal(max(promedio_6_meses, promedio_ultimo_ingreso))
+
+        if venta_promedio_mensual:
+            tiempo_duracion = stock / venta_promedio_mensual
+        else:
+            tiempo_duracion = "-"
+
+        pedido_5_meses = venta_promedio_mensual * 5
+
+        if pedido_5_meses == 0:
+            sugerencia = 'NO SE VENDIÓ'
+        elif pedido_5_meses >= stock:
+            sugerencia = 'EVALUAR'
+        elif pedido_5_meses < stock:
+            sugerencia = 'NO TRAER'
+
+        fila.append(valores['ID'])
+        fila.append(valores['FAMILIA'])
+        fila.append(valores['NOMBRE'])
+        fila.append(valores['DESCRIPCION'])
+        fila.append(precio_compra)
+        fila.append(stock)
+        fila.append(valores['VENTA TOTAL'])
+        fila.append(ventas_mensuales)
+        fila.append(f"{valores['VENTA 6 MESES']} / {promedio_6_meses}")
+        fila.append(f"{valores['VENTA ULTIMO INGRESO']} / {promedio_ultimo_ingreso}")
+        fila.append(promedio_ultimo_ingreso)
+        fila.append(tiempo_duracion)
+        fila.append(pedido_5_meses)
+        fila.append(sugerencia)
+        
+        hoja.append(fila)
+
+    print("******************************************")
+    print(datetime.now())
+    print("******************************************")
+
+    # for row in hoja.rows:
+    #     for col in range(hoja.max_column):
+    #         row[col].border = BORDE_DELGADO
+    #         if 8 <= col <=11:
+    #             row[col].alignment = ALINEACION_DERECHA
+    #             row[col].number_format = FORMATO_DOLAR
+    #         elif col == 13:
+    #             row[col].alignment = ALINEACION_DERECHA
+    #             row[col].number_format = FORMATO_SOLES
+    #         elif col == 15:
+    #             if row[col].value != 'LINK':
+    #                 row[col].hyperlink =  row[col].value
+    #                 row[col].font =  COLOR_AZUL
+
+    ajustarColumnasSheet(hoja)
+    return wb
+    
+def ReporteRotacionCorregido(sociedad):
+    
+    wb=dataReporteRotacion(sociedad)
     return wb

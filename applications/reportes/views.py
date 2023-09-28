@@ -26,7 +26,8 @@ from applications.reportes.forms import (
     ReporteVentasDepartamentoPdfForm,
     ReportesContadorForm, 
     ReportesFiltrosForm, 
-    ReporteVentasDepartamentoExcelForm
+    ReporteVentasDepartamentoExcelForm,
+    ReportesRotacionForm
     )
 from applications.reportes.funciones import *
 from applications.reportes.data_resumen_ingresos_anterior import*
@@ -50,7 +51,8 @@ from applications.reportes.excel import (
     ReporteContadorCorregido,
     ReporteEstadosClienteExcel, 
     ReporteFacturacionAsesorComercial, 
-    ReporteFacturacionGeneral, 
+    ReporteFacturacionGeneral,
+    ReporteRotacionCorregido, 
     ReporteVentasDepartamento
     )
     
@@ -4020,6 +4022,14 @@ class ReportesCorregidos(TemplateView):
             sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
             titulo = f'Reporte Contador - {sociedad.abreviatura} del {fecha_inicio} al {fecha_fin}'
             wb = ReporteContadorCorregido(sociedad, fecha_inicio, fecha_fin)
+        elif formulario == 'formulario2':
+            sociedad = None
+            if self.request.POST.get('sociedad'):
+                sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+                titulo = f'Reporte de Rotación - {sociedad.abreviatura} al {date.today()}'
+            else:
+                titulo = f'Reporte de Rotación - TOTAL al {date.today()}'
+            wb = ReporteRotacionCorregido(sociedad)
 
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
@@ -4031,5 +4041,6 @@ class ReportesCorregidos(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(ReportesCorregidos, self).get_context_data(**kwargs)
         context['form1'] = ReportesContadorForm()
+        context['form2'] = ReportesRotacionForm()
 
         return context

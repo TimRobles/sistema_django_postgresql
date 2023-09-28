@@ -102,7 +102,10 @@ class FacturaVenta(models.Model):
         cantidades = []
         precios_finales = []
         for producto in self.FacturaVentaDetalle_factura_venta.all():
-            productos.append(producto.producto.descripcion_corta)
+            if producto.producto:
+                productos.append(producto.producto.descripcion_corta)
+            else:
+                productos.append(producto.descripcion_documento)
             cantidades.append(f"{producto.cantidad.quantize(Decimal('0.01'))}")
             precios_finales.append(f"{producto.precio_final_con_igv.quantize(Decimal('0.01'))}")
         return " | ".join(productos), " | ".join(cantidades), " | ".join(precios_finales)
@@ -191,7 +194,10 @@ class FacturaVentaDetalle(models.Model):
 
     @property
     def producto(self):
-        return self.content_type.get_object_for_this_type(id = self.id_registro)
+        if self.content_type:
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
+        else:
+            return ""
 
     def __str__(self):
         return str(self.id)
@@ -300,7 +306,10 @@ class BoletaVenta(models.Model):
         cantidades = []
         precios_finales = []
         for producto in self.BoletaVentaDetalle_boleta_venta.all():
-            productos.append(producto.producto.descripcion_corta)
+            if producto.producto:
+                productos.append(producto.producto.descripcion_corta)
+            else:
+                productos.append(producto.descripcion_documento)
             cantidades.append(f"{producto.cantidad.quantize(Decimal('0.01'))}")
             precios_finales.append(f"{producto.precio_final_con_igv.quantize(Decimal('0.01'))}")
         return " | ".join(productos), " | ".join(cantidades), " | ".join(precios_finales)
@@ -391,7 +400,10 @@ class BoletaVentaDetalle(models.Model):
 
     @property
     def producto(self):
-        return self.content_type.get_object_for_this_type(id = self.id_registro)
+        if self.content_type:
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
+        else:
+            return ""
 
     def __str__(self):
         return str(self.id)

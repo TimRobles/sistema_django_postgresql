@@ -100,5 +100,9 @@ class MovimientosAlmacen(models.Model):
     def valor(self):
         return self.cantidad * self.signo_factor_multiplicador
 
+    @property
+    def fecha(self):
+        return self.documento_proceso.fecha
+
     def __str__(self):
         return str(self.id)
