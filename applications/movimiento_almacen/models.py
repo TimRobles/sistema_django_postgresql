@@ -102,7 +102,8 @@ class MovimientosAlmacen(models.Model):
 
     @property
     def fecha(self):
-        return self.documento_proceso.fecha
+        documento_proceso = self.documento_proceso
+        return documento_proceso.fecha
 
     def __str__(self):
         return str(self.id)
