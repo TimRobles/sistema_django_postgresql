@@ -4042,5 +4042,6 @@ class ReportesCorregidos(TemplateView):
         context = super(ReportesCorregidos, self).get_context_data(**kwargs)
         context['form1'] = ReportesContadorForm()
         context['form2'] = ReportesRotacionForm()
+        context['form3'] = ReportesRotacionForm()
 
         return context
