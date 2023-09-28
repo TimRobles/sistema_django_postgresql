@@ -83,7 +83,7 @@
                     <th class="pe-2">Presupuesto Utilizado: </th>
                     <td>
                         {% if contexto_evento_crm.presupuesto_utilizado %}
-                        {{ contexto_evento_crm.presupuesto_utilizado|redondear|intcomma }}
+                        {{ contexto_evento_crm.moneda.simbolo }} {{ contexto_evento_crm.presupuesto_utilizado|redondear|intcomma }}
                         {% endif %}
                     </td>
                 </tr>
@@ -137,7 +137,6 @@
         Agregar
     </button>
     {% endif %}
-    <a href="{% url 'crm_app:evento_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
 </h3>
 
 
@@ -150,7 +149,6 @@
                 <th>Almacén Origen</th>
                 <th>Tipo Stock</th>
                 <th class="text-end">Cantidad Asignada</th>
-                <th>Unidad</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -163,7 +161,6 @@
                 <td class="text-nowrap">{{ merchandising.almacen_origen.nombre }}</td>
                 <td class="text-nowrap">{{ merchandising.tipo_stock.descripcion }}</td>
                 <td class="text-end text-nowrap">{{ merchandising.cantidad_asignada }}</td>
-                <td class="text-nowrap">{{ merchandising.unidad }}</td>
                 <td class="text-center text-nowrap">
                     {% if contexto_evento_crm.estado == 1 %}
                         <button data-form-url="{% url 'crm_app:evento_crm_detalle_actualizar_merchandising' merchandising.id %}"
@@ -188,12 +185,14 @@
 </div>
 <br>
 <h3>Información Adicional
+    {% if contexto_evento_crm.estado != 3 %}
+
     <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_registrar' contexto_evento_crm.id %}"
         data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
         class="create badge bg-success">
         Registrar
     </button>
-    <a href="{% url 'crm_app:evento_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+    {% endif %}
 </h3>
 
 <div class="table-responsive">

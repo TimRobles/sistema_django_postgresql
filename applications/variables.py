@@ -433,6 +433,7 @@ MEDIO = (
     (3, 'LLAMADA'),
     (4, 'WEBINAR'),
     (5, 'EVENTO ISP'),
+    (6, 'PAGINA WEB'),
 )
 
 ESTADOS_CLIENTE = (

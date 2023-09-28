@@ -1,14 +1,15 @@
 {% load funciones_propias %}
 {% load humanize %}
 <br>
-<h3>Alternativas
+<h3>Alternativas | {{ contexto_pregunta_crm.tipo_pregunta }}
     
-    {% if contexto_pregunta_crm.id not in lista_preguntas and contexto_pregunta_crm.id not in lista_alternativas  %}
+    {% if contexto_pregunta_crm.id not in lista_preguntas and contexto_pregunta_crm.id not in lista_alternativas %}
     <button data-form-url="{% url 'crm_app:alternativa_registrar' contexto_pregunta_crm.id %}"
         data-table-url="{% url 'crm_app:pregunta_crm_detalle_tabla' contexto_pregunta_crm.id %}"
         class="create badge bg-primary">
         Registrar
     </button>    
+
     {% endif %}
     
 </h3>

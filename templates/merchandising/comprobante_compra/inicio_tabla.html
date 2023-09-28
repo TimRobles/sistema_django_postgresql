@@ -7,7 +7,6 @@
             <th>Proveedor</th>
             <th>Interlocutor</th>
             <th>Fecha Estimada de Llegada</th>
-            <th>Logistico</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
 
@@ -20,14 +19,13 @@
             <td class="fondo-personalizado" style="--color-fondo: {{ comprobante_compra.sociedad.color }};">{{ comprobante_compra.sociedad.abreviatura }}</td>
             <td>{{ comprobante_compra.fecha_comprobante|date:'d/m/Y' }}</td>
             <td>{{ comprobante_compra.numero_comprobante_compra }}</td>
-            <td>{{ comprobante_compra.orden_compra.proveedor_temporal }}</td>
-            <td>{{ comprobante_compra.orden_compra.interlocutor }}</td>
+            <td>{{ comprobante_compra.proveedor }}</td>
+            <td>{{ comprobante_compra.interlocutor }}</td>
             <td>
                 {% if comprobante_compra.fecha_estimada_llegada %}
                 {{ comprobante_compra.fecha_estimada_llegada|date:'d/m/Y' }}
                 {% endif %}    
             </td>
-            <td>{{ comprobante_compra.logistico}}</td>
             <td>{{ comprobante_compra.get_estado_display}}</td>
             <td class="text-nowrap text-center">
                 <a href="{% url 'merchandising_app:comprobante_compra_merchandising_detalle' comprobante_compra.id %}"

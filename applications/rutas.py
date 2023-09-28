@@ -13,3 +13,8 @@ CONTABILIDAD_FOTO_CHEQUE = 'img/contabilidad/cheque/'
 
 CLIENTE_CRM_ARCHIVO_RECIBIDO = 'img/crm/cliente_crm/'
 CLIENTE_CRM_ARCHIVO_ENVIADO = 'img/crm/cliente_crm/'
+
+ARCHIVO_COMPROBANTE_COMPRA_ARCHIVO_MERCH = 'file/merchandising/comprobante_compra/archivo/'
+
+ARCHIVO_RECEPCION_COMPRA_ARCHIVO_MERCH = 'file/recepcion merchandising/archivo recepcion/'
+FOTO_RECEPCION_COMPRA_FOTO_MERCH = 'file/recepcion merchandising/foto recepcion/'

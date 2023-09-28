@@ -3,6 +3,10 @@ from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseSunat,ProductoSunat, Unidad
 from applications.proveedores.models import Proveedor
 from applications.sociedad.models import Sociedad
+from applications.almacenes.models import Almacen
+from applications.sede.models import Sede
+from django.contrib.contenttypes.models import ContentType
+
 from .models import (
     AjusteInventarioMerchandising,
     AjusteInventarioMerchandisingDetalle,
@@ -31,6 +35,8 @@ from .models import (
     ComprobanteCompraMerchandising,
     ComprobanteCompraMerchandisingDetalle,
     OrdenCompraMerchandising,
+    NotaIngresoMerchandising, 
+    NotaIngresoMerchandisingDetalle,
     )
 from applications.cotizacion.models import PrecioListaMaterial
 from applications.comprobante_compra.models import ComprobanteCompraPI
@@ -864,7 +870,6 @@ class ComprobanteCompraMerchandisingForm(BSModalModelForm):
         fields=(
             'fecha_comprobante',
             'numero_comprobante_compra',
-            'logistico',
             )
         widgets = {
             'fecha_comprobante' : forms.DateInput(
@@ -901,6 +906,7 @@ class ComprobanteCompraMerchandisingLlegadaForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+# Recepción Comprobante
 class RecepcionComprobanteCompraMerchandisingForm(BSModalForm):
     fecha_recepcion = forms.DateField(
         widget = forms.DateInput(
@@ -919,5 +925,93 @@ class RecepcionComprobanteCompraMerchandisingForm(BSModalForm):
 
     def __init__(self, *args, **kwargs):
         super(RecepcionComprobanteCompraMerchandisingForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class RecepcionCompraGenerarNotaIngresoForm(BSModalForm):
+    fecha_ingreso = forms.DateField(
+        widget=forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+    )
+    class Meta:
+        fields=(
+            'fecha_ingreso',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(RecepcionCompraGenerarNotaIngresoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+# Nota de Ingreso
+class NotaIngresoAgregarMerchandisingForm(BSModalForm):
+    producto = forms.ChoiceField(choices=[('1', '1'), ('2', '2')])
+    cantidad = forms.DecimalField(max_digits=8, decimal_places=2)
+    sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1))
+    almacen = forms.ModelChoiceField(queryset=Almacen.objects.none())
+    class Meta:
+        fields=(
+            'producto',
+            'cantidad',
+            'sede',
+            'almacen',
+            )
+    
+    def clean_sede(self):
+        sede = self.cleaned_data.get('sede')
+        almacen = self.fields['almacen']
+        almacen.queryset = Almacen.objects.filter(sede = sede)    
+        return sede
+        
+    def __init__(self, *args, **kwargs):
+        productos = kwargs.pop('productos')
+        try:
+            nota_ingreso_detalle = kwargs.pop('nota_ingreso_detalle')
+        except:
+            pass
+        super(NotaIngresoAgregarMerchandisingForm, self).__init__(*args, **kwargs)
+        self.fields['producto'].choices = productos
+        try:
+            detalle = nota_ingreso_detalle.comprobante_compra_detalle
+            valor = "%s|%s" % (ContentType.objects.get_for_model(detalle).id, detalle.id)
+            self.fields['producto'].initial = valor
+            self.fields['cantidad'].initial = nota_ingreso_detalle.cantidad_conteo
+            self.fields['sede'].initial = nota_ingreso_detalle.almacen.sede
+            self.fields['almacen'].queryset = Almacen.objects.filter(sede = nota_ingreso_detalle.almacen.sede)
+            self.fields['almacen'].initial = nota_ingreso_detalle.almacen
+        except:
+            pass
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class NotaIngresoFinalizarConteoForm(BSModalModelForm):    
+    class Meta:
+        model = NotaIngresoMerchandising
+        fields = (
+            'observaciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaIngresoFinalizarConteoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class NotaIngresoAnularConteoForm(BSModalModelForm):    
+    class Meta:
+        model = NotaIngresoMerchandising
+        fields = (
+            'motivo_anulacion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(NotaIngresoAnularConteoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

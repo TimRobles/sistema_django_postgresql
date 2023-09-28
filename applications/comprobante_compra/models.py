@@ -84,6 +84,10 @@ class ComprobanteCompraPI(models.Model):
     @property
     def proveedor(self):
         return self.orden_compra.proveedor
+    
+    @property
+    def interlocutor(self):
+        return self.orden_compra.proveedor
 
     @property
     def detalle(self):

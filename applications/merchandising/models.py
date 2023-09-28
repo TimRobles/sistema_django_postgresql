@@ -3,7 +3,7 @@ from decimal import Decimal
 import requests
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications import orden_compra
-from applications.variables import ESTADOS, TIPO_IGV_CHOICES, ESTADOS_ORDEN_COMPRA, ESTADO_COMPROBANTE_MERCHANDISING, INTERNACIONAL_NACIONAL
+from applications.variables import ESTADOS, TIPO_IGV_CHOICES, ESTADOS_ORDEN_COMPRA, ESTADO_COMPROBANTE_MERCHANDISING, INTERNACIONAL_NACIONAL, ESTADO_NOTA_INGRESO
 from django.db import models
 from django.conf import settings
 from django.db.models import Q
@@ -17,9 +17,11 @@ from applications.sede.models import Sede
 from applications.almacenes.models import Almacen
 from applications.datos_globales.models import Moneda
 from applications.material.models import ProveedorMaterial
-from applications.funciones import calculos_linea, igv, obtener_totales
+from applications.funciones import calculos_linea, igv, obtener_totales, numeroXn, ver_proveedor
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+from applications.rutas import ARCHIVO_RECEPCION_COMPRA_ARCHIVO_MERCH, FOTO_RECEPCION_COMPRA_FOTO_MERCH, ARCHIVO_COMPROBANTE_COMPRA_ARCHIVO_MERCH
 
+from applications.merchandising.managers import ComprobanteCompraMerchandisingManager, ComprobanteCompraMerchandisingDetalleManager, NotaIngresoMerchandisingManager 
 
 
 
@@ -726,6 +728,8 @@ class ListaRequerimientoMerchandisingDetalle(models.Model):
     def __str__(self):
         return str(self.merchandising)
 
+
+# Oferta proveedor
 class OfertaProveedorMerchandising(models.Model):
     ESTADOS_OFERTA_PROVEEDOR = (
         (1, 'PENDIENTE'),
@@ -813,6 +817,22 @@ class OfertaProveedorMerchandisingDetalle(models.Model):
     #     except:
     #         return "%s. %s" % (self.item, self.proveedor_material.content_type.get_object_for_this_type(id = self.proveedor_material.id_registro))
 
+class ArchivoOfertaProveedorMerchandising(models.Model):
+
+    archivo = models.FileField('Archivo', upload_to = 'file/merchandising/oferta_proveedor/detalle/archivo/', max_length=100, blank=True, null=True)
+    oferta_proveedor = models.ForeignKey(OfertaProveedorMerchandising, on_delete=models.PROTECT)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoOfertaProveedorMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ArchivoOfertaProveedorMerchandising_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Archivo Oferta Proveedor Merchandising'
+        verbose_name_plural = 'Archivos Oferta Proveedor Merchandising'
+
+    def __str__(self):
+        return str(self.oferta_proveedor)
 
 def oferta_proveedor_merchandising_detalle_post_save(*args, **kwargs):
     obj = kwargs['instance']
@@ -831,8 +851,7 @@ def oferta_proveedor_merchandising_detalle_post_save(*args, **kwargs):
 post_save.connect(oferta_proveedor_merchandising_detalle_post_save, sender=OfertaProveedorMerchandisingDetalle)
 
 
-
-
+# Orden Compra
 class OrdenCompraMerchandising(models.Model):
     internacional_nacional = models.IntegerField('INTERNACIONAL-NACIONAL',choices=INTERNACIONAL_NACIONAL, default=2)
     numero_orden_compra = models.CharField('Número de Orden Compra', max_length=50, blank=True, null=True)
@@ -889,9 +908,7 @@ class OrdenCompraMerchandising(models.Model):
 
     def __str__(self):
         return "%s %s" % (self.id, self.numero_orden_compra)
-        # return str(self.numero_orden_compra)
     
-
 class OrdenCompraMerchandisingDetalle(models.Model):
     item = models.IntegerField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #Merchandising
@@ -921,19 +938,16 @@ class OrdenCompraMerchandisingDetalle(models.Model):
             'item',
             ]
     
-    # @property
-    # def producto(self):
-    #     return self.content_type.get_object_for_this_type(id = self.id_registro)
+    @property
+    def producto(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
      
     def __str__(self):
         return "%s" % (str(self.content_type.get_object_for_this_type(id = self.id_registro)))
 
-    # def __str__(self):
-    #     # return str(self.id) 
-    #     return ' '
-    
 
 
+# Comprobante Compra
 class ComprobanteCompraMerchandising(models.Model):
     internacional_nacional = models.IntegerField('Internacional-Nacional', choices=INTERNACIONAL_NACIONAL, default=2)
     numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50, blank=True, null=True)
@@ -956,14 +970,14 @@ class ComprobanteCompraMerchandising(models.Model):
     condiciones = models.TextField('Condiciones', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE_MERCHANDISING, default=0)
     motivo_anulacion = models.CharField('Motivo de anulación', max_length=50, blank=True, null=True)
-    logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=Decimal('0.00'))
+    #logistico = models.DecimalField('Margen logístico', max_digits=3, decimal_places=2, default=Decimal('0.00'))
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraMerchandising_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraMerchandising_updated_by', editable=False)
 
-    # objects = ComprobanteCompraMerchandisingManager()
+    objects = ComprobanteCompraMerchandisingManager()
 
     class Meta:
         verbose_name = 'Comprobante de Compra Merchandising'
@@ -976,27 +990,48 @@ class ComprobanteCompraMerchandising(models.Model):
     @property
     def fecha(self):
         return self.fecha_comprobante
-
+    
+    @property
+    def fecha_recepcion(self):
+        fechas = []
+        try:
+            recepciones = RecepcionCompraMerchandising.objects.filter(
+                content_type=self.content_type,
+                id_registro=self.id,
+            )
+            for recepcion in recepciones:
+                fechas.append(recepcion.fecha_recepcion)
+            return max(fechas)
+        except:
+            return None
+        
     @property
     def proveedor(self):
         return self.orden_compra_merchandising.proveedor_temporal
 
     @property
+    def interlocutor(self):
+        return self.orden_compra_merchandising.interlocutor_temporal
+
+
+    @property
     def content_type(self):
         return ContentType.objects.get_for_model(self)
 
-    # @property
-    # def id_registro(self):
-    #     return self.id
+    @property
+    def id_registro(self):
+        return self.id
 
+    @property
+    def detalle(self):
+        return self.ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising.all()
+    
     @property
     def documento(self):
         return self.numero_comprobante_compra
         
     def __str__(self):
         return str(self.numero_comprobante_compra)
-
-
 
 class ComprobanteCompraMerchandisingDetalle(models.Model):
     item = models.IntegerField()
@@ -1017,7 +1052,7 @@ class ComprobanteCompraMerchandisingDetalle(models.Model):
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ComprobanteCompraMerchandisingDetalle_updated_by', editable=False)
 
-    # objects = ComprobanteCompraMerchandisingDetalleManager()
+    objects = ComprobanteCompraMerchandisingDetalleManager()
 
     class Meta:
         verbose_name = 'Comprobante de Compra Merchandising Detalle'
@@ -1035,13 +1070,13 @@ class ComprobanteCompraMerchandisingDetalle(models.Model):
     def id_registro(self):
         return self.id
 
-    # @property
-    # def producto(self):
-    #     return self.orden_compra_merchandising_detalle.producto
+    @property
+    def producto(self):
+        return self.orden_compra_merchandising_detalle.producto
     
-    # @property
-    # def proveedor(self):
-    #     return self.comprobante_compra_merchandising.proveedor
+    @property
+    def proveedor(self):
+        return self.comprobante_compra_merchandising.proveedor
     
     # @property
     # def descripcion_proveedor(self):
@@ -1062,18 +1097,213 @@ class ComprobanteCompraMerchandisingDetalle(models.Model):
         # return str(self.id)
     
 
-# class ArchivoComprobanteCompraMerchandising(models.Model):
-#     archivo = models.FileField('Archivo', upload_to=ARCHIVO_COMPROBANTE_COMPRA_PI_ARCHIVO, max_length=100)
-#     comprobante_compra_merchandising = models.ForeignKey(ComprobanteCompraMerchandising, on_delete=models.CASCADE)
+class ArchivoComprobanteCompraMerchandising(models.Model):
+    archivo = models.FileField('Archivo', upload_to=ARCHIVO_COMPROBANTE_COMPRA_ARCHIVO_MERCH, max_length=100)
+    comprobante_compra_merchandising = models.ForeignKey(ComprobanteCompraMerchandising, on_delete=models.CASCADE)
 
-#     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
-#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoComprobanteCompraMerchandising_created_by', editable=False)
-#     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
-#     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoComprobanteCompraMerchandising_updated_by', editable=False)
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoComprobanteCompraMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoComprobanteCompraMerchandising_updated_by', editable=False)
 
-#     class Meta:
-#         verbose_name = 'Archivo de Comprobante de Compra Merchandising'
-#         verbose_name_plural = 'Archivos de Comprobantes de Compra Merchandising'
+    class Meta:
+        verbose_name = 'Archivo de Comprobante de Compra Merchandising'
+        verbose_name_plural = 'Archivos de Comprobantes de Compra Merchandising'
 
-#     def __str__(self):
-#         return self.archivo
+    def __str__(self):
+        return self.archivo
+
+
+#RECEPCION COMPRA
+class RecepcionCompraMerchandising(models.Model):
+    ESTADO_COMPROBANTE = (
+    (1, 'PENDIENTE'),
+    (2, 'ANULADO'),
+    (3, 'FINALIZADO'),
+    )
+    numero_comprobante_compra = models.CharField('Número de Comprobante de Compra', max_length=50)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraMerchandising
+    id_registro = models.IntegerField()
+    fecha_recepcion = models.DateField('Fecha de Recepción', auto_now=False, auto_now_add=False)
+    usuario_recepcion = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='RecepcionCompraMerchandising_usuario_recepcion')
+    nro_bultos = models.DecimalField('Número de Bultos', max_digits=4, decimal_places=0)
+    observaciones = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField(blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_COMPROBANTE, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RecepcionCompraMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='RecepcionCompraMerchandising_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Recepción de Compra Merchandising'
+        verbose_name_plural = 'Recepciones de Compras Merchandising'
+
+    @property
+    def proveedor(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return ver_proveedor(documento)[0]
+
+    @property
+    def interlocutor_proveedor(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return ver_proveedor(documento)[1]
+
+    @property
+    def sociedad(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return documento.sociedad
+
+    @property
+    def moneda(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return documento.moneda
+
+    @property
+    def documento(self):
+        documento = self.content_type.get_object_for_this_type(id=self.id_registro)
+        return documento
+
+    @property
+    def fecha(self):
+        return self.fecha_recepcion
+
+    def __str__(self):
+        try:
+            return "%s" % (str(self.content_type.get_object_for_this_type(id=self.id_registro)))
+        except:
+            return "-"
+
+class ArchivoRecepcionCompraMerchandising(models.Model):
+    archivo = models.FileField('Archivo', upload_to=ARCHIVO_RECEPCION_COMPRA_ARCHIVO_MERCH, max_length=100)
+    recepcion_compra = models.ForeignKey(RecepcionCompraMerchandising, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoRecepcionCompraMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ArchivoRecepcionCompraMerchandising_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Archivo de Comprobante de Compra Merchandising'
+        verbose_name_plural = 'Archivos de Comprobantes de Compra Merchandising'
+        ordering = [
+            'recepcion_compra',
+            'archivo',
+            ]
+
+    def __str__(self):
+        return str(self.archivo)
+
+class FotoRecepcionCompraMerchandising(models.Model):
+    foto = models.ImageField('Foto', upload_to=FOTO_RECEPCION_COMPRA_FOTO_MERCH, height_field=None, width_field=None, max_length=None)
+    recepcion_compra = models.ForeignKey(RecepcionCompraMerchandising, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='FotoRecepcionCompraMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='FotoRecepcionCompraMerchandising_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Foto de Comprobante de Compra Merchandising'
+        verbose_name_plural = 'Fotos de Comprobantes de Compra Merchandising'
+        ordering = [
+            'recepcion_compra',
+            'foto',
+            ]
+
+    def __str__(self):
+        return str(self.foto)
+
+
+# NOTA DE INGRESO
+class NotaIngresoMerchandising(models.Model):
+    nro_nota_ingreso = models.IntegerField('Número de Nota de Ingreso', help_text='Correlativo', blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #RecepcionCompra / NotaStockInicial / NotaIngresoMuestra
+    id_registro = models.IntegerField()
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
+    fecha_ingreso = models.DateField('Fecha de Ingreso', auto_now=False, auto_now_add=False)
+    observaciones = models.TextField(blank=True, null=True)
+    motivo_anulacion = models.TextField('Motivo de Anulación', blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_NOTA_INGRESO, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaIngresoMerchandising_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaIngresoMerchandising_updated_by', editable=False)
+
+    objects = NotaIngresoMerchandisingManager()
+
+    class Meta:
+        verbose_name = 'Nota de Ingreso Merchandising'
+        verbose_name_plural = 'Notas de Ingreso Merchandising'
+
+    @property
+    def fecha(self):
+        return self.fecha_ingreso
+
+    @property
+    def detalles(self):
+        return self.NotaIngresoMerchandisingDetalle_nota_ingreso.all()
+    
+    @property
+    def recepcion_compra(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    def __str__(self):
+        return "NOTA DE INGRESO %s%s - %s %s %s" % (self.sociedad.abreviatura, numeroXn(self.nro_nota_ingreso, 6), self.fecha_ingreso.strftime('%d/%m/%Y'), self.created_by, self.recepcion_compra)
+
+class NotaIngresoMerchandisingDetalle(models.Model):
+    item = models.IntegerField(blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT) #ComprobanteCompraPIDetalle / NotaStockInicialDetalle / NotaIngresoMuestraDetalle
+    id_registro = models.IntegerField()
+    cantidad_conteo = models.DecimalField('Cantidad del conteo', max_digits=22, decimal_places=10, blank=True, null=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
+    #Control Calidad y Sede?
+    nota_ingreso = models.ForeignKey(NotaIngresoMerchandising, on_delete=models.PROTECT, related_name='NotaIngresoMerchandisingDetalle_nota_ingreso')
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaIngresoMerchandisingDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaIngresoMerchandisingDetalle_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Nota de Ingreso Detalle Merchandising'
+        verbose_name_plural = 'Notas de Ingreso Merchandising Detalles'
+        ordering = [
+            'nota_ingreso',
+            'item',
+            ]
+    
+    @property
+    def cantidad(self):
+        return self.cantidad_conteo
+    
+    @property
+    def sociedad(self):
+        return self.comprobante_compra_detalle.sociedad
+    
+    @property
+    def producto(self):
+        return self.comprobante_compra_detalle.producto
+
+    @property
+    def comprobante_compra_detalle(self):
+        return self.content_type.get_object_for_this_type(id = self.id_registro)
+
+    def __str__(self):
+        return "%s - %s" % (self.comprobante_compra_detalle, self.almacen)
+
+def nota_ingreso_detalle_post_save(*args, **kwargs):
+    if kwargs['created']:
+        obj = kwargs['instance']
+        try:
+            obj.proveedor = obj.comprobante_compra_detalle.proveedor
+            obj.proveedor.save()
+        except Exception as e:
+            pass
+            
+post_save.connect(nota_ingreso_detalle_post_save, sender=NotaIngresoMerchandisingDetalle)
+
+

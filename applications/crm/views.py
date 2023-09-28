@@ -648,14 +648,9 @@ class EventoCRMUpdateView(BSModalUpdateView):
         return context
 
 
-class EventoCRMGuardarView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('crm.change_eventocrm')
+class EventoCRMGuardarView(BSModalDeleteView):
     model = EventoCRM
     template_name = "includes/eliminar generico.html"
-    
-    def dispatch(self, request, *args, **kwargs):        
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.object.id})
@@ -1143,19 +1138,13 @@ class EventoCRMDetalleInformacionAdicionalDeleteView(PermissionRequiredMixin, BS
         return context
     
 
-class EventoCRMGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('logistica.change_despachodetalle')
+class EventoCRMGenerarGuiaView(BSModalDeleteView):
     model = EventoCRM
     template_name = "includes/eliminar generico.html"
 
-    def dispatch(self, request, *args, **kwargs):
-        if not self.has_permission():
-            return render(request, 'includes/modal sin permiso.html')
-        return super().dispatch(request, *args, **kwargs)
-
     def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['guia'].id})
-
+    # problema guia
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
         sid = transaction.savepoint()
@@ -1177,19 +1166,33 @@ class EventoCRMGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
                 updated_by=self.request.user,
             )
 
+            print('************GUIA*******************+*+')
+            print(self.object.sociedad)
+            print(serie_comprobante)
+            print('*******************************+*+')
+
+
             for detalle in detalles:
+                print('*************DETALLE******************+*+')
+                print('detalle.item', detalle.item)
+                print('detalle.id_registro', detalle.id_registro)
+                print('detalle.cantidad_asignada', detalle.cantidad_asignada)
+                print('detalle.producto', detalle.producto.descripcion_corta)
+                print('self.request', self.request.user)
+                print('self.request', self.request.user)
+                print('*******************************+*+')
+
                 guia_detalle = GuiaDetalle.objects.create(
                     item=detalle.item,
                     content_type=detalle.content_type,
                     id_registro=detalle.id_registro,
                     guia=guia,
                     cantidad=detalle.cantidad_asignada,
-                    unidad=detalle.producto.unidad_base,
                     descripcion_documento=detalle.producto.descripcion_venta,
-                    peso=detalle.producto.peso_unidad_base,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
+                
             self.kwargs['guia'] = guia
             self.request.session['primero'] = False
             messages.success(request, MENSAJE_GENERAR_GUIA)

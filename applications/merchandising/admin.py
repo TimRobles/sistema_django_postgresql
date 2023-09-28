@@ -10,15 +10,13 @@ from applications.merchandising.forms import (
     )
 
 from .models import (
-    AjusteInventarioMerchandising,
-    AjusteInventarioMerchandisingDetalle,
+    AjusteInventarioMerchandising,AjusteInventarioMerchandisingDetalle,
     ClaseMerchandising,
     ComponenteMerchandising,
     AtributoMerchandising,
     FamiliaMerchandising,
     ImagenMerchandising,
-    InventarioMerchandising,
-    InventarioMerchandisingDetalle,
+    InventarioMerchandising, InventarioMerchandisingDetalle,
     RelacionMerchandisingComponente,
     SubFamiliaMerchandising,
     ModeloMerchandising,
@@ -30,14 +28,12 @@ from .models import (
     ProveedorMerchandising,
     EquivalenciaUnidadMerchandising,
     IdiomaMerchandising,
-    ListaRequerimientoMerchandising,
-    ListaRequerimientoMerchandisingDetalle,
-    OfertaProveedorMerchandising,
-    OfertaProveedorMerchandisingDetalle,
-    OrdenCompraMerchandising,
-    OrdenCompraMerchandisingDetalle,
-    ComprobanteCompraMerchandising,
-    ComprobanteCompraMerchandisingDetalle,
+    ListaRequerimientoMerchandising, ListaRequerimientoMerchandisingDetalle,
+    OfertaProveedorMerchandising, OfertaProveedorMerchandisingDetalle,ArchivoOfertaProveedorMerchandising,
+    OrdenCompraMerchandising, OrdenCompraMerchandisingDetalle,
+    ComprobanteCompraMerchandising, ComprobanteCompraMerchandisingDetalle,
+    RecepcionCompraMerchandising,
+    NotaIngresoMerchandising, NotaIngresoMerchandisingDetalle,
 )
 
 @admin.register(ClaseMerchandising)
@@ -579,6 +575,24 @@ class OfertaProveedorMerchandisingDetalleAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+@admin.register(ArchivoOfertaProveedorMerchandising)
+class ArchivoOfertaProveedorMerchandisingAdmin(admin.ModelAdmin):
+    list_display = (
+        'archivo',
+        'oferta_proveedor',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
 @admin.register(OrdenCompraMerchandising)
 class OrdenCompraMerchandisingAdmin(admin.ModelAdmin):
     list_display = (
@@ -663,7 +677,6 @@ class ComprobanteCompraMerchandisingAdmin(admin.ModelAdmin):
         'condiciones',
         'estado',
         'motivo_anulacion',
-        'logistico',
         'created_at',
         'created_by',
         'updated_at',
@@ -697,6 +710,83 @@ class ComprobanteCompraMerchandisingDetalleAdmin(admin.ModelAdmin):
         'updated_by',
         )
 
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(RecepcionCompraMerchandising)
+class RecepcionCompraMerchandisingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'numero_comprobante_compra',
+        'content_type',
+        'id_registro',
+        'fecha_recepcion',
+        'usuario_recepcion',
+        'nro_bultos',
+        'observaciones',
+        'motivo_anulacion',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+# Notas 
+
+@admin.register(NotaIngresoMerchandising)
+class NotaIngresoMerchandisingAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'nro_nota_ingreso',
+        'recepcion_compra',
+        'sociedad',
+        'fecha_ingreso',
+        'observaciones',
+        'motivo_anulacion',
+        'estado',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+    
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(NotaIngresoMerchandisingDetalle)
+class NotaIngresoMerchandisingDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'item',
+        'content_type',
+        'id_registro',
+        'comprobante_compra_detalle',
+        'proveedor',
+        'cantidad_conteo',
+        'almacen',
+        'nota_ingreso',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        )
+    search_fields = (
+        'item',
+        )
+    
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:
             obj.created_by = request.user

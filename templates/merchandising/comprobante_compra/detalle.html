@@ -32,17 +32,15 @@
     </a>    
     {% endif %}
 
-    {% if permiso_logistica %}    
-        {% if contexto_comprobante_compra.estado == 1 %}
-            <button data-form-url="{% url 'merchandising_app:recepcion_comprobante_compra_merchandising' contexto_comprobante_compra.id %}"
-                class="delete btn btn-primary">
-                Recepción
-            </button>
-        {% endif %}
+    {% if contexto_comprobante_compra.estado == 1 %}
+        <button data-form-url="{% url 'merchandising_app:recepcion_comprobante_compra_merchandising' contexto_comprobante_compra.id %}"
+            class="delete btn btn-primary">
+            Recepción
+        </button>
     {% endif %}
 
     {% if contexto_comprobante_compra.estado == 2 and contexto_recepcion_compra %}
-        <a href="{% url 'recepcion_compra_app:recepcion_compra_detalle' contexto_recepcion_compra.id %}"
+        <a href="{% url 'merchandising_app:recepcion_compra_merchandising_detalle' contexto_recepcion_compra.id %}"
         class="btn btn-primary">
             Ver Recepción de Compra
         </a>
