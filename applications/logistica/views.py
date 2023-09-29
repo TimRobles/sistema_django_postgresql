@@ -1262,6 +1262,10 @@ class ValidarSeriesNotaSalidaDetailView(PermissionRequiredMixin, FormView):
                     form.add_error('serie', "Serie ya ha sido registrada")
                     return super().form_invalid(form)
 
+                if buscar.almacen != nota_salida_detalle.almacen:
+                    form.add_error('serie', "Serie en otro almacén, su almacén es: %s" % buscar.almacen)
+                    return super().form_invalid(form)
+
                 if buscar.estado != 'DISPONIBLE' and buscar.estado != 'REPARADO':
                     form.add_error('serie', "Serie no disponible, su estado es: %s" % buscar.estado)
                     return super().form_invalid(form)

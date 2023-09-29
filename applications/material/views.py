@@ -1785,6 +1785,7 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
         kwargs = super(MaterialSeriesVerView, self).get_form_kwargs()
         kwargs['serie'] = self.request.GET.get('serie')
         kwargs['sociedad'] = self.request.GET.get('sociedad')
+        kwargs['tipo_stock'] = self.request.GET.get('tipo_stock')
         kwargs['estado'] = self.request.GET.get('estado')
         kwargs['almacen'] = self.request.GET.get('almacen')
         return kwargs
@@ -1799,6 +1800,7 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
 
         filtro_serie = self.request.GET.get('serie')
         filtro_sociedad = self.request.GET.get('sociedad')
+        filtro_tipo_stock = self.request.GET.get('tipo_stock')
         filtro_estado = self.request.GET.get('estado')
         filtro_almacen = self.request.GET.get('almacen')
 
@@ -1812,7 +1814,7 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
         if filtro_sociedad:
             condicion = Q(sociedad = filtro_sociedad.upper())
             series = series.filter(condicion)
-            contexto_filtro.append("serie=" + filtro_sociedad)
+            contexto_filtro.append("sociedad=" + filtro_sociedad)
 
         if filtro_almacen:
             series_id = []
@@ -1822,6 +1824,15 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
                         series_id.append(serie.id)
             series = series.filter(id__in=series_id)
             contexto_filtro.append("almacen=" + filtro_almacen)
+
+        if filtro_tipo_stock:
+            series_id = []
+            for serie in series:
+                if serie.tipo_stock:
+                    if str(serie.tipo_stock.id) == filtro_tipo_stock:
+                        series_id.append(serie.id)
+            series = series.filter(id__in=series_id)
+            contexto_filtro.append("tipo_stock=" + filtro_tipo_stock)
 
         if filtro_estado:
             series_id = []

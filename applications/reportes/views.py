@@ -51,6 +51,7 @@ from applications.reportes.excel import (
     ReporteFacturacionGeneral, 
     ReporteVentasDepartamento
     )
+    
 class ReportesView(FormView):
     template_name = "reportes/inicio.html"
     form_class = ReportesFiltrosForm
@@ -160,7 +161,7 @@ class ReporteContador(TemplateView):
                     ON nncd.content_type_id='%s' AND mm.id=nncd.id_registro
                 WHERE dgsc.serie!='' AND nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
                 GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota) 
-                ORDER BY fecha_emision_nota, nro_comprobante ;''' %(DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_emision_nota, nro_comprobante ;''' % (DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
             query_info = NotaCredito.objects.raw(sql)
             
             info = []
@@ -3273,8 +3274,8 @@ class ReporteRotacion(TemplateView):
                     ON mm.id=mam.id_registro_producto
                 LEFT JOIN movimiento_almacen_tipostock mats
                     ON mam.tipo_stock_id=mats.id
-                WHERE mam.content_type_producto_id='%s' AND mats.codigo NOT IN (
-                    1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+                WHERE mam.content_type_producto_id='%s' AND mats.codigo IN (
+                    3, 5, 36)
                 GROUP BY mm.id
                 ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'])
             query_info = MovimientosAlmacen.objects.raw(sql_stock)
