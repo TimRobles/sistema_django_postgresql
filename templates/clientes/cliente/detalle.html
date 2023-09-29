@@ -6,10 +6,7 @@
 
 {% block contenido %}
     <h1>{{ contexto_clientes }} - {{ contexto_clientes.get_tipo_documento_display }}: {{ contexto_clientes.numero_documento }}
-        <h3>
-            <a href="{% url 'clientes_app:cliente_inicio' %}"><span class="badge bg-primary">Regresar Cliente ERP</span></a>
-            <a href="{% url 'crm_app:cliente_crm_inicio' %}"><span class="badge bg-primary">Regresar Cliente CRM</span></a>
-        </h3>
+        <a href="{% url 'clientes_app:cliente_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h1>
     <br>
     <div id="tabla">
