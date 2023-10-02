@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
-from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
+from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
 from applications.funciones import numeroXn
 from applications.importaciones import *
 from openpyxl import Workbook
@@ -16,6 +16,7 @@ from openpyxl.chart.plotarea import DataTable
 from applications.material.models import Material
 from applications.movimiento_almacen.managers import ordenar_movimientos
 from applications.movimiento_almacen.models import MovimientosAlmacen
+from applications.recepcion_compra.models import RecepcionCompra
 from applications.reportes.funciones import *
 from applications.datos_globales.models import DocumentoFisico, Moneda, TipoCambioSunat
 from applications.home.templatetags.funciones_propias import get_enlace_nubefact, redondear
@@ -1329,14 +1330,24 @@ def dataReporteRotacion(sociedad=None):
             output_field=FloatField()
         ))
     )
+    
+    subquery_precio_pedido = ComprobanteCompraPIDetalle.objects.filter(
+        orden_compra_detalle__content_type_id=ContentType.objects.get_for_model(Material),
+        orden_compra_detalle__id_registro=OuterRef('orden_compra_detalle__id_registro'),
+    ).order_by('-created_at').values('precio_final_con_igv')[:1]
+    subquery_fecha_pedido = RecepcionCompra.objects.filter(
+        content_type=ContentType.objects.get_for_model(ComprobanteCompraPI),
+        id_registro=OuterRef('comprobante_compra__id'),
+    ).order_by('-fecha_recepcion').values('fecha_recepcion')[:1]
 
     pedidos = ComprobanteCompraPIDetalle.objects.filter(
         orden_compra_detalle__content_type_id=ContentType.objects.get_for_model(Material),
-    ).values('orden_compra_detalle__id_registro').annotate(
-        id_producto=F('orden_compra_detalle__id_registro'),
-        precio_pedido=Sum('precio_final_con_igv'),
-        fecha_pedido=Max('comprobante_compra__fecha_comprobante'),
-    ).order_by('-comprobante_compra__fecha_comprobante')
+    ).values(
+        'orden_compra_detalle__id_registro',
+    ).annotate(
+        precio_pedido=Subquery(subquery_precio_pedido),
+        fecha_pedido=Subquery(subquery_fecha_pedido),
+    )
 
     six_months_ago = datetime.now() - timedelta(days=180)
 
@@ -1442,16 +1453,42 @@ def dataReporteRotacion(sociedad=None):
         'venta_desde_ultimo_pedido'
     )
 
-    
-    print(materiales)
-    print(stock)
-    print(pedidos)
-    print(rotacion_6ultimos_factura)
-    print(rotacion_6ultimos_boleta)
-    print(rotacion_factura)
-    print(rotacion_boleta)
-    print(venta_desde_ultimo_pedido_factura)
-    print(venta_desde_ultimo_pedido_boleta)
+    id_material = 162
+    print(materiales.filter(id=id_material))
+    try:
+        print(stock.get(id_registro_producto=id_material))
+    except:
+        print("Vacio")
+    try:
+        print(pedidos)
+        print(pedidos.get(orden_compra_detalle__id_registro=id_material))
+    except:
+        print("Vacio")
+    print(six_months_ago)
+    try:
+        print(rotacion_6ultimos_factura.get(id_registro=id_material))
+    except:
+        print("Vacio")
+    try:
+        print(rotacion_6ultimos_boleta.get(id_registro=id_material))
+    except:
+        print("Vacio")
+    try:
+        print(rotacion_factura.get(id_registro=id_material))
+    except:
+        print("Vacio")
+    try:
+        print(rotacion_boleta.get(id_registro=id_material))
+    except:
+        print("Vacio")
+    try:
+        print(venta_desde_ultimo_pedido_factura.get(id_registro=id_material))
+    except:
+        print("Vacio")
+    try:
+        print(venta_desde_ultimo_pedido_boleta.get(id_registro=id_material))
+    except:
+        print("Vacio")
 
     # resumen = {}
     # # id, familia, nombre, descripcion, precio, stock,
