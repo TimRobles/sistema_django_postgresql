@@ -5,10 +5,11 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h1>{{ contexto_interlocutores }}</h1>
-    <h3>
-        <button onclick="history.back()" class="badge bg-primary">Regresar Cliente ERP</button>
-    </h3>
+    <h1>{{ contexto_interlocutores }}
+        <button onclick="history.back()" class="badge bg-primary">Regresar</button>
+    </h1>
+
+
     <br>
     <div id="tabla">
         {% include 'clientes/interlocutor/detalle_tabla.html' %}
