@@ -13,6 +13,8 @@
             <th>Descripcion</th>
             <th>Asignado por</th>
             <th>Creación</th>
+            <th>Fecha inicio real</th>
+            <th>Fecha cierre real</th>
 
             <th class="text-center">Acciones</th>
         </tr>
@@ -42,6 +44,8 @@
             <td>{{ tarea.descripcion }}</td>
             <td>{{ tarea.created_by|nombre_usuario }}</td>
             <td>{{ tarea.created_at|date:'d/m/Y' }}</td>
+            <td>{{ tarea.fecha_inicio_real|date:'d/m/Y' }}</td>
+            <td>{{ tarea.fecha_cierre|date:'d/m/Y' }}</td>
             <td class="text-center text-nowrap">
                 
                 {% if tarea.estado < 3 or tarea.estado == 4 %}                    
