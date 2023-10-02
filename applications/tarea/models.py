@@ -32,6 +32,7 @@ class Tarea(models.Model):
     fecha_inicio = models.DateField('Fecha Inicio', blank=True, null=True)
     fecha_limite = models.DateField('Fecha Limite', blank=True, null=True)
     fecha_cierre = models.DateField('Fecha Cierre', blank=True, null=True)
+    fecha_inicio_real = models.DateField('Fecha Inicio Real', blank=True, null=True)
     tipo_tarea = models.ForeignKey(TipoTarea, on_delete=models.PROTECT, related_name='TipoTarea')
     descripcion = models.TextField('Descripción')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='Área',blank=True, null=True)

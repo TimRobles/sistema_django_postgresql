@@ -43,15 +43,41 @@ class TareaBuscarForm(forms.Form):
         )
     estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADO_TAREA, required=False)
     tipo_tarea = forms.ModelChoiceField(queryset=TipoTarea.objects.all(), required=False)
-
+    fecha_inicio_real = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )    
+    
+    fecha_cierre= forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
     def __init__(self, *args, **kwargs):
         filtro_fecha_inicio = kwargs.pop('filtro_fecha_inicio')
         filtro_estado = kwargs.pop('filtro_estado')
         filtro_tipo_tarea = kwargs.pop('filtro_tipo_tarea')
+
+        filtro_fecha_inicio_real = kwargs.pop('filtro_fecha_inicio_real')
+        filtro_fecha_cierre= kwargs.pop('filtro_fecha_cierre')
+
         super(TareaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['fecha_inicio'].initial = filtro_fecha_inicio
         self.fields['estado'].initial = filtro_estado
         self.fields['tipo_tarea'].initial = filtro_tipo_tarea
+
+        self.fields['fecha_inicio_real'].initial = filtro_fecha_inicio_real
+        self.fields['fecha_cierre'].initial = filtro_fecha_cierre
+    
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

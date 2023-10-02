@@ -4,7 +4,7 @@ from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.crm.models import EventoCRM
 from applications.clientes.models import Cliente
-
+from django.utils import timezone
 
 from applications.funciones import registrar_excepcion
 
@@ -131,6 +131,9 @@ class TareaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
         kwargs['filtro_tipo_tarea'] = self.request.GET.get('tipo_tarea')
 
+        kwargs['filtro_fecha_inicio_real'] = self.request.GET.get('fecha_inicio_real')
+        kwargs['filtro_fecha_cierre'] = self.request.GET.get('fecha_cierre')
+
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -140,6 +143,9 @@ class TareaListView(PermissionRequiredMixin, FormView):
         filtro_estado = self.request.GET.get('estado')
         filtro_fecha_inicio = self.request.GET.get('fecha_inicio')
         filtro_tipo_tarea = self.request.GET.get('tipo_tarea')
+
+        filtro_fecha_inicio_real = self.request.GET.get('fecha_inicio_real')
+        filtro_fecha_cierre = self.request.GET.get('fecha_cierre')
         
         contexto_filtro = []   
         
@@ -157,6 +163,18 @@ class TareaListView(PermissionRequiredMixin, FormView):
             condicion = Q(tipo_tarea = filtro_tipo_tarea)
             tarea = tarea.filter(condicion)
             contexto_filtro.append(f"tipo_tarea={filtro_tipo_tarea}")
+
+
+        if filtro_fecha_inicio_real:
+            condicion = Q(fecha_inicio_real = filtro_fecha_inicio_real)
+            tarea = tarea.filter(condicion)
+            contexto_filtro.append(f"fecha_inicio_real={filtro_fecha_inicio_real}")
+
+        if filtro_fecha_cierre:
+            condicion = Q(fecha_cierre = filtro_fecha_cierre)
+            tarea = tarea.filter(condicion)
+            contexto_filtro.append(f"fecha_cierre={filtro_fecha_cierre}")
+
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -188,6 +206,10 @@ def TareaTabla(request):
 
         filtro_estado = request.GET.get('estado')
         filtro_fecha_inicio = request.GET.get('fecha_inicio')
+        filtro_tipo_tarea = request.GET.get('tipo_tarea')
+
+        filtro_fecha_inicio_real = request.GET.get('fecha_inicio_real')
+        filtro_fecha_cierre = request.GET.get('fecha_cierre')
 
         contexto_filtro = []
 
@@ -200,6 +222,22 @@ def TareaTabla(request):
             condicion = Q(fecha_inicio = filtro_fecha_inicio)
             tarea = tarea.filter(condicion)
             contexto_filtro.append(f"fecha_inicio={filtro_fecha_inicio}")
+            
+        if filtro_tipo_tarea:
+            condicion = Q(tipo_tarea = filtro_tipo_tarea)
+            tarea = tarea.filter(condicion)
+            contexto_filtro.append(f"tipo_tarea={filtro_tipo_tarea}")
+
+        if filtro_fecha_inicio_real:
+            condicion = Q(fecha_inicio_real = filtro_fecha_inicio_real)
+            tarea = tarea.filter(condicion)
+            contexto_filtro.append(f"fecha_inicio_real={filtro_fecha_inicio_real}")
+            
+        if filtro_fecha_cierre:
+            condicion = Q(fecha_cierre = filtro_fecha_cierre)
+            tarea = tarea.filter(condicion)
+            contexto_filtro.append(f"fecha_cierre={filtro_fecha_cierre}")
+
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -447,6 +485,7 @@ class TareaFinalizarUpdateView(BSModalDeleteView):
         try:
             self.object = self.get_object()
             self.object.estado = 3
+            self.object.fecha_cierre = timezone.now()
             registro_guardar(self.object, self.request)
             self.object.save()
  
@@ -476,6 +515,7 @@ class TareaIniciarUpdateView(BSModalDeleteView):
         try:
             self.object = self.get_object()
             self.object.estado = 2
+            self.object.fecha_inicio_real = timezone.now()
             registro_guardar(self.object, self.request)
             self.object.save()
  
