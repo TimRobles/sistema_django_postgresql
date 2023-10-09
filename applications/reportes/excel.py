@@ -1660,5 +1660,5 @@ def dataReporteRotacion(sociedad=None):
     
 def ReporteRotacionCorregido(sociedad):
     
-    wb=dataReporteRotacion(sociedad)
+    wb=dataReporteRotacion2(sociedad)
     return wb

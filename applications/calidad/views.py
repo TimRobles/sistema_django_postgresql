@@ -3555,7 +3555,7 @@ class EntradaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalF
     
 
 class EntradaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('calidad.change_transformacionproductosdetalle')
+    permission_required = ('calidad.change_entradatransformacionproductos')
     model = EntradaTransformacionProductos
     template_name = "calidad/transformacion_productos/form_material.html"
     form_class = EntradaTransformacionProductosForm
@@ -3593,7 +3593,7 @@ class EntradaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalU
 
 
 class EntradaTransformacionProductosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('calidad.delete_transformacionproductosdetalle')
+    permission_required = ('calidad.delete_entradatransformacionproductos')
     model = EntradaTransformacionProductos
     template_name = "includes/eliminar generico.html"
 
@@ -3786,7 +3786,7 @@ class SalidaTransformacionProductosCreateView(PermissionRequiredMixin, BSModalFo
     
 
 class SalidaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('calidad.change_transformacionproductosdetalle')
+    permission_required = ('calidad.change_entradatransformacionproductos')
     model = SalidaTransformacionProductos
     template_name = "calidad/transformacion_productos/form_material.html"
     form_class = SalidaTransformacionProductosForm
@@ -3816,7 +3816,7 @@ class SalidaTransformacionProductosUpdateView(PermissionRequiredMixin, BSModalUp
 
 
 class SalidaTransformacionProductosDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('calidad.delete_transformacionproductosdetalle')
+    permission_required = ('calidad.delete_entradatransformacionproductos')
     model = SalidaTransformacionProductos
     template_name = "includes/eliminar generico.html"
 

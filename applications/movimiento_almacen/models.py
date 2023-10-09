@@ -1,9 +1,12 @@
+from datetime import date
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from applications.almacenes.models import Almacen
 from applications.movimiento_almacen.managers import MovimientoAlmacenManager
 from applications.sociedad.models import Sociedad
+from django.db.models.signals import pre_save, post_save, post_delete
+from django.utils import timezone
 
 # Create your models here.
 class TipoStock(models.Model):
@@ -61,6 +64,7 @@ class MovimientosAlmacen(models.Model):
     tipo_movimiento = models.ForeignKey(TipoMovimiento, on_delete=models.PROTECT)
     tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
     signo_factor_multiplicador = models.IntegerField('Signo Factor Multiplicador', choices=SIGNOS)
+    fecha_documento = models.DateField(auto_now=False, auto_now_add=False, default=timezone.now)
     content_type_documento_proceso = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='MovimientosAlmacen_content_type_documento_proceso')
     id_registro_documento_proceso = models.IntegerField()
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)
@@ -107,3 +111,12 @@ class MovimientosAlmacen(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+def guardar_fecha_movimiento_documento(*args, **kwargs):
+    obj = kwargs['instance']
+    if obj.fecha_documento != obj.fecha:
+        obj.fecha_documento = obj.fecha
+        obj.save()
+
+post_save.connect(guardar_fecha_movimiento_documento, sender=MovimientosAlmacen)
