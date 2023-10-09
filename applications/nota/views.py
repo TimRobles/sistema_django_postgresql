@@ -9,7 +9,7 @@ from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.datos_globales.models import DocumentoFisico, NubefactRespuesta, SeriesComprobante, TipoCambio
 from applications.importaciones import *
 from django.core.paginator import Paginator
-from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento
+from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 from applications.nota.forms import NotaCreditoAnularForm, NotaCreditoBuscarForm, NotaCreditoCrearForm, NotaCreditoCuotaForm, NotaCreditoDescripcionForm, NotaCreditoDetalleForm, NotaCreditoGenerarCuotasForm, NotaCreditoMaterialDetalleForm, NotaCreditoObservacionForm, NotaCreditoSerieForm, NotaCreditoTipoForm, NotaDevolucionBuscarForm, NotaDevolucionDetalleForm, NotaDevolucionObservacionForm
 from applications.nota.models import NotaCredito, NotaCreditoCuota, NotaCreditoDetalle, NotaDevolucion, NotaDevolucionDetalle
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales, registrar_excepcion, slug_aleatorio, tipo_de_cambio
@@ -1244,6 +1244,10 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                 self.nota_devolucion = self.get_object()
                 movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
                 for detalle in self.nota_devolucion.detalles:
+                    if not detalle.producto.control_calidad:
+                        tipo_stock_final = TipoStock.objects.get(codigo=3) # DISPONIBLE
+                    else:
+                        tipo_stock_final = movimiento_final.tipo_stock_final
                     movimiento_uno = MovimientosAlmacen.objects.create(
                         content_type_producto = detalle.content_type,
                         id_registro_producto = detalle.id_registro,
@@ -1265,7 +1269,7 @@ class FinalizarNotaDevolucionView(PermissionRequiredMixin, BSModalDeleteView):
                         id_registro_producto = detalle.id_registro,
                         cantidad = detalle.cantidad,
                         tipo_movimiento = movimiento_final,
-                        tipo_stock = movimiento_final.tipo_stock_final,
+                        tipo_stock = tipo_stock_final,
                         signo_factor_multiplicador = +1,
                         content_type_documento_proceso = ContentType.objects.get_for_model(self.nota_devolucion),
                         id_registro_documento_proceso = self.nota_devolucion.id,
@@ -1309,6 +1313,42 @@ class NotaDevolucionDeleteView(PermissionRequiredMixin, BSModalDeleteView):
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('nota_app:nota_devolucion_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            nota_devolucion = self.get_object()
+            movimiento_final = TipoMovimiento.objects.get(codigo=159) #Devolución por Nota de Crédito
+            for detalle in nota_devolucion.detalles:
+                if not detalle.producto.control_calidad:
+                    tipo_stock_final = TipoStock.objects.get(codigo=3) # DISPONIBLE
+                else:
+                    tipo_stock_final = movimiento_final.tipo_stock_final
+                movimiento_dos = MovimientosAlmacen.objects.get(
+                    content_type_producto = detalle.content_type,
+                    id_registro_producto = detalle.id_registro,
+                    cantidad = detalle.cantidad,
+                    tipo_movimiento = movimiento_final,
+                    tipo_stock = tipo_stock_final,
+                    signo_factor_multiplicador = +1,
+                    content_type_documento_proceso = ContentType.objects.get_for_model(nota_devolucion),
+                    id_registro_documento_proceso = nota_devolucion.id,
+                    almacen = detalle.almacen,
+                    sociedad = nota_devolucion.sociedad,
+                )
+                movimiento_uno = movimiento_dos.movimiento_anterior
+
+                movimiento_dos.delete()
+                movimiento_uno.delete()
+            return super().delete(request, *args, **kwargs)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            print('*************')
+            print(ex)
+            print('*************')
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
         
     def get_context_data(self, **kwargs):
         context = super(NotaDevolucionDeleteView, self).get_context_data(**kwargs)
