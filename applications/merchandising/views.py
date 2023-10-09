@@ -3606,7 +3606,7 @@ def ComprobanteCompraMerchandisingTabla(request):
 
 
 class ComprobanteCompraMerchandisingDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('merchandising.view_comprobantecompramerchandising')
+    permission_required = ('merchandising.view_recepcioncompramerchandising')
 
     model = ComprobanteCompraMerchandising
     template_name = "merchandising/comprobante_compra/detalle.html"
@@ -3636,7 +3636,7 @@ class ComprobanteCompraMerchandisingDetailView(PermissionRequiredMixin, DetailVi
                                                     )
         except:
             context['contexto_recepcion_compra'] = None
-        if 'merchandising.view_comprobantecompramerchandising' in self.request.user.get_all_permissions():
+        if 'merchandising.view_recepcioncompramerchandising' in self.request.user.get_all_permissions():
             context['permiso_compras'] = True
         if 'merchandising.add_recepcioncompramerchandising' in self.request.user.get_all_permissions():
             context['permiso_logistica'] = True
@@ -3894,7 +3894,9 @@ class RecepcionComprobanteCompraMerchandisingView(BSModalFormView):
         return context
 
 
-class RecepcionCompraMerchandisingDetailView(DetailView):
+class RecepcionCompraMerchandisingDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('merchandising.view_recepcioncompramerchandising')
+
     model = RecepcionCompraMerchandising
     template_name = "merchandising/recepcion_compra/recepcion_compra/detalle.html"
     context_object_name = 'contexto_recepcion_compra'
