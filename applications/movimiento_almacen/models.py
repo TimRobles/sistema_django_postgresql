@@ -64,7 +64,7 @@ class MovimientosAlmacen(models.Model):
     tipo_movimiento = models.ForeignKey(TipoMovimiento, on_delete=models.PROTECT)
     tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
     signo_factor_multiplicador = models.IntegerField('Signo Factor Multiplicador', choices=SIGNOS)
-    fecha_documento = models.DateField(auto_now=False, auto_now_add=False, default=timezone.now)
+    fecha_documento = models.DateField(auto_now=False, auto_now_add=False, default=timezone.now, null=True)
     content_type_documento_proceso = models.ForeignKey(ContentType, on_delete=models.PROTECT, related_name='MovimientosAlmacen_content_type_documento_proceso')
     id_registro_documento_proceso = models.IntegerField()
     almacen = models.ForeignKey(Almacen, on_delete=models.PROTECT, blank=True, null=True)

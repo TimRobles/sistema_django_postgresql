@@ -272,7 +272,6 @@ class EnvioTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDeleteVie
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
-
                 for validar in detalle.ValidarSerieEnvioTrasladoProductoDetalle_envio_traslado_producto_detalle.all():
                     validar.serie.serie_movimiento_almacen.add(movimiento_uno)
                     validar.serie.serie_movimiento_almacen.add(movimiento_dos)
