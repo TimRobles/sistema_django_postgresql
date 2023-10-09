@@ -316,6 +316,11 @@ class ReunionesCreateView(PermissionRequiredMixin, BSModalCreateView):
     template_name = "includes/formulario generico.html"
     form_class = ReunionesForm
     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_reuniones', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -441,6 +446,11 @@ class VisitasCreateView(PermissionRequiredMixin, BSModalCreateView):
     template_name = "includes/formulario generico.html"
     form_class = VisitasForm
     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+   
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_visitas', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -543,6 +553,11 @@ class LlamadasCreateView(PermissionRequiredMixin, BSModalCreateView):
     template_name = "includes/formulario generico.html"
     form_class = LlamadasForm
     
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+        
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_llamadas', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -643,7 +658,12 @@ class CorreosCreateView(PermissionRequiredMixin, BSModalCreateView):
     model = ClienteCRMDetalle
     template_name = "includes/formulario generico.html"
     form_class = CorreosForm
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+        
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_correos', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -744,7 +764,12 @@ class EventosCreateView(PermissionRequiredMixin, BSModalCreateView):
     model = ClienteCRMDetalle
     template_name = "includes/formulario generico.html"
     form_class = EventosForm
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_eventos', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -846,7 +871,12 @@ class SoporteTecnicoCreateView(PermissionRequiredMixin, BSModalCreateView):
     model = ClienteCRMDetalle
     template_name = "includes/formulario generico.html"
     form_class = SoporteTecnicoForm
-    
+ 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+        
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_soporte_tecnico', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -948,7 +978,12 @@ class CaracteristicasTecnicasCreateView(PermissionRequiredMixin, BSModalCreateVi
     model = ClienteCRMDetalle
     template_name = "includes/formulario generico.html"
     form_class = CaracteristicasTecnicasForm
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_caracteristicas_tecnicas', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -1050,7 +1085,12 @@ class NuevosProductosSolicitadosCreateView(PermissionRequiredMixin, BSModalCreat
     model = ClienteCRMDetalle
     template_name = "includes/formulario generico.html"
     form_class = NuevosProductosSolicitadosForm
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:detalle_nuevos_productos_solicitados', kwargs={'pk':self.kwargs['cliente_crm_id']})
 
@@ -1212,7 +1252,9 @@ class ProveedorCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
         return super().form_valid(form)
     
 
-class EventoCRMListView(FormView):
+class EventoCRMListView(PermissionRequiredMixin, FormView):
+    permission_required = ('crm.view_eventocrm')
+
     template_name = "crm/eventos_crm/inicio.html"
     form_class = EventoCRMBuscarForm
     success_url = '.'
@@ -1328,11 +1370,18 @@ def EventoCRMTabla(request):
         return JsonResponse(data)
 
 
-class EventoCRMCreateView(BSModalCreateView):
+class EventoCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('crm.add_eventocrm')
+
     model = EventoCRM
     template_name = "includes/formulario generico.html"
     form_class = EventoCRMForm
     success_url = reverse_lazy('crm_app:evento_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
@@ -1345,12 +1394,19 @@ class EventoCRMCreateView(BSModalCreateView):
         return context
 
 
-class EventoCRMUpdateView(BSModalUpdateView):
+class EventoCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_eventocrm')
+
     model = EventoCRM
     template_name = "includes/formulario generico.html"
     form_class = EventoCRMForm
     success_url = reverse_lazy('crm_app:evento_crm_inicio')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
@@ -1362,9 +1418,16 @@ class EventoCRMUpdateView(BSModalUpdateView):
         return context
 
 
-class EventoCRMGuardarView(BSModalDeleteView):
+class EventoCRMGuardarView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_eventocrm')
+
     model = EventoCRM
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.object.id})
@@ -1452,7 +1515,8 @@ class EventoCRMFinalizarView(PermissionRequiredMixin, BSModalUpdateView):
         context['titulo']="Evento CRM"
         return context
 
-class EventoCRMDetailView(DetailView):
+class EventoCRMDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('crm.view_eventocrmdetalle')
     model = EventoCRM
     template_name = "crm/eventos_crm/detalle.html"
     context_object_name = 'contexto_evento_crm'
@@ -1475,7 +1539,6 @@ class EventoCRMDetailView(DetailView):
         context['merchandisings'] = merchandisings
         
         return context
-
 
 def EventoCRMDetailTabla(request, pk):
     data = dict()
@@ -1505,11 +1568,17 @@ def EventoCRMDetailTabla(request, pk):
         )
         return JsonResponse(data)
 
+class  EventoCRMDetalleDescripcionView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('crm.change_eventocrm')
 
-class  EventoCRMDetalleDescripcionView(BSModalUpdateView):
     model = EventoCRM
     template_name = "includes/formulario generico.html"
     form_class = EventoCRMDetalleDescripcionForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.object.id})
@@ -1556,10 +1625,17 @@ class  EventoCRMActualizarView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 
-class EventoCRMEliminarDeleteView(BSModalDeleteView):
+class EventoCRMEliminarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_eventocrm')
+
     model = EventoCRM
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('crm_app:evento_crm_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(EventoCRMEliminarDeleteView, self).get_context_data(**kwargs)
@@ -1746,7 +1822,7 @@ class  EventoCRMDetalleMerchandisingUpdateView(PermissionRequiredMixin, BSModalU
 
 
 class EventoCRMDetalleMerchandisingDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('crm.change_eventocrmdetalle')
+    permission_required = ('crm.delete_eventocrmdetalle')
     model = EventoCRMDetalle
     template_name = "includes/eliminar generico.html"
 
@@ -1788,7 +1864,12 @@ class EventoCRMDetalleInformacionAdicionalCreateView(PermissionRequiredMixin, BS
     model = EventoCRMDetalleInformacionAdicional
     template_name = "includes/formulario generico.html"
     form_class = EventoCRMDetalleInformacionAdicionalForm
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.kwargs['evento_crm_id']})
 
@@ -1852,9 +1933,15 @@ class EventoCRMDetalleInformacionAdicionalDeleteView(PermissionRequiredMixin, BS
         return context
     
 
-class EventoCRMGenerarGuiaView(BSModalDeleteView):
+class EventoCRMGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('crm.delete_eventocrmdetalle')
     model = EventoCRM
     template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('comprobante_despacho_app:guia_detalle', kwargs={'id_guia':self.kwargs['guia'].id})
@@ -2124,7 +2211,7 @@ def PreguntaCRMDetailTabla(request, pk):
 
 
 class AlternativaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('crm.add_preguntacrm')
+    permission_required = ('crm.add_alternativacrm')
     model = AlternativaCRM
     template_name = "includes/formulario generico.html"
     form_class = AlternativaCRMForm
@@ -2148,7 +2235,7 @@ class AlternativaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 
 class AlternativaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('crm.change_preguntacrm')
+    permission_required = ('crm.change_alternativacrm')
     model = AlternativaCRM
     template_name = "includes/formulario generico.html"
     form_class = AlternativaCRMForm
@@ -2174,7 +2261,7 @@ class AlternativaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class AlternativaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('crm.delete_preguntacrm')
+    permission_required = ('crm.delete_alternativacrm')
     model = AlternativaCRM
     template_name = "includes/eliminar generico.html"
 
@@ -2320,7 +2407,7 @@ def EncuestaCRMTabla(request):
 
 
 class EncuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('crm.add_preguntacrm')
+    permission_required = ('crm.add_encuestacrm')
     model = EncuestaCRM
     template_name = "includes/formulario generico.html"
     form_class = EncuestaCRMForm
@@ -2344,7 +2431,7 @@ class EncuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 
 class EncuestaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('crm.change_preguntacrm')
+    permission_required = ('crm.change_encuestacrm')
     model = EncuestaCRM
     template_name = "includes/formulario generico.html"
     form_class = EncuestaCRMForm
@@ -2384,7 +2471,7 @@ class EncuestaCRMDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 class EncuestaCRMDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('crm.add_preguntacrm')
+    permission_required = ('crm.view_encuestacrm')
     model = EncuestaCRM
     template_name = "crm/encuestas_crm/encuesta/detalle.html"
     context_object_name = 'contexto_encuesta_crm'
@@ -2686,7 +2773,6 @@ class RespuestaVerView(TemplateView): #respuesta_del_cliente | encuesta para el 
 
 
 class EncuestaRespuesta(View): #encuesta
-    # permission_required = ('crm.view_encuestacrm')
 
     def post(self, request, *args, **kwargs):
         respuesta_id = int(request.POST.get('respuesta'))

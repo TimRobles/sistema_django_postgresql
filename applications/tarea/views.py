@@ -377,10 +377,16 @@ def TareaDetailTabla(request, pk):
         return JsonResponse(data)
 
 
-class  TareaDetalleDescripcionView(BSModalUpdateView):
+class  TareaDetalleDescripcionView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('tarea.change_tarea')
     model = Tarea
     template_name = "includes/formulario generico.html"
     form_class = TareaDescripcionForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
@@ -394,11 +400,17 @@ class  TareaDetalleDescripcionView(BSModalUpdateView):
         context['accion'] = "Actualizar"
         return context
 
-class TareaDetalleHistorialComentarioCreateView(BSModalCreateView):
+class TareaDetalleHistorialComentarioCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('tarea.add_tarea')
     model = HistorialComentarioTarea
     template_name = "includes/formulario generico.html"
     form_class = HistorialComentarioTareaForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.kwargs['tarea_id']})
     
@@ -414,11 +426,17 @@ class TareaDetalleHistorialComentarioCreateView(BSModalCreateView):
         context['titulo']="Comentario"
         return context
 
-class TareaDetalleHistorialComentarioUpdateView(BSModalUpdateView):
+class TareaDetalleHistorialComentarioUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('tarea.change_tarea')
     model = HistorialComentarioTarea
     template_name = "includes/formulario generico.html"
     form_class = HistorialComentarioTareaForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
     
@@ -432,11 +450,17 @@ class TareaDetalleHistorialComentarioUpdateView(BSModalUpdateView):
         context['titulo']="Comentarios"
         return context
 
-class TareaDetalleHistorialComentarioDeleteView(BSModalDeleteView):
+class TareaDetalleHistorialComentarioDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('tarea.delete_tarea')
     model = HistorialComentarioTarea
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('tarea_app:tarea_detalle')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
     
@@ -447,10 +471,16 @@ class TareaDetalleHistorialComentarioDeleteView(BSModalDeleteView):
         return context
 
 
-class TareaAsignarEventoView(BSModalUpdateView):
+class TareaAsignarEventoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('tarea.change_tarea')
     model = Tarea
     template_name = "tarea/tarea/asignar.html"
     form_class = TareaAsignarEventoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
@@ -472,13 +502,19 @@ class TareaAsignarEventoView(BSModalUpdateView):
         context['titulo']="Evento"
         return context
 
-class TareaFinalizarUpdateView(BSModalDeleteView):
+class TareaFinalizarUpdateView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('tarea.delete_tarea')    
     model = Tarea
     template_name ="includes/form generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
-    
+
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
         sid = transaction.savepoint()
@@ -502,9 +538,15 @@ class TareaFinalizarUpdateView(BSModalDeleteView):
         context['item'] = self.get_object()
         return context
 
-class TareaIniciarUpdateView(BSModalDeleteView):
+class TareaIniciarUpdateView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('tarea.delete_tarea')    
     model = Tarea
     template_name ="includes/form generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
@@ -532,11 +574,17 @@ class TareaIniciarUpdateView(BSModalDeleteView):
         context['item'] = self.get_object()
         return context
 
-class TareaRegistrarTipoTareaCreateView(BSModalCreateView):
+class TareaRegistrarTipoTareaCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('tarea.add_tarea')        
     model = TipoTarea
     template_name = "includes/formulario generico.html"
     form_class = TipoTareaForm
     success_url = reverse_lazy('tarea_app:tarea_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(TareaRegistrarTipoTareaCreateView, self).get_context_data(**kwargs)
@@ -550,10 +598,16 @@ class TareaRegistrarTipoTareaCreateView(BSModalCreateView):
 
         return super().form_valid(form)
 
-class TareaEliminarDeleteView(BSModalDeleteView):
+class TareaEliminarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('tarea.delete_tarea')    
     model = Tarea
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('tarea_app:tarea_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(TareaEliminarDeleteView, self).get_context_data(**kwargs)
@@ -561,10 +615,16 @@ class TareaEliminarDeleteView(BSModalDeleteView):
         context['titulo']="Tarea"
         return context
 
-class TareaReaperturaUpdateView(BSModalDeleteView):
+class TareaReaperturaUpdateView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('tarea.delete_tarea')    
     model = Tarea
     template_name ="includes/form generico.html"
     success_url = reverse_lazy('tarea_app:tarea_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -589,10 +649,16 @@ class TareaReaperturaUpdateView(BSModalDeleteView):
         return context
     
 
-class TareaAsignarClienteView(BSModalUpdateView):
+class TareaAsignarClienteView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('tarea.change_tarea')
     model = Tarea
     template_name ="includes/formulario generico.html"
     form_class = TareaAsignarClienteForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
         return reverse_lazy('tarea_app:tarea_detalle', kwargs={'pk':self.object.id})
@@ -614,10 +680,16 @@ class TareaAsignarClienteView(BSModalUpdateView):
         context['titulo']="Cliente"
         return context
     
-class TipoTareaEliminarDeleteView(BSModalDeleteView):
+class TipoTareaEliminarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('tarea.delete_tarea')    
     model = TipoTarea
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('tarea_app:tipo_tarea_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(TipoTareaEliminarDeleteView, self).get_context_data(**kwargs)
