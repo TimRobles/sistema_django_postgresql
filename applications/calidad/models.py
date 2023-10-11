@@ -13,6 +13,7 @@ from applications.almacenes.models import Almacen
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, SERIE_CONSULTA
+from django.db.models.signals import pre_save, post_save, post_delete
 
 from django.db.models.signals import pre_delete, post_delete
 
@@ -178,11 +179,11 @@ class Serie(models.Model):
             print("*******************************")
 
     @property
-    def almacen(self):
+    def almacen_latest(self):
         if self.serie_movimiento_almacen.all():
             return self.serie_movimiento_almacen.latest('id').almacen
         else:
-            return ""
+            return None
 
     @property
     def tipo_stock(self):
@@ -226,6 +227,15 @@ class Serie(models.Model):
 
     def __str__(self):
         return str(self.serie_base)
+
+
+def guardar_almacen_serie(*args, **kwargs):
+    obj = kwargs['instance']
+    if obj.almacen_temporal != obj.almacen_latest:
+        obj.almacen_temporal = obj.almacen_latest
+        obj.save()
+
+post_save.connect(guardar_almacen_serie, sender=Serie)
 
 
 class SerieCalidad(models.Model):
