@@ -15,7 +15,8 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
 from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, SERIE_CONSULTA
 from django.db.models.signals import pre_save, post_save, post_delete
 
-from django.db.models.signals import pre_delete, post_delete
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 class FallaMaterial(models.Model):
     sub_familia = models.ForeignKey(SubFamilia, on_delete=models.CASCADE, related_name='FallaMaterial_sub_familia')
@@ -229,13 +230,13 @@ class Serie(models.Model):
         return str(self.serie_base)
 
 
-def guardar_almacen_serie(*args, **kwargs):
-    obj = kwargs['instance']
-    if obj.almacen != obj.almacen_latest:
-        obj.almacen = obj.almacen_latest
-        obj.save()
-
-post_save.connect(guardar_almacen_serie, sender=Serie)
+@receiver(m2m_changed, sender=Serie.serie_movimiento_almacen.through)
+def actualizar_almacen(sender, instance, action, **kwargs):
+    if action in ['post_add', 'post_remove', 'post_clear']:
+        # Verifica si el almacén actual es diferente al almacén del último movimiento
+        if instance.almacen != instance.almacen_latest:
+            instance.almacen = instance.almacen_latest
+            instance.save()
 
 
 class SerieCalidad(models.Model):
