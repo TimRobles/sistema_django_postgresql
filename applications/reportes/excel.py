@@ -7,6 +7,7 @@ from applications.comprobante_compra.models import ComprobanteCompraPI, Comproba
 from applications.funciones import numeroXn
 from applications.importaciones import *
 from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.styles import *
 from openpyxl.styles.borders import Border, Side
@@ -1315,331 +1316,118 @@ def dataReporteRotacion(sociedad=None):
     lista_tipo_stock = [2,3,4,5,16,17,22,]
     # Recibido 2, Disponible 3, bloqueo sin serie 4, bloqueo sin qa 5, reservado 16, confirmado 17, prestado 22,
     # Recepcion compra 101, confirmacion por venta 120
-    materiales = Material.objects.filter(
-            mostrar=True,
-        ).annotate(
-            familia_material=F('subfamilia__familia__nombre'),
-        ).order_by('familia_material', 'descripcion_corta', 'descripcion_venta')
-    
-    stock = MovimientosAlmacen.objects.filter(
+    movimientos = MovimientosAlmacen.objects.filter(
+        tipo_stock__codigo__in=lista_tipo_stock,
         content_type_producto=ContentType.objects.get_for_model(Material),
-        tipo_stock__codigo__in=[3, 5, 36]
-    ).values('id_registro_producto').annotate(
-        stock=Sum(ExpressionWrapper(
-            F('cantidad') * F('signo_factor_multiplicador'),
-            output_field=FloatField()
-        ))
     )
-    
-    subquery_precio_pedido = ComprobanteCompraPIDetalle.objects.filter(
-        orden_compra_detalle__content_type_id=ContentType.objects.get_for_model(Material),
-        orden_compra_detalle__id_registro=OuterRef('orden_compra_detalle__id_registro'),
-    ).order_by('-created_at').values('precio_final_con_igv')[:1]
-    subquery_fecha_pedido = RecepcionCompra.objects.filter(
-        content_type=ContentType.objects.get_for_model(ComprobanteCompraPI),
-        id_registro=OuterRef('comprobante_compra__id'),
-    ).order_by('-fecha_recepcion').values('fecha_recepcion')[:1]
-
-    pedidos = ComprobanteCompraPIDetalle.objects.filter(
-        orden_compra_detalle__content_type_id=ContentType.objects.get_for_model(Material),
-    ).values(
-        'orden_compra_detalle__id_registro',
-    ).annotate(
-        precio_pedido=Subquery(subquery_precio_pedido),
-        fecha_pedido=Subquery(subquery_fecha_pedido),
-    )
-
-    six_months_ago = datetime.now() - timedelta(days=180)
-
-    rotacion_6ultimos_factura = FacturaVentaDetalle.objects.filter(
-        content_type=ContentType.objects.get_for_model(Material),
-        factura_venta__fecha_emision__gte=six_months_ago,
-        factura_venta__estado='4'
-    ).exclude(
-        id_registro=None,
-    ).values('id_registro').annotate(
-        venta_6_meses=ExpressionWrapper(
-            Sum('cantidad') / 6,
-            output_field=FloatField()
-        ),
-    )
-    
-    rotacion_6ultimos_boleta = BoletaVentaDetalle.objects.filter(
-        content_type=ContentType.objects.get_for_model(Material),
-        boleta_venta__fecha_emision__gte=six_months_ago,
-        boleta_venta__estado='4'
-    ).exclude(
-        id_registro=None,
-    ).values('id_registro').annotate(
-        venta_6_meses=ExpressionWrapper(
-            Sum('cantidad') / 6,
-            output_field=FloatField()
-        ),
-    )
-    
-    rotacion_factura = FacturaVentaDetalle.objects.filter(
-        content_type=ContentType.objects.get_for_model(Material),
-        factura_venta__estado='4',
-    ).exclude(
-        id_registro=None,
-    ).values('id_registro').annotate(
-        venta_total=Sum('cantidad'),
-        venta_mensual=ExpressionWrapper(
-            Sum('cantidad') / Case(
-                When(created_at=F('factura_venta__created_at'), then=1),
-                default=Sum('cantidad'),
-                output_field=FloatField()
-            ),
-            output_field=FloatField()
-        ),
-    )
-    
-    rotacion_boleta = BoletaVentaDetalle.objects.filter(
-        content_type=ContentType.objects.get_for_model(Material),
-        boleta_venta__estado='4',
-    ).exclude(
-        id_registro=None,
-    ).values('id_registro').annotate(
-        venta_total=Sum('cantidad'),
-        venta_mensual=ExpressionWrapper(
-            Sum('cantidad') / Case(
-                When(created_at=F('boleta_venta__created_at'), then=1),
-                default=Sum('cantidad'),
-                output_field=FloatField()
-            ),
-            output_field=FloatField()
-        ),
-    )
-
-    venta_desde_ultimo_pedido_factura = FacturaVentaDetalle.objects.annotate(
-        venta_desde_ultimo_pedido=ExpressionWrapper(
-            Sum('cantidad') / Case(
-                When(
-                    created_at=F('factura_venta__created_at'),
-                    then=1
-                ),
-                default=Sum('cantidad'),
-                output_field=FloatField()
-            ),
-            output_field=FloatField()
+    if sociedad:
+        movimientos = movimientos.filter(
+            sociedad=sociedad,
         )
-    ).filter(
-        content_type=ContentType.objects.get_for_model(Material),
-        created_at=F('factura_venta__created_at'),
-        factura_venta__estado='4'
-    ).values(
-        'id_registro',
-        'venta_desde_ultimo_pedido'
-    )
-
-    venta_desde_ultimo_pedido_boleta = BoletaVentaDetalle.objects.annotate(
-        venta_desde_ultimo_pedido=ExpressionWrapper(
-            Sum('cantidad') / Case(
-                When(
-                    created_at=F('boleta_venta__created_at'),
-                    then=1
-                ),
-                default=Sum('cantidad'),
-                output_field=FloatField()
-            ),
-            output_field=FloatField()
-        )
-    ).filter(
-        content_type=ContentType.objects.get_for_model(Material),
-        created_at=F('boleta_venta__created_at'),
-        boleta_venta__estado='4'
-    ).values(
-        'id_registro',
-        'venta_desde_ultimo_pedido'
-    )
-
-    id_material = 162
-    print(materiales.filter(id=id_material))
-    try:
-        print(stock.get(id_registro_producto=id_material))
-    except:
-        print("Vacio")
-    try:
-        print(pedidos)
-        print(pedidos.get(orden_compra_detalle__id_registro=id_material))
-    except:
-        print("Vacio")
-    print(six_months_ago)
-    try:
-        print(rotacion_6ultimos_factura.get(id_registro=id_material))
-    except:
-        print("Vacio")
-    try:
-        print(rotacion_6ultimos_boleta.get(id_registro=id_material))
-    except:
-        print("Vacio")
-    try:
-        print(rotacion_factura.get(id_registro=id_material))
-    except:
-        print("Vacio")
-    try:
-        print(rotacion_boleta.get(id_registro=id_material))
-    except:
-        print("Vacio")
-    try:
-        print(venta_desde_ultimo_pedido_factura.get(id_registro=id_material))
-    except:
-        print("Vacio")
-    try:
-        print(venta_desde_ultimo_pedido_boleta.get(id_registro=id_material))
-    except:
-        print("Vacio")
-
-    # resumen = {}
-    # # id, familia, nombre, descripcion, precio, stock,
-    # # venta_total, fecha_inicial, fecha_final, venta_desde_6_meses, fecha_inicio_6_meses, venta_desde_ultimo_ingreso, fecha_ultimo_ingreso
-    # # tiempo_total = fecha_final - fecha_inicial
-    # # ventas_mensuales_del_total = 30 * venta_total / tiempo_total
-    # print("******************************************")
-    # print(len(materiales), datetime.now())
-    # print("******************************************")
-    # for movimiento in movimientos:
-    #     producto = movimiento.producto
-    #     if producto == 'Error': continue
-    #     if not producto in resumen:
-    #         resumen[producto] = {
-    #             'ID':producto.id,
-    #             'FAMILIA':producto.subfamilia.familia.nombre,
-    #             'NOMBRE':producto.descripcion_corta,
-    #             'DESCRIPCION':producto.descripcion_venta,
-    #             'PRECIO':producto.precio_lista,
-    #             'FECHA INICIAL':None,
-    #             'FECHA FINAL':None,
-    #             'VENTA TOTAL':0,
-    #             'FECHA INICIO 6 MESES':None,
-    #             'VENTA 6 MESES':0,
-    #             'FECHA ULTIMO INGRESO':None,
-    #             'VENTA ULTIMO INGRESO':0,
-    #             'INGRESOS':{},
-    #             'VENTAS':{},
-    #             'RECIBIDO':0,
-    #             'DISPONIBLE':0,
-    #             'BLOQUEO SIN SERIE':0,
-    #             'BLOQUEO SIN QA':0,
-    #             'RESERVADO':0,
-    #             'CONFIRMADO':0,
-    #             'PRESTADO':0,
-    #         }
-    #     if movimiento.tipo_movimiento.codigo == 101 and movimiento.tipo_stock.codigo == 2: #Recepción de compra : RECIBIDO
-    #         if not resumen[producto]['FECHA ULTIMO INGRESO']:
-    #             resumen[producto]['FECHA ULTIMO INGRESO'] = movimiento.fecha
-    #         elif resumen[producto]['FECHA ULTIMO INGRESO'] < movimiento.fecha:
-    #             resumen[producto]['FECHA ULTIMO INGRESO'] = movimiento.fecha
-    #         if not movimiento.fecha in resumen[producto]['INGRESOS']: resumen[producto]['INGRESOS'][movimiento.fecha] = 0
-    #         resumen[producto]['INGRESOS'][movimiento.fecha] = resumen[producto]['INGRESOS'][movimiento.fecha] + movimiento.cantidad
-    #     elif movimiento.tipo_movimiento.codigo == 120 and movimiento.tipo_stock.codigo == 17: #Confirmado por venta : CONFIRMADO
-    #         if not resumen[producto]['FECHA INICIAL']:
-    #             resumen[producto]['FECHA INICIAL'] = movimiento.fecha
-    #         elif resumen[producto]['FECHA INICIAL'] > movimiento.fecha:
-    #             resumen[producto]['FECHA INICIAL'] = movimiento.fecha
-    #         resumen[producto]['FECHA FINAL'] = movimiento.fecha
-    #         if movimiento.fecha > date.today() - timedelta(180):
-    #             resumen[producto]['VENTA 6 MESES'] = resumen[producto]['VENTA 6 MESES'] + movimiento.cantidad
-    #             if not resumen[producto]['FECHA INICIO 6 MESES']:
-    #                 resumen[producto]['FECHA INICIO 6 MESES'] = movimiento.fecha
-    #             elif resumen[producto]['FECHA INICIO 6 MESES'] < movimiento.fecha:
-    #                 resumen[producto]['FECHA INICIO 6 MESES'] = movimiento.fecha
-    #         resumen[producto]['VENTA TOTAL'] = resumen[producto]['VENTA TOTAL'] + movimiento.cantidad
-    #         if not movimiento.fecha in resumen[producto]['VENTAS']: resumen[producto]['VENTAS'][movimiento.fecha] = 0
-    #         resumen[producto]['VENTAS'][movimiento.fecha] = resumen[producto]['VENTAS'][movimiento.fecha] + movimiento.cantidad
-
-    #     if movimiento.tipo_stock.codigo == 2:
-    #         resumen[producto]['RECIBIDO'] = resumen[producto]['RECIBIDO'] + movimiento.cantidad
-    #     elif movimiento.tipo_stock.codigo == 3:
-    #         resumen[producto]['DISPONIBLE'] = resumen[producto]['DISPONIBLE'] + movimiento.cantidad
-    #     elif movimiento.tipo_stock.codigo == 4:
-    #         resumen[producto]['BLOQUEO SIN SERIE'] = resumen[producto]['BLOQUEO SIN SERIE'] + movimiento.cantidad
-    #     elif movimiento.tipo_stock.codigo == 5:
-    #         resumen[producto]['BLOQUEO SIN QA'] = resumen[producto]['BLOQUEO SIN QA'] + movimiento.cantidad
-    #     elif movimiento.tipo_stock.codigo == 16:
-    #         resumen[producto]['RESERVADO'] = resumen[producto]['RESERVADO'] + movimiento.cantidad
-    #     elif movimiento.tipo_stock.codigo == 17:
-    #         resumen[producto]['CONFIRMADO'] = resumen[producto]['CONFIRMADO'] + movimiento.cantidad
-    #     elif movimiento.tipo_stock.codigo == 22:
-    #         resumen[producto]['PRESTADO'] = resumen[producto]['PRESTADO'] + movimiento.cantidad
-            
-    # print("******************************************")
-    # print(len(resumen), datetime.now())
-    # print("******************************************")
     
-    # for producto, valores in resumen.items():
-    #     fila = []
-    #     precio_compra = Decimal('0.00')
-    #     if valores['PRECIO']:
-    #         precio_compra = valores['PRECIO'].precio_compra
-    #     stock = valores['DISPONIBLE'] + valores['BLOQUEO SIN SERIE'] + valores['BLOQUEO SIN QA'] - valores['RESERVADO'] - valores['CONFIRMADO'] - valores['PRESTADO']
-    #     if not valores['FECHA INICIAL'] and not valores['FECHA FINAL']:
-    #         tiempo_total = None
-    #     else:
-    #         tiempo_total = (valores['FECHA FINAL'] - valores['FECHA INICIAL']).days
-    #     if tiempo_total:
-    #         ventas_mensuales = 30 * valores['VENTA TOTAL'] / tiempo_total
-    #     else:
-    #         ventas_mensuales = 30 * valores['VENTA TOTAL']
+    # FAMILIA.append(producto.subfamilia.familia.nombre)
+    # NOMBRE.append(producto.descripcion_corta)
+    # DESCRIPCION.append(producto.descripcion_venta)
+    # PRECIO.append(producto.precio_lista)
 
-    #     if valores['FECHA INICIO 6 MESES']:
-    #         tiempo_6_meses = (date.today() - valores['FECHA INICIO 6 MESES']).days
-    #     else:
-    #         tiempo_6_meses = 180
-    #     if tiempo_6_meses:
-    #         promedio_6_meses = 30 * valores['VENTA 6 MESES'] / tiempo_6_meses
-    #     else:
-    #         promedio_6_meses = 30 * valores['VENTA 6 MESES']
+    datos = {}
+    ID = []
+    FECHA = []
+    TIPO_MOVIMIENTO = []
+    TIPO_STOCK = []
+    CANTIDAD = []
+    # FECHA_INICIAL = []
+    # FECHA_FINAL = []
+    # VENTA_TOTAL = []
+    # FECHA_INICIO_6_MESES = []
+    # VENTA_6_MESES = []
+    # FECHA_ULTIMO_INGRESO = []
+    # VENTA_ULTIMO_INGRESO = []
+    # INGRESOS = []
+    # VENTAS = []
+    # RECIBIDO = []
+    # DISPONIBLE = []
+    # BLOQUEO_SIN_SERIE = []
+    # BLOQUEO_SIN_QA = []
+    # RESERVADO = []
+    # CONFIRMADO = []
+    # PRESTADO = []
+    movimientos_valores = movimientos.values_list(
+        'id_registro_producto',
+        'fecha_documento',
+        'tipo_movimiento__codigo',
+        'tipo_stock__codigo',
+        'cantidad',
+        'signo_factor_multiplicador',
+        )
+    
+    # Convierte el diccionario en un DataFrame de Pandas
+    df = pd.DataFrame(movimientos_valores, columns=['ID', 'FECHA', 'TIPO_MOVIMIENTO', 'TIPO_STOCK', 'CANTIDAD', 'FACTOR'])
 
-    #     for fecha, cantidad in valores['VENTAS'].items():
-    #         if not valores['FECHA ULTIMO INGRESO']: valores['FECHA ULTIMO INGRESO'] = valores['FECHA INICIAL']
-    #         if fecha >= valores['FECHA ULTIMO INGRESO']:
-    #             valores['VENTA ULTIMO INGRESO'] = valores['VENTA ULTIMO INGRESO'] + cantidad
-        
-    #     tiempo_ultimo_ingreso = None
-    #     if valores['FECHA ULTIMO INGRESO']:
-    #         tiempo_ultimo_ingreso = (date.today() - valores['FECHA ULTIMO INGRESO']).days
-    #     if tiempo_ultimo_ingreso:
-    #         promedio_ultimo_ingreso = 30 * valores['VENTA ULTIMO INGRESO'] / tiempo_ultimo_ingreso
-    #     else:
-    #         promedio_ultimo_ingreso = 30 * valores['VENTA ULTIMO INGRESO']
+    # Ahora df contiene los datos de la consulta ORM en un DataFrame de Pandas
+    df['FECHA'] = pd.to_datetime(df['FECHA'])
+    print(df)
+    print(df['TIPO_MOVIMIENTO'].unique())
+    print(df['TIPO_STOCK'].unique())
+    print(df['FACTOR'].unique())
 
-    #     venta_promedio_mensual = Decimal(max(promedio_6_meses, promedio_ultimo_ingreso))
+    # Suponiendo que tu DataFrame se llama df
+    # Calcula la fecha actual
+    fecha_actual = datetime.now()
 
-    #     if venta_promedio_mensual:
-    #         tiempo_duracion = stock / venta_promedio_mensual
-    #     else:
-    #         tiempo_duracion = "-"
+    # Función personalizada para calcular STOCK
+    def calcular_stock(group):
+        filtro_stock = group['TIPO_STOCK'].isin([3, 4, 5]) & ~group['TIPO_STOCK'].isin([17, 22])
+        return ((group.loc[filtro_stock, 'CANTIDAD'] * group.loc[filtro_stock, 'FACTOR']).sum() - 
+                (group.loc[~filtro_stock, 'CANTIDAD'] * group.loc[~filtro_stock, 'FACTOR']).sum())
 
-    #     pedido_5_meses = venta_promedio_mensual * 5
+    # Función personalizada para calcular FECHA_VENTA_TOTAL
+    def calcular_fecha_venta_total(group):
+        filtro_venta_total = (group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)
+        return (fecha_actual - group.loc[filtro_venta_total, 'FECHA'].min()).days
 
-    #     if pedido_5_meses == 0:
-    #         sugerencia = 'NO SE VENDIÓ'
-    #     elif pedido_5_meses >= stock:
-    #         sugerencia = 'EVALUAR'
-    #     elif pedido_5_meses < stock:
-    #         sugerencia = 'NO TRAER'
+    # Función personalizada para calcular FECHA_ULTIMO_INGRESO
+    def calcular_fecha_ultimo_ingreso(group):
+        filtro_ultimo_ingreso = (group['TIPO_MOVIMIENTO'] == 101) & (group['TIPO_STOCK'] == 2)
+        return (fecha_actual - group.loc[filtro_ultimo_ingreso, 'FECHA'].max()).days
 
-    #     fila.append(valores['ID'])
-    #     fila.append(valores['FAMILIA'])
-    #     fila.append(valores['NOMBRE'])
-    #     fila.append(valores['DESCRIPCION'])
-    #     fila.append(precio_compra)
-    #     fila.append(stock)
-    #     fila.append(valores['VENTA TOTAL'])
-    #     fila.append(ventas_mensuales)
-    #     fila.append(f"{valores['VENTA 6 MESES']} / {promedio_6_meses}")
-    #     fila.append(f"{valores['VENTA ULTIMO INGRESO']} / {promedio_ultimo_ingreso}")
-    #     fila.append(promedio_ultimo_ingreso)
-    #     fila.append(tiempo_duracion)
-    #     fila.append(pedido_5_meses)
-    #     fila.append(sugerencia)
-        
-    #     hoja.append(fila)
+    # Aplica las funciones personalizadas y agrupa por ID
+    resultados = df.groupby('ID').apply(lambda group: pd.Series({
+        'STOCK': calcular_stock(group),
+        'FECHA_VENTA_TOTAL': calcular_fecha_venta_total(group),
+        'VENTA_TOTAL': (group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17), 'CANTIDAD'] * group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17), 'FACTOR']).sum(),
+        'VENTA_ULTIMOS_6_MESES': (group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'CANTIDAD'] * group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'FACTOR']).sum(),
+        'FECHA_ULTIMO_INGRESO': calcular_fecha_ultimo_ingreso(group)
+    }))
+    resultados['STOCK'] = resultados['STOCK'].astype(float)
+    resultados['FECHA_VENTA_TOTAL'] = resultados['FECHA_VENTA_TOTAL'].astype(float)
+    resultados['VENTA_TOTAL'] = resultados['VENTA_TOTAL'].astype(float)
+    resultados['VENTA_ULTIMOS_6_MESES'] = resultados['VENTA_ULTIMOS_6_MESES'].astype(float)
+    resultados['FECHA_ULTIMO_INGRESO'] = resultados['FECHA_ULTIMO_INGRESO'].astype(float)
 
-    # print("******************************************")
-    # print(datetime.now())
-    # print("******************************************")
+    print(resultados)
+
+    # Calcula las demás columnas
+    resultados['VENTA_MENSUALES_TOTAL'] = resultados['VENTA_TOTAL'] / resultados['FECHA_VENTA_TOTAL']
+    resultados['VENTA_ULTIMOS_6_MESES_PROMEDIO'] = resultados['VENTA_ULTIMOS_6_MESES'] / 6
+    resultados['VENTA_ULTIMO_INGRESO_PROMEDIO'] = (resultados['VENTA_TOTAL'] * 30) / resultados['FECHA_ULTIMO_INGRESO']
+    resultados['TIEMPO_DURACION'] = resultados['STOCK'] / resultados[['VENTA_MENSUALES_TOTAL', 'VENTA_ULTIMOS_6_MESES_PROMEDIO', 'VENTA_ULTIMO_INGRESO_PROMEDIO']].max(axis=1)
+    resultados['PEDIDO_5_MESES'] = 5 * resultados[['VENTA_MENSUALES_TOTAL', 'VENTA_ULTIMOS_6_MESES_PROMEDIO', 'VENTA_ULTIMO_INGRESO_PROMEDIO']].max(axis=1)
+    resultados['SUGERENCIA'] = 'NO SE VENDIÓ'
+    resultados.loc[resultados['PEDIDO_5_MESES'] >= resultados['STOCK'], 'SUGERENCIA'] = 'EVALUAR'
+    resultados.loc[resultados['PEDIDO_5_MESES'] < resultados['STOCK'], 'SUGERENCIA'] = 'EVALUAR'
+
+    # Ver los resultados
+    print(resultados)
+    resultados.reset_index(inplace=True)
+    
+    for r_idx, row in enumerate(dataframe_to_rows(resultados, index=False, header=True), 1):
+        for c_idx, value in enumerate(row, 1):
+            hoja.cell(row=r_idx, column=c_idx, value=value)
+
+    # # Aplicar formato a las columnas específicas
+    # venta_total_column = hoja['C']
+    # venta_total_column.font = Font(bold=True)
 
     # for row in hoja.rows:
     #     for col in range(hoja.max_column):
@@ -1660,5 +1448,5 @@ def dataReporteRotacion(sociedad=None):
     
 def ReporteRotacionCorregido(sociedad):
     
-    wb=dataReporteRotacion2(sociedad)
+    wb=dataReporteRotacion(sociedad)
     return wb

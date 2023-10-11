@@ -47,6 +47,8 @@ from datetime import date, datetime
 
 from django.shortcuts import render
 
+import pandas as pd
+
 import simplejson
 
 def registro_guardar(obj, request):
