@@ -80,7 +80,7 @@ class Serie(models.Model):
     id_registro = models.IntegerField(blank=True, null=True)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE, blank=True, null=True)
-    almacen_temporal = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
     cliente_temporal = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=True)
     tipo_stock_temporal = models.ForeignKey(TipoStock, on_delete=models.CASCADE, blank=True, null=True)
     estado_temporal = models.ForeignKey(EstadoSerie, on_delete=models.CASCADE, blank=True, null=True)
