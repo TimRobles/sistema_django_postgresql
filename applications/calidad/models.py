@@ -231,8 +231,8 @@ class Serie(models.Model):
 
 def guardar_almacen_serie(*args, **kwargs):
     obj = kwargs['instance']
-    if obj.almacen_temporal != obj.almacen_latest:
-        obj.almacen_temporal = obj.almacen_latest
+    if obj.almacen != obj.almacen_latest:
+        obj.almacen = obj.almacen_latest
         obj.save()
 
 post_save.connect(guardar_almacen_serie, sender=Serie)
