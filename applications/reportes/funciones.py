@@ -78,6 +78,8 @@ def rellenoSociedadCorregido(sociedad):
 ALINEACION_DERECHA = Alignment(horizontal='right')
 ALINEACION_CENTRO = Alignment(horizontal='center')
 AJUSTAR_TEXTO = Alignment(wrap_text=True)
+AJUSTAR_TEXTO_DERECHA = Alignment(horizontal='right', wrap_text=True)
+AJUSTAR_TEXTO_CENTRO = Alignment(horizontal='center', wrap_text=True)
 BORDE_DELGADO = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
 NEGRITA = Font(bold=True)
 COLOR_ROJO = Font(color='FFFF0000')

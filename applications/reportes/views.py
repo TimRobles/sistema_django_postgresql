@@ -20,6 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from applications.reportes.forms import (
     ReporteComportamientoClienteExcelForm,
+    ReporteDepositoCuentasBancariasForm,
     ReporteFacturacionAsesorComercialExcelForm,
     ReporteFacturacionGeneralExcelForm, 
     ReporteStockSociedadPdfForm, 
@@ -49,6 +50,7 @@ from applications.reportes.excel import (
     ReporteClienteCRMExcel,
     ReporteComportamientoCliente,
     ReporteContadorCorregido,
+    ReporteDepositoCuentasBancariasCorregido,
     ReporteEstadosClienteExcel, 
     ReporteFacturacionAsesorComercial, 
     ReporteFacturacionGeneral,
@@ -1861,7 +1863,6 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     info_depositos.append(lista_datos)
 
                 count_cuenta += 1
-
                 count_mes = 0
                 list_general = []
                 list_mes = []
@@ -1881,9 +1882,6 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     count_mes += 1
                 if list_mes != []:
                     list_general.append(list_mes)
-                # print()
-                # print(list_general)
-                # print()
 
     # ******************************************************************************************************************************
                 count = 0
@@ -4031,10 +4029,23 @@ class ReportesCorregidos(TemplateView):
                 titulo = f'Reporte de Rotación - TOTAL al {date.today()}'
             wb = ReporteRotacionCorregido(sociedad)
 
+        elif formulario == 'formulario3':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+            sociedad_id = self.request.POST.get('sociedad')
+
+            if sociedad_id:
+                sociedad = Sociedad.objects.get(id=sociedad_id)
+                titulo = f'Reporte Depositos Cuentas Bancarias ~ {sociedad.abreviatura} ~ {fecha_inicio} al {fecha_fin}'
+            else:
+                titulo = f'Reporte Depositos Cuentas Bancarias ~ General ~ {fecha_inicio} al {fecha_fin}'
+
+            wb = ReporteDepositoCuentasBancariasCorregido(sociedad_id, fecha_inicio, fecha_fin)
+
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
         respuesta['content-disposition']= content
-
+        
         wb.save(respuesta)
         return respuesta
 
@@ -4042,6 +4053,6 @@ class ReportesCorregidos(TemplateView):
         context = super(ReportesCorregidos, self).get_context_data(**kwargs)
         context['form1'] = ReportesContadorForm()
         context['form2'] = ReportesRotacionForm()
-        context['form3'] = ReportesRotacionForm()
+        context['form3'] = ReporteDepositoCuentasBancariasForm()
 
         return context

@@ -41,13 +41,13 @@
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
     <div class="input-group">
-        {% for field in form2 %}
+        {% for field in form3 %}
             <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
             {% if field.help_text %}
             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
             {% endif %}
             >
-                {% if field in form2.visible_fields %}
+                {% if field in form3.visible_fields %}
                 <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {% endif %}
                 {{ field }}
@@ -59,7 +59,7 @@
             <p class="text-danger mt-0 error-formulario">{{ error }}</p>
             {% endfor %}
         {% endfor %}
-        <input type="hidden" value="formulario2" name="formulario">
+        <input type="hidden" value="formulario3" name="formulario">
         <button type="submit" class="btn btn-success" title="Descargar">
             <i class="bi bi-download"></i>
         </button>

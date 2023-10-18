@@ -215,3 +215,30 @@ class ReportesRotacionForm(forms.Form):
         super(ReportesRotacionForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+            
+class ReporteDepositoCuentasBancariasForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteDepositoCuentasBancariasForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
