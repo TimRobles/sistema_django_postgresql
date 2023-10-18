@@ -318,6 +318,26 @@ class RegistrarCambiarCreateForm(BSModalForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class RegistrarCambiarProductoCreateForm(BSModalForm):
+    serie_cambio = forms.CharField()
+    material = forms.ModelChoiceField(queryset=Material.objects.all())
+    observacion = forms.CharField(widget=forms.Textarea(), required=False)
+    comentario = forms.CharField(widget=forms.Textarea(), required=False)
+    class Meta:
+        model = SerieReclamoHistorial
+        fields = (
+            'serie_cambio',
+            'material',
+            'observacion',
+            'comentario',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrarCambiarProductoCreateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class RegistrarCambiarUpdateForm(BSModalModelForm):
     serie_cambio = forms.CharField(disabled=True)
     comentario = forms.CharField(widget=forms.Textarea(), required=False)

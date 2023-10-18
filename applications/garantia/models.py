@@ -190,6 +190,7 @@ class ControlCalidadReclamoGarantiaDetalle(models.Model):
         (1, 'SOLUCIONADO'),
         (2, 'CAMBIO'),
         (3, 'DEVOLUCIÓN'),
+        (4, 'CAMBIO DE PRODUCTO'),
     )
 
     control_calidad_reclamo_garantia = models.ForeignKey(ControlCalidadReclamoGarantia, on_delete=models.CASCADE, related_name='ControlCalidadReclamoGarantiaDetalle_control_calidad_reclamo_garantia')

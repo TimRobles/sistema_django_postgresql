@@ -26,7 +26,7 @@ from applications.nota.models import NotaCredito
 from applications.crm.models import ClienteCRMDetalle
 from applications.clientes.models import CorreoInterlocutorCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
-from applications.cotizacion.models import CotizacionVenta
+from applications.cotizacion.models import CotizacionVenta, PrecioListaMaterial
 
 ####################################################  FACTURACIÓN VS ASESOR COMERCIAL  ####################################################   
 
@@ -1324,34 +1324,24 @@ def dataReporteRotacion(sociedad=None):
         movimientos = movimientos.filter(
             sociedad=sociedad,
         )
+
+    # Obtén el último precio de lista para cada material
+    ultimos_precios = PrecioListaMaterial.objects.filter(
+        content_type_producto=ContentType.objects.get_for_model(Material),
+        id_registro_producto=OuterRef('id')
+    ).order_by('-created_at').values('precio_lista')[:1]
+
+
+    # Consulta para obtener todos los materiales con subfamilia y último precio de lista
+    materiales = Material.objects.annotate(
+        precio=Subquery(ultimos_precios)
+    )
     
     # FAMILIA.append(producto.subfamilia.familia.nombre)
     # NOMBRE.append(producto.descripcion_corta)
     # DESCRIPCION.append(producto.descripcion_venta)
     # PRECIO.append(producto.precio_lista)
 
-    datos = {}
-    ID = []
-    FECHA = []
-    TIPO_MOVIMIENTO = []
-    TIPO_STOCK = []
-    CANTIDAD = []
-    # FECHA_INICIAL = []
-    # FECHA_FINAL = []
-    # VENTA_TOTAL = []
-    # FECHA_INICIO_6_MESES = []
-    # VENTA_6_MESES = []
-    # FECHA_ULTIMO_INGRESO = []
-    # VENTA_ULTIMO_INGRESO = []
-    # INGRESOS = []
-    # VENTAS = []
-    # RECIBIDO = []
-    # DISPONIBLE = []
-    # BLOQUEO_SIN_SERIE = []
-    # BLOQUEO_SIN_QA = []
-    # RESERVADO = []
-    # CONFIRMADO = []
-    # PRESTADO = []
     movimientos_valores = movimientos.values_list(
         'id_registro_producto',
         'fecha_documento',
@@ -1360,17 +1350,22 @@ def dataReporteRotacion(sociedad=None):
         'cantidad',
         'signo_factor_multiplicador',
         )
+
+    materiales_valores = materiales.values_list(
+        'id',
+        'subfamilia__familia',
+        'descripcion_corta',
+        'descripcion_venta',
+        'precio',
+        )
     
     # Convierte el diccionario en un DataFrame de Pandas
+    dfMateriales = pd.DataFrame(materiales_valores, columns=['ID', 'FAMILIA', 'NOMBRE', 'DESCRIPCION', 'PRECIO'])
     df = pd.DataFrame(movimientos_valores, columns=['ID', 'FECHA', 'TIPO_MOVIMIENTO', 'TIPO_STOCK', 'CANTIDAD', 'FACTOR'])
 
     # Ahora df contiene los datos de la consulta ORM en un DataFrame de Pandas
     df['FECHA'] = pd.to_datetime(df['FECHA'])
-    print(df)
-    print(df['TIPO_MOVIMIENTO'].unique())
-    print(df['TIPO_STOCK'].unique())
-    print(df['FACTOR'].unique())
-
+    
     # Suponiendo que tu DataFrame se llama df
     # Calcula la fecha actual
     fecha_actual = datetime.now()
@@ -1405,8 +1400,6 @@ def dataReporteRotacion(sociedad=None):
     resultados['VENTA_ULTIMOS_6_MESES'] = resultados['VENTA_ULTIMOS_6_MESES'].astype(float)
     resultados['FECHA_ULTIMO_INGRESO'] = resultados['FECHA_ULTIMO_INGRESO'].astype(float)
 
-    print(resultados)
-
     # Calcula las demás columnas
     resultados['VENTA_MENSUALES_TOTAL'] = resultados['VENTA_TOTAL'] / resultados['FECHA_VENTA_TOTAL']
     resultados['VENTA_ULTIMOS_6_MESES_PROMEDIO'] = resultados['VENTA_ULTIMOS_6_MESES'] / 6
@@ -1418,10 +1411,13 @@ def dataReporteRotacion(sociedad=None):
     resultados.loc[resultados['PEDIDO_5_MESES'] < resultados['STOCK'], 'SUGERENCIA'] = 'EVALUAR'
 
     # Ver los resultados
-    print(resultados)
     resultados.reset_index(inplace=True)
+    print(resultados)
+
+    resultado_combinado = pd.merge(resultados, dfMateriales, on='ID')
+
     
-    for r_idx, row in enumerate(dataframe_to_rows(resultados, index=False, header=True), 1):
+    for r_idx, row in enumerate(dataframe_to_rows(resultado_combinado, index=False, header=True), 1):
         for c_idx, value in enumerate(row, 1):
             hoja.cell(row=r_idx, column=c_idx, value=value)
 

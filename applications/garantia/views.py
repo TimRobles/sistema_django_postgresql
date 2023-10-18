@@ -34,6 +34,7 @@ from .forms import(
     ControlCalidadReclamoGarantiaBuscarForm,
     ControlCalidadReclamoGarantiaObservacionForm,
     RegistrarCambiarCreateForm,
+    RegistrarCambiarProductoCreateForm,
     RegistrarCambiarSinSerieCreateForm,
     RegistrarCambiarSinSerieUpdateForm,
     RegistrarCambiarUpdateForm,
@@ -1355,6 +1356,91 @@ class RegistrarCambiarCreateView(PermissionRequiredMixin, BSModalFormView):
         return context
 
 
+class RegistrarCambiarProductoCreateView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('calidad.add_historialestadoserie')
+    template_name = "includes/formulario generico.html"
+    form_class = RegistrarCambiarProductoCreateForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('garantia_app:control_garantia_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                serie = SerieIngresoReclamoGarantiaDetalle.objects.get(id=self.kwargs['id_ingreso_detalle'])
+                estado_serie = EstadoSerie.objects.get(numero_estado=14) #POR CAMBIAR
+                estado_reservar_serie = EstadoSerie.objects.get(numero_estado=13) #RESERVADO POR CAMBIO
+
+                serie_buscar = form.cleaned_data.get('serie_cambio')
+                material = form.cleaned_data.get('material')
+                observacion = form.cleaned_data.get('observacion')
+                comentario = form.cleaned_data.get('comentario')
+                try:
+                    serie_cambio = Serie.objects.get_or_create(
+                        serie_base = serie_buscar,
+                        content_type = material.content_type,
+                        id_registro = material.id,
+                        sociedad = serie.serie.sociedad,
+                    )
+                    print(serie_cambio)
+                except:
+                    form.add_error('serie_cambio', 'Serie no encontrada')
+                    return super().form_invalid(form)
+
+                ControlCalidadReclamoGarantiaDetalle.objects.create(
+                    control_calidad_reclamo_garantia=serie.ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia.ControlCalidadReclamoGarantia_ingreso_reclamo_garantia,
+                    serie_ingreso_reclamo_garantia_detalle=serie,
+                    serie_cambio=serie_cambio,
+                    tipo_analisis=4, #Cambio de Producto
+                    comentario=comentario,
+                )
+
+                reservar_serie = HistorialEstadoSerie.objects.create(
+                    estado_serie = estado_reservar_serie,
+                    serie = serie_cambio,
+                    solucion=None,
+                    observacion=None,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+                historial_estado_serie = HistorialEstadoSerie.objects.create(
+                    estado_serie = estado_serie,
+                    serie = serie.serie,
+                    solucion=None,
+                    observacion=observacion,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+                SerieReclamoHistorial.objects.create(
+                    serie_ingreso_reclamo_garantia_detalle = serie,
+                    historia_estado_serie = historial_estado_serie,
+                    created_by = self.request.user,
+                    updated_by = self.request.user,
+                )
+
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RegistrarCambiarProductoCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Cambio"
+        return context
+
+
 class RegistrarCambiarUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('calidad.change_historialestadoserie')
     model = HistorialEstadoSerie
@@ -2148,6 +2234,106 @@ class SalidadReclamoGarantiaEntregarView(BSModalDeleteView):
                         )
                         control.serie_ingreso_reclamo_garantia_detalle.serie.serie_movimiento_almacen.add(movimiento_uno)
                         control.serie_ingreso_reclamo_garantia_detalle.serie.serie_movimiento_almacen.add(movimiento_dos)
+                    elif control.tipo_analisis == 4: #CAMBIO DE PRODUCTO
+                        estado_serie = EstadoSerie.objects.get(numero_estado=2) #Con Problemas
+                        movimiento_final = TipoMovimiento.objects.get(codigo=124) #Garantía, equipo revisado, malogrado
+                        HistorialEstadoSerie.objects.create(
+                            serie=control.serie_ingreso_reclamo_garantia_detalle.serie,
+                            estado_serie=estado_serie,
+                            falla_material=None,
+                            solucion=None,
+                            observacion=None,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        movimiento_uno = MovimientosAlmacen.objects.create(
+                            content_type_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
+                            id_registro_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.id_registro,
+                            cantidad=1,
+                            tipo_movimiento=movimiento_final,
+                            tipo_stock=movimiento_final.tipo_stock_inicial,
+                            signo_factor_multiplicador=-1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso=self.object.id,
+                            almacen=almacen_ingreso,
+                            sociedad=self.object.sociedad,
+                            movimiento_anterior=None,
+                            movimiento_reversion=False,
+                            transformacion=False,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        movimiento_dos = MovimientosAlmacen.objects.create(
+                            content_type_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
+                            id_registro_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.id_registro,
+                            cantidad=1,
+                            tipo_movimiento=movimiento_final,
+                            tipo_stock=movimiento_final.tipo_stock_final,
+                            signo_factor_multiplicador=+1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso=self.object.id,
+                            almacen=None,
+                            sociedad=self.object.sociedad,
+                            movimiento_anterior=movimiento_uno,
+                            movimiento_reversion=False,
+                            transformacion=False,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        control.serie_ingreso_reclamo_garantia_detalle.serie.serie_movimiento_almacen.add(movimiento_uno)
+                        control.serie_ingreso_reclamo_garantia_detalle.serie.serie_movimiento_almacen.add(movimiento_dos)
+
+                        estado_serie_cambio = EstadoSerie.objects.get(numero_estado=3) #Vendido
+                        movimiento_final_cambio = TipoMovimiento.objects.get(codigo=116) #Garantía, entrega del equipo
+                        if control.serie_cambio:
+                            HistorialEstadoSerie.objects.create(
+                                serie=control.serie_cambio,
+                                estado_serie=estado_serie_cambio,
+                                falla_material=None,
+                                solucion=None,
+                                observacion=None,
+                                created_by=self.request.user,
+                                updated_by=self.request.user,
+                            )
+                        movimiento_uno = MovimientosAlmacen.objects.create(
+                            content_type_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
+                            id_registro_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.id_registro,
+                            cantidad=1,
+                            tipo_movimiento=movimiento_final_cambio,
+                            tipo_stock=movimiento_final_cambio.tipo_stock_inicial,
+                            signo_factor_multiplicador=-1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso=self.object.id,
+                            almacen=None,
+                            sociedad=self.object.sociedad,
+                            movimiento_anterior=None,
+                            movimiento_reversion=False,
+                            transformacion=False,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        movimiento_dos = MovimientosAlmacen.objects.create(
+                            content_type_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.content_type,
+                            id_registro_producto=control.serie_ingreso_reclamo_garantia_detalle.ingreso_reclamo_garantia_detalle.id_registro,
+                            cantidad=1,
+                            tipo_movimiento=movimiento_final_cambio,
+                            tipo_stock=movimiento_final_cambio.tipo_stock_final,
+                            signo_factor_multiplicador=+1,
+                            content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                            id_registro_documento_proceso=self.object.id,
+                            almacen=None,
+                            sociedad=self.object.sociedad,
+                            movimiento_anterior=movimiento_uno,
+                            movimiento_reversion=False,
+                            transformacion=False,
+                            created_by=self.request.user,
+                            updated_by=self.request.user,
+                        )
+                        if control.serie_cambio:
+                            control.serie_cambio.serie_movimiento_almacen.add(movimiento_uno)
+                            control.serie_cambio.serie_movimiento_almacen.add(movimiento_dos)
+
+                    
 
                 self.object.estado = 6
                 self.object.control_calidad_reclamo_garantia.estado = 6
