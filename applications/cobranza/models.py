@@ -367,9 +367,19 @@ class Deuda(models.Model):
                 return 'ERROR, NO EXISTE DOCUMENTO'
         return ""
 
+    @property
+    def documento_objeto(self):
+        if self.content_type:
+            try:
+                documento_venta = self.content_type.get_object_for_this_type(id = self.id_registro)
+                return (documento_venta.get_tipo_comprobante_display(), documento_venta.documento, documento_venta.fecha_emision, documento_venta.cliente)
+            except:
+                return (None, None, None)
+        return (None, None, None)
+
     def __str__(self):
         return "%s %s %s" % (self.documento, self.moneda.simbolo, self.monto)
-        return "%s %s %s (%s %s)" % (self.documento, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
+        # return "%s %s %s (%s %s)" % (self.documento, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
 
 def deuda_post_save(*args, **kwargs):
     print('deuda_post_save')

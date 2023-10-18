@@ -13,7 +13,7 @@ from openpyxl.chart import Reference, Series,LineChart
 from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.plotarea import DataTable
 from applications.reportes.funciones import *
-from applications.datos_globales.models import DocumentoFisico, Moneda, TipoCambioSunat
+from applications.datos_globales.models import CuentaBancariaSociedad, DocumentoFisico, Moneda, TipoCambioSunat
 from applications.home.templatetags.funciones_propias import get_enlace_nubefact, redondear
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.nota.models import NotaCredito
@@ -21,6 +21,8 @@ from applications.crm.models import ClienteCRMDetalle
 from applications.clientes.models import CorreoInterlocutorCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
 from applications.cotizacion.models import CotizacionVenta
+from applications.cobranza.models import Ingreso, Pago
+from applications.reportes.data_resumen_ingresos_anterior import*
 
 ####################################################  FACTURACIÓN VS ASESOR COMERCIAL  ####################################################   
 
@@ -841,7 +843,7 @@ def ReporteEstadosClienteExcel():
     wb=dataEstadosCliente()
     return wb
 
-####################################################  FACTURACIÓN GENERAL  ####################################################   
+####################################################  REPORTE CONTADOR  ####################################################   
 
 def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
     moneda_base = Moneda.objects.get(simbolo='$')
@@ -1058,3 +1060,554 @@ def ReporteContadorCorregido(sociedad, fecha_inicio, fecha_fin):
     
     wb=dataReporteContador(sociedad, fecha_inicio, fecha_fin)
     return wb
+
+
+####################################################  REPORTE DEPÓSITOS CUENTAS BANCARIAS  ####################################################   
+
+
+def dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin):
+    moneda_dolar = Moneda.objects.get(simbolo='$')
+    moneda_sol = Moneda.objects.get(simbolo='S/')
+
+    wb = Workbook()
+    hoja = wb.active
+    color_relleno = rellenoSociedadCorregido(sociedad)
+
+    cuentas = CuentaBancariaSociedad.objects.filter(
+        sociedad = sociedad, 
+        estado = 1, 
+        efectivo = False
+        )
+    
+    info_cuentas = []
+    for cuenta in cuentas:
+        data = []
+        if cuenta.banco:
+            data.append(cuenta.banco.razon_social)
+            data.append(cuenta.sociedad.razon_social)
+            data.append(cuenta.numero_cuenta)
+            data.append(cuenta.numero_cuenta_interbancaria)
+            data.append(cuenta.moneda.nombre)
+            info_cuentas.append(data)
+
+    tipo_cambio_sunat = TipoCambioSunat.objects.filter(
+        fecha__gte=fecha_inicio,
+        fecha__lte=fecha_fin,
+        )
+
+    list_temp_hojas = []
+    dict_totales_cuentas = {}
+    count_cuenta = 0
+    list_nro_cuentas = []
+    for fila in info_cuentas:
+        nro_cuenta = fila[2]
+        list_nro_cuentas.append("%s %s" %(fila[0],fila[4]))
+        info_depositos = []
+        # numero_operacion = []
+
+        ################################## Version N° 1 ##################################
+
+        ingresos = Ingreso.objects.filter(
+            cuenta_bancaria__numero_cuenta = nro_cuenta, 
+            cuenta_bancaria__estado = 1, 
+            cuenta_bancaria__efectivo = False, 
+            fecha__gte=fecha_inicio, 
+            fecha__lte=fecha_fin,).order_by('fecha')
+
+        for ingreso in ingresos:
+            if ingreso.pagos:
+                data = []
+                tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=ingreso.fecha)
+                data.append(ingreso.fecha.strftime('%d/%m/%Y'))
+                data.append(ingreso.numero_operacion)
+                if ingreso.cuenta_bancaria.moneda.abreviatura == "USD":
+                    data.append(ingreso.monto)
+                    data.append(ingreso.monto*tipo_cambio_sunat_documento.tipo_cambio_venta)
+                else:
+                    data.append(ingreso.monto/tipo_cambio_sunat_documento.tipo_cambio_venta)
+                    data.append(ingreso.monto)
+                for pago in ingreso.pagos:
+                    if pago == ingreso.pagos[0]:
+                        data.append(pago.deuda.documento_objeto[3].razon_social)
+                        data.append("%s: %s" % (pago.deuda.documento_objeto[0], pago.deuda.documento_objeto[1]))
+                        data.append(pago.deuda.documento_objeto[2].strftime('%d/%m/%Y'))
+                        if ingreso.cuenta_bancaria.moneda.abreviatura == "USD":
+                            data.append("%s %s" %(moneda_dolar.simbolo, intcomma(redondear(pago.monto))))
+                            data.append("%s %s" %(moneda_sol.simbolo, intcomma(redondear(pago.monto*tipo_cambio_sunat_documento.tipo_cambio_venta))))
+                        else:
+                            data.append("%s %s" %(moneda_dolar.simbolo, intcomma(redondear(pago.monto/tipo_cambio_sunat_documento.tipo_cambio_venta))))
+                            data.append("%s %s" %(moneda_sol.simbolo, intcomma(redondear(pago.monto))))
+                    else:
+                        data[4] = "%s\n%s" %(data[4], pago.deuda.documento_objeto[3].razon_social)
+                        data[5] = "%s\n%s" %(data[5], "%s: %s" % (pago.deuda.documento_objeto[0], pago.deuda.documento_objeto[1]))
+                        data[6] = "%s\n%s" %(data[6], pago.deuda.documento_objeto[2].strftime('%d/%m/%Y'))
+                        if ingreso.cuenta_bancaria.moneda.abreviatura == "USD":
+                            data[7] = "%s\n%s" %(data[7], "%s %s" %(moneda_dolar.simbolo, intcomma(redondear(pago.monto))))
+                            data[8] = "%s\n%s" %(data[8], "%s %s" %(moneda_sol.simbolo, intcomma(redondear(pago.monto*tipo_cambio_sunat_documento.tipo_cambio_venta))))
+                        else:
+                            data[7] = "%s\n%s" %(data[7], "%s %s" %(moneda_dolar.simbolo, intcomma(redondear(pago.monto/tipo_cambio_sunat_documento.tipo_cambio_venta))))
+                            data[8] = "%s\n%s" %(data[8], "%s %s" %(moneda_sol.simbolo, intcomma(redondear(pago.monto)))) 
+                info_depositos.append(data)
+
+            else:
+                data = []
+                tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=ingreso.fecha)
+                data.append(ingreso.fecha.strftime('%d/%m/%Y'))
+                if ingreso.comentario:
+                    data.append("%s | %s" % (ingreso.numero_operacion, ingreso.comentario))
+                else:
+                    data.append("%s | %s" % (ingreso.numero_operacion, 'Sin Comentario'))
+                if ingreso.cuenta_bancaria.moneda.abreviatura == "USD":
+                    data.append(ingreso.monto)
+                    data.append(ingreso.monto*tipo_cambio_sunat_documento.tipo_cambio_venta)
+                else:
+                    data.append(ingreso.monto/tipo_cambio_sunat_documento.tipo_cambio_venta)
+                    data.append(ingreso.monto)
+                
+                data.append('')
+                data.append('')
+                data.append('')
+                data.append('')
+                data.append('')
+                info_depositos.append(data)
+        
+        ################################## Version N° 2 ##################################
+
+        # depositos = Pago.objects.filter(
+        #     content_type = ContentType.objects.get_for_model(Ingreso),
+        #     id_registro__in = [ingreso.id for ingreso in Ingreso.objects.filter(
+        #         cuenta_bancaria__numero_cuenta = nro_cuenta, 
+        #         cuenta_bancaria__estado = 1, 
+        #         cuenta_bancaria__efectivo = False, 
+        #         fecha__gte=fecha_inicio, 
+        #         fecha__lte=fecha_fin,).order_by('fecha')],
+        #         )
+        
+        # for deposito in depositos:
+        #     num_operacion = "%s,%s" %(deposito.ingreso_nota.fecha, deposito.ingreso_nota.numero_operacion)
+        #     if num_operacion in numero_operacion:
+        #         pos = numero_operacion.index(num_operacion)
+        #         info_depositos[pos][4] = "%s\n%s" %(info_depositos[pos][4], deposito.deuda.documento_objeto[3].razon_social)
+        #         info_depositos[pos][5] = "%s\n%s" %(info_depositos[pos][5], "%s: %s" % (deposito.deuda.documento_objeto[0], deposito.deuda.documento_objeto[1]))
+        #         info_depositos[pos][6] = "%s\n%s" %(info_depositos[pos][6], deposito.deuda.documento_objeto[2].strftime('%d/%m/%Y'))
+        #         if deposito.ingreso_nota.cuenta_bancaria.moneda.abreviatura == "USD":
+        #             info_depositos[pos][7] = "%s\n%s" %(info_depositos[pos][7], "%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto))))
+        #             info_depositos[pos][8] = "%s\n%s" %(info_depositos[pos][8], "%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto*tipo_cambio_sunat_documento.tipo_cambio_venta))))
+        #         else:
+        #             info_depositos[pos][7] = "%s\n%s" %(info_depositos[pos][7], "%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto/tipo_cambio_sunat_documento.tipo_cambio_venta))))
+        #             info_depositos[pos][8] = "%s\n%s" %(info_depositos[pos][8], "%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto))))                  
+
+        #     else:
+        #         data = []
+        #         numero_operacion.append(num_operacion)
+        #         tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=deposito.ingreso_nota.fecha)
+        #         data.append(deposito.ingreso_nota.fecha.strftime('%d/%m/%Y'))
+        #         data.append(deposito.ingreso_nota.numero_operacion)
+        #         if deposito.ingreso_nota.cuenta_bancaria.moneda.abreviatura == "USD":
+        #             data.append(deposito.ingreso_nota.monto)
+        #             data.append(deposito.ingreso_nota.monto*tipo_cambio_sunat_documento.tipo_cambio_venta)
+        #         else:
+        #             data.append(deposito.ingreso_nota.monto/tipo_cambio_sunat_documento.tipo_cambio_venta)
+        #             data.append(deposito.ingreso_nota.monto)
+        #         data.append(deposito.deuda.documento_objeto[3].razon_social)
+        #         data.append("%s: %s" % (deposito.deuda.documento_objeto[0], deposito.deuda.documento_objeto[1]))
+        #         data.append(deposito.deuda.documento_objeto[2].strftime('%d/%m/%Y'))
+        #         if deposito.ingreso_nota.cuenta_bancaria.moneda.abreviatura == "USD":
+        #             data.append("%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto))))
+        #             data.append("%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto*tipo_cambio_sunat_documento.tipo_cambio_venta))))
+        #         else:
+        #             data.append("%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto/tipo_cambio_sunat_documento.tipo_cambio_venta))))
+        #             data.append("%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto))))
+        #         info_depositos.append(data)
+
+        # ingresos = Ingreso.objects.filter(
+        #     cuenta_bancaria__numero_cuenta = nro_cuenta, 
+        #     cuenta_bancaria__estado = 1, 
+        #     cuenta_bancaria__efectivo = False, 
+        #     fecha__gte=fecha_inicio, 
+        #     fecha__lte=fecha_fin,
+        #     es_pago=False,
+        #     pendiente_usar=True,).order_by('fecha')
+
+        # for ingreso in ingresos:
+        #     num_operacion = "%s,%s" %(ingreso.fecha, ingreso.numero_operacion)
+        #     if num_operacion not in numero_operacion:
+        #         data = []
+        #         tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=ingreso.fecha)
+        #         data.append(ingreso.fecha.strftime('%d/%m/%Y'))
+        #         if ingreso.comentario:
+        #             data.append("%s | %s" % (ingreso.numero_operacion, ingreso.comentario))
+        #         else:
+        #             data.append("%s | %s" % (ingreso.numero_operacion, 'Sin Comentario'))
+        #         if ingreso.cuenta_bancaria.moneda.abreviatura == "USD":
+        #             data.append(ingreso.monto)
+        #             data.append(ingreso.monto*tipo_cambio_sunat_documento.tipo_cambio_venta)
+        #         else:
+        #             data.append(ingreso.monto/tipo_cambio_sunat_documento.tipo_cambio_venta)
+        #             data.append(ingreso.monto)
+                
+        #         data.append('')
+        #         data.append('')
+        #         data.append('')
+        #         data.append('')
+        #         data.append('')
+        #         info_depositos.append(data)
+
+        # info_depositos.sort(key = lambda i: datetime.strptime(i[0], '%d/%m/%Y'), reverse=False)
+
+        count_cuenta += 1
+        # print('**********************************')
+        # print(info_depositos)
+        # print('**********************************')
+        count_mes = 0
+        list_general = []
+        list_mes = []
+        for deposito in info_depositos:
+            if count_mes != 0:
+                año_mes_actual = deposito[0][6:] + deposito[0][3:5]
+                año_mes_anterior = info_depositos[count_mes-1][0][6:] + info_depositos[count_mes-1][0][3:5]
+                if año_mes_actual != año_mes_anterior:
+                    list_general.append(list_mes)
+                    list_mes = []
+            list_mes.append(deposito)
+            try:
+                deposito[2] = float(deposito[2])
+                deposito[3] = float(deposito[3])
+            except:
+                ""
+            count_mes += 1
+        if list_mes != []:
+            list_general.append(list_mes)
+        # print('**********************************')
+        # print(list_general)
+        # print('**********************************')
+
+        count = 0
+        for list_mes_deposito in list_general:
+            mes = list_mes_deposito[0][0][3:5]
+            año = list_mes_deposito[0][0][6:]
+            name_sheet = DICT_MESES[str(mes)] + ' - ' + str(año)
+            # print('*************************************')
+            # print(str(mes), name_sheet, list_temp_hojas)
+            # print('*************************************')
+            if count != 0:
+                if name_sheet not in list_temp_hojas:
+                    hoja = wb.create_sheet(name_sheet)
+                    list_temp_hojas.append(name_sheet)
+                else:
+                    hoja = wb[name_sheet]
+            else:
+                hoja = wb.active
+                hoja.title = name_sheet
+                if name_sheet not in list_temp_hojas:
+                    list_temp_hojas.append(name_sheet)
+                count += 1
+                # count_cuenta += 1
+
+            hoja.append(('', ''))
+            hoja.append(('', ''))
+            hoja.append(('BANCO:', fila[0]))
+            hoja.append(('EMPRESA:', fila[1]))
+            hoja.append(('CUENTA:', fila[2]))
+            hoja.append(('CCI:', fila[3]))
+            hoja.append(('MONEDA:', fila[4]))
+            # wb.active = hoja
+            hoja.append(('FECHA', 'REFERENCIA', 'MONTO (US$)', 'MONTO (S/)', 'EMPRESAS', 'DOCUMENTOS', 'FECHA DOCUMENTOS', 'PAGOS (US$)', 'PAGOS (S/)'))
+            col_range = hoja.max_column
+            nueva_fila = hoja.max_row
+
+            for col in range(1, col_range + 1):
+                cell_header = hoja.cell(nueva_fila, col)
+                cell_header.fill = color_relleno
+                cell_header.font = NEGRITA
+                for count_fila in range(1,6):
+                    cell_header = hoja.cell(nueva_fila-count_fila, col)
+                    cell_header.fill = color_relleno
+
+            total_mes_cuenta_dolares = 0
+            total_mes_cuenta_soles = 0
+            for fila_deposito in list_mes_deposito:
+                if fila_deposito[4] != "" and fila_deposito[4] != None:
+                    if 'Nota Credito:' not in fila_deposito[1]:
+                        total_mes_cuenta_dolares += float(fila_deposito[2])
+                        try:
+                            total_mes_cuenta_soles += float(fila_deposito[3])
+                        except:
+                            pass
+                hoja.append(fila_deposito)
+            cuenta_banco_ingreso = fila[0] + ' ' + fila[4]
+            dict_totales_cuentas[cuenta_banco_ingreso + '|' + name_sheet] = str(round(total_mes_cuenta_soles,2)) + '|' + str(round(total_mes_cuenta_dolares,2))
+
+            for i in range(hoja.max_row):
+                if i >= nueva_fila-1:
+                    row = list(hoja.rows)[i]
+                    for col in range(hoja.max_column):
+                        row[col].border = BORDE_DELGADO
+                        if col == 2:
+                            row[col].alignment = ALINEACION_DERECHA
+                            row[col].number_format = FORMATO_DOLAR
+                        if col == 3:
+                            row[col].alignment = ALINEACION_DERECHA
+                            row[col].number_format = FORMATO_SOLES
+                        if 4 <= col <= 6:
+                            row[col].alignment = AJUSTAR_TEXTO
+                        if col == 7 or col == 8:
+                            row[col].alignment = AJUSTAR_TEXTO_DERECHA
+
+            ajustarColumnasSheet(hoja)
+
+    hoja = wb.create_sheet('Resumen Ingresos')
+    # hoja.append(('', ''))
+    hoja.append(('ENERO', 'FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'))
+    hoja.append(('', ''))
+    num_cuentas = len(list_nro_cuentas)
+    hoja.cell(row= 3, column=1).value = "SOLES"
+    hoja.cell(row= 3, column= num_cuentas+4).value = "DÓLARES"
+    hoja.merge_cells(start_row = 3, start_column = 1, end_row = 3, end_column = num_cuentas+2)
+    hoja.merge_cells(start_row = 3, start_column = num_cuentas+4, end_row = 3, end_column = 2*num_cuentas+5)
+    celda_multiple = hoja.cell(row = 3, column = 1)
+    celda_multiple.alignment = ALINEACION_CENTRO
+    celda_multiple = hoja.cell(row = 3, column = num_cuentas+4)
+    celda_multiple.alignment = ALINEACION_CENTRO
+    list_encabezado = [''] + list_nro_cuentas + ['TOTAL','',''] + list_nro_cuentas + ['TOTAL']
+    hoja.append(tuple(list_encabezado))
+
+    col_range = 2*num_cuentas+5
+    nueva_fila = hoja.max_row
+    for col in range(1, col_range+1):
+        if col != num_cuentas+3:
+            cell_header = hoja.cell(nueva_fila, col)
+            cell_header.fill = color_relleno
+            cell_header.font = NEGRITA
+            for count_fila in range(1,2):
+                cell_header = hoja.cell(nueva_fila-count_fila, col)
+                cell_header.fill = color_relleno
+
+    def insertarResumenDataAnterior(hoja, data):
+        for fila in data:
+            hoja.append(fila)
+        # return hoja
+        
+    if str(fecha_inicio) <= '2022-01-01':
+        if sociedad.id == 2:
+            insertarResumenDataAnterior(hoja, list_resumen_ingresos_sis_anterior_mpl)
+        if sociedad.id == 1:
+            insertarResumenDataAnterior(hoja, list_resumen_ingresos_sis_anterior_mca)
+
+    for mes in list_temp_hojas:
+        list_temp_fila = []
+        # list_temp.append(mes)
+        list_temp_soles = []
+        list_temp_dolares = []
+        total_soles = 0
+        total_dolares = 0
+        for k,value in dict_totales_cuentas.items():
+            if mes in k:
+                # print(k)
+                monto_soles = float(value[:value.find("|")])
+                monto_dolares = float(value[value.find("|")+1:])
+                total_soles += monto_soles
+                total_dolares += monto_dolares
+                list_temp_soles.append(monto_soles)
+                list_temp_dolares.append(monto_dolares)
+                
+        if len(list_temp_soles) < num_cuentas:
+            while len(list_temp_soles) == num_cuentas:
+                list_temp_soles.insert(len(list_temp_soles), " ")
+                list_temp_dolares.insert(len(list_temp_dolares), " ")
+
+        list_temp_soles.append(total_soles)
+        list_temp_dolares.append(total_dolares)
+        list_temp_fila = [mes] + list_temp_soles + ['', mes] + list_temp_dolares
+        hoja.append(tuple(list_temp_fila))
+
+    i = 0
+    for row in hoja.rows:
+        if i >= 2:
+            for col in range(col_range):
+                if col != num_cuentas+2:
+                    row[col].border = BORDE_DELGADO
+                if 1 <= col <= num_cuentas + 1:
+                    row[col].number_format = FORMATO_SOLES
+                if col >= num_cuentas + 4:
+                    row[col].number_format = FORMATO_DOLAR
+        i += 1
+    ajustarColumnasSheet(hoja)
+
+    def extraer_resumen_bloc_de_notas(hoja):
+
+        # nro_col = col_range
+        file_mpl = open(f'resumen_ingresos_{sociedad.abreviatura}_{fecha_inicio}_{fecha_fin}.txt', "w")
+        file = file_mpl
+
+        list_temp = []
+        for i in range(5, hoja.max_row + 1): # Nro de filas del excel
+            celda = hoja.cell(row = i, column = col_range)
+            if celda.value == None:
+                valor_celda = ''
+            else:
+                valor_celda = celda.value
+            list_temp.append(valor_celda)
+        # print(list_temp)
+
+        for pos in range(len(list_temp)):
+            list_temp[pos] = str(round(list_temp[pos],2))
+
+        info = '\n'.join(list_temp)
+        file.write(info)
+        file.close()
+
+    extraer_resumen_bloc_de_notas(hoja)
+
+    def grafico_resumen_ingresos(ws):
+        max_fila = ws.max_row
+
+        chart = LineChart()
+        # print(help(chart))
+        chart.height = 15 # default is 7.5
+        chart.width = 30 # default is 15
+        chart.y_axis.title = 'INGRESOS'
+        chart.x_axis.title = 'MESES'
+        chart.legend.position = 'b' #bottom
+        # chart.style = 12
+
+        count = 1
+        fila_base = 5
+        year_base = 2018
+        chart.title = f'RESUMEN DE INGRESOS - {sociedad.abreviatura}'
+        data_col = col_range # montos en dolares
+
+        while max_fila >= 12:
+            values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+            series = Series(values, title = "Ingresos del " + str(year_base + count))
+            chart.append(series)
+            max_fila -= 12
+            count += 1
+        if 1 <= max_fila <= 12:
+            values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+            series = Series(values, title = "Ingresos del " + str(year_base + count))
+            chart.append(series)
+
+        meses = Reference(ws, min_col = 1, min_row = 1, max_col = 12, max_row = 1)
+        chart.set_categories(meses)
+        chart.dataLabels = DataLabelList()
+        chart.dataLabels.showVal = True
+        chart.dataLabels.dLblPos = 't' # top
+
+        chart.plot_area.dTable = DataTable()
+        chart.plot_area.dTable.showHorzBorder = True
+        chart.plot_area.dTable.showVertBorder = True
+        chart.plot_area.dTable.showOutline = True
+        chart.plot_area.dTable.showKeys = True
+
+        ws.add_chart(chart)
+
+    grafico_resumen_ingresos(hoja)
+
+    return wb
+
+def dataReporteDepositoCuentasBancariasResumen(sociedades,fecha_inicio, fecha_fin):
+    nombres_soc = []
+    listas = []
+    for sociedad in sociedades:
+        try:
+            file = open(f'resumen_ingresos_{sociedad.abreviatura}_{fecha_inicio}_{fecha_fin}.txt', "r")
+            contenido = file.read()
+            file.close()
+            lista = contenido.split("\n")
+            for pos in range(len(lista)):
+                if lista[pos] != "":
+                    lista[pos]=float(lista[pos])
+                else:
+                    lista[pos]=float('0.00')
+            listas.append(lista)
+            nombres_soc.append(sociedad.nombre_comercial)
+        except Exception as e:
+            print(e)
+            
+
+    max_lon = max(list(map(len, listas)))
+    rango_listas = range(len(listas))
+    rango_max = range(max_lon)
+    
+    listas_todas_empresas = []
+
+    for b in rango_max:
+        total_lista = float('0.00')
+        for a in rango_listas:
+            if b in range(len(listas[a])):
+                total_lista+=listas[a][b]
+            else:
+                total_lista+=float('0.00')
+
+        listas_todas_empresas.append(total_lista)
+
+    wb = Workbook()
+    hoja = wb.active
+    hoja.append(('','ENERO', 'FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'))
+    # for dato in list_ambas_empresas:
+    for dato in listas_todas_empresas:
+        hoja.append((dato,''))
+
+    for row in hoja.rows:
+        for col in range(hoja.max_column):
+            row[col].border = BORDE_DELGADO
+            if col == 0:
+                row[col].number_format = FORMATO_DOLAR
+
+    def grafico_resumen_ingresos(ws):
+        max_fila = ws.max_row
+
+        chart = LineChart()
+        # print(help(chart))
+        chart.height = 15 # default is 7.5
+        chart.width = 30 # default is 15
+        chart.y_axis.title = 'INGRESOS'
+        chart.x_axis.title = 'MESES'
+        chart.legend.position = 'b' #bottom
+        chart.title = f'RESUMEN DE INGRESOS - {" + ".join(nombres_soc)}'
+        # chart.style = 12
+
+        count = 1
+        fila_base = 2
+        year_base = 2018
+        data_col = 1 # montos en dolares
+        while max_fila >= 12:
+            values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+            series = Series(values, title = "Ingresos del " + str(year_base + count))
+            chart.append(series)
+            max_fila -= 12
+            count += 1
+        if 1 <= max_fila <= 12:
+            values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+            series = Series(values, title = "Ingresos del " + str(year_base + count))
+            chart.append(series)
+
+        meses = Reference(ws, min_col = 2, min_row = 1, max_col = 13, max_row = 1)
+        chart.set_categories(meses)
+        chart.dataLabels = DataLabelList()
+        chart.dataLabels.showVal = True
+        chart.dataLabels.dLblPos = 't' # top
+
+        chart.plot_area.dTable = DataTable()
+        chart.plot_area.dTable.showHorzBorder = True
+        chart.plot_area.dTable.showVertBorder = True
+        chart.plot_area.dTable.showOutline = True
+        chart.plot_area.dTable.showKeys = True
+
+        ws.add_chart(chart)
+
+    grafico_resumen_ingresos(hoja)
+
+    return wb
+    
+def ReporteDepositoCuentasBancariasCorregido(sociedad_id, fecha_inicio, fecha_fin):
+
+    if sociedad_id:
+        sociedad = Sociedad.objects.get(id=sociedad_id)
+        wb=dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin)
+        return wb
+    else:
+        sociedades = Sociedad.objects.all()
+        wb=dataReporteDepositoCuentasBancariasResumen(sociedades, fecha_inicio, fecha_fin)
+        return wb
