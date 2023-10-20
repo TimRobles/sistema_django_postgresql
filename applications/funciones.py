@@ -538,6 +538,8 @@ def consulta_totales_ventas(factura_venta, boleta_venta, nota_credito, fecha_ini
 
 
 def consulta_pareto(totales, id_cliente):
+    print("****************************************")
+    print("consulta_pareto")
     acumulado = Decimal('0.00')
     existe = False
     for total in totales:
@@ -560,7 +562,9 @@ def consulta_pareto(totales, id_cliente):
     print(clientes_pareto)
 
     if id_cliente in clientes_pareto:
+        print("VERDADERO")
         return True
+    print("FALSO")
     return False
 
 
