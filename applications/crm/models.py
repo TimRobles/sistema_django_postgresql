@@ -112,7 +112,7 @@ def actualizar_estado_cliente_crm(id_cliente=None):
         fecha_fin = date.today()
         fecha_inicio = fecha_fin - timedelta(6*30)
         totales = consulta_totales_ventas(FacturaVenta, BoletaVenta, NotaCredito, fecha_inicio, fecha_fin)
-        clientes_pareto = consulta_pareto(totales, id_cliente)
+        clientes_pareto = consulta_pareto(totales)
         print(clientes_pareto)
         if id_cliente:
             clientes = Cliente.objects.filter(id=id_cliente)
@@ -137,10 +137,12 @@ def actualizar_estado_cliente_crm(id_cliente=None):
             if len(comprobante_venta.models.BoletaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
                 filtro = False
                 estado_cliente = 4
-            if id_cliente in clientes_pareto:
+            if cliente.id in clientes_pareto:
+                print("PARETO", cliente.id)
                 filtro = False
                 estado_cliente = 5
             if len(cobranza.models.Deuda.objects.filter(cliente=cliente, estado_cancelado=False, fecha_vencimiento__gt=date.today()))>0:
+                print("DEUDOR", cliente.id, estado_cliente)
                 filtro = False
                 if estado_cliente == 5:
                     estado_cliente = 7
