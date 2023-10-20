@@ -122,13 +122,14 @@ def actualizar_estado_cliente_crm(id_cliente=None):
 
         for cliente in clientes:
             filtro = True
+            estado_cliente = 0
             if len(tarea.models.Tarea.objects.filter(content_type=ContentType.objects.get_for_model(Cliente), id_registro = cliente.id, estado__gte=2)) > 0:
                 filtro = False
                 estado_cliente = 2
             if len(crm.models.ClienteCRMDetalle.objects.filter(cliente_crm=cliente, tipo_actividad__gte=1).exclude(tipo_actividad=6).exclude(tipo_actividad=7).exclude(tipo_actividad=8)) > 0:
                 filtro = False
                 estado_cliente = 2
-            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
+            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
                 filtro = False
                 estado_cliente = 3
             if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
@@ -142,7 +143,10 @@ def actualizar_estado_cliente_crm(id_cliente=None):
                 estado_cliente = 5
             if len(cobranza.models.Deuda.objects.filter(cliente=cliente, estado_cancelado=False, fecha_vencimiento__gt=date.today()))>0:
                 filtro = False
-                estado_cliente = 6
+                if estado_cliente == 5:
+                    estado_cliente = 7
+                else:
+                    estado_cliente = 6
             if filtro:
                 estado_cliente = 1
             if cliente.estado_cliente != estado_cliente:
