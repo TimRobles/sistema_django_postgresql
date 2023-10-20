@@ -31,5 +31,5 @@ BUSCAR_IP = 'HTTP_CF_CONNECTING_IP'
 
 CRONJOBS = [
     ('0 10 * * 1-6', 'applications.reportes.pdf.reporte_cobranza', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
-    # ('00 01 * * *', 'applications.crm.funciones.actualizar_estado_cliente_crm', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
+    ('00 01 * * *', 'applications.crm.models.actualizar_estado_cliente_crm', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
 ]
