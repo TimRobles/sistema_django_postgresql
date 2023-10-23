@@ -678,7 +678,7 @@ def ValidarSeriesEnvioTrasladoProductoDetailTabla(request, pk):
 
 
 class ValidarSeriesEnvioTrasladoProductoDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('traslado_producto.delete_validarseriesenviotrasladoproductodetalle')
+    permission_required = ('traslado_producto.delete_enviotrasladoproductodetalle')
     model = ValidarSerieEnvioTrasladoProductoDetalle
     template_name = "includes/eliminar generico.html"
 

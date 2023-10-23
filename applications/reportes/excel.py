@@ -26,7 +26,7 @@ from applications.nota.models import NotaCredito
 from applications.crm.models import ClienteCRMDetalle
 from applications.clientes.models import CorreoInterlocutorCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
-from applications.cotizacion.models import CotizacionVenta
+from applications.cotizacion.models import CotizacionVenta, PrecioListaMaterial
 from applications.cobranza.models import Ingreso, Pago
 from applications.reportes.data_resumen_ingresos_anterior import*
 
@@ -1355,7 +1355,7 @@ def dataReporteRotacion(sociedad=None):
 
     materiales_valores = materiales.values_list(
         'id',
-        'subfamilia__familia',
+        'subfamilia__familia__nombre',
         'descripcion_corta',
         'descripcion_venta',
         'precio',
@@ -1388,13 +1388,26 @@ def dataReporteRotacion(sociedad=None):
         filtro_ultimo_ingreso = (group['TIPO_MOVIMIENTO'] == 101) & (group['TIPO_STOCK'] == 2)
         return (fecha_actual - group.loc[filtro_ultimo_ingreso, 'FECHA'].max()).days
 
+    # Calcular la columna VENTA_ULTIMO_INGRESO para cada grupo
+    def calcular_venta_ultimo_ingreso(group):
+        ultimas_compras = group[(group['TIPO_MOVIMIENTO'] == 101) & (group['TIPO_STOCK'] == 2)]
+        ultima_fecha_compra = ultimas_compras['FECHA'].max()
+        group['VENTA_ULTIMO_INGRESO'] = group.apply(lambda row: row['CANTIDAD'] * row['FACTOR']
+                                                    if row['TIPO_MOVIMIENTO'] == 120
+                                                    and row['TIPO_STOCK'] == 17
+                                                    and ultima_fecha_compra <= row['FECHA'] <= fecha_actual
+                                                    else 0, axis=1)
+        return group
+
+
     # Aplica las funciones personalizadas y agrupa por ID
     resultados = df.groupby('ID').apply(lambda group: pd.Series({
         'STOCK': calcular_stock(group),
         'FECHA_VENTA_TOTAL': calcular_fecha_venta_total(group),
         'VENTA_TOTAL': (group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17), 'CANTIDAD'] * group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17), 'FACTOR']).sum(),
         'VENTA_ULTIMOS_6_MESES': (group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'CANTIDAD'] * group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'FACTOR']).sum(),
-        'FECHA_ULTIMO_INGRESO': calcular_fecha_ultimo_ingreso(group)
+        'FECHA_ULTIMO_INGRESO': calcular_fecha_ultimo_ingreso(group),
+        'VENTA_ULTIMO_INGRESO': calcular_venta_ultimo_ingreso(group)
     }))
     resultados['STOCK'] = resultados['STOCK'].astype(float)
     resultados['FECHA_VENTA_TOTAL'] = resultados['FECHA_VENTA_TOTAL'].astype(float)
@@ -1416,12 +1429,34 @@ def dataReporteRotacion(sociedad=None):
     resultados.reset_index(inplace=True)
     print(resultados)
 
-    resultado_combinado = pd.merge(resultados, dfMateriales, on='ID')
+    resultado_combinado = pd.merge(dfMateriales, resultados, on='ID', how='right')
 
     
-    for r_idx, row in enumerate(dataframe_to_rows(resultado_combinado, index=False, header=True), 1):
-        for c_idx, value in enumerate(row, 1):
-            hoja.cell(row=r_idx, column=c_idx, value=value)
+    for r_idx, row in enumerate(dataframe_to_rows(resultado_combinado, index=False, header=True), 2):
+        # if r_idx == 1: continue
+        print(row)
+        hoja.cell(row=r_idx, column=1, value=row[0])
+        hoja.cell(row=r_idx, column=2, value=row[1])
+        hoja.cell(row=r_idx, column=3, value=row[2])
+        hoja.cell(row=r_idx, column=4, value=row[3])
+        hoja.cell(row=r_idx, column=5, value=row[4])
+        hoja.cell(row=r_idx, column=6, value=row[5])
+
+        hoja.cell(row=r_idx, column=7, value=row[7])
+        hoja.cell(row=r_idx, column=8, value=row[7])
+        hoja.cell(row=r_idx, column=9, value=row[8])
+        hoja.cell(row=r_idx, column=10, value=row[9])
+        hoja.cell(row=r_idx, column=11, value=row[10])
+        hoja.cell(row=r_idx, column=12, value=row[11])
+        hoja.cell(row=r_idx, column=13, value=row[12])
+
+        hoja.cell(row=r_idx, column=14, value=row[13])
+        hoja.cell(row=r_idx, column=15, value=row[14])
+        hoja.cell(row=r_idx, column=16, value=row[15])
+        
+        
+        # for c_idx, value in enumerate(row, 1):
+        #     hoja.cell(row=r_idx, column=c_idx, value=value)
 
     # # Aplicar formato a las columnas específicas
     # venta_total_column = hoja['C']
