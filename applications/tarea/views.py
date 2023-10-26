@@ -133,6 +133,8 @@ class TareaListView(PermissionRequiredMixin, FormView):
 
         kwargs['filtro_fecha_inicio_real'] = self.request.GET.get('fecha_inicio_real')
         kwargs['filtro_fecha_cierre'] = self.request.GET.get('fecha_cierre')
+        kwargs['filtro_encargado'] = self.request.GET.get('encargado')
+        kwargs['filtro_apoyo'] = self.request.GET.get('apoyo')
 
         return kwargs
 
@@ -146,6 +148,12 @@ class TareaListView(PermissionRequiredMixin, FormView):
 
         filtro_fecha_inicio_real = self.request.GET.get('fecha_inicio_real')
         filtro_fecha_cierre = self.request.GET.get('fecha_cierre')
+        if 'tarea.ver_tareas' in self.request.user.get_all_permissions():
+            filtro_encargado = self.request.GET.get('encargado')
+            filtro_apoyo = self.request.GET.get('apoyo')
+        else:
+            filtro_encargado = str(self.request.user.id)
+            filtro_apoyo = str(self.request.user.id)
         
         contexto_filtro = []   
         
@@ -175,6 +183,23 @@ class TareaListView(PermissionRequiredMixin, FormView):
             tarea = tarea.filter(condicion)
             contexto_filtro.append(f"fecha_cierre={filtro_fecha_cierre}")
 
+        if filtro_encargado:
+            condicion_encargado = Q(encargado = filtro_encargado)
+            contexto_filtro.append(f"encargado={filtro_encargado}")
+
+        if filtro_apoyo:
+            condicion_apoyo = Q(apoyo = filtro_apoyo)
+            contexto_filtro.append(f"apoyo={filtro_apoyo}")
+        
+        if 'tarea.ver_tareas' in self.request.user.get_all_permissions():
+            if filtro_encargado and not filtro_apoyo:
+                tarea = tarea.filter(condicion_encargado)
+            elif not filtro_encargado and filtro_apoyo:
+                tarea = tarea.filter(condicion_apoyo)
+            elif filtro_encargado and filtro_apoyo:
+                tarea = tarea.filter(condicion_encargado | condicion_apoyo)
+        else:
+            tarea = tarea.filter(condicion_encargado | condicion_apoyo)
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -575,7 +600,7 @@ class TareaIniciarUpdateView(PermissionRequiredMixin, BSModalDeleteView):
         return context
 
 class TareaRegistrarTipoTareaCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('tarea.add_tarea')        
+    permission_required = ('tarea.add_tipotarea')        
     model = TipoTarea
     template_name = "includes/formulario generico.html"
     form_class = TipoTareaForm

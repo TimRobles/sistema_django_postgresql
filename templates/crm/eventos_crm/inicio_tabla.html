@@ -42,7 +42,7 @@
                 <i class="bi bi-eye-fill"></i>
                 </a>
 
-                {% if evento.estado == 1 %}
+                {% if evento.estado == 1 and permiso_eliminar_evento %}
                 <button data-form-url="{% url 'crm_app:evento_crm_eliminar' evento.id %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">

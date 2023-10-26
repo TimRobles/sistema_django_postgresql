@@ -56,7 +56,9 @@ for condicion in list(CondicionesGarantia.objects.values_list('condicion')):
     CONDICIONES_GARANTIA.append(condicion[0])
 
 
-class IngresoReclamoGarantiaListView(FormView):
+class IngresoReclamoGarantiaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('garantia.add_marca')
+    
     template_name = 'garantia/ingreso_garantia/inicio.html'
     form_class = IngresoReclamoGarantiaBuscarForm
     success_url = '.'

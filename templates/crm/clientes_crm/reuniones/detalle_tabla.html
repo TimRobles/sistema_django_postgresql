@@ -61,11 +61,15 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
+
+                    {% if permiso_eliminar_actividad %}
                     <button data-form-url="{% url 'crm_app:detalle_eliminar_reuniones' cliente_crm.id  %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi-x-lg"></i>
                     </button>
+                    {% endif %}
+
                 </td>
             </tr>
             {% endfor %}

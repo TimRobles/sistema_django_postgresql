@@ -333,7 +333,9 @@ class EsSaludUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class BoletaPagoListView(FormView):
+class BoletaPagoListView(PermissionRequiredMixin, FormView):
+    permission_required = ('contabilidad.view_boletapago')
+
     form_class = BoletaPagoBuscarForm
     template_name = "contabilidad/boleta_pago/inicio.html"
 
@@ -557,7 +559,8 @@ class BoletaPagoDetailView(PermissionRequiredMixin, TemplateView):
         return context
 #---------------------------------------------------------------------------------
 
-class ReciboBoletaPagoListView(TemplateView):
+class ReciboBoletaPagoListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_reciboboletapago')
     template_name = "contabilidad/recibo_boleta_pago/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -648,7 +651,9 @@ class ReciboBoletaPagoDeleteView(BSModalDeleteView):
 
 #---------------------------------------------------------------------------------
 
-class ServicioListView(FormView):
+class ServicioListView(PermissionRequiredMixin, FormView):
+    permission_required = ('contabilidad.view_servicio')
+   
     form_class = ServicioBuscarForm
     template_name = "contabilidad/servicio/inicio.html"
 
@@ -865,7 +870,9 @@ class ServicioUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class ReciboServicioListView(TemplateView):
+class ReciboServicioListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_reciboservicio')
+    
     template_name = "contabilidad/recibo_servicio/inicio.html"
     
     def get_context_data(self, **kwargs):

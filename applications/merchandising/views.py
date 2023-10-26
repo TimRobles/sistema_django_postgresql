@@ -2422,7 +2422,9 @@ class AjusteInventarioMerchandisingDetalleDeleteView(PermissionRequiredMixin, BS
 
 ########################################Nuevo MERCHANDISING########################################################################
 
-class ListaRequerimientoMerchandisingListView(FormView):
+class ListaRequerimientoMerchandisingListView(PermissionRequiredMixin, FormView):
+    permission_required = ('merchandising.view_listarequerimientomerchandising')
+
     template_name = "merchandising/lista_merchandising/inicio.html"
     form_class = ListaRequerimientoMerchandisingBuscarForm
     success_url = '.'
@@ -2707,17 +2709,27 @@ class ListaRequerimientoMerchandisingDetalleDeleteView(BSModalDeleteView):
         return context
 
 
-class OfertaProveedorMerchandisingListView(ListView):
+class OfertaProveedorMerchandisingListView(PermissionRequiredMixin, ListView):
+    permission_required = ('merchandising.view_ofertaproveedormerchandising')
+
     model = OfertaProveedorMerchandising
     template_name = "merchandising/oferta_merchandising/inicio.html"
     context_object_name = 'contexto_oferta_proveedor_merchandising'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['permiso_eliminar_oferta'] = self.request.user.has_perm('merchandising.delete_ofertaproveedormerchandising')
+        return context
+    
 def OfertaProveedorMerchandisingTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'merchandising/oferta_merchandising/inicio_tabla.html'
         context = {}
         context['contexto_oferta_proveedor_merchandising'] = OfertaProveedorMerchandising.objects.all()
+
+        if 'merchandising.delete_ofertaproveedormerchandising' in request.user.get_all_permissions():
+            context['permiso_eliminar_oferta'] = True
 
         data['table'] = render_to_string(
             template,
@@ -3196,7 +3208,9 @@ def ver_ofertas_evaluadas(request, pk):
 ### ORDEN DE COMPRA
 
 
-class OrdenCompraMerchandisingListView(ListView):
+class OrdenCompraMerchandisingListView(PermissionRequiredMixin, ListView):
+    permission_required = ('merchandising.view_ordencompramerchandising')
+
     model = OrdenCompraMerchandising
     template_name = "merchandising/orden_compra_merchandising/inicio.html"
     context_object_name = 'contexto_orden_compra'
@@ -3481,7 +3495,9 @@ class OrdenCompraGenerarComprobanteMerchandisingTotalView(BSModalDeleteView):
 
 
 ## Comprobante de compra
-class ComprobanteCompraMerchandisingListView(FormView):
+class ComprobanteCompraMerchandisingListView(PermissionRequiredMixin, FormView):
+    permission_required = ('merchandising.view_comprobantecompramerchandising')
+
     form_class = ComprobanteCompraMerchandisingBuscarForm
     template_name = "merchandising/comprobante_compra/inicio.html"
 
@@ -3547,6 +3563,9 @@ class ComprobanteCompraMerchandisingListView(FormView):
         context['contexto_comprobante_compra'] = comprobante_compra   
         context['contexto_pagina'] = comprobante_compra
 
+        if 'merchandising.delete_comprobantecompramerchandising' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_comprobante'] = True
+
         return context
 
 def ComprobanteCompraMerchandisingTabla(request):
@@ -3597,6 +3616,9 @@ def ComprobanteCompraMerchandisingTabla(request):
         context['contexto_comprobante_compra'] = comprobante_compra
         context['contexto_pagina'] = comprobante_compra
 
+        if 'merchandising.delete_comprobantecompramerchandising' in request.user.get_all_permissions():
+            context['permiso_eliminar_comprobante'] = True
+        
         data['table'] = render_to_string(
             template,
             context,
@@ -3798,7 +3820,9 @@ class ComprobanteCompraMerchandisingLlegadaUpdateView(PermissionRequiredMixin, B
 
 # Recepción de comprobante
 
-class RecepcionComprobanteCompraMerchandisingView(BSModalFormView):
+class RecepcionComprobanteCompraMerchandisingView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('merchandising.view_recepcioncompramerchandising')
+
     template_name = "includes/formulario generico.html"
     form_class = RecepcionComprobanteCompraMerchandisingForm
     
@@ -3971,7 +3995,9 @@ class RecepcionCompraGenerarNotaIngresoView( BSModalFormView):
 # Nota de Ingreso
 
 
-class NotaIngresoMerchandisingView(TemplateView):
+class NotaIngresoMerchandisingView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('merchandising.view_notaingresomerchandising')
+
     template_name = "merchandising/nota_ingreso/nota_ingreso/inicio.html"
 
     def get_context_data(self, **kwargs):

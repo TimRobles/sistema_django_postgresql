@@ -5,7 +5,7 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>{{ contexto_encuesta_crm.titulo}}
+    <h3>{{ contexto_respuesta.encuesta_crm.titulo }} |  {{ contexto_respuesta.cliente_crm }} 
         <a href="{% url 'crm_app:respuesta_crm_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
     <div id="tabla">

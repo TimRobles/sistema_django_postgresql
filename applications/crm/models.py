@@ -244,7 +244,7 @@ class EventoCRMDetalleInformacionAdicional(models.Model):
 class PreguntaCRM(models.Model):
     tipo_pregunta = models.IntegerField('Tipo Pregunta', choices=TIPO_PREGUNTA_CRM)
     texto = models.CharField('Pregunta', max_length=150)
-    orden = models.IntegerField()
+    orden = models.IntegerField(blank=True, null=True)
     mostrar = models.BooleanField('Mostrar', default=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -256,7 +256,6 @@ class PreguntaCRM(models.Model):
         verbose_name = 'Pregunta CRM'
         verbose_name_plural = 'Preguntas CRM'
         ordering = [
-            'orden',
             '-created_at',
             'mostrar',
         ]
