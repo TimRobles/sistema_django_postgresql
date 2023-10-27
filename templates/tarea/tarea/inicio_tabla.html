@@ -1,6 +1,7 @@
 {% load funciones_propias %}
 {% load humanize %}
 
+
 <table class="table">
     <thead>
         <tr>
@@ -48,14 +49,16 @@
             <td>{{ tarea.fecha_cierre|date:'d/m/Y' }}</td>
             <td class="text-center text-nowrap">
                 
-                {% if tarea.estado < 3 or tarea.estado == 4 %}                    
-                <button data-form-url="{% url 'tarea_app:tarea_actualizar' tarea.id %}"
-                    data-table-url="{% url 'tarea_app:tarea_tabla' %}"
-                    data-keep-open="true"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
+                {% if tarea.estado < 3 or tarea.estado == 4 %}      
+                    {% if request.user == tarea.created_by %}              
+                    <button data-form-url="{% url 'tarea_app:tarea_actualizar' tarea.id %}"
+                        data-table-url="{% url 'tarea_app:tarea_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    {% endif %}    
                 {% endif %}
 
                 <a href="{% url 'tarea_app:tarea_detalle' tarea.id %}"
@@ -71,12 +74,15 @@
                     class="delete btn btn-success btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Iniciar">
                     <i class="bi bi-stopwatch"></i>
-                </button>                
-                <button data-form-url="{% url 'tarea_app:tarea_eliminar' tarea.id %}"
-                    class="delete btn btn-danger btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                    <i class="bi bi-x-lg"></i>
-                </button>                
+                </button>    
+
+                    {% if request.user == tarea.created_by %}
+                    <button data-form-url="{% url 'tarea_app:tarea_eliminar' tarea.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button> 
+                    {% endif %}                
                 {% endif %}
 
                 
@@ -94,4 +100,6 @@
         </tr>
         {% endfor %}
     </tbody>
+    
+
 </table>

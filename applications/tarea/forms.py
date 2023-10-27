@@ -42,6 +42,8 @@ class TareaBuscarForm(forms.Form):
                 )
         )
     estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADO_TAREA, required=False)
+    encargado = forms.ModelChoiceField(queryset=get_user_model().objects, required=False)
+    apoyo = forms.ModelChoiceField(queryset=get_user_model().objects, required=False)
     tipo_tarea = forms.ModelChoiceField(queryset=TipoTarea.objects.all(), required=False)
     fecha_inicio_real = forms.DateField(
         required=False,
@@ -69,6 +71,8 @@ class TareaBuscarForm(forms.Form):
 
         filtro_fecha_inicio_real = kwargs.pop('filtro_fecha_inicio_real')
         filtro_fecha_cierre= kwargs.pop('filtro_fecha_cierre')
+        filtro_encargado= kwargs.pop('filtro_encargado')
+        filtro_apoyo= kwargs.pop('filtro_apoyo')
 
         super(TareaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['fecha_inicio'].initial = filtro_fecha_inicio
@@ -77,6 +81,8 @@ class TareaBuscarForm(forms.Form):
 
         self.fields['fecha_inicio_real'].initial = filtro_fecha_inicio_real
         self.fields['fecha_cierre'].initial = filtro_fecha_cierre
+        self.fields['encargado'].initial = filtro_encargado
+        self.fields['apoyo'].initial = filtro_apoyo
     
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

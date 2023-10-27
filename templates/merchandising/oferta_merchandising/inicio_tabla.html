@@ -44,14 +44,14 @@
                     <i class="bi bi-eye-fill"></i>
                 </a>
 
-
+                {% if oferta_proveedor.estado == 1 and permiso_eliminar_oferta %}
                 <button data-form-url="{% url 'merchandising_app:ofertaproveedor_eliminar' oferta_proveedor.id %}"
                     class="delete btn btn-danger btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar"> 
                     <i class="bi bi-x-lg"></i>
-                </button>
+                </button> 
+                {% endif %}
 
-                
             </td>
         </tr>
         {% endfor %}

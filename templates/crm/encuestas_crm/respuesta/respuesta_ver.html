@@ -26,7 +26,7 @@
             <td>
                 <ul>
                     {% for pregunta in encuesta.pregunta_crm.all %}
-                    <li>{{ pregunta.orden }}. {{ pregunta.texto }}</li>                        
+                    <li><b>{{ pregunta.texto }}</b></li>                        
                         {% if pregunta.tipo_pregunta == 1  %}   
                             <div class="pregunta">
                                 {% for alternativa in pregunta.AlternativaCRM_pregunta_crm.all %}

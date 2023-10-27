@@ -5,13 +5,13 @@
 
 <table class="table">
     <tr>
-        <th>Pregunta</th>
-        <th>Respuestas</th>
+        <th>PREGUNTA</th>
+        <th>RESPUESTAS</th>
     </tr>
 
     {% for pregunta, respuestas in respuesta_detalle.items %}
     <tr>
-        <td>{{ pregunta }}</td>
+        <td><b>{{ pregunta }}</b></td>
         <td>
             <ul>
                 {% for respuesta in respuestas %}

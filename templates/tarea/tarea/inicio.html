@@ -6,7 +6,7 @@
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Tarea
+    <h3>TAREAS | {{request.user }}
         <button data-form-url="{% url 'tarea_app:tarea_registrar' %}"
             data-table-url="{% url 'tarea_app:tarea_tabla' %}"
             class="create badge bg-primary">

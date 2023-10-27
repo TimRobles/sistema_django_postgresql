@@ -53,7 +53,10 @@ class Tarea(models.Model):
         verbose_name_plural = 'Tareas'
         ordering = [
             '-created_at',
-        ]    
+        ]
+        permissions = [
+        ('ver_tareas', 'Puede ver las tareas de todos los usuarios'),
+        ]
 
     def __str__(self):
         return str(self.descripcion)

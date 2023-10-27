@@ -15,7 +15,7 @@
             <td>{{ tipo_tarea.created_at|date:'d/m/Y' }}</td>
             <td>{{ tipo_tarea.updated_at|date:'d/m/Y' }}</td>
             <td>
-                {% if tipo_tarea.id not in lista_tipotarea %}
+                {% if tipo_tarea.id not in lista_tipotarea and request.user == tipo_tarea.created_by  %}
                 <button data-form-url="{% url 'tarea_app:tipo_tarea_actualizar' tipo_tarea.id %}"
                     data-table-url="{% url 'tarea_app:tipo_tarea_tabla' %}"
                     data-keep-open="true"
@@ -23,12 +23,11 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
-                        
                 <button data-form-url="{% url 'tarea_app:tipo_tarea_eliminar' tipo_tarea.id %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                     <i class="bi bi-x-lg"></i>
-                </button>     
+                </button> 
                 {% endif %}
                     
             </td>

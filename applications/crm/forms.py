@@ -515,7 +515,6 @@ class PreguntaCRMForm(BSModalModelForm):
         model = PreguntaCRM
         fields=(
             'texto',
-            'orden',
             'tipo_pregunta',
             'mostrar',
             )
@@ -608,20 +607,6 @@ class RespuestaCRMBuscarForm(forms.Form):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
 
-class RespuestaCrearCRMForm(BSModalModelForm):
-    class Meta:
-        model = RespuestaCRM
-        fields=(
-            'cliente_crm',
-            'interlocutor',
-            'nombre_interlocutor',
-            'encuesta_crm',
-            )
-
-    def __init__(self, *args, **kwargs):
-        super(RespuestaCrearCRMForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
 
 class RespuestaCRMForm(BSModalModelForm):
     class Meta:
@@ -634,27 +619,56 @@ class RespuestaCRMForm(BSModalModelForm):
             )
         
     def clean_cliente(self):
-        cliente_crm = self.cleaned_data.get('cliente_crm')
-        if cliente_crm:
+        cliente = self.cleaned_data.get('cliente_crm')
+        if cliente:
             interlocutor = self.fields['interlocutor']
             lista = []
-            relaciones = ClienteInterlocutor.objects.filter(cliente = cliente_crm.id)
+            relaciones = ClienteInterlocutor.objects.filter(cliente = cliente.id)
             for relacion in relaciones:
                 lista.append(relacion.interlocutor.id)
 
             interlocutor.queryset = InterlocutorCliente.objects.filter(id__in = lista)
 
-        return cliente_crm
+        return cliente
+
+    def __init__(self, *args, **kwargs):
+        super(RespuestaCRMForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class RespuestaClienteActualizarForm(BSModalModelForm):
+    class Meta:
+        model = RespuestaCRM
+        fields = (
+            'cliente_crm',
+            'interlocutor',
+            'nombre_interlocutor',
+            'encuesta_crm',
+            )
+
+    def clean_cliente(self):
+        cliente = self.cleaned_data.get('cliente_crm')
+        if cliente:
+            cliente_interlocutor = self.fields['interlocutor']
+            lista = []
+            relaciones = ClienteInterlocutor.objects.filter(cliente = cliente.id)
+            for relacion in relaciones:
+                lista.append(relacion.interlocutor.id)
+
+            cliente_interlocutor.queryset = InterlocutorCliente.objects.filter(id__in = lista)
+
+        return cliente
 
     def __init__(self, *args, **kwargs):
         interlocutor_queryset = kwargs.pop('interlocutor_queryset')
         interlocutor = kwargs.pop('interlocutor')
-        super(RespuestaCRMForm, self).__init__(*args, **kwargs)
+        super(RespuestaClienteActualizarForm, self).__init__(*args, **kwargs)
         self.fields['interlocutor'].queryset = interlocutor_queryset
-        if interlocutor:
-            self.fields['interlocutor'].initial = interlocutor
+        self.fields['interlocutor'].initial = interlocutor
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
 
 class EventoCRMFinalizarForm(BSModalModelForm):
     class Meta:
