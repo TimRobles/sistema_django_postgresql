@@ -3869,8 +3869,9 @@ class ReporteStockSociedadPdf(TemplateView):
             vertical = True
             vertical = False
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            logo = [sociedad_MPL.logo.url]
             pie_pagina = PIE_DE_PAGINA_DEFAULT
             color = COLOR_DEFAULT
 
@@ -3907,8 +3908,9 @@ class ReportesCRM(TemplateView):
             departamento = self.request.POST.get('departamento')
 
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            logo = [sociedad_MPL.logo.url]
 
             if departamento:
                 titulo = f'Reporte Ventas por Departamento - {departamento}'
@@ -3920,8 +3922,9 @@ class ReportesCRM(TemplateView):
         elif formulario == 'formulario2':
             
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            logo = [sociedad_MPL.logo.url]
             titulo = 'Reporte Cliente CRM' + '_' + str(fecha_doc)
 
             wb = ReporteClienteCRMExcel()
@@ -3930,8 +3933,9 @@ class ReportesCRM(TemplateView):
             cliente = self.request.POST.get('cliente')
 
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            logo = [sociedad_MPL.logo.url]
             titulo = 'Reporte Comportamiento Cliente' + '_' + str(fecha_doc)
 
             wb = ReporteComportamientoCliente(cliente)
@@ -3939,8 +3943,9 @@ class ReportesCRM(TemplateView):
         elif formulario == 'formulario4':
             
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            logo = [sociedad_MPL.logo.url]
             titulo = 'Reporte Estados Cliente' + '_' + str(fecha_doc)
 
             wb = ReporteEstadosClienteExcel()
@@ -3972,8 +3977,9 @@ class ReportesGerencia(TemplateView):
             asesor_comercial = self.request.POST.get('asesor_comercial')
 
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            logo = [sociedad_MPL.logo.url]
 
             if asesor_comercial:
                 titulo = f'Reporte Facturación por Asesor Comercial - {asesor_comercial}'
@@ -3987,8 +3993,9 @@ class ReportesGerencia(TemplateView):
             fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d")
 
             sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+            logo = [sociedad_MPL.logo.url]
             titulo = 'Reporte Facturación General' + '_' + str(fecha_fin.date())
 
             wb = ReporteFacturacionGeneral(fecha_inicio, fecha_fin)

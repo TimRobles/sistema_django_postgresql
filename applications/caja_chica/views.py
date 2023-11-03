@@ -1300,9 +1300,10 @@ class CajaChicaPdfView(View):
         titulo = 'Cierre de caja - %s - %s' % (caja.periodo, nombre_usuario(caja.usuario))
         vertical = False
         sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
         color = COLOR_DEFAULT
-        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        logo = [sociedad_MPL.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
         buf = generarCajaChicaPdf(titulo, vertical, logo, pie_pagina, movimientos, caja, color)
 

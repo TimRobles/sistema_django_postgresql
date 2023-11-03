@@ -58,7 +58,7 @@ for condicion in list(CondicionesGarantia.objects.values_list('condicion')):
 
 
 class IngresoReclamoGarantiaListView(PermissionRequiredMixin, FormView):
-    permission_required = ('garantia.add_marca')
+    permission_required = ('garantia.view_ingresoreclamogarantia')
     
     template_name = 'garantia/ingreso_garantia/inicio.html'
     form_class = IngresoReclamoGarantiaBuscarForm
@@ -119,7 +119,8 @@ def IngresoReclamoGarantiaCreateView(request):
 
     return HttpResponseRedirect(reverse_lazy('garantia_app:ingreso_garantia_ver', kwargs={'id_ingreso':obj.id}))
 
-class IngresoReclamoGarantiaVerView(TemplateView):
+class IngresoReclamoGarantiaVerView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('garantia.view_ingresoreclamogarantia')
     template_name = "garantia/ingreso_garantia/detalle.html"
 
     def get_context_data(self, **kwargs):
@@ -152,7 +153,8 @@ def IngresoReclamoGarantiaVerTabla(request, id_ingreso):
         )
         return JsonResponse(data)
 
-class IngresoReclamoGarantiaDeleteView(BSModalDeleteView):
+class IngresoReclamoGarantiaDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('garantia.delete_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('garantia_app:ingreso_garantia_inicio')
@@ -165,7 +167,8 @@ class IngresoReclamoGarantiaDeleteView(BSModalDeleteView):
         return context
 
 
-class IngresoReclamoGarantiaClienteView(BSModalUpdateView):
+class IngresoReclamoGarantiaClienteView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "garantia/ingreso_garantia/form_cliente.html"
     form_class = IngresoReclamoGarantiaClienteForm
@@ -193,7 +196,8 @@ class IngresoReclamoGarantiaClienteView(BSModalUpdateView):
         context['titulo'] = "Cliente"
         return context
 
-class IngresoReclamoGarantiaEncargadoView(BSModalUpdateView):
+class IngresoReclamoGarantiaEncargadoView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "garantia/ingreso_garantia/form_cliente.html"
     form_class = IngresoReclamoGarantiaEncargadoForm
@@ -209,7 +213,8 @@ class IngresoReclamoGarantiaEncargadoView(BSModalUpdateView):
         context['titulo'] = "Encargado"
         return context
 
-class IngresoReclamoGarantiaSociedadView(BSModalUpdateView):
+class IngresoReclamoGarantiaSociedadView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "includes/formulario generico.html"
     form_class = IngresoReclamoGarantiaSociedadForm
@@ -225,7 +230,8 @@ class IngresoReclamoGarantiaSociedadView(BSModalUpdateView):
         context['titulo'] = "Sociedad"
         return context
 
-class IngresoReclamoGarantiaAlmacenView(BSModalUpdateView):
+class IngresoReclamoGarantiaAlmacenView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "includes/formulario generico.html"
     form_class = IngresoReclamoGarantiaAlmacenForm
@@ -241,7 +247,8 @@ class IngresoReclamoGarantiaAlmacenView(BSModalUpdateView):
         context['titulo'] = "Almacen"
         return context
 
-class IngresoReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
+class IngresoReclamoGarantiaObservacionUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "includes/formulario generico.html"
     form_class = IngresoReclamoGarantiaObservacionForm
@@ -255,7 +262,8 @@ class IngresoReclamoGarantiaObservacionUpdateView(BSModalUpdateView):
         context['id_ingreso'] = self.object.id
         return context
 
-class IngresoReclamoGarantiaMaterialView(BSModalFormView):
+class IngresoReclamoGarantiaMaterialView(PermissionRequiredMixin, BSModalFormView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     template_name = "garantia/ingreso_garantia/form_material.html"
     form_class = IngresoReclamoGarantiaMaterialForm
     success_url = reverse_lazy('garantia_app:ingreso_garantia_inicio')
@@ -301,7 +309,8 @@ class IngresoReclamoGarantiaMaterialView(BSModalFormView):
         context['accion'] = 'Agregar'
         return context
 
-class IngresoReclamoGarantiaMaterialUpdateView(BSModalUpdateView):
+class IngresoReclamoGarantiaMaterialUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantiaDetalle
     template_name = "garantia/ingreso_garantia/actualizar.html"
     form_class = IngresoReclamoGarantiaMaterialUpdateForm
@@ -326,7 +335,8 @@ class IngresoReclamoGarantiaMaterialUpdateView(BSModalUpdateView):
         context['material'] = self.object.content_type.get_object_for_this_type(id = self.object.id_registro)
         return context
 
-class IngresoReclamoGarantiaMaterialDeleteView(BSModalDeleteView):
+class IngresoReclamoGarantiaMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('garantia.delete_ingresoreclamogarantia')
     model = IngresoReclamoGarantiaDetalle
     template_name = "includes/eliminar generico.html"
 
@@ -462,7 +472,8 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
         context['item'] = self.object.cliente
         return context
 
-class IngresoControlCalidadView(BSModalDeleteView):
+class IngresoControlCalidadView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = IngresoReclamoGarantia
     template_name = "includes/form generico.html"
 
@@ -738,7 +749,8 @@ def SerieIngresoReclamoGarantiaTabla(request, **kwargs):
         return JsonResponse(data)
 
 
-class SerieIngresoReclamoGarantiaDetalleUpdateView(BSModalUpdateView):
+class SerieIngresoReclamoGarantiaDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = SerieIngresoReclamoGarantiaDetalle
     template_name = "includes/formulario generico.html"
     form_class = SerieIngresoReclamoGarantiaComentarioForm
@@ -763,7 +775,8 @@ class SerieIngresoReclamoGarantiaDetalleUpdateView(BSModalUpdateView):
         return context
 
 
-class SerieIngresoReclamoGarantiaDetalleDocumentoUpdateView(BSModalUpdateView):
+class SerieIngresoReclamoGarantiaDetalleDocumentoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = SerieIngresoReclamoGarantiaDetalle
     template_name = "includes/formulario generico.html"
     form_class = SerieIngresoReclamoGarantiaDocumentoForm
@@ -818,7 +831,8 @@ class SerieIngresoReclamoGarantiaDetalleDocumentoUpdateView(BSModalUpdateView):
         return context
     
 
-class SerieIngresoReclamoGarantiaMaterialDeleteView(BSModalDeleteView):
+class SerieIngresoReclamoGarantiaMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     model = SerieIngresoReclamoGarantiaDetalle
     template_name = "includes/eliminar generico.html"
 
@@ -842,7 +856,8 @@ class SerieIngresoReclamoGarantiaMaterialDeleteView(BSModalDeleteView):
         return context
     
 
-class IngresoReclamoGarantiaPdfView(View):
+class IngresoReclamoGarantiaPdfView(PermissionRequiredMixin, View):
+    permission_required = ('garantia.change_ingresoreclamogarantia')
     def get(self, request, *args, **kwargs):
         ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.get(id=self.kwargs['id_ingreso'])
         sociedad = ingreso_reclamo_garantia.sociedad
