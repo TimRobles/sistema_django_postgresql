@@ -653,7 +653,6 @@ class ReciboBoletaPagoDeleteView(BSModalDeleteView):
 
 class ServicioListView(PermissionRequiredMixin, FormView):
     permission_required = ('contabilidad.view_servicio')
-   
     form_class = ServicioBuscarForm
     template_name = "contabilidad/servicio/inicio.html"
 

@@ -1317,6 +1317,7 @@ def dataReporteRotacion(sociedad=None):
 
     lista_tipo_stock = [2,3,4,5,16,17,22,]
     # Recibido 2, Disponible 3, bloqueo sin serie 4, bloqueo sin qa 5, reservado 16, confirmado 17, prestado 22,
+    # Remover LABORATORIO
     # Recepcion compra 101, confirmacion por venta 120
     movimientos = MovimientosAlmacen.objects.filter(
         tipo_stock__codigo__in=lista_tipo_stock,
