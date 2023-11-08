@@ -83,7 +83,7 @@ class Serie(models.Model):
     nota_control_calidad_stock_detalle = models.ForeignKey('NotaControlCalidadStockDetalle', on_delete=models.CASCADE, blank=True, null=True)
     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
     cliente_temporal = models.ForeignKey(Cliente, on_delete=models.CASCADE, blank=True, null=True)
-    tipo_stock_temporal = models.ForeignKey(TipoStock, on_delete=models.CASCADE, blank=True, null=True)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE, blank=True, null=True)
     estado_temporal = models.ForeignKey(EstadoSerie, on_delete=models.CASCADE, blank=True, null=True)
     serie_movimiento_almacen = models.ManyToManyField(MovimientosAlmacen, blank=True, related_name='Serie_serie_movimiento_almacen')
 
@@ -187,11 +187,11 @@ class Serie(models.Model):
             return None
 
     @property
-    def tipo_stock(self):
+    def tipo_stock_latest(self):
         if self.serie_movimiento_almacen.all():
             return self.serie_movimiento_almacen.latest('id').tipo_stock
         else:
-            return ""
+            return None
 
     @property
     def ultimo_almacen(self):
