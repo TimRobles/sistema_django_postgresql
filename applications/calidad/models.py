@@ -234,8 +234,15 @@ class Serie(models.Model):
 def actualizar_almacen(sender, instance, action, **kwargs):
     if action in ['post_add', 'post_remove', 'post_clear']:
         # Verifica si el almacén actual es diferente al almacén del último movimiento
+        guardar = False
         if instance.almacen != instance.almacen_latest:
             instance.almacen = instance.almacen_latest
+            guardar = True
+        if instance.tipo_stock != instance.tipo_stock_latest:
+            instance.tipo_stock = instance.tipo_stock_latest
+            guardar = True
+            
+        if guardar:
             instance.save()
 
 

@@ -1040,8 +1040,15 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                 return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':form.instance.id}))
             for serie in series:
                 serie.HistorialEstadoSerie_serie.latest('id').delete()
+                guardar = False
                 if serie.almacen != serie.almacen_latest:
                     serie.almacen = serie.almacen_latest
+                    guardar = True
+                if serie.tipo_stock != serie.tipo_stock_latest:
+                    serie.tipo_stock = serie.tipo_stock_latest
+                    guardar = True
+                    
+                if guardar:
                     serie.save()
             self.request.session['primero'] = False
         return super().form_valid(form)
