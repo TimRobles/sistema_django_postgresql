@@ -1822,12 +1822,8 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
             contexto_filtro.append("almacen=" + filtro_almacen)
 
         if filtro_tipo_stock:
-            series_id = []
-            for serie in series:
-                if serie.tipo_stock:
-                    if str(serie.tipo_stock.id) == filtro_tipo_stock:
-                        series_id.append(serie.id)
-            series = series.filter(id__in=series_id)
+            condicion = Q(tipo_stock = filtro_tipo_stock)
+            series = series.filter(condicion)
             contexto_filtro.append("tipo_stock=" + filtro_tipo_stock)
 
         if filtro_estado:
