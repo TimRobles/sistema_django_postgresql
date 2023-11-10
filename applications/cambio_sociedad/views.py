@@ -50,7 +50,7 @@ def CambioSociedadStockTabla(request):
 
 
 class CambioSociedadStockCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cambiosociedad.add_cambiosociedadstock')
+    permission_required = ('cambio_sociedad.add_cambiosociedadstock')
     model = CambioSociedadStock
     template_name = "cambio_sociedad/cambio_sociedad_stock/form_actualizar.html"
     form_class = CambioSociedadStockForm
@@ -76,7 +76,7 @@ class CambioSociedadStockCreateView(PermissionRequiredMixin, BSModalCreateView):
 
 
 class CambioSociedadStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cambiosociedad.change_cambiosociedadstock')
+    permission_required = ('cambio_sociedad.change_cambiosociedadstock')
 
     model = CambioSociedadStock
     template_name = "cambio_sociedad/cambio_sociedad_stock/form_actualizar.html"
@@ -102,7 +102,7 @@ class CambioSociedadStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
 
 
 class CambioSociedadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cambiosociedad.delete_cambiosociedadstock')
+    permission_required = ('cambio_sociedad.delete_cambiosociedadstock')
     model = CambioSociedadStock
     template_name = "includes/eliminar generico.html"
 
@@ -233,7 +233,7 @@ class CambioSociedadStockConcluirView(PermissionRequiredMixin, BSModalDeleteView
 
 
 class CambioSociedadStockDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('cambiosociedad.view_cambiosociedadstock')
+    permission_required = ('cambio_sociedad.view_cambiosociedadstock')
 
     model = CambioSociedadStock
     template_name = "cambio_sociedad/cambio_sociedad_stock/detalle.html"
@@ -265,7 +265,7 @@ def CambioSociedadStockDetailTabla(request, pk):
 
 
 class CambioSociedadStockDetalleCreateView(PermissionRequiredMixin, BSModalCreateView):
-    permission_required = ('cambiosociedad.add_cambiosociedadstock')
+    permission_required = ('cambio_sociedad.add_cambiosociedadstock')
     model = CambioSociedadStockDetalle
     template_name = "cambio_sociedad/cambio_sociedad_stock/form material.html"
     form_class = CambioSociedadStockDetalleForm
@@ -306,7 +306,7 @@ class CambioSociedadStockDetalleCreateView(PermissionRequiredMixin, BSModalCreat
 
 
 class CambioSociedadStockDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
-    permission_required = ('cambiosociedad.change_cambiosociedadstock')
+    permission_required = ('cambio_sociedad.change_cambiosociedadstock')
     model = CambioSociedadStockDetalle
     template_name = "cambio_sociedad/cambio_sociedad_stock/form_actualizar_material.html"
     form_class = CambioSociedadStockDetalleActualizarForm
@@ -342,7 +342,7 @@ class CambioSociedadStockDetalleUpdateView(PermissionRequiredMixin, BSModalUpdat
 
 
 class ValidarSeriesCambioSociedadStockDetailView(PermissionRequiredMixin, FormView):
-    permission_required = ('cambiosociedad.view_cambiosociedadstockdetalle')
+    permission_required = ('cambio_sociedad.view_cambiosociedadstockdetalle')
     template_name = "cambio_sociedad/validar_serie_cambio_sociedad_stock/detalle.html"
     form_class = CambioSociedadStockDetalleSeriesForm
     success_url = '.'
@@ -497,7 +497,7 @@ class ValidarSeriesCambioSociedadStockSeriesPdf(View):
 
 
 class ValidarSeriesCambioSociedadStockDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteView):
-    permission_required = ('cambiosociedad.delete_validarseriesenviotrasladoproductodetalle')
+    permission_required = ('cambio_sociedad.delete_validarseriesenviotrasladoproductodetalle')
     model = ValidarSerieCambioSociedadStockDetalle
     template_name = "includes/eliminar generico.html"
 
