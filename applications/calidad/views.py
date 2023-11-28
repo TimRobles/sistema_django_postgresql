@@ -606,8 +606,12 @@ class NotaControlCalidadStockRegistrarSeriesView(PermissionRequiredMixin, BSModa
                             continue
                     else:
                         print("Producto malo")
-                        movimiento_inicial = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
-                        movimiento_final = TipoMovimiento.objects.get(codigo=141) #Registro de Serie, material dañado
+                        if self.object.content_type == ContentType.objects.get_for_model(NotaDevolucion):
+                            movimiento_inicial = TipoMovimiento.objects.get(codigo=168) #Inspección serie devuelta, malo, validar serie
+                            movimiento_final = TipoMovimiento.objects.get(codigo=141) #Registro de Serie, material dañado
+                        else:
+                            movimiento_inicial = TipoMovimiento.objects.get(codigo=105) #Inspección, material dañado
+                            movimiento_final = TipoMovimiento.objects.get(codigo=141) #Registro de Serie, material dañado
 
                     movimiento_anterior = MovimientosAlmacen.objects.get(
                         content_type_producto = ContentType.objects.get_for_model(detalle.nota_ingreso_detalle.producto),
