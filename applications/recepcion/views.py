@@ -303,6 +303,7 @@ def AsistenciaTabla(request):
 
         context['contexto_pagina'] = asistencias
 
+
         data['table'] = render_to_string(
             template,
             context,
