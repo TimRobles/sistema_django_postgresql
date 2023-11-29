@@ -83,7 +83,7 @@ class AsistenciaForm(BSModalModelForm):
 
 class AsistenciaBuscarForm(forms.Form):
     nombre = forms.CharField(max_length=50, required=False)
-    fecha = forms.DateField(
+    fecha_de = forms.DateField(
         required=False,
         widget = forms.DateInput(
                 attrs ={
@@ -92,13 +92,23 @@ class AsistenciaBuscarForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-
+    fecha_hasta = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
     def __init__(self, *args, **kwargs):     
         filtro_nombre = kwargs.pop('filtro_nombre')
         filtro_fecha = kwargs.pop('filtro_fecha')
+        filtro_fecha_dos = kwargs.pop('filtro_fecha_dos')
         super(AsistenciaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['nombre'].initial = filtro_nombre
-        self.fields['fecha'].initial = filtro_fecha
+        self.fields['fecha_de'].initial = filtro_fecha
+        self.fields['fecha_hasta'].initial = filtro_fecha_dos
         
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

@@ -766,6 +766,7 @@ class UnirMerchandisingDetalleForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UnirMerchandisingDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['merch'].queryset = Merchandising.objects.all().order_by('descripcion_corta')
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
