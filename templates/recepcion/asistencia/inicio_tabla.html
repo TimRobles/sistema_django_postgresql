@@ -7,6 +7,7 @@
             <th>Hora de Ingreso</th>
             <th>Hora de Salida</th>
             <th>Fecha de Registro</th>
+            <th>Día</th>
         </tr>
     </thead>
     <tbody>
@@ -34,6 +35,11 @@
                     
             </td>
             <td>{{ asistencia.fecha_registro|date:'d/m/Y' }}</td>
+            <td>
+                {% with asistencia.fecha_registro|date:'l' as day_of_week %}
+                    {{ day_of_week|upper  }}
+                {% endwith %}
+            </td>
 
         </tr>
         {% endfor %}

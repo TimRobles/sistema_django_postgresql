@@ -427,28 +427,29 @@ class EventoCRMActualizarForm(BSModalModelForm):
 class EventoCRMDetalleForm(BSModalModelForm):
     merchandising = forms.ModelChoiceField(queryset=Merchandising.objects.all())
     cantidad_asignada = forms.DecimalField(max_digits=22, decimal_places=10)
-    stock_disponible = forms.CharField(required=False)
+    stock_disponible = forms.DecimalField(max_digits=22, decimal_places=10, required=False, disabled=True)
 
     class Meta:
         model = EventoCRMDetalle
         fields=(
             'merchandising',
-            'almacen_origen',
-            'tipo_stock',
+            # 'almacen_origen',
+            # 'tipo_stock',
             'cantidad_asignada',
             'stock_disponible',
             )
 
     def __init__(self, *args, **kwargs):
-        evento_crm = kwargs.pop('evento_crm')
+        # evento_crm = kwargs.pop('evento_crm')
         super(EventoCRMDetalleForm, self).__init__(*args, **kwargs)   
-        self.fields['almacen_origen'].queryset = evento_crm.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
+        # self.fields['almacen_origen'].queryset = evento_crm.sede_origen.Almacen_sede.filter(estado_alta_baja=1)
+        # self.fields['almacen_origen'].required = True
         self.fields['stock_disponible'].disabled = True
-        self.fields['almacen_origen'].required = True
         self.fields['cantidad_asignada'].required = True
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
+        self.fields['cantidad_asignada'].widget.attrs['min'] = 0
+        self.fields['cantidad_asignada'].widget.attrs['step'] = 0.001
 
 class EventoCRMDetalleActualizarForm(BSModalModelForm):
     stock_disponible = forms.CharField(required=False)
