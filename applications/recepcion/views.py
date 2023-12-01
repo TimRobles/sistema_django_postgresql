@@ -189,14 +189,16 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super(AsistenciaListView, self).get_form_kwargs()
         kwargs['filtro_nombre'] = self.request.GET.get('nombre')
-        kwargs['filtro_fecha'] = self.request.GET.get('fecha')
+        kwargs['filtro_fecha'] = self.request.GET.get('fecha_de')
+        kwargs['filtro_fecha_dos'] = self.request.GET.get('fecha_hasta')
         return kwargs
 
     def get_context_data(self, **kwargs):
         context = super(AsistenciaListView,self).get_context_data(**kwargs)
         asistencias = Asistencia.objects.all()
         filtro_nombre = self.request.GET.get('nombre')
-        filtro_fecha = self.request.GET.get('fecha')
+        filtro_fecha = self.request.GET.get('fecha_de')
+        filtro_fecha_dos = self.request.GET.get('fecha_hasta')
 
         contexto_filtro = []
 
@@ -207,10 +209,24 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
             asistencias = asistencias.filter(condicion)
             contexto_filtro.append("nombre=" + filtro_nombre)
 
-        if filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            asistencias = asistencias.filter(condicion)
-            contexto_filtro.append("fecha_registro=" + filtro_fecha)
+        # if filtro_fecha:
+        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+        #     asistencias = asistencias.filter(condicion)
+        #     contexto_filtro.append("fecha_registro=" + filtro_fecha)
+
+            
+        # if filtro_fecha_dos:
+        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date())
+        #     asistencias = asistencias.filter(condicion)
+        #     contexto_filtro.append("fecha_registro_dos=" + filtro_fecha_dos)
+        #     print(contexto_filtro)
+
+        if filtro_fecha and filtro_fecha_dos:
+            fecha_inicio = datetime.strptime(filtro_fecha, "%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date()
+
+            asistencias = asistencias.filter(fecha_registro__range=(fecha_inicio, fecha_fin))
+            contexto_filtro.append("fecha_registro_de: {} a {}".format(filtro_fecha, filtro_fecha_dos))
         
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -239,7 +255,8 @@ def AsistenciaTabla(request):
         context = {}
         asistencias = Asistencia.objects.all()
         filtro_nombre = request.GET.get('nombre')
-        filtro_fecha = request.GET.get('fecha')
+        filtro_fecha = request.GET.get('fecha_de')
+        filtro_fecha_dos = request.GET.get('fecha_hasta')
 
         contexto_filtro = []
 
@@ -250,10 +267,21 @@ def AsistenciaTabla(request):
             asistencias = asistencias.filter(condicion)
             contexto_filtro.append("nombre=" + filtro_nombre)
 
-        if filtro_fecha:
-            condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-            asistencias = asistencias.filter(condicion)
-            contexto_filtro.append("fecha_registro=" + filtro_fecha)
+        # if filtro_fecha:
+        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
+        #     asistencias = asistencias.filter(condicion)
+        #     contexto_filtro.append("fecha_registro=" + filtro_fecha)
+
+        # if filtro_fecha_dos:
+        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date())
+        #     asistencias = asistencias.filter(condicion)
+        #     contexto_filtro.append("fecha_registro_dos=" + filtro_fecha_dos)
+
+        if filtro_fecha and filtro_fecha_dos:
+            fecha_inicio = datetime.strptime(filtro_fecha, "%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date()
+            asistencias = asistencias.filter(fecha_registro__range=(fecha_inicio, fecha_fin))
+            contexto_filtro.append("fecha_registro_de: {} a {}".format(filtro_fecha, filtro_fecha_dos))
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -274,6 +302,7 @@ def AsistenciaTabla(request):
             asistencias = paginator.get_page(page_number)
 
         context['contexto_pagina'] = asistencias
+
 
         data['table'] = render_to_string(
             template,

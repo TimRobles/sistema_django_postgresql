@@ -179,7 +179,7 @@ class Merchandising(models.Model):
         verbose_name_plural = 'Merchandising'
         ordering = [
             'estado_alta_baja',
-            'descripcion_corta',
+            'descripcion_venta',
         ]
     
     @property

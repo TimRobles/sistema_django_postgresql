@@ -1697,23 +1697,115 @@ class EventoCRMEliminarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['item']= self.object.titulo
         return context
 
+# class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFormView):
+#     permission_required = ('crm.change_eventocrmdetalle')
+#     template_name = "crm/eventos_crm/form_merchandising.html"
+#     form_class = EventoCRMDetalleForm
+
+#     def dispatch(self, request, *args, **kwargs):
+#         context = {}
+#         error_sede = False
+#         context['titulo'] = 'Error de guardar'
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         # if not evento_crm.sede_origen:
+#         #     error_sede = True
+
+#         # if error_sede:
+#         #     context['texto'] = 'Ingrese una sede de origen.'
+#         #     return render(request, 'includes/modal sin permiso.html', context)
+        
+#         if not self.has_permission():
+#             return render(request, 'includes/modal sin permiso.html')
+#         return super().dispatch(request, *args, **kwargs)
+
+#     def get_success_url(self, **kwargs):
+#         return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.kwargs['evento_crm_id']})
+
+#     @transaction.atomic
+#     def form_valid(self, form):
+#         sid = transaction.savepoint()
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         almacen_origen = form.cleaned_data.get('almacen_origen')
+#         tipo_stock = form.cleaned_data.get('tipo_stock')
+#         merchandising = form.cleaned_data.get('merchandising')
+#         cantidad_asignada = form.cleaned_data.get('cantidad_asignada')
+#         stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(merchandising), merchandising.id, evento_crm.sociedad.id, almacen_origen.id, tipo_stock.id)
+
+#         buscar = EventoCRMDetalle.objects.filter(
+#             content_type=ContentType.objects.get_for_model(merchandising),
+#             id_registro=merchandising.id,
+#             almacen_origen=almacen_origen,
+#             tipo_stock=tipo_stock,
+#             evento_crm=evento_crm,
+#         )
+
+#         print(buscar)
+
+#         if buscar:
+#             contar = buscar.aggregate(Sum('cantidad_asignada'))['cantidad_asignada__sum']
+#         else:
+#             contar = 0
+        
+#         print(stock_disponible)
+#         print(contar)
+#         print(cantidad_asignada)
+
+#         if stock_disponible < contar + cantidad_asignada:
+#             form.add_error('cantidad_asignada', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_asignada))
+#             return super().form_invalid(form)
+
+#         try:
+#             if self.request.session['primero']:
+#                 item = len(EventoCRMDetalle.objects.filter(evento_crm = evento_crm))
+
+#                 obj, created = EventoCRMDetalle.objects.get_or_create(
+#                     content_type = ContentType.objects.get_for_model(merchandising),
+#                     id_registro = merchandising.id,
+#                     evento_crm = evento_crm,
+#                     almacen_origen = almacen_origen,
+#                     tipo_stock = tipo_stock,
+#                     unidad = form.cleaned_data.get('unidad')
+#                 )
+#                 if created:
+#                     obj.item = item + 1
+#                     obj.cantidad_asignada = cantidad_asignada
+
+#                 else:
+#                     obj.cantidad_asignada = obj.cantidad_asignada + cantidad_asignada
+
+#                 registro_guardar(obj, self.request)
+#                 obj.save()
+#                 self.request.session['primero']=False
+#         except Exception as ex:
+#             transaction.savepoint_rollback(sid)
+#             registrar_excepcion(self, ex, __file__)
+#         return HttpResponseRedirect(self.get_success_url())
+
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         kwargs['evento_crm'] = evento_crm
+#         return kwargs
+
+#     def get_context_data(self, **kwargs):
+#         self.request.session['primero'] = True
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         context = super(EventoCRMDetalleMerchandisingCreateView, self).get_context_data(**kwargs)
+#         context['accion'] = 'Agregar'
+#         context['titulo'] = 'Merchandising'
+#         # context['sociedad'] = evento_crm.sociedad.id
+#         context['url_stock'] = reverse_lazy('merchandising_app:stock', kwargs={'id_merchandising':1})[:-2]
+#         context['url_unidad'] = reverse_lazy('merchandising_app:unidad_merchandising', kwargs={'id_merchandising':1})[:-2]
+#         return context
+
+
+
 class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('crm.change_eventocrmdetalle')
     template_name = "crm/eventos_crm/form_merchandising.html"
     form_class = EventoCRMDetalleForm
 
     def dispatch(self, request, *args, **kwargs):
-        context = {}
-        error_sede = False
-        context['titulo'] = 'Error de guardar'
-        evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
-        if not evento_crm.sede_origen:
-            error_sede = True
-
-        if error_sede:
-            context['texto'] = 'Ingrese una sede de origen.'
-            return render(request, 'includes/modal sin permiso.html', context)
-        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1725,46 +1817,31 @@ class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFo
     def form_valid(self, form):
         sid = transaction.savepoint()
         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
-        almacen_origen = form.cleaned_data.get('almacen_origen')
-        tipo_stock = form.cleaned_data.get('tipo_stock')
         merchandising = form.cleaned_data.get('merchandising')
         cantidad_asignada = form.cleaned_data.get('cantidad_asignada')
-        stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(merchandising), merchandising.id, evento_crm.sociedad.id, almacen_origen.id, tipo_stock.id)
+        # stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(merchandising), merchandising.id, evento_crm.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EventoCRMDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(merchandising),
             id_registro=merchandising.id,
-            almacen_origen=almacen_origen,
-            tipo_stock=tipo_stock,
             evento_crm=evento_crm,
         )
 
-        print(buscar)
-
-        if buscar:
-            contar = buscar.aggregate(Sum('cantidad_asignada'))['cantidad_asignada__sum']
-        else:
-            contar = 0
-        
-        print(stock_disponible)
-        print(contar)
-        print(cantidad_asignada)
-
-        if stock_disponible < contar + cantidad_asignada:
-            form.add_error('cantidad_asignada', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_asignada))
-            return super().form_invalid(form)
-
         try:
             if self.request.session['primero']:
+                evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
                 item = len(EventoCRMDetalle.objects.filter(evento_crm = evento_crm))
+
+                merchandising = form.cleaned_data.get('merchandising')
+                cantidad_asignada = form.cleaned_data.get('cantidad_asignada')
+
+                print(merchandising)
+                print(cantidad_asignada)
 
                 obj, created = EventoCRMDetalle.objects.get_or_create(
                     content_type = ContentType.objects.get_for_model(merchandising),
                     id_registro = merchandising.id,
                     evento_crm = evento_crm,
-                    almacen_origen = almacen_origen,
-                    tipo_stock = tipo_stock,
-                    unidad = form.cleaned_data.get('unidad')
                 )
                 if created:
                     obj.item = item + 1
@@ -1779,23 +1856,17 @@ class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFo
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
+            print('ex..............EXCEPTION')
+            print(ex)
+            print('ex..............EXCEPTION')
         return HttpResponseRedirect(self.get_success_url())
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
-        kwargs['evento_crm'] = evento_crm
-        return kwargs
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
-        evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
         context = super(EventoCRMDetalleMerchandisingCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Merchandising'
-        context['sociedad'] = evento_crm.sociedad.id
         context['url_stock'] = reverse_lazy('merchandising_app:stock', kwargs={'id_merchandising':1})[:-2]
-        context['url_unidad'] = reverse_lazy('merchandising_app:unidad_merchandising', kwargs={'id_merchandising':1})[:-2]
         return context
 
 

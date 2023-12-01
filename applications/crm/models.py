@@ -199,7 +199,7 @@ class EventoCRMDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)#Merchandising
     id_registro = models.IntegerField()
     almacen_origen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
-    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE,blank=True, null=True)
     cantidad_asignada = models.DecimalField('Cantidad Asignada', max_digits=8, decimal_places=2,blank=True, null=True)
     cantidad_utilizada = models.DecimalField('Cantidad Utilizada', max_digits=8, decimal_places=2,blank=True, null=True)
     cantidad_restante = models.DecimalField('Cantidad Restante', max_digits=8, decimal_places=2,blank=True, null=True)

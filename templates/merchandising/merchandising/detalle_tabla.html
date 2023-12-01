@@ -466,6 +466,7 @@
                 <th class="text-rigth">Name</th>
                 <th class="text-rigth">Brand</th>
                 <th class="text-rigth">Descripción</th>
+
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -473,9 +474,28 @@
             {% for proveedor in proveedores %}
             <tr>
                 <td>{{ proveedor.proveedor}}</td>
-                <td>{{ proveedor.name}}</td>
-                <td>{{ proveedor.brand}}</td>
-                <td>{{ proveedor.description}}</td>
+                <td>
+                    {% if proveedor.name %}
+                    {{ proveedor.name }}
+                    {% else %}
+                    -
+                    {% endif %}    
+                </td>
+                <td>
+                    {% if proveedor.brand %}
+                    {{ proveedor.brand }}
+                    {% else %}
+                    -
+                    {% endif %}  
+                </td>
+                <td>
+                    {% if proveedor.description %}
+                    {{ proveedor.description }}
+                    {% else %}
+                    -
+                    {% endif %}  
+                </td>
+                    
                 <td class="text-center text-nowrap">
                     {% if proveedor.estado_alta_baja == 1 %}
                         <button data-form-url="{% url 'merchandising_app:proveedor_merchandising_actualizar' proveedor.id %}"

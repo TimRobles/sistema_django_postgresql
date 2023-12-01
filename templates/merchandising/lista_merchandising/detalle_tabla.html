@@ -1,7 +1,12 @@
 {% load funciones_propias %}
 {% load humanize %}
 
-<h2> {{lista.titulo}}
+<h2> 
+    
+    {% if lista.titulo %}
+        {{lista.titulo}}
+    {% endif %}
+        
     <a href="{% url 'merchandising_app:lista_requerimiento_merchandising_inicio' %}"
     class="create btn btn-primary" title="Regresar a Lista Requerimiento Merchandising">
         Regresar

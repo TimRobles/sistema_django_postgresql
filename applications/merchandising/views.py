@@ -3092,10 +3092,9 @@ class OfertaProveedorMerchandisingFinalizarView(PermissionRequiredMixin, BSModal
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self, **kwargs):
-        return reverse_lazy('merchandising_app:oferta_proveedor_merchandising_inicio')
-    # def get_success_url(self, **kwargs):
-    #     return reverse_lazy('merchandising_app:oferta_proveedor_merchandising_detalle', kwargs={'pk':self.get_object().oferta_proveedor_merchandising.id})
-    
+        return reverse_lazy('merchandising_app:oferta_proveedor_merchandising_detalle', kwargs={'pk':self.kwargs['pk']})
+
+
     def form_valid(self, form):
         totales = obtener_totales(OfertaProveedorMerchandising.objects.get(id=form.instance.id))
         form.instance.estado = 2
