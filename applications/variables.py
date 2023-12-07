@@ -447,6 +447,7 @@ ESTADOS_CLIENTE = (
     (4, 'FINAL'),
     (5, 'ESTRELLA'),
     (6, 'DEUDOR'),
+    (7, 'DEUDOR ESTRELLA'),
 )
 
 TIPO_ACTIVIDAD = (

@@ -979,6 +979,7 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
     def form_valid(self, form):
         if self.request.session['primero']:
             sid = transaction.savepoint()
+            series = set()
             try:
                 form.instance.estado = 3
                 registro_guardar(form.instance, self.request)
@@ -1018,18 +1019,37 @@ class NotaSalidaAnularView(PermissionRequiredMixin, BSModalUpdateView):
                         sociedad=form.instance.sociedad,
                     )
                     movimiento_dos = movimiento_tres.movimiento_anterior
-                    #Pendiente eliminar movimiento del historial Serie
-                    
+                    if movimiento_tres.Serie_serie_movimiento_almacen.exists():
+                        for serie in movimiento_tres.Serie_serie_movimiento_almacen.all():
+                            series.add(serie)
+                    if movimiento_dos.Serie_serie_movimiento_almacen.exists():
+                        for serie in movimiento_dos.Serie_serie_movimiento_almacen.all():
+                            series.add(serie)
 
                     movimiento_tres.delete()
                     movimiento_dos.delete()
                     for movimiento in movimiento_uno:
+                        if movimiento.Serie_serie_movimiento_almacen.exists():
+                            for serie in movimiento.Serie_serie_movimiento_almacen.all():
+                                series.add(serie)
                         movimiento.delete()
                 messages.success(self.request, MENSAJE_ANULAR_NOTA_SALIDA)
             except Exception as ex:
                 transaction.savepoint_rollback(sid)
                 registrar_excepcion(self, ex, __file__)
                 return HttpResponseRedirect(reverse_lazy('logistica_app:nota_salida_detalle', kwargs={'pk':form.instance.id}))
+            for serie in series:
+                serie.HistorialEstadoSerie_serie.latest('id').delete()
+                guardar = False
+                if serie.almacen != serie.almacen_latest:
+                    serie.almacen = serie.almacen_latest
+                    guardar = True
+                if serie.tipo_stock != serie.tipo_stock_latest:
+                    serie.tipo_stock = serie.tipo_stock_latest
+                    guardar = True
+                    
+                if guardar:
+                    serie.save()
             self.request.session['primero'] = False
         return super().form_valid(form)
 

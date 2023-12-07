@@ -1822,12 +1822,8 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
             contexto_filtro.append("almacen=" + filtro_almacen)
 
         if filtro_tipo_stock:
-            series_id = []
-            for serie in series:
-                if serie.tipo_stock:
-                    if str(serie.tipo_stock.id) == filtro_tipo_stock:
-                        series_id.append(serie.id)
-            series = series.filter(id__in=series_id)
+            condicion = Q(tipo_stock = filtro_tipo_stock)
+            series = series.filter(condicion)
             contexto_filtro.append("tipo_stock=" + filtro_tipo_stock)
 
         if filtro_estado:
@@ -1870,11 +1866,12 @@ class MaterialSeriesVerView(PermissionRequiredMixin, FormView):
 class PrecioListaPdfView(View):
     def get(self, request, *args, **kwargs):
         sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
         color = COLOR_DEFAULT
         titulo = f'Precios de Lista {date.today().strftime("%d/%m/%Y")}'
         vertical = False
-        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        logo = [sociedad_MPL.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
         fuenteBase = "ComicNeue"
 
@@ -1903,11 +1900,12 @@ class PrecioListaPdfView(View):
 class PrecioListaStockPdfView(View):
     def get(self, request, *args, **kwargs):
         sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
         color = COLOR_DEFAULT
         titulo = f'Precios de Lista {date.today().strftime("%d/%m/%Y")}'
         vertical = False
-        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        logo = [sociedad_MPL.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
         fuenteBase = "ComicNeue"
 
@@ -1920,7 +1918,7 @@ class PrecioListaStockPdfView(View):
         TablaDatos = []
         item = 1
         for material in Material.objects.filter(mostrar=True):
-            if material.stock > 0:
+            if material.stock > 0 and material.precio_lista > 0:
                 fila = []
                 # fila.append(item)
                 fila.append(material.descripcion_documento)

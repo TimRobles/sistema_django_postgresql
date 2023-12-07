@@ -7,6 +7,8 @@ from applications.movimiento_almacen.managers import MovimientoAlmacenManager
 from applications.sociedad.models import Sociedad
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.utils import timezone
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 # Create your models here.
 class TipoStock(models.Model):

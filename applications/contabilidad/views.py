@@ -333,7 +333,9 @@ class EsSaludUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class BoletaPagoListView(FormView):
+class BoletaPagoListView(PermissionRequiredMixin, FormView):
+    permission_required = ('contabilidad.view_boletapago')
+
     form_class = BoletaPagoBuscarForm
     template_name = "contabilidad/boleta_pago/inicio.html"
 
@@ -557,7 +559,8 @@ class BoletaPagoDetailView(PermissionRequiredMixin, TemplateView):
         return context
 #---------------------------------------------------------------------------------
 
-class ReciboBoletaPagoListView(TemplateView):
+class ReciboBoletaPagoListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_reciboboletapago')
     template_name = "contabilidad/recibo_boleta_pago/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -648,7 +651,8 @@ class ReciboBoletaPagoDeleteView(BSModalDeleteView):
 
 #---------------------------------------------------------------------------------
 
-class ServicioListView(FormView):
+class ServicioListView(PermissionRequiredMixin, FormView):
+    permission_required = ('contabilidad.view_servicio')
     form_class = ServicioBuscarForm
     template_name = "contabilidad/servicio/inicio.html"
 
@@ -865,7 +869,9 @@ class ServicioUpdateView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class ReciboServicioListView(TemplateView):
+class ReciboServicioListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_reciboservicio')
+    
     template_name = "contabilidad/recibo_servicio/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -2273,9 +2279,10 @@ class ChequeSolicitarPdfView(View):
         fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
         vertical = True
         sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
         color = COLOR_DEFAULT
-        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        logo = [sociedad_MPL.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
         buf = generarChequeSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color)
 
@@ -2294,9 +2301,10 @@ class ChequeCerrarPdfView(View):
         fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
         vertical = False
         sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
         color = COLOR_DEFAULT
-        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        logo = [sociedad_MPL.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
         buf = generarChequeCerrarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, cheque, color)
 
@@ -2817,9 +2825,10 @@ class TelecreditoSolicitarPdfView(View):
         fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
         vertical = True
         sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
         color = COLOR_DEFAULT
-        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        logo = [sociedad_MPL.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
         buf = generarTelecreditoSolicitarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, telecredito, color)
 
@@ -2838,9 +2847,10 @@ class TelecreditoCerrarPdfView(View):
         fecha_hoy = _date(datetime.today(), "d \d\e F \d\e Y")
         vertical = False
         sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-        sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
+        # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
         color = COLOR_DEFAULT
-        logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
+        logo = [sociedad_MPL.logo.url]
         pie_pagina = PIE_DE_PAGINA_DEFAULT
         buf = generarTelecreditoCerrarPdf(titulo, vertical, logo, pie_pagina, fecha_hoy, movimientos, telecredito, color)
 

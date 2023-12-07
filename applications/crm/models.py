@@ -106,15 +106,14 @@ class ProveedorCRM(models.Model):
     
 from applications import cotizacion, comprobante_venta, cobranza, tarea, crm
 
-def ver_pareto(id_cliente):
-    fecha_fin = date.today()
-    fecha_inicio = fecha_fin - timedelta(6*30)
-    totales = consulta_totales_ventas(FacturaVenta, BoletaVenta, NotaCredito, fecha_inicio, fecha_fin)
-    return consulta_pareto(totales, id_cliente)
-
 def actualizar_estado_cliente_crm(id_cliente=None):
     try:
         print('actualizar_estado_cliente_crm')
+        fecha_fin = date.today()
+        fecha_inicio = fecha_fin - timedelta(6*30)
+        totales = consulta_totales_ventas(FacturaVenta, BoletaVenta, NotaCredito, fecha_inicio, fecha_fin)
+        clientes_pareto = consulta_pareto(totales)
+        print(clientes_pareto)
         if id_cliente:
             clientes = Cliente.objects.filter(id=id_cliente)
         else:
@@ -122,13 +121,14 @@ def actualizar_estado_cliente_crm(id_cliente=None):
 
         for cliente in clientes:
             filtro = True
+            estado_cliente = 0
             if len(tarea.models.Tarea.objects.filter(content_type=ContentType.objects.get_for_model(Cliente), id_registro = cliente.id, estado__gte=2)) > 0:
                 filtro = False
                 estado_cliente = 2
             if len(crm.models.ClienteCRMDetalle.objects.filter(cliente_crm=cliente, tipo_actividad__gte=1).exclude(tipo_actividad=6).exclude(tipo_actividad=7).exclude(tipo_actividad=8)) > 0:
                 filtro = False
                 estado_cliente = 2
-            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=8).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
+            if len(cotizacion.models.CotizacionVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=9).exclude(estado=10).exclude(estado=11)) > 0:
                 filtro = False
                 estado_cliente = 3
             if len(comprobante_venta.models.FacturaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
@@ -137,12 +137,17 @@ def actualizar_estado_cliente_crm(id_cliente=None):
             if len(comprobante_venta.models.BoletaVenta.objects.filter(cliente=cliente, estado__gte=2).exclude(estado=3))>0:
                 filtro = False
                 estado_cliente = 4
-            if ver_pareto(id_cliente):
+            if cliente.id in clientes_pareto:
+                print("PARETO", cliente.id)
                 filtro = False
                 estado_cliente = 5
             if len(cobranza.models.Deuda.objects.filter(cliente=cliente, estado_cancelado=False, fecha_vencimiento__gt=date.today()))>0:
+                print("DEUDOR", cliente.id, estado_cliente)
                 filtro = False
-                estado_cliente = 6
+                if estado_cliente == 5:
+                    estado_cliente = 7
+                else:
+                    estado_cliente = 6
             if filtro:
                 estado_cliente = 1
             if cliente.estado_cliente != estado_cliente:
@@ -194,7 +199,7 @@ class EventoCRMDetalle(models.Model):
     content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.PROTECT)#Merchandising
     id_registro = models.IntegerField()
     almacen_origen = models.ForeignKey(Almacen, on_delete=models.PROTECT,blank=True, null=True)
-    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE)
+    tipo_stock = models.ForeignKey(TipoStock, on_delete=models.CASCADE,blank=True, null=True)
     cantidad_asignada = models.DecimalField('Cantidad Asignada', max_digits=8, decimal_places=2,blank=True, null=True)
     cantidad_utilizada = models.DecimalField('Cantidad Utilizada', max_digits=8, decimal_places=2,blank=True, null=True)
     cantidad_restante = models.DecimalField('Cantidad Restante', max_digits=8, decimal_places=2,blank=True, null=True)
@@ -244,7 +249,7 @@ class EventoCRMDetalleInformacionAdicional(models.Model):
 class PreguntaCRM(models.Model):
     tipo_pregunta = models.IntegerField('Tipo Pregunta', choices=TIPO_PREGUNTA_CRM)
     texto = models.CharField('Pregunta', max_length=150)
-    orden = models.IntegerField()
+    orden = models.IntegerField(blank=True, null=True)
     mostrar = models.BooleanField('Mostrar', default=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -256,7 +261,6 @@ class PreguntaCRM(models.Model):
         verbose_name = 'Pregunta CRM'
         verbose_name_plural = 'Preguntas CRM'
         ordering = [
-            'orden',
             '-created_at',
             'mostrar',
         ]

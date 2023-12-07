@@ -6,7 +6,11 @@
             <th>Estado</th>
             <th>Encuesta</th>
             <th>Cliente</th>
-            <th>Fecha Vencimiento</th>
+            <th>Interlocutor</th>
+            <td>{% if  respuesta.fecha_vencimiento %}
+                Fecha Vencimiento
+                {% endif %}
+            </td>   
             <th>Registrado por</th>
             <th>Fecha Modificación
             <th>Modificado por</th>
@@ -18,9 +22,16 @@
         {% for respuesta in contexto_pagina %}
         <tr>
             <td>{{ respuesta.get_estado_display}}</td>
-            <td>{{ respuesta.encuesta_crm}}</td>
-            <td>{{ respuesta.cliente_crm}}</td>
-            <td>{{ respuesta.fecha_vencimiento}}</td>
+            <td>{{ respuesta.encuesta_crm.titulo}}</td>
+            <td>{{ respuesta.cliente_crm}}</td>            
+            <td>{% if  respuesta.interlocutor %}
+                {{ respuesta.interlocutor}}
+                {% endif %}
+            </td>  
+            <td>{% if  respuesta.fecha_vencimiento %}
+                {{ respuesta.fecha_vencimiento}}
+                {% endif %}
+            </td>           
             <td>{{ respuesta.created_by|nombre_usuario }}</td>
             <td>{{ respuesta.created_at|date:'d/m/Y'}}</td>
             <td>{{ respuesta.updated_by|nombre_usuario }}</td>
@@ -34,11 +45,15 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
+
+                {% if permiso_eliminar_respuesta %}                    
                 <button data-form-url="{% url 'crm_app:respuesta_crm_eliminar' respuesta.slug %}"
                     class="delete btn btn-danger btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                     <i class="bi bi-x-lg"></i>
                 </button>
+                {% endif %}
+
                 {% endif %}
 
                 
@@ -50,11 +65,15 @@
                 </a>
                 {% endif %}
 
+                
+                {% if respuesta.estado == 1 %}
                 <a href="{% url 'crm_app:encuesta_ver' respuesta.slug  %}" 
                     class="btn btn-secondary btn-sm"
                     title="Encuesta">
                     <i class="bi bi-file-ruled"></i>
-                </a>
+                </a>                   
+                {% endif %}
+
                 <!-- <button onclick="copyToClipboard(url)"
                 class="btn btn-success btn-sm"
                 >URL</button> -->

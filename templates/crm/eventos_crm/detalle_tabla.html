@@ -101,15 +101,13 @@
 </div>
 <br>
 {% if contexto_evento_crm.estado == 1 %}
-<h3>Descripción
     <button data-form-url="{% url 'crm_app:evento_crm_detalle_descripcion' contexto_evento_crm.id %}"
         data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
-        class="delete badge bg-success">
-        +  
+        class="delete btn btn-primary">
+        Descripción
     </button>
 {% endif %}
-    
-</h3>
+<br>
 <div class="table-responsive">
     <table class="table">
         <thead>
@@ -128,26 +126,22 @@
     </table>
 </div>
 <br>
-<h3>Merchandising
-    {% if contexto_evento_crm.estado == 1 %}
-    <button data-form-url="{% url 'crm_app:evento_crm_detalle_agregar_merchandising' contexto_evento_crm.id %}"
-        data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
-        data-keep-open="True"
-        class="update badge bg-success">
-        Agregar
-    </button>
-    {% endif %}
-</h3>
 
+{% if contexto_evento_crm.estado == 1 %}
+<button data-form-url="{% url 'crm_app:evento_crm_detalle_agregar_merchandising' contexto_evento_crm.id %}"
+    data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+    data-keep-open="True"
+    class="update btn btn-primary" title="Agregar Merchandising">
+    Agregar Merchandising
+</button>
+{% endif %}
 
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
                 <th>Item</th>
-                <th>Producto</th>
-                <th>Almacén Origen</th>
-                <th>Tipo Stock</th>
+                <th>Merchandising</th>
                 <th class="text-end">Cantidad Asignada</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -158,8 +152,6 @@
             <tr>
                 <td>{{ merchandising.item }}</td>
                 <td style="min-width: 500px;">{{ merchandising.merchandising.descripcion_corta }}</td>
-                <td class="text-nowrap">{{ merchandising.almacen_origen.nombre }}</td>
-                <td class="text-nowrap">{{ merchandising.tipo_stock.descripcion }}</td>
                 <td class="text-end text-nowrap">{{ merchandising.cantidad_asignada }}</td>
                 <td class="text-center text-nowrap">
                     {% if contexto_evento_crm.estado == 1 %}
@@ -184,16 +176,15 @@
     </table>
 </div>
 <br>
-<h3>Información Adicional
-    {% if contexto_evento_crm.estado != 3 %}
 
-    <button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_registrar' contexto_evento_crm.id %}"
-        data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
-        class="create badge bg-success">
-        Registrar
-    </button>
-    {% endif %}
-</h3>
+{% if contexto_evento_crm.estado != 3 %}
+
+<button data-form-url="{% url 'crm_app:evento_crm_detalle_informacion_adicional_registrar' contexto_evento_crm.id %}"
+    data-table-url="{% url 'crm_app:evento_crm_detalle_tabla' contexto_evento_crm.id %}"
+    class="update btn btn-primary" title="Información Adicional">
+    Información Adicional
+</button>
+{% endif %}
 
 <div class="table-responsive">
     <table class="table">

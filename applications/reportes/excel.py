@@ -26,7 +26,7 @@ from applications.nota.models import NotaCredito
 from applications.crm.models import ClienteCRMDetalle
 from applications.clientes.models import CorreoInterlocutorCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
-from applications.cotizacion.models import CotizacionVenta
+from applications.cotizacion.models import CotizacionVenta, PrecioListaMaterial
 from applications.cobranza.models import Ingreso, Pago
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.sede.models import Sede
@@ -1316,8 +1316,9 @@ def dataReporteRotacion(sociedad=None):
         cell_header.fill = color_relleno
         cell_header.font = NEGRITA
 
-    lista_tipo_stock = [2,3,4,5,16,17,22,]
-    # Recibido 2, Disponible 3, bloqueo sin serie 4, bloqueo sin qa 5, reservado 16, confirmado 17, prestado 22,
+    lista_tipo_stock = [2,3,4,5,15,16,17,22,]
+    # Recibido 2, Disponible 3, bloqueo sin serie 4, bloqueo sin qa 5, despachado 15, reservado 16, confirmado 17, prestado 22,
+    # Remover LABORATORIO
     # Recepcion compra 101, confirmacion por venta 120
     movimientos = MovimientosAlmacen.objects.filter(
         tipo_stock__codigo__in=lista_tipo_stock,
@@ -1356,7 +1357,7 @@ def dataReporteRotacion(sociedad=None):
 
     materiales_valores = materiales.values_list(
         'id',
-        'subfamilia__familia',
+        'subfamilia__familia__nombre',
         'descripcion_corta',
         'descripcion_venta',
         'precio',
@@ -1375,27 +1376,45 @@ def dataReporteRotacion(sociedad=None):
 
     # Función personalizada para calcular STOCK
     def calcular_stock(group):
-        filtro_stock = group['TIPO_STOCK'].isin([3, 4, 5]) & ~group['TIPO_STOCK'].isin([17, 22])
-        return ((group.loc[filtro_stock, 'CANTIDAD'] * group.loc[filtro_stock, 'FACTOR']).sum() - 
-                (group.loc[~filtro_stock, 'CANTIDAD'] * group.loc[~filtro_stock, 'FACTOR']).sum())
+        filtro_stock = group['TIPO_STOCK'].isin([3, 4, 5]) & ~group['TIPO_STOCK'].isin([17, 22]) # Disponible, bloqueo sin serie, bloqueo sin qa - Confirmado por venta, prestado
+        return (group.loc[filtro_stock, 'CANTIDAD'] * group.loc[filtro_stock, 'FACTOR']).sum()
 
     # Función personalizada para calcular FECHA_VENTA_TOTAL
     def calcular_fecha_venta_total(group):
-        filtro_venta_total = (group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)
+        filtro_venta_total = ((group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)) | ((group['TIPO_MOVIMIENTO'] == 159) & (group['TIPO_STOCK'] == 15)) # Confirmado por venta y Confirmado - Devolución por Nota de Crédito y DESPACHADO
         return (fecha_actual - group.loc[filtro_venta_total, 'FECHA'].min()).days
 
     # Función personalizada para calcular FECHA_ULTIMO_INGRESO
     def calcular_fecha_ultimo_ingreso(group):
-        filtro_ultimo_ingreso = (group['TIPO_MOVIMIENTO'] == 101) & (group['TIPO_STOCK'] == 2)
+        filtro_ultimo_ingreso = (group['TIPO_MOVIMIENTO'] == 101) & (group['TIPO_STOCK'] == 2) # Recepcion compra y Recibido
         return (fecha_actual - group.loc[filtro_ultimo_ingreso, 'FECHA'].max()).days
 
+    # Calcular la columna VENTA_ULTIMO_INGRESO para cada grupo
+    def calcular_venta_ultimo_ingreso(group):
+        ultimas_compras = group[(group['TIPO_MOVIMIENTO'] == 101) & (group['TIPO_STOCK'] == 2)]
+        ultima_fecha_compra = ultimas_compras['FECHA'].max()
+        group['VENTA_ULTIMO_INGRESO'] = group.apply(lambda row: row['CANTIDAD'] * row['FACTOR']
+                                                    if row['TIPO_MOVIMIENTO'] == 120
+                                                    and row['TIPO_STOCK'] == 17
+                                                    and ultima_fecha_compra <= row['FECHA'] <= fecha_actual
+                                                    else 0, axis=1)
+        return group['VENTA_ULTIMO_INGRESO'].sum()
+
+
     # Aplica las funciones personalizadas y agrupa por ID
+    print(
+        df.groupby('ID').apply(lambda group: pd.Series({
+            'VENTA_TOTAL': (group.loc[((group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)) | ((group['TIPO_MOVIMIENTO'] == 159) & (group['TIPO_STOCK'] == 15)), 'CANTIDAD'] * group.loc[((group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)) | ((group['TIPO_MOVIMIENTO'] == 159) & (group['TIPO_STOCK'] == 15)), 'FACTOR']),
+        }))
+    )
+    time.sleep(10)
     resultados = df.groupby('ID').apply(lambda group: pd.Series({
         'STOCK': calcular_stock(group),
         'FECHA_VENTA_TOTAL': calcular_fecha_venta_total(group),
-        'VENTA_TOTAL': (group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17), 'CANTIDAD'] * group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17), 'FACTOR']).sum(),
-        'VENTA_ULTIMOS_6_MESES': (group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'CANTIDAD'] * group.loc[(group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'FACTOR']).sum(),
-        'FECHA_ULTIMO_INGRESO': calcular_fecha_ultimo_ingreso(group)
+        'VENTA_TOTAL': (group.loc[((group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)) | ((group['TIPO_MOVIMIENTO'] == 159) & (group['TIPO_STOCK'] == 15)), 'CANTIDAD'] * group.loc[((group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)) | ((group['TIPO_MOVIMIENTO'] == 159) & (group['TIPO_STOCK'] == 15)), 'FACTOR']).sum(),
+        'VENTA_ULTIMOS_6_MESES': (group.loc[((group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)) | ((group['TIPO_MOVIMIENTO'] == 159) & (group['TIPO_STOCK'] == 15)) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'CANTIDAD'] * group.loc[((group['TIPO_MOVIMIENTO'] == 120) & (group['TIPO_STOCK'] == 17)) | ((group['TIPO_MOVIMIENTO'] == 159) & (group['TIPO_STOCK'] == 15)) & (group['FECHA'] >= (fecha_actual - pd.Timedelta(days=180))), 'FACTOR']).sum(),
+        'FECHA_ULTIMO_INGRESO': calcular_fecha_ultimo_ingreso(group),
+        'VENTA_ULTIMO_INGRESO': calcular_venta_ultimo_ingreso(group)
     }))
     resultados['STOCK'] = resultados['STOCK'].astype(float)
     resultados['FECHA_VENTA_TOTAL'] = resultados['FECHA_VENTA_TOTAL'].astype(float)
@@ -1417,12 +1436,41 @@ def dataReporteRotacion(sociedad=None):
     resultados.reset_index(inplace=True)
     print(resultados)
 
-    resultado_combinado = pd.merge(resultados, dfMateriales, on='ID')
+    resultado_combinado = pd.merge(dfMateriales, resultados, on='ID', how='right')
 
     
     for r_idx, row in enumerate(dataframe_to_rows(resultado_combinado, index=False, header=True), 1):
-        for c_idx, value in enumerate(row, 1):
-            hoja.cell(row=r_idx, column=c_idx, value=value)
+        if r_idx == 1: continue
+        hoja.cell(row=r_idx, column=1, value=row[0]) #ID
+        hoja.cell(row=r_idx, column=2, value=row[1]) #FAMILIA
+        hoja.cell(row=r_idx, column=3, value=row[2]) #NOMBRE
+        hoja.cell(row=r_idx, column=4, value=row[3]) #DESCRIPCION
+        hoja.cell(row=r_idx, column=5, value=row[4]) #PRECIO
+        hoja.cell(row=r_idx, column=6, value=row[5]) #STOCK
+
+        hoja.cell(row=r_idx, column=7, value=round(row[7], 2)) #VENTA_TOTAL
+        hoja.cell(row=r_idx, column=8, value=round(row[11], 2)) #VENTA_MENSUALES_TOTAL
+        hoja.cell(row=r_idx, column=9, value=f"{round(row[8], 2)} / {round(row[12], 2)}") #VENTA_ULTIMOS_6_MESES / VENTA_ULTIMOS_6_MESES_PROMEDIO
+        hoja.cell(row=r_idx, column=10, value=f"{round(row[10], 2)} / {round(row[13], 2)}") #VENTA_ULTIMO_INGRESO / VENTA_ULTIMO_INGRESO_PROMEDIO
+        hoja.cell(row=r_idx, column=11, value=round(row[14], 2)) #TIEMPO_DURACION
+        hoja.cell(row=r_idx, column=12, value=round(row[15], 2)) #PEDIDO_5_MESES
+        hoja.cell(row=r_idx, column=13, value=row[16]) #SUGERENCIA
+
+        # hoja.cell(row=r_idx, column=7, value=row[6]) #FECHA_VENTA_TOTAL
+        # hoja.cell(row=r_idx, column=8, value=row[7]) #VENTA_TOTAL
+        # hoja.cell(row=r_idx, column=9, value=row[8]) #VENTA_ULTIMOS_6_MESES
+        # hoja.cell(row=r_idx, column=10, value=row[9]) #FECHA_ULTIMO_INGRESO
+        # hoja.cell(row=r_idx, column=11, value=row[10]) #VENTA_ULTIMO_INGRESO
+        # hoja.cell(row=r_idx, column=12, value=row[11]) #VENTA_MENSUALES_TOTAL
+        # hoja.cell(row=r_idx, column=13, value=row[12]) #VENTA_ULTIMOS_6_MESES_PROMEDIO
+        # hoja.cell(row=r_idx, column=14, value=row[13]) #VENTA_ULTIMO_INGRESO_PROMEDIO
+        # hoja.cell(row=r_idx, column=15, value=row[14]) #TIEMPO_DURACION
+        # hoja.cell(row=r_idx, column=16, value=row[15]) #PEDIDO_5_MESES
+        # hoja.cell(row=r_idx, column=17, value=row[16]) #SUGERENCIA
+        
+        
+        # for c_idx, value in enumerate(row, 1):
+        #     hoja.cell(row=r_idx, column=c_idx, value=value)
 
     # # Aplicar formato a las columnas específicas
     # venta_total_column = hoja['C']

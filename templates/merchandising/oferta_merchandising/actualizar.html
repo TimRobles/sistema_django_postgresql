@@ -8,7 +8,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        {{ material }}
+        {{merchandising.merchandising}} me
+        
+        {% if  material %}
+        {{ material }}  
+        {% endif %}
+
         {% for field in form %}
         
             {% if field in form.hidden_fields %}

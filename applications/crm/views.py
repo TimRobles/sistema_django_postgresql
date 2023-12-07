@@ -18,7 +18,7 @@ from applications.crm.forms import (NuevosProductosSolicitadosForm, Caracteristi
                                     PreguntaCRMBuscarForm, PreguntaCRMForm,
                                     AlternativaCRMForm,
                                     EncuestaCRMBuscarForm, EncuestaCRMForm, EncuestaPreguntaCRMForm,
-                                    RespuestaCRMBuscarForm, RespuestaCRMForm, RespuestaCrearCRMForm, ReunionesForm, SoporteTecnicoForm, VisitasForm)
+                                    RespuestaCRMBuscarForm, RespuestaCRMForm, ReunionesForm, SoporteTecnicoForm, VisitasForm, RespuestaClienteActualizarForm)
 
 from applications.crm.models import (
     ClienteCRMDetalle,
@@ -289,7 +289,10 @@ class ReunionesView(PermissionRequiredMixin, DetailView):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(ReunionesView, self).get_context_data(**kwargs)
         context['reuniones'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 1).order_by('-fecha')
-
+        
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+        
         return context
 
 
@@ -301,7 +304,10 @@ def ReunionesTabla(request, pk):
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['reuniones'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 1).order_by('-fecha')
-        
+
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+
         data['table'] = render_to_string(
             template,
             context,
@@ -383,8 +389,10 @@ class ReunionesUpdateView(PermissionRequiredMixin,BSModalUpdateView):
         context = super(ReunionesUpdateView, self).get_context_data(**kwargs)
         context['accion']="Actualizar"
         context['titulo']="Información de Reunión"
+
+
         return context
-    
+        
 
 class ReunionesDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('crm.delete_clientecrmdetalle')
@@ -405,6 +413,10 @@ class ReunionesDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['titulo'] = "Información de Reunión"
         context['item'] = self.get_object().get_tipo_actividad_display() + ' ' + str(self.get_object().fecha.strftime('%d/%m/%Y'))
         context['dar_baja'] = "true"
+
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+
         return context
     
 ########################################### Visitas ########################################### 
@@ -419,6 +431,9 @@ class VisitasView(PermissionRequiredMixin, DetailView):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(VisitasView, self).get_context_data(**kwargs)
         context['visitas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 2).order_by('-fecha')
+        
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
 
         return context
 
@@ -432,6 +447,9 @@ def VisitasTabla(request, pk):
         context['contexto_cliente_crm'] = cliente_crm
         context['visitas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 2).order_by('-fecha')
         
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+
         data['table'] = render_to_string(
             template,
             context,
@@ -526,7 +544,10 @@ class LlamadasView(PermissionRequiredMixin, DetailView):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(LlamadasView, self).get_context_data(**kwargs)
         context['llamadas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 3).order_by('-fecha')
-
+        
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+        
         return context
 
 
@@ -538,6 +559,9 @@ def LlamadasTabla(request, pk):
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['llamadas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 3).order_by('-fecha')
+
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
         
         data['table'] = render_to_string(
             template,
@@ -632,7 +656,10 @@ class CorreosView(PermissionRequiredMixin, DetailView):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(CorreosView, self).get_context_data(**kwargs)
         context['correos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 4).order_by('-fecha')
-
+        
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+        
         return context
 
 
@@ -644,6 +671,9 @@ def CorreosTabla(request, pk):
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['correos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 4).order_by('-fecha')
+        
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True        
         
         data['table'] = render_to_string(
             template,
@@ -739,6 +769,9 @@ class EventosView(PermissionRequiredMixin, DetailView):
         context = super(EventosView, self).get_context_data(**kwargs)
         context['eventos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 5).order_by('-fecha')
 
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+
         return context
 
 
@@ -750,7 +783,10 @@ def EventosTabla(request, pk):
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['eventos'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 5).order_by('-fecha')
-        
+
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+
         data['table'] = render_to_string(
             template,
             context,
@@ -846,6 +882,9 @@ class SoporteTecnicoView(PermissionRequiredMixin, DetailView):
         context = super(SoporteTecnicoView, self).get_context_data(**kwargs)
         context['soporte_tecnico'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 6).order_by('-fecha')
 
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+
         return context
 
 
@@ -857,7 +896,10 @@ def SoporteTecnicoTabla(request, pk):
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['soporte_tecnico'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 6).order_by('-fecha')
-        
+
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
+
         data['table'] = render_to_string(
             template,
             context,
@@ -952,7 +994,8 @@ class CaracteristicasTecnicasView(PermissionRequiredMixin, DetailView):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(CaracteristicasTecnicasView, self).get_context_data(**kwargs)
         context['caracteristicas_tecnicas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 7).order_by('-fecha')
-
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
         return context
 
 
@@ -964,7 +1007,8 @@ def CaracteristicasTecnicasTabla(request, pk):
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['caracteristicas_tecnicas'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 7).order_by('-fecha')
-        
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True        
         data['table'] = render_to_string(
             template,
             context,
@@ -1060,7 +1104,8 @@ class NuevosProductosSolicitadosView(PermissionRequiredMixin, DetailView):
         cliente_crm = Cliente.objects.get(id = self.kwargs['pk'])
         context = super(NuevosProductosSolicitadosView, self).get_context_data(**kwargs)
         context['nuevos_productos_solicitados'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 8).order_by('-fecha')
-
+        if 'crm.delete_clientecrmdetalle' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
         return context
 
 
@@ -1072,7 +1117,8 @@ def NuevosProductosSolicitadosTabla(request, pk):
         cliente_crm = Cliente.objects.get(id = pk)
         context['contexto_cliente_crm'] = cliente_crm
         context['nuevos_productos_solicitados'] = ClienteCRMDetalle.objects.filter(cliente_crm = cliente_crm, tipo_actividad = 8).order_by('-fecha')
-        
+        if 'crm.delete_clientecrmdetalle' in request.user.get_all_permissions():
+            context['permiso_eliminar_actividad'] = True
         data['table'] = render_to_string(
             template,
             context,
@@ -1311,6 +1357,10 @@ class EventoCRMListView(PermissionRequiredMixin, FormView):
    
         context['contexto_pagina'] = eventos_crm
         context['contexto_evento_crm'] = eventos_crm
+
+        if 'crm.delete_eventocrm' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_evento'] = True
+
         return context
 
 
@@ -1361,6 +1411,9 @@ def EventoCRMTabla(request):
    
         context['contexto_pagina'] = eventos_crm
         context['contexto_evento_crm'] = eventos_crm
+
+        if 'crm.delete_eventocrm' in request.user.get_all_permissions():
+            context['permiso_eliminar_evento'] = True
 
         data['table'] = render_to_string(
             template,
@@ -1644,23 +1697,115 @@ class EventoCRMEliminarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['item']= self.object.titulo
         return context
 
+# class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFormView):
+#     permission_required = ('crm.change_eventocrmdetalle')
+#     template_name = "crm/eventos_crm/form_merchandising.html"
+#     form_class = EventoCRMDetalleForm
+
+#     def dispatch(self, request, *args, **kwargs):
+#         context = {}
+#         error_sede = False
+#         context['titulo'] = 'Error de guardar'
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         # if not evento_crm.sede_origen:
+#         #     error_sede = True
+
+#         # if error_sede:
+#         #     context['texto'] = 'Ingrese una sede de origen.'
+#         #     return render(request, 'includes/modal sin permiso.html', context)
+        
+#         if not self.has_permission():
+#             return render(request, 'includes/modal sin permiso.html')
+#         return super().dispatch(request, *args, **kwargs)
+
+#     def get_success_url(self, **kwargs):
+#         return reverse_lazy('crm_app:evento_crm_detalle', kwargs={'pk':self.kwargs['evento_crm_id']})
+
+#     @transaction.atomic
+#     def form_valid(self, form):
+#         sid = transaction.savepoint()
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         almacen_origen = form.cleaned_data.get('almacen_origen')
+#         tipo_stock = form.cleaned_data.get('tipo_stock')
+#         merchandising = form.cleaned_data.get('merchandising')
+#         cantidad_asignada = form.cleaned_data.get('cantidad_asignada')
+#         stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(merchandising), merchandising.id, evento_crm.sociedad.id, almacen_origen.id, tipo_stock.id)
+
+#         buscar = EventoCRMDetalle.objects.filter(
+#             content_type=ContentType.objects.get_for_model(merchandising),
+#             id_registro=merchandising.id,
+#             almacen_origen=almacen_origen,
+#             tipo_stock=tipo_stock,
+#             evento_crm=evento_crm,
+#         )
+
+#         print(buscar)
+
+#         if buscar:
+#             contar = buscar.aggregate(Sum('cantidad_asignada'))['cantidad_asignada__sum']
+#         else:
+#             contar = 0
+        
+#         print(stock_disponible)
+#         print(contar)
+#         print(cantidad_asignada)
+
+#         if stock_disponible < contar + cantidad_asignada:
+#             form.add_error('cantidad_asignada', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_asignada))
+#             return super().form_invalid(form)
+
+#         try:
+#             if self.request.session['primero']:
+#                 item = len(EventoCRMDetalle.objects.filter(evento_crm = evento_crm))
+
+#                 obj, created = EventoCRMDetalle.objects.get_or_create(
+#                     content_type = ContentType.objects.get_for_model(merchandising),
+#                     id_registro = merchandising.id,
+#                     evento_crm = evento_crm,
+#                     almacen_origen = almacen_origen,
+#                     tipo_stock = tipo_stock,
+#                     unidad = form.cleaned_data.get('unidad')
+#                 )
+#                 if created:
+#                     obj.item = item + 1
+#                     obj.cantidad_asignada = cantidad_asignada
+
+#                 else:
+#                     obj.cantidad_asignada = obj.cantidad_asignada + cantidad_asignada
+
+#                 registro_guardar(obj, self.request)
+#                 obj.save()
+#                 self.request.session['primero']=False
+#         except Exception as ex:
+#             transaction.savepoint_rollback(sid)
+#             registrar_excepcion(self, ex, __file__)
+#         return HttpResponseRedirect(self.get_success_url())
+
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         kwargs['evento_crm'] = evento_crm
+#         return kwargs
+
+#     def get_context_data(self, **kwargs):
+#         self.request.session['primero'] = True
+#         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
+#         context = super(EventoCRMDetalleMerchandisingCreateView, self).get_context_data(**kwargs)
+#         context['accion'] = 'Agregar'
+#         context['titulo'] = 'Merchandising'
+#         # context['sociedad'] = evento_crm.sociedad.id
+#         context['url_stock'] = reverse_lazy('merchandising_app:stock', kwargs={'id_merchandising':1})[:-2]
+#         context['url_unidad'] = reverse_lazy('merchandising_app:unidad_merchandising', kwargs={'id_merchandising':1})[:-2]
+#         return context
+
+
+
 class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFormView):
     permission_required = ('crm.change_eventocrmdetalle')
     template_name = "crm/eventos_crm/form_merchandising.html"
     form_class = EventoCRMDetalleForm
 
     def dispatch(self, request, *args, **kwargs):
-        context = {}
-        error_sede = False
-        context['titulo'] = 'Error de guardar'
-        evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
-        if not evento_crm.sede_origen:
-            error_sede = True
-
-        if error_sede:
-            context['texto'] = 'Ingrese una sede de origen.'
-            return render(request, 'includes/modal sin permiso.html', context)
-        
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
@@ -1672,46 +1817,31 @@ class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFo
     def form_valid(self, form):
         sid = transaction.savepoint()
         evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
-        almacen_origen = form.cleaned_data.get('almacen_origen')
-        tipo_stock = form.cleaned_data.get('tipo_stock')
         merchandising = form.cleaned_data.get('merchandising')
         cantidad_asignada = form.cleaned_data.get('cantidad_asignada')
-        stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(merchandising), merchandising.id, evento_crm.sociedad.id, almacen_origen.id, tipo_stock.id)
+        # stock_disponible = ver_tipo_stock(ContentType.objects.get_for_model(merchandising), merchandising.id, evento_crm.sociedad.id, almacen_origen.id, tipo_stock.id)
 
         buscar = EventoCRMDetalle.objects.filter(
             content_type=ContentType.objects.get_for_model(merchandising),
             id_registro=merchandising.id,
-            almacen_origen=almacen_origen,
-            tipo_stock=tipo_stock,
             evento_crm=evento_crm,
         )
 
-        print(buscar)
-
-        if buscar:
-            contar = buscar.aggregate(Sum('cantidad_asignada'))['cantidad_asignada__sum']
-        else:
-            contar = 0
-        
-        print(stock_disponible)
-        print(contar)
-        print(cantidad_asignada)
-
-        if stock_disponible < contar + cantidad_asignada:
-            form.add_error('cantidad_asignada', 'Se superó la cantidad contada. Máximo: %s. Contado: %s.' % (stock_disponible, contar + cantidad_asignada))
-            return super().form_invalid(form)
-
         try:
             if self.request.session['primero']:
+                evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
                 item = len(EventoCRMDetalle.objects.filter(evento_crm = evento_crm))
+
+                merchandising = form.cleaned_data.get('merchandising')
+                cantidad_asignada = form.cleaned_data.get('cantidad_asignada')
+
+                print(merchandising)
+                print(cantidad_asignada)
 
                 obj, created = EventoCRMDetalle.objects.get_or_create(
                     content_type = ContentType.objects.get_for_model(merchandising),
                     id_registro = merchandising.id,
                     evento_crm = evento_crm,
-                    almacen_origen = almacen_origen,
-                    tipo_stock = tipo_stock,
-                    unidad = form.cleaned_data.get('unidad')
                 )
                 if created:
                     obj.item = item + 1
@@ -1726,23 +1856,17 @@ class EventoCRMDetalleMerchandisingCreateView(PermissionRequiredMixin, BSModalFo
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
+            print('ex..............EXCEPTION')
+            print(ex)
+            print('ex..............EXCEPTION')
         return HttpResponseRedirect(self.get_success_url())
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
-        kwargs['evento_crm'] = evento_crm
-        return kwargs
 
     def get_context_data(self, **kwargs):
         self.request.session['primero'] = True
-        evento_crm = EventoCRM.objects.get(id = self.kwargs['evento_crm_id'])
         context = super(EventoCRMDetalleMerchandisingCreateView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Merchandising'
-        context['sociedad'] = evento_crm.sociedad.id
         context['url_stock'] = reverse_lazy('merchandising_app:stock', kwargs={'id_merchandising':1})[:-2]
-        context['url_unidad'] = reverse_lazy('merchandising_app:unidad_merchandising', kwargs={'id_merchandising':1})[:-2]
         return context
 
 
@@ -2343,6 +2467,9 @@ class EncuestaCRMListView(PermissionRequiredMixin, FormView):
         context['contexto_pagina'] = encuesta_crm
         context['contexto_encuesta_crm'] = encuesta_crm
         context['lista_encuestas'] = RespuestaCRM.objects.values_list('encuesta_crm', flat=True)
+       
+        if 'crm.delete_encuestacrm' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_encuesta'] = True
 
         return context
 
@@ -2398,6 +2525,9 @@ def EncuestaCRMTabla(request):
         context['contexto_encuesta_crm'] = encuesta_crm
         context['lista_encuestas'] = RespuestaCRM.objects.values_list('encuesta_crm', flat=True)
 
+        if 'crm.delete_encuestacrm' in request.user.get_all_permissions():
+            context['permiso_eliminar_encuesta'] = True
+        
         data['table'] = render_to_string(
             template,
             context,
@@ -2589,6 +2719,10 @@ class RespuestaCRMListView(PermissionRequiredMixin, FormView):
    
         context['contexto_respuesta_crm'] = respuesta_crm
         context['contexto_pagina'] = respuesta_crm
+
+        if 'crm.delete_respuestacrm' in self.request.user.get_all_permissions():
+            context['permiso_eliminar_respuesta'] = True
+
         return context
 
 
@@ -2634,6 +2768,9 @@ def RespuestaCRMTabla(request):
         context['contexto_pagina'] = respuesta_crm
         context['contexto_respuesta_crm'] = respuesta_crm
 
+        if 'crm.delete_respuestacrm' in request.user.get_all_permissions():
+            context['permiso_eliminar_respuesta'] = True
+
         data['table'] = render_to_string(
             template,
             context,
@@ -2645,9 +2782,8 @@ def RespuestaCRMTabla(request):
 class RespuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('crm.add_respuestacrm')
     model = RespuestaCRM
-    template_name = "includes/formulario generico.html"
-    # form_class = RespuestaCRMForm
-    form_class = RespuestaCrearCRMForm
+    template_name = "crm/encuestas_crm/respuesta/form_cliente.html"
+    form_class = RespuestaCRMForm
     success_url = reverse_lazy('crm_app:respuesta_crm_inicio')
 
     def dispatch(self, request, *args, **kwargs):
@@ -2659,7 +2795,7 @@ class RespuestaCRMCreateView(PermissionRequiredMixin, BSModalCreateView):
         form.instance.slug = slug_aleatorio(RespuestaCRM)
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
-    
+
     def get_context_data(self, **kwargs):
         context = super(RespuestaCRMCreateView, self).get_context_data(**kwargs)
         context['accion']="Registrar"
@@ -2672,7 +2808,7 @@ class RespuestaCRMUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     model = RespuestaCRM
     # template_name = "includes/formulario generico.html"
     template_name = "crm/clientes_crm/form_cliente.html"
-    form_class = RespuestaCRMForm
+    form_class = RespuestaClienteActualizarForm
     success_url = reverse_lazy('crm_app:respuesta_crm_inicio')
 
     def dispatch(self, request, *args, **kwargs):

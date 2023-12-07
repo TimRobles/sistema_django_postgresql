@@ -1,7 +1,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th>id</th>
             <th>Fecha</th>
             <th>N° de Orden</th>
             <th>Sociedad</th>
@@ -15,7 +14,6 @@
     <tbody>
         {% for orden_compra in contexto_orden_compra %}
         <tr> 
-            <td>{{ orden_compra.id }}</td>
             <td>{{ orden_compra.fecha_orden|date:'d/m/Y' }}</td>
             <td>
                 {% if orden_compra.numero_orden_compra != None %}

@@ -139,7 +139,7 @@
 <br>
 
 <h4>Descripción
-    {% if contexto_tarea.estado < 3 %}  
+    {% if contexto_tarea.estado < 3 and request.user == contexto_tarea.created_by  %}  
     <button data-form-url="{% url 'tarea_app:tarea_detalle_descripcion' contexto_tarea.id %}"
         class="delete btn btn-primary">
         +  
