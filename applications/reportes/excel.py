@@ -29,6 +29,7 @@ from applications.datos_globales.models import Departamento, Moneda
 from applications.cotizacion.models import CotizacionVenta
 from applications.cobranza.models import Ingreso, Pago
 from applications.reportes.data_resumen_ingresos_anterior import*
+from applications.sede.models import Sede
 
 ####################################################  FACTURACIÓN VS ASESOR COMERCIAL  ####################################################   
 
@@ -1997,4 +1998,134 @@ def ReporteDepositoCuentasBancariasCorregido(sociedad_id, fecha_inicio, fecha_fi
     else:
         sociedades = Sociedad.objects.all()
         wb=dataReporteDepositoCuentasBancariasResumen(sociedades, fecha_inicio, fecha_fin)
+        return wb
+
+####################################################  REPORTE RESUMEN STOCK PRODUCTOS  ####################################################   
+
+def dataReporteResumenStockProductos(sede):
+
+    sql_stock_productos = ''' SELECT
+    MAX(mam.id) AS id,
+    mm.id,
+    mm.descripcion_corta,
+    sed.nombre,
+    ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),2) AS stock_disponible,
+    ROUND(SUM(CASE WHEN (mats.codigo='4' or mats.codigo='5') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),2) AS stock_sin_qa,
+    ROUND(SUM(CASE WHEN (mats.codigo='6' or mats.codigo='26') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),2) AS stock_por_qa,
+    ROUND(SUM(CASE WHEN (mats.codigo NOT IN (3,4,5,6,26)) THEN mam.cantidad*mam.signo_factor_multiplicador ELSE (0.00) END),2) AS stock_otros,
+    ROUND(SUM(mam.cantidad*mam.signo_factor_multiplicador),2) as total_stock
+    FROM movimiento_almacen_movimientosalmacen mam
+    LEFT JOIN material_material mm
+        ON mm.id=mam.id_registro_producto AND mam.content_type_producto_id='%s'
+    LEFT JOIN movimiento_almacen_tipostock mats
+        ON mam.tipo_stock_id=mats.id
+    LEFT JOIN almacenes_almacen alms
+        ON mam.almacen_id=alms.id
+    LEFT JOIN sede_sede sed
+        ON alms.sede_id=sed.id
+    WHERE alms.sede_id= '%s' AND mats.codigo NOT IN (
+        1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 32, 33, 34, 35, 36, 37, 38)
+    GROUP BY mm.id, sed.id
+    ORDER BY sed.id, mm.descripcion_corta; ''' %(DICT_CONTENT_TYPE['material | material'], sede.id)
+    query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
+
+    info = []
+    for fila in query_info:
+        lista_datos = []
+        lista_datos.append(fila.id)
+        lista_datos.append(fila.descripcion_corta)
+        lista_datos.append(fila.nombre)
+        lista_datos.append(fila.stock_disponible)
+        lista_datos.append(fila.stock_sin_qa)
+        lista_datos.append(fila.stock_por_qa)
+        lista_datos.append(fila.stock_otros)
+        lista_datos.append(fila.total_stock)
+        info.append(lista_datos)
+
+    list_encabezado = [
+        'COD. MAT.',
+        'DESCRIPCIÓN',
+        'SEDE',
+        'ALMACÉN #1',
+        'ALMACÉN #2',
+        'ALMACÉN #3',
+        'ALMACÉN #4',
+        'ALMACÉN #5',
+        'SUMA CONTEO',
+        'DISPONIBLE',
+        'BLOQ. SIN QA',
+        'BLOQ. POR QA',
+        'BLOQ. DESG.',
+        'SUMATORIA',
+        'DIFERENCIA',
+        ]
+
+    # color_relleno = rellenoSociedad(sede.id)
+
+    wb = Workbook()
+    hoja = wb.active
+    hoja.append(tuple(list_encabezado))
+
+    col_range = hoja.max_column  # get max columns in the worksheet
+    # cabecera de la tabla
+    for col in range(1, col_range + 1):
+        if col == 8 or col == 13:
+            # color_celda_cabecera = PatternFill(start_color='8C4966', end_color='8C4966', fill_type='solid')
+            color_celda_cabecera = PatternFill(start_color='C0C0C0', end_color='C0C0C0', fill_type='solid')
+        elif col == 14:
+            color_celda_cabecera = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
+        else:
+            color_celda_cabecera = RELLENO_EXCEL
+        cell_header = hoja.cell(1, col)
+        cell_header.fill = color_celda_cabecera
+        cell_header.font = NEGRITA
+    # if info == []:
+    #     return False
+    # for bloque in info:
+    # for fila in bloque:
+    for fila in info:
+        fila[3] = float(fila[3])
+        fila[4] = float(fila[4])
+        fila[5] = float(fila[5])
+        fila[6] = float(fila[6])
+        fila[7] = float(fila[7])
+        nueva_fila = []
+        nueva_fila.extend([
+            fila[0],
+            fila[1],
+            fila[2],
+            '',     # ALMACEN 1
+            '',     # ALMACEN 2
+            '',     # ALMACEN 3
+            '',     # ALMACEN 4
+            '',     # ALMACEN 5
+            '',     # SUMA CONTEO
+            fila[3],
+            fila[4],
+            fila[5],
+            fila[6],
+            fila[7],
+            '',     # DIFERENCIA
+            ])
+        hoja.append(nueva_fila)
+
+    for row in hoja.rows:
+        for col in range(hoja.max_column):
+            row[col].border = BORDE_DELGADO
+            if col >= 3:
+                row[col].number_format = FORMATO_NUMERO
+
+    hoja.freeze_panes = 'C2'
+    ajustarColumnasSheet(hoja)
+    return wb
+    
+def ReporteResumenStockProductosCorregido(sede_id):
+
+    if sede_id:
+        sede = Sede.objects.get(id=sede_id)
+        wb=dataReporteResumenStockProductos(sede)
+        return wb
+    else:
+        sedes = Sede.objects.all()
+        wb=dataReporteResumenStockProductos(sedes)
         return wb

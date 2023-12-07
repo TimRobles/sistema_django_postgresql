@@ -22,7 +22,8 @@ from applications.reportes.forms import (
     ReporteComportamientoClienteExcelForm,
     ReporteDepositoCuentasBancariasForm,
     ReporteFacturacionAsesorComercialExcelForm,
-    ReporteFacturacionGeneralExcelForm, 
+    ReporteFacturacionGeneralExcelForm,
+    ReporteResumenStockProductosForm, 
     ReporteStockSociedadPdfForm, 
     ReporteVentasDepartamentoPdfForm,
     ReportesContadorForm, 
@@ -54,9 +55,11 @@ from applications.reportes.excel import (
     ReporteEstadosClienteExcel, 
     ReporteFacturacionAsesorComercial, 
     ReporteFacturacionGeneral,
+    ReporteResumenStockProductosCorregido,
     ReporteRotacionCorregido, 
     ReporteVentasDepartamento
     )
+from applications.sede.models import Sede
     
 class ReportesView(FormView):
     template_name = "reportes/inicio.html"
@@ -4020,6 +4023,7 @@ class ReportesCorregidos(TemplateView):
             sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
             titulo = f'Reporte Contador - {sociedad.abreviatura} del {fecha_inicio} al {fecha_fin}'
             wb = ReporteContadorCorregido(sociedad, fecha_inicio, fecha_fin)
+
         elif formulario == 'formulario2':
             sociedad = None
             if self.request.POST.get('sociedad'):
@@ -4030,17 +4034,28 @@ class ReportesCorregidos(TemplateView):
             wb = ReporteRotacionCorregido(sociedad)
 
         elif formulario == 'formulario3':
+            sociedad = None
             fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
             fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
-            sociedad_id = self.request.POST.get('sociedad')
 
-            if sociedad_id:
-                sociedad = Sociedad.objects.get(id=sociedad_id)
+            if self.request.POST.get('sociedad'):
+                sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
                 titulo = f'Reporte Depositos Cuentas Bancarias ~ {sociedad.abreviatura} ~ {fecha_inicio} al {fecha_fin}'
             else:
                 titulo = f'Reporte Depositos Cuentas Bancarias ~ General ~ {fecha_inicio} al {fecha_fin}'
 
-            wb = ReporteDepositoCuentasBancariasCorregido(sociedad_id, fecha_inicio, fecha_fin)
+            wb = ReporteDepositoCuentasBancariasCorregido(sociedad, fecha_inicio, fecha_fin)
+
+        elif formulario == 'formulario4':
+            sede_id = self.request.POST.get('sede')
+
+            if sede_id:
+                sede = Sede.objects.get(id=sede_id)
+                titulo = f'Reporte Resumen Stock Productos {sede.nombre} ~ ' + str(fecha_doc)
+            else:
+                titulo = f'Reporte Resumen Stock Productos ~ General ~ ' + str(fecha_doc)
+
+            wb = ReporteResumenStockProductosCorregido(sede_id)
 
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
@@ -4054,5 +4069,6 @@ class ReportesCorregidos(TemplateView):
         context['form1'] = ReportesContadorForm()
         context['form2'] = ReportesRotacionForm()
         context['form3'] = ReporteDepositoCuentasBancariasForm()
+        context['form4'] = ReporteResumenStockProductosForm()
 
         return context
