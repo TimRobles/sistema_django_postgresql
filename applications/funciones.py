@@ -133,6 +133,13 @@ def validar_numero(texto):
         if not letra.isnumeric():
             raise ValidationError('%s tiene caracteres incorrectos' % texto)
 
+def validar_texto_cuenta(texto):
+    permitidas = set("RETENCION")
+    
+    for letra in texto:
+        if letra.isnumeric() or letra.upper() not in permitidas:
+            raise ValidationError('%s tiene caracteres incorrectos' % texto)
+
 
 def consulta_distancia(longitud, latitud, sede_id):
     ubicacion = applications.recepcion.models.GeoLocalizacion.objects.get(sede__id=sede_id)

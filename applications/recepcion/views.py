@@ -238,7 +238,7 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
                 context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
    
-        objectsxpage =  15 # Show 15 objects per page.
+        objectsxpage =  30 # Show 30 objects per page.
 
         if len(asistencias) > objectsxpage:
             paginator = Paginator(asistencias, objectsxpage)
@@ -294,7 +294,7 @@ def AsistenciaTabla(request):
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
 
-        objectsxpage = 15 # Show 15 objects per page.
+        objectsxpage = 30 # Show 30 objects per page.
 
         if len(asistencias) > objectsxpage:
             paginator = Paginator(asistencias, objectsxpage)
