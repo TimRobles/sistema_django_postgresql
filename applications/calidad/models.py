@@ -846,3 +846,14 @@ def eliminar_serie_post_delete(instance, *args, **kwargs):
 
 
 post_delete.connect(eliminar_serie_post_delete, sender=ValidarSerieSalidaTransformacionProductos)
+
+
+# from applications.calidad.models import *
+# series = Serie.objects.filter(serie_movimiento_almacen=None)
+# series
+# len(series)
+
+# for serie in series:
+#     serie.delete()
+
+    
