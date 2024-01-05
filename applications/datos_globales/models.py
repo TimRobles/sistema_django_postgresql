@@ -598,7 +598,7 @@ class UnidadImpositivaTributaria(models.Model):
         ]
 
     def __str__(self):     
-        return self.monto
+        return str(self.monto)
 
 
 class ImpuestoGeneralVentas(models.Model):

@@ -504,6 +504,15 @@ TIPO_PREGUNTA_CRM = (
     (3, 'ABIERTA'),
     )
 
+ESTADO_PROBLEMAS= (
+    (1, 'ABIERTO'),
+    (2, 'EN PROCESO'),
+    (3, 'RESUELTO'),
+    )
+
+
+
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'

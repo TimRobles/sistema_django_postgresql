@@ -1,0 +1,28 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Titulo</th>
+            <th>Creado por</th>
+            <th>Fecha de Registro</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        
+        {% for problema in contexto_problemas %}
+        <tr>
+            <td>{{ problema.titulo }}</td>
+            <td>{{ problema.created_by }}</td>
+            <td>{{ problema.created_at|date:'d/m/Y' }}</td>
+            <td>{{ problema.get_estado_display }}</td>
+            <td>Acciones</td>
+        </tr>
+            
+        {% endfor %}
+            
+
+    </tbody>
+</table>

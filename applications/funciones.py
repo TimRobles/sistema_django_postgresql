@@ -137,7 +137,7 @@ def validar_texto_cuenta(texto):
     permitidas = set("RETENCION")
     
     for letra in texto:
-        if letra.isnumeric() or letra.upper() not in permitidas:
+        if not letra.isnumeric() and letra.upper() not in permitidas:
             raise ValidationError('%s tiene caracteres incorrectos' % texto)
 
 
