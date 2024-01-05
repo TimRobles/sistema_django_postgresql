@@ -344,7 +344,7 @@ class OfertaProveedorDetalleDeleteView(PermissionRequiredMixin, BSModalDeleteVie
         return context
 
 class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
+    permission_required = ('oferta_proveedor.add_ofertaproveedordetalle')
     template_name = "oferta_proveedor/oferta_proveedor/form_material.html"
     form_class = AgregarMaterialOfertaProveedorForm
 
@@ -412,7 +412,7 @@ class MaterialOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormVie
         return context
 
 class MaterialOfertaProveedorCrearView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
+    permission_required = ('oferta_proveedor.add_ofertaproveedordetalle')
     template_name = "includes/formulario generico.html"
     form_class = CrearMaterialOfertaProveedorForm
 
@@ -660,7 +660,7 @@ class OfertaProveedorGenerarOrdenCompraView(PermissionRequiredMixin, BSModalForm
 
 
 class MerchandisingOfertaProveedorAgregarView(PermissionRequiredMixin, BSModalFormView):
-    permission_required = ('oferta_proveedor.add_Materialofertaproveedor')
+    permission_required = ('oferta_proveedor.add_ofertaproveedordetalle')
     template_name = "oferta_proveedor/oferta_proveedor/form_merchandising.html"
     form_class = AgregarMerchandisingOfertaProveedorForm
 
