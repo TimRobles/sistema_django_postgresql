@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Problema
+{% endblock titulo %}
+
+{% block contenido %}
+    <div class="table-responsive" id="tabla">
+        {% include 'soporte/problema/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

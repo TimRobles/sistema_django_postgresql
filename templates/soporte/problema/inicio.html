@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Problemas
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Problemas
+        <a href="{% url 'soporte_app:problema_registrar' %}"
+        class="badge btn btn-primary" title="Registrar">
+        Registrar
+        </a>
+    </h3>
+
+    {% include 'includes/paginador.html' %}
+
+    <div class="table-responsive" id="tabla">
+        {% include 'soporte/problema/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
