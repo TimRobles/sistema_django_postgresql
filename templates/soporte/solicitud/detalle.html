@@ -7,10 +7,10 @@
 
 {% block contenido %}
     <h3>
-        {{ contexto_problema.titulo }}
-    <a href="{% url 'soporte_app:problema_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+        {{ contexto_solicitud.titulo }}
+    <a href="{% url 'soporte_app:solicitud_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     </h3>
     <div class="table-responsive" id="tabla">
-        {% include 'soporte/problema/detalle_tabla.html' %}
+        {% include 'soporte/solicitud/detalle_tabla.html' %}
     </div>
 {% endblock contenido %}

@@ -2,14 +2,14 @@
 {% load static %}
 
 {% block titulo %}
-    Problemas
+    Solicitud
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Problemas
+    <h3>Solicitud 
         <button class="create badge bg-primary"
-            data-form-url="{% url 'soporte_app:problema_registrar' %}"
-            data-table-url="{% url 'soporte_app:problema_tabla' %}">
+            data-form-url="{% url 'soporte_app:solicitud_registrar' %}"
+            data-table-url="{% url 'soporte_app:solicitud_tabla' %}">
             Registrar
         </button>
     </h3>
@@ -24,6 +24,6 @@
     {% include 'includes/paginador.html' %}
 
     <div class="table-responsive" id="tabla">
-        {% include 'soporte/problema/inicio_tabla.html' %}
+        {% include 'soporte/solicitud/inicio_tabla.html' %}
     </div>
 {% endblock contenido %}

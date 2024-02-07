@@ -1488,50 +1488,50 @@ class EventoCRMGuardarView(PermissionRequiredMixin, BSModalDeleteView):
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
         sid = transaction.savepoint()
-        try:
-            self.object = self.get_object()
-            movimiento_final = TipoMovimiento.objects.get(codigo=139)  # Salida por traslado
-            for detalle in self.object.EventoCRMDetalle_evento_crm.all():
-                movimiento_uno = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_asignada,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=detalle.tipo_stock,
-                    signo_factor_multiplicador=-1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                    id_registro_documento_proceso=self.object.id,
-                    almacen=detalle.almacen_origen,
-                    sociedad=self.object.sociedad,
-                    movimiento_anterior=None,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
-                movimiento_dos = MovimientosAlmacen.objects.create(
-                    content_type_producto=detalle.content_type,
-                    id_registro_producto=detalle.id_registro,
-                    cantidad=detalle.cantidad_asignada,
-                    tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_final,
-                    signo_factor_multiplicador=+1,
-                    content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
-                    id_registro_documento_proceso=self.object.id,
-                    sociedad=self.object.sociedad,
-                    movimiento_anterior=movimiento_uno,
-                    movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
-                )
+        # try:
+        self.object = self.get_object()
+        movimiento_final = TipoMovimiento.objects.get(codigo=139)  # Salida por traslado
+        for detalle in self.object.EventoCRMDetalle_evento_crm.all():
+            movimiento_uno = MovimientosAlmacen.objects.create(
+                content_type_producto=detalle.content_type,
+                id_registro_producto=detalle.id_registro,
+                cantidad=detalle.cantidad_asignada,
+                tipo_movimiento=movimiento_final,
+                tipo_stock=detalle.tipo_stock,
+                signo_factor_multiplicador=-1,
+                content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                id_registro_documento_proceso=self.object.id,
+                almacen=detalle.almacen_origen,
+                sociedad=self.object.sociedad,
+                movimiento_anterior=None,
+                movimiento_reversion=False,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
+            movimiento_dos = MovimientosAlmacen.objects.create(
+                content_type_producto=detalle.content_type,
+                id_registro_producto=detalle.id_registro,
+                cantidad=detalle.cantidad_asignada,
+                tipo_movimiento=movimiento_final,
+                tipo_stock=movimiento_final.tipo_stock_final,
+                signo_factor_multiplicador=+1,
+                content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                id_registro_documento_proceso=self.object.id,
+                sociedad=self.object.sociedad,
+                movimiento_anterior=movimiento_uno,
+                movimiento_reversion=False,
+                created_by=self.request.user,
+                updated_by=self.request.user,
+            )
 
-            self.object.estado = 2
+        self.object.estado = 2
 
-            registro_guardar(self.object, self.request)
-            self.object.save()
-            messages.success(request, MENSAJE_GUARDAR_EVENTO_DETALLE)
-        except Exception as ex:
-            transaction.savepoint_rollback(sid)
-            registrar_excepcion(self, ex, __file__)
+        registro_guardar(self.object, self.request)
+        self.object.save()
+        messages.success(request, MENSAJE_GUARDAR_EVENTO_DETALLE)
+        # except Exception as ex:
+        #     transaction.savepoint_rollback(sid)
+        #     registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
@@ -2113,7 +2113,7 @@ class EventoCRMGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
                     id_registro=detalle.id_registro,
                     guia=guia,
                     cantidad=detalle.cantidad_asignada,
-                    descripcion_documento=detalle.producto.descripcion_venta,
+                    descripcion_documento=detalle.producto.descripcion_corta,
                     created_by=self.request.user,
                     updated_by=self.request.user,
                 )
