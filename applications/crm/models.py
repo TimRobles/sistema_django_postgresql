@@ -188,7 +188,10 @@ class EventoCRM(models.Model):
             '-fecha_inicio',
         ]
 
-
+    @property
+    def fecha(self):
+        return self.updated_at
+    
     def __str__(self):
         return str(self.titulo)
     

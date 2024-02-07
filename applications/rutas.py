@@ -11,6 +11,7 @@ REQUERIMIENTO_VOUCHER = 'file/caja_chica/requerimiento/documento/'
 REQUERIMIENTO_FOTO_PRODUCTO = 'img/caja_chica/requerimiento/producto/'
 CONTABILIDAD_FOTO_CHEQUE = 'img/contabilidad/cheque/'
 PROBLEMA_FOTO = 'img/soporte/problema/'
+SOLICITUD_FOTO = 'img/soporte/solicitud/'
 
 CLIENTE_CRM_ARCHIVO = 'img/crm/cliente_crm/'
 CLIENTE_CRM_ARCHIVO_RECIBIDO = 'img/crm/cliente_crm/'

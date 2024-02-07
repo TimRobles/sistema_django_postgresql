@@ -40,7 +40,7 @@ class HistoricoUser(models.Model):
             ]
 
     def __str__(self):
-        return str(self.usuario) + " - " + str(self.fecha_alta)
+        return str(self.usuario) 
 
 
 class DatosUsuario(models.Model):

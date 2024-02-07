@@ -12,42 +12,35 @@
 
     <tbody>
         
-        {% for problema in contexto_problemas %}
+        {% for solicitud in contexto_solicitudes %}
         <tr>
-            <td>{{ problema.titulo }}</td>
-            <td>{{ problema.created_by }}</td>
-            <td>{{ problema.created_at|date:'d/m/Y' }}</td>
-            <td>{{ problema.get_estado_display }}</td>
+            <td>{{ solicitud.titulo }}</td>
+            <td>{{ solicitud.created_by }}</td>
+            <td>{{ solicitud.created_at|date:'d/m/Y' }}</td>
+            <td>{{ solicitud.get_estado_display }}</td>
             <td class="text-center text-nowrap">
-            <button data-form-url="{% url 'soporte_app:problema_actualizar' problema.id %}"
-                data-table-url="{% url 'soporte_app:problema_tabla' %}"
+            <button data-form-url="{% url 'soporte_app:solicitud_actualizar' solicitud.id %}"
+                data-table-url="{% url 'soporte_app:solicitud_tabla' %}"
                 data-keep-open="true"
                 class="update btn btn-warning btn-sm"
                 data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                 <i class="bi bi-pencil-fill"></i>
             </button>
             
-            {% if problema.estado == 1 %}
-            <button data-form-url="{% url 'soporte_app:problema_eliminar' problema.id %}"
+            {% if solicitud.estado == 1 %}
+            <button data-form-url="{% url 'soporte_app:solicitud_eliminar' solicitud.id %}"
                 class="delete btn btn-danger btn-sm"
                 data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                 <i class="bi bi-x-lg"></i>
             </button>
             {% endif %}
 
-            <a href="{% url 'soporte_app:problema_detalle' problema.id %}"
+
+            <a href="{% url 'soporte_app:solicitud_detalle' solicitud.id %}"
                 class="btn btn-info btn-sm"
                 data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
                 <i class="bi bi-eye-fill"></i>
             </a>
-
-            {% if problema.estado == 1 %}
-            <button data-form-url="{% url 'soporte_app:problema_notificar' problema.id %}"
-                class="delete btn btn-success btn-sm"
-                data-bs-toggle="tooltip" data-bs-placement="top" title="Notificar">
-                <i class="bi bi-clipboard"></i>
-            </button>
-            {% endif %}
 
             </td>
         </tr>
