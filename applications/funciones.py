@@ -18,7 +18,7 @@ import sys
 def consulta_ruc(ruc):
     sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
-    url = "https://api.apis.net.pe/v1/ruc?numero="
+    url = "https://api.apis.net.pe/v2/ruc?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
     r = requests.get(url + str(ruc), headers=headers)
     data = r.json()
@@ -71,7 +71,7 @@ def consulta_dni(dni):
 def consulta_dni2(dni):
     sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
-    url = "https://api.apis.net.pe/v1/dni?numero="
+    url = "https://api.apis.net.pe/v2/dni?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
     r = requests.get(url + str(dni), headers=headers)
     data = r.json()
