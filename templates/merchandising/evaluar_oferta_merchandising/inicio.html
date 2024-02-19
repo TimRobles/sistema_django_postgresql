@@ -32,8 +32,6 @@
                         <th class="text-nowrap text-end">Sub Total</th>
                         <th class="text-nowrap text-end">IGV</th>
                         <th class="text-nowrap text-end">Total</th>
-                        <th>Imagen</th>
-                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,7 +47,6 @@
                             <td class="text-end text-nowrap">{{ ofertas_evaluadas_detalle.moneda.simbolo }} {{ merchandising.igv|redondear|intcomma }}</td>
                             <td class="text-end text-nowrap">{{ ofertas_evaluadas_detalle.moneda.simbolo }} {{ merchandising.total|redondear|intcomma }}</td>
                             <td>{{ merchandising.archivo }}</td>
-                            <td> ACCIONES </td>
                         </tr>
                     {% endfor %}
                 </tbody>

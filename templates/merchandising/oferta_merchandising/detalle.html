@@ -10,13 +10,13 @@
         <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
     
         {% if contexto_oferta_proveedor.evaluada == True %}
-        <a href="{% url 'merchandising_app:ver_ofertas_evaluadas' contexto_oferta_proveedor.id %}" class="btn btn-primary">Evaluación de Ofertas</a>
+        <a href="{% url 'merchandising_app:ver_ofertas_evaluadas' contexto_oferta_proveedor.id %}"><span class="btn btn-success">Evaluación de Ofertas</a>
         {% endif %}
 
         {% if contexto_oferta_proveedor.estado == 1 and contexto_oferta_proveedor.evaluada == True %}
             <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_finalizar' contexto_oferta_proveedor.id %}"
                 data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
-                class="delete badge bg-primary">
+                class="delete badge bg-danger">
                 Finalizar Oferta
             </button>
         {% endif %}
