@@ -21,21 +21,27 @@
 
 
 
-<h3>Imagenes
+<h3>Imagenes | URL
+    
+    {% if contexto_problema.estado == 1 %}        
     <button class="create badge bg-primary"
         data-form-url="{% url 'soporte_app:problema_detalle_registrar' contexto_problema.id %}"
         data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}">    
         Añadir
-    </button>          
+    </button>    
+    {% endif %}
+
 </h3>
-<div class="table-responsive">
+<div class="table-responsive mt-3">
     <table class="table">
         <thead>
             <tr>
                 <th>Item</th>
                 <th>Imagen</th>
                 <th>URL</th>
+                <th style="min-width: 500px;">Nota Solución</th>
                 <th style="text-align: center;">Acciones</th>
+                    
             </tr>
         </thead>
         <tbody>
@@ -58,7 +64,16 @@
                 -
                 {% endif %}
                 </td>
+                <td style="min-width: 500px;" >
+                    {% if problema.nota_solucion %}
+                    {{problema.nota_solucion}}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>                
+
                 <td class="text-center text-nowrap">
+                    {% if contexto_problema.estado == 1 %}
                     <button data-form-url="{% url 'soporte_app:problema_detalle_actualizar' problema.id %}"
                         data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}"
                         data-keep-open="true"
@@ -66,11 +81,23 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
+
                     <button data-form-url="{% url 'soporte_app:problema_detalle_eliminar' problema.id %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi bi-x-lg"></i>
                     </button>
+                    {% endif %}
+
+                    {% if contexto_problema.estado == 3 %}
+                    <button data-form-url="{% url 'soporte_app:problema_detalle_notasolucion' problema.id %}"
+                        data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-success btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Nota Solución">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                    {% endif %}
                 </td>
             </tr>
                 

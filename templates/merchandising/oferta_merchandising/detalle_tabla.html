@@ -79,7 +79,6 @@
     <table class="table">
         <thead>
             <tr>
-                <th>id</th>
                 <th>Item</th>
                 <td> Merchandising </td>
                 <td> Merchandising Oficial </td>
@@ -108,7 +107,6 @@
         <tbody>
             {% for detalle in merchandising %}
                 <tr>
-                    <td>{{ detalle.id }}</td>
                     <td>{{ detalle.item }}</td>
                     <td>{{ detalle.merchandising }}</td>
                     <td>{{ detalle.merch.descripcion_corta }}</td>
@@ -128,7 +126,12 @@
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.igv|redondear|intcomma }}</td>
                     {% endif %}
                     <td class="text-end text-nowrap">{{ contexto_oferta_proveedor.moneda.simbolo }} {{ detalle.total|redondear|intcomma }}</td>
-                    <td>{{ merchandising.archivo }}</td>
+                    <!-- <td>{{ merchandising.archivo }}</td> -->
+                    <td>
+                        {% if detalle.archivo %}
+                        <a href="{{ MEDIA_URL }}{{ detalle.archivo }}" target="_blank">Ver Archivo</a>
+                        {% endif %}
+                    </td>
 
                     <td class="text-center text-nowrap">
                         {% if contexto_oferta_proveedor.estado == 1 %}
@@ -136,15 +139,15 @@
                                 data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id %}"
                                 data-modal="modal-xl"
                                 data-keep-open="true"
-                                class="update btn btn-warning btn-sm"
+                                class="update btn btn-success btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar Precios">
-                                <i class="bi bi-pencil-fill"></i>
+                                <i class="bi bi-calculator calculator-icon"></i>
                             </button>
 
                             <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_unir' detalle.id %}"
                                 data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle_tabla' contexto_oferta_proveedor.id  %}"
                                 data-keep-open="true"
-                                class="update btn btn-success btn-sm"
+                                class="update btn btn-warning btn-sm"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Merchandising">
                                 <i class="bi bi-pencil-fill"></i>
                             </button>

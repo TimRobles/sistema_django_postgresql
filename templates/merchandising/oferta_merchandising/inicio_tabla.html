@@ -6,6 +6,7 @@
             <th>Proveedor</th>
             <th>Estado</th>
             <th>Evaluada</th>
+            <th>lista</th>
             <th class="text-center">Acciones</th>
 
         </tr>
@@ -32,11 +33,15 @@
             <td>{{ oferta_proveedor.get_estado_display}}</td>
             <td>
                 {% if oferta_proveedor.evaluada == True %}
-                    Sí
-                {% else %}
-                    No
+                    Sí | {{oferta_proveedor.id}}
+
+                {% elif  oferta_proveedor.id in oferta_elegida%}
+                        Sí - Elegida | {{oferta_proveedor.id}}
+                   
                 {% endif %}
             </td>
+
+            <td>            {{ oferta_eligida }}    | {{oferta_proveedor.id}}          </td>
             <td class="text-center text-nowrap">
                 <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_detalle' oferta_proveedor.id %}"
                     class="btn btn-info btn-sm"
