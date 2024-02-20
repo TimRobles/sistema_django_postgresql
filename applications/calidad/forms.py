@@ -38,15 +38,18 @@ class NotaControlCalidadStockBuscarForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
     estado = forms.ChoiceField(choices=((None, '-----------------'),) + ESTADOS_NOTA_CALIDAD_STOCK, required=False)
     usuario = forms.ModelChoiceField(queryset=get_user_model().objects, required=False)
+    producto = forms.ModelChoiceField(queryset=Material.objects.filter(mostrar=1), required=False)
     
     def __init__(self, *args, **kwargs):
         filtro_sociedad = kwargs.pop('filtro_sociedad')
         filtro_estado = kwargs.pop('filtro_estado')
         filtro_usuario = kwargs.pop('filtro_usuario')
+        filtro_producto = kwargs.pop('filtro_producto')
         super(NotaControlCalidadStockBuscarForm, self).__init__(*args, **kwargs)
         self.fields['sociedad'].initial = filtro_sociedad
         self.fields['estado'].initial = filtro_estado
         self.fields['usuario'].initial = filtro_usuario
+        self.fields['producto'].initial = filtro_producto
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
