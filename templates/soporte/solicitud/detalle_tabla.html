@@ -32,12 +32,16 @@
 </div>
 
 
+{% if contexto_solicitud.estado == 5 or contexto_solicitud.estado == 6   %}    
 <h3>Documentación
+    {% if contexto_solicitud.estado == 5 %}        
     <button class="create badge bg-primary"
         data-form-url="{% url 'soporte_app:solicitud_detalle_registrar' contexto_solicitud.id %}"
         data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}">    
         Añadir
-    </button>          
+    </button>               
+    {% endif %}
+    
 </h3>
 <div class="table-responsive">
     <table class="table">
@@ -46,7 +50,11 @@
                 <th>Item</th>
                 <th>Imagen</th>
                 <th>URL</th>
-                <th style="text-align: center;">Acciones</th>
+                <th style="text-align: center;">
+                    {% if contexto_solicitud.estado == 5 %}        
+                    Acciones
+                    {% endif %}
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -69,6 +77,7 @@
                     {% endif %}
                 </td>
                 <td class="text-center text-nowrap">
+                    {% if contexto_solicitud.estado == 5 %}        
                     <button data-form-url="{% url 'soporte_app:solicitud_detalle_actualizar' solicitud.id %}"
                         data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}"
                         data-keep-open="true"
@@ -80,7 +89,8 @@
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi bi-x-lg"></i>
-                    </button>
+                    </button>    
+                    {% endif %}
                 </td>
             </tr>
                 
@@ -90,3 +100,4 @@
         </tbody>
     </table>
 </div>
+{% endif %}

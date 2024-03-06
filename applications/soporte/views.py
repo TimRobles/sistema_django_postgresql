@@ -11,6 +11,7 @@ from .forms import (
     ProblemaUpdateForm,
     ProblemaDetalleForm,
     ProblemaDetalleUpdateForm,
+    ProblemaDetalleNotaSolucionForm,
     SolicitudBuscarForm,
     SolicitudForm,
     SolicitudUpdateForm,
@@ -25,7 +26,9 @@ from .models import (
     SolicitudDetalle
 )
 
-class ProblemaListView(FormView):
+class ProblemaListView(PermissionRequiredMixin, FormView):
+    permission_required = ('soporte.view_problema')
+
     template_name = "soporte/problema/inicio.html"
     form_class = ProblemaBuscarForm
 
@@ -85,7 +88,6 @@ class ProblemaListView(FormView):
 
         return context
 
-
 def ProblemaTabla(request):
     data = dict()
     if request.method == 'GET':
@@ -143,7 +145,6 @@ def ProblemaTabla(request):
         )
         return JsonResponse(data)
 
-
 class ProblemaCreateView(BSModalCreateView):
     model = Problema
     template_name = "includes/formulario generico.html"
@@ -161,7 +162,6 @@ class ProblemaCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
     
-
 class  ProblemaUpdateView(BSModalUpdateView):
     model = Problema
     template_name = "includes/formulario generico.html"
@@ -193,7 +193,10 @@ class ProblemaDeleteView(BSModalDeleteView):
         context['item'] = self.object.titulo
         return context
 
-class ProblemaDetailView(DetailView):
+
+class ProblemaDetailView(PermissionRequiredMixin,DetailView):
+    permission_required = ('soporte.view_problemadetalle')
+
     model = Problema
     template_name = "soporte/problema/detalle.html"
     context_object_name = 'contexto_problema'
@@ -202,6 +205,10 @@ class ProblemaDetailView(DetailView):
         problema = Problema.objects.get(id = self.kwargs['pk'])
         context = super(ProblemaDetailView, self).get_context_data(**kwargs)
         context['contexto_problema_detalle'] = ProblemaDetalle.objects.filter(problema = problema)
+
+        if 'soporte.delete_problemadetalle' in self.request.user.get_all_permissions():
+            context['permiso_botones_problema'] = True
+
         return context
 
 def ProblemaDetalleTabla(request, pk):
@@ -212,6 +219,10 @@ def ProblemaDetalleTabla(request, pk):
         problema = Problema.objects.get(id = pk)
         context['contexto_problema'] = problema
         context['contexto_problema_detalle'] = ProblemaDetalle.objects.filter(problema = problema)
+
+        if 'soporte.delete_problemadetalle' in request.user.get_all_permissions():
+            context['permiso_botones_problema'] = True
+
         data['table'] = render_to_string(
             template,
             context,
@@ -275,6 +286,24 @@ class ProblemaDetalleUpdateView(BSModalUpdateView):
         context['titulo']="Item"
         return context
     
+class ProblemaDetalleNotaSolucionView(BSModalUpdateView):
+    model = ProblemaDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = ProblemaDetalleNotaSolucionForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('soporte_app:problema_detalle', kwargs={'pk':self.get_object().problema_id})
+
+    def form_valid(self, form):
+        form.instance.estado = 4
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemaDetalleNotaSolucionView, self).get_context_data(**kwargs)
+        context['accion']="Nota"
+        context['titulo']="Solución"
+        return context
 
 
 class ProblemaNotificarView(BSModalDeleteView):
@@ -282,7 +311,7 @@ class ProblemaNotificarView(BSModalDeleteView):
     template_name = "includes/eliminar generico.html"
     
     def get_success_url(self, **kwargs):
-        return reverse_lazy('soporte_app:problema_detalle', kwargs={'pk':self.get_object().problema_id})
+        return reverse_lazy('soporte_app:problema_detalle', kwargs={'pk':self.get_object().id})
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
@@ -307,10 +336,71 @@ class ProblemaNotificarView(BSModalDeleteView):
         return context
 
 
+class ProblemaDetalleIniciarSolucionView(BSModalDeleteView):
+    model = Problema
+    template_name = "includes/eliminar generico.html"    
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('soporte_app:problema_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_INICIAR_SOLUCION)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemaDetalleIniciarSolucionView, self).get_context_data(**kwargs)
+        context['accion'] = "Iniciar"
+        context['titulo'] = "Solución"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.titulo)
+        return context
+
+
+
+class ProblemaDetalleFinalizarProblemaView(BSModalDeleteView):
+    model = Problema
+    template_name = "includes/eliminar generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('soporte_app:problema_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_FINALIZAR_PROBLEMA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(ProblemaDetalleFinalizarProblemaView, self).get_context_data(**kwargs)
+        context['accion'] = "Finalizar"
+        context['titulo'] = "Problema"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.titulo)
+        return context
 
 #----- SOLICITUD ---------
 
-class SolicitudListView(FormView):
+class SolicitudListView(PermissionRequiredMixin, FormView):
+    permission_required = ('soporte.view_solicitud')
+
     template_name = "soporte/solicitud/inicio.html"
     form_class = SolicitudBuscarForm
 
@@ -478,7 +568,9 @@ class SolicitudDeleteView(BSModalDeleteView):
         context['item'] = self.object.titulo
         return context
 
-class SolicitudDetailView(DetailView):
+class SolicitudDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = ('soporte.view_solicituddetalle')
+
     model = Solicitud
     template_name = "soporte/solicitud/detalle.html"
     context_object_name = 'contexto_solicitud'
@@ -487,6 +579,9 @@ class SolicitudDetailView(DetailView):
         solicitud = Solicitud.objects.get(id = self.kwargs['pk'])
         context = super(SolicitudDetailView, self).get_context_data(**kwargs)
         context['contexto_solicitud_detalle'] = SolicitudDetalle.objects.filter(solicitud = solicitud)
+        if 'soporte.delete_solicituddetalle' in self.request.user.get_all_permissions():
+            context['permiso_botones_solicitud'] = True
+
         return context
 
 def SolicitudDetalleTabla(request, pk):
@@ -497,6 +592,8 @@ def SolicitudDetalleTabla(request, pk):
         solicitud = Solicitud.objects.get(id = pk)
         context['contexto_solicitud'] = solicitud
         context['contexto_solicitud_detalle'] = SolicitudDetalle.objects.filter(solicitud = solicitud)
+        if 'soporte.delete_solicituddetalle' in request.user.get_all_permissions():
+            context['permiso_botones_solicitud'] = True
         data['table'] = render_to_string(
             template,
             context,
@@ -519,8 +616,8 @@ class SolicitudDetalleCreateView(BSModalCreateView):
 
     def get_context_data(self, **kwargs):
         context = super(SolicitudDetalleCreateView, self).get_context_data(**kwargs)
-        context['accion']="Agregar Imagenes"
-        context['titulo']="del solicitud"
+        context['accion']="Agregar Documentación"
+        context['titulo']="de la solicitud resulta"
         return context
 
 
@@ -558,4 +655,149 @@ class SolicitudDetalleUpdateView(BSModalUpdateView):
         context['accion']="Actualizar"
         context['titulo']="Item"
         return context
+
+
+class SolicitudSolicitarView(BSModalDeleteView):
+    model = Solicitud
+    template_name = "includes/eliminar generico.html"
     
+    def get_success_url(self):
+        return reverse_lazy('soporte_app:solicitud_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 2
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITADO)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudSolicitarView, self).get_context_data(**kwargs)
+        context['accion'] = "Solicitar"
+        context['titulo'] = "Solicitud"
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.titulo)
+        return context
+
+class SolicitudAprobarView(BSModalDeleteView):
+    model = Solicitud
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('soporte_app:solicitud_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITUD_APROBADA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudAprobarView, self).get_context_data(**kwargs)
+        context['accion'] = "Aprobar"
+        context['titulo'] = "."
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.titulo)
+        return context
+
+class SolicitudRechazarView(BSModalDeleteView):
+    model = Solicitud
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('soporte_app:solicitud_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 4
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITUD_RECHAZADA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudRechazarView, self).get_context_data(**kwargs)
+        context['accion'] = "Rechazar"
+        context['titulo'] = "."
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.titulo)
+        return context
+
+class SolicitudIniciarView(BSModalDeleteView):
+    model = Solicitud
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('soporte_app:solicitud_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 5
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITUD_INICIADA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudIniciarView, self).get_context_data(**kwargs)
+        context['accion'] = "Iniciar"
+        context['titulo'] = "."
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.titulo)
+        return context
+
+class SolicitudResolverView(BSModalDeleteView):
+    model = Solicitud
+    template_name = "includes/eliminar generico.html"
+    
+    def get_success_url(self):
+        return reverse_lazy('soporte_app:solicitud_detalle', kwargs={'pk':self.get_object().id})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 6
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_SOLICITUD_RESULTA)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(SolicitudResolverView, self).get_context_data(**kwargs)
+        context['accion'] = "Resolver"
+        context['titulo'] = "."
+        context['dar_baja'] = "true"
+        context['item'] = str(self.object.titulo)
+        return context

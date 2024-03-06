@@ -85,6 +85,19 @@ class ProblemaDetalleUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class ProblemaDetalleNotaSolucionForm(BSModalModelForm):
+    class Meta:
+        model = ProblemaDetalle
+        fields=(
+            'nota_solucion',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ProblemaDetalleNotaSolucionForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class SolicitudBuscarForm(forms.Form): 
     titulo = forms.CharField(label = 'Titulo', max_length=100, required=False)
     estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADO_SOLICITUD, required=False)

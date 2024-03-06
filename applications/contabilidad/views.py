@@ -158,7 +158,8 @@ class ComisionFondoPensionesDeleteView(BSModalDeleteView):
 
 #---------------------------------------------------------------------------------
 
-class DatosPlanillaListView(TemplateView):
+class DatosPlanillaListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('contabilidad.view_datosplanilla')
     template_name = "contabilidad/datos_planilla/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -216,12 +217,19 @@ class DatosPlanillaCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class DatosPlanillaUpdateView(BSModalUpdateView):
+class DatosPlanillaUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('contabilidad.change_datosplanilla')
+
     model = DatosPlanilla
     template_name = "contabilidad/datos_planilla/form.html"
     form_class = DatosPlanillaForm
     success_url = reverse_lazy('contabilidad_app:datos_planilla_inicio')
-       
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         form.instance.estado = 1
         registro_guardar(form.instance, self.request)
@@ -234,12 +242,18 @@ class DatosPlanillaUpdateView(BSModalUpdateView):
         context['titulo'] = 'Datos Planilla'
         return context
 
-class DatosPlanillaDarBajaView(BSModalUpdateView):
+class DatosPlanillaDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('contabilidad.change_datosplanilla')
     model = DatosPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosPlanillaDarBajaForm
     success_url = reverse_lazy('contabilidad_app:datos_planilla_inicio')
-    
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         form.instance.estado = 2
         registro_guardar(form.instance, self.request)
@@ -254,9 +268,10 @@ class DatosPlanillaDarBajaView(BSModalUpdateView):
 
 #---------------------------------------------------------------------------------
 
-class EsSaludListView(TemplateView):
+class EsSaludListView(PermissionRequiredMixin, TemplateView):
     template_name = "contabilidad/essalud/inicio.html"
-    
+    permission_required = ('contabilidad.view_essalud')
+
     def get_context_data(self, **kwargs):
         context = super(EsSaludListView, self).get_context_data(**kwargs)
         essalud = EsSalud.objects.all()

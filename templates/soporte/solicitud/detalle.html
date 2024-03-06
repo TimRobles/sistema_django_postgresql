@@ -2,14 +2,55 @@
 {% load static %}
 
 {% block titulo %}
-    Detalle Problema
+    Detalle Solicitud
 {% endblock titulo %}
 
 {% block contenido %}
     <h3>
         {{ contexto_solicitud.titulo }}
     <a href="{% url 'soporte_app:solicitud_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+   
+    {% if contexto_solicitud.estado == 1 %}
+    <button data-form-url="{% url 'soporte_app:solicitud_detalle_solicitar' contexto_solicitud.id %}"
+        data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}"
+        class="delete badge bg-success">
+        Solicitar
+    </button>
+    {% endif %}
+
+    {% if contexto_solicitud.estado == 2 and permiso_botones_solicitud %}
+    <button data-form-url="{% url 'soporte_app:solicitud_detalle_aprobar' contexto_solicitud.id %}"
+        data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}"
+        class="delete badge bg-success">
+        Aprobar
+    </button>
+
+    <button data-form-url="{% url 'soporte_app:solicitud_detalle_rechazar' contexto_solicitud.id %}"
+        data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}"
+        class="delete badge bg-danger">
+        Rechazar
+    </button>
+    {% endif %}
+
+    {% if contexto_solicitud.estado == 3 and permiso_botones_solicitud %}
+    <button data-form-url="{% url 'soporte_app:solicitud_detalle_iniciar' contexto_solicitud.id %}"
+        data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}"
+        class="delete badge bg-success">
+        Iniciar
+    </button>
+    {% endif %}
+
+    {% if contexto_solicitud.estado == 5 and permiso_botones_solicitud %}
+    <button data-form-url="{% url 'soporte_app:solicitud_detalle_resolver' contexto_solicitud.id %}"
+        data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}"
+        class="delete badge bg-success">
+        Resolver
+    </button>
+    {% endif %}
+
     </h3>
+
+
     <div class="table-responsive" id="tabla">
         {% include 'soporte/solicitud/detalle_tabla.html' %}
     </div>

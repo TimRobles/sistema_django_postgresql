@@ -26,6 +26,7 @@ class ProblemaDetalle(models.Model):
     imagen = models.ImageField('Imagen', upload_to=PROBLEMA_FOTO, height_field=None, width_field=None, max_length=None, blank=True, null = True)
     url = models.URLField('URL', max_length=200, null=True, blank=True)
     problema = models.ForeignKey(Problema, on_delete=models.CASCADE, related_name='ProblemaDetalle_problema')
+    nota_solucion = models.TextField('Nota de Solución', null=True, blank=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='ProblemaDetalle_created_by', editable=False)
