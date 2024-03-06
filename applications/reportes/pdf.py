@@ -505,7 +505,6 @@ def reporte_cobranza():
         registrar_excepcion_sin_user(ex, __file__)
         print(ex)
 
-
 #############################################################
 
 def dataReporteStockSociedad(sociedad, fuenteBase, color):
