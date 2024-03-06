@@ -47,6 +47,7 @@ class Solicitud(models.Model):
     titulo = models.CharField('Titulo', max_length=100)
     descripcion = models.TextField('Descripción')
     estado = models.IntegerField('Estado', choices=ESTADO_SOLICITUD, default=1)
+    motivo_rechazo = models.CharField('Motivo de Rechazo', max_length=50, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='Solicitud_created_by', editable=False)

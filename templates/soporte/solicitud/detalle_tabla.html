@@ -26,6 +26,15 @@
                         {{ contexto_solicitud.get_estado_display }}
                     </td>
                 </tr>
+                {% if contexto_solicitud.estado == 4  %}
+                <tr>
+                    <th class="pe-2">Motivo de Rechazo:</th>
+                    <td>
+                        {{ contexto_solicitud.motivo_rechazo }}
+                    </td>
+                </tr>
+                {% endif %}
+
             </tbody>
         </table>
     </div>
