@@ -172,3 +172,15 @@ class SolicitudDetalleUpdateForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class SolicitudMotivoRechazoUpdateForm(BSModalModelForm):
+    class Meta:
+        model = Solicitud
+        fields=(
+            'motivo_rechazo',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(SolicitudMotivoRechazoUpdateForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+

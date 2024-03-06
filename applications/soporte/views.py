@@ -17,6 +17,7 @@ from .forms import (
     SolicitudUpdateForm,
     SolicitudDetalleForm,
     SolicitudDetalleUpdateForm,
+    SolicitudMotivoRechazoUpdateForm,
 )
 
 from .models import (
@@ -715,33 +716,24 @@ class SolicitudAprobarView(BSModalDeleteView):
         context['item'] = str(self.object.titulo)
         return context
 
-class SolicitudRechazarView(BSModalDeleteView):
+class SolicitudRechazarView(BSModalUpdateView):
     model = Solicitud
-    template_name = "includes/eliminar generico.html"
-    
+    template_name = "includes/formulario generico.html"
+    form_class = SolicitudMotivoRechazoUpdateForm
+    success_url = reverse_lazy('soporte_app:solicitud_inicio')
+
     def get_success_url(self):
         return reverse_lazy('soporte_app:solicitud_detalle', kwargs={'pk':self.get_object().id})
-
-    @transaction.atomic
-    def delete(self, request, *args, **kwargs):
-        sid = transaction.savepoint()
-        try:
-            self.object = self.get_object()
-            self.object.estado = 4
-            registro_guardar(self.object, self.request)
-            self.object.save()
-            messages.success(request, MENSAJE_SOLICITUD_RECHAZADA)
-        except Exception as ex:
-            transaction.savepoint_rollback(sid)
-            registrar_excepcion(self, ex, __file__)
-        return HttpResponseRedirect(self.get_success_url())
+   
+    def form_valid(self, form):
+        form.instance.estado = 4
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(SolicitudRechazarView, self).get_context_data(**kwargs)
-        context['accion'] = "Rechazar"
-        context['titulo'] = "."
-        context['dar_baja'] = "true"
-        context['item'] = str(self.object.titulo)
+        context['accion']="Rechazar"
+        context['titulo']="Solicitud"
         return context
 
 class SolicitudIniciarView(BSModalDeleteView):
