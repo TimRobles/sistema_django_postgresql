@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import json
 from time import sleep
 import requests
@@ -14,6 +14,12 @@ from applications.soporte_sistema.models import Excepcion
 from django.contrib import messages
 from django.db import models
 import sys
+
+def numeroXn(numero, n):
+    if numero:
+        return '0'*(n-len(str(numero))) + str(numero)
+    return ""
+
 
 def consulta_ruc(ruc):
     sleep(2)
@@ -387,12 +393,6 @@ def obtener_totales_soles(resultado, tipo_cambio, sociedad=None):
     respuesta['total_icbper'] = resultado['total_icbper'] * tipo_cambio
     respuesta['total'] = resultado['total'] * tipo_cambio
     return respuesta
-
-
-def numeroXn(numero, n):
-    if numero:
-        return '0'*(n-len(str(numero))) + str(numero)
-    return ""
 
 
 def igv(fecha=date.today()):
