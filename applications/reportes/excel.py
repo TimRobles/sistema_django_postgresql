@@ -906,6 +906,10 @@ def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
 
     for factura in facturas:
         tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=factura.fecha_emision)
+        if tipo_cambio_sunat_documento:
+            tipo_cambio_venta = tipo_cambio_sunat_documento.tipo_cambio_venta
+        else:
+            tipo_cambio_venta = Decimal('0.00')
         fila = []
         fila.append(factura.fecha_emision)  #0
         fila.append(factura.get_tipo_comprobante_display()) #1
@@ -920,8 +924,8 @@ def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
         fila.append(factura.total_igv)    #9
         fila.append(factura.descuento_global)   #10
         fila.append(factura.total)  #11
-        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta.quantize(Decimal('0.01')))    #12
-        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta * factura.total)    #13
+        fila.append(tipo_cambio_venta.quantize(Decimal('0.01')))    #12
+        fila.append(tipo_cambio_venta * factura.total)    #13
         fila.append(factura.observaciones)  #14
         if factura.url_nubefact:
             fila.append(get_enlace_nubefact(factura.url_nubefact))   #15
