@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import numeroXn
+from applications.funciones import numero_str, numeroXn
 from applications.importaciones import *
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -1890,7 +1890,7 @@ def dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin):
         # print(list_temp)
 
         for pos in range(len(list_temp)):
-            list_temp[pos] = str(round(list_temp[pos],2))
+            list_temp[pos] = numero_str(list_temp[pos],2)
 
         info = '\n'.join(list_temp)
         file.write(info)

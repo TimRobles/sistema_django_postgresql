@@ -20,6 +20,12 @@ def numeroXn(numero, n):
         return '0'*(n-len(str(numero))) + str(numero)
     return ""
 
+def numero_str(numero, n):
+    try:
+        return str(round(numero, 2))
+    except:
+        return 'CERO'
+
 
 def consulta_ruc(ruc):
     sleep(2)
