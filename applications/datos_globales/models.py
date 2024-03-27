@@ -7,7 +7,7 @@ from applications.sociedad.models import Sociedad
 from django.db import models
 from colorfield.fields import ColorField
 
-from applications.funciones import validar_numero
+from applications.funciones import validar_numero, validar_texto_cuenta
 
 
 class Moneda(models.Model):
@@ -363,13 +363,14 @@ class RangoDocumentoFisico(models.Model):
 
 
 class CuentaBancariaSociedad(models.Model):
-    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_numero], blank=True, null=True)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_texto_cuenta], blank=True, null=True)
     numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero], blank=True, null=True)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
     efectivo = models.BooleanField(default=False)
+    percepcion = models.BooleanField(default=False)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='CuentaBancariaSociedad_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -597,7 +598,7 @@ class UnidadImpositivaTributaria(models.Model):
         ]
 
     def __str__(self):     
-        return self.monto
+        return str(self.monto)
 
 
 class ImpuestoGeneralVentas(models.Model):

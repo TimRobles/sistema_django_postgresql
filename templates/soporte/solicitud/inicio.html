@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Solicitud
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Solicitud 
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'soporte_app:solicitud_registrar' %}"
+            data-table-url="{% url 'soporte_app:solicitud_tabla' %}">
+            Registrar
+        </button>
+    </h3>
+
+    <form action="" method="get" autocomplete="off">
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+    
+    {% include 'includes/paginador.html' %}
+
+    <div class="table-responsive" id="tabla">
+        {% include 'soporte/solicitud/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}

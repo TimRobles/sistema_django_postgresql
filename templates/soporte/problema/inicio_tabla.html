@@ -1,0 +1,52 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Titulo</th>
+            <th>Fecha de Registro</th>
+            <th>Creado por</th>
+            <th>Area</th>
+            <th>Estado</th>
+            <th style="text-align: center;">Acciones</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        
+        {% for problema in contexto_problemas %}
+        <tr>
+            <td>{{ problema.titulo }}</td>
+            <td>{{ problema.created_at|date:'d/m/Y' }}</td>
+            <td>{{ problema.created_by }}</td>
+            <td>{{ problema.created_by.area }}</td>
+            <td>{{ problema.get_estado_display }}</td>
+            <td class="text-center text-nowrap">
+
+            {% if problema.estado == 1 %}
+            <button data-form-url="{% url 'soporte_app:problema_actualizar' problema.id %}"
+                data-table-url="{% url 'soporte_app:problema_tabla' %}"
+                data-keep-open="true"
+                class="update btn btn-warning btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                <i class="bi bi-pencil-fill"></i>
+            </button>
+            <button data-form-url="{% url 'soporte_app:problema_eliminar' problema.id %}"
+                class="delete btn btn-danger btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            {% endif %}
+
+            <a href="{% url 'soporte_app:problema_detalle' problema.id %}"
+                class="btn btn-info btn-sm"
+                data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
+                <i class="bi bi-eye-fill"></i>
+            </a>
+            </td>
+        </tr>
+            
+        {% endfor %}
+            
+
+    </tbody>
+</table>

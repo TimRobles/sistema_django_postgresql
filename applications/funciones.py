@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import json
 from time import sleep
 import requests
@@ -15,10 +15,22 @@ from django.contrib import messages
 from django.db import models
 import sys
 
+def numeroXn(numero, n):
+    if numero:
+        return '0'*(n-len(str(numero))) + str(numero)
+    return ""
+
+def numero_str(numero, n):
+    try:
+        return str(round(numero, 2))
+    except:
+        return 'CERO'
+
+
 def consulta_ruc(ruc):
     sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
-    url = "https://api.apis.net.pe/v1/ruc?numero="
+    url = "https://api.apis.net.pe/v2/ruc?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
     r = requests.get(url + str(ruc), headers=headers)
     data = r.json()
@@ -71,7 +83,7 @@ def consulta_dni(dni):
 def consulta_dni2(dni):
     sleep(2)
     token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
-    url = "https://api.apis.net.pe/v1/dni?numero="
+    url = "https://api.apis.net.pe/v2/dni?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
     r = requests.get(url + str(dni), headers=headers)
     data = r.json()
@@ -131,6 +143,13 @@ def validar_texto(texto):
 def validar_numero(texto):
     for letra in texto:
         if not letra.isnumeric():
+            raise ValidationError('%s tiene caracteres incorrectos' % texto)
+
+def validar_texto_cuenta(texto):
+    permitidas = set("RETENCION")
+    
+    for letra in texto:
+        if not letra.isnumeric() and letra.upper() not in permitidas:
             raise ValidationError('%s tiene caracteres incorrectos' % texto)
 
 
@@ -380,12 +399,6 @@ def obtener_totales_soles(resultado, tipo_cambio, sociedad=None):
     respuesta['total_icbper'] = resultado['total_icbper'] * tipo_cambio
     respuesta['total'] = resultado['total'] * tipo_cambio
     return respuesta
-
-
-def numeroXn(numero, n):
-    if numero:
-        return '0'*(n-len(str(numero))) + str(numero)
-    return ""
 
 
 def igv(fecha=date.today()):

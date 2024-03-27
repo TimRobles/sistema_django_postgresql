@@ -275,7 +275,11 @@
                 </tr>
                 <tr>
                     <th class="pe-2">Peso Total:</th>
-                    <td>{{ guia.peso_total|redondear|intcomma }}</td>
+                    <td>
+                        {% if guia.peso_total != NoneType%}
+                        {{ guia.peso_total|redondear|intcomma }}
+                        {% endif %}
+                    </td>                        
                 </tr>
             </tbody>
         </table>
@@ -432,9 +436,15 @@
                 <th>Item</th>
                 <th style="min-width: 500px;">Material</th>
                 <th class="text-end">Cantidad</th>
+                {% if guia.unidad != NoneType%}
                 <th class="text-end">Unidad</th>
+                {% endif %}
+                {% if guia.peso != NoneType%}
                 <th class="text-end">Peso</th>
+                {% endif %}
+                {% if guia.peso_total != NoneType%}
                 <th class="text-end">Peso Total</th>
+                {% endif %}
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -444,9 +454,16 @@
                     <td>{{ material.item }}</td>
                     <td style="min-width: 500px;">{{ material.producto }}</td>
                     <td class="text-end">{{ material.cantidad|redondear|intcomma }}</td>
+                    {% if guia.unidad != NoneType%}
                     <td class="text-end">{{ material.unidad }}</td>
+                    {% endif %}
+                    {% if guia.peso != NoneType%}                   
                     <td class="text-end">{{ material.peso|redondear|intcomma }} Kg</td>
+                    {% endif %}
+                    {% if guia.peso_total != NoneType%}
                     <td class="text-end">{{ material.peso_total|redondear|intcomma }} Kg</td>
+                    {% endif %}
+                        
                     <td class="text-center text-nowrap">
                         {% if guia.estado == 1 or guia.estado == 6 %}
                         <button data-form-url="{% url 'comprobante_despacho_app:guia_detalle_peso' material.id %}"

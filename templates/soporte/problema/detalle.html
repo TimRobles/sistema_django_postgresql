@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Problema
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>
+        {{ contexto_problema.titulo }}
+    <a href="{% url 'soporte_app:problema_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+
+    {% if contexto_problema.estado == 1 %}
+    <button data-form-url="{% url 'soporte_app:problema_notificar' contexto_problema.id %}"
+        data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}"
+        class="delete badge bg-success">
+        Notificar
+    </button>
+    {% endif %}
+
+    {% if contexto_problema.estado == 2 and permiso_botones_problema %}
+    <button data-form-url="{% url 'soporte_app:problema_detalle_iniciar_solucion' contexto_problema.id %}"
+        data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}"
+        class="delete badge bg-success">
+        Iniciar
+    </button>
+
+    {% endif %}    
+    
+    {% if contexto_problema.estado == 3 and permiso_botones_problema %}
+    <button data-form-url="{% url 'soporte_app:problema_detalle_finalizar_problema' contexto_problema.id %}"
+        data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}"
+        class="delete badge bg-danger">    
+        Finalizar
+    </button>   
+    {% endif %}
+
+
+         
+    </h3>
+    <div class="table-responsive" id="tabla">
+        {% include 'soporte/problema/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

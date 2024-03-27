@@ -388,6 +388,7 @@ TIPO_PAGO_RECIBO = (
 YEARS = (
     (2022, '2022'),
     (2023, '2023'),
+    (2024, '2024'),
 )
 
 MESES = (
@@ -505,6 +506,23 @@ TIPO_PREGUNTA_CRM = (
     (3, 'ABIERTA'),
     )
 
+ESTADO_PROBLEMAS= (
+    (1, 'NUEVO'),
+    (2, 'SOLICITADO'),
+    (3, 'EN PROCESO'),
+    (4, 'RESUELTO'),
+    )
+
+ESTADO_SOLICITUD= (
+    (1, 'NUEVO'),
+    (2, 'SOLICITADO'),
+    (3, 'APROBADO'),
+    (4, 'RECHAZADO'),
+    (5, 'EN PROCESO'),
+    (6, 'RESUELTO'),
+    )
+
+
 MENSAJE_DAR_ALTA = 'Operación exitosa: El registro fue dado de alta.'
 MENSAJE_ACTUALIZACION = 'Operación exitosa: El registro fue actualizado.'
 MENSAJE_DAR_BAJA = 'Operación exitosa: El registro fue dado de baja.'
@@ -587,6 +605,15 @@ MENSAJE_CONFIRMAR_DOCUMENTO_RECLAMO = 'Operación exitosa: El Documento de Recla
 MENSAJE_GUARDAR_EVENTO_DETALLE = 'Operación exitosa: El detalle evento fue guardado con éxito.'
 
 MENSAJE_CONCLUIR_CAMBIO_SOCIEDAD_STOCK = 'Operación exitosa: El Cambio de Sociedad Stock fue concluido.'
+MENSAJE_PROBLEMA_NOTIFICADO = 'Operación exitosa: El Problema fue Notificado.'
+MENSAJE_INICIAR_SOLUCION = 'Operación exitosa: Inicio de solución.'
+MENSAJE_FINALIZAR_PROBLEMA = 'Operación exitosa: Problema finalizado.'
+
+MENSAJE_SOLICITADO = 'Operación exitosa: Solicitado satisfactoriamente.'
+MENSAJE_SOLICITUD_APROBADA = 'Operación exitosa: Solicitud aprobada.'
+MENSAJE_SOLICITUD_RECHAZADA = 'Operación exitosa: Solicitud rechazada.'
+MENSAJE_SOLICITUD_INICIADA = 'Operación exitosa: Solicitud en proceso.'
+MENSAJE_SOLICITUD_RESULTA= 'Operación exitosa: Solicitud resulta.'
 
 COLOR_DEFAULT = '#04fb1d'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY

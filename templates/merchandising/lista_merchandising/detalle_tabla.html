@@ -11,12 +11,14 @@
     class="create btn btn-primary" title="Regresar a Lista Requerimiento Merchandising">
         Regresar
     </a>
-    
-    <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_inicio' %}"
-    class="create btn btn-primary" title="Oferta Proveedores">
-        Ver Ofertas
-    </a>
 
+    {% if lista.id in ofertas_merchandising %}
+        <a href="{% url 'merchandising_app:oferta_proveedor_merchandising_inicio' %}"
+        class="create btn btn-primary" title="Oferta Proveedores">
+            Ver Ofertas
+        </a>
+    {% endif %}
+            
     <button data-form-url="{% url 'merchandising_app:oferta_proveedor_merchandising_crear' lista.id %}"
         data-table-url="{% url 'merchandising_app:oferta_proveedor_merchandising_tabla' %}"
         class="delete btn btn-success">

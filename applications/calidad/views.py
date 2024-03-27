@@ -229,6 +229,7 @@ class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_sociedad'] = self.request.GET.get('sociedad')
         kwargs['filtro_estado'] = self.request.GET.get('estado')
         kwargs['filtro_usuario'] = self.request.GET.get('usuario')
+        kwargs['filtro_producto'] = self.request.GET.get('producto')
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -238,6 +239,7 @@ class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
         filtro_sociedad = self.request.GET.get('sociedad')
         filtro_estado = self.request.GET.get('estado')
         filtro_usuario = self.request.GET.get('usuario')
+        filtro_producto = self.request.GET.get('producto')
         
         contexto_filtro = []
 
@@ -258,6 +260,17 @@ class NotaControlCalidadStockListView(PermissionRequiredMixin, FormView):
             condicion = Q(created_by = filtro_usuario)
             nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
+
+        if filtro_producto:
+            ids = []
+            for nota in nota_control_calidad_stock.all():
+                for detalle in nota.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all():
+                    if detalle.nota_ingreso_detalle:
+                        if str(detalle.nota_ingreso_detalle.producto.id) == filtro_producto:
+                            ids.append(nota.id)
+                            break
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(id__in = ids)
+            contexto_filtro.append(f"producto={filtro_producto}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 
@@ -290,6 +303,7 @@ def NotaControlCalidadStockTabla(request):
         filtro_sociedad = request.GET.get('sociedad')
         filtro_estado = request.GET.get('estado')
         filtro_usuario = request.GET.get('usuario')
+        filtro_producto = request.GET.get('producto')
         
         contexto_filtro = []
 
@@ -307,6 +321,17 @@ def NotaControlCalidadStockTabla(request):
             condicion = Q(created_by = filtro_usuario)
             nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
+
+        if filtro_producto:
+            ids = []
+            for nota in nota_control_calidad_stock.all():
+                for detalle in nota.NotaControlCalidadStockDetalle_nota_control_calidad_stock.all():
+                    if detalle.nota_ingreso_detalle:
+                        if str(detalle.nota_ingreso_detalle.producto.id) == filtro_producto:
+                            ids.append(nota.id)
+                            break
+            nota_control_calidad_stock = nota_control_calidad_stock.filter(id__in = ids)
+            contexto_filtro.append(f"producto={filtro_producto}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
 

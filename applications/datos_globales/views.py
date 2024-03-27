@@ -12,6 +12,7 @@ from applications.datos_globales.models import (
     TipoCambioSunat,
     )
 from applications.datos_globales.forms import TipoCambioForm
+from applications.funciones import registrar_excepcion
 
 # Create your views here.
 
@@ -153,12 +154,19 @@ class TipoCambioCreateView(PermissionRequiredMixin, BSModalCreateView):
         context['accion']="Registrar"
         context['titulo']="Tipo de Cambio"
         return context
-
+    
+    @transaction.atomic
     def form_valid(self, form):
-        form.instance.usuario = self.request.user
-        actualizarTipoCambioSunat(form.instance.fecha, self.request)
-        registro_guardar(form.instance, self.request)
-        return super().form_valid(form)
+        sid = transaction.savepoint()
+        try:
+            form.instance.usuario = self.request.user
+            actualizarTipoCambioSunat(form.instance.fecha, self.request)
+            registro_guardar(form.instance, self.request)
+            return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
 
 class TipoCambioUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('datos_globales.change_tipocambio')

@@ -1,0 +1,112 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Descripción:</th>
+                    <td>{{ contexto_solicitud.descripcion  }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2">Fecha Creación:</th>
+                    <td>{{ contexto_solicitud.created_at|date:'d/m/Y' }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>
+                        {{ contexto_solicitud.get_estado_display }}
+                    </td>
+                </tr>
+                {% if contexto_solicitud.estado == 4  %}
+                <tr>
+                    <th class="pe-2">Motivo de Rechazo:</th>
+                    <td>
+                        {{ contexto_solicitud.motivo_rechazo }}
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% if contexto_solicitud.estado == 5 or contexto_solicitud.estado == 6   %}    
+<h3>Documentación
+    {% if contexto_solicitud.estado == 5 %}        
+    <button class="create badge bg-primary"
+        data-form-url="{% url 'soporte_app:solicitud_detalle_registrar' contexto_solicitud.id %}"
+        data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}">    
+        Añadir
+    </button>               
+    {% endif %}
+    
+</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Imagen</th>
+                <th>URL</th>
+                <th style="text-align: center;">
+                    {% if contexto_solicitud.estado == 5 %}        
+                    Acciones
+                    {% endif %}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for solicitud in contexto_solicitud_detalle %}
+            <tr>
+                <td> {{ forloop.counter}} </td>
+                <td>
+                    {% if solicitud.imagen %}
+                    <a href="{{ MEDIA_URL }}{{ solicitud.imagen }}" target="_blank">{{solicitud.imagen|filename }}</a>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if solicitud.url %}
+                    <a href="{{ solicitud.url }}" target="_blank">{{solicitud.url}}</a>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="text-center text-nowrap">
+                    {% if contexto_solicitud.estado == 5 %}        
+                    <button data-form-url="{% url 'soporte_app:solicitud_detalle_actualizar' solicitud.id %}"
+                        data-table-url="{% url 'soporte_app:solicitud_detalle_tabla' contexto_solicitud.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'soporte_app:solicitud_detalle_eliminar' solicitud.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>    
+                    {% endif %}
+                </td>
+            </tr>
+                
+            {% endfor %}
+                
+
+        </tbody>
+    </table>
+</div>
+{% endif %}

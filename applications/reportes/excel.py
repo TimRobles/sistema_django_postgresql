@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from applications.comprobante_compra.models import ComprobanteCompraPI, ComprobanteCompraPIDetalle
-from applications.funciones import numeroXn
+from applications.funciones import numero_str, numeroXn
 from applications.importaciones import *
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -959,6 +959,10 @@ def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
 
     for factura in facturas:
         tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=factura.fecha_emision)
+        if tipo_cambio_sunat_documento.tipo_cambio_venta:
+            tipo_cambio_venta = tipo_cambio_sunat_documento.tipo_cambio_venta
+        else:
+            tipo_cambio_venta = Decimal('0.00')
         fila = []
         fila.append(factura.fecha_emision)  #0
         fila.append(factura.get_tipo_comprobante_display()) #1
@@ -973,8 +977,8 @@ def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
         fila.append(factura.total_igv)    #9
         fila.append(factura.descuento_global)   #10
         fila.append(factura.total)  #11
-        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta.quantize(Decimal('0.01')))    #12
-        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta * factura.total)    #13
+        fila.append(tipo_cambio_venta.quantize(Decimal('0.01')))    #12
+        fila.append(tipo_cambio_venta * factura.total)    #13
         fila.append(factura.observaciones)  #14
         if factura.url_nubefact:
             fila.append(get_enlace_nubefact(factura.url_nubefact))   #15
@@ -999,8 +1003,8 @@ def dataReporteContador(sociedad, fecha_inicio, fecha_fin):
         fila.append(boleta.total_igv)    #9
         fila.append(boleta.descuento_global)   #10
         fila.append(boleta.total)    #11
-        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta.quantize(Decimal('0.01')))    #12
-        fila.append(tipo_cambio_sunat_documento.tipo_cambio_venta * boleta.total)    #13
+        fila.append(tipo_cambio_venta.quantize(Decimal('0.01')))    #12
+        fila.append(tipo_cambio_venta * boleta.total)    #13
         fila.append(boleta.observaciones)  #14
         if boleta.url_nubefact:
             fila.append(get_enlace_nubefact(boleta.url_nubefact))   #15
@@ -1852,7 +1856,7 @@ def dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin):
         # print(list_temp)
 
         for pos in range(len(list_temp)):
-            list_temp[pos] = str(round(list_temp[pos],2))
+            list_temp[pos] = numero_str(list_temp[pos],2)
 
         info = '\n'.join(list_temp)
         file.write(info)

@@ -271,7 +271,7 @@ class MerchandisingListView(PermissionRequiredMixin, FormView):
     
     def get_context_data(self, **kwargs):
         context = super(MerchandisingListView,self).get_context_data(**kwargs)
-        merchandising = Merchandising.objects.all().order_by('descripcion_venta','descripcion_corta','marca','modelo')
+        merchandising = Merchandising.objects.all().order_by('estado_alta_baja','descripcion_venta','descripcion_corta','marca','modelo')
         filtro = self.request.GET.get('buscar')
 
         contexto_filtro = []
@@ -2590,6 +2590,7 @@ class ListaRequerimientoMerchandisingUpdateView(FormView):
         context['lista_detalle'] = lista_detalle
         context['accion'] = "Actualizar"
         context['titulo'] = "Lista Requerimiento Merchandising"
+        context['ofertas_merchandising'] = list(OfertaProveedorMerchandising.objects.values_list('lista_requerimiento_merchandising', flat=True))
         return context
 
 def ListaRequerimientoMerchandisingDetalleTabla(request, pk):
@@ -2606,6 +2607,7 @@ def ListaRequerimientoMerchandisingDetalleTabla(request, pk):
         context['lista'] = lista
         context['lista_detalle'] = lista_detalle
         context['form'] = ListaRequerimientoMerchandisingForm(instance=instance)
+        context['ofertas_merchandising'] = list(OfertaProveedorMerchandising.objects.values_list('lista_requerimiento_merchandising', flat=True))
 
         data['table'] = render_to_string(
             template,
@@ -2719,6 +2721,11 @@ class OfertaProveedorMerchandisingListView(PermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['permiso_eliminar_oferta'] = self.request.user.has_perm('merchandising.delete_ofertaproveedormerchandising')
+        context['oferta_elegida'] = list(OrdenCompraMerchandising.objects.values_list('oferta_proveedor_merchandising', flat=True))
+        print('**************************************')
+        print(list(OrdenCompraMerchandising.objects.values_list('oferta_proveedor_merchandising', flat=True)))
+        print('**************************************')
+
         return context
     
 def OfertaProveedorMerchandisingTabla(request):
@@ -2730,7 +2737,11 @@ def OfertaProveedorMerchandisingTabla(request):
 
         if 'merchandising.delete_ofertaproveedormerchandising' in request.user.get_all_permissions():
             context['permiso_eliminar_oferta'] = True
-
+        context['oferta_elegida'] = list(OrdenCompraMerchandising.objects.values_list('oferta_proveedor_merchandising', flat=True))
+        print('**************************************')
+        print(list(OrdenCompraMerchandising.objects.values_list('oferta_proveedor_merchandising', flat=True)))
+        print('**************************************')
+        
         data['table'] = render_to_string(
             template,
             context,

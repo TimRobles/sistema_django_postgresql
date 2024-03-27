@@ -2331,6 +2331,7 @@ class CotizacionVentaSociedadCuentasSolesPdfView(View):
                     sociedad=sociedad,
                     moneda=moneda,
                     efectivo=False,
+                    percepcion=False,
                     estado=1,
                     )
                 sociedad.cuentas = cuentas
@@ -2645,6 +2646,7 @@ class CotizacionVentaResumenView(PermissionRequiredMixin, BSModalReadView):
                     sociedad=sociedad,
                     moneda=moneda,
                     efectivo=False,
+                    percepcion=False,
                     estado=1,
                     )
                 sociedad.cuentas = cuentas
