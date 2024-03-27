@@ -618,12 +618,27 @@ SERIE_CONSULTA = (
         (2, 'SUBIDO'),
     )
 
+ESTADOS_NOTA_SALIDA = (
+        (1, 'EN PROCESO'),
+        (2, 'ATENDIDO'),
+        (3, 'ANULADO'),
+    )
+
+ESTADOS_DESPACHO = (
+    (1, 'EN PROCESO'),
+    (2, 'DESPACHADO'),
+    (3, 'ANULADO'),
+    (4, 'CONCLUIDO SIN GUIA'),
+    (5, 'CONCLUIDO CON GUIA'),
+    (6, 'GUIA ANULADA'),
+    )
+
 ESTADOS_NOTA_CALIDAD_STOCK = (
     (1, 'EN PROCESO'),
     (2, 'POR REGISTRAR SERIES'),
     (3, 'CONCLUIDA'),
     (4, 'ANULADA'),
-)
+    )
 
 ESTADO_COMPROBANTE_MERCHANDISING = (
     (0, 'BORRADOR'),

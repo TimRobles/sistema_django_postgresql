@@ -1,7 +1,7 @@
 from applications.clientes.models import Cliente
 from applications.material.funciones import stock, stock_disponible, stock_sede_disponible
 from applications.sociedad.models import Sociedad
-from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK
+from applications.variables import ESTADOS_DESPACHO, ESTADOS_NOTA_SALIDA
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from applications.logistica.models import AjusteInventarioMateriales, AjusteInventarioMaterialesDetalle, Despacho, DevolucionPrestamoMateriales, DevolucionPrestamoMaterialesDetalle, DocumentoPrestamoMateriales, ImagenesDespacho, InventarioMateriales, InventarioMaterialesDetalle, NotaSalida, NotaSalidaDetalle, SolicitudPrestamoMateriales, SolicitudPrestamoMaterialesDetalle
 from applications.sede.models import Sede
@@ -299,7 +299,7 @@ class NotaSalidaBuscarForm(forms.Form):
     numero_salida = forms.CharField(required=False)
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(estado_sunat=1), required=False)
-    estado = forms.ChoiceField(choices=((None, '---------'),) + ESTADOS_NOTA_CALIDAD_STOCK, required=False)
+    estado = forms.ChoiceField(choices=((None, '---------'),) + ESTADOS_NOTA_SALIDA, required=False)
     
     def __init__(self, *args, **kwargs):
         filtro_numero_salida = kwargs.pop('filtro_numero_salida')
@@ -318,7 +318,7 @@ class NotaSalidaBuscarForm(forms.Form):
 class DespachoBuscarForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.filter(estado_sunat=1), required=False)
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(estado_sunat=1), required=False)
-    estado = forms.ChoiceField(choices=((None, '---------'),) + ESTADOS_NOTA_CALIDAD_STOCK, required=False)
+    estado = forms.ChoiceField(choices=((None, '---------'),) + ESTADOS_DESPACHO, required=False)
     
     def __init__(self, *args, **kwargs):
         filtro_sociedad = kwargs.pop('filtro_sociedad')

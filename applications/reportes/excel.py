@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db import models
 import time
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -24,12 +25,13 @@ from applications.home.templatetags.funciones_propias import get_enlace_nubefact
 from applications.comprobante_venta.models import BoletaVenta, BoletaVentaDetalle, FacturaVenta, FacturaVentaDetalle
 from applications.nota.models import NotaCredito
 from applications.crm.models import ClienteCRMDetalle
-from applications.clientes.models import CorreoInterlocutorCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
+from applications.clientes.models import CorreoInterlocutorCliente, HistorialEstadoCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
 from applications.cotizacion.models import CotizacionVenta, PrecioListaMaterial
 from applications.cobranza.models import Ingreso, Pago
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.sede.models import Sede
+from django.db.models import Subquery, OuterRef, Max
 
 ####################################################  FACTURACIÓN VS ASESOR COMERCIAL  ####################################################   
 
@@ -770,9 +772,9 @@ def ReporteComportamientoCliente(cliente):
     wb=dataComportamientoCliente(cliente)
     return wb
 
-####################################################  ESTADOS CLIENTE  ####################################################   
+####################################################  TASA DE CONVERSION A CLIENTE FINAL ####################################################   
 
-def dataEstadosCliente():
+def dataEstadosCliente(fecha_inicio, fecha_fin):
 
     list_estado = ESTADOS_CLIENTE
     DICT_ESTADO = dict(list_estado)
@@ -780,21 +782,16 @@ def dataEstadosCliente():
     DICT_MEDIO = dict(list_medio)
 
     list_encabezado = [
-        'Fecha de Registro',
         'Razón Social',
-        'RUC',
-        'País',
-        'Distrito',
-        'Fecha de Última Actividad',
-        'Medio',
-        'Estado',
-        'Teléfono',
-        'Correo Electrónico',
+        'Fecha de Registro',
+        'Estado Anterior',
+        'Fecha de Registro',
+        'Estado Actual',
         ]
 
     wb = Workbook()
     hoja = wb.active
-    hoja.title = 'Clientes'
+    hoja.title = 'EstadoClientes'
     hoja.append(tuple(list_encabezado))
 
     col_range = hoja.max_column  # get max columns in the worksheet
@@ -804,50 +801,105 @@ def dataEstadosCliente():
         cell_header.fill = RELLENO_EXCEL
         cell_header.font = NEGRITA
 
+    # Subconsulta para obtener los IDs de los dos últimos registros para cada cliente
+    subquery = (
+        HistorialEstadoCliente.objects
+        .filter(
+            cliente=OuterRef('cliente'),
+            created_at__range=(fecha_inicio, fecha_fin),
+            estado_cliente__lte=4,
+        )
+        .order_by('-created_at')
+        .values('id')[:2]
+    )
+
+    # Obtener los registros utilizando la subconsulta
+    historiales = (
+        HistorialEstadoCliente.objects
+        .filter(id__in=Subquery(subquery))
+        .select_related('cliente')
+        .order_by('cliente', 'created_at')
+    )
+    
+    # Crear la lista de listas de clientes
     data = []
-    
-    for cliente in Cliente.objects.all():
-        fila = []
-        fila.append(cliente.created_at.strftime('%d/%m/%Y'))
-        fila.append(cliente.razon_social)
-        fila.append(cliente.numero_documento)
-        fila.append(str(cliente.pais))
-        fila.append(str(cliente.ubigeo_total))
-        # cliente_crm_detalle = ClienteCRMDetalle.objects.filter(cliente_crm = cliente.id).order_by('-id')[0]
-        # fila.append(cliente_crm_detalle.fecha.strftime('%d/%m/%Y'))
-        # fila.append(DICT_MEDIO[cliente.medio])
-        # fila.append(DICT_ESTADO[cliente.estado])
-        fila.append("")
-        fila.append("")
-        fila.append("")
-        try: 
-            representante_legal = RepresentanteLegalCliente.objects.filter(cliente=cliente)[0]
-            telefono =  TelefonoInterlocutorCliente.objects.filter(interlocutor=representante_legal.interlocutor)[0]
-            fila.append(str(telefono.numero))
-            correo = CorreoInterlocutorCliente.objects.filter(interlocutor=representante_legal.interlocutor)[0]
-            fila.append(str(correo.correo))    
+    current_cliente = None
+    cliente_info = []
 
-        except:
-            fila.append("")
-            fila.append("")
-    
-        data.append(fila)
+    # Contadores para clientes INTERESADOS o NUEVOS y clientes FINALES
+    clientes_interesados_count = 0
+    clientes_finales_count = 0
 
+    for historial in historiales:
+        if historial.cliente != current_cliente:
+            # Nuevo cliente, agregar la lista actual a data y reiniciar
+            if cliente_info:
+                data.append(cliente_info)
+            current_cliente = historial.cliente
+            cliente_info = [historial.cliente.razon_social]
+
+        # Agregar información del cliente
+        cliente_info.append(historial.created_at.strftime('%d/%m/%Y'))
+        cliente_info.append(historial.get_estado_cliente_display())
+
+        # Contar clientes INTERESADOS y clientes FINALES
+        if historial.estado_cliente == 3:
+            clientes_interesados_count += 1
+
+        if historial.estado_cliente == 4:
+            clientes_finales_count += 1
+
+    # Añadir el último cliente a data
+    if cliente_info:
+        data.append(cliente_info)
+    
     for fila in data:
         hoja.append(fila)
 
     for row in hoja.rows:
         for col in range(hoja.max_column):
             row[col].border = BORDE_DELGADO
-            if col == 0 or col == 7:
-                row[col].alignment = ALINEACION_CENTRO
+
+    ajustarColumnasSheet(hoja)
+
+    list_encabezado_resumen = [
+        'Clientes Interesados',
+        'Clientes Finales',
+        'Tasa de conversión',
+        ]
+    hoja = wb.create_sheet('RESUMEN')
+    
+    hoja.append(tuple(list_encabezado_resumen))
+
+    col_range = hoja.max_column  # get max columns in the worksheet
+    # cabecera de la tabla
+    for col in range(1, col_range + 1):
+        cell_header = hoja.cell(1, col)
+        cell_header.fill = RELLENO_EXCEL
+        cell_header.font = NEGRITA
+
+    tasa_conversion = (clientes_finales_count/clientes_interesados_count)*100
+
+    list_data_resumen = [
+        clientes_interesados_count,
+        clientes_finales_count,
+        ("%s %s" % (intcomma(redondear((Decimal(clientes_finales_count/clientes_interesados_count))*100)), '%')),
+        ]
+
+    hoja.append(tuple(list_data_resumen))
+
+    for row in hoja.rows:
+        for col in range(hoja.max_column):
+            row[col].border = BORDE_DELGADO
+            if col == 1 or col == 2:
+                row[col].alignment = ALINEACION_DERECHA
 
     ajustarColumnasSheet(hoja)
     return wb
 
-def ReporteEstadosClienteExcel():
+def ReporteTasaConversionCliente(fecha_inicio, fecha_fin):
 
-    wb=dataEstadosCliente()
+    wb=dataEstadosCliente(fecha_inicio, fecha_fin)
     return wb
 
 ####################################################  REPORTE CONTADOR  ####################################################   
@@ -1498,6 +1550,7 @@ def ReporteRotacionCorregido(sociedad):
     wb=dataReporteRotacion(sociedad)
     return wb
 
+
 ####################################################  REPORTE DEPÓSITOS CUENTAS BANCARIAS  ####################################################   
 
 
@@ -1541,12 +1594,8 @@ def dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin):
         info_depositos = []
         # numero_operacion = []
 
-        ################################## Version N° 1 ##################################
-
         ingresos = Ingreso.objects.filter(
             cuenta_bancaria__numero_cuenta = nro_cuenta, 
-            cuenta_bancaria__estado = 1, 
-            cuenta_bancaria__efectivo = False, 
             fecha__gte=fecha_inicio, 
             fecha__lte=fecha_fin,).order_by('fecha')
 
@@ -1606,90 +1655,6 @@ def dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin):
                 data.append('')
                 data.append('')
                 info_depositos.append(data)
-        
-        ################################## Version N° 2 ##################################
-
-        # depositos = Pago.objects.filter(
-        #     content_type = ContentType.objects.get_for_model(Ingreso),
-        #     id_registro__in = [ingreso.id for ingreso in Ingreso.objects.filter(
-        #         cuenta_bancaria__numero_cuenta = nro_cuenta, 
-        #         cuenta_bancaria__estado = 1, 
-        #         cuenta_bancaria__efectivo = False, 
-        #         fecha__gte=fecha_inicio, 
-        #         fecha__lte=fecha_fin,).order_by('fecha')],
-        #         )
-        
-        # for deposito in depositos:
-        #     num_operacion = "%s,%s" %(deposito.ingreso_nota.fecha, deposito.ingreso_nota.numero_operacion)
-        #     if num_operacion in numero_operacion:
-        #         pos = numero_operacion.index(num_operacion)
-        #         info_depositos[pos][4] = "%s\n%s" %(info_depositos[pos][4], deposito.deuda.documento_objeto[3].razon_social)
-        #         info_depositos[pos][5] = "%s\n%s" %(info_depositos[pos][5], "%s: %s" % (deposito.deuda.documento_objeto[0], deposito.deuda.documento_objeto[1]))
-        #         info_depositos[pos][6] = "%s\n%s" %(info_depositos[pos][6], deposito.deuda.documento_objeto[2].strftime('%d/%m/%Y'))
-        #         if deposito.ingreso_nota.cuenta_bancaria.moneda.abreviatura == "USD":
-        #             info_depositos[pos][7] = "%s\n%s" %(info_depositos[pos][7], "%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto))))
-        #             info_depositos[pos][8] = "%s\n%s" %(info_depositos[pos][8], "%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto*tipo_cambio_sunat_documento.tipo_cambio_venta))))
-        #         else:
-        #             info_depositos[pos][7] = "%s\n%s" %(info_depositos[pos][7], "%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto/tipo_cambio_sunat_documento.tipo_cambio_venta))))
-        #             info_depositos[pos][8] = "%s\n%s" %(info_depositos[pos][8], "%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto))))                  
-
-        #     else:
-        #         data = []
-        #         numero_operacion.append(num_operacion)
-        #         tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=deposito.ingreso_nota.fecha)
-        #         data.append(deposito.ingreso_nota.fecha.strftime('%d/%m/%Y'))
-        #         data.append(deposito.ingreso_nota.numero_operacion)
-        #         if deposito.ingreso_nota.cuenta_bancaria.moneda.abreviatura == "USD":
-        #             data.append(deposito.ingreso_nota.monto)
-        #             data.append(deposito.ingreso_nota.monto*tipo_cambio_sunat_documento.tipo_cambio_venta)
-        #         else:
-        #             data.append(deposito.ingreso_nota.monto/tipo_cambio_sunat_documento.tipo_cambio_venta)
-        #             data.append(deposito.ingreso_nota.monto)
-        #         data.append(deposito.deuda.documento_objeto[3].razon_social)
-        #         data.append("%s: %s" % (deposito.deuda.documento_objeto[0], deposito.deuda.documento_objeto[1]))
-        #         data.append(deposito.deuda.documento_objeto[2].strftime('%d/%m/%Y'))
-        #         if deposito.ingreso_nota.cuenta_bancaria.moneda.abreviatura == "USD":
-        #             data.append("%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto))))
-        #             data.append("%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto*tipo_cambio_sunat_documento.tipo_cambio_venta))))
-        #         else:
-        #             data.append("%s %s" %(moneda_dolar.simbolo, intcomma(redondear(deposito.monto/tipo_cambio_sunat_documento.tipo_cambio_venta))))
-        #             data.append("%s %s" %(moneda_sol.simbolo, intcomma(redondear(deposito.monto))))
-        #         info_depositos.append(data)
-
-        # ingresos = Ingreso.objects.filter(
-        #     cuenta_bancaria__numero_cuenta = nro_cuenta, 
-        #     cuenta_bancaria__estado = 1, 
-        #     cuenta_bancaria__efectivo = False, 
-        #     fecha__gte=fecha_inicio, 
-        #     fecha__lte=fecha_fin,
-        #     es_pago=False,
-        #     pendiente_usar=True,).order_by('fecha')
-
-        # for ingreso in ingresos:
-        #     num_operacion = "%s,%s" %(ingreso.fecha, ingreso.numero_operacion)
-        #     if num_operacion not in numero_operacion:
-        #         data = []
-        #         tipo_cambio_sunat_documento = tipo_cambio_sunat.get(fecha=ingreso.fecha)
-        #         data.append(ingreso.fecha.strftime('%d/%m/%Y'))
-        #         if ingreso.comentario:
-        #             data.append("%s | %s" % (ingreso.numero_operacion, ingreso.comentario))
-        #         else:
-        #             data.append("%s | %s" % (ingreso.numero_operacion, 'Sin Comentario'))
-        #         if ingreso.cuenta_bancaria.moneda.abreviatura == "USD":
-        #             data.append(ingreso.monto)
-        #             data.append(ingreso.monto*tipo_cambio_sunat_documento.tipo_cambio_venta)
-        #         else:
-        #             data.append(ingreso.monto/tipo_cambio_sunat_documento.tipo_cambio_venta)
-        #             data.append(ingreso.monto)
-                
-        #         data.append('')
-        #         data.append('')
-        #         data.append('')
-        #         data.append('')
-        #         data.append('')
-        #         info_depositos.append(data)
-
-        # info_depositos.sort(key = lambda i: datetime.strptime(i[0], '%d/%m/%Y'), reverse=False)
 
         count_cuenta += 1
         # print('**********************************')
@@ -2024,7 +1989,6 @@ def dataReporteDepositoCuentasBancariasResumen(sociedades,fecha_inicio, fecha_fi
         chart.dataLabels = DataLabelList()
         chart.dataLabels.showVal = True
         chart.dataLabels.dLblPos = 't' # top
-
         chart.plot_area.dTable = DataTable()
         chart.plot_area.dTable.showHorzBorder = True
         chart.plot_area.dTable.showVertBorder = True
@@ -2037,14 +2001,13 @@ def dataReporteDepositoCuentasBancariasResumen(sociedades,fecha_inicio, fecha_fi
 
     return wb
     
-def ReporteDepositoCuentasBancariasCorregido(sociedad_id, fecha_inicio, fecha_fin):
+def ReporteDepositoCuentasBancariasCorregido(sociedad, fecha_inicio, fecha_fin):
 
-    if sociedad_id:
-        sociedad = Sociedad.objects.get(id=sociedad_id)
+    if sociedad!=None:
         wb=dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin)
         return wb
     else:
-        sociedades = Sociedad.objects.all()
+        sociedades = Sociedad.objects.only('id','abreviatura','nombre_comercial')
         wb=dataReporteDepositoCuentasBancariasResumen(sociedades, fecha_inicio, fecha_fin)
         return wb
 
@@ -2052,48 +2015,56 @@ def ReporteDepositoCuentasBancariasCorregido(sociedad_id, fecha_inicio, fecha_fi
 
 def dataReporteResumenStockProductos(sede):
 
-    sql_stock_productos = ''' SELECT
-    MAX(mam.id) AS id,
-    mm.id,
-    mm.descripcion_corta,
-    sed.nombre,
-    ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),2) AS stock_disponible,
-    ROUND(SUM(CASE WHEN (mats.codigo='4' or mats.codigo='5') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),2) AS stock_sin_qa,
-    ROUND(SUM(CASE WHEN (mats.codigo='6' or mats.codigo='26') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),2) AS stock_por_qa,
-    ROUND(SUM(CASE WHEN (mats.codigo NOT IN (3,4,5,6,26)) THEN mam.cantidad*mam.signo_factor_multiplicador ELSE (0.00) END),2) AS stock_otros,
-    ROUND(SUM(mam.cantidad*mam.signo_factor_multiplicador),2) as total_stock
-    FROM movimiento_almacen_movimientosalmacen mam
-    LEFT JOIN material_material mm
-        ON mm.id=mam.id_registro_producto AND mam.content_type_producto_id='%s'
-    LEFT JOIN movimiento_almacen_tipostock mats
-        ON mam.tipo_stock_id=mats.id
-    LEFT JOIN almacenes_almacen alms
-        ON mam.almacen_id=alms.id
-    LEFT JOIN sede_sede sed
-        ON alms.sede_id=sed.id
-    WHERE alms.sede_id= '%s' AND mats.codigo NOT IN (
-        1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 32, 33, 34, 35, 36, 37, 38)
-    GROUP BY mm.id, sed.id
-    ORDER BY sed.id, mm.descripcion_corta; ''' %(DICT_CONTENT_TYPE['material | material'], sede.id)
-    query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
+    material = Material.objects.only('id','descripcion_corta').order_by('descripcion_corta')
 
-    info = []
-    for fila in query_info:
-        lista_datos = []
-        lista_datos.append(fila.id)
-        lista_datos.append(fila.descripcion_corta)
-        lista_datos.append(fila.nombre)
-        lista_datos.append(fila.stock_disponible)
-        lista_datos.append(fila.stock_sin_qa)
-        lista_datos.append(fila.stock_por_qa)
-        lista_datos.append(fila.stock_otros)
-        lista_datos.append(fila.total_stock)
-        info.append(lista_datos)
+    material_valores = material.values_list(
+    'id',
+    'descripcion_corta',
+    )
+    
+    df_material = pd.DataFrame(material_valores, columns=['ID','DESCRIPCION CORTA'])
+
+    df_material = df_material.assign(ALMACEN_1=None, ALMACEN_2=None, ALMACEN_3 = None, ALMACEN_4=None, ALMACEN_5=None, SUMA_CONTEO=None, DIFERENCIA=None)
+
+    query_info =MovimientosAlmacen.objects.filter(
+            content_type_producto=ContentType.objects.get_for_model(Material), 
+            tipo_stock__codigo__in=['3', '4', '5', '6', '26'],
+            sociedad__estado_sunat=1,
+            almacen__sede__id = sede.id,
+        ).values(
+            'id_registro_producto', 'almacen__sede__id'
+        ).annotate(
+            stock_disponible=Sum(Case(When(tipo_stock__codigo='3', then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
+            stock_sin_qa=Sum(Case(When(tipo_stock__codigo__in=['4', '5'], then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
+            stock_por_qa=Sum(Case(When(tipo_stock__codigo__in=['6', '26'], then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
+            stock_otros=Sum(Case(When(tipo_stock__codigo__in=['3', '4', '5', '6', '26'], then=0.0), default=F('cantidad') * F('signo_factor_multiplicador'), output_field=models.DecimalField())),
+            total_stock=Sum(F('cantidad') * F('signo_factor_multiplicador'), output_field=models.DecimalField())
+        )
+    
+    print(query_info)
+    print('##################################################')
+
+    info = [[item[key] for key in item] for item in query_info]
+
+    print(info)
+    print('##################################################')
+
+    # Ejecutar la consulta
+    df_info = pd.DataFrame(info, columns=['SEDE', 'ID', 'STOCK DISPONIBLE', 'STOCK SIN QA', 'STOCK POR QA', 'STOCK OTROS', 'TOTAL STOCK'])
+
+    # Combinar las consultas
+    df_combinado = pd.merge(df_info, df_material, on='ID', how='left')
+
+    # Reordenar las columnas
+    columnas_ordenadas = ['SEDE', 'DESCRIPCION CORTA', 'ALMACEN_1', 'ALMACEN_2', 'ALMACEN_3', 'ALMACEN_4', 'ALMACEN_5', 'SUMA_CONTEO', 'STOCK DISPONIBLE', 'STOCK SIN QA', 'STOCK POR QA', 'STOCK OTROS', 'TOTAL STOCK', 'DIFERENCIA']
+
+    df_combinado_final = df_combinado[columnas_ordenadas].sort_values(by='DESCRIPCION CORTA')
+
+    # info = df_combinado_final.values.tolist()
 
     list_encabezado = [
-        'COD. MAT.',
-        'DESCRIPCIÓN',
         'SEDE',
+        'DESCRIPCIÓN',
         'ALMACÉN #1',
         'ALMACÉN #2',
         'ALMACÉN #3',
@@ -2127,50 +2098,42 @@ def dataReporteResumenStockProductos(sede):
         cell_header = hoja.cell(1, col)
         cell_header.fill = color_celda_cabecera
         cell_header.font = NEGRITA
-    # if info == []:
-    #     return False
-    # for bloque in info:
-    # for fila in bloque:
-    for fila in info:
-        fila[3] = float(fila[3])
-        fila[4] = float(fila[4])
-        fila[5] = float(fila[5])
-        fila[6] = float(fila[6])
-        fila[7] = float(fila[7])
-        nueva_fila = []
-        nueva_fila.extend([
-            fila[0],
-            fila[1],
-            fila[2],
-            '',     # ALMACEN 1
-            '',     # ALMACEN 2
-            '',     # ALMACEN 3
-            '',     # ALMACEN 4
-            '',     # ALMACEN 5
-            '',     # SUMA CONTEO
-            fila[3],
-            fila[4],
-            fila[5],
-            fila[6],
-            fila[7],
-            '',     # DIFERENCIA
-            ])
-        hoja.append(nueva_fila)
+
+    for r_idx, row in enumerate(dataframe_to_rows(df_combinado_final, index=False, header=True), 1):
+        if r_idx == 1: continue
+        for c_idx, value in enumerate(row, 1):
+            hoja.cell(row=r_idx, column=c_idx, value=value)
+            if c_idx >=8:
+                hoja.cell(row=r_idx, column=c_idx, value=value)
+
+        # hoja.cell(row=r_idx, column=1, value=row[1]) #SEDE
+        # hoja.cell(row=r_idx, column=2, value=row[2]) #DESCRIPCION
+        # hoja.cell(row=r_idx, column=3, value=row[3]) 
+        # hoja.cell(row=r_idx, column=4, value=row[4]) 
+        # hoja.cell(row=r_idx, column=5, value=row[5]) 
+        # hoja.cell(row=r_idx, column=6, value=row[6]) 
+        # hoja.cell(row=r_idx, column=7, value=row[7]) 
+        # hoja.cell(row=r_idx, column=8, value=row[8])
+        # hoja.cell(row=r_idx, column=9, value=row[9])  #DISPONIBLE
+        # hoja.cell(row=r_idx, column=10, value=row[10]) #SIN QA
+        # hoja.cell(row=r_idx, column=11, value=row[11]) #POR QA
+        # hoja.cell(row=r_idx, column=12, value=row[12]) #OTROS
+        # hoja.cell(row=r_idx, column=13, value=row[13]) #TOTAL
+        # hoja.cell(row=r_idx, column=14, value=row[14])
 
     for row in hoja.rows:
         for col in range(hoja.max_column):
             row[col].border = BORDE_DELGADO
-            if col >= 3:
+            if col >= 8:
                 row[col].number_format = FORMATO_NUMERO
 
     hoja.freeze_panes = 'C2'
     ajustarColumnasSheet(hoja)
     return wb
     
-def ReporteResumenStockProductosCorregido(sede_id):
+def ReporteResumenStockProductosCorregido(sede):
 
-    if sede_id:
-        sede = Sede.objects.get(id=sede_id)
+    if sede!=None:
         wb=dataReporteResumenStockProductos(sede)
         return wb
     else:
