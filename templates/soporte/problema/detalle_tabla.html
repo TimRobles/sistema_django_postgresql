@@ -8,12 +8,21 @@
             <tr>
                 <th class="text-rigth">Descripción</th>
                 <th class="text-rigth">Estado</th>
+                
+                {% if contexto_problema.comentario  %}
+                <th class="text-rigth">Comentario</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>{{ contexto_problema.descripcion }}</td>
                 <td>{{ contexto_problema.get_estado_display }}</td>
+                
+                {% if contexto_problema.comentario  %}
+                <td>{{ contexto_problema.comentario }}</td>
+                {% endif %}
+                    
             </tr>
         </tbody>
     </table>

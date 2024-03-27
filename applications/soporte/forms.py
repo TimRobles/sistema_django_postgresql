@@ -57,6 +57,19 @@ class ProblemaUpdateForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class ProblemaComentarioForm(BSModalModelForm):
+    class Meta:
+        model = Problema
+        fields = (
+            'comentario',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ProblemaComentarioForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class ProblemaDetalleForm(BSModalModelForm):
 
     class Meta:

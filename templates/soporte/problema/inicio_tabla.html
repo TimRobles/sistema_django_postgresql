@@ -4,7 +4,6 @@
             <th>Titulo</th>
             <th>Fecha de Registro</th>
             <th>Creado por</th>
-            <th>Area</th>
             <th>Estado</th>
             <th style="text-align: center;">Acciones</th>
 
@@ -18,7 +17,6 @@
             <td>{{ problema.titulo }}</td>
             <td>{{ problema.created_at|date:'d/m/Y' }}</td>
             <td>{{ problema.created_by }}</td>
-            <td>{{ problema.created_by.area }}</td>
             <td>{{ problema.get_estado_display }}</td>
             <td class="text-center text-nowrap">
 

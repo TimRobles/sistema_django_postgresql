@@ -17,12 +17,19 @@
         Notificar
     </button>
     {% endif %}
+    
 
     {% if contexto_problema.estado == 2 and permiso_botones_problema %}
     <button data-form-url="{% url 'soporte_app:problema_detalle_iniciar_solucion' contexto_problema.id %}"
         data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}"
         class="delete badge bg-success">
         Iniciar
+    </button>
+
+    <button data-form-url="{% url 'soporte_app:problema_comentar' contexto_problema.id %}"
+        data-table-url="{% url 'soporte_app:problema_detalle_tabla' contexto_problema.id %}"
+        class="delete badge bg-success">
+        Comentario
     </button>
 
     {% endif %}    
@@ -35,8 +42,6 @@
     </button>   
     {% endif %}
 
-
-         
     </h3>
     <div class="table-responsive" id="tabla">
         {% include 'soporte/problema/detalle_tabla.html' %}
