@@ -1468,6 +1468,12 @@ class ReporteFacturasPendientes(TemplateView):
                 'F001-002098',
                 'F001-002099',
                 ]
+            list_fact_invalidas_mf = [
+                ]
+            list_fact_invalidas_wf = [
+                ]
+            DICT_FACT_INVALIDAS['4'] = list_fact_invalidas_wf
+            DICT_FACT_INVALIDAS['3'] = list_fact_invalidas_mf
             DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
             DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
