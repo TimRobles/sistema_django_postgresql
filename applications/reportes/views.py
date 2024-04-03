@@ -1478,7 +1478,7 @@ class ReporteFacturasPendientes(TemplateView):
             DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
             if DICT_FACT_INVALIDAS[global_sociedad]:
-                texto_fact_invalidas = ", lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s" % tuple(DICT_FACT_INVALIDAS[global_sociedad])
+                texto_fact_invalidas = "AND CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s" % tuple(DICT_FACT_INVALIDAS[global_sociedad])
             else:
                 texto_fact_invalidas = ""
 
@@ -1527,7 +1527,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'CANCELADO'
                     ) ELSE (
                         'PENDIENTE'
-                    ) END) = 'PENDIENTE' AND CONCAT(MAX(dgsc.serie), '-' %s
+                    ) END) = 'PENDIENTE' %s
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
                 UNION
                 (SELECT
