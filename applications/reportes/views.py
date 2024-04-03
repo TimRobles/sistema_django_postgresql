@@ -1477,6 +1477,11 @@ class ReporteFacturasPendientes(TemplateView):
             DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
             DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
+            if DICT_FACT_INVALIDAS[global_sociedad]:
+                texto_fact_invalidas = ", lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s" % tuple(DICT_FACT_INVALIDAS[global_sociedad])
+            else:
+                texto_fact_invalidas = ""
+
             sql = ''' (SELECT
                 MAX(cvf.id) AS id,
                 to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
@@ -1522,7 +1527,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'CANCELADO'
                     ) ELSE (
                         'PENDIENTE'
-                    ) END) = 'PENDIENTE' AND CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s
+                    ) END) = 'PENDIENTE' AND CONCAT(MAX(dgsc.serie), '-' %s
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
                 UNION
                 (SELECT
@@ -1572,7 +1577,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'PENDIENTE'
                     ) END) = 'PENDIENTE'
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
-                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, tuple(DICT_FACT_INVALIDAS[global_sociedad]), DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, texto_fact_invalidas, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
             query_info = FacturaVenta.objects.raw(sql)
 
             info_general = []
