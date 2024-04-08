@@ -10,6 +10,7 @@ urlpatterns = [
     path('problema/actualizar/<pk>/', views.ProblemaUpdateView.as_view(), name='problema_actualizar'),
     path('problema/eliminar/<pk>', views.ProblemaDeleteView.as_view(), name='problema_eliminar'),
     path('problema/notificar/<pk>/', views.ProblemaNotificarView.as_view(), name='problema_notificar'),
+    path('problema/comentar/<pk>/', views.ProblemaComentarioView.as_view(), name='problema_comentar'),
 
     path('problema-detalle/<pk>', views.ProblemaDetailView.as_view(), name='problema_detalle'),
     path('problema-detalle-tabla/<pk>', views.ProblemaDetalleTabla, name='problema_detalle_tabla'),

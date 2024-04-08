@@ -18,6 +18,7 @@ from .forms import (
     SolicitudDetalleForm,
     SolicitudDetalleUpdateForm,
     SolicitudMotivoRechazoUpdateForm,
+    ProblemaComentarioForm,
 )
 
 from .models import (
@@ -194,7 +195,6 @@ class ProblemaDeleteView(BSModalDeleteView):
         context['item'] = self.object.titulo
         return context
 
-
 class ProblemaDetailView(PermissionRequiredMixin,DetailView):
     permission_required = ('soporte.view_problemadetalle')
 
@@ -247,8 +247,8 @@ class ProblemaDetalleCreateView(BSModalCreateView):
 
     def get_context_data(self, **kwargs):
         context = super(ProblemaDetalleCreateView, self).get_context_data(**kwargs)
-        context['accion']="Agregar Imagenes"
-        context['titulo']="del problema"
+        context['accion']="Agregar"
+        context['titulo']=" imagenes o url del problema"
         return context
 
 
@@ -396,6 +396,23 @@ class ProblemaDetalleFinalizarProblemaView(BSModalDeleteView):
         context['dar_baja'] = "true"
         context['item'] = str(self.object.titulo)
         return context
+
+
+
+class ProblemaComentarioView(BSModalUpdateView):
+    model = Problema
+    template_name = "includes/formulario generico.html"
+    form_class = ProblemaComentarioForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('soporte_app:problema_inicio')
+    
+    def get_context_data(self, **kwargs):
+        context = super(ProblemaComentarioView, self).get_context_data(**kwargs)
+        context['accion'] = "Comentarios"
+        context['titulo'] = "| Días de solución"
+        return context
+
 
 #----- SOLICITUD ---------
 
