@@ -51,6 +51,7 @@ urlpatterns = [
     path('merchandising/', include('applications.merchandising.urls')),
     path('cambio-sociedad/', include('applications.cambio_sociedad.urls')),
     path('soporte/', include('applications.soporte.urls')),
+    path('notificaciones/', include('applications.notificaciones.urls')),
 ]
 
 urlpatterns += [url(r'^ftp/(?P<path>.*)', serve, {'document_root': settings.FTP_ROOT})]

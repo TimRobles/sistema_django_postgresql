@@ -55,17 +55,17 @@ class ProblemaListView(PermissionRequiredMixin, FormView):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
         
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")        
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
@@ -107,17 +107,17 @@ def ProblemaTabla(request):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
@@ -443,17 +443,17 @@ class SolicitudListView(PermissionRequiredMixin, FormView):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
         
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")        
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
@@ -496,17 +496,17 @@ def SolicitudTabla(request):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)

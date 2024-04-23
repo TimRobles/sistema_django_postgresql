@@ -80,6 +80,7 @@ LOCAL_APPS = (
     'applications.merchandising',
     'applications.cambio_sociedad',
     'applications.soporte',
+    'applications.notificaciones',
 )
 
 THIRD_PARTY_APPS = (
