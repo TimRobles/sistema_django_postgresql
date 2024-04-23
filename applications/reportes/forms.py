@@ -5,6 +5,7 @@ from bootstrap_modal_forms.forms import BSModalModelForm
 from applications.sociedad.models import Sociedad
 from applications.clientes.models import Cliente
 from applications.cotizacion.models import CotizacionVenta
+from applications.sede.models import Sede
 
 class ReportesFiltrosForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all())
@@ -146,13 +147,13 @@ class ReporteVentasDepartamentoExcelForm(forms.Form):
 
 class ReporteFacturacionGeneralExcelForm(forms.Form):
     fecha_inicio = forms.DateField(
-    required=True,
-    widget = forms.DateInput(
-            attrs ={
-                'type':'date',
-                },
-            format = '%Y-%m-%d',
-            )
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
     )
     fecha_fin = forms.DateField(
         required=True,
@@ -175,6 +176,31 @@ class ReporteComportamientoClienteExcelForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ReporteComportamientoClienteExcelForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ReporteTasaConversionClienteForm(forms.Form):
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+    )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteTasaConversionClienteForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -240,5 +266,14 @@ class ReporteDepositoCuentasBancariasForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ReporteDepositoCuentasBancariasForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReporteResumenStockProductosForm(forms.Form):
+    sede = forms.ModelChoiceField(queryset=Sede.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteResumenStockProductosForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

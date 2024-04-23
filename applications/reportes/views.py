@@ -21,8 +21,10 @@ from django.contrib.contenttypes.models import ContentType
 from applications.reportes.forms import (
     ReporteComportamientoClienteExcelForm,
     ReporteDepositoCuentasBancariasForm,
+    ReporteTasaConversionClienteForm,
     ReporteFacturacionAsesorComercialExcelForm,
-    ReporteFacturacionGeneralExcelForm, 
+    ReporteFacturacionGeneralExcelForm,
+    ReporteResumenStockProductosForm, 
     ReporteStockSociedadPdfForm, 
     ReporteVentasDepartamentoPdfForm,
     ReportesContadorForm, 
@@ -51,12 +53,14 @@ from applications.reportes.excel import (
     ReporteComportamientoCliente,
     ReporteContadorCorregido,
     ReporteDepositoCuentasBancariasCorregido,
-    ReporteEstadosClienteExcel, 
     ReporteFacturacionAsesorComercial, 
     ReporteFacturacionGeneral,
-    ReporteRotacionCorregido, 
+    ReporteResumenStockProductosCorregido,
+    ReporteRotacionCorregido,
+    ReporteTasaConversionCliente, 
     ReporteVentasDepartamento
     )
+from applications.sede.models import Sede
     
 class ReportesView(FormView):
     template_name = "reportes/inicio.html"
@@ -2869,6 +2873,8 @@ class ReporteDeudas(TemplateView):
             'F001-002098',
             'F001-002099',
             ]
+        DICT_FACT_INVALIDAS['4'] = list_fact_invalidas_mpl
+        DICT_FACT_INVALIDAS['3'] = list_fact_invalidas_mca
         DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
         DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
@@ -3924,9 +3930,9 @@ class ReportesCRM(TemplateView):
             logo = [sociedad_MPL.logo.url]
 
             if departamento:
-                titulo = f'Reporte Ventas por Departamento - {departamento}'
+                titulo = f'Reporte Ventas por Departamento - {departamento} del {fecha_inicio} al {fecha_fin}'
             else:
-                titulo = f'Reporte Ventas por Departamento - TODOS'
+                titulo = f'Reporte Ventas por Departamento - TODOS del {fecha_inicio} al {fecha_fin}'
 
             wb = ReporteVentasDepartamento(titulo, fecha_inicio, fecha_fin, departamento)
             
@@ -3952,14 +3958,12 @@ class ReportesCRM(TemplateView):
             wb = ReporteComportamientoCliente(cliente)
         
         elif formulario == 'formulario4':
-            
-            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
-            logo = [sociedad_MPL.logo.url]
-            titulo = 'Reporte Estados Cliente' + '_' + str(fecha_doc)
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
 
-            wb = ReporteEstadosClienteExcel()
+            titulo = f'Reporte Tasa Conversión a Cliente Final del {fecha_inicio} al {fecha_fin}'
+
+            wb = ReporteTasaConversionCliente(fecha_inicio, fecha_fin)
             
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
@@ -3972,6 +3976,7 @@ class ReportesCRM(TemplateView):
         context = super(ReportesCRM, self).get_context_data(**kwargs)
         context['form1'] = ReporteVentasDepartamentoExcelForm()
         context['form3'] = ReporteComportamientoClienteExcelForm()
+        context['form4'] = ReporteTasaConversionClienteForm()
 
         return context
     
@@ -3993,9 +3998,9 @@ class ReportesGerencia(TemplateView):
             logo = [sociedad_MPL.logo.url]
 
             if asesor_comercial:
-                titulo = f'Reporte Facturación por Asesor Comercial - {asesor_comercial}'
+                titulo = f'Reporte Facturación por Asesor Comercial - {asesor_comercial} del {fecha_inicio} al {fecha_fin}'
             else:
-                titulo = f'Reporte Facturación por Asesor Comercial - TODOS'
+                titulo = f'Reporte Facturación por Asesor Comercial - TODOS del {fecha_inicio} al {fecha_fin}'
 
             wb = ReporteFacturacionAsesorComercial(fecha_inicio, fecha_fin, asesor_comercial)
         
@@ -4038,6 +4043,7 @@ class ReportesCorregidos(TemplateView):
             sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
             titulo = f'Reporte Contador - {sociedad.abreviatura} del {fecha_inicio} al {fecha_fin}'
             wb = ReporteContadorCorregido(sociedad, fecha_inicio, fecha_fin)
+
         elif formulario == 'formulario2':
             sociedad = None
             if self.request.POST.get('sociedad'):
@@ -4048,17 +4054,28 @@ class ReportesCorregidos(TemplateView):
             wb = ReporteRotacionCorregido(sociedad)
 
         elif formulario == 'formulario3':
+            sociedad = None
             fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
             fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
-            sociedad_id = self.request.POST.get('sociedad')
 
-            if sociedad_id:
-                sociedad = Sociedad.objects.get(id=sociedad_id)
+            if self.request.POST.get('sociedad'):
+                sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
                 titulo = f'Reporte Depositos Cuentas Bancarias ~ {sociedad.abreviatura} ~ {fecha_inicio} al {fecha_fin}'
             else:
                 titulo = f'Reporte Depositos Cuentas Bancarias ~ General ~ {fecha_inicio} al {fecha_fin}'
 
-            wb = ReporteDepositoCuentasBancariasCorregido(sociedad_id, fecha_inicio, fecha_fin)
+            wb = ReporteDepositoCuentasBancariasCorregido(sociedad, fecha_inicio, fecha_fin)
+
+        elif formulario == 'formulario4':
+            sede = None
+
+            if self.request.POST.get('sede'):
+                sede = Sede.objects.get(id=self.request.POST.get('sede'))
+                titulo = f'Reporte Resumen Stock Productos {sede.nombre} ~ ' + str(fecha_doc)
+            else:
+                titulo = f'Reporte Resumen Stock Productos ~ General ~ ' + str(fecha_doc)
+
+            wb = ReporteResumenStockProductosCorregido(sede)
 
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
@@ -4072,5 +4089,6 @@ class ReportesCorregidos(TemplateView):
         context['form1'] = ReportesContadorForm()
         context['form2'] = ReportesRotacionForm()
         context['form3'] = ReporteDepositoCuentasBancariasForm()
+        context['form4'] = ReporteResumenStockProductosForm()
 
         return context
