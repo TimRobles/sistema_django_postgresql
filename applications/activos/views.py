@@ -8,6 +8,7 @@ from applications.activos.models import (
     DevolucionActivo,
     DevolucionDetalleActivo,
     DocumentoInventarioActivo,
+    FamiliaActivo,
     InventarioActivo,
     InventarioActivoDetalle,
     SubFamiliaActivo,
@@ -41,6 +42,7 @@ from .forms import (
     ComprobanteCompraActivoDetalleForm,
     ComprobanteCompraActivoForm,
     DocumentoInventarioActivoForm,
+    FamiliaActivoForm,
     InventarioActivoDetalleCreateForm,
     InventarioActivoDetalleUpdateForm,
     InventarioActivoForm,
@@ -50,13 +52,14 @@ from .forms import (
     AsignacionActivoForm,
     AsignacionDetalleActivoForm,
     ProductoSunatActivoForm,
+    SubFamiliaActivoForm,
     )
 
-class SubFamiliaActivoForm(forms.Form):
+class SubFamiliaActivoApiForm(forms.Form):
     sub_familia = forms.ModelChoiceField(queryset = SubFamiliaActivo.objects.all(), required=False)
 
 def SubFamiliaActivoView(request, id_familia):
-    form = SubFamiliaActivoForm()
+    form = SubFamiliaActivoApiForm()
     form.fields['sub_familia'].queryset = SubFamiliaActivo.objects.filter(familia = id_familia)
     data = dict()
     if request.method == 'GET':
@@ -290,6 +293,168 @@ class MarcaActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
         registro_guardar(form.instance, self.request)
 
         return super().form_valid(form)
+
+
+class FamiliaActivoListView(PermissionRequiredMixin, ListView):
+    permission_required = ('activos.view_familiaactivo')
+
+    model = FamiliaActivo
+    template_name = "activos/familia_activo/inicio.html"
+    context_object_name = 'contexto_familia_activo'
+
+def FamiliaActivoTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'activos/familia_activo/inicio_tabla.html'
+        context = {}
+        context['contexto_familia_activo'] = FamiliaActivo.objects.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class FamiliaActivoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('activos.add_familiaactivo')
+    model = FamiliaActivo
+    template_name = "includes/formulario generico.html"
+    form_class = FamiliaActivoForm
+    success_url = reverse_lazy('activos_app:familia_activo_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(FamiliaActivoCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Familia Activo"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class FamiliaActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('activos.change_familiaactivo')
+    model = FamiliaActivo
+    template_name = "includes/formulario generico.html"
+    form_class = FamiliaActivoForm
+    success_url = reverse_lazy('activos_app:familia_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(FamiliaActivoUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Familia Activo"
+        return context
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+class FamiliaActivoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.delete_familiaactivo')
+    model = FamiliaActivo
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('activos_app:familia_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(FamiliaActivoDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Familia Activo"
+        return context
+
+class SubFamiliaActivoListView(PermissionRequiredMixin, TemplateView):
+    permission_required = ('activos.view_subfamiliaactivo')
+    template_name = "activos/sub_familia_activo/inicio.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(SubFamiliaActivoListView, self).get_context_data(**kwargs)
+        familia = FamiliaActivo.objects.get(id = self.kwargs['id_familia'])
+        context['familia'] = familia
+        context['contexto_sub_familia_activo'] = familia.SubFamiliaActivo_familia.all()
+        return context
+
+def SubFamiliaActivoTabla(request, id_familia):
+    data = dict()
+    if request.method == 'GET':
+        template = 'activos/sub_familia_activo/inicio_tabla.html'
+        context = {}
+        familia = FamiliaActivo.objects.get(id = id_familia)
+        context['familia'] = familia
+        context['contexto_sub_familia_activo'] = familia.SubFamiliaActivo_familia.all()
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+class SubFamiliaActivoCreateView(PermissionRequiredMixin, BSModalCreateView):
+    permission_required = ('activos.add_subfamiliaactivo')
+    model = SubFamiliaActivo
+    template_name = "includes/formulario generico.html"
+    form_class = SubFamiliaActivoForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:familia_activo_sub_familia_activo', kwargs={'id_familia':self.kwargs['id_familia']})
+
+    def form_valid(self, form):
+        form.instance.familia = FamiliaActivo.objects.get(id = self.kwargs['id_familia'])
+        form.instance.usuario = self.request.user
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['familia'] = self.kwargs['id_familia']
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(SubFamiliaActivoCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Sub Familia Activo"
+        return context
+
+class SubFamiliaActivoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+
+    permission_required = ('activos.change_subfamiliaactivo')
+    model = SubFamiliaActivo
+    template_name = "includes/formulario generico.html"
+    form_class = SubFamiliaActivoForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('activos_app:familia_activo_sub_familia_activo', kwargs={'id_familia':self.object.familia.id})
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SubFamiliaActivoUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Sub Familia Activo"
+        return context
+
+class SubFamiliaActivoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('activos.delete_subfamiliaactivo')
+    model = SubFamiliaActivo
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('activos_app:familia_activo_inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(SubFamiliaActivoDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Sub Familia Activo"
+        return context
+    
+
 
 class ActivoBaseListView(PermissionRequiredMixin, ListView):
     permission_required = ('activos.view_activobase')

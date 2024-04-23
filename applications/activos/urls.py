@@ -44,6 +44,19 @@ urlActivoSociedad = [
     path('activo-sociedad/actualizar/<pk>/', views.ActivoSociedadUpdateView.as_view(), name='activo_sociedad_actualizar'),  
 ]
 
+urlFamiliaActivo = [
+    path('familia-activo/', views.FamiliaActivoListView.as_view(), name='familia_activo_inicio'),
+    path('familia-activo-tabla/', views.FamiliaActivoTabla, name='familia_activo_tabla'),
+    path('familia-activo/registrar/', views.FamiliaActivoCreateView.as_view(), name='familia_activo_registrar'),
+    path('familia-activo/actualizar/<pk>/', views.FamiliaActivoUpdateView.as_view(), name='familia_activo_actualizar'),
+    path('familia-activo/eliminar/<pk>/', views.FamiliaActivoDeleteView.as_view(), name='familia_activo_eliminar'),
+    path('familia-activo/subfamilia/lista/<int:id_familia>/', views.SubFamiliaActivoListView.as_view(), name='familia_activo_sub_familia_activo'),
+    path('familia-activo/subfamilia-tabla/<int:id_familia>/', views.SubFamiliaActivoTabla, name='familia_activo_sub_familia_activo_tabla'),
+    path('familia-activo/subfamilia/registrar/<int:id_familia>/', views.SubFamiliaActivoCreateView.as_view(), name='familia_activo_sub_familia_activo_registrar'),
+    path('familia-activo/subfamilia/actualizar/<pk>/', views.SubFamiliaActivoUpdateView.as_view(), name='familia_activo_sub_familia_activo_actualizar'),
+    path('familia-activo/subfamilia/eliminar/<pk>/', views.SubFamiliaActivoDeleteView.as_view(), name='familia_activo_sub_familia_activo_eliminar'),
+]
+
 urlActivoBase = [
     path('activo_base/', views.ActivoBaseListView.as_view(), name='activo_base_inicio'),
     path('activo_base-tabla/', views.ActivoBaseTabla, name='activo_base_tabla'),
@@ -59,7 +72,6 @@ urlActivoBase = [
     path('clase-sunat_activo/<str:id_familia>/', views.ClaseSunatActivoView, name='clase_sunat'),
     path('producto-sunat_activo/<str:id_clase>/', views.ProductoSunatActivoView, name='producto_sunat'),
 ]
-
 
 urlAsignacionActivo = [
     path('asignacion_activo/', views.AsignacionActivoListView.as_view(), name='asignacion_activo_inicio'),
@@ -125,4 +137,4 @@ urlpatterns = [
     path('activo/detalle/<pk>/', views.ActivoDetailView.as_view(), name='activo_detalle'),
     path('activo/detalle-tabla/<pk>/', views.ActivoDetailTabla, name='activo_detalle_tabla'),
 
-] + urlDevolucionActivo + urlInventarioActivo + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlModelos + urlMarcas + urlActivoBase + urlAsignacionActivo
+] + urlDevolucionActivo + urlInventarioActivo + urlComprobanteCompraActivo + urlActivoUbicacion + urlActivoSociedad + urlModelos + urlMarcas + urlFamiliaActivo + urlActivoBase + urlAsignacionActivo
