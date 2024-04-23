@@ -10,7 +10,7 @@ from applications.logistica.managers import NotaSalidaManager
 from applications.muestra.models import DevolucionMuestra
 from applications.sociedad.models import Sociedad
 from applications.cotizacion.models import ConfirmacionVenta, ConfirmacionVentaDetalle
-from applications.variables import ESTADOS
+from applications.variables import ESTADOS, ESTADOS_DESPACHO, ESTADOS_NOTA_SALIDA
 from applications.almacenes.models import Almacen
 from applications.calidad.models import Serie
 from applications.sede.models import Sede
@@ -302,12 +302,6 @@ class ValidarSerieDevolucionPrestamoMaterialesDetalle(models.Model):
 #         )
 
 class NotaSalida(models.Model):
-    ESTADOS_NOTA_SALIDA = (
-        (1, 'EN PROCESO'),
-        (2, 'ATENDIDO'),
-        (3, 'ANULADO'),
-    )
-
     # confirmacion_venta = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, blank=True, null=True, related_name='NotaSalida_confirmacion_venta')
     # solicitud_prestamo_materiales = models.ForeignKey(SolicitudPrestamoMateriales, on_delete=models.CASCADE, blank=True, null=True, related_name='NotaSalida_solicitud_prestamo_materiales')
     numero_salida = models.IntegerField('Número Salida', blank=True, null=True)
@@ -606,14 +600,6 @@ class ValidarSerieNotaSalidaDetalle(models.Model):
         
         
 class Despacho(models.Model):
-    ESTADOS_DESPACHO = (
-    (1, 'EN PROCESO'),
-    (2, 'DESPACHADO'),
-    (3, 'ANULADO'),
-    (4, 'CONCLUIDO SIN GUIA'),
-    (5, 'CONCLUIDO CON GUIA'),
-    (6, 'GUIA ANULADA'),
-)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE,blank=True, null=True)
     nota_salida = models.ForeignKey(NotaSalida, on_delete=models.CASCADE,blank=True, null=True, related_name='Despacho_nota_salida')
     numero_despacho = models.IntegerField('Número Despacho', blank=True, null=True)

@@ -28,7 +28,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 
-class FamiliaActivoForm(forms.ModelForm):
+class FamiliaActivoForm(BSModalModelForm):
     class Meta:
         model = FamiliaActivo
         fields = (
@@ -44,23 +44,32 @@ class FamiliaActivoForm(forms.ModelForm):
 
         return nombre
 
+    def __init__(self, *args, **kwargs):
+        super(FamiliaActivoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
-class SubFamiliaActivoForm(forms.ModelForm):
+class SubFamiliaActivoForm(BSModalModelForm):
     class Meta:
         model = SubFamiliaActivo
         fields = (
             'nombre',
-            'familia',
             )
 
     def clean(self):
         cleaned_data = super().clean()
         nombre = cleaned_data.get('nombre')
-        familia = cleaned_data.get('familia')
+        familia = self.familia
         filtro = SubFamiliaActivo.objects.filter(nombre__unaccent__iexact = nombre, familia = familia)
         if nombre != self.instance.nombre:
             if len(filtro)>0:
                 self.add_error('nombre', 'Ya existe una SubFamilia con este nombre')
+
+    def __init__(self, *args, **kwargs):
+        self.familia = kwargs.pop('familia')
+        super(SubFamiliaActivoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 
 class ProductoSunatActivoForm(BSModalModelForm):
