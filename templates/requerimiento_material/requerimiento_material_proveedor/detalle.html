@@ -14,7 +14,7 @@
     </h3>
 
     {% if requerimiento.lista_requerimiento %}        
-    <a href="{% url 'requerimiento_material_app:lista_requerimiento_material_detalle_tabla' requerimiento.lista_requerimiento.id %}">
+    <a href="{% url 'requerimiento_material_app:lista_requerimiento_material_actualizar' requerimiento.lista_requerimiento.id %}">
         <span class="btn btn-primary">Ver Lista Requerimiento</span>
     </a>
     {% endif %}
