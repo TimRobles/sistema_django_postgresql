@@ -43,8 +43,7 @@
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
                 </a>
-                
-                {% if not orden_compra.ComprobanteCompraPI_orden_compra.all %}
+                {% if not orden_compra.ComprobanteCompraPI_orden_compra %}
                 {% if orden_compra.estado != 4 %}
                 <button data-form-url="{% url 'orden_compra_app:orden_compra_anular' orden_compra.id %}"
                     class="delete btn btn-danger btn-sm"
