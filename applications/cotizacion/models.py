@@ -5,6 +5,7 @@ from functools import total_ordering
 from reportlab.lib import colors
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from applications.cotizacion.utils import actualizar_cotizacion
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
 import applications
 from applications import material
@@ -164,7 +165,7 @@ def cotizacion_venta_pre_save(*args, **kwargs):
     print('cotizacion_venta_pre_save')
     
 post_save.connect(cotizacion_venta_post_save, sender=CotizacionVenta)
-pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
+# pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
         
 
 class CotizacionVentaDetalle(models.Model):
@@ -261,9 +262,10 @@ def cotizacion_venta_material_detalle_post_delete(sender, instance, *args, **kwa
             material.item = contador
             material.save()
         contador += 1
+    actualizar_cotizacion(instance.cotizacion_venta)
 
-pre_save.connect(cotizacion_venta_detalle_pre_save, sender=CotizacionVentaDetalle)
-post_save.connect(cotizacion_venta_detalle_post_save, sender=CotizacionVentaDetalle)
+# pre_save.connect(cotizacion_venta_detalle_pre_save, sender=CotizacionVentaDetalle)
+# post_save.connect(cotizacion_venta_detalle_post_save, sender=CotizacionVentaDetalle)
 post_delete.connect(cotizacion_venta_material_detalle_post_delete, sender=CotizacionVentaDetalle)
 
 

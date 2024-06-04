@@ -6,6 +6,7 @@ from django import forms
 from applications.clientes.funciones import validar_estado_ruc
 from applications.cobranza.models import SolicitudCredito, SolicitudCreditoCuota
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta, FacturaVentaDetalle
+from applications.cotizacion.utils import actualizar_cotizacion
 from applications.home.templatetags.funciones_propias import nombre_usuario, redondear
 from applications.importaciones import *
 from applications.clientes.models import ClienteInterlocutor, InterlocutorCliente
@@ -402,15 +403,12 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
     success_url = reverse_lazy('cotizacion_app:cotizacion_venta_inicio')
 
     def dispatch(self, request, *args, **kwargs):
-        print('dispatch')
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
         return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def form_valid(self, form):
-        print('form_valid')
-        print(self.request.session['primero'])
         sid = transaction.savepoint()
         try:
             if self.request.session['primero']:
@@ -480,6 +478,8 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
                         cantidad_total -= cantidades[sociedad.abreviatura]
                     obj2.save()
 
+                actualizar_cotizacion(cotizacion)
+
                 self.request.session['primero'] = False
         except Exception as ex:
             transaction.savepoint_rollback(sid)
@@ -487,9 +487,7 @@ class CotizacionVentaMaterialDetalleView(PermissionRequiredMixin, BSModalFormVie
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
-        print('get_context_data')
         self.request.session['primero'] = True
-        print(self.request.session['primero'])
         context = super(CotizacionVentaMaterialDetalleView, self).get_context_data(**kwargs)
         context['accion'] = 'Agregar'
         context['titulo'] = 'Material'
@@ -922,7 +920,12 @@ class CotizacionVentaMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalU
                     obj.cantidad = cantidades[sociedad.abreviatura]
                     cantidad_total -= cantidades[sociedad.abreviatura]
                 obj.save()
-            return super().form_valid(form)
+
+            response = super().form_valid(form)
+            
+            actualizar_cotizacion(form.instance.cotizacion_venta)
+            
+            return response
         except Exception as ex:
             transaction.savepoint_rollback(sid)
             registrar_excepcion(self, ex, __file__)
@@ -3658,3 +3661,14 @@ class ConfirmacionNotaSalidaView(PermissionRequiredMixin, BSModalDeleteView):
         context['titulo'] = "Nota Salida"
         context['dar_baja'] = "true"
         return context
+
+
+def actualizar_cotizaciones():
+    cotizaciones = CotizacionVenta.objects.all()
+    for cotizacion in cotizaciones:
+        try:
+            actualizar_cotizacion(cotizacion)
+        except Exception as ex:
+            print(ex)
+    print("Actualizacion de cotizaciones finalizada")
+    return True
