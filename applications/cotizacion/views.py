@@ -44,6 +44,9 @@ from .forms import (
     PrecioListaMaterialForm,
     SolicitudCreditoCuotaForm,
     SolicitudCreditoForm,
+    RotuladoForm,
+    RotuladoDespachoLBuscarForm,
+    RotuladoVerForm,
 )
 
 from .models import (
@@ -59,6 +62,7 @@ from .models import (
     CotizacionVenta,
     CotizacionVentaDetalle,
     PrecioListaMaterial,
+    Cliente,
 )
 
 
@@ -3657,4 +3661,138 @@ class ConfirmacionNotaSalidaView(PermissionRequiredMixin, BSModalDeleteView):
         context['accion'] = "Generar"
         context['titulo'] = "Nota Salida"
         context['dar_baja'] = "true"
+        return context
+
+
+############################ ROTULADO ###################################
+    
+class RotuladoView(BSModalUpdateView):
+    model = ConfirmacionVenta
+    template_name = "cotizacion/rotulado_despacho/form_rotulado.html"
+    form_class = RotuladoForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RotuladoView, self).get_context_data(**kwargs)
+        context['accion'] = "Rotulado"
+        context['titulo'] = "Despacho"
+        context['cliente'] = self.object.cliente
+
+        for factura in self.object.facturas:
+            context['nro_factura'] = factura.documento
+
+        for boleta in self.object.boletas:
+            context['nro_boleta'] = boleta.documento
+
+        return context
+
+class RotuladoDespachoListView(FormView):
+    template_name = 'cotizacion/rotulado_despacho/inicio.html'
+    form_class = RotuladoDespachoLBuscarForm
+    success_url = '.'
+    
+    def get_form_kwargs(self):
+        kwargs = super(RotuladoDespachoListView, self).get_form_kwargs()
+        kwargs['filtro_cliente'] = self.request.GET.get('cliente')
+
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(RotuladoDespachoListView, self).get_context_data(**kwargs)
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3).filter(rotulado__isnull=False, rotulado__gt='').order_by('rotulado_estado')
+
+        filtro_cliente = self.request.GET.get('cliente')
+
+        contexto_filtro = []
+
+        if filtro_cliente:
+            condicion = Q(cliente = filtro_cliente)
+            contexto_cotizacion_venta = contexto_cotizacion_venta.filter(condicion)
+            contexto_filtro.append("cliente=" + filtro_cliente)
+
+        
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  10 # Show 10 objects per page.
+
+        if len(contexto_cotizacion_venta) > objectsxpage:
+            paginator = Paginator(contexto_cotizacion_venta, objectsxpage)
+            page_number = self.request.GET.get('page')
+            contexto_cotizacion_venta = paginator.get_page(page_number)
+
+        context['contexto_cotizacion_venta'] = contexto_cotizacion_venta
+        context['contexto_pagina'] = contexto_cotizacion_venta
+        
+        facturas = [cv.facturas for cv in contexto_cotizacion_venta]
+        boletas = [cv.boletas for cv in contexto_cotizacion_venta]
+
+        return context
+
+class RotuladoActualizarEstadoView(BSModalDeleteView):
+    model = ConfirmacionVenta
+    template_name = "includes/eliminar generico.html"
+    success_url = reverse_lazy('cotizacion_app:rotulado_inicio')
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+
+            if self.object.rotulado_estado == False:
+                self.object.rotulado_estado = True
+
+            registro_guardar(self.object, self.request)
+            self.object.save()
+            messages.success(request, MENSAJE_ESTADO_ROTULADO)
+
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(RotuladoActualizarEstadoView, self).get_context_data(**kwargs)
+        context['accion'] = "Actualizar"
+        context['titulo'] = "Estado"
+        context['dar_baja'] = "true"
+        return context
+
+
+
+class RotuladoVerView(BSModalUpdateView):
+    model = ConfirmacionVenta
+    template_name = "cotizacion/rotulado_despacho/form_rotulado_ver.html"  
+    form_class = RotuladoVerForm
+    success_url = '.'
+
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(RotuladoVerView, self).get_context_data(**kwargs)
+        context['accion'] = "Rotulado"
+        context['titulo'] = "Despacho"
+        context['cliente'] = self.object.cliente
+        for factura in self.object.facturas:
+            context['nro_factura'] = factura.documento
+
+        for boleta in self.object.boletas:
+            context['nro_boleta'] = boleta.documento
+
         return context

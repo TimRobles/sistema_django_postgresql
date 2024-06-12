@@ -26,7 +26,7 @@ class ProblemaAdmin(admin.ModelAdmin):
         'updated_at',
         'updated_by',
     )
-    form = ProblemaForm
+    # form = ProblemaForm
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:

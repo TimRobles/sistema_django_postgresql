@@ -7,24 +7,72 @@
 
 {% block contenido %}
     <h1>Notificaciones</h1>
+
     {% if no_leidas > 0 %}
-
-    <p>Tienes {{ no_leidas }} notificaciones sin leer.</p>
+        <p>Tienes {{ no_leidas }} notificaciones sin leer.</p>
     {% else %}
-
-    <p>No tienes notificaciones sin leer.</p>
+        <p>No tienes notificaciones sin leer.</p>
     {% endif %}
 
-    <ul>
-    {% for notificacion in notificaciones %}
-        <li {% if not notificacion.leido %}class="no_leida"{% endif %}>
-        <h3>{{ notificacion.titulo }}</h3>
-        <p>{{ notificacion.mensaje }}</p>
-        <p>Creado el {{ notificacion.creado_en }}</p>
-        {% if not notificacion.leido %}
-            <a href="{% url 'marcar_como_leido' notificacion.id %}">Marcar como leído</a>
-        {% endif %}
-        </li>
-    {% endfor %}
-    </ul>
+
+    {% if notificaciones %}
+    <table class="table table-striped">
+    <thead>
+        <tr>
+        <th>id</th>
+        <th>Título</th>
+        <th>Fecha</th>
+        <th>Mensaje</th>
+        <th>url</th>
+        <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for notificacion in notificaciones %}
+            <tr {% if not notificacion.leido %} class="no-leida"{% endif %}>
+            <td>{{ notificacion.id }}</td>
+            <td>{{ notificacion.titulo }}</td>
+            <td>{{ notificacion.created_at|date:'d/m/Y' }}</td>
+            <td>{{ notificacion.mensaje }}</td>
+            <td>
+                {% if notificacion.url %}
+                    <a href="{{ notificacion.url }}" target="_blank">{{notificacion.url}}</a></td>
+                {% endif %}
+            <td>
+                <a href="{% url 'notificaciones_app:marcar_como_leido' notificacion.id %}" class="btn btn-primary">Marcar como leído</a>            </td>
+            
+
+            
+            </tr>
+        {% endfor %}
+    </tbody>
+    
+    </table>
+    {% else %}
+        <p>No hay notificaciones nuevas.</p>
+    {% endif %}
+
+    <style>
+        .table {
+        width: 100%;
+        border-collapse: collapse;
+        }
+
+        .table th, .table td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+        background-color: #f2f2f2;
+        }
+
+        .no-leida {
+        font-weight: bold;
+        background-color: #ffdddd;
+        }
+    </style>
+
+    
 {% endblock contenido %}

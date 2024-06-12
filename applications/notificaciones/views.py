@@ -3,6 +3,8 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect
 from .models import Notificaciones
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+
 
 @login_required
 def notificaciones(request):
@@ -13,32 +15,22 @@ def notificaciones(request):
 @login_required
 def marcar_como_leido(request, id_notificacion):
     notification = Notificaciones.objects.get(id=id_notificacion, usuario=request.user)
+    #notification = get_object_or_404(Notificaciones, id=id_notificacion, usuario=request.user)
     notification.leido = True
     notification.save()
-    return redirect('notificaciones')
+    #return redirect('notificaciones')
+    return render(request, 'notificaciones/notificaciones.html')
 
 
-def enviar_notificacion(usuario, titulo, mensaje):
+# poner la función 'enviar_notificacion' en los programas
+def enviar_notificacion(usuario, titulo, mensaje, url): 
     notificacion = Notificaciones.objects.create(
         usuario=usuario,
         titulo=titulo,
-        mensaje=mensaje
+        mensaje=mensaje,
+        url=url
     )
     notificacion.save()
-    # Aquí puedes agregar lógica adicional para enviar la notificación
-    # por push, email, etc.
 
-# En tu otro programa, llamas a esta función cuando ocurre la acción
-#def realizar_accion():
-#    usuario = User.objects.get(username='john_doe')
-#    enviar_notificacion(usuario, 'Nueva Acción', 'Se ha realizado una nueva acción en el sistema.')
 
-@login_required
-def crear_notificacion(request):
-    if request.method == 'POST':
-        titulo = request.POST['titulo']
-        mensaje = request.POST['mensaje']
-        notificacion = Notificaciones.objects.create(usuario=request.user, titulo=titulo, mensaje=mensaje)
-        return redirect('notificaciones')
-    return render(request, 'notificaciones/crear_notificacion.html')
 

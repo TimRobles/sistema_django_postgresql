@@ -2,8 +2,10 @@ from django.shortcuts import render
 from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.funciones import registrar_excepcion
-
 from django import forms
+
+from applications.notificaciones.models import Notificaciones
+from applications.notificaciones.views import enviar_notificacion
 
 from .forms import (
     ProblemaBuscarForm,
@@ -321,6 +323,17 @@ class ProblemaNotificarView(BSModalDeleteView):
             self.object = self.get_object()
             self.object.estado = 2
             registro_guardar(self.object, self.request)
+
+            #url = request.build_absolute_uri()
+            url = 'http://127.0.0.1:8000/soporte/problema-detalle/26'
+            
+            usuario = self.request.user
+            titulo = self.object.titulo
+            mensaje = self.object.descripcion
+            url = url
+
+            enviar_notificacion(usuario,titulo,mensaje,url) #enviar notificaciones
+            
             self.object.save()
             messages.success(request, MENSAJE_PROBLEMA_NOTIFICADO)
         except Exception as ex:
