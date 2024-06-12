@@ -615,6 +615,9 @@ MENSAJE_SOLICITUD_RECHAZADA = 'Operación exitosa: Solicitud rechazada.'
 MENSAJE_SOLICITUD_INICIADA = 'Operación exitosa: Solicitud en proceso.'
 MENSAJE_SOLICITUD_RESULTA= 'Operación exitosa: Solicitud resulta.'
 
+MENSAJE_ESTADO_ROTULADO = 'Operación exitosa: Estado actualizado'
+
+
 COLOR_DEFAULT = '#04fb1d'
 PIE_DE_PAGINA_DEFAULT = '''GRUPO MULTIPLAY
 Celular: 974899069 / Teléfono: 2536767

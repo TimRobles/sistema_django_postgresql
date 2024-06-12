@@ -474,3 +474,71 @@ class ConfirmacionVentaBuscarForm(forms.Form):
         self.fields['cliente'].initial = filtro_cliente
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control field-lineal'
+
+
+############################ ROTULADO ###################################
+
+
+class RotuladoForm(BSModalModelForm):
+    class Meta:
+        model = ConfirmacionVenta
+        fields = (
+            'rotulado',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(RotuladoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+        if self.instance and not self.instance.rotulado:
+            rotulado_text = f"DESTINO    :   \n"  
+            rotulado_text += f"EMPRESA   :   \n"  
+            rotulado_text += f"NOMBRE    :   \n" 
+            rotulado_text += f"DNI               :   \n" 
+            rotulado_text += f"CELULAR    :   \n"  
+
+            if self.instance.cliente:
+                rotulado_text += f"CLIENTE     :   {self.instance.cliente}\n"
+            
+            if self.instance.facturas:
+                for factura in self.instance.facturas:
+                    rotulado_text += f"FACTURA    :   {factura.documento}\n"
+
+            if self.instance.boletas:
+                for boleta in self.instance.boletas:
+                    rotulado_text += f"BOLETA      :   {boleta.documento}\n" 
+
+        if self.instance and self.instance.rotulado and self.instance.rotulado_estado == False:
+            rotulado_text = self.instance.rotulado
+        
+        self.initial['rotulado'] = rotulado_text
+
+
+class RotuladoDespachoLBuscarForm(forms.Form):
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_cliente = kwargs.pop('filtro_cliente')
+
+        super(RotuladoDespachoLBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['cliente'].initial = filtro_cliente
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control field-lineal'
+
+
+
+class RotuladoVerForm(BSModalModelForm):
+    class Meta:
+        model = ConfirmacionVenta
+        fields = (
+            'rotulado',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(RotuladoVerForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            self.fields['rotulado'].disabled = True
+
