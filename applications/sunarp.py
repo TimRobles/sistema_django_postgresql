@@ -29,28 +29,26 @@ def obtener_estado():
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    data = response.json()
-    estado = data['lstTitulo'][0]['estadoActual']
-    return estado
-
+    return response.json()
+    
 def funcion_sunarp():
     # Ejecutar el script cada 15 minutos hasta que el estado cambie
     send_slack(f'Iniciando función')
-    contador = 0
-    while True:
-        try:
+    try:
+        contador = 0
+        while True:
             estado = obtener_estado()
-        except Exception as e:
-            send_slack(f'Error: {e}')
-            break
-        if estado != 'EN CALIFICACIÓN':
-            send_slack(f'El estado es {estado}')
-            contador += 1
-            if contador == 3:
-                break
-        else:
-            print('Aun no ha cambiado')
-        # Esperar 15 minutos
-        sleep(900)
-    send_slack(f'Finalizando función')
+            if estado['lstTitulo'][0]['estadoActual'] != 'EN CALIFICACIÓN':
+                send_slack(f"El estado es {estado['lstTitulo'][0]['estadoActual']}")
+                send_slack(estado)
+                contador += 1
+                if contador == 3:
+                    break
+            else:
+                print('Aun no ha cambiado')
+            # Esperar 15 minutos
+            sleep(900)
+        send_slack(f'Finalizando función')
+    except Exception as e:
+        send_slack(f'Error: {e}')
 
