@@ -35,6 +35,7 @@ def obtener_estado():
 
 def funcion_sunarp():
     # Ejecutar el script cada 15 minutos hasta que el estado cambie
+    send_slack(f'Iniciando función')
     contador = 0
     while True:
         estado = obtener_estado()
@@ -47,4 +48,5 @@ def funcion_sunarp():
             print('Aun no ha cambiado')
         # Esperar 15 minutos
         sleep(900)
+    send_slack(f'Finalizando función')
 
