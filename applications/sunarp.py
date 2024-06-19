@@ -38,8 +38,7 @@ def funcion_sunarp():
     contador = 0
     while True:
         estado = obtener_estado()
-        # if estado != 'EN CALIFICACIÓN':
-        if estado != 'DISTRIBUCIÓN':
+        if estado != 'EN CALIFICACIÓN':
             send_slack(f'El estado es {estado}')
             contador += 1
             if contador == 3:
