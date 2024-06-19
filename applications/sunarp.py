@@ -33,18 +33,19 @@ def obtener_estado():
     estado = data['lstTitulo'][0]['estadoActual']
     return estado
 
-# Ejecutar el script cada 15 minutos hasta que el estado cambie
-contador = 0
-while True:
-    estado = obtener_estado()
-    # if estado != 'EN CALIFICACIÓN':
-    if estado != 'DISTRIBUCIÓN':
-        send_slack(f'El estado es {estado}')
-        contador += 1
-        if contador == 3:
-            break
-    else:
-        print('Aun no ha cambiado')
-    # Esperar 15 minutos
-    sleep(900)
+def funcion_sunarp():
+    # Ejecutar el script cada 15 minutos hasta que el estado cambie
+    contador = 0
+    while True:
+        estado = obtener_estado()
+        # if estado != 'EN CALIFICACIÓN':
+        if estado != 'DISTRIBUCIÓN':
+            send_slack(f'El estado es {estado}')
+            contador += 1
+            if contador == 3:
+                break
+        else:
+            print('Aun no ha cambiado')
+        # Esperar 15 minutos
+        sleep(900)
 
