@@ -38,7 +38,11 @@ def funcion_sunarp():
     send_slack(f'Iniciando función')
     contador = 0
     while True:
-        estado = obtener_estado()
+        try:
+            estado = obtener_estado()
+        except Exception as e:
+            send_slack(f'Error: {e}')
+            break
         if estado != 'EN CALIFICACIÓN':
             send_slack(f'El estado es {estado}')
             contador += 1
