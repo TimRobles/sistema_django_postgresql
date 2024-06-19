@@ -222,69 +222,73 @@ def calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valo
 
 
 def calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descuento_oferta, descuento_global, otros_cargos, valor_igv, tipo_cambio=Decimal('1')):
-    respuesta = {}
+    try:
+        print(lista_resultados_linea, descuento_global_cotizacion, descuento_oferta, descuento_global, otros_cargos, valor_igv, tipo_cambio)
+        respuesta = {}
 
-    descuento_global_con_igv = (descuento_global * (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
+        descuento_global_con_igv = (descuento_global * (1+Decimal(valor_igv))).quantize(Decimal('0.01'))
 
-    suma_igv = Decimal('0.00')
-    total_descuento = Decimal('0.00')
-    total_descuento_con_igv = Decimal('0.00')
-    total_gravada = Decimal('0.00')
-    total_inafecta = Decimal('0.00')
-    total_exonerada = Decimal('0.00')
-    total_anticipo = Decimal('0.00')
+        suma_igv = Decimal('0.00')
+        total_descuento = Decimal('0.00')
+        total_descuento_con_igv = Decimal('0.00')
+        total_gravada = Decimal('0.00')
+        total_inafecta = Decimal('0.00')
+        total_exonerada = Decimal('0.00')
+        total_anticipo = Decimal('0.00')
 
-    total_gratuita = Decimal('0.00')
-    total_otros_cargos = otros_cargos
-    total_icbper = Decimal('0.00')
-    total = Decimal('0.00')
-    for resultado_linea in lista_resultados_linea:
-        total_descuento += resultado_linea['descuento']
-        total_descuento_con_igv += resultado_linea['descuento_con_igv']
-        if resultado_linea['tipo_igv']==8:
-            total_exonerada += resultado_linea['subtotal']
-        elif resultado_linea['tipo_igv']==17:
-            total_gratuita += resultado_linea['subtotal']
-        else:
-            if resultado_linea['anticipo_regularizacion']:
-                suma_igv -= resultado_linea['igv']
-                total_gravada -= resultado_linea['subtotal']
-                total_anticipo += resultado_linea['subtotal']
+        total_gratuita = Decimal('0.00')
+        total_otros_cargos = otros_cargos
+        total_icbper = Decimal('0.00')
+        total = Decimal('0.00')
+        for resultado_linea in lista_resultados_linea:
+            total_descuento += resultado_linea['descuento']
+            total_descuento_con_igv += resultado_linea['descuento_con_igv']
+            if resultado_linea['tipo_igv']==8:
+                total_exonerada += resultado_linea['subtotal']
+            elif resultado_linea['tipo_igv']==17:
+                total_gratuita += resultado_linea['subtotal']
             else:
-                suma_igv += resultado_linea['igv']
-                total_gravada += resultado_linea['subtotal']
+                if resultado_linea['anticipo_regularizacion']:
+                    suma_igv -= resultado_linea['igv']
+                    total_gravada -= resultado_linea['subtotal']
+                    total_anticipo += resultado_linea['subtotal']
+                else:
+                    suma_igv += resultado_linea['igv']
+                    total_gravada += resultado_linea['subtotal']
 
-    total_descuento += descuento_global
-    total_descuento_con_igv += descuento_global_con_igv
-    total_gravada -= descuento_global
-    total_igv = suma_igv - (descuento_global_con_igv - descuento_global)
-    # total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
-    total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
+        total_descuento += descuento_global
+        total_descuento_con_igv += descuento_global_con_igv
+        total_gravada -= descuento_global
+        total_igv = suma_igv - (descuento_global_con_igv - descuento_global)
+        # total_igv = (total_gravada * Decimal(valor_igv)).quantize(Decimal('0.01'))
+        total = (total_gravada + total_inafecta + total_exonerada + total_igv + total_otros_cargos).quantize(Decimal('0.01'))
 
-    respuesta['descuento_global_cotizacion'] = (descuento_global_cotizacion * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['descuento_oferta'] = (descuento_oferta * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['descuento_global'] = (descuento_global * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['descuento_global_con_igv'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
-    if descuento_global_con_igv >= total_otros_cargos:
-        respuesta['descuento_cotizacion'] = ((descuento_global_con_igv - total_otros_cargos) * tipo_cambio).quantize(Decimal('0.01'))
-        respuesta['otros_cargos_cotizacion'] = (Decimal('0.00') * tipo_cambio).quantize(Decimal('0.01'))
-    else:
-        respuesta['descuento_cotizacion'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
-        respuesta['otros_cargos_cotizacion'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_descuento'] = (total_descuento * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['descuento_por_items'] = (respuesta['total_descuento'] - respuesta['descuento_global'])
-    respuesta['total_descuento_con_igv'] = (total_descuento_con_igv * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_anticipo'] = (total_anticipo * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_gravada'] = (total_gravada * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_inafecta'] = (total_inafecta * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_exonerada'] = (total_exonerada * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_igv'] = (total_igv * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_gratuita'] = (total_gratuita * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_otros_cargos'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total_icbper'] = (total_icbper * tipo_cambio).quantize(Decimal('0.01'))
-    respuesta['total'] = (total * tipo_cambio).quantize(Decimal('0.01'))
-    return respuesta
-
+        respuesta['descuento_global_cotizacion'] = (descuento_global_cotizacion * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['descuento_oferta'] = (descuento_oferta * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['descuento_global'] = (descuento_global * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['descuento_global_con_igv'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
+        if descuento_global_con_igv >= total_otros_cargos:
+            respuesta['descuento_cotizacion'] = ((descuento_global_con_igv - total_otros_cargos) * tipo_cambio).quantize(Decimal('0.01'))
+            respuesta['otros_cargos_cotizacion'] = (Decimal('0.00') * tipo_cambio).quantize(Decimal('0.01'))
+        else:
+            respuesta['descuento_cotizacion'] = (descuento_global_con_igv * tipo_cambio).quantize(Decimal('0.01'))
+            respuesta['otros_cargos_cotizacion'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_descuento'] = (total_descuento * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['descuento_por_items'] = (respuesta['total_descuento'] - respuesta['descuento_global'])
+        respuesta['total_descuento_con_igv'] = (total_descuento_con_igv * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_anticipo'] = (total_anticipo * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_gravada'] = (total_gravada * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_inafecta'] = (total_inafecta * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_exonerada'] = (total_exonerada * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_igv'] = (total_igv * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_gratuita'] = (total_gratuita * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_otros_cargos'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total_icbper'] = (total_icbper * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['total'] = (total * tipo_cambio).quantize(Decimal('0.01'))
+        return respuesta
+    except Exception as e:
+        print('Error calculos_totales: ', e)
+        return False
 
 def ver_proveedor(documento):
     if hasattr(documento, 'OfertaProveedorDetalle_oferta_proveedor'):
@@ -303,68 +307,63 @@ def ver_proveedor(documento):
 
 
 def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
-    if hasattr(cabecera, 'OfertaProveedorDetalle_oferta_proveedor'):
-        detalles = cabecera.OfertaProveedorDetalle_oferta_proveedor.all()
-    elif hasattr(cabecera, 'ComprobanteCompraPIDetalle_comprobante_compra'):
-        detalles = cabecera.ComprobanteCompraPIDetalle_comprobante_compra.all()
-    elif hasattr(cabecera, 'ComprobanteCompraCIDetalle_comprobante_compra'):
-        detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()
-    elif hasattr(cabecera, 'OrdenCompraDetalle_orden_compra'):
-        detalles = cabecera.OrdenCompraDetalle_orden_compra.all()
-    elif hasattr(cabecera, 'ComprobanteCompraActivoDetalle_comprobante_compra_activo'):
-        detalles = cabecera.ComprobanteCompraActivoDetalle_comprobante_compra_activo.all()
-    elif hasattr(cabecera, 'CotizacionVentaDetalle_cotizacion_venta'):
-        detalles = cabecera.CotizacionVentaDetalle_cotizacion_venta.all()
-    elif hasattr(cabecera, 'ConfirmacionVentaDetalle_confirmacion_venta'):
-        detalles = cabecera.ConfirmacionVentaDetalle_confirmacion_venta.all()
-    elif hasattr(cabecera, 'FacturaVentaDetalle_factura_venta'):
-        detalles = cabecera.FacturaVentaDetalle_factura_venta.all()
-    elif hasattr(cabecera, 'BoletaVentaDetalle_boleta_venta'):
-        detalles = cabecera.BoletaVentaDetalle_boleta_venta.all()
-    elif hasattr(cabecera, 'NotaCreditoDetalle_nota_credito'):
-        detalles = cabecera.NotaCreditoDetalle_nota_credito.all()
-    elif hasattr(cabecera, 'OfertaProveedorMerchandisingDetalle_oferta_proveedor'):
-        detalles = cabecera.OfertaProveedorMerchandisingDetalle_oferta_proveedor.all()    
-    elif hasattr(cabecera, 'OrdenCompraMerchandisingDetalle_orden_compra'):
-        detalles = cabecera.OrdenCompraMerchandisingDetalle_orden_compra.all()    
-    elif hasattr(cabecera, 'ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising'):
-        detalles = cabecera.ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising.all()
-    lista_resultados_linea = []
-    valor_igv = 0
-    for detalle in detalles:
-        tipo_igv = detalle.tipo_igv
-        if sociedad and hasattr(detalle, 'CotizacionSociedad_cotizacion_venta_detalle'):
-            cantidad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad).cantidad
+    try:
+        if hasattr(cabecera, 'OfertaProveedorDetalle_oferta_proveedor'):
+            detalles = cabecera.OfertaProveedorDetalle_oferta_proveedor.all()
+        elif hasattr(cabecera, 'ComprobanteCompraPIDetalle_comprobante_compra'):
+            detalles = cabecera.ComprobanteCompraPIDetalle_comprobante_compra.all()
+        elif hasattr(cabecera, 'ComprobanteCompraCIDetalle_comprobante_compra'):
+            detalles = cabecera.ComprobanteCompraCIDetalle_comprobante_compra.all()
+        elif hasattr(cabecera, 'OrdenCompraDetalle_orden_compra'):
+            detalles = cabecera.OrdenCompraDetalle_orden_compra.all()
+        elif hasattr(cabecera, 'ComprobanteCompraActivoDetalle_comprobante_compra_activo'):
+            detalles = cabecera.ComprobanteCompraActivoDetalle_comprobante_compra_activo.all()
+        elif hasattr(cabecera, 'CotizacionVentaDetalle_cotizacion_venta'):
+            detalles = cabecera.CotizacionVentaDetalle_cotizacion_venta.all()
+        elif hasattr(cabecera, 'ConfirmacionVentaDetalle_confirmacion_venta'):
+            detalles = cabecera.ConfirmacionVentaDetalle_confirmacion_venta.all()
+        elif hasattr(cabecera, 'FacturaVentaDetalle_factura_venta'):
+            detalles = cabecera.FacturaVentaDetalle_factura_venta.all()
+        elif hasattr(cabecera, 'BoletaVentaDetalle_boleta_venta'):
+            detalles = cabecera.BoletaVentaDetalle_boleta_venta.all()
+        elif hasattr(cabecera, 'NotaCreditoDetalle_nota_credito'):
+            detalles = cabecera.NotaCreditoDetalle_nota_credito.all()
+        elif hasattr(cabecera, 'OfertaProveedorMerchandisingDetalle_oferta_proveedor'):
+            detalles = cabecera.OfertaProveedorMerchandisingDetalle_oferta_proveedor.all()    
+        elif hasattr(cabecera, 'OrdenCompraMerchandisingDetalle_orden_compra'):
+            detalles = cabecera.OrdenCompraMerchandisingDetalle_orden_compra.all()    
+        elif hasattr(cabecera, 'ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising'):
+            detalles = cabecera.ComprobanteCompraMerchandisingDetalle_comprobante_compra_merchandising.all()
+        lista_resultados_linea = []
+        valor_igv = 0
+        for detalle in detalles:
+            tipo_igv = detalle.tipo_igv
+            if sociedad and hasattr(detalle, 'CotizacionSociedad_cotizacion_venta_detalle'):
+                cantidad = detalle.CotizacionSociedad_cotizacion_venta_detalle.get(sociedad=sociedad).cantidad
+            else:
+                cantidad = detalle.cantidad
+            precio_unitario_con_igv = detalle.precio_unitario_con_igv
+            precio_final_con_igv = detalle.precio_final_con_igv
+            if detalle.tipo_igv == 1:
+                valor_igv = 0.18
+            else:
+                valor_igv = 0
+            if hasattr(detalle, 'anticipo_regularizacion'):
+                anticipo_regularizacion = detalle.anticipo_regularizacion
+            else:
+                anticipo_regularizacion = False
+            calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, anticipo_regularizacion)
+            lista_resultados_linea.append(calculo)
+        if sociedad and hasattr(cabecera, 'CotizacionDescuentoGlobal_cotizacion_venta'):
+            print('Confirmación')
+            descuento_global_cotizacion = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global_cotizacion
+            descuento_oferta = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_oferta
+            descuento_global = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global
+            otros_cargos = cabecera.CotizacionOtrosCargos_cotizacion_venta.get(sociedad=sociedad).otros_cargos
         else:
-            cantidad = detalle.cantidad
-        precio_unitario_con_igv = detalle.precio_unitario_con_igv
-        precio_final_con_igv = detalle.precio_final_con_igv
-        if detalle.tipo_igv == 1:
-            valor_igv = 0.18
-        else:
-            valor_igv = 0
-        if hasattr(detalle, 'anticipo_regularizacion'):
-            anticipo_regularizacion = detalle.anticipo_regularizacion
-        else:
-            anticipo_regularizacion = False
-        calculo = calculos_linea(cantidad, precio_unitario_con_igv, precio_final_con_igv, valor_igv, tipo_igv, anticipo_regularizacion)
-        lista_resultados_linea.append(calculo)
-    if sociedad and hasattr(cabecera, 'CotizacionDescuentoGlobal_cotizacion_venta'):
-        print('Confirmación')
-        descuento_global_cotizacion = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global_cotizacion
-        descuento_oferta = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_oferta
-        descuento_global = cabecera.CotizacionDescuentoGlobal_cotizacion_venta.get(sociedad=sociedad).descuento_global
-        otros_cargos = cabecera.CotizacionOtrosCargos_cotizacion_venta.get(sociedad=sociedad).otros_cargos
-    else:
-        try:
-            descuento_global_cotizacion = cabecera.descuento_global_cotizacion
-            descuento_oferta = cabecera.descuento_oferta
-            descuento_global = cabecera.descuento_global
-            otros_cargos = cabecera.otros_cargos
-        except:
             try:
-                descuento_global_cotizacion = Decimal('0.00')
-                descuento_oferta = Decimal('0.00')
+                descuento_global_cotizacion = cabecera.descuento_global_cotizacion
+                descuento_oferta = cabecera.descuento_oferta
                 descuento_global = cabecera.descuento_global
                 otros_cargos = cabecera.otros_cargos
             except:
@@ -372,14 +371,23 @@ def obtener_totales(cabecera, sociedad=None, tipo_cambio=Decimal('1')):
                     descuento_global_cotizacion = Decimal('0.00')
                     descuento_oferta = Decimal('0.00')
                     descuento_global = cabecera.descuento_global
-                    otros_cargos = cabecera.total_otros_cargos
+                    otros_cargos = cabecera.otros_cargos
                 except:
-                    descuento_global_cotizacion = Decimal('0.00')
-                    descuento_oferta = Decimal('0.00')
-                    descuento_global = Decimal('0.00')
-                    otros_cargos = Decimal('0.00')
+                    try:
+                        descuento_global_cotizacion = Decimal('0.00')
+                        descuento_oferta = Decimal('0.00')
+                        descuento_global = cabecera.descuento_global
+                        otros_cargos = cabecera.total_otros_cargos
+                    except:
+                        descuento_global_cotizacion = Decimal('0.00')
+                        descuento_oferta = Decimal('0.00')
+                        descuento_global = Decimal('0.00')
+                        otros_cargos = Decimal('0.00')
 
-    return calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descuento_oferta, descuento_global, otros_cargos, valor_igv, tipo_cambio)
+        return calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descuento_oferta, descuento_global, otros_cargos, valor_igv, tipo_cambio)
+    except Exception as e:
+        print('Error obtener_totales: ', e)
+        return False
 
 
 def obtener_totales_soles(resultado, tipo_cambio, sociedad=None):
