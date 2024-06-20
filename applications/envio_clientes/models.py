@@ -20,5 +20,10 @@ class Transportista(models.Model):
         verbose_name = 'Transportista'
         verbose_name_plural = 'Transportistas'
 
+        ordering = [
+            'razon_social',
+            ]
+        
+
     def __str__(self):
         return str(self.razon_social)

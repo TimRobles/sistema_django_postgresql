@@ -40,7 +40,7 @@ class TransportistaListView(PermissionRequiredMixin, FormView):
                 context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  20 # Show 20 objects per page.
 
         if len(transportistas) > objectsxpage:
             paginator = Paginator(transportistas, objectsxpage)
@@ -77,7 +77,7 @@ def TransportistaTabla(request):
                 context['pagina_filtro'] = f'page={request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  20 # Show 20 objects per page.
 
         if len(transportistas) > objectsxpage:
             paginator = Paginator(transportistas, objectsxpage)

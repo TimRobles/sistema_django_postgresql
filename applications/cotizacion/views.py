@@ -3707,7 +3707,7 @@ class RotuladoDespachoListView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(RotuladoDespachoListView, self).get_context_data(**kwargs)
-        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3).filter(rotulado__isnull=False, rotulado__gt='').order_by('rotulado_estado')
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3).filter(rotulado__isnull=False, rotulado__gt='').order_by('-created_at','rotulado_estado') 
 
         filtro_cliente = self.request.GET.get('cliente')
 
