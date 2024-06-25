@@ -31,7 +31,7 @@ class FamiliaActivo(models.Model):
 
 class SubFamiliaActivo(models.Model):
     nombre = models.CharField('Nombre', max_length=50)
-    familia = models.ForeignKey(FamiliaActivo, on_delete=models.PROTECT)
+    familia = models.ForeignKey(FamiliaActivo, on_delete=models.PROTECT, related_name='SubFamiliaActivo_familia')
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='SubFamiliaActivo_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -166,8 +166,8 @@ class Activo(models.Model):
     activo_base = models.ForeignKey(ActivoBase, verbose_name='Activo Base', on_delete=models.CASCADE)
     unidad = models.ForeignKey(Unidad,on_delete=models.CASCADE, blank=True, null=True)
     peso = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE)
-    modelo = models.ForeignKey(ModeloActivo, on_delete=models.CASCADE)
+    marca = models.ForeignKey(MarcaActivo, on_delete=models.CASCADE, blank=True, null=True)
+    modelo = models.ForeignKey(ModeloActivo, on_delete=models.CASCADE, blank=True, null=True)
     fecha_compra = models.DateField('Fecha de Compra', auto_now=False, auto_now_add=False, blank=True, null=True)
     tiempo_garantia = models.IntegerField('Tiempo de Garantía (meses)', blank=True, null=True, default = 0)
     color = models.CharField('Color', max_length=25)

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block titulo %}
+Rotulados de Despacho
+{% endblock titulo %}
+
+{% block contenido %}
+    <h3>Rotulados de Despacho</h3>
+    
+    <form id="formulario" action="" method="get" autocomplete="off" >
+        {% include 'includes/formulario lineal.html' %}
+        <button type="submit" class="btn btn-success" title="Buscar">
+            <i class="bi bi-search"></i>
+        </button>
+        <a class="btn btn-success" href="{% url 'cotizacion_app:rotulado_inicio' %}">Limpiar</a>
+    </form>
+
+    {% include 'includes/paginador.html' %}
+    
+
+    <div class="table-responsive" id="tabla">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Día</th>
+                    <th style="text-align: center;">Fecha confirmación</th>
+                    <th style="text-align: center;">Nro Documento</th>
+                    <th>Cliente</th>
+                    <th>Estado rotulado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for confirmacion in contexto_cotizacion_venta %}
+                    <tr>                            
+                        <td>
+                            {% with confirmacion.fecha_confirmacion|date:'l' as day_of_week %}
+                                {{ day_of_week|upper  }}
+                            {% endwith %}
+                        </td>    
+                        <td style="text-align: center;">{{ confirmacion.fecha_confirmacion|date:'d/m/Y' }}</td>
+                        <td style="text-align: center;">
+                            {% if confirmacion.facturas %}
+                                {% for factura in confirmacion.facturas %}
+                                    {{ factura.documento }}<br>
+                                {% endfor %}
+                            {% endif %}
+                                
+                            {% if confirmacion.boletas %}
+                                {% for boleta in confirmacion.boletas %}
+                                    {{ boleta.documento }}<br>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>{{ confirmacion.cliente }}</td>                  
+                        <td>
+                            {% if confirmacion.rotulado_estado == True %}
+                                Despachado
+                            {% endif %}
+                             
+                            {% if confirmacion.rotulado_estado == False %}
+                                <span style="color: red;">Por Despachar</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if confirmacion.rotulado_estado == False %}
+                                <button data-form-url="{% url 'cotizacion_app:rotulado_estado_actualizar' confirmacion.id %}"
+                                    class="delete btn btn-warning btn-sm"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Cambiar a Estado Despachado">
+                                    <i class="bi bi-arrow-right-circle"></i>
+
+                                </button>
+                            {% endif %}
+
+                            <button data-form-url="{% url 'cotizacion_app:rotulado_despacho_ver' confirmacion.id %}"
+                                class="update btn btn-info btn-sm"
+                                data-modal="modal-xl" title="Ver">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %} 
+            </tbody>
+        </table>
+    </div>
+
+{% endblock contenido %}

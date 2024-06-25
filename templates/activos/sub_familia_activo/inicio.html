@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Sub Familia de Activo
+{% endblock titulo %}
+
+
+{% block contenido %}
+    <h3>Sub Familia de Activo - {{ familia.nombre }}
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'activos_app:familia_activo_sub_familia_activo_registrar' familia.id %}"
+            data-table-url="{% url 'activos_app:familia_activo_sub_familia_activo_tabla' familia.id %}">
+            Registrar Sub Familia de Activo
+        </button>
+    </h3>
+
+    <div class="table-responsive" id="tabla">
+        {% include 'activos/sub_familia_activo/inicio_tabla.html' %}
+    </div>
+{% endblock contenido %}
+    

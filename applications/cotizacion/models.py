@@ -5,6 +5,7 @@ from functools import total_ordering
 from reportlab.lib import colors
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from applications.cotizacion.utils import actualizar_cotizacion
 from applications.funciones import calculos_linea, igv, numeroXn, obtener_totales
 import applications
 from applications import material
@@ -130,7 +131,10 @@ class CotizacionVenta(models.Model):
 
     @property
     def otros_cargos(self):
-        return self.CotizacionOtrosCargos_cotizacion_venta.all().aggregate(models.Sum('otros_cargos'))['otros_cargos__sum']
+        resultado = self.CotizacionOtrosCargos_cotizacion_venta.all().aggregate(models.Sum('otros_cargos'))['otros_cargos__sum']
+        if resultado:
+            return resultado
+        return Decimal('0.00')
 
     @property
     def documento(self):
@@ -164,7 +168,7 @@ def cotizacion_venta_pre_save(*args, **kwargs):
     print('cotizacion_venta_pre_save')
     
 post_save.connect(cotizacion_venta_post_save, sender=CotizacionVenta)
-pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
+# pre_save.connect(cotizacion_venta_pre_save, sender=CotizacionVenta)
         
 
 class CotizacionVentaDetalle(models.Model):
@@ -261,9 +265,10 @@ def cotizacion_venta_material_detalle_post_delete(sender, instance, *args, **kwa
             material.item = contador
             material.save()
         contador += 1
+    actualizar_cotizacion(instance.cotizacion_venta)
 
-pre_save.connect(cotizacion_venta_detalle_pre_save, sender=CotizacionVentaDetalle)
-post_save.connect(cotizacion_venta_detalle_post_save, sender=CotizacionVentaDetalle)
+# pre_save.connect(cotizacion_venta_detalle_pre_save, sender=CotizacionVentaDetalle)
+# post_save.connect(cotizacion_venta_detalle_post_save, sender=CotizacionVentaDetalle)
 post_delete.connect(cotizacion_venta_material_detalle_post_delete, sender=CotizacionVentaDetalle)
 
 
@@ -313,7 +318,9 @@ class ConfirmacionVenta(models.Model):
     estado = models.IntegerField(choices=ESTADOS_CONFIRMACION, default=1)
     sunat_transaction = models.IntegerField(choices=SUNAT_TRANSACTION, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
-
+    rotulado = models.TextField(blank=True, null=True)
+    rotulado_estado = models.BooleanField(default=False)
+  
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ConfirmacionVenta_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)

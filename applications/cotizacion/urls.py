@@ -94,4 +94,10 @@ urlpatterns = [
     path('solicitud-credito/cuota/eliminar/<pk>/',views.SolicitudCreditoCuotaDeleteView.as_view(),name='solicitud_credito_cuota_eliminar'),
     
     path('confirmacion/nota-salida/<pk>/',views.ConfirmacionNotaSalidaView.as_view(),name='confirmacion_nota_salida'),
+
+    path('confirmacion/rotulado-despacho/<pk>/',views.RotuladoView.as_view(),name='rotulado_despacho'),
+    path('confirmacion/rotulado/',views.RotuladoDespachoListView.as_view(),name='rotulado_inicio'),
+    path('confirmacion/rotulado/actualizar/<pk>/',views.RotuladoActualizarEstadoView.as_view(),name='rotulado_estado_actualizar'),
+    path('confirmacion/rotulado-despacho/ver/<pk>/',views.RotuladoVerView.as_view(),name='rotulado_despacho_ver'),
+
 ]

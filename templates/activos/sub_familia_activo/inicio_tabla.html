@@ -1,0 +1,31 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sub_familia_activo in contexto_sub_familia_activo %}
+            <tr>
+                <td>{{ sub_familia_activo.nombre }}</td>
+                <td>{{ sub_familia_activo.descripcion }}</td>
+                <td class="text-center text-nowrap">
+                    <button data-form-url="{% url 'activos_app:familia_activo_sub_familia_activo_actualizar' sub_familia_activo.id %}"
+                        data-table-url="{% url 'activos_app:familia_activo_sub_familia_activo_tabla' familia.id %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button data-form-url="{% url 'activos_app:familia_activo_sub_familia_activo_eliminar' sub_familia_activo.id %}"
+                        class="delete btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

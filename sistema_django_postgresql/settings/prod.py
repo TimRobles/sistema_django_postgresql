@@ -30,6 +30,9 @@ MEDIA_ROOT = BASE_DIR.ancestor(1).child('media')
 BUSCAR_IP = 'HTTP_CF_CONNECTING_IP'
 
 CRONJOBS = [
-    ('0 10 * * 1-6', 'applications.reportes.pdf.reporte_cobranza', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
+    #cron format: minute, hour, day of month, month, day of week
+    ('00 10 * * 1-6', 'applications.reportes.pdf.reporte_cobranza', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
     ('00 01 * * *', 'applications.crm.models.actualizar_estado_cliente_crm', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
+    ('00 14 * * *', 'applications.datos_globales.funciones.actualizarTotalTipoCambioSunat', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
+    ('30 12 19 6 *', 'applications.sunarp.funcion_sunarp', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob_sunarp.log 2>&1'),
 ]

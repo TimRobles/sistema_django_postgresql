@@ -2,8 +2,10 @@ from django.shortcuts import render
 from applications.importaciones import *
 from django.core.paginator import Paginator
 from applications.funciones import registrar_excepcion
-
 from django import forms
+
+from applications.notificaciones.models import Notificaciones
+from applications.notificaciones.views import enviar_notificacion
 
 from .forms import (
     ProblemaBuscarForm,
@@ -55,17 +57,17 @@ class ProblemaListView(PermissionRequiredMixin, FormView):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
         
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")        
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
@@ -107,17 +109,17 @@ def ProblemaTabla(request):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            problemas = problemas.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
@@ -321,6 +323,17 @@ class ProblemaNotificarView(BSModalDeleteView):
             self.object = self.get_object()
             self.object.estado = 2
             registro_guardar(self.object, self.request)
+
+            #url = request.build_absolute_uri()
+            url = 'http://127.0.0.1:8000/soporte/problema-detalle/26'
+            
+            usuario = self.request.user
+            titulo = self.object.titulo
+            mensaje = self.object.descripcion
+            url = url
+
+            enviar_notificacion(usuario,titulo,mensaje,url) #enviar notificaciones
+            
             self.object.save()
             messages.success(request, MENSAJE_PROBLEMA_NOTIFICADO)
         except Exception as ex:
@@ -443,17 +456,17 @@ class SolicitudListView(PermissionRequiredMixin, FormView):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
         
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")        
 
         context['contexto_filtro'] = "&".join(contexto_filtro)
@@ -496,17 +509,17 @@ def SolicitudTabla(request):
             condicion = Q(titulo__unaccent__icontains = filtro_titulo.split(" ")[0])
             for palabra in filtro_titulo.split(" ")[1:]:
                 condicion &= Q(titulo__unaccent__icontains = palabra)
-            encuesta_crm = encuesta_crm.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"titulo={filtro_titulo}")
 
         if filtro_estado:
             condicion = Q(estado = filtro_estado)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"estado={filtro_estado}")
 
         if filtro_usuario:
             condicion = Q(created_by = filtro_usuario)
-            nota_control_calidad_stock = nota_control_calidad_stock.filter(condicion)
+            solicitudes = solicitudes.filter(condicion)
             contexto_filtro.append(f"usuario={filtro_usuario}")
 
         context['contexto_filtro'] = "&".join(contexto_filtro)

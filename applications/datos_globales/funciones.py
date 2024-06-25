@@ -285,3 +285,22 @@ def actualizarTipoCambioSunat(fecha: date, request):
         except Exception as ex:
             print(ex)
             registrar_excepcion_sin_user(ex, __file__)
+
+
+def actualizarTotalTipoCambioSunat():
+    tipo_cambios = TipoCambioSunat.objects.filter(
+        fecha = None,
+    )
+    if tipo_cambios.exists():
+        for tipo_cambio in tipo_cambios:
+            try:
+                respuesta = consulta_sunat_tipo_cambio(tipo_cambio.fecha)
+                print(respuesta)
+                venta = Decimal(respuesta['venta']).quantize(Decimal('0.001'))
+                compra = Decimal(respuesta['compra']).quantize(Decimal('0.001'))
+                tipo_cambio.tipo_cambio_venta = venta
+                tipo_cambio.tipo_cambio_compra = compra
+                tipo_cambio.save()
+            except Exception as ex:
+                print(ex)
+                registrar_excepcion_sin_user(ex, __file__)
