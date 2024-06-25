@@ -58,7 +58,7 @@ from applications.reportes.excel import (
     ReporteResumenStockProductosCorregido,
     ReporteRotacionCorregido,
     ReporteTasaConversionCliente, 
-    ReporteVentasDepartamento
+    ReporteVentasDepartamento,
     )
 from applications.sede.models import Sede
     
@@ -1473,18 +1473,30 @@ class ReporteFacturasPendientes(TemplateView):
                 'F001-002099',
                 ]
             list_fact_invalidas_mf = [
+                'F001-000231',
+                'F001-000233',
+                'F001-000245',
+                'F001-000298',
+                'F001-002098',
+                'F001-002099',
                 ]
             list_fact_invalidas_wf = [
+                'F001-000231',
+                'F001-000233',
+                'F001-000245',
+                'F001-000298',
+                'F001-002098',
+                'F001-002099',
                 ]
             DICT_FACT_INVALIDAS['4'] = list_fact_invalidas_wf
             DICT_FACT_INVALIDAS['3'] = list_fact_invalidas_mf
             DICT_FACT_INVALIDAS['2'] = list_fact_invalidas_mpl
             DICT_FACT_INVALIDAS['1'] = list_fact_invalidas_mca
 
-            if DICT_FACT_INVALIDAS[global_sociedad]:
-                texto_fact_invalidas = "AND CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s" % tuple(DICT_FACT_INVALIDAS[global_sociedad])
-            else:
-                texto_fact_invalidas = ""
+            # if DICT_FACT_INVALIDAS[global_sociedad]:
+            #     texto_fact_invalidas = "AND CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s" % tuple(DICT_FACT_INVALIDAS[global_sociedad])
+            # else:
+            #     texto_fact_invalidas = ""
 
             sql = ''' (SELECT
                 MAX(cvf.id) AS id,
@@ -1531,7 +1543,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'CANCELADO'
                     ) ELSE (
                         'PENDIENTE'
-                    ) END) = 'PENDIENTE' %s
+                    ) END) = 'PENDIENTE' AND CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) NOT IN %s
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
                 UNION
                 (SELECT
@@ -1581,7 +1593,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'PENDIENTE'
                     ) END) = 'PENDIENTE'
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
-                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, texto_fact_invalidas, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, tuple(DICT_FACT_INVALIDAS[global_sociedad]), DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
             query_info = FacturaVenta.objects.raw(sql)
 
             info_general = []
