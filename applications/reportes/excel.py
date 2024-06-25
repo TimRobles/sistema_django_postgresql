@@ -28,10 +28,11 @@ from applications.crm.models import ClienteCRMDetalle
 from applications.clientes.models import CorreoInterlocutorCliente, HistorialEstadoCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
 from applications.cotizacion.models import CotizacionVenta, PrecioListaMaterial
-from applications.cobranza.models import Ingreso, Pago
+from applications.cobranza.models import Deuda, Ingreso, Nota, Pago
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.sede.models import Sede
-from django.db.models import Subquery, OuterRef, Max
+from django.db.models import Subquery, OuterRef, Max, F, Sum, Case, When, Value
+from django.db.models.functions import Concat, Coalesce, Cast, LPad
 
 ####################################################  FACTURACIÓN VS ASESOR COMERCIAL  ####################################################   
 
@@ -1554,9 +1555,7 @@ def ReporteRotacionCorregido(sociedad):
     wb=dataReporteRotacion(sociedad)
     return wb
 
-
 ####################################################  REPORTE DEPÓSITOS CUENTAS BANCARIAS  ####################################################   
-
 
 def dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin):
     moneda_dolar = Moneda.objects.get(simbolo='$')
@@ -2017,7 +2016,12 @@ def ReporteDepositoCuentasBancariasCorregido(sociedad, fecha_inicio, fecha_fin):
 
 ####################################################  REPORTE RESUMEN STOCK PRODUCTOS  ####################################################   
 
-def dataReporteResumenStockProductos(sede):
+def ReporteResumenStockProductosCorregido(sede):
+
+    if sede:
+        sedes = Sede.objects.filter(id=sede.id)
+    else:
+        sedes = Sede.objects.all()
 
     material = Material.objects.only('id','descripcion_corta').order_by('descripcion_corta')
 
@@ -2028,119 +2032,96 @@ def dataReporteResumenStockProductos(sede):
     
     df_material = pd.DataFrame(material_valores, columns=['ID','DESCRIPCION CORTA'])
 
-    df_material = df_material.assign(ALMACEN_1=None, ALMACEN_2=None, ALMACEN_3 = None, ALMACEN_4=None, ALMACEN_5=None, SUMA_CONTEO=None, DIFERENCIA=None)
-
-    query_info =MovimientosAlmacen.objects.filter(
-            content_type_producto=ContentType.objects.get_for_model(Material), 
-            tipo_stock__codigo__in=['3', '4', '5', '6', '26'],
-            sociedad__estado_sunat=1,
-            almacen__sede__id = sede.id,
-        ).values(
-            'id_registro_producto', 'almacen__sede__id'
-        ).annotate(
-            stock_disponible=Sum(Case(When(tipo_stock__codigo='3', then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
-            stock_sin_qa=Sum(Case(When(tipo_stock__codigo__in=['4', '5'], then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
-            stock_por_qa=Sum(Case(When(tipo_stock__codigo__in=['6', '26'], then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
-            stock_otros=Sum(Case(When(tipo_stock__codigo__in=['3', '4', '5', '6', '26'], then=0.0), default=F('cantidad') * F('signo_factor_multiplicador'), output_field=models.DecimalField())),
-            total_stock=Sum(F('cantidad') * F('signo_factor_multiplicador'), output_field=models.DecimalField())
-        )
-    
-    print(query_info)
-    print('##################################################')
-
-    info = [[item[key] for key in item] for item in query_info]
-
-    print(info)
-    print('##################################################')
-
-    # Ejecutar la consulta
-    df_info = pd.DataFrame(info, columns=['SEDE', 'ID', 'STOCK DISPONIBLE', 'STOCK SIN QA', 'STOCK POR QA', 'STOCK OTROS', 'TOTAL STOCK'])
-
-    # Combinar las consultas
-    df_combinado = pd.merge(df_info, df_material, on='ID', how='left')
-
-    # Reordenar las columnas
-    columnas_ordenadas = ['SEDE', 'DESCRIPCION CORTA', 'ALMACEN_1', 'ALMACEN_2', 'ALMACEN_3', 'ALMACEN_4', 'ALMACEN_5', 'SUMA_CONTEO', 'STOCK DISPONIBLE', 'STOCK SIN QA', 'STOCK POR QA', 'STOCK OTROS', 'TOTAL STOCK', 'DIFERENCIA']
-
-    df_combinado_final = df_combinado[columnas_ordenadas].sort_values(by='DESCRIPCION CORTA')
-
-    # info = df_combinado_final.values.tolist()
-
-    list_encabezado = [
-        'SEDE',
-        'DESCRIPCIÓN',
-        'ALMACÉN #1',
-        'ALMACÉN #2',
-        'ALMACÉN #3',
-        'ALMACÉN #4',
-        'ALMACÉN #5',
-        'SUMA CONTEO',
-        'DISPONIBLE',
-        'BLOQ. SIN QA',
-        'BLOQ. POR QA',
-        'BLOQ. DESG.',
-        'SUMATORIA',
-        'DIFERENCIA',
-        ]
-
-    # color_relleno = rellenoSociedad(sede.id)
+    df_material = df_material.assign(ALMACEN_1=None, ALMACEN_2=None, ALMACEN_3=None, ALMACEN_4=None, ALMACEN_5=None, SUMA_CONTEO=None, DIFERENCIA=None)
 
     wb = Workbook()
-    hoja = wb.active
-    hoja.append(tuple(list_encabezado))
+    count = 0
+    for sede in sedes:
 
-    col_range = hoja.max_column  # get max columns in the worksheet
-    # cabecera de la tabla
-    for col in range(1, col_range + 1):
-        if col == 8 or col == 13:
-            # color_celda_cabecera = PatternFill(start_color='8C4966', end_color='8C4966', fill_type='solid')
-            color_celda_cabecera = PatternFill(start_color='C0C0C0', end_color='C0C0C0', fill_type='solid')
-        elif col == 14:
-            color_celda_cabecera = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
+        list_encabezado = [
+            'SEDE',
+            'DESCRIPCIÓN',
+            'ALMACÉN #1',
+            'ALMACÉN #2',
+            'ALMACÉN #3',
+            'ALMACÉN #4',
+            'ALMACÉN #5',
+            'SUMA CONTEO',
+            'DISPONIBLE',
+            'BLOQ. SIN QA',
+            'BLOQ. POR QA',
+            'BLOQ. DESG.',
+            'SUMATORIA',
+            'DIFERENCIA',
+            ]
+
+        if count != 0:
+            hoja = wb.create_sheet(str(sede.nombre))
         else:
-            color_celda_cabecera = RELLENO_EXCEL
-        cell_header = hoja.cell(1, col)
-        cell_header.fill = color_celda_cabecera
-        cell_header.font = NEGRITA
+            hoja = wb.active
+            hoja.title = str(sede.nombre)
 
-    for r_idx, row in enumerate(dataframe_to_rows(df_combinado_final, index=False, header=True), 1):
-        if r_idx == 1: continue
-        for c_idx, value in enumerate(row, 1):
-            hoja.cell(row=r_idx, column=c_idx, value=value)
-            if c_idx >=8:
+        hoja.append(tuple(list_encabezado))
+
+        col_range = hoja.max_column  # get max columns in the worksheet
+        # cabecera de la tabla
+        for col in range(1, col_range + 1):
+            if col == 8 or col == 13:
+                # color_celda_cabecera = PatternFill(start_color='8C4966', end_color='8C4966', fill_type='solid')
+                color_celda_cabecera = PatternFill(start_color='C0C0C0', end_color='C0C0C0', fill_type='solid')
+            elif col == 14:
+                color_celda_cabecera = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
+            else:
+                color_celda_cabecera = RELLENO_EXCEL
+            cell_header = hoja.cell(1, col)
+            cell_header.fill = color_celda_cabecera
+            cell_header.font = NEGRITA
+
+        data = MovimientosAlmacen.objects.filter(
+                content_type_producto=ContentType.objects.get_for_model(Material), 
+                id_registro_producto__in = Material.objects.values_list('id', flat=True),
+                almacen__sede__id = sede.id,
+            ).values(
+                'id_registro_producto', 'almacen__sede__nombre'
+            ).exclude(
+                tipo_stock__codigo__in = [1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 32, 33, 34, 35, 36, 37, 38],
+            ).annotate(
+                stock_disponible=Sum(Case(When(tipo_stock__codigo='3', then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
+                stock_sin_qa=Sum(Case(When(tipo_stock__codigo__in=['4', '5'], then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
+                stock_por_qa=Sum(Case(When(tipo_stock__codigo__in=['6', '26'], then=F('cantidad') * F('signo_factor_multiplicador')), default=0.0, output_field=models.DecimalField())),
+                stock_otros=Sum(Case(When(tipo_stock__codigo__in=['3', '4', '5', '6', '26'], then=0.0), default=F('cantidad') * F('signo_factor_multiplicador'), output_field=models.DecimalField())),
+                total_stock=Sum(F('cantidad') * F('signo_factor_multiplicador'), output_field=models.DecimalField())
+            ).order_by('id_registro_producto', 'almacen__sede__id')
+
+        info = [[item[key] for key in item] for item in data]
+
+        # Ejecutar la consulta
+        df_info = pd.DataFrame(info, columns=['ID', 'SEDE', 'STOCK DISPONIBLE', 'STOCK SIN QA', 'STOCK POR QA', 'STOCK OTROS', 'TOTAL STOCK'])
+
+        # Combinar las consultas
+        df_combinado = pd.merge(df_info, df_material, on='ID', how='inner')
+
+        # Reordenar las columnas
+        columnas_ordenadas = ['SEDE', 'DESCRIPCION CORTA', 'ALMACEN_1', 'ALMACEN_2', 'ALMACEN_3', 'ALMACEN_4', 'ALMACEN_5', 'SUMA_CONTEO', 'STOCK DISPONIBLE', 'STOCK SIN QA', 'STOCK POR QA', 'STOCK OTROS', 'TOTAL STOCK', 'DIFERENCIA']
+
+        df_combinado_final = df_combinado[columnas_ordenadas].sort_values(by='DESCRIPCION CORTA')
+
+        # info = df_combinado_final.values.tolist()
+
+        for r_idx, row in enumerate(dataframe_to_rows(df_combinado_final, index=False, header=True), 1):
+            if r_idx == 1: continue
+            for c_idx, value in enumerate(row, 1):
                 hoja.cell(row=r_idx, column=c_idx, value=value)
+                if c_idx >=8:
+                    hoja.cell(row=r_idx, column=c_idx, value=value)
 
-        # hoja.cell(row=r_idx, column=1, value=row[1]) #SEDE
-        # hoja.cell(row=r_idx, column=2, value=row[2]) #DESCRIPCION
-        # hoja.cell(row=r_idx, column=3, value=row[3]) 
-        # hoja.cell(row=r_idx, column=4, value=row[4]) 
-        # hoja.cell(row=r_idx, column=5, value=row[5]) 
-        # hoja.cell(row=r_idx, column=6, value=row[6]) 
-        # hoja.cell(row=r_idx, column=7, value=row[7]) 
-        # hoja.cell(row=r_idx, column=8, value=row[8])
-        # hoja.cell(row=r_idx, column=9, value=row[9])  #DISPONIBLE
-        # hoja.cell(row=r_idx, column=10, value=row[10]) #SIN QA
-        # hoja.cell(row=r_idx, column=11, value=row[11]) #POR QA
-        # hoja.cell(row=r_idx, column=12, value=row[12]) #OTROS
-        # hoja.cell(row=r_idx, column=13, value=row[13]) #TOTAL
-        # hoja.cell(row=r_idx, column=14, value=row[14])
+        for row in hoja.rows:
+            for col in range(hoja.max_column):
+                row[col].border = BORDE_DELGADO
+                if col >= 8:
+                    row[col].number_format = FORMATO_NUMERO
 
-    for row in hoja.rows:
-        for col in range(hoja.max_column):
-            row[col].border = BORDE_DELGADO
-            if col >= 8:
-                row[col].number_format = FORMATO_NUMERO
-
-    hoja.freeze_panes = 'C2'
-    ajustarColumnasSheet(hoja)
+        hoja.freeze_panes = 'C2'
+        ajustarColumnasSheet(hoja)
+        count += 1
     return wb
-    
-def ReporteResumenStockProductosCorregido(sede):
-
-    if sede!=None:
-        wb=dataReporteResumenStockProductos(sede)
-        return wb
-    else:
-        sedes = Sede.objects.all()
-        wb=dataReporteResumenStockProductos(sedes)
-        return wb
