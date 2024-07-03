@@ -7,6 +7,8 @@
             <th>Alias</th>
             <th>Número de Referencia</th>
             <th>Estado</th>
+            <th>Fecha Baja</th>
+
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -19,14 +21,32 @@
             <td>{{ servicio.alias}}</td>
             <td>{{ servicio.numero_referencia }}</td>
             <td>{{ servicio.get_estado_display}}</td>
+            
             <td>
-                <button data-form-url="{% url 'contabilidad_app:servicio_actualizar' servicio.id %}"
-                    data-table-url="{% url 'contabilidad_app:servicio_tabla' %}"
-                    data-keep-open="true"
-                    class="update btn btn-warning btn-sm"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                    <i class="bi bi-pencil-fill"></i>
-                </button>
+                {% if servicio.fecha_baja %}
+                    {{ servicio.fecha_baja |date:'d/m/Y'}}
+                {% endif %}
+            </td>
+                
+            <td>
+                {% if servicio.estado == 1 %}                   
+
+                    <button data-form-url="{% url 'contabilidad_app:servicio_actualizar' servicio.id %}"
+                        data-table-url="{% url 'contabilidad_app:servicio_tabla' %}"
+                        data-keep-open="true"
+                        class="update btn btn-warning btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    <button data-form-url="{% url 'contabilidad_app:servicio_baja' servicio.id %}"
+                        data-table-url="{% url 'contabilidad_app:servicio_tabla' %}"
+                        class="update btn btn-danger btn-sm"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Dar de Baja">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                    </button>
+                {% endif %}
+
             </td>
 
         </tr>

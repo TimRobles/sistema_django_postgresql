@@ -5,6 +5,7 @@
             <th>Sociedad</th>
             <th>Fecha ingreso</th>
             <th>Fecha baja</th>
+            <th>Estado</th>
 
             <th class="text-center">Acciones</th>
         </tr>
@@ -24,6 +25,7 @@
             </td>
             <td>{{ datosplanilla.fecha_inicio|date:'d/m/Y' }}</td>
             <td>{{ datosplanilla.fecha_baja|date:'d/m/Y' }}</td>
+            <td>{{ datosplanilla.get_estado_display}}</td>
 
             <td>
                 {% if datosplanilla.estado == 1 %} 

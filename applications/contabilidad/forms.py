@@ -106,12 +106,12 @@ class DatosPlanillaDarBajaForm(BSModalModelForm):
             'fecha_baja': forms.DateInput(
                 attrs ={
                     'type':'date',
+                    'required': True,
                     },
                 format = '%Y-%m-%d',
                 ), 
             }
-
-    
+        
     def __init__(self, *args, **kwargs):
         super(DatosPlanillaDarBajaForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -156,6 +156,8 @@ class BoletaPagoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BoletaPagoForm, self).__init__(*args, **kwargs)
+        self.fields['datos_planilla'].queryset = DatosPlanilla.objects.filter(estado=1)
+
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -320,6 +322,8 @@ class ReciboServicioForm(BSModalModelForm):
             }
     def __init__(self, *args, **kwargs):
         super(ReciboServicioForm, self).__init__(*args, **kwargs)
+        self.fields['servicio'].queryset = Servicio.objects.filter(estado=1)
+
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
@@ -756,3 +760,28 @@ class TelecreditoCobrarForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+
+
+
+class ServicioDarBajaForm(BSModalModelForm):
+    class Meta:
+        model = Servicio
+        fields = (
+            'fecha_baja',
+            )
+        widgets = {
+            'fecha_baja': forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    'required': True,
+                    },
+                format = '%Y-%m-%d',
+                ), 
+            }
+
+        required_fields = ('fecha_baja',)
+
+    def __init__(self, *args, **kwargs):
+        super(ServicioDarBajaForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
