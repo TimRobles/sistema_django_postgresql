@@ -34,11 +34,11 @@ def enviar_notificacion(usuario, titulo, mensaje, url):
 
 
 
-### prueba de mensaje:
-import pywhatkit
+# ### prueba de mensaje:
+# import pywhatkit
 
 
-def enviar_mensaje_whatsapp(request):
-    id_grupo = "HE3omy3KoKj5FAYSfigJ0i"
-    pywhatkit.sendwhatmsg_to_group(id_grupo, "mensaje prueba", 12, 6)
-    return render(request, 'whatsapp/index.html', {})
+# def enviar_mensaje_whatsapp(request):
+#     id_grupo = "HE3omy3KoKj5FAYSfigJ0i"
+#     pywhatkit.sendwhatmsg_to_group(id_grupo, "mensaje prueba", 12, 6)
+#     return render(request, 'whatsapp/index.html', {})
