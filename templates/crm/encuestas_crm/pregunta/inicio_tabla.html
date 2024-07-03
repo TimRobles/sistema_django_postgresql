@@ -4,6 +4,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Orden</th>
             <th>Texto</th>
             <th>Tipo de Pregunta</th>
             <th>Mostrar</th>
@@ -17,6 +18,7 @@
     <tbody>
         {% for pregunta in contexto_pagina %}
         <tr>
+            <td>{{ pregunta.orden}}</td>
             <td>{{ pregunta.texto}}</td>
             <td>{{ pregunta.get_tipo_pregunta_display}}</td>
             <td>{{ pregunta.mostrar}}</td>

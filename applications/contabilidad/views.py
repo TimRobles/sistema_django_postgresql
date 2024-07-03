@@ -48,6 +48,7 @@ from .forms import(
     TipoServicioForm,
     InstitucionForm,
     MedioPagoForm,
+    ServicioDarBajaForm,
 )
 
 from .models import(
@@ -684,7 +685,7 @@ class ServicioListView(PermissionRequiredMixin, FormView):
     
     def get_context_data(self, **kwargs):
         context = super(ServicioListView, self).get_context_data(**kwargs)
-        servicio = Servicio.objects.all()
+        servicio = Servicio.objects.all().order_by('estado')
 
         filtro_institucion = self.request.GET.get('institucion')
         filtro_tipo_servicio = self.request.GET.get('tipo_servicio')
@@ -750,7 +751,7 @@ class ServicioListView(PermissionRequiredMixin, FormView):
                 context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  25 # Show 25 objects per page.
 
         if len(servicio) > objectsxpage:
             paginator = Paginator(servicio, objectsxpage)
@@ -766,7 +767,7 @@ def ServicioTabla(request):
     if request.method == 'GET':
         template = 'contabilidad/servicio/inicio_tabla.html'
         context = {}
-        servicio = Servicio.objects.all()
+        servicio = Servicio.objects.all().order_by('estado')
         
         filtro_institucion = request.GET.get('institucion')
         filtro_tipo_servicio = request.GET.get('tipo_servicio')
@@ -832,7 +833,7 @@ def ServicioTabla(request):
                 context['pagina_filtro'] = f'page={request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  25 # Show 25 objects per page.
 
         if len(servicio) > objectsxpage:
             paginator = Paginator(servicio, objectsxpage)
@@ -882,6 +883,27 @@ class ServicioUpdateView(BSModalUpdateView):
         context['titulo'] = "Servicio"
         return context
 
+
+class ServicioDarBajaView(BSModalUpdateView):
+    model = Servicio
+    template_name = "includes/formulario generico.html"
+    form_class = ServicioDarBajaForm
+    success_url = reverse_lazy('contabilidad_app:servicio_inicio')
+
+
+    def form_valid(self, form):
+        form.instance.estado = 2
+        registro_guardar(form.instance, self.request)
+        
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super(ServicioDarBajaView, self).get_context_data(**kwargs)
+        context['accion'] = 'Dar de Baja'
+        context['titulo'] = 'Servicio'
+        return context
+
+
 #---------------------------------------------------------------------------------
 
 class ReciboServicioListView(PermissionRequiredMixin, TemplateView):
@@ -892,7 +914,7 @@ class ReciboServicioListView(PermissionRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(ReciboServicioListView, self).get_context_data(**kwargs)
         recibo_servicio = ReciboServicio.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  25 # Show 25 objects per page.
 
         if len(recibo_servicio) > objectsxpage:
             paginator = Paginator(recibo_servicio, objectsxpage)
@@ -910,7 +932,7 @@ def ReciboServicioTabla(request):
         template = 'contabilidad/recibo_servicio/inicio_tabla.html'
         context = {}
         recibo_servicio = ReciboServicio.objects.all()
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  25 # Show 25 objects per page.
 
         if len(recibo_servicio) > objectsxpage:
             paginator = Paginator(recibo_servicio, objectsxpage)

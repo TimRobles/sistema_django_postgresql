@@ -4,14 +4,14 @@
 
 {% if contexto_pregunta_crm.tipo_pregunta != 3 %}    
 
-<h3>Alternativas | {{ contexto_pregunta_crm.get_tipo_pregunta_display }}  | {{contexto_pregunta_crm.tipo_pregunta}}
+<h3>Alternativas | {{ contexto_pregunta_crm.get_tipo_pregunta_display }}
 
     
     {% if contexto_pregunta_crm.id not in lista_preguntas %}
     <button data-form-url="{% url 'crm_app:alternativa_registrar' contexto_pregunta_crm.id %}"
         data-table-url="{% url 'crm_app:pregunta_crm_detalle_tabla' contexto_pregunta_crm.id %}"
-        class="create badge bg-primary">
-        Registrar
+        class="create badge bg-success">
+        Registrar alternativa
     </button>    
     {% endif %}
 
