@@ -70,6 +70,7 @@ from .models import(
 )
 
 class ComisionFondoPensionesListView(TemplateView):
+    permission_required = ('contabilidad.view_comisionfondopensiones')
     template_name = "contabilidad/comision_fondo_pensiones/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -112,6 +113,7 @@ def ComisionFondoPensionesTabla(request):
         return JsonResponse(data)
 
 class ComisionFondoPensionesCreateView(BSModalCreateView):
+    permission_required = ('contabilidad.add_comisionfondopensiones')
     model = ComisionFondoPensiones
     template_name = "includes/formulario generico.html"
     form_class = ComisionFondoPensionesForm
@@ -129,6 +131,7 @@ class ComisionFondoPensionesCreateView(BSModalCreateView):
         return super().form_valid(form)
 
 class ComisionFondoPensionesUpdateView(BSModalUpdateView):
+    permission_required = ('contabilidad.change_comisionfondopensiones')
     model = ComisionFondoPensiones
     template_name = "includes/formulario generico.html"
     form_class = ComisionFondoPensionesForm
@@ -146,7 +149,7 @@ class ComisionFondoPensionesUpdateView(BSModalUpdateView):
         return super().form_valid(form)
 
 class ComisionFondoPensionesDeleteView(BSModalDeleteView):
-
+    permission_required = ('contabilidad.delete_comisionfondopensiones')
     model = ComisionFondoPensiones
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('contabilidad_app:comision_inicio')
@@ -1001,6 +1004,7 @@ class ReciboServicioDeleteView(BSModalDeleteView):
 #---------------------------------------------------------------------------------
 
 class TipoServicioListView(TemplateView):
+    permission_required = ('contabilidad.view_tiposervicio')
     template_name = "contabilidad/tipo_servicio/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -1043,6 +1047,7 @@ def TipoServicioTabla(request):
         return JsonResponse(data)
 
 class TipoServicioCreateView(BSModalCreateView):
+    permission_required = ('contabilidad.add_tiposervicio')
     model = TipoServicio
     template_name = "includes/formulario generico.html"
     form_class = TipoServicioForm
@@ -1060,6 +1065,7 @@ class TipoServicioCreateView(BSModalCreateView):
         return super().form_valid(form)
 
 class TipoServicioUpdateView(BSModalUpdateView):
+    permission_required = ('contabilidad.change_tiposervicio')
     model = TipoServicio
     template_name = "contabilidad/tipo_servicio/form.html"
     form_class = TipoServicioForm
@@ -1079,6 +1085,7 @@ class TipoServicioUpdateView(BSModalUpdateView):
 #---------------------------------------------------------------------------------
 
 class InstitucionListView(FormView):
+    permission_required = ('contabilidad.view_institucion')
     template_name = "contabilidad/institucion/inicio.html"
     form_class = InstitucionBuscarForm
     success_url = '.'
@@ -1183,6 +1190,7 @@ def InstitucionTabla(request):
         return JsonResponse(data)
 
 class InstitucionCreateView(BSModalCreateView):
+    permission_required = ('contabilidad.add_institucion')
     model = Institucion
     template_name = "includes/formulario generico.html"
     form_class = InstitucionForm
@@ -1201,6 +1209,7 @@ class InstitucionCreateView(BSModalCreateView):
 
 
 class InstitucionUpdateView(BSModalUpdateView):
+    permission_required = ('contabilidad.change_institucion')
     model = Institucion
     template_name = "contabilidad/institucion/form.html"
     form_class = InstitucionForm
@@ -1218,6 +1227,7 @@ class InstitucionUpdateView(BSModalUpdateView):
 
 
 class InstitucionDeleteView(BSModalDeleteView):
+    permission_required = ('contabilidad.delete_institucion')
     model = Institucion
     template_name = "includes/eliminar generico.html"
     form_class = InstitucionForm
@@ -1233,6 +1243,7 @@ class InstitucionDeleteView(BSModalDeleteView):
 #---------------------------------------------------------------------------------
 
 class MedioPagoListView(TemplateView):
+    permission_required = ('contabilidad.view_mediopago')
     template_name = "contabilidad/medio_pago/inicio.html"
     
     def get_context_data(self, **kwargs):
@@ -1275,6 +1286,7 @@ def MedioPagoTabla(request):
         return JsonResponse(data)
 
 class MedioPagoCreateView(BSModalCreateView):
+    permission_required = ('contabilidad.add_mediopago')
     model = MedioPago
     template_name = "includes/formulario generico.html"
     form_class = MedioPagoForm
@@ -1292,6 +1304,7 @@ class MedioPagoCreateView(BSModalCreateView):
         return super().form_valid(form)
 
 class MedioPagoUpdateView(BSModalUpdateView):
+    permission_required = ('contabilidad.change_mediopago')
     model = MedioPago
     template_name = "contabilidad/medio_pago/form.html"
     form_class = MedioPagoForm
