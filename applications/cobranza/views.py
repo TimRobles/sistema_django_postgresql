@@ -1293,6 +1293,11 @@ class DepositosPagarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     model = Pago
     template_name = "includes/eliminar generico.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse_lazy('cobranza_app:cuenta_bancaria_depositos_inicio')
 
