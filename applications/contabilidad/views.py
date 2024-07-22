@@ -69,7 +69,7 @@ from .models import(
     MedioPago,
 )
 
-class ComisionFondoPensionesListView(TemplateView):
+class ComisionFondoPensionesListView(PermissionRequiredMixin, TemplateView):
     permission_required = ('contabilidad.view_comisionfondopensiones')
     template_name = "contabilidad/comision_fondo_pensiones/inicio.html"
     
@@ -112,12 +112,17 @@ def ComisionFondoPensionesTabla(request):
         )
         return JsonResponse(data)
 
-class ComisionFondoPensionesCreateView(BSModalCreateView):
+class ComisionFondoPensionesCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_comisionfondopensiones')
     model = ComisionFondoPensiones
     template_name = "includes/formulario generico.html"
     form_class = ComisionFondoPensionesForm
     success_url = reverse_lazy('contabilidad_app:comision_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ComisionFondoPensionesCreateView, self).get_context_data(**kwargs)
@@ -130,12 +135,17 @@ class ComisionFondoPensionesCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class ComisionFondoPensionesUpdateView(BSModalUpdateView):
+class ComisionFondoPensionesUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_comisionfondopensiones')
     model = ComisionFondoPensiones
     template_name = "includes/formulario generico.html"
     form_class = ComisionFondoPensionesForm
     success_url = reverse_lazy('contabilidad_app:comision_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ComisionFondoPensionesUpdateView, self).get_context_data(**kwargs)
@@ -148,11 +158,16 @@ class ComisionFondoPensionesUpdateView(BSModalUpdateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class ComisionFondoPensionesDeleteView(BSModalDeleteView):
+class ComisionFondoPensionesDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('contabilidad.delete_comisionfondopensiones')
     model = ComisionFondoPensiones
     template_name = "includes/eliminar generico.html"
     success_url = reverse_lazy('contabilidad_app:comision_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ComisionFondoPensionesDeleteView, self).get_context_data(**kwargs)
@@ -205,12 +220,17 @@ def DatosPlanillaTabla(request):
         )
         return JsonResponse(data)
 
-class DatosPlanillaCreateView(BSModalCreateView):
+class DatosPlanillaCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_datosplanilla')
     model = DatosPlanilla
     template_name = "includes/formulario generico.html"
     form_class = DatosPlanillaForm
     success_url = reverse_lazy('contabilidad_app:datos_planilla_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(DatosPlanillaCreateView, self).get_context_data(**kwargs)
@@ -276,7 +296,6 @@ class DatosPlanillaDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
 class EsSaludListView(PermissionRequiredMixin, TemplateView):
     permission_required = ('contabilidad.view_essalud')
     template_name = "contabilidad/essalud/inicio.html"
-    permission_required = ('contabilidad.view_essalud')
 
     def get_context_data(self, **kwargs):
         context = super(EsSaludListView, self).get_context_data(**kwargs)
@@ -317,12 +336,17 @@ def EsSaludTabla(request):
         )
         return JsonResponse(data)
 
-class EsSaludCreateView(BSModalCreateView):
+class EsSaludCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_essalud')
     model = EsSalud
     template_name = "includes/formulario generico.html"
     form_class = EsSaludForm
     success_url = reverse_lazy('contabilidad_app:essalud_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(EsSaludCreateView, self).get_context_data(**kwargs)
@@ -335,12 +359,17 @@ class EsSaludCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class EsSaludUpdateView(BSModalUpdateView):
+class EsSaludUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_essalud')
     model = EsSalud
     template_name = "contabilidad/essalud/form.html"
     form_class = EsSaludForm
     success_url = reverse_lazy('contabilidad_app:essalud_inicio')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
        
     def form_valid(self, form):
         form.instance.estado = 1
@@ -496,7 +525,7 @@ def BoletaPagoTabla(request):
         )
         return JsonResponse(data)
 
-class BoletaPagoCreateView(BSModalCreateView):
+class BoletaPagoCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_boletapago')
     model = BoletaPago
     template_name = "contabilidad/boleta_pago/form crear.html"
@@ -515,7 +544,7 @@ class BoletaPagoCreateView(BSModalCreateView):
         return super().form_valid(form)
 
 
-class BoletaPagoUpdateView(BSModalUpdateView):
+class BoletaPagoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_boletapago')
     model = BoletaPago
     template_name = "contabilidad/boleta_pago/form.html"
@@ -556,7 +585,7 @@ class BoletaPagoUpdateView(BSModalUpdateView):
         context['planilla'] = boleta.datos_planilla.planilla
         return context
 
-class BoletaPagoDeleteView(BSModalDeleteView):
+class BoletaPagoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('contabilidad.delete_boletapago')
     model = BoletaPago
     template_name = "includes/eliminar generico.html"
@@ -628,7 +657,7 @@ def ReciboBoletaPagoTabla(request):
         )
         return JsonResponse(data)
 
-class ReciboBoletaPagoCreateView(BSModalCreateView):
+class ReciboBoletaPagoCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_reciboboletapago')
     model = ReciboBoletaPago
     template_name = "includes/formulario generico.html"
@@ -646,7 +675,7 @@ class ReciboBoletaPagoCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class ReciboBoletaPagoUpdateView(BSModalUpdateView):
+class ReciboBoletaPagoUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_reciboboletapago')
     model = ReciboBoletaPago
     template_name = "contabilidad/recibo_boleta_pago/form.html"
@@ -663,7 +692,7 @@ class ReciboBoletaPagoUpdateView(BSModalUpdateView):
         context['titulo'] = "Recibo Boleta de Pago"
         return context
 
-class ReciboBoletaPagoDeleteView(BSModalDeleteView):
+class ReciboBoletaPagoDeleteView(PermissionRequiredMixin, BSModalDeleteView):
     permission_required = ('contabilidad.delete_reciboboletapago')
     model = ReciboBoletaPago
     template_name = "includes/eliminar generico.html"
@@ -863,7 +892,7 @@ def ServicioTabla(request):
         )
         return JsonResponse(data)
 
-class ServicioCreateView(BSModalCreateView):
+class ServicioCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_servicio')
     model = Servicio
     template_name = "includes/formulario generico.html"
@@ -881,7 +910,7 @@ class ServicioCreateView(BSModalCreateView):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
 
-class ServicioUpdateView(BSModalUpdateView):
+class ServicioUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_servicio')
     model = Servicio
     template_name = "contabilidad/servicio/form.html"
@@ -899,7 +928,7 @@ class ServicioUpdateView(BSModalUpdateView):
         return context
 
 
-class ServicioDarBajaView(BSModalUpdateView):
+class ServicioDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('contabilidad.change_servicio')
     model = Servicio
     template_name = "includes/formulario generico.html"
@@ -966,7 +995,7 @@ def ReciboServicioTabla(request):
         )
         return JsonResponse(data)
 
-class ReciboServicioCreateView(BSModalCreateView):
+class ReciboServicioCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('contabilidad.add_reciboservicio')
     model = ReciboServicio
     template_name = "includes/formulario generico.html"
