@@ -3,6 +3,7 @@ from time import time
 from urllib import request
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from applications.calidad.utils import actualizar_serie_almacen
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.importaciones import *
 from applications.logistica.models import DevolucionPrestamoMateriales
@@ -2917,12 +2918,14 @@ class ReparacionMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
                     signo_factor_multiplicador = +1,
                     content_type_documento_proceso = detalle.reparacion.content_type,
                     id_registro_documento_proceso = detalle.reparacion.id,
-                    almacen = detalle.almacen,
+                    almacen = detalle.almacen if detalle.almacen else detalle.almacen_final,
                     sociedad = detalle.reparacion.sociedad,
                 )
                 movimiento_uno = movimiento_dos.movimiento_anterior
 
+                series = []
                 for serie in detalle.ValidarSerieReparacionMaterialDetalle_reparacion_detalle.all():
+                    series.append(serie.serie)
                     historial_reparado = HistorialEstadoSerie.objects.get(
                         serie=serie.serie,
                         estado_serie=EstadoSerie.objects.get(numero_estado=5), # REPARADO
@@ -2953,6 +2956,9 @@ class ReparacionMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
                     historial_reparado.delete()
                 movimiento_dos.delete()
                 movimiento_uno.delete()
+
+            for serie in series:
+                actualizar_serie_almacen(serie)
 
             self.object.estado = 1          # BORRADOR
             registro_guardar(self.object, self.request)
@@ -3005,6 +3011,9 @@ class ReparacionMaterialConcluirView(PermissionRequiredMixin, BSModalDeleteView)
 
             tipo_movimiento = TipoMovimiento.objects.get(codigo=160) # Reparación, material reparado
 
+            if self.object.series_almacen_validar == False:
+                raise Exception('Hay almacenes que no coinciden con las series')
+
             for detalle in self.object.ReparacionMaterialDetalle_reparacion.all():
                 movimiento_uno = MovimientosAlmacen.objects.create(
                     content_type_producto = detalle.material.content_type,
@@ -3030,7 +3039,7 @@ class ReparacionMaterialConcluirView(PermissionRequiredMixin, BSModalDeleteView)
                     signo_factor_multiplicador = +1,
                     content_type_documento_proceso = detalle.reparacion.content_type,
                     id_registro_documento_proceso = detalle.reparacion.id,
-                    almacen = detalle.almacen,
+                    almacen = detalle.almacen if detalle.almacen else detalle.almacen_final,
                     sociedad = detalle.reparacion.sociedad,
                     movimiento_anterior = movimiento_uno,
                     created_by = request.user,

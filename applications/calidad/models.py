@@ -3,6 +3,7 @@ from secrets import choice
 from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from applications.calidad.utils import actualizar_serie_almacen
 from applications.clientes.models import Cliente
 from applications.funciones import numeroXn
 from applications.logistica.managers import SerieManager
@@ -232,18 +233,9 @@ class Serie(models.Model):
 
 @receiver(m2m_changed, sender=Serie.serie_movimiento_almacen.through)
 def actualizar_almacen(sender, instance, action, **kwargs):
+    print('Actualizar almacen')
     if action in ['post_add', 'post_remove', 'post_clear']:
-        # Verifica si el almacén actual es diferente al almacén del último movimiento
-        guardar = False
-        if instance.almacen != instance.almacen_latest:
-            instance.almacen = instance.almacen_latest
-            guardar = True
-        if instance.tipo_stock != instance.tipo_stock_latest:
-            instance.tipo_stock = instance.tipo_stock_latest
-            guardar = True
-            
-        if guardar:
-            instance.save()
+        actualizar_serie_almacen(instance)
 
 
 class SerieCalidad(models.Model):
@@ -624,6 +616,13 @@ class ReparacionMaterial(models.Model):
     def content_type(self):
         return ContentType.objects.get_for_model(self)
 
+    @property
+    def series_almacen_validar(self):
+        for detalle in self.ReparacionMaterialDetalle_reparacion.all():
+            if detalle.series_almacen_validar:
+                return True
+        return False
+
     def __str__(self):
         return "%s - %s - %s" % (self.fecha_reparacion_inicio.strftime('%d/%m/%Y'), numeroXn(self.numero_reparacion, 6), self.responsable)
 
@@ -633,7 +632,8 @@ class ReparacionMaterialDetalle(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
     cantidad = models.DecimalField('Cantidad a reparar', max_digits=22, decimal_places=10, default=Decimal('0.00'))
     sede = models.ForeignKey(Sede, on_delete=models.CASCADE, blank=True, null=True)
-    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True)
+    almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True, related_name='ReparacionMaterialDetalle_almacen')
+    almacen_final = models.ForeignKey(Almacen, on_delete=models.CASCADE, blank=True, null=True, related_name='ReparacionMaterialDetalle_almacen_final')
     reparacion = models.ForeignKey(ReparacionMaterial, on_delete=models.CASCADE, related_name='ReparacionMaterialDetalle_reparacion')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -652,6 +652,13 @@ class ReparacionMaterialDetalle(models.Model):
     @property
     def series_validar(self):
         return Decimal(len(self.ValidarSerieReparacionMaterialDetalle_reparacion_detalle.all())).quantize(Decimal('0.01'))
+
+    @property
+    def series_almacen_validar(self):
+        for serie in self.ValidarSerieReparacionMaterialDetalle_reparacion_detalle.all():
+            if serie.almacen_serie != self.almacen:
+                return True
+        return False
 
     def __str__(self):
         return str(self.reparacion) + ' | ' + str(self.item)
@@ -675,6 +682,10 @@ class ValidarSerieReparacionMaterialDetalle(models.Model):
         ordering = [
             'created_at',
             ]
+
+    @property
+    def almacen_serie(self):
+        return self.serie.almacen
 
     def __str__(self):
         return "%s - %s" % (self.reparacion_detalle , str(self.serie))

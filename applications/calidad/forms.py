@@ -527,7 +527,6 @@ class ReparacionMaterialDetalleForm(BSModalModelForm):
     sede = forms.ModelChoiceField(queryset=Sede.objects.filter(estado=1), required=False)
     unidad = forms.ModelChoiceField(queryset=Unidad.objects.all(), required=False, )
     stock = forms.DecimalField(required=False, initial=0, max_digits=22, decimal_places=10, disabled=True)
-    # unidad = forms.CharField(required=False)
     class Meta:
         model = ReparacionMaterialDetalle
         # fields = '__all__'
@@ -536,6 +535,7 @@ class ReparacionMaterialDetalleForm(BSModalModelForm):
             'unidad',
             'sede',
             'almacen',
+            'almacen_final',
             'stock',
             'cantidad',
             )

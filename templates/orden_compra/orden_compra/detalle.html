@@ -35,6 +35,14 @@
 
 
     {% if contexto_orden_compra.estado == 2 %}
+    <button data-form-url="{% url 'orden_compra_app:orden_compra_revertir_estado' contexto_orden_compra.slug %}"
+        class="delete btn btn-primary">
+        Revertir
+    </button>
+    {% endif %}
+
+
+    {% if contexto_orden_compra.estado == 2 %}
     <button data-form-url="{% url 'orden_compra_app:orden_compra_generar_comprobante_compra_total' contexto_orden_compra.slug %}"
         class="delete btn btn-primary">
         Generar Comprobante Total

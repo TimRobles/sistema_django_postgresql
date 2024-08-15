@@ -52,6 +52,7 @@
             <th>Cantidad Series</th>
             <th>Sede</th>
             <th>Almacén</th>
+            <th>Almacén Final</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -66,6 +67,7 @@
             <td class="text-end"> {{ fila_detalle.series_validar }} </td>
             <td> {{ fila_detalle.sede }} </td>
             <td> {{ fila_detalle.almacen.nombre }} </td>
+            <td> {{ fila_detalle.almacen_final }} </td>
             <td class="text-center text-nowrap">
                 
                 {% if fila_detalle.reparacion.estado == 1 %}
