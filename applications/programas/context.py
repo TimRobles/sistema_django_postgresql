@@ -4,6 +4,7 @@ from django.conf import settings
 
 from .models import NivelUno
 
+git_version = os.popen('git describe --tags --always').read().strip()
 def contexto_menu(request):
     programa_nivel_uno = NivelUno.objects.all()
     data = {}
@@ -11,7 +12,6 @@ def contexto_menu(request):
     return data
 
 def cache_bust(request):
-    git_version = os.popen('git describe --tags --always').read().strip()
     if settings.DEBUG:                                                                                                                   
         version = git_version
     else:                                                                                                                                
