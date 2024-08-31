@@ -28,7 +28,7 @@ from applications.crm.models import ClienteCRMDetalle
 from applications.clientes.models import CorreoInterlocutorCliente, HistorialEstadoCliente, RepresentanteLegalCliente, TelefonoInterlocutorCliente
 from applications.datos_globales.models import Departamento, Moneda
 from applications.cotizacion.models import CotizacionVenta, PrecioListaMaterial
-from applications.cobranza.models import Deuda, Ingreso, Nota, Pago
+from applications.cobranza.models import Cuota, Deuda, Ingreso, Nota, Pago
 from applications.reportes.data_resumen_ingresos_anterior import*
 from applications.sede.models import Sede
 from django.db.models import Subquery, OuterRef, Max, F, Sum, Case, When, Value
@@ -2125,3 +2125,844 @@ def ReporteResumenStockProductosCorregido(sede):
         ajustarColumnasSheet(hoja)
         count += 1
     return wb
+
+####################################################  REPORTE VENTAS FACTURADAS  ####################################################
+
+def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
+
+    query_notas = NotaCredito.objects.filter(
+        sociedad_id=sociedad.id,
+        fecha_emision__gte=fecha_inicio,
+        fecha_emision__lte=fecha_fin
+    ).annotate(
+        fecha_emision_nota=Max('fecha_emision', format='%d/%m/%Y'),
+        comprobante=Case(
+            When(tipo_comprobante='3', then=Value('NOTA DE CRÉDITO')),
+            default=Value('-'),
+            output_field=models.CharField(),
+        ),
+        nro_comprobante=Concat(
+            Max('serie_comprobante__serie'), Value('-'), LPad(Cast(Max('numero_nota'), output_field=models.CharField()), 6, Value('0'))
+        ),
+        cliente_denominacion=Max('cliente__razon_social'),
+        facturado=Sum(F('NotaCreditoDetalle_nota_credito__total') * Value(-1)),
+        amortizado=Sum(F('NotaCreditoDetalle_nota_credito__total') * Value(-1)),
+        pendiente=Value('0.00'),
+        estado_nota=Value('PENDIENTE'),
+        fecha_vencimiento_nota=Max('fecha_emision', format='%d/%m/%Y'),
+        credito=Value('0.00'),
+        dias=Value(''),
+        guia=Value(''),
+        obs=Value(''),
+        letras=Value(''),
+        pagos=Value('')
+    ).values(
+        'fecha_emision_nota', 
+        'comprobante', 
+        'nro_comprobante', 
+        'cliente_denominacion',
+        'facturado', 
+        'amortizado', 
+        'pendiente', 
+        'estado_nota', 
+        'fecha_vencimiento_nota', 
+        'credito',
+        'dias', 
+        'guia', 
+        'obs', 
+        'letras', 
+        'pagos'
+    )
+
+    # Ejecutar la consulta ORM y convertir el resultado en un DataFrame de Pandas
+    data = list(query_notas)
+
+    # Procesar los datos en Python
+    for item in data:
+        item['fecha_emision_nota'] = item['fecha_emision_nota'].strftime('%d/%m/%Y')
+        item['fecha_vencimiento_nota'] = item['fecha_vencimiento_nota'].strftime('%d/%m/%Y')
+        item['facturado'] = float(item['facturado'])  # Convertir 'facturado' a float
+        item['amortizado'] = float(item['amortizado'])  # Convertir 'amortizado' a float
+        item['credito'] = float(item['credito'])  # Convertir 'credito' a float
+
+    # Crear el DataFrame de Pandas
+    info_notas = pd.DataFrame(list(data))
+
+##################################################################################################################################
+
+    factura_anuladas = FacturaVenta.objects.filter(
+        estado=3,
+        sociedad_id=sociedad.id
+    ).annotate(
+        nro_comprobante=Case(
+            When(serie_comprobante__tipo_comprobante_id=ContentType.objects.get_for_model(FacturaVenta),
+                then=Concat(
+            Max('serie_comprobante__serie'), Value('-'), LPad(Cast(Max('numero_factura'), output_field=models.CharField()), 6, Value('0'))))
+        ),
+        id_comprobante=Max('id')
+    ).values('id_comprobante', 'nro_comprobante')
+
+    # Consulta ORM para boletas anuladas
+    boleta_anuladas = BoletaVenta.objects.filter(
+        estado=3,
+        sociedad_id=sociedad.id
+    ).annotate(
+        nro_comprobante=Case(
+            When(serie_comprobante__tipo_comprobante_id=ContentType.objects.get_for_model(BoletaVenta),
+                then=Concat(
+            Max('serie_comprobante__serie'), Value('-'), LPad(Cast(Max('numero_boleta'), output_field=models.CharField()), 6, Value('0'))))
+        ),
+        id_comprobante=Max('id')
+    ).values('id_comprobante', 'nro_comprobante')
+
+    # Combinar los resultados de las consultas ORM en un DataFrame de Pandas
+    info_anulados = pd.DataFrame.from_records(
+        list(factura_anuladas) + list(boleta_anuladas),
+        columns=['id_comprobante', 'nro_comprobante']
+    )
+
+##################################################################################################################################
+
+    # Consulta para Facturas
+    factura_queryset = FacturaVenta.objects.filter(
+        sociedad_id=sociedad.id,
+        estado=4
+    ).annotate(
+        fecha_emision_comprobante=F('fecha_emision'),
+        comprobante=Value('FACTURA'),
+        nro_comprobante=Concat(
+            Max('serie_comprobante__serie'), Value('-'), LPad(Cast(Max('numero_factura'), output_field=models.CharField()), 6, Value('0'))),
+        cliente_denominacion=F('cliente__razon_social')
+    ).values(
+        'id', 
+        'fecha_emision_comprobante', 
+        'comprobante', 'nro_comprobante', 
+        'cliente_denominacion'
+    ).order_by('cliente_denominacion')
+
+    # Consulta para Boletas
+    boleta_queryset = BoletaVenta.objects.filter(
+        sociedad_id=sociedad.id,
+        estado=4
+    ).annotate(
+        fecha_emision_comprobante=F('fecha_emision'),
+        comprobante=Value('BOLETA'),
+        nro_comprobante=Concat(
+            Max('serie_comprobante__serie'), Value('-'), LPad(Cast(Max('numero_boleta'), output_field=models.CharField()), 6, Value('0'))),
+        cliente_denominacion=F('cliente__razon_social')
+    ).values(
+        'id', 
+        'fecha_emision_comprobante', 
+        'comprobante', 
+        'nro_comprobante', 
+        'cliente_denominacion'
+    ).order_by('cliente_denominacion')
+
+    # Unir las consultas de Facturas y Boletas
+    queryset = factura_queryset.union(boleta_queryset, all=True).order_by('cliente_denominacion')
+
+    # Obtener los pagos asociados a cada comprobante
+    for row in queryset:
+        deudas = Deuda.objects.filter(
+            content_type_id__in=[ContentType.objects.get_for_model(FacturaVenta), ContentType.objects.get_for_model(BoletaVenta)],
+            id_registro=row['id']
+        )
+        ingresos = Ingreso.objects.values(
+            'id', 'fecha', 'cuenta_bancaria__moneda__abreviatura', 'cuenta_bancaria__moneda__simbolo', 
+        )
+
+        pagos = Pago.objects.filter(
+            deuda__in=deudas,
+            content_type_id=ContentType.objects.get_for_model(Ingreso),
+            id_registro__in = Ingreso.objects.values_list('id', flat=True),
+        ).annotate(
+            pago_monto=F('monto'),
+            pago_tipo_cambio=F('tipo_cambio'),
+            pago_fecha=Subquery(ingresos.filter(id=OuterRef('id_registro')).values('fecha')[:1]),
+            moneda_simbolo=Subquery(ingresos.filter(id=OuterRef('id_registro')).values('cuenta_bancaria__moneda__simbolo')[:1]),
+            moneda_abreviatura=Subquery(ingresos.filter(id=OuterRef('id_registro')).values('cuenta_bancaria__moneda__abreviatura')[:1]),
+        ).values('id_registro', 'pago_monto', 'pago_tipo_cambio', 'pago_fecha', 'moneda_simbolo', 'moneda_abreviatura')
+
+        # Crear la cadena de pagos
+        pagos_str = '\n'.join([
+            f"{p['pago_fecha'].strftime('%d/%m/%Y')} {p['moneda_simbolo']} {p['pago_monto']:.2f}"
+            + (' ($ {:.2f})'.format(p['pago_monto'] / p['pago_tipo_cambio']) if p['moneda_abreviatura'] == 'PEN' else '')
+            for p in pagos
+            ])
+        row['pagos'] = pagos_str
+
+    # Convertir a DataFrame de Pandas
+    df_pagos = pd.DataFrame(list(queryset))
+
+##################################################################################################################################
+
+    # Consulta para FacturaVenta
+    facturas = FacturaVenta.objects.filter(
+        tipo_venta='2',
+        sociedad_id=sociedad.id,
+        fecha_emision__range=[fecha_inicio, fecha_fin],
+        estado='4'
+    ).annotate(
+        fecha_emision_comprobante=F('fecha_emision'),
+        comprobante=Value('FACTURA', output_field=CharField()),
+        nro_comprobante=Concat(
+            Max('serie_comprobante__serie'), 
+            Value('-'), 
+            LPad(Cast(Max('numero_factura'), output_field=models.CharField()), 6, Value('0'))),
+    ).values(
+        'id',
+        'fecha_emision_comprobante',
+        'comprobante',
+        'nro_comprobante'
+    )
+
+    # Consulta para BoletaVenta
+    boletas = BoletaVenta.objects.filter(
+        tipo_venta='2',
+        sociedad_id=sociedad.id,
+        fecha_emision__range=[fecha_inicio, fecha_fin],
+        estado='4'
+    ).annotate(
+        fecha_emision_comprobante=F('fecha_emision'),
+        comprobante=Value('BOLETA', output_field=CharField()),
+        nro_comprobante=Concat(
+            Max('serie_comprobante__serie'), 
+            Value('-'), 
+            LPad(Cast(Max('numero_boleta'), output_field=models.CharField()), 6, Value('0'))),
+    ).values(
+        'id',
+        'fecha_emision_comprobante',
+        'comprobante',
+        'nro_comprobante'
+    )
+
+   # Unir las consultas de Facturas y Boletas
+    queryset = facturas.union(boletas, all=True).order_by('fecha_emision_comprobante', 'nro_comprobante')
+    for row in queryset:
+        cuotas = Cuota.objects.filter(
+            deuda__content_type_id__in=[ContentType.objects.get_for_model(FacturaVenta), ContentType.objects.get_for_model(BoletaVenta)],
+            deuda__id_registro=row['id']
+        ).values('fecha', 'monto')
+
+        letras_str = '\n'.join([
+            f"{cuota['fecha'].strftime('%d/%m/%Y')} $ {cuota['monto']:.2f}" 
+            for cuota in cuotas
+            ])
+        row['letras'] = letras_str
+    
+    df_letras = pd.DataFrame(list(queryset))
+
+    # Formatear la fecha de emisión
+    df_letras['fecha_emision_comprobante'] = pd.to_datetime(df_letras['fecha_emision_comprobante'])
+    df_letras['fecha_emision_comprobante'] = df_letras['fecha_emision_comprobante'].dt.strftime('%d/%m/%Y')
+
+
+##################################################################################################################################
+
+    # Consulta para Facturas
+    factura_queryset = FacturaVenta.objects.filter(
+        sociedad_id=sociedad.id,
+        estado=4
+    ).annotate(
+        fecha_emision_comprobante=F('fecha_emision'),
+        comprobante=Value('FACTURA'),
+        nro_comprobante=Concat(
+            Max('serie_comprobante__serie'), Value('-'), LPad(Cast(Max('numero_factura'), output_field=models.CharField()), 6, Value('0'))),
+        cliente_denominacion=F('cliente__razon_social')
+    ).values(
+        'id', 
+        'comprobante', 
+        'nro_comprobante', 
+        'cliente_denominacion'
+    ).order_by('cliente_denominacion')
+
+    # Consulta para Boletas
+    boleta_queryset = BoletaVenta.objects.filter(
+        sociedad_id=sociedad.id,
+        estado=4
+    ).annotate(
+        fecha_emision_comprobante=F('fecha_emision'),
+        comprobante=Value('BOLETA'),
+        nro_comprobante=Concat(
+            Max('serie_comprobante__serie'), Value('-'), LPad(Cast(Max('numero_boleta'), output_field=models.CharField()), 6, Value('0'))),
+        cliente_denominacion=F('cliente__razon_social')
+    ).values(
+        'id', 
+        'comprobante', 
+        'nro_comprobante', 
+        'cliente_denominacion'
+    ).order_by('cliente_denominacion')
+
+    # Unir las consultas de Facturas y Boletas
+    queryset = factura_queryset.union(boleta_queryset, all=True).order_by('cliente_denominacion')
+
+    # Obtener los pagos asociados a cada comprobante
+    for row in queryset:
+        deudas = Deuda.objects.filter(
+            content_type_id__in=[ContentType.objects.get_for_model(FacturaVenta), ContentType.objects.get_for_model(BoletaVenta)],
+            id_registro=row['id']
+        )
+        notas = Nota.objects.values(
+            'id', 'monto', 
+        )
+
+        pagos = Pago.objects.filter(
+            deuda__in=deudas,
+            content_type_id=ContentType.objects.get_for_model(Nota),
+            id_registro__in = Nota.objects.values_list('id', flat=True),
+        ).annotate(
+            monto_total=Sum(Subquery(notas.filter(id=OuterRef('id_registro')).values('monto')[:1])),
+        ).values('id_registro', 'monto_total')
+
+        # Crear la cadena de pagos
+
+        letras_str = '\n'.join([
+            f"{p['monto_total']:.2f}"
+            for p in pagos
+            ])
+        row['monto'] = letras_str
+
+    # Convertir a DataFrame de Pandas
+    df = pd.DataFrame(list(queryset))
+
+    df_reducido = df.dropna(subset=['monto'])
+    df_reducido = df_reducido[df_reducido['monto'].astype(str).str.strip() != '']
+
+    print("#######################################################################")
+    print(df_reducido)
+    print("#######################################################################")
+
+
+    sql_cobranza_nota = ''' (SELECT
+        MAX(cn.id) AS id,
+        CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+        SUM(cn.monto) as monto_nota_credito,
+        MAX(cc.razon_social) AS cliente_denominacion,
+        'FACTURA' AS tipo_comprobante
+        FROM cobranza_nota cn
+        LEFT JOIN cobranza_pago cp
+            ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+        LEFT JOIN cobranza_deuda cd
+            ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+        LEFT JOIN comprobante_venta_facturaventa cvf
+            ON cd.id_registro=cvf.id
+        LEFT JOIN datos_globales_seriescomprobante dgsc
+            ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+        LEFT JOIN clientes_cliente cc
+            ON cc.id=cvf.cliente_id
+        LEFT JOIN datos_globales_moneda dgm
+            ON dgm.id=cn.moneda_id
+        WHERE cvf.sociedad_id='%s'
+        GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+        ORDER BY 4)
+        UNION
+        (SELECT
+        MAX(cn.id) AS id,
+        CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+        SUM(cn.monto) as monto_nota_credito,
+        MAX(cc.razon_social) AS cliente_denominacion,
+        'BOLETA' AS tipo_comprobante
+        FROM cobranza_nota cn
+        LEFT JOIN cobranza_pago cp
+            ON cp.id_registro=cn.id AND cp.content_type_id='%s'
+        LEFT JOIN cobranza_deuda cd
+            ON cp.deuda_id=cd.id  AND cd.content_type_id='%s'
+        LEFT JOIN comprobante_venta_boletaventa cvb
+            ON cd.id_registro=cvb.id
+        LEFT JOIN datos_globales_seriescomprobante dgsc
+            ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+        LEFT JOIN clientes_cliente cc
+            ON cc.id=cvb.cliente_id
+        LEFT JOIN datos_globales_moneda dgm
+            ON dgm.id=cn.moneda_id
+        WHERE cvb.sociedad_id='%s'
+        GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+        ORDER BY 4) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], sociedad.id, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], sociedad.id)
+    query_info = Nota.objects.raw(sql_cobranza_nota)
+
+    info_cobranza_nota = []
+    for fila in query_info:
+        lista_datos = []
+        lista_datos.append(fila.nro_comprobante)
+        lista_datos.append(fila.monto_nota_credito)
+        lista_datos.append(fila.cliente_denominacion)
+        lista_datos.append(fila.tipo_comprobante)
+        info_cobranza_nota.append(lista_datos)
+
+    print("#######################################################################")
+    print(info_cobranza_nota, len(info_cobranza_nota))
+    print("#######################################################################") 
+
+    dict_cobranza_nota = {}
+    for fila in info_cobranza_nota:
+        dict_cobranza_nota[fila[0]+'|'+fila[3]] = fila[1]
+
+    def reporte_ventas():
+
+        # verificar esto..
+        sql_guias = '''(SELECT
+            MAX(cvf.id) AS id,
+            to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+            'FACTURA' AS tipo_comprobante,
+            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+            STRING_AGG(
+                DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias
+            FROM comprobante_venta_facturaventa cvf
+            LEFT JOIN datos_globales_seriescomprobante dgsc
+                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+            LEFT JOIN clientes_cliente cc
+                ON cc.id=cvf.cliente_id
+            LEFT JOIN logistica_notasalidadocumento lnsd
+                ON lnsd.content_type_id='%s' AND lnsd.id_registro=cvf.confirmacion_id
+            LEFT JOIN logistica_notasalida lns
+                ON lns.id=lnsd.nota_salida_id
+            LEFT JOIN logistica_despacho ld
+                ON ld.nota_salida_id=lns.id
+            LEFT JOIN comprobante_despacho_guia cdg
+                ON cdg.despacho_id=ld.id
+            LEFT JOIN datos_globales_seriescomprobante dgsc2
+                ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cdg.serie_comprobante_id
+            WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+            GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+            ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC)
+        UNION
+            (SELECT 
+            MAX(cvb.id) AS id,
+            to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+            'BOLETA' AS tipo_comprobante,
+            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+            STRING_AGG(
+                DISTINCT(CONCAT(dgsc2.serie, '-', lpad(CAST(cdg.numero_guia AS TEXT),6,'0'), ' ', to_char(cdg.fecha_emision, 'DD/MM/YYYY'))), '\n') AS documento_guias
+            FROM comprobante_venta_boletaventa cvb
+            LEFT JOIN datos_globales_seriescomprobante dgsc
+                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+            LEFT JOIN clientes_cliente cc
+                ON cc.id=cvb.cliente_id
+            LEFT JOIN logistica_notasalidadocumento lnsd
+                ON lnsd.content_type_id='%s' AND lnsd.id_registro=cvb.confirmacion_id
+            LEFT JOIN logistica_notasalida lns
+                ON lns.id=lnsd.nota_salida_id
+            LEFT JOIN logistica_despacho ld
+                ON ld.nota_salida_id=lns.id
+            LEFT JOIN comprobante_despacho_guia cdg
+                ON cdg.despacho_id=ld.id
+            LEFT JOIN datos_globales_seriescomprobante dgsc2
+                ON dgsc2.tipo_comprobante_id='%s' AND dgsc2.id=cdg.serie_comprobante_id
+            WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+            GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+            ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
+                DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
+                DICT_CONTENT_TYPE['cotizacion | confirmacionventa'], 
+                DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                sociedad, 
+                fecha_inicio, 
+                fecha_fin, 
+                DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],
+                DICT_CONTENT_TYPE['cotizacion | confirmacionventa'],  
+                DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                sociedad, 
+                fecha_inicio, 
+                fecha_fin
+                )
+        query_info_guias = FacturaVenta.objects.raw(sql_guias)
+
+        info_guias = []
+        for fila in query_info_guias:
+            lista_datos = []
+            lista_datos.append(fila.fecha_emision_comprobante)
+            lista_datos.append(fila.tipo_comprobante)
+            lista_datos.append(fila.nro_comprobante)
+            lista_datos.append(fila.documento_guias)
+            info_guias.append(lista_datos)
+
+        dict_guias = {}
+        for fila in info_guias:
+            dict_guias[fila[0]+'|'+fila[1]+'|'+fila[2]] = fila[3]
+
+        sql_facturas = ''' (SELECT 
+            MAX(cvf.id) AS id,
+            to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+            'FACTURA' AS tipo_comprobante,
+            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvf.numero_factura) AS TEXT),6,'0')) AS nro_comprobante,
+            MAX(cc.razon_social) AS cliente_denominacion,
+            MAX(cvf.total) AS monto_facturado,
+            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
+            MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+            (CASE WHEN MAX(cvf.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                THEN (
+                    'CANCELADO'
+                ) ELSE (
+                    'PENDIENTE'
+                ) END) AS estado_cobranza,
+            to_char(MAX(cvf.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
+            MAX(cvf.fecha_vencimiento) - MAX(cvf.fecha_emision) AS dias_credito,
+            MAX(cvf.fecha_vencimiento) AS dias_vencimiento,
+            '' AS documento_guias,
+            '' AS letras,
+            '' AS pagos
+            FROM comprobante_venta_facturaventa cvf
+            LEFT JOIN datos_globales_seriescomprobante dgsc
+                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvf.serie_comprobante_id
+            LEFT JOIN clientes_cliente cc
+                ON cc.id=cvf.cliente_id
+            LEFT JOIN cobranza_deuda cd
+                ON cd.content_type_id='%s' AND cd.id_registro=cvf.id
+            LEFT JOIN cobranza_pago cp
+                ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
+            LEFT JOIN cobranza_ingreso ci
+                ON ci.id=cp.id_registro
+            LEFT JOIN datos_globales_cuentabancariasociedad dgcb
+                ON dgcb.id=ci.cuenta_bancaria_id
+            LEFT JOIN datos_globales_moneda dgm
+                ON dgm.id=dgcb.moneda_id
+            LEFT JOIN cobranza_redondeo cr
+                ON cr.deuda_id=cd.id
+            WHERE cvf.sociedad_id='%s' AND '%s' <= cvf.fecha_emision AND cvf.fecha_emision <= '%s'
+            GROUP BY cvf.sociedad_id, cvf.tipo_comprobante, cvf.serie_comprobante_id, cvf.numero_factura
+            ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC)
+            UNION
+            (SELECT 
+            MAX(cvb.id) AS id,
+            to_char(MAX(cvb.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
+            'BOLETA' AS tipo_comprobante,
+            CONCAT(MAX(dgsc.serie), '-', lpad(CAST(MAX(cvb.numero_boleta) AS TEXT),6,'0')) AS nro_comprobante,
+            MAX(cc.razon_social) AS cliente_denominacion,
+            MAX(cvb.total) AS monto_facturado,
+            SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) + (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_amortizado,
+            MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) AS monto_pendiente,
+            (CASE WHEN MAX(cvb.total) - SUM(CASE WHEN dgm.abreviatura='PEN' THEN ROUND(cp.monto/cp.tipo_cambio,2) ELSE cp.monto END) - (CASE WHEN MAX(cr.monto) IS NOT NULL THEN MAX(cr.monto) ELSE 0.00 END) <= 0.00
+                THEN (
+                    'CANCELADO'
+                ) ELSE (
+                    'PENDIENTE'
+                ) END) AS estado_cobranza,
+            to_char(MAX(cvb.fecha_vencimiento), 'DD/MM/YYYY') AS fecha_vencimiento_comprobante,
+            MAX(cvb.fecha_vencimiento) - MAX(cvb.fecha_emision) AS dias_credito,
+            MAX(cvb.fecha_vencimiento) AS dias_vencimiento,
+            '' AS documento_guias,
+            '' AS letras,
+            '' AS pagos
+            FROM comprobante_venta_boletaventa cvb
+            LEFT JOIN datos_globales_seriescomprobante dgsc
+                ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
+            LEFT JOIN clientes_cliente cc
+                ON cc.id=cvb.cliente_id
+            LEFT JOIN cobranza_deuda cd
+                ON cd.content_type_id='%s' AND cd.id_registro=cvb.id
+            LEFT JOIN cobranza_pago cp
+                ON cp.deuda_id=cd.id AND cp.content_type_id='%s'
+            LEFT JOIN cobranza_ingreso ci
+                ON ci.id=cp.id_registro
+            LEFT JOIN datos_globales_cuentabancariasociedad dgcb
+                ON dgcb.id=ci.cuenta_bancaria_id
+            LEFT JOIN datos_globales_moneda dgm
+                ON dgm.id=dgcb.moneda_id
+            LEFT JOIN cobranza_redondeo cr
+                ON cr.deuda_id=cd.id
+            WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
+            GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
+            ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
+                DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
+                DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
+                DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                sociedad, 
+                fecha_inicio, 
+                fecha_fin, 
+                DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
+                DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
+                DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                sociedad, 
+                fecha_inicio, 
+                fecha_fin
+                )
+        query_info_facturas = FacturaVenta.objects.raw(sql_facturas)
+        
+        info_facturas = []
+        for fila in query_info_facturas:
+            lista_datos = []
+            lista_datos.append(fila.fecha_emision_comprobante)
+            lista_datos.append(fila.tipo_comprobante)
+            lista_datos.append(fila.nro_comprobante)
+            lista_datos.append(fila.cliente_denominacion)
+            lista_datos.append(fila.monto_facturado)
+            lista_datos.append(fila.monto_amortizado)
+            lista_datos.append(fila.monto_pendiente)
+            lista_datos.append(fila.estado_cobranza)
+            lista_datos.append(fila.fecha_vencimiento_comprobante)
+            lista_datos.append(fila.dias_credito)
+            lista_datos.append(str(fila.dias_vencimiento))
+            lista_datos.append(fila.documento_guias)
+            lista_datos.append(fila.letras)
+            lista_datos.append(fila.pagos)
+            info_facturas.append(lista_datos)
+
+        # dict_comprobante = {
+        #     'Factura': '1',
+        #     'Boleta': '2',
+        #     }
+        for fila in info_facturas:
+            if fila[2] not in list_anulados:
+                try:
+                    fila[4] = float(fila[4])
+                    if fila[5] == None:
+                        fila[5] = '0.00'
+                    if fila[6] == None:
+                        fila[6] = fila[4]
+                    fila[5] = float(fila[5])
+                    fila[6] = float(fila[6])
+                    fila[9] = float(fila[9])
+                except:
+                    ''
+                if fila[10] != '':
+                    fecha_hoy = datetime.now().strftime("%Y-%m-%d")
+                    fecha1 = datetime.strptime(fecha_hoy, '%Y-%m-%d')
+                    fecha2 = datetime.strptime(fila[10], '%Y-%m-%d')
+                    dias = (fecha1 - fecha2) / timedelta(days=1)
+                    if float(fila[9]) == float(0):
+                        fila[10] = ''
+                    elif fila[7] != 'CANCELADO':
+                        fila[10] = float(dias)
+                    else:
+                        fila[10] = ''
+                if float(dias) > float(0) and fila[7]=='PENDIENTE':
+                    fila[7] = 'VENCIDO'
+                if fila[0]+'|'+fila[1]+'|'+fila[2] in dict_pagos:
+                    fila[13] = dict_pagos[fila[0]+'|'+fila[1]+'|'+fila[2]]
+                if fila[2] + '|' + fila[1] in dict_cobranza_nota:
+                    fila[5] += float(dict_cobranza_nota[fila[2] + '|' + fila[1]])
+                    fila[6] = fila[4] - fila[5]
+                    if fila[6] <= float(0):
+                        fila[7] = 'CANCELADO'
+                if fila[0]+'|'+fila[1]+'|'+fila[2] in dict_guias:
+                    fila[11] = dict_guias[fila[0]+'|'+fila[1]+'|'+fila[2]]
+            else:
+                for i in range(13):
+                    if i == 3:
+                        fila[i] = 'ANULADO'
+                    elif i > 3:
+                        fila[i] = ''
+
+        info = info_facturas + info_notas
+        info_ordenado = sorted(info, key=lambda x:formatearFecha3(x[0]))
+
+        wb = Workbook()
+
+        count = 0
+        list_general = []
+        list_temp = []
+        for fila in info_ordenado:
+            if count != 0:
+                if fila[0][3:5] != info_ordenado[count-1][0][3:5]:
+                    list_general.append(list_temp)
+                    list_temp = []
+            list_temp.append(fila)
+            count += 1
+        list_general.append(list_temp)
+        # if list_general == [] and list_temp != []:
+            # list_general.append(list_temp)
+        # print('Listas encontradas:',len(list_general))
+
+        count = 0
+        total_facturado = 0
+        list_montos_totales = []
+        for info in list_general:
+            name_sheet = DICT_MESES[str(info[0][0][3:5])] + ' - ' + str(info[0][0][6:])
+            if count != 0:
+                hoja = wb.create_sheet(name_sheet)
+                # wb.active = hoja
+            else:
+                hoja = wb.active
+                hoja.title = name_sheet
+
+            hoja.append(('FECHA', 'TIPO DE COMP.', 'N° COMPROB.', 'RAZON SOCIAL', 'FACTURADO (US$)', 'AMORITZADO (US$)', 'PENDIENTE(US$)', 'ESTADO', 'FECHA DE VENC.', 'CRÉDITO', 'DIAS DE VENC.', 'GUIAS', 'LETRAS', 'PAGOS')) # Crea la fila del encabezado con los títulos
+
+            color_relleno = rellenoSociedad(sociedad)
+
+            col_range = hoja.max_column  # get max columns in the worksheet
+            # cabecera de la tabla
+            for col in range(1, col_range + 1):
+                cell_header = hoja.cell(1, col)
+                cell_header.fill = color_relleno
+                cell_header.font = NEGRITA
+
+            total_facturado_mes = 0
+            for producto in info:
+                hoja.append(producto)
+                try:
+                    total_facturado_mes += producto[4]
+                except Exception as e:
+                    print(e)
+
+            hoja.append(('','','','TOTAL:',total_facturado_mes))
+
+            for row in hoja.rows:
+                for col in range(hoja.max_column):
+                    row[col].border = BORDE_DELGADO
+                    if 4 <= col <= 6:
+                        row[col].alignment = ALINEACION_DERECHA
+                        row[col].number_format = FORMATO_DOLAR
+                    if col == 9 or col == 10:
+                        row[col].alignment = ALINEACION_DERECHA
+                    if 11 <= col <= 13:
+                        row[col].alignment = AJUSTAR_TEXTO
+
+            ajustarColumnasSheet(hoja)
+            list = [name_sheet, total_facturado_mes] # Agregar mes en 0.00
+            list_montos_totales.append(list)
+            total_facturado += total_facturado_mes
+            count += 1
+
+        list_meses = [
+            'ENERO',
+            'FEBRERO',
+            'MARZO',
+            'ABRIL',
+            'MAYO',
+            'JUNIO',
+            'JULIO',
+            'AGOSTO',
+            'SETIEMBRE',
+            'OCTUBRE',
+            'NOVIEMBRE',
+            'DICIEMBRE'
+            ]
+
+        dict_meses_valor = {
+            'ENERO' : 1,
+            'FEBRERO': 2,
+            'MARZO': 3,
+            'ABRIL': 4,
+            'MAYO': 5,
+            'JUNIO': 6,
+            'JULIO': 7,
+            'AGOSTO': 8,
+            'SETIEMBRE': 9,
+            'OCTUBRE': 10,
+            'NOVIEMBRE': 11,
+            'DICIEMBRE' : 12,
+        }
+
+        # print()
+        # print(list_montos_totales)
+        # print()
+
+        count = 0
+        list_general = []
+        list_temp = []
+        for fila in list_montos_totales:
+            if count != 0:
+                mes_resumen = fila[0].split(" - ")[0]
+                mes_anterior = list_montos_totales[count-1][0].split(" - ")[0]
+                if list_meses.index(mes_resumen) <= list_meses.index(mes_anterior):
+                    list_general.append(list_temp)
+                    list_temp = []
+            list_temp.append(fila)
+            count += 1
+        list_general.append(list_temp)
+
+        # MES/AÑO MONTO FACTURADO CERO
+        i = 0
+        for list_resumen_anual in list_general:
+            if i != 0:
+                now_year = list_resumen_anual[-1][0].split(' - ')[1]
+                past_year = list_general[i-1][-1][0].split(' - ')[1]
+                diff_years = int(now_year) - int(past_year)
+                while diff_years > 1:
+                    name_year_faltante = 'ENERO - ' + str(int(past_year) + diff_years - 1)
+                    list_general.insert(i, [[name_year_faltante, 0.0]])
+                    diff_years -= 1
+            i += 1
+
+        list_resumen_anuales = []
+        for list_anual in list_general:
+            list_temp_anual = []
+            for fila in list_anual:
+                list_temp_anual.append(fila[0].split(" - ")[0])
+            for mes_calendario in list_meses:
+                if mes_calendario not in list_temp_anual:
+                    list_anual.insert(dict_meses_valor[mes_calendario]-1, [mes_calendario + " - " + fila[0].split(" - ")[1] , 0])
+
+            list_resumen_anuales += list_anual
+
+        color_relleno = rellenoSociedad(sociedad)
+
+        hoja = wb.create_sheet('Resumen')
+        hoja.append(('ENERO', 'FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SETIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'))
+        hoja.append(('', ''))
+        hoja.append(('Periodo','Monto'))
+        # for col in range(1, hoja.max_column + 1):
+        for col in range(1, 2 + 1):
+            cell_header = hoja.cell(3, col)
+            cell_header.fill = color_relleno
+            cell_header.font = NEGRITA
+
+        for fila in list_resumen_anuales: # aqui! ANTES: "list_montos_totales"
+            hoja.append(fila)
+        # hoja.append(('TOTAL:',total_facturado)) # Es la sumatoria de todos los montos
+
+        for row in hoja.rows:
+            # for col in range(hoja.max_column):
+            for col in range(2):
+                row[col].border = BORDE_DELGADO
+                if col == 1:
+                    row[col].number_format = FORMATO_DOLAR
+        ajustarColumnasSheet(hoja)
+
+
+        # Insertar Gráfico
+
+        def grafico_resumen_ingresos(ws):
+            max_fila = ws.max_row - 3 # 3 filas de espacio antes de los meses
+
+            chart = LineChart()
+            # print(help(chart))
+            chart.height = 15 # default is 7.5
+            chart.width = 30 # default is 15
+            chart.y_axis.title = 'VENTAS FACTURDAS'
+            chart.x_axis.title = 'MESES'
+            chart.legend.position = 'b' #bottom
+            # chart.style = 12
+
+            count = 1
+            fila_base = 4
+            year_base = int(ws['A' + str(fila_base)].value.split(' - ')[1]) - count # 2018
+            data_col = 2 # montos en dolares
+            if sociedad == '2':
+                chart.title = 'RESUMEN VENTAS FACTURADAS - MULTIPLAY'
+            if sociedad == '1':
+                chart.title = 'RESUMEN VENTAS FACTURADAS - MULTICABLE'
+            while max_fila >= 12:
+                values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+                # series = Series(values, title = "Ventas del " + str(year_base + count))
+                year_referencia = int(ws['A' + str(fila_base + 12*(count-1))].value.split(' - ')[1]) # 2018
+                series = Series(values, title = "Ventas del " + str(year_referencia))
+                chart.append(series)
+                max_fila -= 12
+                count += 1
+            if 1 <= max_fila <= 12:
+                values = Reference(ws, min_col = data_col, min_row = fila_base + 12*(count-1), max_col = data_col, max_row = 12*count + fila_base - 1)
+                # series = Series(values, title = "Ventas del " + str(year_base + count))
+                year_referencia = int(ws['A' + str(fila_base + 12*(count-1))].value.split(' - ')[1]) # 2018
+                series = Series(values, title = "Ventas del " + str(year_referencia))
+                chart.append(series)
+
+            meses = Reference(ws, min_col = 1, min_row = 1, max_col = 12, max_row = 1)
+            chart.set_categories(meses)
+            chart.dataLabels = DataLabelList()
+            chart.dataLabels.showVal = True
+            chart.dataLabels.dLblPos = 't' # top
+
+            chart.plot_area.dTable = DataTable()
+            chart.plot_area.dTable.showHorzBorder = True
+            chart.plot_area.dTable.showVertBorder = True
+            chart.plot_area.dTable.showOutline = True
+            chart.plot_area.dTable.showKeys = True
+
+            ws.add_chart(chart)
+
+        grafico_resumen_ingresos(hoja)
+
+
+    return wb
+
+

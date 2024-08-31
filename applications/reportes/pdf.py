@@ -20,6 +20,58 @@ from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
 from django.core.files.base import ContentFile
 
+#############################################################
+
+def dataResumenStockProductos(TablaEncabezado, TablaDatos, fuenteBase, color):
+    encabezado = []
+    for encab in TablaEncabezado:
+        encabezado.append(parrafoCentro(encab, fuenteBase, 8, 'Bold'))
+    
+    data = []
+    data.append(encabezado)
+    
+    for dato in TablaDatos:
+        fila = []
+        fila.append(parrafoCentro(dato[0], fuenteBase, 7))
+        fila.append(parrafoIzquierda(dato[1], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[2], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[3], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[4], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[5], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[6], fuenteBase, 7))
+        data.append(fila)  
+
+    t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-1),0.5,colors.black),
+                        ('BOX',(0,0),(-1,-1),1,colors.black),
+                        ('BOX',(0,0),(-1,0),1,colors.black),
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),
+                        ('VALIGN',(0,0),(-1,-1),'TOP'),
+                        ('ALIGN',(0,0),(-1,-1),'CENTER')])
+    t._argW[0]=cmToPx(2)
+    t._argW[1]=cmToPx(11.5)
+    t._argW[2]=cmToPx(2.7)
+    t._argW[3]=cmToPx(2.7)
+    t._argW[4]=cmToPx(2.7)
+    t._argW[5]=cmToPx(2.7)
+    # t._argW[6]=cmToPx(2.7)
+
+    return t
+
+def generarReporteResumenStockProductos(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color):
+    fuenteBase = "ComicNeue"
+
+    data_tabla = dataResumenStockProductos(TablaEncabezado, TablaDatos, fuenteBase, color)
+    elementos = []
+    # elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
+    elementos.append(vacio(2.0))
+    elementos.append(data_tabla)
+    
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+
+    return buf
+
+#############################################################
+
 def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
     encabezado = []
     for encab in TablaEncabezado:
@@ -136,6 +188,31 @@ def dataCuentas(list_cuenta_dolares, list_cuenta_soles, fuenteBase, color):
 
     return t
 
+def generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, list_cuenta_dolares, list_cuenta_soles):
+    fuenteBase = "ComicNeue"
+
+    data_tabla = dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color)
+    data_tabla_cuentas = dataCuentas(list_cuenta_dolares, list_cuenta_soles, fuenteBase, color)
+    elementos = []
+    elementos.append(vacio(1))
+    elementos.append(Texto[0])
+    elementos.append(vacio(1))
+    elementos.append(parrafoIzquierda(Texto[1], fuenteBase, 10))
+    elementos.append(Texto[2])
+    elementos.append(Texto[3])
+    elementos.append(vacio(1))
+    elementos.append(data_tabla)
+    elementos.append(vacio(1.5))
+    elementos.append(Texto[4])
+    elementos.append(vacio(1.5))
+    elementos.append(data_tabla_cuentas)
+    
+    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
+
+    return buf
+
+#############################################################
+
 def dataCobranza(TablaEncabezado, TablaDatos, fuenteBase, color):
     encabezado = []
     for encab in TablaEncabezado:
@@ -174,64 +251,6 @@ def dataCobranza(TablaEncabezado, TablaDatos, fuenteBase, color):
 
     return t
 
-def dataResumenStockProductos(TablaEncabezado, TablaDatos, fuenteBase, color):
-    encabezado = []
-    for encab in TablaEncabezado:
-        encabezado.append(parrafoCentro(encab, fuenteBase, 8, 'Bold'))
-    
-    data = []
-    data.append(encabezado)
-    
-    for dato in TablaDatos:
-        fila = []
-        fila.append(parrafoCentro(dato[0], fuenteBase, 7))
-        fila.append(parrafoIzquierda(dato[1], fuenteBase, 7))
-        fila.append(parrafoDerecha(dato[2], fuenteBase, 7))
-        fila.append(parrafoDerecha(dato[3], fuenteBase, 7))
-        fila.append(parrafoDerecha(dato[4], fuenteBase, 7))
-        fila.append(parrafoDerecha(dato[5], fuenteBase, 7))
-        fila.append(parrafoDerecha(dato[6], fuenteBase, 7))
-        data.append(fila)  
-
-    t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-1),0.5,colors.black),
-                        ('BOX',(0,0),(-1,-1),1,colors.black),
-                        ('BOX',(0,0),(-1,0),1,colors.black),
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(color)),
-                        ('VALIGN',(0,0),(-1,-1),'TOP'),
-                        ('ALIGN',(0,0),(-1,-1),'CENTER')])
-    t._argW[0]=cmToPx(2)
-    t._argW[1]=cmToPx(11.5)
-    t._argW[2]=cmToPx(2.7)
-    t._argW[3]=cmToPx(2.7)
-    t._argW[4]=cmToPx(2.7)
-    t._argW[5]=cmToPx(2.7)
-    # t._argW[6]=cmToPx(2.7)
-
-    return t
-
-def generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color, list_cuenta_dolares, list_cuenta_soles):
-    fuenteBase = "ComicNeue"
-
-    data_tabla = dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color)
-    data_tabla_cuentas = dataCuentas(list_cuenta_dolares, list_cuenta_soles, fuenteBase, color)
-    elementos = []
-    elementos.append(vacio(1))
-    elementos.append(Texto[0])
-    elementos.append(vacio(1))
-    elementos.append(parrafoIzquierda(Texto[1], fuenteBase, 10))
-    elementos.append(Texto[2])
-    elementos.append(Texto[3])
-    elementos.append(vacio(1))
-    elementos.append(data_tabla)
-    elementos.append(vacio(1.5))
-    elementos.append(Texto[4])
-    elementos.append(vacio(1.5))
-    elementos.append(data_tabla_cuentas)
-    
-    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
-
-    return buf
-
 def generarReporteCobranza(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color):
     fuenteBase = "ComicNeue"
 
@@ -248,19 +267,7 @@ def generarReporteCobranza(titulo, vertical, logo, pie_pagina, Texto, TablaEncab
 
     return buf
 
-def generarReporteResumenStockProductos(titulo, vertical, logo, pie_pagina, Texto, TablaEncabezado, TablaDatos, color):
-    fuenteBase = "ComicNeue"
-
-    data_tabla = dataResumenStockProductos(TablaEncabezado, TablaDatos, fuenteBase, color)
-    elementos = []
-    # elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
-    elementos.append(vacio(2.0))
-    elementos.append(data_tabla)
-    
-    buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
-
-    return buf
-
+#############################################################
 
 def generar_reporte_cobranza(global_sociedad, titulo):
     sql_cobranza_nota = ''' (SELECT
@@ -480,20 +487,25 @@ def reporte_cobranza():
         print('reporte_cobranza')
         nombre_archivo_1 = "Reporte_Cobranza_MC_" + str(date.today()) + '.pdf'
         nombre_archivo_2 = "Reporte_Cobranza_MP_" + str(date.today()) + '.pdf'
-        nombre_archivo_3 = "Reporte_Cobranza_WF_" + str(date.today()) + '.pdf'
+        nombre_archivo_3 = "Reporte_Cobranza_MF_" + str(date.today()) + '.pdf'
+        nombre_archivo_4 = "Reporte_Cobranza_WF_" + str(date.today()) + '.pdf'
         archivo_1 = generar_reporte_cobranza(global_sociedad = '1', titulo=nombre_archivo_1)
         archivo_2 = generar_reporte_cobranza(global_sociedad = '2', titulo=nombre_archivo_2)
-        archivo_3 = generar_reporte_cobranza(global_sociedad = '4', titulo=nombre_archivo_3)
+        archivo_3 = generar_reporte_cobranza(global_sociedad = '3', titulo=nombre_archivo_3)
+        archivo_4 = generar_reporte_cobranza(global_sociedad = '4', titulo=nombre_archivo_4)
         asunto = "Recordatorio - Facturas por cobrar " + str(date.today())
         mensaje = "Facturas pendientes por cobrar"
         email_remitente = EMAIL_REMITENTE
-        email_destinatario = ["rpaniura@multiplay.com.pe",]
-        email_copia = ["trobles@multiplay.com.pe","dprincipal@multiplay.com.pe",]
+        email_destinatario = ["rore@multiplay.com.pe",]
+        email_copia = ["dsilva@multiplay.com.pe"]
+        # email_destinatario = ["rpaniura@multiplay.com.pe",]
+        # email_copia = ["trobles@multiplay.com.pe","dprincipal@multiplay.com.pe",]
 
         correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to = email_destinatario, cc = email_copia,)
         correo.attach(nombre_archivo_1, archivo_1.getvalue(), 'application/pdf')
         correo.attach(nombre_archivo_2, archivo_2.getvalue(), 'application/pdf')
         correo.attach(nombre_archivo_3, archivo_3.getvalue(), 'application/pdf')
+        correo.attach(nombre_archivo_4, archivo_4.getvalue(), 'application/pdf')
         correo.attach_alternative(mensaje, "text/html")
         try:
             correo.send()
@@ -568,7 +580,6 @@ def dataReporteStockSociedad(sociedad, fuenteBase, color):
     t_items._argW[4]=cmToPx(3)
 
     return t_items
-
 
 def generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, color):
     fuenteBase = "ComicNeue"
@@ -645,7 +656,6 @@ def dataReporteStockMalogradoSociedad(sociedad, fuenteBase, color):
     t_items._argW[4]=cmToPx(3)
 
     return t_items
-
 
 def generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, sociedad, color):
     fuenteBase = "ComicNeue"
@@ -749,7 +759,6 @@ def dataReporteVentasDepartamento(fecha_inicio, fecha_fin, departamento, fuenteB
     t_items._argW[6]=cmToPx(2.5)
 
     return t_items
-
 
 def generarReporteVentasDepartamento(titulo, vertical, logo, pie_pagina, fecha_inicio, fecha_fin, departamento_codigo, color):
     fuenteBase = "ComicNeue"

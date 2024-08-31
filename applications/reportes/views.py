@@ -19,14 +19,17 @@ from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDeta
 from django.contrib.contenttypes.models import ContentType
 
 from applications.reportes.forms import (
+    ReporteCobranzaPdfForm,
     ReporteComportamientoClienteExcelForm,
     ReporteDepositoCuentasBancariasForm,
+    ReporteDeudasPdfForm,
     ReporteTasaConversionClienteForm,
     ReporteFacturacionAsesorComercialExcelForm,
     ReporteFacturacionGeneralExcelForm,
     ReporteResumenStockProductosForm, 
     ReporteStockSociedadPdfForm, 
     ReporteVentasDepartamentoPdfForm,
+    ReporteVentasFacturadasForm,
     ReportesContadorForm, 
     ReportesFiltrosForm, 
     ReporteVentasDepartamentoExcelForm,
@@ -59,6 +62,7 @@ from applications.reportes.excel import (
     ReporteRotacionCorregido,
     ReporteTasaConversionCliente, 
     ReporteVentasDepartamento,
+    ReporteVentasFacturadasCorregido
     )
 from applications.sede.models import Sede
     
@@ -2752,6 +2756,63 @@ class ReporteDeudas(TemplateView):
         global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
         global_cliente = self.request.GET.get('filtro_cliente')
         
+        # Consulta para FacturaVenta
+        factura_query = FacturaVenta.objects.filter(estado=4).annotate(
+            fecha_emision_comprobante=F('fecha_emision'),
+            numero_comprobante=Concat(
+                F('serie_comprobante__serie'),
+                Value('-'),
+                LPad(F('numero_factura'), 6, Value('0'))
+            )
+        ).values('id', 'fecha_emision_comprobante', 'numero_comprobante')
+
+        # Consulta para BoletaVenta
+        boleta_query = BoletaVenta.objects.filter(estado=4).annotate(
+            fecha_emision_comprobante=F('fecha_emision'),
+            numero_comprobante=Concat(
+                F('serie_comprobante__serie'),
+                Value('-'),
+                LPad(F('numero_boleta'), 6, Value('0'))
+            )
+        ).values('id', 'fecha_emision_comprobante', 'numero_comprobante')
+
+        # Convertir a DataFrames
+        df_factura = pd.DataFrame(list(factura_query))
+        df_boleta = pd.DataFrame(list(boleta_query))
+
+        # Función para obtener los materiales
+        def get_materiales(modelo, id_field):
+            return modelo.objects.filter(
+                content_type=material_content_type
+            ).values(
+                id_field
+            ).annotate(
+                texto_materiales=StringAgg('material__descripcion_corta', delimiter=' | ')
+            )
+
+        # Obtener materiales para facturas y boletas
+        df_materiales_factura = pd.DataFrame(list(get_materiales(FacturaVentaDetalle, 'factura_venta_id')))
+        df_materiales_boleta = pd.DataFrame(list(get_materiales(BoletaVentaDetalle, 'boleta_venta_id')))
+
+        # Combinar DataFrames
+        df_factura = df_factura.merge(df_materiales_factura, left_on='id', right_on='factura_venta_id', how='left')
+        df_boleta = df_boleta.merge(df_materiales_boleta, left_on='id', right_on='boleta_venta_id', how='left')
+
+        # Unir los DataFrames de factura y boleta
+        df_final = pd.concat([df_factura, df_boleta], ignore_index=True)
+
+        # Formatear la fecha
+        df_final['fecha_emision_comprobante'] = pd.to_datetime(df_final['fecha_emision_comprobante']).dt.strftime('%d/%m/%Y')
+
+        # Seleccionar y ordenar las columnas finales
+        df_final = df_final[['id', 'fecha_emision_comprobante', 'numero_comprobante', 'texto_materiales']]
+
+        # Ordenar por id
+        df_final = df_final.sort_values('id')
+
+        # Reiniciar el índice
+        df_final = df_final.reset_index(drop=True)
+
         sql_productos = ''' (SELECT
             MAX(cvf.id) AS id,
             to_char(MAX(cvf.fecha_emision), 'DD/MM/YYYY') AS fecha_emision_comprobante,
@@ -3246,7 +3307,7 @@ class ReporteCobranza(TemplateView):
         #         ],
         # }
 
-        reporte_cobranza(self.request, titulo)
+        # reporte_cobranza(self.request, titulo)
 
         buf = generar_reporte_cobranza(global_sociedad, titulo)
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
@@ -3868,9 +3929,10 @@ class ReporteResumenStockProductosPDF(TemplateView):
 
         return respuesta
 
+####################################################  REPORTES CORREGIDOS PDF  ####################################################
 
-class ReporteStockSociedadPdf(TemplateView):
-    template_name = 'reportes/reporte stock sociedad.html'
+class ReportesCorregidosPdf(TemplateView):
+    template_name = 'reportes/reportes_pdf.html'
 
     def post(self,request, *args,**kwargs):
         formulario = self.request.POST.get('formulario')
@@ -3889,11 +3951,11 @@ class ReporteStockSociedadPdf(TemplateView):
             elif tipo == '2':
                 titulo = f'Reporte Stock Malogrado por Sociedad - {sociedad.abreviatura}'
                 buf = generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, sociedad, color)
+
         elif formulario == 'formulario2':
             fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
             fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
             departamento = self.request.POST.get('departamento')
-            tipo = self.request.POST.get('tipo')
 
             vertical = True
             vertical = False
@@ -3904,13 +3966,25 @@ class ReporteStockSociedadPdf(TemplateView):
             pie_pagina = PIE_DE_PAGINA_DEFAULT
             color = COLOR_DEFAULT
 
-            if tipo == '1':
-                if departamento:
-                    titulo = f'Reporte Ventas por Departamento - {departamento}'
-                else:
-                    titulo = f'Reporte Ventas por Departamento - TODOS'
+            if departamento:
+                titulo = f'Reporte Ventas por Departamento - {departamento}'
+            else:
+                titulo = f'Reporte Ventas por Departamento - TODOS'
 
-                buf = generarReporteVentasDepartamento(titulo, vertical, logo, pie_pagina, fecha_inicio, fecha_fin, departamento, color)
+            buf = generarReporteVentasDepartamento(titulo, vertical, logo, pie_pagina, fecha_inicio, fecha_fin, departamento, color)
+
+        elif formulario == 'formulario3':
+            sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+            cliente = Cliente.objects.get(id=self.request.POST.get('cliente'))
+            titulo = f'Reporte Deudas- {sociedad.abreviatura} - {cliente.razon_social} ~ ' + str(fecha_doc)
+
+            buf = generarReporteDeudasCorregido(titulo, vertical, logo, pie_pagina, sociedad, cliente, color)
+
+        elif formulario == 'formulario4':
+            sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+            titulo = f'Reporte Cobranza - {sociedad.abreviatura} ~ ' + str(fecha_doc)
+
+            buf = generarReporteCobranzaCorregido(titulo, vertical, logo, pie_pagina, sociedad, color)
             
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
@@ -3919,12 +3993,14 @@ class ReporteStockSociedadPdf(TemplateView):
 
     
     def get_context_data(self, **kwargs):
-        context = super(ReporteStockSociedadPdf, self).get_context_data(**kwargs)
-        context['form'] = ReporteStockSociedadPdfForm()
+        context = super(ReportesCorregidosPdf, self).get_context_data(**kwargs)
+        context['form1'] = ReporteStockSociedadPdfForm()
         context['form2'] = ReporteVentasDepartamentoPdfForm()
+        context['form3'] = ReporteDeudasPdfForm()
+        context['form4'] = ReporteCobranzaPdfForm()
         return context
 
-####################################################  REPORTES CRM  ####################################################   
+####################################################  REPORTES CRM #################################################### 
 
 class ReportesCRM(TemplateView):
     template_name = 'reportes/reportes_crm.html'
@@ -3992,7 +4068,7 @@ class ReportesCRM(TemplateView):
 
         return context
     
-####################################################  REPORTES GERENCIA  ####################################################   
+####################################################  REPORTES GERENCIA  ####################################################
 
 class ReportesGerencia(TemplateView):
     template_name = 'reportes/reportes_gerencia.html'
@@ -4042,10 +4118,10 @@ class ReportesGerencia(TemplateView):
 
         return context
     
-####################################################  REPORTES CORREGIDOS  ####################################################   
+####################################################  REPORTES CORREGIDOS EXCEL ####################################################
 
-class ReportesCorregidos(TemplateView):
-    template_name = 'reportes/reportes_corregidos.html'
+class ReportesCorregidosExcel(TemplateView):
+    template_name = 'reportes/reportes_excel.html'
 
     def post(self,request, *args,**kwargs):
         formulario = self.request.POST.get('formulario')
@@ -4089,6 +4165,14 @@ class ReportesCorregidos(TemplateView):
 
             wb = ReporteResumenStockProductosCorregido(sede)
 
+        elif formulario == 'formulario5':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+            sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+            titulo = f'Reporte Ventas Facturadas- {sociedad.abreviatura} del {fecha_inicio} al {fecha_fin}'
+
+            wb = ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin)
+
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
         respuesta['content-disposition']= content
@@ -4097,10 +4181,11 @@ class ReportesCorregidos(TemplateView):
         return respuesta
 
     def get_context_data(self, **kwargs):
-        context = super(ReportesCorregidos, self).get_context_data(**kwargs)
+        context = super(ReportesCorregidosExcel, self).get_context_data(**kwargs)
         context['form1'] = ReportesContadorForm()
         context['form2'] = ReportesRotacionForm()
         context['form3'] = ReporteDepositoCuentasBancariasForm()
         context['form4'] = ReporteResumenStockProductosForm()
+        context['form5'] = ReporteVentasFacturadasForm()
 
         return context

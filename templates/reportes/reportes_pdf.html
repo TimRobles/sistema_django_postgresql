@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Reporte Corregidos
+{% endblock titulo %}
+
+{% block contenido %}
+<h1 class="text-center" style="color: red;">Reportes Pdf</h1>
+<br>
+<h3>Reporte Stock</h3>
+<form action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="input-group">
+        {% for field in form1 %}
+            <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
+            {% if field.help_text %}
+            data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+            {% endif %}
+            >
+                {% if field in form1.visible_fields %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+            </div>
+            {% if field.help_text %}
+            <p class="mt-0">Pista:{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        <input type="hidden" value="formulario1" name="formulario">
+        <button type="submit" class="btn btn-danger" title="Descargar">
+            <i class="bi bi-download"></i>
+        </button>
+    </div>
+</form>
+<br>
+<h3>Reporte Ventas</h3>
+<form action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="input-group">
+        {% for field in form2 %}
+            <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
+            {% if field.help_text %}
+            data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+            {% endif %}
+            >
+                {% if field in form2.visible_fields %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+            </div>
+            {% if field.help_text %}
+            <p class="mt-0">Pista:{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        <input type="hidden" value="formulario2" name="formulario">
+        <button type="submit" class="btn btn-danger" title="Descargar">
+            <i class="bi bi-download"></i>
+        </button>
+    </div>
+</form>
+<br>
+<h3>Reporte Deudas</h3>
+<form action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="input-group">
+        {% for field in form3 %}
+            <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
+            {% if field.help_text %}
+            data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+            {% endif %}
+            >
+                {% if field in form3.visible_fields %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+            </div>
+            {% if field.help_text %}
+            <p class="mt-0">Pista:{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        <input type="hidden" value="formulario3" name="formulario">
+        <button type="submit" class="btn btn-danger" title="Descargar">
+            <i class="bi bi-download"></i>
+        </button>
+    </div>
+</form>
+<br>
+<h3>Reporte Cobranza</h3>
+<form action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="input-group">
+        {% for field in form4 %}
+            <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
+            {% if field.help_text %}
+            data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+            {% endif %}
+            >
+                {% if field in form4.visible_fields %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+            </div>
+            {% if field.help_text %}
+            <p class="mt-0">Pista:{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        <input type="hidden" value="formulario4" name="formulario">
+        <button type="submit" class="btn btn-danger" title="Descargar">
+            <i class="bi bi-download"></i>
+        </button>
+    </div>
+</form>
+{% endblock contenido %}
+    
