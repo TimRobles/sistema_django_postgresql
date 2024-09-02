@@ -13,7 +13,7 @@ DATABASES = {
         'NAME': 'sistema_django_prod',
         'USER': 'multiplay',
         'PASSWORD': 'multiplay123',
-        'HOST': 'localhost',
+        'HOST': '186.64.122.149',
         'PORT': '5432',
     }
 }
@@ -32,7 +32,7 @@ BUSCAR_IP = 'HTTP_CF_CONNECTING_IP'
 CRONJOBS = [
     #cron format: minute, hour, day of month, month, day of week
     ('00 10 * * 1-6', 'applications.reportes.pdf.reporte_cobranza', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
+    ('00 10 * * 1-6', 'applications.verificar.verificar_confirmacion_total', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob_sunarp.log 2>&1'),
     ('00 01 * * *', 'applications.crm.models.actualizar_estado_cliente_crm', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
     ('00 14 * * *', 'applications.datos_globales.funciones.actualizarTotalTipoCambioSunat', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
-    ('30 12 19 6 *', 'applications.sunarp.funcion_sunarp', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob_sunarp.log 2>&1'),
 ]

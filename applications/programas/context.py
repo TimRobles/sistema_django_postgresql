@@ -1,9 +1,10 @@
 import os
 import uuid
-from django.conf import settings                                                                                                         
+from django.conf import settings
 
 from .models import NivelUno
 
+git_version = os.popen('git describe --tags --always').read().strip()
 def contexto_menu(request):
     programa_nivel_uno = NivelUno.objects.all()
     data = {}
@@ -12,7 +13,7 @@ def contexto_menu(request):
 
 def cache_bust(request):
     if settings.DEBUG:                                                                                                                   
-        version = uuid.uuid1()
+        version = git_version
     else:                                                                                                                                
         version = os.environ.get('PROJECT_VERSION')
         if version is None:

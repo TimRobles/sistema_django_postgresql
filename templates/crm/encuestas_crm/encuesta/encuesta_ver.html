@@ -21,8 +21,9 @@
         <tbody>
             <td>
                 <ul>
-                    {% for pregunta in encuesta.pregunta_crm.all %}
-                    <li>{{ pregunta.orden }}. {{ pregunta.texto }}</li>                        
+                    {% for pregunta in encuesta.pregunta_crm.all|dictsort:"orden"  %}
+                    <li>{{ pregunta.orden }}. {{ pregunta.texto }}</li>    
+
                         {% if pregunta.tipo_pregunta == 1  %}   
                             <div class="pregunta">
                                 {% for alternativa in pregunta.AlternativaCRM_pregunta_crm.all %}

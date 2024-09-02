@@ -455,6 +455,38 @@ class OrdenCompraEnviarCorreoView(PermissionRequiredMixin, BSModalFormView):
         context['titulo']="Correos"
         return context
 
+class OrdenCompraRevertirEstadoView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('orden_compra.change_ordencompra')
+    model = OrdenCompra
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('orden_compra_app:orden_compra_detalle', kwargs={'slug':self.get_object().slug})
+
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            obj = self.get_object()
+            obj.estado = 1
+            obj.save()
+            messages.success(self.request, 'Se revirtió el estado de la orden de compra.')
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super(OrdenCompraRevertirEstadoView, self).get_context_data(**kwargs)
+        context['accion'] = 'Revertir Estado'
+        context['titulo'] = 'Orden de Compra'
+        context['dar_baja'] = True
+        return context
+
 class OrdenCompraProveedorDetalleUpdateView(PermissionRequiredMixin, BSModalUpdateView):
     permission_required = ('orden_compra.change_ordencompradetalle')
     model = OrdenCompraDetalle

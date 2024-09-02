@@ -289,6 +289,7 @@ class Servicio(models.Model):
     alias = models.CharField('Alias', max_length=50,blank=True, null=True)
     estado = models.IntegerField(choices=ESTADOS,default=1)
     sociedad = models.ForeignKey(Sociedad, null=True,blank=True, on_delete=models.PROTECT)
+    fecha_baja = models.DateField('Fecha Baja', auto_now=False, auto_now_add=False, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Servicio_created_by', editable=False)

@@ -18,6 +18,8 @@ from applications.material.models import Material
 from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
 
+
+
 from applications.reportes.forms import (
     ReporteCobranzaPdfForm,
     ReporteComportamientoClienteExcelForm,
@@ -65,8 +67,10 @@ from applications.reportes.excel import (
     ReporteVentasFacturadasCorregido
     )
 from applications.sede.models import Sede
+
     
-class ReportesView(FormView):
+class ReportesView(PermissionRequiredMixin, FormView):
+    permission_required = ('reportes.view_reportes')
     template_name = "reportes/inicio.html"
     form_class = ReportesFiltrosForm
     success_url = '.'
@@ -95,6 +99,7 @@ class ReportesView(FormView):
     
 
 class ReporteContador(TemplateView):
+    permission_required = ('reportes.view_reportes')
     def get(self,request, *args,**kwargs):
 
         global_sociedad = self.request.GET.get('filtro_sociedad')

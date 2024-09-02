@@ -130,33 +130,35 @@
                 </a>
             </div>
             {% endif %}
+        {% endif %}
 
-            {% if confirmacion.estado != 3  %}
-            <div class="col-auto">   
+        {% if confirmacion.estado != 3  %}
+        <div class="col-auto">   
 
-                {% if confirmacion.rotulado and confirmacion.rotulado_estado == True %}
-                <button data-form-url="{% url 'cotizacion_app:rotulado_despacho_ver' confirmacion.id %}"
-                    class="update btn btn-dark"
-                    data-modal="modal-xl">
-                    Ver Rotulado
-                </button>
-                {% endif %}
-
-                {% if confirmacion.rotulado_estado == False %}
-                <button data-form-url="{% url 'cotizacion_app:rotulado_despacho' confirmacion.id %}"
-                    data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
-                    class="update btn btn-outline-dark"
-                    data-modal="modal-xl">
-                    Rotulado
-                </button>   
-                {% endif %}
-
-            </div>
-
+            {% if confirmacion.rotulado and confirmacion.rotulado_estado == True %}
+            <button data-form-url="{% url 'cotizacion_app:rotulado_despacho_ver' confirmacion.id %}"
+                class="update btn btn-dark"
+                data-modal="modal-xl">
+                Ver Rotulado
+            </button>
             {% endif %}
 
+            {% if confirmacion.rotulado_estado == False %}
+            <button data-form-url="{% url 'cotizacion_app:rotulado_despacho' confirmacion.id %}"
+                data-table-url="{% url 'cotizacion_app:confirmacion_ver_tabla' confirmacion.id %}"
+                class="update btn btn-outline-dark"
+                data-modal="modal-xl">
+                Rotulado
+            </button>   
+            {% endif %}
+
+        </div>
+
         {% endif %}
+
     </div>
+
+
 </div>
 
 <div class="row mt-3">

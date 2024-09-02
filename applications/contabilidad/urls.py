@@ -104,6 +104,7 @@ urlpatterns = urlTelecredito + urlCheque +[
     path('servicio-tabla/', views.ServicioTabla, name='servicio_tabla'),
     path('servicio/registrar/', views.ServicioCreateView.as_view(), name='servicio_registrar'),
     path('servicio/actualizar/<pk>/', views.ServicioUpdateView.as_view(), name='servicio_actualizar'),    
+    path('servicio/baja/<pk>/', views.ServicioDarBajaView.as_view(), name='servicio_baja'),    
 
     path('recibo-servicio/', views.ReciboServicioListView.as_view(), name='recibo_servicio_inicio'),
     path('recibo-servicio-tabla/', views.ReciboServicioTabla, name='recibo_servicio_tabla'),

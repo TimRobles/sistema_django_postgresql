@@ -15,6 +15,8 @@ from django.contrib import messages
 from django.db import models
 import sys
 
+from applications.variables import SLACK_VERIFICAR_CHANNEL_URL
+
 def numeroXn(numero, n):
     if numero:
         return '0'*(n-len(str(numero))) + str(numero)
@@ -572,5 +574,9 @@ def consulta_pareto(totales):
             clientes_pareto.append(total[0])
     return clientes_pareto
     
-
-    
+def send_slack_verificar(message):
+    slack_message = {
+        'text': message,
+    }
+    r = requests.post(SLACK_VERIFICAR_CHANNEL_URL, json=slack_message)
+    return r

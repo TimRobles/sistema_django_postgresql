@@ -13,6 +13,7 @@ urlpatterns = [
     path('orden-compra/detalle-tabla/<slug>/', views.OrdenCompraDetailTabla, name='orden_compra_detalle_tabla'),
     path('orden-compra/pdf-anular/<slug>/', views.OrdenCompraMotivoAnulacionPdfView.as_view(), name='orden_compra_pdf_anular'),
     path('orden-compra/enviar-correo/<slug>/', views.OrdenCompraEnviarCorreoView.as_view(), name='orden_compra_enviar_correo'),
+    path('orden-compra/revertir-estado/<slug>/', views.OrdenCompraRevertirEstadoView.as_view(), name='orden_compra_revertir_estado'),
     path('orden-compra/pdf/<slug>/', views.OrdenCompraPdfView.as_view(), name='orden_compra_pdf'),
     path('orden-compra/nueva-version/<pk>/', views.OrdenCompraNuevaVersionView.as_view(), name='orden_compra_nueva_version'),
     path('orden-compra/crear/', views.OrdenCompraCreateView.as_view(), name='orden_compra_crear'),

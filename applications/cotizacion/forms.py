@@ -492,22 +492,22 @@ class RotuladoForm(BSModalModelForm):
             visible.field.widget.attrs['class'] = 'form-control'
 
         if self.instance and not self.instance.rotulado:
-            rotulado_text = f"DESTINO    :   \n"  
-            rotulado_text += f"EMPRESA   :   \n"  
-            rotulado_text += f"NOMBRE    :   \n" 
-            rotulado_text += f"DNI               :   \n" 
-            rotulado_text += f"CELULAR    :   \n"  
+            rotulado_text = f"DESTINO                              :  \n"  
+            rotulado_text += f"AGENCIA                              :  \n"  
+            rotulado_text += f"NOMBRE CONTACTO      :  \n" 
+            rotulado_text += f"DNI CONTACTO                 :  \n" 
+            rotulado_text += f"CELULAR CONTACTO      :  \n"  
 
             if self.instance.cliente:
-                rotulado_text += f"CLIENTE     :   {self.instance.cliente}\n"
+                rotulado_text += f"CLIENTE                               :   {self.instance.cliente}\n"
             
             if self.instance.facturas:
                 for factura in self.instance.facturas:
-                    rotulado_text += f"FACTURA    :   {factura.documento}\n"
+                    rotulado_text += f"FACTURA                             :   {factura.documento}\n"
 
             if self.instance.boletas:
                 for boleta in self.instance.boletas:
-                    rotulado_text += f"BOLETA      :   {boleta.documento}\n" 
+                    rotulado_text += f"BOLETA                                :   {boleta.documento}\n" 
 
         if self.instance and self.instance.rotulado and self.instance.rotulado_estado == False:
             rotulado_text = self.instance.rotulado

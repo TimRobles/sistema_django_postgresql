@@ -3707,7 +3707,7 @@ class RotuladoDespachoListView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(RotuladoDespachoListView, self).get_context_data(**kwargs)
-        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3).filter(rotulado__isnull=False, rotulado__gt='').order_by('rotulado_estado')
+        contexto_cotizacion_venta = ConfirmacionVenta.objects.exclude(estado=3).filter(rotulado__isnull=False, rotulado__gt='').order_by('rotulado_estado','-created_at') 
 
         filtro_cliente = self.request.GET.get('cliente')
 
@@ -3729,7 +3729,7 @@ class RotuladoDespachoListView(FormView):
                 context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
         context['contexto_filtro'] = '?' + context['contexto_filtro']
 
-        objectsxpage =  10 # Show 10 objects per page.
+        objectsxpage =  30 # Show 10 objects per page.
 
         if len(contexto_cotizacion_venta) > objectsxpage:
             paginator = Paginator(contexto_cotizacion_venta, objectsxpage)

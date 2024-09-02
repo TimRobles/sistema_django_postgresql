@@ -33,7 +33,9 @@
             <td>
                 <ul>
                     {% for pregunta in contexto_encuesta_crm.pregunta_crm.all %}
-                    <li>{{ forloop.counter }}. {{ pregunta.texto }}</li>                        
+
+                    <li>{{ pregunta.orden }}. {{ pregunta.texto }}</li>          
+
                         {% if pregunta.tipo_pregunta == 1  %}   
                             <div class="pregunta">
                                 {% for alternativa in pregunta.AlternativaCRM_pregunta_crm.all %}
@@ -45,6 +47,7 @@
                             </div>    
                             <br>
                         {% endif %}
+
                         {% if pregunta.tipo_pregunta == 2  %}   
                             <div class="pregunta">
                                 {% for alternativa in pregunta.AlternativaCRM_pregunta_crm.all %}
@@ -56,11 +59,13 @@
                             </div>    
                             <br>
                         {% endif %}
+
                         {% if pregunta.tipo_pregunta == 3  %}
                             <input class="form-control respuesta-texto-crm" type="text" data-pregunta="{{ pregunta.id }}" name="{{ pregunta.texto }}"
                             required maxlength="100">
                         <br>
                         {% endif %}
+
                     {% endfor %}
                 </ul>
 

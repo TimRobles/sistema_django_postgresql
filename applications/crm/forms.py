@@ -517,6 +517,7 @@ class PreguntaCRMForm(BSModalModelForm):
         fields=(
             'texto',
             'tipo_pregunta',
+            'orden',
             'mostrar',
             )
 
@@ -580,6 +581,7 @@ class EncuestaCRMForm(BSModalModelForm):
 
 class EncuestaPreguntaCRMForm(BSModalModelForm):
     pregunta_crm = forms.ModelMultipleChoiceField(queryset=PreguntaCRM.objects.filter(mostrar=True))
+
     class Meta:
         model = EncuestaCRM
         fields=(
@@ -590,7 +592,7 @@ class EncuestaPreguntaCRMForm(BSModalModelForm):
         super(EncuestaPreguntaCRMForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-        # self.fields['pregunta_crm'].widget.attrs['class'] = 'no-bull'
+        #self.fields['pregunta_crm'].widget.attrs['class'] = 'no-bull'
 
 
 class RespuestaCRMBuscarForm(forms.Form):
@@ -683,3 +685,31 @@ class EventoCRMFinalizarForm(BSModalModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
             visible.field.required = True
+
+
+
+#--------------------RESPUESTA LIBRE
+# class RespuestaLibreCRMForm(BSModalModelForm):
+#     class Meta:
+#         model = RespuestaCRM
+#         fields=(
+#             'encuesta_crm',
+#             )
+        
+#     def clean_cliente(self):
+#         cliente = self.cleaned_data.get('cliente_crm')
+#         if cliente:
+#             interlocutor = self.fields['interlocutor']
+#             lista = []
+#             relaciones = ClienteInterlocutor.objects.filter(cliente = cliente.id)
+#             for relacion in relaciones:
+#                 lista.append(relacion.interlocutor.id)
+
+#             interlocutor.queryset = InterlocutorCliente.objects.filter(id__in = lista)
+
+#         return cliente
+
+#     def __init__(self, *args, **kwargs):
+#         super(RespuestaCRMForm, self).__init__(*args, **kwargs)
+#         for visible in self.visible_fields():
+#             visible.field.widget.attrs['class'] = 'form-control'
