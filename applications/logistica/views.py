@@ -2842,7 +2842,8 @@ class DevolucionPrestamoMaterialesConcluirView(PermissionRequiredMixin, BSModalD
         error_serie = False
         for detalle in self.get_object().detalles:
             if len(detalle.ValidarSerieDevolucionPrestamoMaterialesDetalle_devolucion_materiales_detalle.all()) != detalle.cantidad_devolucion:
-                error_serie = True
+                if detalle.producto.control_serie:
+                    error_serie = True
         
         if error_fecha:
             context['texto'] = 'Ingrese una fecha de despacho.'
