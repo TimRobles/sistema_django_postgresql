@@ -2761,62 +2761,62 @@ class ReporteDeudas(TemplateView):
         global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
         global_cliente = self.request.GET.get('filtro_cliente')
         
-        # Consulta para FacturaVenta
-        factura_query = FacturaVenta.objects.filter(estado=4).annotate(
-            fecha_emision_comprobante=F('fecha_emision'),
-            numero_comprobante=Concat(
-                F('serie_comprobante__serie'),
-                Value('-'),
-                LPad(F('numero_factura'), 6, Value('0'))
-            )
-        ).values('id', 'fecha_emision_comprobante', 'numero_comprobante')
+        # # Consulta para FacturaVenta
+        # factura_query = FacturaVenta.objects.filter(estado=4).annotate(
+        #     fecha_emision_comprobante=F('fecha_emision'),
+        #     numero_comprobante=Concat(
+        #         F('serie_comprobante__serie'),
+        #         Value('-'),
+        #         LPad(F('numero_factura'), 6, Value('0'))
+        #     )
+        # ).values('id', 'fecha_emision_comprobante', 'numero_comprobante')
 
-        # Consulta para BoletaVenta
-        boleta_query = BoletaVenta.objects.filter(estado=4).annotate(
-            fecha_emision_comprobante=F('fecha_emision'),
-            numero_comprobante=Concat(
-                F('serie_comprobante__serie'),
-                Value('-'),
-                LPad(F('numero_boleta'), 6, Value('0'))
-            )
-        ).values('id', 'fecha_emision_comprobante', 'numero_comprobante')
+        # # Consulta para BoletaVenta
+        # boleta_query = BoletaVenta.objects.filter(estado=4).annotate(
+        #     fecha_emision_comprobante=F('fecha_emision'),
+        #     numero_comprobante=Concat(
+        #         F('serie_comprobante__serie'),
+        #         Value('-'),
+        #         LPad(F('numero_boleta'), 6, Value('0'))
+        #     )
+        # ).values('id', 'fecha_emision_comprobante', 'numero_comprobante')
 
-        # Convertir a DataFrames
-        df_factura = pd.DataFrame(list(factura_query))
-        df_boleta = pd.DataFrame(list(boleta_query))
+        # # Convertir a DataFrames
+        # df_factura = pd.DataFrame(list(factura_query))
+        # df_boleta = pd.DataFrame(list(boleta_query))
 
-        # Función para obtener los materiales
-        def get_materiales(modelo, id_field):
-            return modelo.objects.filter(
-                content_type=material_content_type
-            ).values(
-                id_field
-            ).annotate(
-                texto_materiales=StringAgg('material__descripcion_corta', delimiter=' | ')
-            )
+        # # Función para obtener los materiales
+        # def get_materiales(modelo, id_field):
+        #     return modelo.objects.filter(
+        #         content_type=material_content_type
+        #     ).values(
+        #         id_field
+        #     ).annotate(
+        #         texto_materiales=StringAgg('material__descripcion_corta', delimiter=' | ')
+        #     )
 
-        # Obtener materiales para facturas y boletas
-        df_materiales_factura = pd.DataFrame(list(get_materiales(FacturaVentaDetalle, 'factura_venta_id')))
-        df_materiales_boleta = pd.DataFrame(list(get_materiales(BoletaVentaDetalle, 'boleta_venta_id')))
+        # # Obtener materiales para facturas y boletas
+        # df_materiales_factura = pd.DataFrame(list(get_materiales(FacturaVentaDetalle, 'factura_venta_id')))
+        # df_materiales_boleta = pd.DataFrame(list(get_materiales(BoletaVentaDetalle, 'boleta_venta_id')))
 
-        # Combinar DataFrames
-        df_factura = df_factura.merge(df_materiales_factura, left_on='id', right_on='factura_venta_id', how='left')
-        df_boleta = df_boleta.merge(df_materiales_boleta, left_on='id', right_on='boleta_venta_id', how='left')
+        # # Combinar DataFrames
+        # df_factura = df_factura.merge(df_materiales_factura, left_on='id', right_on='factura_venta_id', how='left')
+        # df_boleta = df_boleta.merge(df_materiales_boleta, left_on='id', right_on='boleta_venta_id', how='left')
 
-        # Unir los DataFrames de factura y boleta
-        df_final = pd.concat([df_factura, df_boleta], ignore_index=True)
+        # # Unir los DataFrames de factura y boleta
+        # df_final = pd.concat([df_factura, df_boleta], ignore_index=True)
 
-        # Formatear la fecha
-        df_final['fecha_emision_comprobante'] = pd.to_datetime(df_final['fecha_emision_comprobante']).dt.strftime('%d/%m/%Y')
+        # # Formatear la fecha
+        # df_final['fecha_emision_comprobante'] = pd.to_datetime(df_final['fecha_emision_comprobante']).dt.strftime('%d/%m/%Y')
 
-        # Seleccionar y ordenar las columnas finales
-        df_final = df_final[['id', 'fecha_emision_comprobante', 'numero_comprobante', 'texto_materiales']]
+        # # Seleccionar y ordenar las columnas finales
+        # df_final = df_final[['id', 'fecha_emision_comprobante', 'numero_comprobante', 'texto_materiales']]
 
-        # Ordenar por id
-        df_final = df_final.sort_values('id')
+        # # Ordenar por id
+        # df_final = df_final.sort_values('id')
 
-        # Reiniciar el índice
-        df_final = df_final.reset_index(drop=True)
+        # # Reiniciar el índice
+        # df_final = df_final.reset_index(drop=True)
 
         sql_productos = ''' (SELECT
             MAX(cvf.id) AS id,

@@ -36,6 +36,7 @@ from applications.calidad.forms import(
     ReparacionMaterialDetalleSeriesActualizarForm,
     ReparacionMaterialDetalleSeriesCambioSerieForm,
     ReparacionMaterialDetalleSeriesForm,
+    ReparacionMaterialStockForm,
     SalidaTransformacionProductosForm,
     SalidaTransformacionProductosSeriesForm,
     SerieBuscarForm,
@@ -2726,7 +2727,26 @@ class ReparacionMaterialDetalleUpdateView(PermissionRequiredMixin, BSModalUpdate
     def form_valid(self, form):
         registro_guardar(form.instance, self.request)
         return super().form_valid(form)
+    
 
+class ReparacionMaterialStockUpdateView(PermissionRequiredMixin, BSModalUpdateView):
+    permission_required = ('calidad.change_reparacionmaterial')
+    model = ReparacionMaterial
+    template_name = "includes/formulario generico.html"
+    form_class = ReparacionMaterialStockForm
+    success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super(ReparacionMaterialStockUpdateView, self).get_context_data(**kwargs)
+        context['accion'] = 'Seleccionar'
+        context['titulo'] = 'Stock'
+        return context
+    
 
 class ValidarSeriesReparacionMaterialDetailView(PermissionRequiredMixin, FormView):
     permission_required = ('calidad.view_reparacionmaterialdetalle')
@@ -2906,7 +2926,10 @@ class ReparacionMaterialDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         try:
             self.object = self.get_object()
 
-            tipo_movimiento = TipoMovimiento.objects.get(codigo=160) # Reparación, material reparado
+            if self.object.origen == 1:
+                tipo_movimiento = TipoMovimiento.objects.get(codigo=160) # Reparación, material reparado
+            elif self.object.origen == 2:
+                tipo_movimiento = TipoMovimiento.objects.get(codigo=172) # Reparación, material reparado desde desguace
 
             for detalle in self.object.ReparacionMaterialDetalle_reparacion.all():
                 movimiento_dos = MovimientosAlmacen.objects.get(
@@ -3009,9 +3032,12 @@ class ReparacionMaterialConcluirView(PermissionRequiredMixin, BSModalDeleteView)
         try:
             self.object = self.get_object()
 
-            tipo_movimiento = TipoMovimiento.objects.get(codigo=160) # Reparación, material reparado
+            if self.object.origen == 1:
+                tipo_movimiento = TipoMovimiento.objects.get(codigo=160) # Reparación, material reparado
+            elif self.object.origen == 2:
+                tipo_movimiento = TipoMovimiento.objects.get(codigo=172) # Reparación, material reparado desde desguace
 
-            if self.object.series_almacen_validar == False:
+            if self.object.series_almacen_validar:
                 raise Exception('Hay almacenes que no coinciden con las series')
 
             for detalle in self.object.ReparacionMaterialDetalle_reparacion.all():

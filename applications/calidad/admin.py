@@ -5,6 +5,7 @@ from .models import(
     NotaControlCalidadStock,
     NotaControlCalidadStockDetalle,
     ReparacionMaterial,
+    ReparacionMaterialDetalle,
     SalidaTransformacionProductos,
     Serie,
     FallaMaterial,
@@ -275,6 +276,25 @@ class ReparacionMaterialAdmin(admin.ModelAdmin):
         'created_by',
         'updated_at',
         'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(ReparacionMaterialDetalle)
+class ReparacionMaterialDetalleAdmin(admin.ModelAdmin):
+    list_display = (
+        'item',
+        'material',
+        'cantidad',
+        'sede',
+        'almacen',
+        'almacen_final',
+        'reparacion',
     )
 
     def save_model(self, request, obj, form, change):

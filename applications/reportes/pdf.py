@@ -20,7 +20,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
 from django.core.files.base import ContentFile
 
-#############################################################
+############################################################# ReporteResumenStockProductos ############################################################# 
 
 def dataResumenStockProductos(TablaEncabezado, TablaDatos, fuenteBase, color):
     encabezado = []
@@ -70,7 +70,7 @@ def generarReporteResumenStockProductos(titulo, vertical, logo, pie_pagina, Text
 
     return buf
 
-#############################################################
+############################################################# ReporteDeudas ############################################################# 
 
 def dataDeudas(TablaEncabezado, TablaDatos, fuenteBase, color):
     encabezado = []
@@ -211,7 +211,7 @@ def generarReporteDeudas(titulo, vertical, logo, pie_pagina, Texto, TablaEncabez
 
     return buf
 
-#############################################################
+############################################################# ReporteCobranza #############################################################
 
 def dataCobranza(TablaEncabezado, TablaDatos, fuenteBase, color):
     encabezado = []
@@ -266,8 +266,6 @@ def generarReporteCobranza(titulo, vertical, logo, pie_pagina, Texto, TablaEncab
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
     return buf
-
-#############################################################
 
 def generar_reporte_cobranza(global_sociedad, titulo):
     sql_cobranza_nota = ''' (SELECT
@@ -496,10 +494,10 @@ def reporte_cobranza():
         asunto = "Recordatorio - Facturas por cobrar " + str(date.today())
         mensaje = "Facturas pendientes por cobrar"
         email_remitente = EMAIL_REMITENTE
-        email_destinatario = ["rore@multiplay.com.pe",]
-        email_copia = ["dsilva@multiplay.com.pe"]
-        # email_destinatario = ["rpaniura@multiplay.com.pe",]
-        # email_copia = ["trobles@multiplay.com.pe","dprincipal@multiplay.com.pe",]
+        # email_destinatario = ["rore@multiplay.com.pe",]
+        # email_copia = ["dsilva@multiplay.com.pe"]
+        email_destinatario = ["rpaniura@multiplay.com.pe",]
+        email_copia = ["trobles@multiplay.com.pe","dprincipal@multiplay.com.pe",]
 
         correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to = email_destinatario, cc = email_copia,)
         correo.attach(nombre_archivo_1, archivo_1.getvalue(), 'application/pdf')
@@ -517,7 +515,7 @@ def reporte_cobranza():
         registrar_excepcion_sin_user(ex, __file__)
         print(ex)
 
-#############################################################
+############################################################# ReporteStockSociedad #############################################################
 
 def dataReporteStockSociedad(sociedad, fuenteBase, color):
     encabezado = []
@@ -593,7 +591,7 @@ def generarReporteStockSociedad(titulo, vertical, logo, pie_pagina, sociedad, co
 
     return buf
 
-#############################################################
+############################################################# ReporteStockMalogradoSociedad #############################################################
 
 def dataReporteStockMalogradoSociedad(sociedad, fuenteBase, color):
     encabezado = []
@@ -669,7 +667,7 @@ def generarReporteStockMalogradoSociedad(titulo, vertical, logo, pie_pagina, soc
 
     return buf
 
-#############################################################
+############################################################# ReporteVentasDepartamento #############################################################
 
 def dataReporteVentasDepartamento(fecha_inicio, fecha_fin, departamento, fuenteBase, color):
     moneda_base = Moneda.objects.get(simbolo='$')

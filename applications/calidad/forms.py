@@ -7,7 +7,7 @@ from applications.nota_ingreso.models import NotaIngreso
 from applications.sociedad.models import Sociedad
 from applications.datos_globales.models import Unidad
 from applications.material.funciones import stock, stock_disponible, stock_sede_disponible, stock_tipo_stock
-from applications.variables import CHOICE_VACIO, ESTADOS_NOTA_CALIDAD_STOCK
+from applications.variables import CHOICE_VACIO, ESTADOS_NOTA_CALIDAD_STOCK, ORIGEN
 from django.contrib.auth import get_user_model
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from .models import (
@@ -519,6 +519,20 @@ class ReparacionMaterialForm(BSModalModelForm):
             tiempo_estimado = self.instance.tiempo_estimado
             self.fields['horas'].initial = tiempo_estimado // 60
             self.fields['minutos'].initial = tiempo_estimado % 60
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReparacionMaterialStockForm(BSModalModelForm):
+    class Meta:
+        model = ReparacionMaterial
+        fields = (
+            'origen',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ReparacionMaterialStockForm, self).__init__(*args, **kwargs)
+        self.fields['origen'].choices = ((None, '--------------'),) + ORIGEN
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

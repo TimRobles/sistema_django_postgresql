@@ -679,6 +679,11 @@ ESTADO_COMPROBANTE_MERCHANDISING = (
     (3, 'ANULADO'),
     )
 
+ORIGEN = (
+    (1, 'BLOQUEO POR QA'),
+    (2, 'BLOQUEO POR DESGUACE'),
+)
+
 
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
 

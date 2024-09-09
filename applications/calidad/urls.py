@@ -93,6 +93,8 @@ urlReparacionMaterial = [
     path('reparacion-material/detalle/registrar/<int:reparacion_id>/', views.ReparacionMaterialDetalleCreateView.as_view(), name='reparacion_material_detalle_registrar'),
     path('reparacion-material/detalle/actualizar/<pk>/', views.ReparacionMaterialDetalleUpdateView.as_view(), name='reparacion_material_detalle_actualizar'),
     path('reparacion-material/detalle/eliminar/<pk>/', views.ReparacionMaterialDetalleDeleteView.as_view(), name='reparacion_material_detalle_eliminar'),
+
+    path('reparacion-material/stock/<pk>/', views.ReparacionMaterialStockUpdateView.as_view(), name='reparacion_material_stock'),
 ]
 
 urlReparacionMaterialSeries = [

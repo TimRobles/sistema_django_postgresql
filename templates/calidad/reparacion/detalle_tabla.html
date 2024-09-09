@@ -36,6 +36,20 @@
                     <td class="px-2">:</td>
                     <td>{{ contexto_reparacion_material.motivo_anulacion }}</td>
                 {% endif %}
+                <td class="px-4"></td>
+                <td><b>Origen</b></td>
+                <td class="px-2">:</td>
+                <td>{{ contexto_reparacion_material.get_origen_display }}</td>
+                <td class="px-4"></td>
+                {% if contexto_reparacion_material.estado == 1 %}
+                <td class="ps-2" rowspan="3">
+                    <button data-form-url="{% url 'calidad_app:reparacion_material_stock' contexto_reparacion_material.id %}"
+                        data-table-url="{% url 'calidad_app:reparacion_material_detalle_tabla' contexto_reparacion_material.id %}"
+                        class="update btn btn-primary text-nowrap">
+                        Seleccionar Stock
+                    </button>
+                </td>
+                {% endif %}
             </tr>
         </tbody>
     </table>
