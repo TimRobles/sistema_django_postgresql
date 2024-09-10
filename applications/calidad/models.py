@@ -13,7 +13,7 @@ from applications.sede.models import Sede
 from applications.almacenes.models import Almacen
 from applications.nota_ingreso.models import NotaIngreso, NotaIngresoDetalle
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoStock
-from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, SERIE_CONSULTA
+from applications.variables import ESTADOS_NOTA_CALIDAD_STOCK, ORIGEN, SERIE_CONSULTA
 from django.db.models.signals import pre_save, post_save, post_delete
 
 from django.db.models.signals import m2m_changed
@@ -594,6 +594,7 @@ class ReparacionMaterial(models.Model):
     estado = models.IntegerField(choices=ESTADOS_REPARACION_MATERIAL, default=1)
     motivo_anulacion = models.TextField(blank=True, null=True)
     responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True)
+    origen = models.IntegerField(choices=ORIGEN, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ReparacionMaterial_created_by', editable=False)

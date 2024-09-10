@@ -44,6 +44,7 @@ class ReportesFiltrosForm(forms.Form):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+####################################################  REPORTES PDF  ####################################################   
 
 class ReporteStockSociedadPdfForm(forms.Form):
     CHOICES_TIPO = [
@@ -60,9 +61,7 @@ class ReporteStockSociedadPdfForm(forms.Form):
 
 
 class ReporteVentasDepartamentoPdfForm(forms.Form):
-    CHOICES_TIPO = [
-        (1, 'VENTA POR DEPARTAMENTO'),
-    ]
+    departamento = forms.ModelChoiceField(queryset=Departamento.objects.all(), required=False)
     fecha_inicio = forms.DateField(
         required=True,
         widget = forms.DateInput(
@@ -81,17 +80,33 @@ class ReporteVentasDepartamentoPdfForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    departamento = forms.ModelChoiceField(queryset=Departamento.objects.all(), required=False)
-    tipo = forms.ChoiceField(choices=CHOICES_TIPO, required=True)
 
     def __init__(self, *args, **kwargs):
         super(ReporteVentasDepartamentoPdfForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 
+class ReporteDeudasPdfForm(forms.Form):
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
+    
+    def __init__(self, *args, **kwargs):
+        super(ReporteDeudasPdfForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+            
+class ReporteCobranzaPdfForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=False)
+    
+    def __init__(self, *args, **kwargs):
+        super(ReporteCobranzaPdfForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 ####################################################  REPORTES CRM  ####################################################   
 
 class ReporteFacturacionAsesorComercialExcelForm(forms.Form):
+    asesor_comercial = forms.ModelChoiceField(queryset=get_user_model().objects.filter(id__in = [cotizacion.vendedor.id for cotizacion in CotizacionVenta.objects.all()]), required=False)
     fecha_inicio = forms.DateField(
         required=True,
         widget = forms.DateInput(
@@ -110,7 +125,6 @@ class ReporteFacturacionAsesorComercialExcelForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    asesor_comercial = forms.ModelChoiceField(queryset=get_user_model().objects.filter(id__in = [cotizacion.vendedor.id for cotizacion in CotizacionVenta.objects.all()]), required=False)
 
     def __init__(self, *args, **kwargs):
         super(ReporteFacturacionAsesorComercialExcelForm, self).__init__(*args, **kwargs)
@@ -119,6 +133,7 @@ class ReporteFacturacionAsesorComercialExcelForm(forms.Form):
 
 
 class ReporteVentasDepartamentoExcelForm(forms.Form):
+    departamento = forms.ModelChoiceField(queryset=Departamento.objects.all(), required=False)
     fecha_inicio = forms.DateField(
         required=True,
         widget = forms.DateInput(
@@ -137,7 +152,6 @@ class ReporteVentasDepartamentoExcelForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
-    departamento = forms.ModelChoiceField(queryset=Departamento.objects.all(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(ReporteVentasDepartamentoExcelForm, self).__init__(*args, **kwargs)
@@ -205,7 +219,7 @@ class ReporteTasaConversionClienteForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
-####################################################  REPORTES CORREGIDOS  ####################################################   
+####################################################  REPORTES EXCEL  ####################################################   
 
 class ReportesContadorForm(forms.Form):
     sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=True)
@@ -275,5 +289,31 @@ class ReporteResumenStockProductosForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ReporteResumenStockProductosForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ReporteVentasFacturadasForm(forms.Form):
+    sociedad = forms.ModelChoiceField(queryset=Sociedad.objects.all(), required=True)
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteVentasFacturadasForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
