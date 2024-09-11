@@ -19,7 +19,8 @@ django-import-export
 python-slugify
 django-resized
 pandas
-plotly==5.24.0
+# plotly==5.24.0
+plotly
 django_crontab
 django-background-tasks
 pywhatkit
