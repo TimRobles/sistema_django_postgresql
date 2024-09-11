@@ -28,10 +28,10 @@ from .models import (
 
 class ActivoBaseAdmin(admin.ModelAdmin):
     list_display = (
-        'descripcion_venta',
+        # 'descripcion_venta',
         'descripcion_corta',
         'unidad',
-        'peso',
+        # 'peso',
         'sub_familia',
         'depreciacion',
         'producto_sunat',
