@@ -30,6 +30,7 @@ Rotulados de Despacho
                     <th style="text-align: center;">Nro Documento</th>
                     <th>Cliente</th>
                     <th>Estado rotulado</th>
+                    <th>Vendedor</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -66,6 +67,7 @@ Rotulados de Despacho
                                 <span style="color: red;">Por Despachar</span>
                             {% endif %}
                         </td>
+                        <td>{{ confirmacion.cotizacion_venta.vendedor }}</td>                  
                         <td class="text-center">
                             {% if confirmacion.rotulado_estado == False %}
                                 <button data-form-url="{% url 'cotizacion_app:rotulado_estado_actualizar' confirmacion.id %}"

@@ -132,10 +132,10 @@ class ActivoBaseForm(BSModalModelForm):
     class Meta:
         model = ActivoBase
         fields = (
-            'descripcion_venta',
+            # 'descripcion_venta',
             'descripcion_corta',
             'unidad',
-            'peso',
+            # 'peso',
             'familia',
             'sub_familia',
             'depreciacion',

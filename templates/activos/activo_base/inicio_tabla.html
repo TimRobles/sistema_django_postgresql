@@ -3,12 +3,10 @@
     <thead>
         <tr>
             <th>Descripción Corta</th>    
-            <th>Descripción de Venta</th>
             <th>Unidad</th>    
-            <th>Peso</th>    
             <th>SubFamilia</th>    
             <th>Depreciación</th>    
-            <th>ProductoSunat</th>    
+            <th>Producto Sunat</th>    
             <th>Traducción</th>    
             <th>Partida</th>    
             <th>Estado Activo</th>    
@@ -20,14 +18,16 @@
         {% for activo_base in contexto_activo_base %}
             <tr>
                 <td> {{ activo_base.descripcion_corta }}</td>
-                <td> {{ activo_base.descripcion_venta }}</td>
-                <td> {{ activo_base.unidad }}</td>
-                <td> 
-                    {% if activo_base.peso %}
-                    {{ activo_base.peso }}
-                    {% endif %}
+                <td>
+                    {% if activo_base.unidad %}
+                        {{ activo_base.unidad }}
+                    {% endif %}     
                 </td>
-                <td> {{ activo_base.sub_familia }}</td>
+                <td> 
+                    {% if activo_base.sub_familia  %}
+                        {{ activo_base.sub_familia }}
+                    {% endif %}     
+                </td>
                 <td> {{ activo_base.depreciacion }}</td>
                 <td> 
                     {% if activo_base.producto_sunat %}
