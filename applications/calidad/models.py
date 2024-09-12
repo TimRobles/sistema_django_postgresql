@@ -327,7 +327,7 @@ class NotaControlCalidadStock(models.Model):
     @property
     def nota_ingreso(self):
         try:
-            return f"{self.content_type.app_label} - {self.content_type.get_object_for_this_type(id = self.id_registro)}"
+            return self.content_type.get_object_for_this_type(id = self.id_registro)
         except:
             return ""
 
