@@ -1981,7 +1981,8 @@ class DespachoGenerarGuiaView(PermissionRequiredMixin, BSModalDeleteView):
 class ImagenesDespachoCreateView(PermissionRequiredMixin, BSModalCreateView):
     permission_required = ('logistica.change_despacho')
     model = ImagenesDespacho
-    template_name = "includes/formulario generico.html"
+    # template_name = "includes/formulario generico.html"
+    template_name = "logistica/despacho/imagenes.html"
     form_class = ImagenesDespachoForm
 
     def dispatch(self, request, *args, **kwargs):
@@ -1992,18 +1993,39 @@ class ImagenesDespachoCreateView(PermissionRequiredMixin, BSModalCreateView):
     def get_success_url(self, **kwargs):
         return reverse_lazy('logistica_app:despacho_inicio')
 
+    # @transaction.atomic
+    # def form_valid(self, form):
+    #     sid = transaction.savepoint()
+    #     try:
+    #         if self.request.session['primero']:
+    #             despacho = Despacho.objects.get(id=self.kwargs['id_despacho'])
+    #             form.instance.despacho = despacho
+    #             registro_guardar(form.instance, self.request)
+    #         return super().form_valid(form)
+    #     except Exception as ex:
+    #         transaction.savepoint_rollback(sid)
+    #         registrar_excepcion(self, ex, __file__)
+    #     return HttpResponseRedirect(self.get_success_url())
+
+
     @transaction.atomic
     def form_valid(self, form):
         sid = transaction.savepoint()
-        try:
-            if self.request.session['primero']:
-                despacho = Despacho.objects.get(id=self.kwargs['id_despacho'])
-                form.instance.despacho = despacho
-                registro_guardar(form.instance, self.request)
+        # try:
+        if self.request.session['primero']:
+            despacho = Despacho.objects.get(id=self.kwargs['id_despacho'])
+            form.instance.despacho = despacho
+            # registro_guardar(form.instance, self.request)
+
+
+            for img in self.request.FILES.getlist('imagen'):
+                new_image = ImagenesDespacho(imagen=img, despacho=despacho)
+                new_image.save()
+
             return super().form_valid(form)
-        except Exception as ex:
-            transaction.savepoint_rollback(sid)
-            registrar_excepcion(self, ex, __file__)
+        # except Exception as ex:
+        #     transaction.savepoint_rollback(sid)
+        #     registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
