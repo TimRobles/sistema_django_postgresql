@@ -2011,21 +2011,21 @@ class ImagenesDespachoCreateView(PermissionRequiredMixin, BSModalCreateView):
     @transaction.atomic
     def form_valid(self, form):
         sid = transaction.savepoint()
-        # try:
-        if self.request.session['primero']:
-            despacho = Despacho.objects.get(id=self.kwargs['id_despacho'])
-            form.instance.despacho = despacho
-            # registro_guardar(form.instance, self.request)
+        try:
+            if self.request.session['primero']:
+                despacho = Despacho.objects.get(id=self.kwargs['id_despacho'])
+                form.instance.despacho = despacho
 
-
-            for img in self.request.FILES.getlist('imagen'):
-                new_image = ImagenesDespacho(imagen=img, despacho=despacho)
-                new_image.save()
-
-            return super().form_valid(form)
-        # except Exception as ex:
-        #     transaction.savepoint_rollback(sid)
-        #     registrar_excepcion(self, ex, __file__)
+                print(self.request.FILES.getlist('imagen'))
+                for img in self.request.FILES.getlist('imagen'):
+                    print(img)
+                    new_image = ImagenesDespacho.objects.create(imagen=img, despacho=despacho, created_by=self.request.user, updated_by=self.request.user)
+                    new_image.save()
+                self.request.session['primero'] = False
+                return super().form_valid(form)
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
