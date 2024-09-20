@@ -1,0 +1,7 @@
+{% extends 'includes/formulario generico.html' %}
+{% load static %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>

@@ -283,16 +283,18 @@ class DespachoAnularForm(BSModalModelForm):
       
 
 class ImagenesDespachoForm(BSModalModelForm):
+    imagen = forms.ImageField(widget=forms.ClearableFileInput(attrs={'multiple': True})) #añadido 
     class Meta:
         model = ImagenesDespacho
         fields=(
             'imagen',
             )
-
+        
     def __init__(self, *args, **kwargs):
         super(ImagenesDespachoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
 
 
 class NotaSalidaBuscarForm(forms.Form):
