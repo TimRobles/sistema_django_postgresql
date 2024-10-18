@@ -2429,7 +2429,7 @@ def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
     df_reducido = df_reducido[df_reducido['monto'].astype(str).str.strip() != '']
 
     print("#######################################################################")
-    print(df_reducido)
+    print(df_reducido, df_reducido.shape[0])
     print("#######################################################################")
 
 
@@ -2489,8 +2489,13 @@ def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
         lista_datos.append(fila.tipo_comprobante)
         info_cobranza_nota.append(lista_datos)
 
+
+    lista_ordenada = sorted(info_cobranza_nota, key=lambda x: x[2])
+
+
     print("#######################################################################")
-    print(info_cobranza_nota, len(info_cobranza_nota))
+    for sublista in lista_ordenada:
+        print(sublista)
     print("#######################################################################") 
 
     dict_cobranza_nota = {}

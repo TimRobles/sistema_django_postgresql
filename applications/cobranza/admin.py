@@ -5,6 +5,7 @@ from .models import(
     Deuda,
     DeudaProveedor,
     Egreso,
+    EnvioDeuda,
     Ingreso,
     LineaCredito,
     Nota,
@@ -351,6 +352,24 @@ class NotaAdmin(admin.ModelAdmin):
         'tipo_cambio',
         'sociedad',
         'cliente',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.created_by == None:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(EnvioDeuda)
+class EnvioDeudaAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'envio',
+        'fecha',
         'created_at',
         'created_by',
         'updated_at',

@@ -35,4 +35,5 @@ CRONJOBS = [
     ('00 10 * * 1-6', 'applications.verificar.verificar_confirmacion_total', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob_sunarp.log 2>&1'),
     ('00 01 * * *', 'applications.crm.models.actualizar_estado_cliente_crm', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
     ('00 14 * * *', 'applications.datos_globales.funciones.actualizarTotalTipoCambioSunat', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
+    # ('00 15 * * 5', 'applications.reportes.pdf.reporte_cobranza_deudor', '--settings sistema_django_postgresql.settings.prod >> /webapps/sistema_django_prod/sistema_django_postgresql/cronjob.log 2>&1'),
 ]

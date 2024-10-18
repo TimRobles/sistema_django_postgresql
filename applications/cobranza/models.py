@@ -721,3 +721,19 @@ class RedondeoProveedor(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.fecha, self.monto)
+
+class EnvioDeuda(models.Model):
+    envio = models.JSONField() #Usar json.loads() para leer el diccionario
+    fecha = models.DateField(auto_now_add=True)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EnvioDeuda_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='EnvioDeuda_updated_by', editable=False)
+
+    class Meta:
+        verbose_name = 'Envio Deuda'
+        verbose_name_plural = 'Envios Deuda'
+
+    def __str__(self):
+        return "%s" % (self.fecha)
