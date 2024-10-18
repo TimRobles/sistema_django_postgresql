@@ -77,10 +77,10 @@ class MarcaActivo(models.Model):
         return self.nombre
 
 class ActivoBase(models.Model):
-    descripcion_venta = models.CharField('Descripción de Venta', max_length=150, null=True, blank=True)
+    # descripcion_venta = models.CharField('Descripción de Venta', max_length=150, null=True, blank=True)
     descripcion_corta = models.CharField('Descripción Corta', max_length=150)
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
-    peso = models.DecimalField('Peso', max_digits=6, decimal_places=2, blank=True, null=True)
+    # peso = models.DecimalField('Peso', max_digits=6, decimal_places=2, blank=True, null=True)
     sub_familia = models.ForeignKey(SubFamiliaActivo, on_delete=models.CASCADE, blank=True, null=True)
     depreciacion = models.DecimalField('Depreciación', max_digits=6, decimal_places=3)
     vida_util = models.IntegerField('Vida Útil (meses)', blank=True, null=True)
