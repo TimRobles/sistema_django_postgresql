@@ -2770,10 +2770,14 @@ class ReporteDeudas(TemplateView):
         titulo = "Reporte de Deudas - " + abreviatura + " - " + DICT_CLIENTE[global_cliente] + " - " + FECHA_HOY
 
         buf = generar_reporte_deudas(global_sociedad, global_cliente, titulo)
-        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
-        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+        
+        if isinstance(buf, str):
+            return HttpResponse(status=204)
+        else:
+            respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+            respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
-        return respuesta
+            return respuesta
 
 
 class ReporteCobranza(TemplateView):

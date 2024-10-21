@@ -295,6 +295,7 @@ class Deuda(models.Model):
     sociedad = models.ForeignKey(Sociedad, on_delete=models.PROTECT)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='Deuda_cliente')
     estado_cancelado = models.BooleanField(default=False)
+    texto = models.CharField(max_length=500, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Deuda_created_by', editable=False)
@@ -376,9 +377,15 @@ class Deuda(models.Model):
             except:
                 return (None, None, None)
         return (None, None, None)
+    
+    def save(self, force_insert=None, force_update=None, using=None, update_fields=None):
+        self.texto = "%s" % (self.documento)
+        return super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
 
     def __str__(self):
-        return "%s %s %s" % (self.documento, self.moneda.simbolo, self.monto)
+        return "%s" % (self.texto)
+        # return "%s %s %s" % (self.documento, self.moneda.simbolo, self.monto)
         # return "%s %s %s (%s %s)" % (self.documento, self.moneda.simbolo, self.monto, self.moneda.simbolo, self.saldo)
 
 def deuda_post_save(*args, **kwargs):

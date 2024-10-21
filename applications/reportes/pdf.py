@@ -671,8 +671,8 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
                     fila.append(dict_productos[lista[0]+'|'+lista[1]])
                     TablaDatos.append(fila)
 
-
-    TablaDatos.append(["","","", "Deuda Total:", round(suma_deuda_total,2) ,"","","","","","",""])
+    if TablaDatos != []:
+        TablaDatos.append(["","","", "Deuda Total:", round(suma_deuda_total,2) ,"","","","","","",""])
 
     # texto = '''Agradeceremos pueda realizar los pagos a nombre de <strong>%s</strong> y confirmarnos el pago en cualquiera de las siguientes cuentas:''' % DICT_SOCIEDAD[global_sociedad].razon_social
     # list_texto.append(texto)
@@ -718,12 +718,11 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
                 list_temp.extend([fila[0], fila[1], fila[2]])
                 list_cuenta_dolares.append(list_temp)
 
-    buf = generarReporteDeudas(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color, list_cuenta_dolares, list_cuenta_soles)
-
-    # respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
-    # respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
-
-    return buf
+    if TablaDatos == []:
+        return "No registra deudas vencidas, ni pendientes por vencer"
+    else:
+        buf = generarReporteDeudas(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color, list_cuenta_dolares, list_cuenta_soles)
+        return buf
 
 def reporte_deuda(global_sociedad):
     sql_cobranza_nota = ''' (SELECT
@@ -932,7 +931,7 @@ def reporte_deuda(global_sociedad):
         clientes_correos[cliente] = list(correos_cliente)
         interlocutores_correos[cliente] = list(correos_interlocutores)
 
-    return clientes, clientes_correos,interlocutores_correos
+    return clientes, clientes_correos, interlocutores_correos
 
 def reporte_cobranza_deudor():
     try:
@@ -947,6 +946,9 @@ def reporte_cobranza_deudor():
             for cliente in data[0]:
                 titulo = "Reporte de Deudas - " + FECHA_HOY
                 archivo = generar_reporte_deudas(global_sociedad = str(sociedad.id), global_cliente=str(cliente), titulo=titulo)
+                if isinstance(archivo, str):
+                    print(f"Reporte para Sociedad {sociedad.id} y Cliente {cliente}: {archivo}")
+                    continue
                 asunto = "Recordatorio - Deudas Pendientes " + str(date.today())
                 mensaje = "Estimado cliente, usted cuenta con deudas pendientes por cancelar."
                 email_remitente = EMAIL_REMITENTE
@@ -986,7 +988,7 @@ def reporte_cobranza_deudor():
         registrar_excepcion_sin_user(ex, __file__)
         print(ex)
         
-    envio_deuda = EnvioDeuda.objects.latest('fecha')
+    envio_deuda = EnvioDeuda.objects.latest('created_at')
     envio_dict = json.loads(envio_deuda.envio)
 
     for sociedad_id, clientes in envio_dict.items():
