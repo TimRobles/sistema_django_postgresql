@@ -693,7 +693,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
             ON dgm.id=dgcb.moneda_id
         LEFT JOIN sociedad_sociedad ss
             ON ss.id=dgcb.sociedad_id
-        WHERE dgcb.sociedad_id='%s' AND dgcb.estado='1' AND dgcb.efectivo=False''' %(global_sociedad)
+        WHERE dgcb.sociedad_id='%s' AND dgcb.estado='1' AND dgcb.efectivo=False AND dgcb.percepcion=False''' %(global_sociedad)
     query_info_cuentas = CuentaBancariaSociedad.objects.raw(sql_cuentas_bancarias)
 
     info_cuentas = []
