@@ -638,7 +638,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
     TablaDatos = []
     for lista in list_general:
         if "VENCIDO" in lista[14]: 
-            if lista[5] >= float(100):
+            if lista[5] >= float(0):
                 fila = []
                 fila.append(lista[0])
                 fila.append(lista[1])
@@ -655,7 +655,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
                 TablaDatos.append(fila)
         else:
             if any(float(numero) > float(-8) for numero in lista[13]):
-                if lista[5] >= float(100):
+                if lista[5] >= float(0):
                     fila = []
                     fila.append(lista[0])
                     fila.append(lista[1])
@@ -1248,7 +1248,7 @@ def generar_reporte_cobranza(global_sociedad, titulo):
 
     TablaDatos = []
     for lista in list_cobranza:
-        if lista[4] > float(100):
+        if lista[4] > float(0):
             fila = []
             fila.append(lista[0])
             fila.append(lista[1])
