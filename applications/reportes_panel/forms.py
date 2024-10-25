@@ -80,3 +80,33 @@ class ReporteUbigeoVentasFiltrosForm(forms.Form):
         # self.fields['producto'].required = False
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ReportesClienteFacturacionFiltrosForm(forms.Form):
+    fecha_inicio = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+    fecha_fin = forms.DateField(
+        required=False,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        filtro_fecha_inicio = kwargs.pop('filtro_fecha_inicio')
+        filtro_fecha_fin = kwargs.pop('filtro_fecha_fin')
+        super(ReportesClienteFacturacionFiltrosForm, self).__init__(*args, **kwargs)
+        self.fields['fecha_inicio'].initial = filtro_fecha_inicio
+        self.fields['fecha_fin'].initial = filtro_fecha_fin
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

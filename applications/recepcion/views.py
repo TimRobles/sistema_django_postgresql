@@ -472,11 +472,11 @@ class AsistenciaPersonalCreateView(PermissionRequiredMixin, BSModalCreateView):
                 return super().form_invalid(form)
 
         try:
-            sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario).sociedad
+            sociedad = DatosContratoPlanilla.objects.get(usuario = form.instance.usuario, estado_alta_baja=1).sociedad
     
         except:
             try:
-                sociedad = DatosContratoHonorarios.objects.get(usuario = form.instance.usuario).sociedad
+                sociedad = DatosContratoHonorarios.objects.get(usuario = form.instance.usuario, estado_alta_baja=1).sociedad
 
             except:
                 sociedad = None
