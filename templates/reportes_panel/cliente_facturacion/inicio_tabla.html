@@ -1,0 +1,26 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th class="text-justify text-nowrap">#</th>
+            <th class="text-justify text-nowrap">Razón Social</th>
+            <th class="text-justify text-nowrap">RUC</th>
+            <th class="text-center text-nowrap">Nro. Ventas</th>
+            <th class="text-center text-nowrap">Monto Total Venta</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fila in contexto_cliente_facturacion %}
+            <td> {{ forloop.counter }} </td>
+            {% for dato in fila %}
+                {% if forloop.counter == 2 %}
+                    <td class="text-center text-nowrap">{{ dato }}</td>
+                {% elif forloop.counter == 3 or forloop.counter == 4 %}
+                    <td class="text-end text-nowrap">{{ dato }}</td>     
+                {% else %}
+                    <td class="text-justify text-nowrap">{{ dato }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

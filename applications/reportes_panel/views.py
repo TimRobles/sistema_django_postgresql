@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from applications.importaciones import *
 from django.db.models.functions import Substr
-from applications.reportes_panel.forms import ReportesPanelFiltrosForm, ReporteProductoClienteVentasFiltrosForm, ReporteUbigeoVentasFiltrosForm
+from applications.reportes_panel.forms import ReportesClienteFacturacionFiltrosForm, ReportesPanelFiltrosForm, ReporteProductoClienteVentasFiltrosForm, ReporteUbigeoVentasFiltrosForm
 from applications.material.forms import Material
 from applications.comprobante_venta.models import FacturaVentaDetalle, FacturaVenta
 from applications.reportes.funciones import *
@@ -17,6 +17,7 @@ import requests
 from plotly.offline import plot
 import plotly.express as px
 import plotly.graph_objects as go
+from applications.reportes.excel import dataClienteFacturacion
 
 def consultar_marca_ventas(filtro_sociedad, filtro_marca, filtro_fecha_inicio, filtro_fecha_fin):
     sql_base = '''SELECT
@@ -427,3 +428,80 @@ def grafico_departamentos(df):
     return plot(fig, auto_open=False, output_type='div')
     # fig = go.Figure(fig)
     # return fig.to_html(full_html=False)
+
+
+class ReportesClientesFacturacionView(FormView):
+    template_name = "reportes_panel/cliente_facturacion/inicio.html"
+    form_class = ReportesClienteFacturacionFiltrosForm
+    success_url = '.' 
+
+    def get_form_kwargs(self):
+        kwargs = super(ReportesClientesFacturacionView, self).get_form_kwargs()
+        kwargs['filtro_fecha_inicio'] = self.request.GET.get('fecha_inicio')
+        kwargs['filtro_fecha_fin'] = self.request.GET.get('fecha_fin')
+        global global_fecha_inicio, global_fecha_fin
+        global_fecha_inicio = self.request.GET.get('fecha_inicio')
+        global_fecha_fin = self.request.GET.get('fecha_fin')
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super(ReportesClientesFacturacionView, self).get_context_data(**kwargs)
+        contexto_filtros = []
+        filtro_fecha_inicio = self.request.GET.get('fecha_inicio')
+        filtro_fecha_fin = self.request.GET.get('fecha_fin')
+        contexto_filtros.append(f"filtro_fecha_inicio={filtro_fecha_inicio}")
+        contexto_filtros.append(f"filtro_fecha_fin={filtro_fecha_fin}")
+        context["contexto_filtros"] = "&".join(contexto_filtros)
+        context['contexto_cliente_facturacion'] = dataClienteFacturacion(filtro_fecha_inicio, filtro_fecha_fin)
+        return context
+    
+
+class ReporteExcelClienteFacturacion(TemplateView):
+    def get(self, request, *args,**kwargs):
+        filtro_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        filtro_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+
+        def reporte_cliente_facturacion():
+            list_encabezado = [
+                'Razón Social',
+                'RUC',
+                'Nro. Ventas',
+                'Monto Total',
+                ]
+
+            wb = Workbook()
+            hoja = wb.active
+            hoja.title = 'Clientes VS Facturación'
+            hoja.append(tuple(list_encabezado))
+
+            col_range = hoja.max_column  # get max columns in the worksheet
+            # cabecera de la tabla
+            for col in range(1, col_range + 1):
+                cell_header = hoja.cell(1, col)
+                cell_header.fill = RELLENO_EXCEL
+                cell_header.font = NEGRITA
+
+            data = dataClienteFacturacion(filtro_fecha_inicio, filtro_fecha_fin)
+
+            for fila in data:
+                hoja.append(fila)
+
+            for row in hoja.rows:
+                for col in range(hoja.max_column):
+                    row[col].border = BORDE_DELGADO
+                    if col == 1 or col == 2:
+                        row[col].alignment = ALINEACION_DERECHA
+                    elif col == 3:
+                        row[col].alignment = ALINEACION_DERECHA
+                        row[col].number_format = FORMATO_DOLAR
+
+            ajustarColumnasSheet(hoja)
+            return wb
+
+        wb = reporte_cliente_facturacion()
+        nombre_archivo = "Reporte Cliente VS Facturación - " + FECHA_HOY + ".xlsx"
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename ={0}".format(nombre_archivo)
+        respuesta['content-disposition']= content
+        wb.save(respuesta)
+        return respuesta
