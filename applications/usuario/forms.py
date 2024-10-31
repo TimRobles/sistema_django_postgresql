@@ -1,9 +1,12 @@
 from django import forms 
 from django.contrib.auth import authenticate
 from applications.importaciones import *
+from django.core.exceptions import ValidationError
+
 
 from applications.usuario.models import HistoricoUser
 from applications.usuario.models import DatosUsuario
+from applications.usuario.models import Vacaciones, VacacionesDetalle
 
 from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 
@@ -220,3 +223,127 @@ class HistoricoUserCreateForm(BSModalModelForm):
         self.fields['usuario'].queryset = get_user_model().objects.exclude(HistoricoUser_usuario__estado=1).exclude(HistoricoUser_usuario__estado=2)
 
 
+    ################################# V A C A C I O N E S ################################################
+
+class VacacionesBuscarForm(forms.Form):
+    usuario = forms.ModelChoiceField(queryset=get_user_model().objects, required=False)
+    estado = forms.ChoiceField(choices=((None, '--------------------'),) + ESTADO_VACACIONES, required=False)
+
+    def __init__(self, *args, **kwargs):
+        filtro_estado = kwargs.pop('filtro_estado')
+        filtro_usuario = kwargs.pop('filtro_usuario')
+
+        super(VacacionesBuscarForm, self).__init__(*args, **kwargs)
+        self.fields['estado'].initial = filtro_estado
+        self.fields['usuario'].initial = filtro_usuario
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class VacacionesForm(BSModalModelForm):
+    class Meta:
+        model = Vacaciones
+        fields = (
+            'usuario',
+            'dias_vacaciones',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(VacacionesForm, self).__init__(*args, **kwargs)
+        self.fields['usuario'].queryset = (get_user_model().objects.filter(is_active=1).order_by('username'))     
+        self.fields['dias_vacaciones'].required = True
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class VacacionesDetalleForm(BSModalModelForm):
+    class Meta:
+        model = VacacionesDetalle
+        fields = (
+            'fecha_inicio',
+            'fecha_fin',
+            'motivo',
+            )
+        
+        widgets = {
+            'fecha_inicio': forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ), 
+            
+            'fecha_fin': forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ), 
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.usuario = kwargs.pop('usuario')
+        self.dias_restantes = kwargs.pop('dias_restantes')
+        super(VacacionesDetalleForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+    def clean_fecha_fin(self):
+        fecha_inicio = self.cleaned_data.get('fecha_inicio')
+        fecha_fin = self.cleaned_data.get('fecha_fin')
+
+        if fecha_fin < fecha_inicio:
+            self.add_error('fecha_fin', 'La Fecha Fin debe ser igual o mayor a la Fecha Inicio')
+        return fecha_fin
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_inicio = cleaned_data.get('fecha_inicio')
+        fecha_fin = cleaned_data.get('fecha_fin')
+
+        if fecha_inicio and fecha_fin:
+            existing_records = VacacionesDetalle.objects.filter(
+                fecha_inicio__lte=fecha_fin,
+                fecha_fin__gte=fecha_inicio,
+                vacaciones__usuario = self.usuario,
+            )
+            if existing_records.exists():
+                self.add_error('fecha_fin', 'Ya existe un registro de vacaciones que coincide con estas fechas.')
+
+        if fecha_inicio and fecha_fin:
+            duration = (fecha_fin - fecha_inicio).days + 1  # +1 para incluir el día de inicio
+            if duration > self.dias_restantes:
+
+                self.add_error('fecha_fin', f'El rango de fechas seleccionadas contiene {duration} días')
+                self.add_error('fecha_fin', f'Solo se cuenta con {self.dias_restantes} días restantes de vacaciones')
+
+        return cleaned_data
+
+class VacacionesDetalleActualizarForm(BSModalModelForm):
+    class Meta:
+        model = VacacionesDetalle
+        fields = (
+            'fecha_inicio',
+            'fecha_fin',
+            'motivo',
+            )
+        
+        widgets = {
+            'fecha_inicio': forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ), 
+            
+            'fecha_fin': forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ), 
+        }        
+
+    def __init__(self, *args, **kwargs):
+        super(VacacionesDetalleActualizarForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

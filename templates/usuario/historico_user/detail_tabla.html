@@ -1,0 +1,124 @@
+
+<h3> Datos del usuario </h3>
+
+<div class="table-responsive">
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre Completo</th>
+                <th>Tipo de Documento</th>
+                <th>Nro. Documento</th>
+                <th>Fecha de Nacimiento</th>
+                <th>Estado</th>
+                <th>Direc</th>
+            </tr>
+        </thead>
+
+        
+        <tbody>
+            {% for dato in datos_usuario %}
+            <tr>
+                <td>{{ dato.usuario.id }}</td>
+                <td>{{ dato.usuario.first_name }} {{ dato.usuario.last_name }}</td>
+                <td>{{ dato.get_tipo_documento_display }}</td>
+                <td>{{ dato.numero_documento }}</td>
+                <td>{{ dato.fecha_nacimiento }}</td>
+                <td>{{ dato.get_estado_display}}</td>
+                <td>{{ dato.direccion}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+<h3> Historico del usuario </h3>
+
+<div class="table-responsive">
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Usuario</th>
+                <th>Fecha de Alta</th>
+                <th>Fecha de Baja</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for historicouser in historico_user.all %}
+            <tr>
+                <td>{{ historicouser.usuario.id }}</td>
+                <td>{{ historicouser.usuario }}</td>
+                <td>{{ historicouser.fecha_alta|date:'d/m/Y' }}</td>
+                <td>{{ historicouser.fecha_baja|date:'d/m/Y' }}</td>
+                <td>{{ historicouser.get_estado_display}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        
+    </table>
+</div>
+
+<br>
+
+<h3>Vacaciones </h3>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>id_user</th>
+                <th>Usuario</th>
+                <th>Días de Vacaciones</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vacaciones in vacaciones_usuario %}
+            <tr>
+                <td>{{ vacaciones.usuario.id }}</td>
+                <td>{{ vacaciones.usuario }}</td>
+                <td>{{ vacaciones.dias_vacaciones }}</td>
+                <td>{{ vacaciones.get_estado_display }}</td>
+                <td> 
+                    Registrar días 
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br>
+
+<h3>Permisos</h3>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Permiso</th>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th>Content Type</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for permiso in datos_usuario.usuario.get_all_permissions %}
+            <tr>
+                <td>{{ permiso }}</td>
+                <td>{{ permiso.name }}</td>
+                <td>{{ permiso.codename }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        
+    </table>
+</div>

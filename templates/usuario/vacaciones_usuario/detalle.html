@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Detalle Vacaciones
+{% endblock titulo %}
+
+{% block contenido %}
+    <div id="tabla">
+        {% include 'usuario/vacaciones_usuario/detalle_tabla.html' %}
+    </div>
+{% endblock contenido %}

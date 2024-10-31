@@ -1,10 +1,13 @@
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from django.shortcuts import render
+from django.core.paginator import Paginator
 
 from .models import (
     DatosUsuario,
     HistoricoUser,
+    Vacaciones,
+    VacacionesDetalle,
     )
 
 from .forms import (
@@ -13,6 +16,11 @@ from .forms import (
     UserPasswordForm,
     HistoricoUserDarBajaForm,
     HistoricoUserDarAltaForm,
+    VacacionesBuscarForm,
+    VacacionesDetalleForm,
+    VacacionesForm,
+    VacacionesDetalleForm,
+    VacacionesDetalleActualizarForm,
     )
 
 class DatosUsuarioView(LoginRequiredMixin, FormView):
@@ -203,23 +211,47 @@ class HistoricoUserDarAltaView(PermissionRequiredMixin, BSModalCreateView):
         context['titulo'] = 'Historico Usuario'
         return context
 
-class HistoricoDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = ('usuario.view_historicouser')
+
+class HistoricoDetailView(DetailView):
     model = get_user_model()
     template_name = "usuario/historico_user/detail.html"
-    context_object_name = 'contexto_user'
+    context_object_name = 'contexto_historico_user'
 
     def get_context_data(self, **kwargs):
-        contexto_historicouser = HistoricoUser.objects.filter(usuario__id = self.kwargs['pk'])
-        try:
-            datos_usuario = DatosUsuario.objects.get(usuario__id = self.kwargs['pk'])
-        except:
-            datos_usuario = None
-
+        # context = super().get_context_data(**kwargs)
         context = super(HistoricoDetailView, self).get_context_data(**kwargs)
+
+        historico_user = HistoricoUser.objects.filter(usuario=self.kwargs['pk'])
+        datos_usuario = DatosUsuario.objects.select_related('usuario').filter(usuario=self.kwargs['pk'])
+        vacaciones_usuario = Vacaciones.objects.select_related('usuario').filter(usuario=self.kwargs['pk'])
+
+        context['historico_user'] = historico_user
         context['datos_usuario'] = datos_usuario
-        context['contexto_historicouser'] = contexto_historicouser
+        context['vacaciones_usuario'] = vacaciones_usuario
+
         return context
+
+def HistoricoDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'usuario/historico_user/detail_tabla.html'
+        context = {}
+        
+        historico_user = HistoricoUser.objects.filter(usuario=pk)
+        datos_usuario = DatosUsuario.objects.select_related('usuario').filter(usuario=pk)
+        vacaciones_usuario = Vacaciones.objects.select_related('usuario').filter(usuario=pk)
+
+        context['contexto_historico_user'] = historico_user
+        context['historico_user'] = historico_user
+        context['datos_usuario'] = datos_usuario
+        context['vacaciones_usuario'] = vacaciones_usuario
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
 
 
 class HistoricoUserCreateView(PermissionRequiredMixin, BSModalCreateView):
@@ -251,3 +283,206 @@ class HistoricoUserCreateView(PermissionRequiredMixin, BSModalCreateView):
         context['accion'] = 'Registrar'
         context['titulo'] = 'Historico Usuario'
         return context
+    
+    ################################# V A C A C I O N E S ################################################
+
+class VacacionesListView(FormView):
+    template_name = "usuario/vacaciones_usuario/inicio.html"
+    form_class = VacacionesBuscarForm
+    success_url = '.'
+
+    def get_form_kwargs(self):
+        kwargs = super(VacacionesListView, self).get_form_kwargs()
+        kwargs['filtro_estado'] = self.request.GET.get('estado')
+        kwargs['filtro_usuario'] = self.request.GET.get('usuario')
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(VacacionesListView,self).get_context_data(**kwargs)
+        vacaciones = Vacaciones.objects.all()
+        
+        filtro_estado = self.request.GET.get('estado')
+        filtro_usuario = self.request.GET.get('usuario')
+        
+        contexto_filtro = []   
+        
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            vacaciones = vacaciones.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_usuario:
+            condicion = Q(usuario = filtro_usuario)
+            vacaciones = vacaciones.filter(condicion)
+            contexto_filtro.append(f"usuario={filtro_usuario}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if self.request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  20
+
+        if len(vacaciones) > objectsxpage:
+            paginator = Paginator(vacaciones, objectsxpage)
+            page_number = self.request.GET.get('page')
+            vacaciones = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = vacaciones
+        context['contexto_vacaciones'] = vacaciones
+        return context
+
+def VacacionesTabla(request):
+    data = dict()
+    if request.method == 'GET':
+        template = 'usuario/vacaciones_usuario/inicio_tabla.html'
+        context = {}
+        vacaciones = Vacaciones.objects.all()
+
+        filtro_estado = request.GET.get('estado')
+        filtro_usuario = request.GET.get('usuario')
+
+        contexto_filtro = []
+
+        if filtro_estado:
+            condicion = Q(estado = filtro_estado)
+            vacaciones = vacaciones.filter(condicion)
+            contexto_filtro.append(f"estado={filtro_estado}")
+
+        if filtro_usuario:
+            condicion = Q(usuario = filtro_usuario)
+            vacaciones = vacaciones.filter(condicion)
+            contexto_filtro.append(f"usuario={filtro_usuario}")
+
+        context['contexto_filtro'] = "&".join(contexto_filtro)
+
+        context['pagina_filtro'] = ""
+        if request.GET.get('page'):
+            if context['contexto_filtro']:
+                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+            else:
+                context['pagina_filtro'] = f'page={request.GET.get("page")}'
+        context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+        objectsxpage =  20
+
+        if len(vacaciones) > objectsxpage:
+            paginator = Paginator(vacaciones, objectsxpage)
+            page_number = request.GET.get('page')
+            vacaciones = paginator.get_page(page_number)
+   
+        context['contexto_pagina'] = vacaciones
+        context['contexto_vacaciones'] = vacaciones
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class VacacionesDetailView(DetailView):
+    model = Vacaciones
+    template_name = "usuario/vacaciones_usuario/detalle.html"
+    context_object_name = 'contexto_vacaciones'
+
+    def get_context_data(self, **kwargs):
+        vacaciones = Vacaciones.objects.get(id = self.kwargs['pk'])
+
+        context = super(VacacionesDetailView, self).get_context_data(**kwargs)
+        context['contexto_vacaciones'] = vacaciones
+        context['detalle_vacaciones'] = VacacionesDetalle.objects.filter(vacaciones = vacaciones)
+        
+        return context
+    
+def VacacionesDetailTabla(request, pk):
+    data = dict()
+    if request.method == 'GET':
+        template = 'usuario/vacaciones_usuario/detalle_tabla.html'
+        context = {}
+        vacaciones = Vacaciones.objects.get(id = pk)
+
+        context['contexto_vacaciones'] = vacaciones
+        context['detalle_vacaciones'] = VacacionesDetalle.objects.filter(vacaciones = vacaciones)
+
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
+
+
+class VacacionesCreateView(BSModalCreateView):
+    model = Vacaciones
+    template_name = "includes/formulario generico.html"
+    form_class = VacacionesForm
+    success_url = reverse_lazy('usuario_app:vacaciones_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(VacacionesCreateView, self).get_context_data(**kwargs)
+        context['accion'] = "Registrar"
+        context['titulo'] = "Vacaciones"
+        return context
+
+class VacacionesDetalleCreateView(BSModalCreateView):
+    model = VacacionesDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = VacacionesDetalleForm
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('usuario_app:vacaciones_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    def form_valid(self, form):
+        # Obtenemos la instancia de Vacaciones
+        vacaciones_instance = Vacaciones.objects.get(id=self.kwargs['pk'])
+        form.instance.vacaciones = vacaciones_instance
+        
+        # Actualizamos el estado de Vacaciones a 2
+        form.instance.vacaciones.estado = 2
+        form.instance.vacaciones.save()
+
+        # Guardamos el registro
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['usuario'] = Vacaciones.objects.get(id=self.kwargs['pk']).usuario  # Pasa el usuario al formulario
+        kwargs['dias_restantes'] = Vacaciones.objects.get(id=self.kwargs['pk']).dias_restantes  
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super(VacacionesDetalleCreateView, self).get_context_data(**kwargs)
+        context['accion']="Registrar"
+        context['titulo']="Dias"
+        return context
+    
+
+class VacacionesDetalleUpdateView(BSModalUpdateView):
+    model = VacacionesDetalle
+    template_name = "includes/formulario generico.html"
+    form_class = VacacionesDetalleActualizarForm
+    success_url = '.'
+    
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(VacacionesDetalleUpdateView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Días"
+        return context
+

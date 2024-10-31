@@ -1,25 +1,23 @@
 <table class="table">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Usuario</th>
-            <th>Fecha de Alta</th>
-            <th>Fecha de Baja</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+            <th style="text-align: center;">Fecha de Alta | Ingreso </th>
+            <th style="text-align: center;">Fecha de Baja | Salida </th>
+            <th style="text-align: center;">Estado</th>
+            <th style="text-align: center;">Acciones</th>
 
         </tr>
     </thead>
     <tbody>
         {% for historicouser in contexto_historicouser %}
         <tr>
-            <td>{{ historicouser.id }}</td>
             <td>{{ historicouser.usuario }}</td>
-            <td>{{ historicouser.fecha_alta|date:'d/m/Y' }}</td>
-            <td>{{ historicouser.fecha_baja|date:'d/m/Y' }}</td>
-            <td>{{ historicouser.get_estado_display}}</td>
+            <td style="text-align: center;">{{ historicouser.fecha_alta|date:'d/m/Y' }}</td>
+            <td style="text-align: center;">{{ historicouser.fecha_baja|date:'d/m/Y' }}</td>
+            <td style="text-align: center;">{{ historicouser.get_estado_display}}</td>
                          
-            <td>
+            <td style="text-align: center;">
             {% if historicouser.estado == 1 %}                   
                 <button data-form-url="{% url 'usuario_app:baja_usuarios' historicouser.id %}"
                     data-table-url="{% url 'usuario_app:historico_usuarios_tabla' %}"
