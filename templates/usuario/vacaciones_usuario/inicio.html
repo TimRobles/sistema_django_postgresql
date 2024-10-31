@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}
+    Vacaciones
+{% endblock titulo %}
+
+{% block contenido %}
+
+    <h3>Vacaciones
+        <button data-form-url="{% url 'usuario_app:vacaciones_registrar' %}"
+            data-table-url="{% url 'usuario_app:vacaciones_tabla' %}"
+            class="create badge bg-primary">
+            Registrar Vacaciones
+        </button>
+    </h3>
+
+
+    <form action="" method="get" autocomplete="off">
+        <div class="row">
+            {% for field in form %}
+            <div class="col-lg-4">
+                <div class="input-group flex-nowrap {% if field.errors %} invalid{% endif %}"
+                {% if field.help_text %}
+                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+                {% endif %} >
+                
+                {% if 'Boton' not in field.label %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+                </div>
+                {% for error in field.errors %}
+                <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            <div class="col-lg-4 my-auto">
+                <input class="btn btn-outline-dark" type="submit" value="Buscar">
+                <a class="btn btn-outline-dark" href="{% url 'usuario_app:vacaciones_inicio' %}">Limpiar</a>
+            </div>            
+        </div>
+    </form>
+
+    {% include 'includes/paginador.html' %}
+    <div class="table-responsive" id="tabla">
+        {% include 'usuario/vacaciones_usuario/inicio_tabla.html' %}
+    </div>
+    {% include 'includes/paginador inferior.html' %}
+    
+{% endblock contenido %}
+

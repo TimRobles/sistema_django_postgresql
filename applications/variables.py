@@ -684,6 +684,17 @@ ORIGEN = (
     (2, 'BLOQUEO POR DESGUACE'),
 )
 
+ESTADO_VACACIONES = (
+    (1, 'REGISTRADAS'),
+    (2, 'INICIADAS'),
+    (3, 'TERMINADAS'),
+)
+
+ESTADO_VACACIONES_DETALLE = (
+    (1, 'PENDIENTE'),
+    (2, 'APROBADO'),
+    (3, 'RECHAZADO'),
+)
 
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
 
