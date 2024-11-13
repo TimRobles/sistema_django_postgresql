@@ -185,6 +185,32 @@ class ReporteFacturacionGeneralExcelForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class ReporteFacturacionClienteExcelForm(forms.Form):
+    fecha_inicio = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+    )
+    fecha_fin = forms.DateField(
+        required=True,
+        widget = forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                )
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(ReporteFacturacionClienteExcelForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
 class ReporteComportamientoClienteExcelForm(forms.Form):
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all(), required=False)
 

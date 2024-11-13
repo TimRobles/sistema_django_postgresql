@@ -48,6 +48,7 @@ def ReporteFacturacionAsesorComercial(fecha_inicio, fecha_fin, asesor_comercial)
         asesores = get_user_model().objects.filter(id__in = [cotizacion.vendedor.id for cotizacion in CotizacionVenta.objects.all()])
 
     wb = Workbook()
+
     data_resumen = []
     total_resumen = Decimal('0.00')
     count = 0
@@ -137,6 +138,7 @@ def ReporteFacturacionAsesorComercial(fecha_inicio, fecha_fin, asesor_comercial)
         total = total_factura + total_boleta
         total_nota = total_nota_factura + total_nota_boleta
         total_total = total - total_nota
+
         list_encabezado = [
             'Asesor Comercial',
             'Fecha Emisión',
@@ -154,7 +156,7 @@ def ReporteFacturacionAsesorComercial(fecha_inicio, fecha_fin, asesor_comercial)
                 hoja.title = str(asesor_comercial.username)
                 # count += 1 
 
-            data.sort(key = lambda i: i[1], reverse=False)
+            data.sort(key=lambda x: datetime.strptime(x[1], "%d/%m/%Y"))
             # data.append(["","","SUBTOTAL",("%s %s" % (moneda_base.simbolo, intcomma(redondear(total))))])
             
             hoja.append(tuple(list_encabezado))
@@ -671,132 +673,141 @@ def ReporteFacturacionGeneral(fecha_inicio, fecha_fin):
 
 ####################################################  CLIENTE VS FACTURACIÓN ####################################################   
 
-def dataClienteFacturacion(fecha_inicio, fecha_fin):
+def dataFacturacionCliente(fecha_inicio, fecha_fin):
     moneda_base = Moneda.objects.get(simbolo='$')
 
-    # list_encabezado = [
-    #     'Razón Social',
-    #     'RUC'
-    #     'Nro. Ventas',
-    #     'Monto Total',
-    #     ]
+    list_encabezado = [
+        'Razón Social',
+        'RUC',
+        'Nro. Ventas',
+        'Monto Total',
+        ]
 
-    # wb = Workbook()
-    # hoja = wb.active
-    # hoja.title = 'Clientes VS Facturación'
-    # hoja.append(tuple(list_encabezado))
+    wb = Workbook()
+    hoja = wb.active
+    hoja.title = 'Clientes VS Facturación'
+    hoja.append(tuple(list_encabezado))
 
-    # col_range = hoja.max_column  # get max columns in the worksheet
-    # # cabecera de la tabla
-    # for col in range(1, col_range + 1):
-    #     cell_header = hoja.cell(1, col)
-    #     cell_header.fill = RELLENO_EXCEL
-    #     cell_header.font = NEGRITA
-
-    data = []
-    for cliente in Cliente.objects.filter(estado_sunat = 1):
-        total = Decimal('0.00')
-        total_factura = Decimal('0.00')
-        total_boleta = Decimal('0.00')
-        # total_nota_credito = Decimal('0.00')
-        nf = 0
-        nb = 0
-        # nn = 0
-
-        if fecha_inicio not in ['None', None] and fecha_fin not in ['None', None]:
-
-            for factura in FacturaVenta.objects.filter(cliente=cliente, estado=4, fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin):
-                if factura.moneda == moneda_base:
-                    total_factura += factura.total
-                else:
-                    total_factura += (factura.total / factura.tipo_cambio.tipo_cambio_venta).quantize(Decimal('0.01'))
-                
-                nf += 1
-
-            for boleta in BoletaVenta.objects.filter(cliente=cliente, estado=4, fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin):
-                if boleta.moneda == moneda_base:
-                    total_boleta += boleta.total
-                else:
-                    total_boleta += (boleta.total / boleta.tipo_cambio.tipo_cambio_venta).quantize(Decimal('0.01'))
-                
-                nb += 1
-
-            # for nota_credito in NotaCredito.objects.filter(cliente=cliente, estado=4, fecha_emision__gte=fecha_inicio, fecha_emision__lte=fecha_fin):
-            #     if nota_credito.moneda == moneda_base:
-            #         total_nota_credito += nota_credito.total
-            #     else:
-            #         total_nota_credito += (nota_credito.total / nota_credito.tipo_cambio.tipo_cambio_venta).quantize(Decimal('0.01'))
-                
-            #     nn += 1
-        else:
-
-            for factura in FacturaVenta.objects.filter(cliente=cliente, estado=4):
-                if factura.moneda == moneda_base:
-                    total_factura += factura.total
-                else:
-                    total_factura += (factura.total / factura.tipo_cambio.tipo_cambio_venta).quantize(Decimal('0.01'))
-                    
-                nf += 1
-
-            for boleta in BoletaVenta.objects.filter(cliente=cliente, estado=4):
-                if boleta.moneda == moneda_base:
-                    total_boleta += boleta.total
-                else:
-                    total_boleta += (boleta.total / boleta.tipo_cambio.tipo_cambio_venta).quantize(Decimal('0.01'))
-                
-                nb += 1
-
-            # for nota_credito in NotaCredito.objects.filter(cliente=cliente, estado=4):
-            #     if nota_credito.moneda == moneda_base:
-            #         total_nota_credito += nota_credito.total
-            #     # else:
-            #     #     total_nota_credito += (nota_credito.total / nota_credito.tipo_cambio.tipo_cambio_venta).quantize(Decimal('0.01'))
-                
-            #     nn += 1
-            
-
-        total = total_factura + total_boleta 
-        total_transacciones = nf + nb 
-        
-        fila = []
-        fila.append(cliente.razon_social)
-        fila.append(cliente.numero_documento)
-        fila.append(total_transacciones)
-        fila.append(total)
-        data.append(fila)
-
-        data = sorted(data, key=lambda x: x[3], reverse=True)
-
-        TablaDatos = []
-        for lista in data:
-            if lista[2] != 0:
-                fila = []
-                fila.append(lista[0])
-                fila.append(lista[1])
-                fila.append(lista[2])
-                fila.append("%s %s" % (moneda_base.simbolo, intcomma(redondear(lista[3]))))
-                TablaDatos.append(fila)
-        
-    return TablaDatos
-    # for fila in data:
-    #     hoja.append(fila)
-
-    # for row in hoja.rows:
-    #     for col in range(hoja.max_column):
-    #         row[col].border = BORDE_DELGADO
-    #         if col == 1 or col == 2:
-    #             row[col].alignment = ALINEACION_DERECHA
-    #         elif col == 3:
-    #             row[col].alignment = ALINEACION_DERECHA
-    #             row[col].number_format = FORMATO_DOLAR
-
-    # ajustarColumnasSheet(hoja)
-    # return wb
+    col_range = hoja.max_column  # get max columns in the worksheet
+    # cabecera de la tabla
+    for col in range(1, col_range + 1):
+        cell_header = hoja.cell(1, col)
+        cell_header.fill = RELLENO_EXCEL
+        cell_header.font = NEGRITA
     
-# def ReporteClienteFacturacion(fecha_inicio, fecha_fin):
+    # Base query para clientes
+    clientes = Cliente.objects.filter(estado_sunat=1)
+    
+    # Condición de fecha común
+    fecha_filter = {}
+    if fecha_inicio not in ['None', None] and fecha_fin not in ['None', None]:
+        fecha_filter = {
+            'fecha_emision__gte': fecha_inicio,
+            'fecha_emision__lte': fecha_fin
+        }
+    
+    # Subqueries para facturas y boletas
+    facturas_annotation = FacturaVenta.objects.filter(
+        cliente=OuterRef('pk'),
+        estado=4,
+        **fecha_filter
+    ).values('cliente').annotate(
+        total_convertido=Sum(
+            Case(
+                When(moneda=moneda_base, then=F('total')),
+                default=Cast(F('total') / F('tipo_cambio__tipo_cambio_venta'), DecimalField(max_digits=12, decimal_places=2)),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        ),
+        count=Count('id')
+    ).values('total_convertido', 'count')
 
-#     wb=dataClienteFacturacion(fecha_inicio, fecha_fin)
-#     return wb
+    boletas_annotation = BoletaVenta.objects.filter(
+        cliente=OuterRef('pk'),
+        estado=4,
+        **fecha_filter
+    ).values('cliente').annotate(
+        total_convertido=Sum(
+            Case(
+                When(moneda=moneda_base, then=F('total')),
+                default=Cast(F('total') / F('tipo_cambio__tipo_cambio_venta'), DecimalField(max_digits=12, decimal_places=2)),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        ),
+        count=Count('id')
+    ).values('total_convertido', 'count')
+
+    notas_annotation = NotaCredito.objects.filter(
+        cliente=OuterRef('pk'),
+        estado=4,
+        **fecha_filter
+    ).values('cliente').annotate(
+        total_convertido=Sum(
+            Case(
+                When(moneda=moneda_base, then=F('total')),
+                default=Cast(F('total') / F('tipo_cambio__tipo_cambio_venta'), DecimalField(max_digits=12, decimal_places=2)),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        ),
+    ).values('total_convertido')
+
+    # Query principal
+    clientes_data = clientes.annotate(
+        total_factura=Coalesce(Subquery(
+            facturas_annotation.values('total_convertido'),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        ), Value(0, output_field=DecimalField(max_digits=12, decimal_places=2))),
+        count_factura=Coalesce(Subquery(
+            facturas_annotation.values('count'),
+            output_field=IntegerField()
+        ), Value(0, output_field=IntegerField())),
+        total_boleta=Coalesce(Subquery(
+            boletas_annotation.values('total_convertido'),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        ), Value(0, output_field=DecimalField(max_digits=12, decimal_places=2))),
+        count_boleta=Coalesce(Subquery(
+            boletas_annotation.values('count'),
+            output_field=IntegerField()
+        ), Value(0, output_field=IntegerField())),
+        total_nota=Coalesce(Subquery(
+            notas_annotation.values('total_convertido'),
+            output_field=DecimalField(max_digits=12, decimal_places=2)
+        ), Value(0, output_field=DecimalField(max_digits=12, decimal_places=2))),
+    ).annotate(
+        total_general=F('total_factura') + F('total_boleta') - F('total_nota'),
+        total_transacciones=F('count_factura') + F('count_boleta')
+    ).filter(total_transacciones__gt=0).order_by('-total_general')
+
+    # Construcción de la tabla final
+    TablaDatos = []
+    for cliente in clientes_data:
+        fila = [
+            cliente.razon_social,
+            cliente.numero_documento,
+            cliente.total_transacciones,
+            "%s %s" % (moneda_base.simbolo, intcomma(cliente.total_general.quantize(Decimal('0.01'))))
+        ]
+        TablaDatos.append(fila)
+
+    for fila in TablaDatos:
+        hoja.append(fila)
+
+    for row in hoja.rows:
+        for col in range(hoja.max_column):
+            row[col].border = BORDE_DELGADO
+            if col == 1 or col == 2:
+                row[col].alignment = ALINEACION_DERECHA
+            elif col == 3:
+                row[col].alignment = ALINEACION_DERECHA
+                row[col].number_format = FORMATO_DOLAR
+
+    ajustarColumnasSheet(hoja)
+    return wb
+    
+def ReporteFacturacionCliente(fecha_inicio, fecha_fin):
+
+    wb=dataFacturacionCliente(fecha_inicio, fecha_fin)
+    return wb
 
 ####################################################  COMPORTAMIENTO CLIENTE  ####################################################   
 

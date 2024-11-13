@@ -1,7 +1,5 @@
 from django.urls import path
 from .views import (
-    ReporteExcelClienteFacturacion, 
-    ReportesClientesFacturacionView, 
     ReportesPanelTemplateView, 
     ReportesMarcaVentasView, 
     ReporteExcelMarcaVentas, 
@@ -18,6 +16,4 @@ urlpatterns = [
     path('producto-cliente-ventas/', ProductoClienteVentasView.as_view(), name='reportes_panel_productoclienteventas'),
     path('producto-cliente-ventas-detalle/<pk>', ProductoClienteVentasDetalle.as_view(), name='reportes_panel_productoclienteventas_detalle'),
     path('ubigeo-ventas/', UbigeoVentasView.as_view(), name='reportes_panel_ubigeoventas'),
-    path('cliente-facturacion/', ReportesClientesFacturacionView.as_view(), name='cliente_facturacion'),
-    path('cliente-facturacion-descargar/', ReporteExcelClienteFacturacion.as_view(), name='cliente_facturacion_descargar'),
 ]

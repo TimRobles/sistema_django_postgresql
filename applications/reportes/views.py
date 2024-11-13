@@ -26,6 +26,7 @@ from applications.reportes.forms import (
     ReporteComportamientoClienteExcelForm,
     ReporteDepositoCuentasBancariasForm,
     ReporteDeudasPdfForm,
+    ReporteFacturacionClienteExcelForm,
     ReporteTasaConversionClienteForm,
     ReporteFacturacionAsesorComercialExcelForm,
     ReporteFacturacionGeneralExcelForm,
@@ -60,7 +61,8 @@ from applications.reportes.excel import (
     ReporteComportamientoCliente,
     ReporteContadorCorregido,
     ReporteDepositoCuentasBancariasCorregido,
-    ReporteFacturacionAsesorComercial, 
+    ReporteFacturacionAsesorComercial,
+    ReporteFacturacionCliente, 
     ReporteFacturacionGeneral,
     ReporteResumenStockProductosCorregido,
     ReporteRotacionCorregido,
@@ -3572,13 +3574,10 @@ class ReportesGerencia(TemplateView):
             fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
             asesor_comercial = self.request.POST.get('asesor_comercial')
 
-            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
-            logo = [sociedad_MPL.logo.url]
+            asesor = get_user_model().objects.get(id = asesor_comercial)
 
             if asesor_comercial:
-                titulo = f'Reporte Facturación por Asesor Comercial - {asesor_comercial} del {fecha_inicio} al {fecha_fin}'
+                titulo = f'Reporte Facturación por Asesor Comercial - {asesor.first_name} del {fecha_inicio} al {fecha_fin}'
             else:
                 titulo = f'Reporte Facturación por Asesor Comercial - TODOS del {fecha_inicio} al {fecha_fin}'
 
@@ -3588,13 +3587,17 @@ class ReportesGerencia(TemplateView):
             fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
             fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d")
 
-            sociedad_MPL = Sociedad.objects.get(abreviatura='MPL')
-            # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
-            # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
-            logo = [sociedad_MPL.logo.url]
             titulo = 'Reporte Facturación General' + '_' + str(fecha_fin.date())
 
             wb = ReporteFacturacionGeneral(fecha_inicio, fecha_fin)
+
+        elif formulario == 'formulario3':
+            fecha_inicio = datetime.strptime(self.request.POST.get('fecha_inicio'),"%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(self.request.POST.get('fecha_fin'),"%Y-%m-%d").date()
+
+            titulo = f'Reporte Facturación por Cliente del {fecha_inicio} al {fecha_fin}'
+
+            wb = ReporteFacturacionCliente(fecha_inicio, fecha_fin)
 
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
@@ -3607,6 +3610,7 @@ class ReportesGerencia(TemplateView):
         context = super(ReportesGerencia, self).get_context_data(**kwargs)
         context['form1'] = ReporteFacturacionAsesorComercialExcelForm()
         context['form2'] = ReporteFacturacionGeneralExcelForm()
+        context['form3'] = ReporteFacturacionClienteExcelForm()
 
         return context
     
