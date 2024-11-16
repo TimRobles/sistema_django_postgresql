@@ -252,6 +252,8 @@ class VacacionesForm(BSModalModelForm):
         super(VacacionesForm, self).__init__(*args, **kwargs)
         self.fields['usuario'].queryset = (get_user_model().objects.filter(is_active=1).order_by('username'))     
         self.fields['dias_vacaciones'].required = True
+        self.fields['dias_vacaciones'].initial = 15  # Establece el valor inicial a 15
+        self.fields['dias_vacaciones'].help_text = "Puedes modificar el número de días de vacaciones si es necesario." # Mensaje de ayuda
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

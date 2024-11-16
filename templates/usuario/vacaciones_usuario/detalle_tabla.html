@@ -1,18 +1,8 @@
 {% load funciones_propias %}
 {% load humanize %}
 
-<h3> Detalle Vacaciones - {{ contexto_vacaciones.usuario }} - {{ contexto_vacaciones.usuario.id }} 
+<h3> Detalle Vacaciones - {{ contexto_vacaciones.usuario }} 
     <a href="{% url 'usuario_app:vacaciones_inicio' %}"><span class="badge bg-primary">Regresar</span></a>        
-
-    
-    {% if contexto_vacaciones.dias_restantes != 0 %}
-    <button data-form-url="{% url 'usuario_app:vacaciones_detalle_registrar' contexto_vacaciones.id %}"
-        data-table-url="{% url 'usuario_app:vacaciones_detalle_tabla' contexto_vacaciones.id %}"
-        class="create badge bg-success">
-        Registrar
-    </button>
-    {% endif %}
-        
 </h3>
 <hr>
 <div class="row mt-3">
@@ -32,7 +22,13 @@
                     <th class="pe-2">Estado :</th>
                     <td>
                         {% if contexto_vacaciones.estado  %}
-                        {{ contexto_vacaciones.get_estado_display }}
+
+                        <span class="{% if contexto_vacaciones.estado == 1 %}text-danger
+                        {% elif contexto_vacaciones.estado == 2 %}text-success
+                        {% endif %}">
+                             {{ contexto_vacaciones.get_estado_display }}
+                        </span>
+                        
                         {% endif %}
                     </td>              
                 </tr>
@@ -66,34 +62,53 @@
     </div>
 </div>
 
+<h3>
+    {% if contexto_vacaciones.dias_restantes != 0 %}
+    <button data-form-url="{% url 'usuario_app:vacaciones_detalle_registrar' contexto_vacaciones.id %}"
+        data-table-url="{% url 'usuario_app:vacaciones_detalle_tabla' contexto_vacaciones.id %}"
+        class="create badge bg-success">
+        Registrar
+    </button>
+    {% endif %}
+</h3>
+
 <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
+                <th class="text-rigth">N°</th>
                 <th class="text-rigth">Fecha Inicio </th>
                 <th class="text-rigth">Fecha Fin </th>
                 <th class="text-rigth">Duración </th>
                 <th class="text-rigth">Motivo | Comentario </th>
-                <th class="text-rigth">Estado </th>
                 <th class="text-rigth">Acciones </th>
             </tr>
         </thead>
         <tbody>
             {% for detalle in detalle_vacaciones %}
                 <tr>
-                    <td>{{ detalle.fecha_inicio|date:'d/m/Y' }}</td>
-                    <td>{{ detalle.fecha_fin|date:'d/m/Y' }}</td>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ detalle.fecha_inicio|date:'l, d/m/Y' }}</td>
+                    <td>{{ detalle.fecha_fin|date:'l, d/m/Y' }}</td>
                     <td>{{ detalle.duracion }}</td>
                     <td>{{ detalle.motivo }}</td>
-                    <td>{{ detalle.get_estado_display }}</td>
+                    <td>{{ today }}</td>
                     <td class="text-center text-nowrap">
+                        {{today}}
+                        {% if detalle.fecha_fin <= today %}
+                            <button data-form-url="{% url 'usuario_app:vacaciones_detalle_actualizar' detalle.id %}"
+                                data-table-url="{% url 'usuario_app:vacaciones_detalle_tabla' contexto_vacaciones.id %}"
+                                data-keep-open="true"
+                                class="update btn btn-warning btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        {% endif %}
 
-                        <button data-form-url="{% url 'usuario_app:vacaciones_detalle_actualizar' detalle.id %}"
-                            data-table-url="{% url 'usuario_app:vacaciones_detalle_tabla' contexto_vacaciones.id %}"
-                            data-keep-open="true"
-                            class="update btn btn-warning btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
-                            <i class="bi bi-pencil-fill"></i>
+                        <button data-form-url="{% url 'usuario_app:vacaciones_detalle_eliminar' detalle.id %}"
+                            class="delete btn btn-danger btn-sm"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                            <i class="bi bi-x-lg"></i>
                         </button>
 
                     </td>

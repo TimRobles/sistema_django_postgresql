@@ -19,8 +19,12 @@
             <td>{{ vacaciones.usuario }}</td>
             <td class="text-center">{{ vacaciones.dias_vacaciones }}</td>
             <td class="text-center">{{ vacaciones.total_duracion }}</td>
-            <td class="text-center">{{ vacaciones.dias_restantes }}</td>
-            <td>{{ vacaciones.get_estado_display }} </td>
+            <td class="text-center" style="color: blue;">{{ vacaciones.dias_restantes }}</td>
+            <td class="text-center 
+            {% if vacaciones.estado == 1 %}text-danger
+            {% elif vacaciones.estado == 2 %} text-success
+            {% endif %}">
+            {{ vacaciones.get_estado_display }} </td>
             <td class="text-center">
                 <a href="{% url 'usuario_app:vacaciones_detalle' vacaciones.id %}"
                     class="btn btn-info btn-sm"
