@@ -1,0 +1,34 @@
+{% load funciones_propias %}
+{% load humanize %}
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th class="text-center">Días de vacaciones</th>
+            <th class="text-center">Días de usados </th>
+            <th class="text-center">Días de restantes </th>
+            <th>Estado</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vacaciones in contexto_vacaciones %}
+        <tr>
+            <td>{{ vacaciones.usuario }}</td>
+            <td class="text-center">{{ vacaciones.dias_vacaciones }}</td>
+            <td class="text-center">{{ vacaciones.total_duracion }}</td>
+            <td class="text-center">{{ vacaciones.dias_restantes }}</td>
+            <td>{{ vacaciones.get_estado_display }} </td>
+            <td class="text-center">
+                <a href="{% url 'usuario_app:vacaciones_detalle' vacaciones.id %}"
+                    class="btn btn-info btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
+                    <i class="bi bi-eye-fill"></i>
+                </a>            
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

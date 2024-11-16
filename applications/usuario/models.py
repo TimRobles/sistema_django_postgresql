@@ -4,7 +4,7 @@ from django.conf import settings
 from datetime import date, timedelta
 from phonenumber_field.modelfields import PhoneNumberField
 
-from applications.variables import TIPO_DOCUMENTO_CHOICES
+from applications.variables import TIPO_DOCUMENTO_CHOICES, ESTADO_VACACIONES, ESTADO_VACACIONES_DETALLE
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -32,13 +32,13 @@ class HistoricoUser(models.Model):
     class Meta:
         verbose_name = 'Histórico Usuario'
         verbose_name_plural = 'Histórico Usuarios'
-        ordering = ['estado']
+        ordering = ['estado','usuario__username']
         constraints = [
             models.UniqueConstraint(
                 fields=['usuario',], condition=models.Q(estado=1), name = 'usuario de alta',
                 ),
             ]
-
+    
     def __str__(self):
         return str(self.usuario) 
 
@@ -67,6 +67,14 @@ class DatosUsuario(models.Model):
         verbose_name_plural = 'Datos de los Usuarios'
 
     @property
+    def vacaciones(self):
+        return Vacaciones.objects.filter(usuario=self).first()
+
+    @property
+    def vacaciones_detalle(self):
+        return VacacionesDetalle.objects.filter(vacaciones=self.vacaciones)
+    
+    @property
     def fecha_cumpleaños(self):
         fecha_cumpleaños = date(day=self.fecha_nacimiento.day, month=self.fecha_nacimiento.month, year=date.today().year)
         if fecha_cumpleaños < date.today():
@@ -83,3 +91,68 @@ class DatosUsuario(models.Model):
 
     def __str__(self):
         return str(self.usuario)+ " - " + str(self.numero_documento)
+
+
+
+class Vacaciones(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='Vacaciones_usuario')
+    dias_vacaciones = models.PositiveIntegerField()
+    estado = models.IntegerField('Estado', choices=ESTADO_VACACIONES, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Vacaciones_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='Vacaciones_updated_by', editable=False)
+
+    class Meta:
+
+        verbose_name = 'Vacacion'
+        verbose_name_plural = 'Vacaciones'
+        ordering = [
+            'estado',
+            '-created_at', 
+            ]
+
+    def __str__(self):
+        return f"{self.usuario} - {self.dias_vacaciones}"
+
+    @property
+    def total_duracion(self):
+        """Calcula la suma de los días usados."""
+        total_duracion = sum(detalle.duracion for detalle in self.VacacionesDetalle_vacaciones.all())
+        return total_duracion
+
+    @property
+    def dias_restantes(self):
+        """Calcula los días restantes de vacaciones."""
+        total_duracion = sum(detalle.duracion for detalle in self.VacacionesDetalle_vacaciones.all())
+        return self.dias_vacaciones - total_duracion
+    
+
+class VacacionesDetalle(models.Model):
+    vacaciones = models.ForeignKey(Vacaciones, on_delete=models.CASCADE, related_name='VacacionesDetalle_vacaciones')
+    fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False)
+    fecha_fin = models.DateField('Fecha de Fin', auto_now=False, auto_now_add=False)
+    motivo = models.TextField(blank=True, null=True)
+    estado = models.IntegerField('Estado', choices=ESTADO_VACACIONES_DETALLE, default=1)
+
+    created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='VacacionesDetalle_created_by', editable=False)
+    updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='VacacionesDetalle_updated_by', editable=False)
+
+
+    def __str__(self):
+        return f"{self.vacaciones.usuario} - {self.fecha_inicio} a {self.fecha_fin}"
+    
+    @property
+    def duracion(self):
+        """Calcula la duración de las vacaciones en días al memento de accionar el form"""
+        if self.fecha_inicio and self.fecha_fin:
+            return (self.fecha_fin - self.fecha_inicio).days + 1  # +1 para incluir el día de inicio
+        return 0
+    
+    @property
+    def usuario(self):
+        """Devuelve el usuario asociado a las vacaciones."""
+        return self.vacaciones.usuario
