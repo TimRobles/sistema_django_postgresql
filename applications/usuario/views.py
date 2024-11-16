@@ -506,3 +506,4 @@ class VacacionesDetalleDeleteView(BSModalDeleteView):
         return context
 
     print("H O L A")
+    print('hola retorno')
