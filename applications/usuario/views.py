@@ -504,6 +504,3 @@ class VacacionesDetalleDeleteView(BSModalDeleteView):
         context['accion']="Eliminar"
         context['titulo']="Registro"
         return context
-
-    print("H O L A")
-    print('hola retorno')
