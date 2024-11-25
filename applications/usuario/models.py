@@ -134,7 +134,7 @@ class VacacionesDetalle(models.Model):
     fecha_inicio = models.DateField('Fecha de Inicio', auto_now=False, auto_now_add=False)
     fecha_fin = models.DateField('Fecha de Fin', auto_now=False, auto_now_add=False)
     motivo = models.TextField(blank=True, null=True)
-    estado = models.IntegerField('Estado', choices=ESTADO_VACACIONES_DETALLE, default=1)
+    estado = models.IntegerField('Estado', choices=ESTADO_VACACIONES_DETALLE, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='VacacionesDetalle_created_by', editable=False)

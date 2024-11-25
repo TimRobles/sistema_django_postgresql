@@ -2,6 +2,8 @@ from applications.funciones import registrar_excepcion
 from applications.importaciones import *
 from django.shortcuts import render
 from django.core.paginator import Paginator
+from django.utils import timezone
+
 
 from .models import (
     DatosUsuario,
@@ -335,6 +337,8 @@ class VacacionesListView(FormView):
    
         context['contexto_pagina'] = vacaciones
         context['contexto_vacaciones'] = vacaciones
+        context['today'] = timezone.now().date().strftime('%d/%m/%Y')
+        print('today',context['today'])
         return context
 
 def VacacionesTabla(request):
@@ -378,6 +382,8 @@ def VacacionesTabla(request):
    
         context['contexto_pagina'] = vacaciones
         context['contexto_vacaciones'] = vacaciones
+        context['today'] = timezone.now().date().strftime('%d/%m/%Y')
+        print('today',context['today'])
 
         data['table'] = render_to_string(
             template,
@@ -486,3 +492,15 @@ class VacacionesDetalleUpdateView(BSModalUpdateView):
         context['titulo']="Días"
         return context
 
+class VacacionesDetalleDeleteView(BSModalDeleteView):
+    model = VacacionesDetalle
+    template_name = "includes/eliminar generico.html"
+    # success_url = '.'
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('usuario_app:vacaciones_detalle', kwargs={'pk':self.object.vacaciones.id})
+
+    def get_context_data(self, **kwargs):
+        context = super(VacacionesDetalleDeleteView, self).get_context_data(**kwargs)
+        context['accion']="Eliminar"
+        context['titulo']="Registro"
+        return context
