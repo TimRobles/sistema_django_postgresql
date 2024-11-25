@@ -54,6 +54,7 @@ class FacturaVenta(models.Model):
     confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, related_name='FacturaVenta_confirmacion', blank=True, null=True)
     nubefact = models.URLField(max_length=400, blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
+    texto = models.CharField(max_length=500, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='FacturaVenta_created_by', editable=False)
@@ -122,11 +123,23 @@ class FacturaVenta(models.Model):
     def descripcion(self):
         return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_factura, 6))
 
-    def __str__(self):
+    @property
+    def retorno(self):
         if self.numero_factura:
             return "%s %s-%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.numero_factura, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
         else:
             return "%s %s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
+
+    def save(self, force_insert=None, force_update=None, using=None, update_fields=None):
+        self.texto = "%s" % (self.retorno)
+        return super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
+    def __str__(self):
+        return "%s" % (self.texto)
+        # if self.numero_factura:
+            # return "%s %s-%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.numero_factura, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
+        # else:
+            # return "%s %s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.sociedad.abreviatura, self.cliente, self.moneda.simbolo, self.total)
 
 def factura_venta_post_save(*args, **kwargs):
     print('factura_venta_post_save')
@@ -258,6 +271,7 @@ class BoletaVenta(models.Model):
     confirmacion = models.ForeignKey(ConfirmacionVenta, on_delete=models.PROTECT, related_name='BoletaVenta_confirmacion', blank=True, null=True)
     nubefact = models.URLField(max_length=400, blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
+    texto = models.CharField(max_length=500, blank=True, null=True)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='BoletaVenta_created_by', editable=False)
@@ -326,11 +340,23 @@ class BoletaVenta(models.Model):
     def descripcion(self):
         return "%s %s-%s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, numeroXn(self.numero_boleta, 6))
 
-    def __str__(self):
+    @property
+    def retorno(self):
         if self.numero_boleta:
             return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.numero_boleta, self.cliente, self.moneda.simbolo, self.total)
         else:
             return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.cliente, self.moneda.simbolo, self.total)
+
+    def save(self, force_insert=None, force_update=None, using=None, update_fields=None):
+        self.texto = "%s" % (self.retorno)
+        return super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
+    def __str__(self):
+        return "%s" % (self.texto)
+        # if self.numero_boleta:
+        #     return "%s %s-%s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.numero_boleta, self.cliente, self.moneda.simbolo, self.total)
+        # else:
+        #     return "%s %s %s %s %s" % (self.get_tipo_comprobante_display(), self.serie_comprobante.serie, self.cliente, self.moneda.simbolo, self.total)
 
 def boleta_venta_post_save(*args, **kwargs):
     print('boleta_venta_post_save')
