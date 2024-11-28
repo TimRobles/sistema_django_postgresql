@@ -3,7 +3,7 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'www.multiplay-group.com', 'multiplay-group.com', 'sistema.multiplay.com.pe']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '186.64.122.149', 'sistema.multiplay.com.pe']
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
