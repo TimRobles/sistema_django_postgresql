@@ -148,11 +148,14 @@ def validar_numero(texto):
             raise ValidationError('%s tiene caracteres incorrectos' % texto)
 
 def validar_texto_cuenta(texto):
+
     permitidas = set("RETENCION")
     
     for letra in texto:
         if not letra.isnumeric() and letra.upper() not in permitidas:
-            raise ValidationError('%s tiene caracteres incorrectos' % texto)
+            print(letra.upper())
+            print(letra.isnumeric())
+            raise ValidationError('%s es incorrecto. Ingresar: RETENCION' % texto)
 
 
 def consulta_distancia(longitud, latitud, sede_id):

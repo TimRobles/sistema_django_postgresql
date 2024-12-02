@@ -363,7 +363,7 @@ class RangoDocumentoFisico(models.Model):
 
 
 class CuentaBancariaSociedad(models.Model):
-    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, unique=True, validators=[validar_texto_cuenta], blank=True, null=True)
+    numero_cuenta = models.CharField('Número de Cuenta', max_length=20, validators=[validar_texto_cuenta], blank=True, null=True)
     numero_cuenta_interbancaria = models.CharField('Número de Cuenta Interbancaria', max_length=20, unique=True, validators=[validar_numero], blank=True, null=True)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, blank=True, null=True)
     moneda = models.ForeignKey(Moneda, on_delete=models.CASCADE)
@@ -385,6 +385,8 @@ class CuentaBancariaSociedad(models.Model):
             'banco',
             'moneda',
             ]
+        unique_together = ('numero_cuenta', 'sociedad')  # Asegura la unicidad de la combinación
+
 
     def __str__(self):
         try:
