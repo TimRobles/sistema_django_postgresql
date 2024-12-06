@@ -288,10 +288,16 @@ class HistoricoUserCreateView(PermissionRequiredMixin, BSModalCreateView):
     
     ################################# V A C A C I O N E S ################################################
 
-class VacacionesListView(FormView):
+class VacacionesListView(PermissionRequiredMixin,FormView):
+    permission_required = ('usuario.view_vacaciones')
     template_name = "usuario/vacaciones_usuario/inicio.html"
     form_class = VacacionesBuscarForm
     success_url = '.'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs) 
 
     def get_form_kwargs(self):
         kwargs = super(VacacionesListView, self).get_form_kwargs()
