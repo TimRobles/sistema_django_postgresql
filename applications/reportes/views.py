@@ -3685,3 +3685,98 @@ class ReportesCorregidosExcel(TemplateView):
         context['form5'] = ReporteVentasFacturadasForm()
 
         return context
+    
+####################################################  REPORTE PRODUCTO*PRECIOVENTA ####################################################
+
+
+class ReporteProductoPorPrecioVentaPDF(TemplateView):
+    def get(self,request, *args,**kwargs):
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
+
+        sql_stock_productos = ''' SELECT
+            MAX(mam.id) AS id,
+            mm.id,
+            mm.descripcion_corta,
+            ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_disponible,
+            ROUND(SUM(CASE WHEN (mats.codigo='5') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_sin_qa,
+            ROUND(SUM(CASE WHEN (mats.codigo='6') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_por_qa,
+            ROUND(SUM(CASE WHEN (mats.codigo NOT IN (3,5,6)) THEN mam.cantidad*mam.signo_factor_multiplicador ELSE (0.00) END),3) AS stock_otros,
+            ROUND(SUM(mam.cantidad*mam.signo_factor_multiplicador),3) as total_stock
+            FROM movimiento_almacen_movimientosalmacen mam
+            LEFT JOIN material_material mm
+                ON mm.id=mam.id_registro_producto AND mam.content_type_producto_id='%s'
+            LEFT JOIN movimiento_almacen_tipostock mats
+                ON mam.tipo_stock_id=mats.id
+            WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
+                1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+            GROUP BY mm.id
+            ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
+        query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
+
+        info = []
+        for fila in query_info:
+            lista_datos = []
+            lista_datos.append(fila.id)
+            lista_datos.append(fila.descripcion_corta)
+            lista_datos.append(fila.stock_disponible)
+            lista_datos.append(fila.stock_sin_qa)
+            lista_datos.append(fila.stock_por_qa)
+            lista_datos.append(fila.stock_otros)
+            lista_datos.append(fila.stock_otros)
+            lista_datos.append(fila.stock_otros)
+            lista_datos.append(fila.total_stock)
+            info.append(lista_datos)
+
+        objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
+
+        fecha_hoy = datetime.now().strftime("%Y-%m-%d")
+        fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
+
+        color = DICT_SOCIEDAD[global_sociedad].color
+        #####
+        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
+        abreviatura = query_sociedad.abreviatura
+        #####
+        titulo = "Reporte Producto Por Precio Venta PDF - " + abreviatura + " - " + FECHA_HOY
+        vertical = False
+        alinear = 'right'
+        logo = [[objeto_sociedad.logo.url, alinear]]
+        pie_pagina = objeto_sociedad.pie_pagina
+        list_texto = []
+
+        TablaEncabezado = [
+            'COD. MAT',
+            'DESCRIPCIÓN DEL MATERIAL',
+            'DISPONIBLE',
+            'BLOQ. SIN QA',
+            'BLOQ. POR QA',
+            'BLOQ. DESG.',
+            'PRECIO.',
+            'CANTIDAD',
+            'SUMATORIA',
+            ]
+
+        TablaDatos = []
+        for lista in info:
+            fila = []
+            fila.append(lista[0])
+            fila.append(lista[1])
+            fila.append(lista[2])
+            fila.append(lista[3])
+            fila.append(lista[4])
+            fila.append(lista[5])
+            fila.append(lista[6])
+            fila.append(lista[7])
+            fila.append(lista[8])
+            TablaDatos.append(fila)
+
+
+        buf = generarReporteResumenStockProductos(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta

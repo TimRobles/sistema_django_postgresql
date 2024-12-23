@@ -20,4 +20,6 @@ urlpatterns = [
     path('reportes-crm-excel/', views.ReportesCRM.as_view(), name='reportes_crm_excel'),
     path('reportes-gerencia-excel/', views.ReportesGerencia.as_view(), name='reportes_gerencia_excel'),
     path('reportes-corregidos/', views.ReportesCorregidosExcel.as_view(), name='reportes_corregidos'),
+    path('reportes-producto-precioventa-pdf/', views.ReporteProductoPorPrecioVentaPDF.as_view(), name='reportes_producto_precioventa_pdf'),
+    path('reportes-producto-precioventa-pdf/', views.ReporteProductoPorPrecioVentaPDF.as_view(), name='reportes_producto_precioventa_pdf'),
  ]
