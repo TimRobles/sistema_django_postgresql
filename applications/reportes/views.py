@@ -3687,9 +3687,9 @@ class ReportesCorregidosExcel(TemplateView):
 
         return context
     
-####################################################  REPORTE PRODUCTO*PRECIOVENTA ####################################################
+####################################################  REPORTE VALORIZACIÓN DE STOCK (PRODUCTO*PRECIOVENTAFINAL_PRECIOMÁSBAJO) ####################################################
 
-class ReporteProductoPorPrecioVentaPDF(TemplateView):
+class ReporteValorizacionStockPDF(TemplateView):
     def get(self,request, *args,**kwargs):
         global_sociedad = self.request.GET.get('filtro_sociedad')
         global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
@@ -3701,7 +3701,8 @@ class ReporteProductoPorPrecioVentaPDF(TemplateView):
                 mm.id,
                 mm.descripcion_corta,
                 ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_disponible,
-                subquery_precios.precio_minimo_venta_con_igv AS precio_minimo_venta_con_igv
+                subquery_precios.precio_minimo_venta_con_igv,
+                ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) * subquery_precios.precio_minimo_venta_con_igv AS valorizacion_stock
                 FROM movimiento_almacen_movimientosalmacen mam
                 LEFT JOIN material_material mm
                     ON mm.id=mam.id_registro_producto AND mam.content_type_producto_id = '%s'
@@ -3719,17 +3720,28 @@ class ReporteProductoPorPrecioVentaPDF(TemplateView):
                     1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
                 GROUP BY mm.id, mm.descripcion_corta, subquery_precios.precio_minimo_venta_con_igv
                 ORDER BY mm.descripcion_corta; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
+                
         query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
-        print(query_info)
 
         info = []
+        lista_valorizados = []
         for fila in query_info:
+            valorizados = [fila.valorizacion_stock]
+
             lista_datos = []
             lista_datos.append(fila.id)
             lista_datos.append(fila.descripcion_corta)
             lista_datos.append(fila.stock_disponible)
             lista_datos.append(fila.precio_minimo_venta_con_igv)
+            lista_datos.append(fila.valorizacion_stock)
             info.append(lista_datos)
+            lista_valorizados.append(valorizados)
+
+        total_valorizado = 0
+        for sublista in lista_valorizados:
+            for elemento in sublista:
+                if elemento is not None:
+                    total_valorizado += elemento
 
         objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
 
@@ -3738,18 +3750,18 @@ class ReporteProductoPorPrecioVentaPDF(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         #####
-        titulo = "Reporte Resumen de Stock Productos - " + abreviatura + " - " + FECHA_HOY
+        titulo = "Valorización de Stock - " + abreviatura + " - " + FECHA_HOY
         vertical = False
         alinear = 'right'
         logo = [[objeto_sociedad.logo.url, alinear]]
         pie_pagina = objeto_sociedad.pie_pagina
-        list_texto = []
-
+        list_texto = [f"La valorización de stock para {abreviatura} es $ {total_valorizado:,.3f} a la fecha {FECHA_HOY}"] 
         TablaEncabezado = [
             'COD. MAT',
             'DESCRIPCIÓN DEL MATERIAL',
             'DISPONIBLE',
             'PRECIO VENTA CON IGV',
+            'valorizacion_stock',
             ]
 
         TablaDatos = []
@@ -3757,8 +3769,19 @@ class ReporteProductoPorPrecioVentaPDF(TemplateView):
             fila = []
             fila.append(lista[0])
             fila.append(lista[1])
-            fila.append(lista[2])
-            fila.append(lista[3])
+            if lista[2]:
+                fila.append(round(lista[2], 3)) 
+            else:
+                fila.append('')
+            if lista[3]:
+                fila.append(round(lista[3], 3)) 
+            else:
+                fila.append('')
+
+            if lista[4]:
+                fila.append(round(lista[4], 3)) 
+            else:
+                fila.append('')
             TablaDatos.append(fila)
 
         buf = generarReportePrecioProductosDisponible(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)

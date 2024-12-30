@@ -1564,7 +1564,7 @@ def generarReporteVentasDepartamento(titulo, vertical, logo, pie_pagina, fecha_i
     return buf
 
 
-#########################################################
+####################################################  REPORTE PRODUCTO*PRECIOVENTA ####################################################
 def dataReportePrecioProductosDisponible(TablaEncabezado, TablaDatos, fuenteBase, color):
     encabezado = []
     for encab in TablaEncabezado:
@@ -1579,9 +1579,7 @@ def dataReportePrecioProductosDisponible(TablaEncabezado, TablaDatos, fuenteBase
         fila.append(parrafoIzquierda(dato[1], fuenteBase, 7))
         fila.append(parrafoDerecha(dato[2], fuenteBase, 7))
         fila.append(parrafoDerecha(dato[3], fuenteBase, 7))
-        # fila.append(parrafoDerecha(dato[4], fuenteBase, 7))
-        # fila.append(parrafoDerecha(dato[5], fuenteBase, 7))
-        # fila.append(parrafoDerecha(dato[6], fuenteBase, 7))
+        fila.append(parrafoDerecha(dato[4], fuenteBase, 7))
         data.append(fila)  
 
     t=Table(data, repeatRows=1, style=[('GRID',(0,0),(-1,-1),0.5,colors.black),
@@ -1594,9 +1592,7 @@ def dataReportePrecioProductosDisponible(TablaEncabezado, TablaDatos, fuenteBase
     t._argW[1]=cmToPx(11.5)
     t._argW[2]=cmToPx(2.7)
     t._argW[3]=cmToPx(2.7)
-    # t._argW[4]=cmToPx(2.7)
-    # t._argW[5]=cmToPx(2.7)
-    # t._argW[6]=cmToPx(2.7)
+    t._argW[4]=cmToPx(2.7)
 
     return t
 
@@ -1605,7 +1601,7 @@ def generarReportePrecioProductosDisponible(titulo, vertical, logo, pie_pagina, 
 
     data_tabla = dataReportePrecioProductosDisponible(TablaEncabezado, TablaDatos, fuenteBase, color)
     elementos = []
-    # elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10))
+    elementos.append(parrafoIzquierda(Texto[0], fuenteBase, 10, 'Bold'))
     elementos.append(vacio(2.0))
     elementos.append(data_tabla)
     
