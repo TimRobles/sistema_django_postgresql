@@ -51,7 +51,8 @@ from applications.reportes.pdf import (
     generarReporteStockMalogradoSociedad, 
     generarReporteStockSociedad, 
     generarReporteVentasDepartamento, 
-    reporte_cobranza
+    reporte_cobranza,
+    generarReportePrecioProductosDisponible,
     )
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
@@ -3685,3 +3686,107 @@ class ReportesCorregidosExcel(TemplateView):
         context['form5'] = ReporteVentasFacturadasForm()
 
         return context
+    
+####################################################  REPORTE VALORIZACIÓN DE STOCK (PRODUCTO*PRECIOVENTAFINAL_PRECIOMÁSBAJO) ####################################################
+
+class ReporteValorizacionStockPDF(TemplateView):
+    def get(self,request, *args,**kwargs):
+        global_sociedad = self.request.GET.get('filtro_sociedad')
+        global_fecha_inicio = self.request.GET.get('filtro_fecha_inicio')
+        global_fecha_fin = self.request.GET.get('filtro_fecha_fin')
+        global_cliente = self.request.GET.get('filtro_cliente')
+
+        sql_stock_productos = ''' SELECT
+                MAX(mam.id) AS id,
+                mm.id,
+                mm.descripcion_corta,
+                ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) AS stock_disponible,
+                subquery_precios.precio_minimo_venta_con_igv,
+                ROUND(SUM(CASE WHEN (mats.codigo='3') THEN (mam.cantidad*mam.signo_factor_multiplicador) ELSE (0.00) END),3) * subquery_precios.precio_minimo_venta_con_igv AS valorizacion_stock
+                FROM movimiento_almacen_movimientosalmacen mam
+                LEFT JOIN material_material mm
+                    ON mm.id=mam.id_registro_producto AND mam.content_type_producto_id = '%s'
+                LEFT JOIN movimiento_almacen_tipostock mats
+                    ON mam.tipo_stock_id=mats.id
+                LEFT JOIN (
+                    SELECT 
+                        fvd.id_registro,
+                        COALESCE(MIN(fvd.precio_final_con_igv),0) AS precio_minimo_venta_con_igv
+                    FROM comprobante_venta_facturaventadetalle fvd
+                    WHERE fvd.content_type_id = (SELECT id FROM django_content_type WHERE model = 'material')
+                    GROUP BY fvd.id_registro
+                ) subquery_precios ON mm.id = subquery_precios.id_registro
+                WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
+                    1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
+                GROUP BY mm.id, mm.descripcion_corta, subquery_precios.precio_minimo_venta_con_igv
+                ORDER BY mm.descripcion_corta; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
+                
+        query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
+
+        info = []
+        lista_valorizados = []
+        for fila in query_info:
+            valorizados = [fila.valorizacion_stock]
+
+            lista_datos = []
+            lista_datos.append(fila.id)
+            lista_datos.append(fila.descripcion_corta)
+            lista_datos.append(fila.stock_disponible)
+            lista_datos.append(fila.precio_minimo_venta_con_igv)
+            lista_datos.append(fila.valorizacion_stock)
+            info.append(lista_datos)
+            lista_valorizados.append(valorizados)
+
+        total_valorizado = 0
+        for sublista in lista_valorizados:
+            for elemento in sublista:
+                if elemento is not None:
+                    total_valorizado += elemento
+
+        objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
+
+        color = DICT_SOCIEDAD[global_sociedad].color
+        #####
+        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
+        abreviatura = query_sociedad.abreviatura
+        #####
+        titulo = "Valorización de Stock - " + abreviatura + " - " + FECHA_HOY
+        vertical = False
+        alinear = 'right'
+        logo = [[objeto_sociedad.logo.url, alinear]]
+        pie_pagina = objeto_sociedad.pie_pagina
+        list_texto = [f"La valorización de stock para {abreviatura} es $ {total_valorizado:,.3f} a la fecha {FECHA_HOY}"] 
+        TablaEncabezado = [
+            'COD. MAT',
+            'DESCRIPCIÓN DEL MATERIAL',
+            'DISPONIBLE',
+            'PRECIO VENTA CON IGV',
+            'valorizacion_stock',
+            ]
+
+        TablaDatos = []
+        for lista in info:
+            fila = []
+            fila.append(lista[0])
+            fila.append(lista[1])
+            if lista[2]:
+                fila.append(round(lista[2], 3)) 
+            else:
+                fila.append('')
+            if lista[3]:
+                fila.append(round(lista[3], 3)) 
+            else:
+                fila.append('')
+
+            if lista[4]:
+                fila.append(round(lista[4], 3)) 
+            else:
+                fila.append('')
+            TablaDatos.append(fila)
+
+        buf = generarReportePrecioProductosDisponible(titulo, vertical, logo, pie_pagina, list_texto, TablaEncabezado, TablaDatos, color)
+
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
+
+        return respuesta
