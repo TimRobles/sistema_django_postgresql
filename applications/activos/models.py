@@ -81,7 +81,7 @@ class ActivoBase(models.Model):
     unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, blank=True, null=True)
     # peso = models.DecimalField('Peso', max_digits=6, decimal_places=2, blank=True, null=True)
     sub_familia = models.ForeignKey(SubFamiliaActivo, on_delete=models.CASCADE, blank=True, null=True)
-    depreciacion = models.DecimalField('Depreciación', max_digits=6, decimal_places=3)
+    depreciacion = models.DecimalField('Depreciación', max_digits=6, decimal_places=3, blank=True, null=True)
     vida_util = models.IntegerField('Vida Útil (meses)', blank=True, null=True)
     producto_sunat = models.ForeignKey(ProductoSunat, on_delete=models.CASCADE, blank=True, null=True)
     estado = models.IntegerField('Estado Activo', choices=ESTADOS, default=1)
