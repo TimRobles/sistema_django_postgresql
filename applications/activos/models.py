@@ -4,10 +4,9 @@ from django.conf import settings
 from applications.datos_globales.models import ProductoSunat, Unidad, Moneda
 from applications.usuario.models import DatosUsuario
 from django.contrib.contenttypes.models import ContentType
-from applications.variables import ESTADOS, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_COMPROBANTE, TIPO_IGV_CHOICES
+from applications.variables import ESTADOS, INCOTERMS, INTERNACIONAL_NACIONAL, TIPO_COMPROBANTE, TIPO_IGV_CHOICES, ESTADOS_COMPROBANTE_COMPRA_ACTIVO
 from applications.sede.models import Sede
 from applications.sociedad.models import Sociedad
-from applications.orden_compra.models import OrdenCompra, OrdenCompraDetalle
 from django.db.models.signals import pre_save, post_save, post_delete
 
 from applications.funciones import obtener_totales
@@ -114,11 +113,10 @@ class AsignacionActivo(models.Model):
         (3, 'CONCLUIDO SIN ENTREGAR'),
         (4, 'ANULADO'),
         ]
-    titulo = models.CharField('Título', max_length=50)
     colaborador = models.ForeignKey(DatosUsuario, on_delete=models.PROTECT)
-    fecha_asignacion = models.DateField('Fecha Asignación', auto_now=False, auto_now_add=False)
     observacion = models.TextField(null=True, blank=True)
-    fecha_entrega = models.DateField('Fecha Entrega', auto_now=False, auto_now_add=False, null=True, blank=True)
+    fecha_inicio = models.DateField('Fecha Inicio Asignación', auto_now=False, auto_now_add=False, blank=True, null=True)
+    fecha_fin = models.DateField('Fecha Fin Asignación', auto_now=False, auto_now_add=False,blank=True, null=True)
     estado = models.IntegerField('Estado Asignación', choices=ESTADOS_ASIGNACION, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivo_created_by', editable=False)
@@ -129,11 +127,11 @@ class AsignacionActivo(models.Model):
         verbose_name = 'Asignación de Activo'
         verbose_name_plural = 'Asignación de Activos'
         ordering = [
-            '-fecha_asignacion',
+            '-fecha_inicio',
             ]
 
     def __str__(self):
-        return self.titulo
+        return str(self.id)
 
 class AsignacionDetalleActivo(models.Model):
     ESTADOS_ASIGNACION_DETALLE = [
@@ -143,8 +141,20 @@ class AsignacionDetalleActivo(models.Model):
         (4, 'CONCLUIDO SIN ENTREGAR'),
         (5, 'ANULADO'),
         ]
+    
+    CONDICION_ACTIVO = [
+        (1, 'NUEVO'),
+        (2, 'USADO - BUEN ESTADO'),
+        (3, 'USADO - CON DETALLES'),
+        (4, 'DAÑADO')
+        ]
     activo = models.ForeignKey('Activo', on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_activo')
     asignacion = models.ForeignKey(AsignacionActivo, on_delete=models.PROTECT, related_name='AsignacionDetalleActivo_asignacion')
+    fecha_entrega = models.DateField('Fecha Entrega', auto_now=False, auto_now_add=False,blank=True, null=True)
+    condicion_entrega = models.IntegerField('Condición de Entrega', choices=CONDICION_ACTIVO, default=1)
+    condicion_devolucion = models.IntegerField('Condición de Devolución', choices=CONDICION_ACTIVO, null=True, blank=True)
+    observaciones_entrega = models.TextField(null=True, blank=True)
+    observaciones_devolucion = models.TextField(null=True, blank=True)
     estado = models.IntegerField('Estado Asignación', choices=ESTADOS_ASIGNACION_DETALLE, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivoDetalle_created_by', editable=False)
@@ -207,6 +217,13 @@ class Activo(models.Model):
         else:
             return ""
     
+    @property
+    def numero_comprobante_compra(self):
+        detalle = self.comprobantecompraactivodetalle_set.first()
+        if detalle and detalle.comprobante_compra_activo:
+            return detalle.comprobante_compra_activo.numero_comprobante
+        return None
+    
     def save(self, *args, **kwargs):
         self.color = self.color.upper()
         super().save(*args, **kwargs)
@@ -214,16 +231,7 @@ class Activo(models.Model):
     def __str__(self):
         return str(self.descripcion)
 
-def actualizar_estado_activo_asignacion(*args, **kwargs):
-    obj = kwargs['instance']
-    activo = Activo.objects.get(id=obj.activo.id)
-    activo.estado = 2
-    activo.save()
-
-post_save.connect(actualizar_estado_activo_asignacion, sender=AsignacionDetalleActivo)
-
 class ActivoSociedad(models.Model):
-
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
     activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True, related_name='ActivoSociedad_activo')
 
@@ -418,12 +426,10 @@ def actualizar_historial_activo_devolucion(*args, **kwargs):
 post_save.connect(actualizar_historial_activo_devolucion, sender=DevolucionActivo)
 
 class ComprobanteCompraActivo(models.Model):
-
     numero_comprobante = models.CharField('Número de Comprobante', max_length=50)
     internacional_nacional = models.IntegerField('Tipo de Compra', choices=INTERNACIONAL_NACIONAL)
     incoterms = models.IntegerField('INCOTERMS', choices=INCOTERMS, blank=True, null=True)
     tipo_comprobante = models.IntegerField('Tipo de Comprobante', choices=TIPO_COMPROBANTE)
-    orden_compra = models.ForeignKey(OrdenCompra, verbose_name='Orden de Compra', null=True, blank=True, on_delete=models.CASCADE)
     sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE)
     fecha_comprobante = models.DateField('Fecha de Comprobante', auto_now=False, auto_now_add=False)
     moneda = models.ForeignKey(Moneda, null=True,  on_delete=models.PROTECT)
@@ -441,7 +447,7 @@ class ComprobanteCompraActivo(models.Model):
     archivo = models.FileField('Archivo', blank=True, null=True)
     condiciones = models.TextField('Condiciones', null=True, blank=True)
     logistico = models.DecimalField('Logístico', max_digits=3, decimal_places=2, null=True, blank=True)
-    estado = models.IntegerField('Estado', choices=ESTADOS, default=1)
+    estado = models.IntegerField('Estado', choices=ESTADOS_COMPROBANTE_COMPRA_ACTIVO, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='ComprobanteCompraActivo_created_by', editable=False)
@@ -459,20 +465,18 @@ class ComprobanteCompraActivo(models.Model):
         return self.numero_comprobante
 
 class ComprobanteCompraActivoDetalle(models.Model):
-
     item = models.IntegerField(blank=True, null=True)
-    descripcion_comprobante = models.TextField('Descripción Comprobante', null=True, blank=True)
-    orden_compra_detalle = models.ForeignKey(OrdenCompraDetalle, verbose_name='Orden de Compra Detalle', null=True, blank=True, on_delete=models.CASCADE)
+    descripcion_comprobante = models.CharField('Descripción Comprobante',max_length=200, null=True, blank=True)
     activo = models.ForeignKey(Activo, on_delete=models.CASCADE, blank=True, null=True)
     cantidad = models.DecimalField('Cantidad', max_digits=22, decimal_places=10, default=Decimal('0.00'))
-    precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
-    precio_unitario_con_igv = models.DecimalField('Precio Unitario con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
-    precio_final_con_igv = models.DecimalField('Precio Final con IGV', max_digits=22, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_sin_igv = models.DecimalField('Precio Unitario sin IGV', max_digits=14, decimal_places=10, default=Decimal('0.00'))
+    precio_unitario_con_igv = models.DecimalField('Precio Unitario con IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
+    precio_final_con_igv = models.DecimalField('Precio Final con IGV', max_digits=14, decimal_places=10, default=Decimal('0.00'))
     descuento = models.DecimalField('Descuento', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     sub_total = models.DecimalField('Sub Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     igv = models.DecimalField('IGV', max_digits=14, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField('Total', max_digits=14, decimal_places=2, default=Decimal('0.00'))
-    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True)
+    tipo_igv = models.IntegerField('Tipo de IGV', choices=TIPO_IGV_CHOICES, null=True, default =1)
     comprobante_compra_activo = models.ForeignKey(ComprobanteCompraActivo, verbose_name='Comprobante de Compra', on_delete=models.CASCADE, related_name='ComprobanteCompraActivoDetalle_comprobante_compra_activo')
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)

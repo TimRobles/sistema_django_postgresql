@@ -1,0 +1,90 @@
+{% extends 'includes/modal generico.html' %}
+{% load static %}
+{% load funciones_propias %}
+{% load humanize %}
+
+{% block content %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Operación</th>
+            <th class="text-end">Monto</th>
+            <th class="text-end">Usado</th>
+            <th class="text-end">Disponible</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for movimiento in contexto_pagina %}
+        <tr>
+        {% if  movimiento.saldo > 0 %}
+            <td>{{ movimiento.fecha|date:'d/m/Y' }}</td>
+            <td>
+                {% if movimiento.pagos %}
+                <div class="accordion" id="accordion{{ movimiento.tipo }}{{ movimiento.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed p-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ movimiento.tipo }}{{ movimiento.id }}" aria-expanded="false" aria-controls="collapse{{ movimiento.tipo }}{{ movimiento.id }}">
+                                {{ movimiento.numero_operacion }}
+                                {% if movimiento.cuenta_origen %}
+                                | {{ movimiento.cuenta_origen }}
+                                {% endif %}
+                                {% if movimiento.comentario %}
+                                | {{ movimiento.comentario }}
+                                {% endif %}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ movimiento.tipo }}{{ movimiento.id }}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion{{ movimiento.tipo }}{{ movimiento.id }}">
+                            <div class="accordion-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Monto</th>
+                                            <th class="text-center">Usado</th>
+                                            <th class="text-center">Disponible</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.monto|redondear|intcomma }}</td>
+                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}</td>
+                                            <td class="text-center">{{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                               
+                            </div>
+                        </div>
+                    </div>                          
+                </div>
+                {% else %}
+                {{ movimiento.numero_operacion }}
+                {% if movimiento.cuenta_origen %}
+                | {{ movimiento.cuenta_origen }}
+                {% endif %}
+                {% if movimiento.comentario %}
+                | {{ movimiento.comentario }}
+                {% endif %}
+                {% endif %}
+            </td>
+                <td class="text-end text-nowrap">
+                    {{ movimiento.moneda.simbolo }} {{ movimiento.ingreso|redondear|intcomma }}
+                </td>
+                <td class="text-end text-nowrap">
+                    {{ movimiento.moneda.simbolo }} {{ movimiento.usado|redondear|intcomma }}
+                </td>
+                <td class="text-end text-nowrap">
+                    {{ movimiento.moneda.simbolo }} {{ movimiento.saldo|redondear|intcomma }}
+                </td>
+
+        {% endif %}
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock content %}

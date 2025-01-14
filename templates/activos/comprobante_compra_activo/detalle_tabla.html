@@ -1,12 +1,102 @@
 {% load humanize %}
 <h3>Detalle Comprobante de Compra Activo
-    <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_registrar' contexto_comprobante_compra_activo_detalle.id %}"
-        data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
-        class="create badge bg-primary">
-        Registrar Activo
-    </button>
+    {% if comprobante.estado == 1 %}
+        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_registrar' contexto_comprobante_compra_activo_detalle.id %}"
+            data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
+            class="create badge bg-primary">
+            Registrar Activo
+        </button>
+
+        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_culminar' contexto_comprobante_compra_activo_detalle.id %}"
+            data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
+            class="delete badge bg-success">
+            Culminar Registro
+        </button>
+    {% endif %}
+        
     <a href="{% url 'activos_app:comprobante_compra_activo_inicio' %}"><span class="badge bg-primary">Regresar</span></a>
+
 </h3>
+
+<hr>
+<div class="row mt-3">
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+                <tr>
+                    <th class="pe-2 text-nowrap">N° Comprobante:</th>
+                    <td>{{ comprobante.numero_comprobante }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Tipo Comprobante:</th>
+                    <td>{{ comprobante.get_tipo_comprobante_display }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Fecha Comprobante:</th>
+                    <td>{{ comprobante.fecha_comprobante|date:'d/m/Y' }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Tipo de Compra:</th>
+                    <td>{{ comprobante.get_internacional_nacional_display}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>
+
+                <tr>
+                    <th class="pe-2">Sociedad:</th>
+                    <td>{{ comprobante.sociedad }}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Estado:</th>
+                    <td>{{ comprobante.get_estado_display}}</td>
+                </tr>
+                <tr>
+                    <th class="pe-2">Archivo:</th>
+                    <td>
+                    <div class="table-responsive">
+                        {% if comprobante.estado == 1 %}
+                        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_archivo_agregar' contexto_comprobante_compra_activo_detalle.id %}"
+                            data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
+                            class="create badge bg-primary">
+                            Agregar Archivo
+                        </button>
+                        {% endif %}   
+                        <table class="table">
+                            <tbody>
+                                {% for archivo in archivos %}
+                                    <tr>
+                                        <td class="text-center">
+                                            <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">
+                                                {{ archivo.archivo }}
+                                            </a>
+                                        </td>
+                                        {% if comprobante.estado == 1 %}
+                                        <td class="text-center text-nowrap">
+                                            <button data-form-url="{% url 'activos_app:comprobante_compra_activo_archivo_eliminar' archivo.id %}"
+                                                class="delete btn btn-danger btn-sm"
+                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </td>
+                                        {% endif %}   
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<hr>
 
 <div class="table-responsive">
     <table class="table">
@@ -25,7 +115,9 @@
                 <th class="text-nowrap">Sub Total</th>
                 <th>IGV</th>
                 <th>Total</th>
+                {% if comprobante.estado == 1 %}
                 <th class="text-center">Acciones</th>
+                {% endif %}   
             </tr>
         </thead>
         <tbody>
@@ -51,7 +143,7 @@
                     <td class="text-end text-nowrap">{{ activo.sub_total|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ activo.igv|intcomma }}</td>
                     <td class="text-end text-nowrap">{{ activo.total|intcomma }}</td>
- 
+                    {% if comprobante.estado == 1 %}
                     <td class="text-center text-nowrap">
                         <button data-form-url="{% url 'activos_app:comprobante_compra_activo_detalle_actualizar' activo.id %}"
                             data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
@@ -66,6 +158,8 @@
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </td>
+                    {% endif %}   
+
                 </tr>
             {% endfor %}    
         </tbody>
@@ -115,41 +209,5 @@
                 <td class="text-end">{{ totales.total|intcomma }}</td>
             </tr>
         </tfoot>
-    </table>
-</div>
-<br>
-<h3>Archivos
-    <button data-form-url="{% url 'activos_app:comprobante_compra_activo_archivo_agregar' contexto_comprobante_compra_activo_detalle.id %}"
-        data-table-url="{% url 'activos_app:comprobante_compra_activo_detalle_tabla' contexto_comprobante_compra_activo_detalle.id %}"
-        class="create badge bg-primary">
-        Agregar Archivo
-    </button>
-</h3>
-<div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th class="text-center">Archivo</th>
-                <th class="text-center">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for archivo in archivos %}
-                <tr>
-                    <td class="text-center">
-                        <a href="{{ MEDIA_URL }}{{ archivo.archivo }}" target="_blank">
-                            {{ archivo.archivo }}
-                        </a>
-                    </td>
-                    <td class="text-center text-nowrap">
-                        <button data-form-url="{% url 'activos_app:comprobante_compra_activo_archivo_eliminar' archivo.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
     </table>
 </div>

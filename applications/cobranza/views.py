@@ -1307,3 +1307,18 @@ class DepositosPagarDeleteView(PermissionRequiredMixin, BSModalDeleteView):
         context['titulo'] = 'Pago'
         context['item'] = self.get_object()
         return context
+
+
+class CuentaBancariaDepositosNoRelacionados(TemplateView):
+    template_name = "bancos/cuenta bancaria/depositos no relacionados.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(CuentaBancariaDepositosNoRelacionados, self).get_context_data(**kwargs)
+        cuenta_bancaria = CuentaBancariaSociedad.objects.get(id=self.kwargs['pk'])
+        context['titulo'] = 'Depositos No Relacionados'
+        movimientos = movimientos_bancarios(cuenta_bancaria.id)
+        context['cuenta_bancaria'] = cuenta_bancaria
+        context['contexto_pagina'] = movimientos
+
+        return context
+    

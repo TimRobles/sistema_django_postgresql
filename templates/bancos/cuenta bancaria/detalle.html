@@ -8,7 +8,8 @@ Detalle de Cuenta Bancaria
 {% endblock titulo %}
 
 {% block contenido %}
-    <h3>Detalle de Cuenta Bancaria</h3>
+    <h3>Detalle de Cuenta Bancaria </h3>
+    <br>
     <div class="table-responsive">
         <table>
             <tbody>
@@ -39,21 +40,32 @@ Detalle de Cuenta Bancaria
             </tbody>
         </table>
     </div>
+<br>
     <a href="{% url 'cobranza_app:cuenta_bancaria_inicio' %}"
     class="btn btn-primary">
         Regresar
     </a>
     {% if cuenta_bancaria.efectivo %}
-    <button class="delete btn btn-primary"
-        data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso_efectivo' cuenta_bancaria.id %}">
-        Agregar Ingreso
-    </button>
+        <button class="delete btn btn-primary"
+            data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso_efectivo' cuenta_bancaria.id %}">
+            Agregar Ingreso
+        </button>
     {% else %}
-    <button class="delete btn btn-primary"
-        data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso' cuenta_bancaria.id %}">
-        Agregar Ingreso
-    </button>
+        <button class="delete btn btn-primary"
+            data-form-url="{% url 'cobranza_app:cuenta_bancaria_agregar_ingreso' cuenta_bancaria.id %}">
+            Agregar Ingreso
+        </button>
+
+        <button class="read btn btn-danger"
+            data-form-url="{% url 'cobranza_app:cuenta_bancaria_depositos_no_relacionados' cuenta_bancaria.id%}"
+            data-bs-toggle="tooltip" data-bs-placement="top" title= "Depositos NO relacionados">
+            NO relacionados
+        </button>
     {% endif %}
+
+<br>
+<br> 
+
     <form action="" method="get" autocomplete="off">
         {% include 'includes/formulario lineal.html' %}
         <button type="submit" class="btn btn-success" title="Buscar">
@@ -61,7 +73,8 @@ Detalle de Cuenta Bancaria
         </button>
         <a class="btn btn-success" href="{% url 'cobranza_app:cuenta_bancaria_detalle' cuenta_bancaria.id %}">Limpiar</a>
     </form>
-    <br>
+
+    <hr>
     {% include 'includes/paginador.html' %}
     <div class="table-responsive" id="tabla">
         {% include 'bancos/cuenta bancaria/detalle tabla.html' %}

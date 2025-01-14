@@ -2,11 +2,10 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Título</th>    
             <th>Colaborador</th>
-            <th>Fecha Documento</th>    
+            <th>Fecha Inicio</th>    
             <th>Observación</th>    
-            <th>Fecha Asignación</th>    
+            <th>Fecha Fin</th>    
             <th>Estado</th>    
             <th class="text-center">Acciones</th>    
         </tr>
@@ -15,13 +14,12 @@
         
         {% for asignacion_activo in contexto_asignacion_activo %}
             <tr>
-                <td> {{ asignacion_activo.titulo }}</td>
                 <td> {{ asignacion_activo.colaborador }}</td>
-                <td> {{ asignacion_activo.fecha_asignacion }}</td>
+                <td> {{ asignacion_activo.fecha_inicio }}</td>
                 <td> {{ asignacion_activo.observacion }}</td>
                 <td>
-                {% if asignacion_activo.fecha_entrega %}
-                     {{ asignacion_activo.fecha_entrega }}
+                {% if asignacion_activo.fecha_fin %}
+                     {{ asignacion_activo.fecha_fin }}
                 {% endif %}
                 </td>
                 <td> {{ asignacion_activo.get_estado_display }}</td>

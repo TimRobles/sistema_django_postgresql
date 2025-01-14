@@ -1,4 +1,26 @@
-<h3>Sociedad
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Comprobante de compra</th>
+                <th>Fecha de compra</th>
+                <th>Sociedad de compra</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for detalle in comprobante_compra_detalle %}
+                    <td>{{detalle.comprobante_compra_activo.numero_comprobante}}</td>
+                    <td>{{detalle.comprobante_compra_activo.fecha_comprobante}}</td>
+                    <td>{{detalle.comprobante_compra_activo.sociedad}}</td>
+                {% endfor %}   
+            </tr>
+        </tbody>
+    </table>
+</div>
+<br>
+
+<h3>Sociedad del Activo
     <button data-form-url="{% url 'activos_app:activo_sociedad_relacionar' contexto_activo_detalle.id %}"
         data-table-url="{% url 'activos_app:activo_detalle_tabla' contexto_activo_detalle.id %}"
         class="create badge bg-primary">
@@ -33,8 +55,10 @@
         </tbody>
     </table>
 </div>
+
 <br>
-<h3>Ubicación
+
+<h3>Ubicación del Activo
     <button data-form-url="{% url 'activos_app:activo_ubicacion_relacionar' contexto_activo_detalle.id %}"
         data-table-url="{% url 'activos_app:activo_detalle_tabla' contexto_activo_detalle.id %}"
         class="create badge bg-primary">

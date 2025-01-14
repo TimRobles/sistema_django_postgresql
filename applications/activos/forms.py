@@ -26,7 +26,7 @@ from applications.datos_globales.models import SegmentoSunat,FamiliaSunat,ClaseS
 from bootstrap_modal_forms.forms import BSModalModelForm
 from django import forms
 from django.contrib.auth import get_user_model
-
+from django.db.models import Q
 
 class FamiliaActivoForm(BSModalModelForm):
     class Meta:
@@ -172,13 +172,12 @@ class AsignacionActivoForm(BSModalModelForm):
     class Meta:
         model = AsignacionActivo
         fields = (
-            'titulo',
             'colaborador',
-            'fecha_asignacion',
+            'fecha_inicio',
             'observacion',
             )
         widgets = {
-            'fecha_asignacion' : forms.DateInput(
+            'fecha_inicio' : forms.DateInput(
                 attrs ={
                     'type':'date',
                     },
@@ -213,7 +212,6 @@ class DevolucionActivoForm(BSModalModelForm):
     class Meta:
         model = DevolucionActivo
         fields = (
-            'titulo',
             'colaborador',
             'fecha_devolucion',
             'observacion',
@@ -428,7 +426,6 @@ class ComprobanteCompraActivoForm(BSModalModelForm):
             'internacional_nacional',
             'sociedad',
             'incoterms',
-            'orden_compra',
             'moneda',
             'condiciones',
             'logistico',
@@ -454,7 +451,6 @@ class ComprobanteCompraActivoDetalleForm(BSModalModelForm):
         fields=(
             'activo',
             'descripcion_comprobante',
-            'orden_compra_detalle',
             'tipo_igv',
             'cantidad',
             'precio_unitario_sin_igv',
@@ -467,7 +463,32 @@ class ComprobanteCompraActivoDetalleForm(BSModalModelForm):
             )
 
     def __init__(self, *args, **kwargs):
+        activos_sin_comprobante = Activo.objects.exclude(comprobantecompraactivodetalle__isnull=False)
         super(ComprobanteCompraActivoDetalleForm, self).__init__(*args, **kwargs)
+        self.fields['activo'].queryset = activos_sin_comprobante
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class ComprobanteCompraActivoDetalleActualizarForm(BSModalModelForm):
+    class Meta:
+        model = ComprobanteCompraActivoDetalle
+        fields=(
+            'descripcion_comprobante',
+            'tipo_igv',
+            'cantidad',
+            'precio_unitario_sin_igv',
+            'precio_unitario_con_igv',
+            'precio_final_con_igv',
+            'descuento',
+            'sub_total',
+            'igv',
+            'total',
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(ComprobanteCompraActivoDetalleActualizarForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

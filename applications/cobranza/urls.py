@@ -46,4 +46,7 @@ urlpatterns = [
     
     path('cuenta-bancaria/eliminar/pago/<int:id_cuenta_bancaria>/<pk>/',views.CuentaBancariaIngresoPagarDeleteView.as_view(),name='cuenta_bancaria_eliminar_pago'),
     path('cuenta-bancaria/actualizar/pago/<int:id_cuenta_bancaria>/<int:id_ingreso>/<pk>/',views.CuentaBancariaIngresoPagarUpdateView.as_view(),name='cuenta_bancaria_actualizar_pago'),
+ 
+    path('cuenta-bancaria/depositos-no-relacionados/<pk>/',views.CuentaBancariaDepositosNoRelacionados.as_view(),name='cuenta_bancaria_depositos_no_relacionados'),
+
  ]

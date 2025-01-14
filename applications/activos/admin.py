@@ -117,11 +117,8 @@ class MarcaAdmin(admin.ModelAdmin):
 
 class AsignacionActivoAdmin(admin.ModelAdmin):
     list_display = (
-        'titulo',
         'colaborador',
-        'fecha_asignacion',
         'observacion',
-        'fecha_entrega',
         'estado',
         'created_at',
         'created_by',
@@ -185,9 +182,7 @@ class AsignacionDetalleActivoAdmin(admin.ModelAdmin):
 
 class DevolucionActivoAdmin(admin.ModelAdmin):
     list_display = (
-        'titulo',
         'colaborador',
-        'fecha_devolucion',
         'observacion',
         'estado',
         'archivo',
@@ -281,7 +276,6 @@ class ComprobanteCompraActivoAdmin(admin.ModelAdmin):
         'internacional_nacional',
         'incoterms',
         'tipo_comprobante',
-        'orden_compra',
         'sociedad',
         'fecha_comprobante',
         'moneda',
@@ -317,7 +311,6 @@ class ComprobanteCompraActivoDetalleAdmin(admin.ModelAdmin):
     list_display = (
         'item',
         'descripcion_comprobante',
-        'orden_compra_detalle',
         'activo',
         'cantidad',
         'precio_unitario_sin_igv',

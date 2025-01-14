@@ -696,6 +696,12 @@ ESTADO_VACACIONES_DETALLE = (
     (3, 'RECHAZADO'),
 )
 
+
+ESTADOS_COMPROBANTE_COMPRA_ACTIVO = (
+    (1, 'EN PROCESO'),
+    (2, 'REGISTRADO'),
+    )
+
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
 
 CHOICE_VACIO = ((None, '-----------------'),)

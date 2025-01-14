@@ -41,6 +41,7 @@
                 </td>
                 <td class="text-center">{{ activo.estado }}</td>
                 <td class="text-center text-nowrap">
+                    {% if not activo.comprobante_compra_activo%}
                     <button data-form-url="{% url 'activos_app:activo_actualizar' activo.id %}"
                         data-table-url="{% url 'activos_app:activo_tabla' %}"
                         data-keep-open="true"
@@ -53,6 +54,7 @@
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
                         <i class="bi bi-x-lg"></i>
                     </button>
+                    {% endif %}
                     <a href="{% url 'activos_app:activo_detalle' activo.id %}"
                         class="btn btn-info btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">

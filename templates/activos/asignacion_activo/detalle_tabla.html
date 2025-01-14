@@ -1,15 +1,7 @@
 <!-- <div>{{contexto_asignacion_activo_detalle}}</div> -->
 
 <!-- DETALLE ASIGNACIONES -->
-<h3>Asignación Activo Detalle 
-    {% if contexto_asignacion_activo.estado == 1 %}   
-        <button class="create badge bg-primary"
-            data-form-url="{% url 'activos_app:asignacion_activo_detalle_registrar' contexto_asignacion_activo.id %}"
-            data-table-url="{% url 'activos_app:asignacion_activo_detalle_tabla' contexto_asignacion_activo.id %}">    
-            Añadir Activo
-        </button>            
-    {% endif %}
-    
+<h3>Asignación Activo Detalle     
     {% if contexto_asignacion_activo.estado == 1 or contexto_asignacion_activo.estado == 2 %}
         <a href="{% url 'activos_app:asignacion_activo_pdf' contexto_asignacion_activo.id %}"
             class="create btn badge bg-primary">
@@ -22,7 +14,7 @@
         Retroceder
     </a>
 </h3>
-
+<hr>
 <!-- TABLA DETALLE ASIGNACIONES -->
 <div class="table-responsive">
 <table>
@@ -39,7 +31,19 @@
         </tr>
     </tbody>
 </table>
-
+</div>
+<hr>
+<br>
+<h3>Activos asignados
+    {% if contexto_asignacion_activo.estado == 1 %}   
+        <button class="create badge bg-primary"
+            data-form-url="{% url 'activos_app:asignacion_activo_detalle_registrar' contexto_asignacion_activo.id %}"
+            data-table-url="{% url 'activos_app:asignacion_activo_detalle_tabla' contexto_asignacion_activo.id %}">    
+            Asignar Activo
+        </button>            
+    {% endif %}
+</h3>
+<div>
 <table class="table">
     <thead>
         <tr>
@@ -113,16 +117,14 @@
         {% for asignacion_archivo in contexto_asignacion_activo_archivo %}
             <tr>
                 <td> {{ forloop.counter}} </td>
-                <td> {{ asignacion_archivo.archivo }} </td>
+                <td> 
+                    <a href="{{ MEDIA_URL }}{{ asignacion_archivo.archivo }}" target="_blank">
+                        {{ asignacion_archivo.archivo }}
+                    </a>
+                </td>
                 <td> {{ asignacion_archivo.comentario }} </td>
                 <td> {{ asignacion_archivo.created_at|date:'d/m/Y' }} </td>
                 <td class="text-center text-nowrap"> 
-                    <a href="{{ MEDIA_URL }}{{ asignacion_archivo.archivo }} " target="_blank"
-                        class="btn btn-info btn-sm"
-                        data-bs-toggle="tooltip" data-bs-placement="top" title="Visualizar">
-                        <i class="bi bi-eye-fill"></i>
-                        <!-- {{ asignacion_archivo.archivo }} -->
-                    </a>
                     <button data-form-url="{% url 'activos_app:asignacion_activo_eliminar_archivo' asignacion_archivo.id %}"
                         class="delete btn btn-danger btn-sm"
                         data-bs-toggle="tooltip" data-bs-placement="top" title="Remover">
