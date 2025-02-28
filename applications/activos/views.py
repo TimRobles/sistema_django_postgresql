@@ -27,6 +27,7 @@ from applications.importaciones import *
 from django import forms
 from bootstrap_modal_forms.generic import BSModalCreateView
 from applications.funciones import igv, obtener_totales, registrar_excepcion
+from applications.reportes.funciones import *
 
 from .forms import (
     ActivoBaseForm,
@@ -975,6 +976,9 @@ class AsignacionActivoDetailView(PermissionRequiredMixin, DetailView):
         context = super(AsignacionActivoDetailView, self).get_context_data(**kwargs)
         context['contexto_asignacion_activo_detalle'] = AsignacionDetalleActivo.objects.filter(asignacion = asignacion)
         context['contexto_asignacion_activo_archivo'] = ArchivoAsignacionActivo.objects.filter(asignacion = asignacion)
+        for detalle in context['contexto_asignacion_activo_detalle']:
+            context['tiene_activo'] = detalle.tiene_activo
+
         return context
 
 def AsignacionActivoDetalleTabla(request, pk):
@@ -986,42 +990,16 @@ def AsignacionActivoDetalleTabla(request, pk):
         context['contexto_asignacion_activo'] = asignacion
         context['contexto_asignacion_activo_detalle'] = AsignacionDetalleActivo.objects.filter(asignacion = asignacion)
         context['contexto_asignacion_activo_archivo'] = ArchivoAsignacionActivo.objects.filter(asignacion = asignacion)
+        for detalle in context['contexto_asignacion_activo_detalle']:
+            context['tiene_activo'] = detalle.tiene_activo
+
         data['table'] = render_to_string(
             template,
             context,
             request=request
         )
         return JsonResponse(data)
-
-# Lo hizo Tim, referencia
-
-# class AsignacionActivoDetailView(PermissionRequiredMixin, DetailView):
-#     permission_required = ('activos.view_asignacion_activo_detalle')
-#     model = AsignacionActivo
-#     template_name = "activos/asignacion_activo/detalle.html"
-#     context_object_name = 'contexto_asignacion_activo'
-
-#     def get_context_data(self, **kwargs):
-#         context = super(AsignacionActivoDetailView, self).get_context_data(**kwargs)
-#         context['contexto_asignacion_activo_detalle'] = self.object.AsignacionDetalleActivo_asignacion.all()
-#         return context
-
-
-# def AsignacionActivoDetalleTabla(request, pk):
-#     data = dict()
-#     if request.method == 'GET':
-#         template = 'activos/asignacion_activo/detalle_tabla.html'
-#         context = {}
-#         detalle_asignacion = AsignacionDetalleActivo.objects.get(id = pk)
-#         context['contexto_asignacion_activo_detalle'] = detalle_asignacion
-
-#         data['table'] = render_to_string(
-#             template,
-#             context,
-#             request=request
-#         )
-#         return JsonResponse(data)  
-
+    
 
 class AsignacionDetalleActivoCreateView(BSModalCreateView):
     permission_required = ('activos.add_asignaciondetalleactivo')
@@ -1052,9 +1030,6 @@ class AsignacionDetalleActivoDeleteView(PermissionRequiredMixin, BSModalDeleteVi
     context_object_name = 'contexto_asignacion_detalle_activo_eliminar' 
 
     def get_success_url(self, **kwargs):
-        print(15*'*', 'DELETE')
-        print('id:', self.object.activo.id)
-        print('descripcion:', self.object.activo.descripcion)
         Activo.objects.filter(id=self.object.activo.id).update(estado=1)
         return reverse_lazy('activos_app:asignacion_activo_detalle_inicio', kwargs={'pk':self.object.asignacion.id})
 
@@ -1107,7 +1082,6 @@ class ArchivoAsignacionActivoDeleteView(PermissionRequiredMixin, BSModalDeleteVi
 
 class AsignacionActivoPdfView(View):
     def get(self, request, *args, **kwargs):
-        color = COLOR_DEFAULT
         titulo = 'Asignación de Activos'
         vertical = True
         logo = None
@@ -1157,12 +1131,20 @@ class AsignacionActivoPdfView(View):
                 fila.append('-')
             TablaDatos.append(fila)
             count += 1
-
+        
+        for activo in activos:
+            empresa = activo.activo.empresa
+            color = activo.activo.empresa_color
+            logo = [[activo.activo.empresa_logo]]
+            print('___')
+            print('color',color)
+            print('logo',logo)
+            print('___')
 
         tabla_firmas = [
             ['', '------------------------', '', '------------------------', ''],
             ['', 'Recibe el/los equipo(s)', '', 'Entrega el/los equipo(s)', ''],
-            ['', str(obj.colaborador), '', 'ING. BASILIO ÁLVAREZ ZAPATA', '']
+            ['', str(obj.colaborador), '', '', '------------------------']
             ]
         
 

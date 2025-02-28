@@ -8,6 +8,8 @@
 {% block contenido %}
 <h1 class="text-center" style="color: green;">Reportes Excel</h1>
 <br>
+<hr>
+
 <h3>Reporte Contador</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
@@ -37,6 +39,8 @@
     </div>
 </form>
 <br>
+<hr>
+
 <h3>Reporte Rotación</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
@@ -66,6 +70,8 @@
     </div>
 </form>
 <br>
+<hr>
+
 <h3>Reporte Depósitos Cuentas Bancarias</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
@@ -95,6 +101,8 @@
     </div>
 </form>
 <br>
+<hr>
+
 <h3>Reporte Resumen Stock Productos</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
@@ -124,6 +132,8 @@
     </div>
 </form>
 <br>
+<hr>
+
 <h3>Reporte Ventas Facturadas</h3>
 <form action="" method="post" autocomplete="off">
     {% csrf_token %}
@@ -153,4 +163,48 @@
     </div>
 </form>
 <br>
+<hr>
+<h3>Reporte Valorizado - prueba</h3>
+<p>
+    - [ ]  Más estados
+        - [ ]  BloqueoQA
+        - [ ]  Desguace (malogrados)
+
+        - [ ]  PRECIO DE COMPRA
+        - [ ]  Todos los stocks, todos los productos
+        
+        - [ ]  **CON IGV**
+</p>
+
+
+<form action="" method="post" autocomplete="off">
+    {% csrf_token %}
+    <div class="input-group">
+        {% for field in form6 %}
+            <div class="input-group columna-auto {% if field.errors %} invalid{% endif %}"
+            {% if field.help_text %}
+            data-bs-toggle="tooltip" data-bs-placement="top" title="{{ field.help_text }}"
+            {% endif %}
+            >
+                {% if field in form6.visible_fields %}
+                <label class="input-group-text" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% endif %}
+                {{ field }}
+            </div>
+            {% if field.help_text %}
+            <p class="mt-0">Pista:{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-danger mt-0 error-formulario">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        <input type="hidden" value="formulario6" name="formulario">
+        <button type="submit" class="btn btn-success" title="Descargar">
+            <i class="bi bi-download"></i>
+        </button>
+    </div>
+</form>
+<br>
+<hr>
+
 {% endblock contenido %}

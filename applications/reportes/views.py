@@ -37,7 +37,8 @@ from applications.reportes.forms import (
     ReportesContadorForm, 
     ReportesFiltrosForm, 
     ReporteVentasDepartamentoExcelForm,
-    ReportesRotacionForm
+    ReportesRotacionForm,
+    ReportesValorizadoForm
     )
 from applications.reportes.funciones import *
 from applications.reportes.data_resumen_ingresos_anterior import*
@@ -69,7 +70,8 @@ from applications.reportes.excel import (
     ReporteRotacionCorregido,
     ReporteTasaConversionCliente, 
     ReporteVentasDepartamento,
-    ReporteVentasFacturadasCorregido
+    ReporteVentasFacturadasCorregido,
+    ReporteValorizadoCorregido
     )
 from applications.sede.models import Sede
 
@@ -3669,6 +3671,15 @@ class ReportesCorregidosExcel(TemplateView):
             titulo = f'Reporte Ventas Facturadas- {sociedad.abreviatura} del {fecha_inicio} al {fecha_fin}'
 
             wb = ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin)
+        
+        elif formulario == 'formulario6':
+            sociedad = None
+            if self.request.POST.get('sociedad'):
+                sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
+                titulo = f'Reporte de Valorizado - {sociedad.abreviatura} al {date.today()}'
+            else:
+                titulo = f'Reporte de Valorizado - TOTAL al {date.today()}'
+            wb = ReporteValorizadoCorregido(sociedad)
 
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(titulo + '.xlsx')
@@ -3684,6 +3695,7 @@ class ReportesCorregidosExcel(TemplateView):
         context['form3'] = ReporteDepositoCuentasBancariasForm()
         context['form4'] = ReporteResumenStockProductosForm()
         context['form5'] = ReporteVentasFacturadasForm()
+        context['form6'] = ReportesValorizadoForm()
 
         return context
     

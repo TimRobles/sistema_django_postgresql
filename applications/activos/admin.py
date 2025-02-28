@@ -166,7 +166,6 @@ class AsignacionDetalleActivoAdmin(admin.ModelAdmin):
     list_display = (
         'activo',
         'asignacion',
-        'estado',
         'created_at',
         'created_by',
         'updated_at',

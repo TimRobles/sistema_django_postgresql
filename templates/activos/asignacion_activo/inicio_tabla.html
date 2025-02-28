@@ -15,7 +15,7 @@
         {% for asignacion_activo in contexto_asignacion_activo %}
             <tr>
                 <td> {{ asignacion_activo.colaborador }}</td>
-                <td> {{ asignacion_activo.fecha_inicio }}</td>
+                <td> {{ asignacion_activo.fecha_inicio|date:'d/m/Y' }}</td>
                 <td> {{ asignacion_activo.observacion }}</td>
                 <td>
                 {% if asignacion_activo.fecha_fin %}

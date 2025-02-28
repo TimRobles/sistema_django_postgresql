@@ -7,6 +7,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from applications.variables import TIPO_DOCUMENTO_CHOICES, ESTADO_VACACIONES, ESTADO_VACACIONES_DETALLE
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from applications.sociedad.models import Sociedad
 
 
 # Create your models here.
@@ -97,6 +98,9 @@ class DatosUsuario(models.Model):
 class Vacaciones(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='Vacaciones_usuario')
     dias_vacaciones = models.PositiveIntegerField()
+    sociedad = models.ForeignKey(Sociedad, on_delete=models.CASCADE, blank=True, null=True)
+    periodo = models.CharField('Periodo',max_length=500, blank=True, null=True)
+    documento = models.FileField('Documento', blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADO_VACACIONES, default=1)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
@@ -128,6 +132,9 @@ class Vacaciones(models.Model):
         total_duracion = sum(detalle.duracion for detalle in self.VacacionesDetalle_vacaciones.all())
         return self.dias_vacaciones - total_duracion
     
+    @property
+    def hoy(self):
+        return date.today().strftime("%d/%m/%Y")
 
 class VacacionesDetalle(models.Model):
     vacaciones = models.ForeignKey(Vacaciones, on_delete=models.CASCADE, related_name='VacacionesDetalle_vacaciones')

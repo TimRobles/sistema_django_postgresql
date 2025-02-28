@@ -309,6 +309,12 @@ class VacacionesListView(PermissionRequiredMixin,FormView):
         context = super(VacacionesListView,self).get_context_data(**kwargs)
         vacaciones = Vacaciones.objects.all()
         
+        # # --- Actualización del estado ---
+        # for vacacion in vacaciones:
+        #     if vacacion.estado ==2 and vacacion.dias_restantes == 0:
+        #         vacacion.estado = 3
+        #         vacacion.save()
+
         filtro_estado = self.request.GET.get('estado')
         filtro_usuario = self.request.GET.get('usuario')
         
@@ -343,8 +349,6 @@ class VacacionesListView(PermissionRequiredMixin,FormView):
    
         context['contexto_pagina'] = vacaciones
         context['contexto_vacaciones'] = vacaciones
-        context['today'] = timezone.now().date().strftime('%d/%m/%Y')
-        print('today',context['today'])
         return context
 
 def VacacionesTabla(request):
@@ -353,6 +357,12 @@ def VacacionesTabla(request):
         template = 'usuario/vacaciones_usuario/inicio_tabla.html'
         context = {}
         vacaciones = Vacaciones.objects.all()
+
+        # # --- Actualización del estado ---
+        # for vacacion in vacaciones:
+        #     if vacacion.estado == 2 and vacacion.dias_restantes == 0:
+        #         vacacion.estado = 3
+        #         vacacion.save()
 
         filtro_estado = request.GET.get('estado')
         filtro_usuario = request.GET.get('usuario')
@@ -388,9 +398,6 @@ def VacacionesTabla(request):
    
         context['contexto_pagina'] = vacaciones
         context['contexto_vacaciones'] = vacaciones
-        context['today'] = timezone.now().date().strftime('%d/%m/%Y')
-        print('today',context['today'])
-
         data['table'] = render_to_string(
             template,
             context,
@@ -448,6 +455,23 @@ class VacacionesCreateView(BSModalCreateView):
         context['titulo'] = "Vacaciones"
         return context
 
+class VacacionesActualizarView(BSModalUpdateView):
+    model = Vacaciones
+    template_name = "includes/formulario generico.html"
+    form_class = VacacionesForm
+    success_url = reverse_lazy('usuario_app:vacaciones_inicio')
+
+    @transaction.atomic
+    def form_valid(self, form):
+        registro_guardar(form.instance, self.request)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(VacacionesActualizarView, self).get_context_data(**kwargs)
+        context['accion']="Actualizar"
+        context['titulo']="Registro"
+        return context
+
 class VacacionesDetalleCreateView(BSModalCreateView):
     model = VacacionesDetalle
     template_name = "includes/formulario generico.html"
@@ -501,7 +525,6 @@ class VacacionesDetalleUpdateView(BSModalUpdateView):
 class VacacionesDetalleDeleteView(BSModalDeleteView):
     model = VacacionesDetalle
     template_name = "includes/eliminar generico.html"
-    # success_url = '.'
     def get_success_url(self, **kwargs):
         return reverse_lazy('usuario_app:vacaciones_detalle', kwargs={'pk':self.object.vacaciones.id})
 
@@ -509,4 +532,33 @@ class VacacionesDetalleDeleteView(BSModalDeleteView):
         context = super(VacacionesDetalleDeleteView, self).get_context_data(**kwargs)
         context['accion']="Eliminar"
         context['titulo']="Registro"
+        return context
+
+class VacacionesTerminarView(BSModalDeleteView):
+    model = Vacaciones
+    # template_name = "includes/eliminar generico.html"
+    template_name = "includes/form generico.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('usuario_app:vacaciones_detalle', kwargs={'pk':self.kwargs['pk']})
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            self.object = self.get_object()
+            self.object.estado = 3
+            registro_guardar(self.object, self.request)
+            self.object.save()
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(VacacionesTerminarView, self).get_context_data(**kwargs)
+        context['accion'] = "Terminar"
+        context['titulo'] = "Vacaciones"
+        context['texto'] = "¿Desea culminar las vacaciones del siguiente usuario?"
+        context['item'] = self.object.usuario
         return context

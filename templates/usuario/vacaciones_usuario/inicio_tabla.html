@@ -6,10 +6,12 @@
     <thead>
         <tr>
             <th>Usuario</th>
-            <th class="text-center">Días de vacaciones</th>
+            <th class="text-center">Días de vacaciones </th>
             <th class="text-center">Días de usados </th>
             <th class="text-center">Días de restantes </th>
-            <th>Estado</th>
+            <th>Sociedad </th>
+            <th>Periodo </th>
+            <th>Estado </th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -20,17 +22,31 @@
             <td class="text-center">{{ vacaciones.dias_vacaciones }}</td>
             <td class="text-center">{{ vacaciones.total_duracion }}</td>
             <td class="text-center" style="color: blue;">{{ vacaciones.dias_restantes }}</td>
-            <td class="text-center 
+            <td>{{ vacaciones.sociedad.abreviatura }}</td>
+            <td>{{ vacaciones.periodo }}</td>
+            <td class="
             {% if vacaciones.estado == 1 %}text-danger
             {% elif vacaciones.estado == 2 %} text-success
             {% endif %}">
             {{ vacaciones.get_estado_display }} </td>
+                
             <td class="text-center">
                 <a href="{% url 'usuario_app:vacaciones_detalle' vacaciones.id %}"
                     class="btn btn-info btn-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Detalle">
                     <i class="bi bi-eye-fill"></i>
-                </a>            
+                </a>   
+                {% if vacaciones.estado != 3 %}
+                <button data-form-url="{% url 'usuario_app:vacaciones_actualizar' vacaciones.id %}"
+                    data-table-url="{% url 'usuario_app:vacaciones_tabla' %}"
+                    data-keep-open="true"
+                    class="update btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                {% endif %}
+
+
             </td>
         </tr>
         {% endfor %}

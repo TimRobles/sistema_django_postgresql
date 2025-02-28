@@ -1695,6 +1695,200 @@ def ReporteRotacionCorregido(sociedad):
     wb=dataReporteRotacion(sociedad)
     return wb
 
+################################## EN PRUEBA ##################################
+
+def dataReporteValorizado(sociedad=None): 
+    moneda_base = Moneda.objects.get(simbolo='$')
+
+    list_encabezado = [
+        'ID MAT.',
+        'FAMILIA',
+        'NOMBRE',
+        'DESCRIPCIÓN',
+        'DISPONIBLE',
+        'BLOQUEO SIN SERIE',
+        'BLOQUEO SIN QA',
+        'BLOQUEO POR QA',
+        'BLOQUEO DESGUACE',
+        'TOTAL_STOCK',
+        'PRECIO_COMPRA',
+        'PRECIO_LISTA',
+        'PRECIO_SIN_IGV',
+        'VALOR_STOCK_COMPRA',
+        'VALOR_STOCK_LISTA',
+        'VALOR_STOCK_SIN_IGV'
+        ]
+
+    wb = Workbook()
+    hoja = wb.active
+    hoja.title = 'Reporte'
+    hoja.append(tuple(list_encabezado))
+
+    color_relleno = rellenoSociedadCorregido(sociedad)
+
+    col_range = hoja.max_column  # get max columns in the worksheet
+    # cabecera de la tabla
+    for col in range(1, col_range + 1):
+        cell_header = hoja.cell(1, col)
+        cell_header.fill = color_relleno
+        cell_header.font = NEGRITA
+
+    lista_tipo_stock = [2,3,4,5,15,16,17,22,]
+    # Recibido 2, Disponible 3, bloqueo sin serie 4, bloqueo sin qa 5, despachado 15, reservado 16, confirmado 17, prestado 22,
+    # Remover LABORATORIO
+    # Recepcion compra 101, confirmacion por venta 120
+    movimientos = MovimientosAlmacen.objects.filter(
+        tipo_stock__codigo__in=lista_tipo_stock,
+        content_type_producto=ContentType.objects.get_for_model(Material),
+    )
+    if sociedad:
+        movimientos = movimientos.filter(
+            sociedad=sociedad,
+        )
+
+    # Obtén el último precio de lista para cada material
+    ultimos_precios = PrecioListaMaterial.objects.filter(
+        content_type_producto=ContentType.objects.get_for_model(Material),
+        id_registro_producto=OuterRef('id')
+    ).order_by('-created_at')[:1]    
+
+    # Consulta para obtener todos los materiales con subfamilia y último precio de lista
+    materiales = Material.objects.annotate(
+        precio_compra=Subquery(ultimos_precios.values('precio_compra')),
+        precio_lista=Subquery(ultimos_precios.values('precio_lista')),
+        precio_sin_igv=Subquery(ultimos_precios.values('precio_sin_igv'))
+    )
+
+    movimientos_valores = movimientos.values_list(
+        'id_registro_producto',
+        'fecha_documento',
+        'tipo_movimiento__codigo',
+        'tipo_stock__codigo',
+        'cantidad',
+        'signo_factor_multiplicador',
+        )
+
+    materiales_valores = materiales.values_list(
+        'id',
+        'subfamilia__familia__nombre',
+        'descripcion_corta',
+        'descripcion_venta',
+        'precio_compra',
+        'precio_lista',
+        'precio_sin_igv'
+        )
+    
+    # Convierte el diccionario en un DataFrame de Pandas
+    dfMateriales = pd.DataFrame(materiales_valores, columns=['ID', 'FAMILIA', 'NOMBRE', 'DESCRIPCION', 'PRECIO_COMPRA', 'PRECIO_LISTA', 'PRECIO_SIN_IGV'])
+    df = pd.DataFrame(movimientos_valores, columns=['ID', 'FECHA', 'TIPO_MOVIMIENTO', 'TIPO_STOCK', 'CANTIDAD', 'FACTOR'])
+
+    # Ahora df contiene los datos de la consulta ORM en un DataFrame de Pandas
+    df['FECHA'] = pd.to_datetime(df['FECHA'])
+    
+    # Suponiendo que tu DataFrame se llama df
+    # Calcula la fecha actual
+    fecha_actual = datetime.now()
+
+    # Función personalizada para calcular STOCK por tipo
+    def calcular_stock_por_tipo(group, tipo_stock):
+        filtro_stock = (group['TIPO_STOCK'] == tipo_stock)
+        return (group.loc[filtro_stock, 'CANTIDAD'] * group.loc[filtro_stock, 'FACTOR']).sum()
+
+    # Agrupa por ID y calcula los stocks
+    resultados_stock = df.groupby('ID').apply(lambda group: pd.Series({
+        'DISPONIBLE': calcular_stock_por_tipo(group, 3),
+        'BLOQUEO SIN SERIE': calcular_stock_por_tipo(group, 4),
+        'BLOQUEO SIN QA': calcular_stock_por_tipo(group, 5),
+        'BLOQUEO POR QA': calcular_stock_por_tipo(group, 2), #TODO: No existe, usamos Recibido(2)
+        'BLOQUEO DESGUACE': calcular_stock_por_tipo(group, 22), #TODO: No existe, usamos prestado(22)
+    }))
+    
+    resultados_stock['DISPONIBLE'] = resultados_stock['DISPONIBLE'].astype(float)
+    resultados_stock['BLOQUEO SIN SERIE'] = resultados_stock['BLOQUEO SIN SERIE'].astype(float)
+    resultados_stock['BLOQUEO SIN QA'] = resultados_stock['BLOQUEO SIN QA'].astype(float)
+    resultados_stock['BLOQUEO POR QA'] = resultados_stock['BLOQUEO POR QA'].astype(float)
+    resultados_stock['BLOQUEO DESGUACE'] = resultados_stock['BLOQUEO DESGUACE'].astype(float)
+
+    # Calcular la suma total del stock
+    resultados_stock['TOTAL_STOCK'] = resultados_stock['DISPONIBLE'] + resultados_stock['BLOQUEO SIN SERIE'] + resultados_stock['BLOQUEO SIN QA'] + resultados_stock['BLOQUEO POR QA'] + resultados_stock['BLOQUEO DESGUACE']
+
+    # Combinar resultados con dfMateriales
+    resultados_stock.reset_index(inplace=True)
+    resultado_combinado = pd.merge(dfMateriales, resultados_stock, on='ID', how='left')
+    resultado_combinado['TOTAL_STOCK'] = resultado_combinado['TOTAL_STOCK'].apply(Decimal)
+
+
+    # Calcular los valores del stock
+    resultado_combinado['VALOR_STOCK_COMPRA'] = resultado_combinado['TOTAL_STOCK'] * resultado_combinado['PRECIO_COMPRA']
+    resultado_combinado['VALOR_STOCK_LISTA'] = resultado_combinado['TOTAL_STOCK'] * resultado_combinado['PRECIO_LISTA']
+    resultado_combinado['VALOR_STOCK_SIN_IGV'] = resultado_combinado['TOTAL_STOCK'] * resultado_combinado['PRECIO_SIN_IGV']
+
+    # Calcular las sumas de las columnas
+    valor_stock_compra_sum = resultado_combinado['VALOR_STOCK_COMPRA'].sum()
+    valor_stock_lista_sum = resultado_combinado['VALOR_STOCK_LISTA'].sum()
+    valor_stock_sin_igv_sum = resultado_combinado['VALOR_STOCK_SIN_IGV'].sum()
+
+    for r_idx, row in enumerate(dataframe_to_rows(resultado_combinado, index=False, header=True), 1):
+        if r_idx == 1: continue
+        hoja.cell(row=r_idx, column=1, value=row[0])  # ID MAT.
+        hoja.cell(row=r_idx, column=2, value=row[1])  # FAMILIA
+        hoja.cell(row=r_idx, column=3, value=row[2])  # NOMBRE
+        hoja.cell(row=r_idx, column=4, value=row[3])  # DESCRIPCIÓN
+        hoja.cell(row=r_idx, column=5, value=row[7]) # DISPONIBLE
+        hoja.cell(row=r_idx, column=6, value=row[8]) # BLOQUEO SIN SERIE
+        hoja.cell(row=r_idx, column=7, value=row[9]) # BLOQUEO SIN QA
+        hoja.cell(row=r_idx, column=8, value=row[10]) # BLOQUEO POR QA
+        hoja.cell(row=r_idx, column=9, value=row[11]) # BLOQUEO DESGUACE
+        hoja.cell(row=r_idx, column=10, value=row[12]) # TOTAL_STOCK
+        hoja.cell(row=r_idx, column=11, value=intcomma(redondear(row[4]))) # PRECIO_COMPRA
+        hoja.cell(row=r_idx, column=12, value=intcomma(redondear(row[5]))) # PRECIO_LISTA
+        hoja.cell(row=r_idx, column=13, value=intcomma(redondear(row[6]))) # PRECIO_SIN_IGV
+        hoja.cell(row=r_idx, column=14, value=intcomma(redondear(row[13]))) # VALOR_STOCK_COMPRA
+        hoja.cell(row=r_idx, column=15, value=intcomma(redondear(row[14]))) # VALOR_STOCK_LISTA
+        hoja.cell(row=r_idx, column=16, value=intcomma(redondear(row[15]))) # VALOR_STOCK_SIN_IGV
+
+
+    # Agregar la tabla resumen al final
+    last_row = hoja.max_row + 3  # Dejar un espacio de 3 filas
+
+    # Encabezados de la tabla resumen
+    hoja.cell(row=last_row, column=14, value='VALOR STOCK COMPRA').font = NEGRITA
+    hoja.cell(row=last_row, column=15, value='VALOR STOCK LISTA').font = NEGRITA
+    hoja.cell(row=last_row, column=16, value='VALOR STOCK SIN IGV').font = NEGRITA
+
+    # Valores de la tabla resumen
+    hoja.cell(row=last_row + 1, column=14, value=intcomma(redondear(valor_stock_compra_sum)))
+    hoja.cell(row=last_row + 1, column=15, value=intcomma(redondear(valor_stock_lista_sum)))
+    hoja.cell(row=last_row + 1, column=16, value=intcomma(redondear(valor_stock_sin_igv_sum)))
+
+
+
+    # --- INICIO: CREACION DE LA NUEVA HOJA "RESUMEN" ---
+    # Crear una nueva hoja llamada "Resumen"
+    hoja_resumen = wb.create_sheet("Resumen")
+
+    # Encabezados de la tabla resumen en la hoja "Resumen"
+    hoja_resumen.cell(row=1, column=1, value='VALOR STOCK COMPRA').font = NEGRITA
+    hoja_resumen.cell(row=2, column=1, value='VALOR STOCK LISTA').font = NEGRITA
+    hoja_resumen.cell(row=3, column=1, value='VALOR STOCK SIN IGV').font = NEGRITA
+
+    # Valores de la tabla resumen en la hoja "Resumen"
+    hoja_resumen.cell(row=1, column=2, value=intcomma(redondear(valor_stock_compra_sum)))
+    hoja_resumen.cell(row=2, column=2, value=intcomma(redondear(valor_stock_lista_sum)))
+    hoja_resumen.cell(row=3, column=2, value=intcomma(redondear(valor_stock_sin_igv_sum)))
+
+    ajustarColumnasSheet(hoja_resumen)
+    # --- FIN: CREACION DE LA NUEVA HOJA "RESUMEN" ---
+
+    ajustarColumnasSheet(hoja)
+
+    return wb
+
+def ReporteValorizadoCorregido(sociedad):
+    
+    wb=dataReporteValorizado(sociedad)
+    return wb
+
 ####################################################  REPORTE DEPÓSITOS CUENTAS BANCARIAS  ####################################################   
 
 def dataReporteDepositoCuentasBancarias(sociedad, fecha_inicio, fecha_fin):

@@ -189,6 +189,7 @@ class AsignacionActivoForm(BSModalModelForm):
         super(AsignacionActivoForm, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+        self.fields['fecha_inicio'].required = True
 
 
 class AsignacionDetalleActivoForm(BSModalModelForm):
@@ -197,14 +198,23 @@ class AsignacionDetalleActivoForm(BSModalModelForm):
         model = AsignacionDetalleActivo
         fields = (
             'activo',
+            'fecha_entrega',
             )
+        widgets = {
+            'fecha_entrega' : forms.DateInput(
+                attrs ={
+                    'type':'date',
+                    },
+                format = '%Y-%m-%d',
+                ),
+        }
 
     def __init__(self, *args, **kwargs):
         super(AsignacionDetalleActivoForm, self).__init__(*args, **kwargs)
         self.fields['activo'].queryset = Activo.objects.filter(estado=1) 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
-
+        self.fields['fecha_entrega'].required = True
 
 
 class DevolucionActivoForm(BSModalModelForm):

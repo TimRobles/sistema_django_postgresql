@@ -134,14 +134,6 @@ class AsignacionActivo(models.Model):
         return str(self.id)
 
 class AsignacionDetalleActivo(models.Model):
-    ESTADOS_ASIGNACION_DETALLE = [
-        (1, 'EN PROCESO ASIGNACIÓN'),
-        (2, 'ASIGNADO'),
-        (3, 'DEVUELTO'),
-        (4, 'CONCLUIDO SIN ENTREGAR'),
-        (5, 'ANULADO'),
-        ]
-    
     CONDICION_ACTIVO = [
         (1, 'NUEVO'),
         (2, 'USADO - BUEN ESTADO'),
@@ -155,7 +147,6 @@ class AsignacionDetalleActivo(models.Model):
     condicion_devolucion = models.IntegerField('Condición de Devolución', choices=CONDICION_ACTIVO, null=True, blank=True)
     observaciones_entrega = models.TextField(null=True, blank=True)
     observaciones_devolucion = models.TextField(null=True, blank=True)
-    estado = models.IntegerField('Estado Asignación', choices=ESTADOS_ASIGNACION_DETALLE, default=1)
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True, related_name='AsignacionActivoDetalle_created_by', editable=False)
     updated_at = models.DateTimeField('Fecha de Modificación', auto_now=True, auto_now_add=False, blank=True, null=True, editable=False)
@@ -164,6 +155,10 @@ class AsignacionDetalleActivo(models.Model):
     class Meta:
         verbose_name = 'Asignación Detalle del Activo'
         verbose_name_plural = 'Asignación Detalle de Activos'
+    
+    @property
+    def tiene_activo(self):
+        return self.activo is not None
 
     def __str__(self):
         return str(self.activo.descripcion)
@@ -207,6 +202,20 @@ class Activo(models.Model):
     def empresa(self):
         if self.ActivoSociedad_activo.all():
             return self.ActivoSociedad_activo.all()[0].sociedad.razon_social
+        else:
+            return ""
+
+    @property
+    def empresa_logo(self):
+        if self.ActivoSociedad_activo.all():
+            return self.ActivoSociedad_activo.all()[0].sociedad.logo.url if self.ActivoSociedad_activo.all()[0].sociedad.logo else ""
+        else:
+            return ""
+        
+    @property
+    def empresa_color(self):
+        if self.ActivoSociedad_activo.all():
+            return self.ActivoSociedad_activo.all()[0].sociedad.color if self.ActivoSociedad_activo.all()[0].sociedad.color else ""
         else:
             return ""
 

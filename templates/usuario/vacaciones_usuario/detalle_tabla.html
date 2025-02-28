@@ -1,8 +1,17 @@
 {% load funciones_propias %}
 {% load humanize %}
 
-<h3> Detalle Vacaciones - {{ contexto_vacaciones.usuario }} 
-    <a href="{% url 'usuario_app:vacaciones_inicio' %}"><span class="badge bg-primary">Regresar</span></a>        
+<h3> Detalle Vacaciones de {{ contexto_vacaciones.usuario }} | Hoy {{ contexto_vacaciones.hoy }}
+    <a href="{% url 'usuario_app:vacaciones_inicio' %}"><span class="badge bg-primary">Regresar</span></a>     
+    
+    {% if contexto_vacaciones.estado == 2 and contexto_vacaciones.dias_restantes == 0 %}
+    <button data-form-url="{% url 'usuario_app:vacaciones_terminar' contexto_vacaciones.id %}"
+        data-table-url="{% url 'usuario_app:vacaciones_detalle_tabla' contexto_vacaciones.id %}"
+        data-keep-open="true"
+        class="update badge bg-primary"> Terminar
+    </button>
+    {% endif %}
+
 </h3>
 <hr>
 <div class="row mt-3">
@@ -19,6 +28,29 @@
                 </tr>
 
                 <tr>
+                    <th class="pe-2">Sociedad :</th>
+                    <td>
+                        {% if contexto_vacaciones.sociedad  %}
+                            {{ contexto_vacaciones.sociedad}} - {{ contexto_vacaciones.sociedad.abreviatura }}                          
+                        {% endif %}
+                    </td>              
+                </tr>
+                <tr>
+                    <th class="pe-2">Periodo :</th>
+                    <td>
+                        {% if contexto_vacaciones.periodo  %}
+                             {{ contexto_vacaciones.periodo}}                        
+                        {% endif %}
+                    </td>              
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6 table-responsive mb-3">
+        <table>
+            <tbody>  
+                <tr>
                     <th class="pe-2">Estado :</th>
                     <td>
                         {% if contexto_vacaciones.estado  %}
@@ -30,15 +62,8 @@
                         </span>
                         
                         {% endif %}
-                    </td>              
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="col-lg-6 table-responsive mb-3">
-        <table>
-            <tbody>                
+                    </td> 
+                </tr>              
                 <tr>
                     <th class="pe-2">Cantidad de días :</th>
                     <td>
@@ -67,7 +92,7 @@
     <button data-form-url="{% url 'usuario_app:vacaciones_detalle_registrar' contexto_vacaciones.id %}"
         data-table-url="{% url 'usuario_app:vacaciones_detalle_tabla' contexto_vacaciones.id %}"
         class="create badge bg-success">
-        Registrar
+        Registrar Días
     </button>
     {% endif %}
 </h3>
@@ -81,7 +106,7 @@
                 <th class="text-rigth">Fecha Fin </th>
                 <th class="text-rigth">Duración </th>
                 <th class="text-rigth">Motivo | Comentario </th>
-                <th class="text-rigth">Acciones </th>
+                <th class="text-center">Acciones </th>
             </tr>
         </thead>
         <tbody>
@@ -92,10 +117,8 @@
                     <td>{{ detalle.fecha_fin|date:'l, d/m/Y' }}</td>
                     <td>{{ detalle.duracion }}</td>
                     <td>{{ detalle.motivo }}</td>
-                    <td>{{ today }}</td>
-                    <td class="text-center text-nowrap">
-                        {{today}}
-                        {% if detalle.fecha_fin <= today %}
+                    <td class="text-center">
+                        {% if contexto_vacaciones.estado == 1 or  contexto_vacaciones.estado == 2 %}
                             <button data-form-url="{% url 'usuario_app:vacaciones_detalle_actualizar' detalle.id %}"
                                 data-table-url="{% url 'usuario_app:vacaciones_detalle_tabla' contexto_vacaciones.id %}"
                                 data-keep-open="true"
@@ -103,13 +126,12 @@
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar">
                                 <i class="bi bi-pencil-fill"></i>
                             </button>
+                            <button data-form-url="{% url 'usuario_app:vacaciones_detalle_eliminar' detalle.id %}"
+                                class="delete btn btn-danger btn-sm"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                         {% endif %}
-
-                        <button data-form-url="{% url 'usuario_app:vacaciones_detalle_eliminar' detalle.id %}"
-                            class="delete btn btn-danger btn-sm"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
 
                     </td>
 

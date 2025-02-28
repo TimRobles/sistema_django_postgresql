@@ -20,6 +20,8 @@ from applications.usuario.views import(
     VacacionesDetalleCreateView,
     VacacionesDetalleUpdateView,
     VacacionesDetalleDeleteView,
+    VacacionesActualizarView,
+    VacacionesTerminarView,
 )
 
 app_name='usuario_app'
@@ -40,12 +42,14 @@ urlpatterns = [
     path('vacaciones/', VacacionesListView.as_view(), name='vacaciones_inicio'),
     path('vacaciones-tabla/', VacacionesTabla, name='vacaciones_tabla'),
     path('vacaciones/registrar/', VacacionesCreateView.as_view(), name='vacaciones_registrar'),
+    path('vacaciones/actualizar/<pk>/', VacacionesActualizarView.as_view(), name='vacaciones_actualizar'),
 
     path('vacaciones/detalle/<pk>/', VacacionesDetailView.as_view(), name='vacaciones_detalle'),
     path('vacaciones/detalle-tabla/<pk>/', VacacionesDetailTabla, name='vacaciones_detalle_tabla'),
     path('vacaciones/detalle/registrar/<pk>/', VacacionesDetalleCreateView.as_view(), name='vacaciones_detalle_registrar'),
     path('vacaciones/detalle/actualizar/<pk>/', VacacionesDetalleUpdateView.as_view(), name='vacaciones_detalle_actualizar'),
-    
     path('vacaciones/detalle/eliminar/<pk>/', VacacionesDetalleDeleteView.as_view(), name='vacaciones_detalle_eliminar'),
-
+    
+    path('vacaciones/terminar/<pk>/', VacacionesTerminarView.as_view(), name='vacaciones_terminar'),
+    
 ]

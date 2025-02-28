@@ -487,7 +487,6 @@ MOTIVO_INASISTENCIA = (
     (1, 'ASISTIO'),
     (2, 'FALTA'),
     (3, 'PERMISO'),
-    (4, 'VACACIONES'),
     )
 
 ESTADO_SOLICITUD_INASISTENCIA = (
