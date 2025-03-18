@@ -98,6 +98,10 @@ class FacturaVenta(models.Model):
             return []
 
     @property
+    def amortizado(self):
+        return sum([cuota.monto for cuota in self.cuotas])
+
+    @property
     def contador(self):
         productos = []
         cantidades = []

@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from django.contrib.contenttypes.models import ContentType
 from openpyxl.styles import PatternFill, Alignment
-from openpyxl.styles import*
+from openpyxl.styles import *
 from openpyxl.styles.borders import Border, Side
 
 from applications.clientes.models import Cliente

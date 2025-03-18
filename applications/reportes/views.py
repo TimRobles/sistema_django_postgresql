@@ -18,7 +18,7 @@ from applications.nota.models import NotaCredito
 from applications.material.models import Material
 from applications.comprobante_venta.models import FacturaVenta, FacturaVentaDetalle
 from django.contrib.contenttypes.models import ContentType
-
+from .cron import *
 
 
 from applications.reportes.forms import (
@@ -53,6 +53,7 @@ from applications.reportes.pdf import (
     generarReporteVentasDepartamento, 
     reporte_cobranza,
     generarReportePrecioProductosDisponible,
+    resumen_ventas,
     )
 from applications.movimiento_almacen.models import MovimientosAlmacen
 from applications.comprobante_compra.models import ComprobanteCompraPIDetalle
@@ -3789,4 +3790,11 @@ class ReporteValorizacionStockPDF(TemplateView):
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=%s.pdf' % titulo
 
+        return respuesta
+
+class ReporteViernesView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        buf = resumen_ventas()
+        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        respuesta.headers['content-disposition']='inline; filename=Reporte_Viernes.pdf'
         return respuesta

@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from applications.comprobante_venta.models import FacturaVenta
 from applications.datos_globales.models import Distrito, Pais
 from applications.funciones import registrar_excepcion
 from applications.importaciones import *
@@ -334,11 +335,14 @@ class ClienteDetailView(PermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         cliente = Cliente.objects.get(id = self.kwargs['pk'])
+        facturas = FacturaVenta.objects.filter(cliente = cliente, estado = 4)
         context = super(ClienteDetailView, self).get_context_data(**kwargs)
         context['interlocutores'] = ClienteInterlocutor.objects.filter(cliente = cliente)
         context['correos'] = CorreoCliente.objects.filter(cliente = cliente)
         context['representantes_legales'] = RepresentanteLegalCliente.objects.filter(cliente = cliente)
         context['anexos'] = cliente.ClienteAnexo_cliente.all()
+        context['facturas'] = facturas
+        context['total_facturas'] = facturas.aggregate(Sum('total'))['total__sum']
         return context
 
 def ClienteDetailTabla(request, pk):

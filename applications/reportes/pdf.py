@@ -1,10 +1,13 @@
+import matplotlib
+matplotlib.use('Agg')  # Usa un backend sin interfaz gráfica
 from decimal import Decimal
 import json
+import time
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 from datetime import date, datetime, timedelta
 from applications.clientes.models import Cliente, ClienteInterlocutor, CorreoCliente, CorreoInterlocutorCliente
-from applications.cobranza.models import EnvioDeuda, Nota
+from applications.cobranza.models import EnvioDeuda, Ingreso, Nota
 from applications.comprobante_venta.models import BoletaVenta, FacturaVenta
 from applications.cotizacion.models import PrecioListaMaterial
 from applications.datos_globales.models import CuentaBancariaSociedad, Departamento, Moneda
@@ -967,6 +970,7 @@ def reporte_cobranza_deudor():
                 estado_envio = False
                 try:
                     correo.send()
+                    time.sleep(2)
                     estado_envio = True
                 except Exception as ex:
                     print(ex)
@@ -1608,3 +1612,235 @@ def generarReportePrecioProductosDisponible(titulo, vertical, logo, pie_pagina, 
     buf = generarPDF(titulo, elementos, vertical, logo, pie_pagina)
 
     return buf
+
+
+import matplotlib.pyplot as plt
+from openpyxl.chart import Reference, Series, LineChart
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.plotarea import DataTable
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+from openpyxl import Workbook
+from django.db.models import Sum, F
+from applications.reportes.data_resumen_ingresos_anterior import list_resumen_ingresos_sis_anterior_mca, list_resumen_ingresos_sis_anterior_mpl
+from applications.funciones import mes_en_letras
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.utils import ImageReader
+from PIL import Image as PILImage
+import excel2img
+
+import os
+import io
+import pandas as pd
+from decimal import Decimal
+from datetime import date
+from openpyxl import Workbook
+from openpyxl.chart import LineChart, Reference, Series
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.plotarea import DataTable
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.utils import ImageReader
+import excel2img
+from PIL import Image as PILImage
+
+def generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Ingresos"
+
+    # Encabezados de la tabla
+    años = list(range(2019, 2026))  # Ajusta los años según sea necesario
+    ws.append(["Mes"] + años)
+
+    # Convertir datos a DataFrame
+    df_ingresos = pd.DataFrame(list(ingresos.items()), columns=['Mes', 'Monto'])
+    df_ingresos['Monto'] = df_ingresos['Monto'].astype(float)
+
+    # Extraer año y mes
+    df_ingresos['Año'] = df_ingresos['Mes'].str.extract(r'(\d{4})').astype(int)
+    df_ingresos['Mes'] = df_ingresos['Mes'].str.replace(r'\s+-\s+\d{4}', '', regex=True)
+
+    # Ordenar por año y mes
+    meses_orden = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SETIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
+    df_ingresos['Mes'] = pd.Categorical(df_ingresos['Mes'], categories=meses_orden, ordered=True)
+    df_ingresos = df_ingresos.sort_values(by=['Año', 'Mes'])
+
+    # Llenar los datos en la hoja de Excel con formato de moneda
+    for fila_idx, mes in enumerate(meses_orden, start=2):  # Empezamos en la fila 2
+        fila = [mes] + [
+            df_ingresos.loc[(df_ingresos['Mes'] == mes) & (df_ingresos['Año'] == anio), 'Monto'].sum()
+            if not (anio == date.today().year and meses_orden.index(mes) >= date.today().month)
+            else ""  # Dejar vacío si es un mes futuro
+            for anio in años
+        ]
+        ws.append(fila)
+        
+        # Aplicar formato de moneda a las celdas de monto, excepto a las celdas vacías
+        for col_idx in range(2, len(años) + 2):  # Columnas de los montos (de B en adelante)
+            cell = ws.cell(row=fila_idx, column=col_idx)
+            if cell.value != "":  # Solo aplicar formato si no está vacío
+                cell.number_format = '"$"#,##0.00'
+
+
+
+    # Crear el gráfico como en `grafico_resumen_ingresos(ws)`
+    chart = LineChart()
+    chart.height = 15.3
+    chart.width = 30.5
+    chart.title = titulo
+    chart.title.overlay = False
+    chart.y_axis.title = titulo_eje_y
+    chart.y_axis.delete = False  # Asegura que el eje no se elimine
+    chart.y_axis.scaling.min = 0
+    chart.y_axis.scaling.max = None  # Dejar que Excel determine el valor máximo adecuado
+    chart.x_axis.title = None
+    chart.legend = None
+
+    # Referencias para los datos
+    data = Reference(ws, min_col=2, min_row=1, max_col=len(años)+1, max_row=13)
+    categorias = Reference(ws, min_col=1, min_row=2, max_row=13)
+
+    # Agregar cada serie correctamente nombrada
+    for i, anio in enumerate(años):
+        serie = Series(Reference(ws, min_col=i+2, min_row=2, max_row=13), title=f"Ingresos del {anio}")
+        serie.smooth = False  
+        chart.append(serie)
+
+    chart.set_categories(categorias)
+
+    # Ajuste de etiquetas para evitar superposiciones
+    chart.dataLabels = DataLabelList()
+    chart.dataLabels.showVal = True
+    chart.dataLabels.showCatName = False
+    chart.dataLabels.showSerName = False
+    chart.dataLabels.dLblPos = 't' 
+    chart.dataLabels.showLegendKey = False
+
+    # Agregar la tabla de datos como en `grafico_resumen_ingresos(ws)`
+    tabla = DataTable()
+    tabla.showHorzBorder = True
+    tabla.showVertBorder = True
+    tabla.showOutline = True
+    tabla.showKeys = True
+    chart.plot_area.dTable = tabla
+
+    ws.add_chart(chart, "K6")  # Posición del gráfico en la hoja
+    # Reducir el ancho de la columna J al mínimo
+    ws.column_dimensions["J"].width = 0.1
+    ws.column_dimensions["AC"].width = 0.1
+
+    # Reducir la altura de la fila 5 al mínimo
+    ws.row_dimensions[5].height = 2
+
+
+    # Guardar en un archivo temporal
+    excel_path = os.getcwd() + "/" + ruta_imagen + ".xlsx"
+    ws.sheet_view.showGridLines = False  # Oculta las líneas de cuadrícula
+    wb.save(excel_path)
+
+    return excel_path
+
+
+def ingresos_sistema_anterior():
+    ingresos = {}
+    # Llenar los key del diccionario ingresos con el formato "MES - AÑO" desde ENERO 2019 hasta el mes y año actual
+    for i in range(2019, date.today().year + 1):
+        for j in range(1, 13):
+            if i == date.today().year and j > date.today().month:
+                break
+            ingresos[f'{mes_en_letras(j)} - {i}'] = Decimal('0.00')
+    for fila in list_resumen_ingresos_sis_anterior_mca:
+        ingresos[fila[0]] += Decimal(fila[-1]).quantize(Decimal('0.01'))
+    for fila in list_resumen_ingresos_sis_anterior_mpl:
+        ingresos[fila[0]] += Decimal(fila[-1]).quantize(Decimal('0.01'))
+
+    return ingresos
+
+
+def generar_pdf_con_grafico(ingresos, ruta_imagen, titulo, titulo_eje_y):
+    # Generar Excel con el gráfico
+    excel_path = generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y)
+
+    # Convertir el gráfico de Excel a imagen
+    img_path = os.getcwd() + "/" + ruta_imagen + ".png"
+
+    # Extraer imagen del gráfico en Excel
+    excel2img.export_img(excel_path, img_path, "Ingresos", "J5:AC34")
+
+    # Verificar si la imagen se generó correctamente
+    if not os.path.exists(img_path):
+        raise FileNotFoundError(f"No se pudo generar la imagen en {img_path}")
+
+    # Generar PDF con la imagen del gráfico
+    buf_pdf = io.BytesIO()
+    c = canvas.Canvas(buf_pdf, pagesize=landscape(A4))
+    
+    img = PILImage.open(img_path)
+    img = img.convert("RGB")
+    img.save(img_path, format="PNG")
+
+    img = ImageReader(img_path)
+    c.drawImage(img, 50, 200, width=700, height=400, preserveAspectRatio=True, mask='auto')
+    c.showPage()
+    c.save()
+
+    buf_pdf.seek(0)
+    return buf_pdf
+
+
+def resumen_ingresos():
+    ingresos = ingresos_sistema_anterior()
+    ingresos_no_es_pago = Ingreso.objects.filter(es_pago=False, pendiente_usar=False)
+    for ingreso in ingresos_no_es_pago:
+        ingreso.es_pago = True
+        ingreso.save()
+    
+    ingresos_buscar = Ingreso.objects.filter(es_pago=True, fecha__year__gte=2019, cuenta_bancaria__efectivo=False)
+    for ingreso in ingresos_buscar:
+        mes = mes_en_letras(ingreso.fecha.month)
+        anio = ingreso.fecha.year
+        if ingreso.cuenta_bancaria.moneda.abreviatura == 'USD':
+            ingresos[f'{mes} - {anio}'] += ingreso.monto.quantize(Decimal('0.01'))
+        else:
+            ingresos[f'{mes} - {anio}'] += (ingreso.monto / ingreso.tipo_cambio).quantize(Decimal('0.01'))
+    
+    return generar_pdf_con_grafico(ingresos, 'reporte_ingresos', "RESUMEN DE INGRESOS GENERAL", "INGRESOS")
+
+
+def resumen_ventas():
+    facturas = FacturaVenta.objects.filter(estado=4, fecha_emision__year__gte=2019)
+    boletas = BoletaVenta.objects.filter(estado=4, fecha_emision__year__gte=2019)
+    notas_credito = NotaCredito.objects.filter(estado=4, fecha_emision__year__gte=2019)
+    ventas = {}
+    
+    for factura in facturas:
+        mes = mes_en_letras(factura.fecha_emision.month)
+        anio = factura.fecha_emision.year
+        if factura.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'] = ventas.get(f'{mes} - {anio}', Decimal('0.00')) + factura.total
+        else:
+            ventas[f'{mes} - {anio}'] = ventas.get(f'{mes} - {anio}', Decimal('0.00')) + (factura.total / factura.tipo_cambio.tipo_cambio_venta)
+
+    for boleta in boletas:
+        mes = mes_en_letras(boleta.fecha_emision.month)
+        anio = boleta.fecha_emision.year
+        if boleta.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'] = ventas.get(f'{mes} - {anio}', Decimal('0.00')) + boleta.total
+        else:
+            ventas[f'{mes} - {anio}'] = ventas.get(f'{mes} - {anio}', Decimal('0.00')) + (boleta.total / boleta.tipo_cambio.tipo_cambio_venta)
+
+    for nota in notas_credito:
+        mes = mes_en_letras(nota.fecha_emision.month)
+        anio = nota.fecha_emision.year
+        if nota.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'] = ventas.get(f'{mes} - {anio}', Decimal('0.00')) - nota.total
+        else:
+            ventas[f'{mes} - {anio}'] = ventas.get(f'{mes} - {anio}', Decimal('0.00')) - (nota.total / nota.tipo_cambio.tipo_cambio_venta)
+
+    return generar_pdf_con_grafico(ventas, 'reporte_ventas', "RESUMEN DE VENTAS GENERAL", "MONTO FACTURADO")

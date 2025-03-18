@@ -113,6 +113,12 @@ class IngresoAdmin(admin.ModelAdmin):
     search_fields = (
         'id',
     )
+    list_filter = (
+        'es_pago',
+        'pendiente_usar',
+        'cuenta_bancaria',
+    )
+    date_hierarchy = 'fecha'
 
     def save_model(self, request, obj, form, change):
         if obj.created_by == None:

@@ -21,4 +21,5 @@ urlpatterns = [
     path('reportes-gerencia-excel/', views.ReportesGerencia.as_view(), name='reportes_gerencia_excel'),
     path('reportes-corregidos/', views.ReportesCorregidosExcel.as_view(), name='reportes_corregidos'),
     path('reportes-valorizacion-stock-pdf/', views.ReporteValorizacionStockPDF.as_view(), name='reportes_valorizacion_stock_pdf'),
+    path('reporte_viernes/', views.ReporteViernesView.as_view(), name='reporte_viernes'),
  ]

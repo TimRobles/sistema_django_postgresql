@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load humanize %}
+{% load funciones_propias %}
 
 {% block titulo %}
     Detalle Cliente
@@ -11,5 +13,46 @@
     <br>
     <div id="tabla">
         {% include 'clientes/cliente/detalle_tabla.html' %}
+    </div>
+    <hr>
+    <h1>Facturas</h1>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Número de factura</th>
+                    <th class="text-end">Monto</th>
+                    <th class="text-end">Amortizado</th>
+                    <th>PDF</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for factura in facturas %}
+                <tr>
+                    <td>{{ factura.fecha|date:'d/m/Y' }}</td>
+                    <td>{{ factura.sociedad.abreviatura }} {{ factura.documento }}</td>
+                    <td class="text-end">{{ factura.moneda.simbolo }}{{ factura.total|intcomma }}</td>
+                    <td class="text-end">{{ factura.moneda.simbolo }}{{ factura.amortizado|intcomma }}</td>
+                    <td>
+                        {% if factura.url_nubefact %}
+                        <a href="{{ factura.url_nubefact|get_enlace_pdf_nubefact }}">PDF</a>
+                        {% endif %}    
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'comprobante_venta_app:factura_venta_detalle' factura.id %}"><span class="badge bg-primary">Detalle</span></a>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">Total</th>
+                    <th class="text-end">$ {{ total_facturas|intcomma }}</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 {% endblock contenido %}
