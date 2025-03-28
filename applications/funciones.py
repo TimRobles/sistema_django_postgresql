@@ -289,6 +289,7 @@ def calculos_totales(lista_resultados_linea, descuento_global_cotizacion, descue
         respuesta['total_gratuita'] = (total_gratuita * tipo_cambio).quantize(Decimal('0.01'))
         respuesta['total_otros_cargos'] = (total_otros_cargos * tipo_cambio).quantize(Decimal('0.01'))
         respuesta['total_icbper'] = (total_icbper * tipo_cambio).quantize(Decimal('0.01'))
+        respuesta['flete'] = Decimal('0.00')
         respuesta['total'] = (total * tipo_cambio).quantize(Decimal('0.01'))
         return respuesta
     except Exception as e:

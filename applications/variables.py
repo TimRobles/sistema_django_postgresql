@@ -643,6 +643,7 @@ DICCIONARIO_TOTALES={
     # 'total_otros_cargos':'Otros Cargos',
     'otros_cargos_cotizacion':'Otros Cargos',
     'total_icbper':'ICBPER',
+    'flete':'Flete',
     'total':'Total',
 }
 

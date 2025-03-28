@@ -343,6 +343,7 @@ class OrdenCompraPdfView(View):
             TablaDatos.append(fila)
             item += 1
         
+        totales = obtener_totales(obj, sociedad)
         if obj.flete:
             fila = []
             fila.append(item)
@@ -357,7 +358,9 @@ class OrdenCompraPdfView(View):
             fila.append("%s %s" % (obj.moneda.simbolo, intcomma(0)))
             fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
             TablaDatos.append(fila)
-        totales = obtener_totales(obj, sociedad)
+
+            totales['flete'] += obj.flete
+            totales['total'] += obj.flete
 
         TablaTotales = []
         for k,v in totales.items():
@@ -368,7 +371,7 @@ class OrdenCompraPdfView(View):
             fila.append(intcomma(v))
 
             TablaTotales.append(fila)
-
+            
         buf = generarOrdenCompra(titulo, vertical, logo, pie_pagina, sociedad, orden, proveedor, interlocutor, usuario, TablaEncabezado, TablaDatos, TablaTotales, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
