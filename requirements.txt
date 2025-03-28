@@ -25,4 +25,3 @@ django_crontab
 django-background-tasks
 pywhatkit
 matplotlib
-excel2img

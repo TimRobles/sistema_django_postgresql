@@ -254,6 +254,7 @@ INCOTERMS = (
         (3, 'FCA'),
         (4, 'CIF'),
         (5, 'DDP'),
+        (6, 'CNF'),
 )
 
 ESTADOS_ORDEN_COMPRA = (

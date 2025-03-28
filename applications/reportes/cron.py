@@ -15,6 +15,7 @@ def funcion_iterativa():
 
 
 def reportes_viernes():
+    start = datetime.now()
     print("Generando reportes de viernes...")
     asunto = "Reporte de cobranza de deudores de la semana"
     mensaje = f"Buenos días, se adjuntan los reportes correspondientes al {datetime.now().strftime('%d/%m/%Y')}\n\n- Reporte de cobranza\n- Resumen de Ingresos\n- Resumen de Ventas\n\nSaludos cordiales."
@@ -69,3 +70,4 @@ def reportes_viernes():
         except:
             pass
     print("Archivos eliminados")
+    print(f"Proceso finalizado en {datetime.now()-start}")

@@ -1,4 +1,6 @@
 import matplotlib
+
+from applications.reportes.excel_img import convertir_excel_a_imagen
 matplotlib.use('Agg')  # Usa un backend sin interfaz gráfica
 from decimal import Decimal
 import json
@@ -1632,7 +1634,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.utils import ImageReader
 from PIL import Image as PILImage
-import excel2img
 
 import os
 import io
@@ -1646,7 +1647,6 @@ from openpyxl.chart.plotarea import DataTable
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.utils import ImageReader
-import excel2img
 from PIL import Image as PILImage
 
 def generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y):
@@ -1771,7 +1771,7 @@ def generar_pdf_con_grafico(ingresos, ruta_imagen, titulo, titulo_eje_y):
     img_path = os.getcwd() + "/" + ruta_imagen + ".png"
 
     # Extraer imagen del gráfico en Excel
-    excel2img.export_img(excel_path, img_path, "Ingresos", "J5:AC34")
+    convertir_excel_a_imagen(excel_path, img_path, "Ingresos", "J5:AC34")
 
     # Verificar si la imagen se generó correctamente
     if not os.path.exists(img_path):
