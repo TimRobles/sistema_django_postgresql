@@ -36,6 +36,7 @@ class OrdenCompra(models.Model):
     proveedor_temporal = models.ForeignKey(Proveedor, verbose_name='Proveedor', on_delete=models.CASCADE, blank=True, null=True)
     interlocutor_temporal = models.ForeignKey(InterlocutorProveedor, on_delete=models.CASCADE, blank=True, null=True)
     estado = models.IntegerField('Estado', choices=ESTADOS_ORDEN_COMPRA,default=1)
+    flete = models.DecimalField('Flete', max_digits=14, decimal_places=2, default=Decimal('0.00'))
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='OrdenCompra_created_by', editable=False)

@@ -343,6 +343,20 @@ class OrdenCompraPdfView(View):
             TablaDatos.append(fila)
             item += 1
         
+        if obj.flete:
+            fila = []
+            fila.append(item)
+            fila.append('Flete')
+            fila.append('UN')
+            fila.append('1')
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(0)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(0)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
+            TablaDatos.append(fila)
         totales = obtener_totales(obj, sociedad)
 
         TablaTotales = []
