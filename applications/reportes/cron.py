@@ -4,7 +4,7 @@ from datetime import datetime
 from django.core.mail import EmailMultiAlternatives
 from applications.sociedad.models import Sociedad
 from applications.variables import EMAIL_REMITENTE
-from applications.reportes.pdf import generar_reporte_cobranza, resumen_ingresos, resumen_ventas
+from applications.reportes.pdf import generar_reporte_cobranza, resumen_comercial, resumen_ingresos, resumen_ventas
 def funcion_iterativa():
     with open("/webapps/sistema_django_prod/sistema_django_postgresql/applications/reportes/diccionario.json", "r") as infile:
         diccionario = json.load(infile)
@@ -22,10 +22,10 @@ def reportes_viernes():
     email_remitente = EMAIL_REMITENTE
     correos_para = [
         'trobles@multiplay.com.pe',
-        'salvarez@multiplay.com.pe',
-        'fmaldonado@multiplay.com.pe',
-        'rpaniura@multiplay.com.pe',
-        'gzuniga@multiplay.com.pe',
+        # 'salvarez@multiplay.com.pe',
+        # 'fmaldonado@multiplay.com.pe',
+        # 'rpaniura@multiplay.com.pe',
+        # 'gzuniga@multiplay.com.pe',
     ]
     correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_para)
 
@@ -53,6 +53,12 @@ def reportes_viernes():
     archivo = resumen_ventas()
     correo.attach(titulo, archivo.getvalue(), 'application/pdf')
     print("Adjuntando resumen de ventas...")
+
+    titulo = f"Reporte por Comercial - {datetime.now().strftime('%Y-%m-%d')}"
+    print("Generando resumen por comercial...")
+    archivo = resumen_comercial()
+    correo.attach(titulo, archivo.getvalue(), 'application/pdf')
+    print("Adjuntando resumen por comercial...")
     
     print("Enviando correos...")
     correo.send()

@@ -349,13 +349,13 @@ class OrdenCompraPdfView(View):
             fila.append(item)
             fila.append('Flete')
             fila.append('UN')
-            fila.append('1')
+            fila.append('1.00')
             fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
             fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
             fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
-            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(0)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma('0.00')))
             fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
-            fila.append("%s %s" % (obj.moneda.simbolo, intcomma(0)))
+            fila.append("%s %s" % (obj.moneda.simbolo, intcomma('0.00')))
             fila.append("%s %s" % (obj.moneda.simbolo, intcomma(obj.flete)))
             TablaDatos.append(fila)
 
@@ -371,7 +371,7 @@ class OrdenCompraPdfView(View):
             fila.append(intcomma(v))
 
             TablaTotales.append(fila)
-            
+
         buf = generarOrdenCompra(titulo, vertical, logo, pie_pagina, sociedad, orden, proveedor, interlocutor, usuario, TablaEncabezado, TablaDatos, TablaTotales, color)
 
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')

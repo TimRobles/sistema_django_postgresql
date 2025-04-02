@@ -1,5 +1,5 @@
 import matplotlib
-
+from django.contrib.auth import get_user_model
 from applications.reportes.excel_img import convertir_excel_a_imagen
 matplotlib.use('Agg')  # Usa un backend sin interfaz gráfica
 from decimal import Decimal
@@ -22,7 +22,7 @@ from applications.pdf import *
 from applications.reportes.funciones import DICT_CONTENT_TYPE, DICT_SOCIEDAD, FECHA_HOY, StrToDate, formatoFechaTexto
 from applications import reportes
 from applications.sociedad.models import Sociedad
-from applications.variables import EMAIL_REMITENTE
+from applications.variables import EMAIL_REMITENTE, MESES
 from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
 from django.core.files.base import ContentFile
@@ -1649,95 +1649,193 @@ from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.utils import ImageReader
 from PIL import Image as PILImage
 
-def generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y):
+# Ordenar por fecha cronológica
+meses_esp = {
+    'ENERO': '01', 'FEBRERO': '02', 'MARZO': '03', 'ABRIL': '04',
+    'MAYO': '05', 'JUNIO': '06', 'JULIO': '07', 'AGOSTO': '08',
+    'SETIEMBRE': '09', 'OCTUBRE': '10', 'NOVIEMBRE': '11', 'DICIEMBRE': '12'
+}
+
+def mes_anio_to_fecha(mes_anio):
+    mes, anio = mes_anio.split(" - ")
+    mes_num = meses_esp[mes.upper()]
+    return datetime.strptime(f"{anio}-{mes_num}-01", "%Y-%m-%d")
+
+
+def generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y, tipo_grafico):
     wb = Workbook()
     ws = wb.active
     ws.title = "Ingresos"
 
-    # Encabezados de la tabla
-    años = list(range(2019, 2026))  # Ajusta los años según sea necesario
-    ws.append(["Mes"] + años)
+    if tipo_grafico == "comercial":
+        # ingresos = {'MARZO - 2025': {<User: RossneryPaniura>: Decimal('3258.00'), <User: JaimePaima>: Decimal('904.20'), <User: DanielysPrincipal>: Decimal('5064.00'), <User: PaulChacon>: Decimal('851.00')}, 'FEBRERO - 2025': {<User: RossneryPaniura>: Decimal('27459.60'), <User: PaulChacon>: Decimal('12376.50'), <User: DanielysPrincipal>: Decimal('2283.21')}, 'ENERO - 2025': {<User: PaulChacon>: Decimal('7590.18'), <User: DanielysPrincipal>: Decimal('5852.25'), <User: RossneryPaniura>: Decimal('10080.20')}, 'DICIEMBRE - 2024': {<User: RossneryPaniura>: Decimal('38368.05'), <User: DanielysPrincipal>: Decimal('3012.60'), <User: PaulChacon>: Decimal('9552.73')}, 'NOVIEMBRE - 2024': {<User: PaulChacon>: Decimal('12559.00'), <User: RossneryPaniura>: Decimal('24678.30'), <User: DanielysPrincipal>: Decimal('3276.50')}, 'OCTUBRE - 2024': {<User: PaulChacon>: Decimal('17194.53'), <User: RossneryPaniura>: Decimal('27219.70'), <User: DanielysPrincipal>: Decimal('2054.20')}, 'SETIEMBRE - 2024': {<User: RossneryPaniura>: Decimal('22455.74'), <User: PaulChacon>: Decimal('16490.60'), <User: DanielysPrincipal>: Decimal('5022.60')}, 'AGOSTO - 2024': {<User: RossneryPaniura>: Decimal('41615.30'), <User: PaulChacon>: Decimal('10138.92'), <User: DanielysPrincipal>: Decimal('8950.41')}, 'JULIO - 2024': {<User: RossneryPaniura>: Decimal('31018.15'), <User: PaulChacon>: Decimal('8667.95'), <User: DanielysPrincipal>: Decimal('7687.14')}, 'JUNIO - 2024': {<User: RossneryPaniura>: Decimal('46529.92'), <User: PaulChacon>: Decimal('12339.04'), <User: DanielysPrincipal>: Decimal('6103.54')}, 'MAYO - 2024': {<User: RossneryPaniura>: Decimal('27759.65'), <User: PaulChacon>: Decimal('12626.20'), <User: DanielysPrincipal>: Decimal('6301.80'), <User: DianaSilva>: Decimal('813.80')}, 'ABRIL - 2024': {<User: PaulChacon>: Decimal('15451.55'), <User: RossneryPaniura>: Decimal('44683.90'), <User: DanielysPrincipal>: Decimal('7220.20'), <User: DennisMartinez>: Decimal('250.00')}}
+        # Preparar estructura de datos
+        filas = []
+        nombres_vendedores = set()
 
-    # Convertir datos a DataFrame
-    df_ingresos = pd.DataFrame(list(ingresos.items()), columns=['Mes', 'Monto'])
-    df_ingresos['Monto'] = df_ingresos['Monto'].astype(float)
+        for mes_anio, vendedores in ingresos.items():
+            fila = {'Mes-Año': mes_anio}
+            for vendedor, monto in vendedores.items():
+                nombre = vendedor.get_full_name()
+                fila[nombre] = float(monto)
+                nombres_vendedores.add(nombre)
+            filas.append(fila)
 
-    # Extraer año y mes
-    df_ingresos['Año'] = df_ingresos['Mes'].str.extract(r'(\d{4})').astype(int)
-    df_ingresos['Mes'] = df_ingresos['Mes'].str.replace(r'\s+-\s+\d{4}', '', regex=True)
+        df = pd.DataFrame(filas).fillna(0)
 
-    # Ordenar por año y mes
-    meses_orden = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SETIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
-    df_ingresos['Mes'] = pd.Categorical(df_ingresos['Mes'], categories=meses_orden, ordered=True)
-    df_ingresos = df_ingresos.sort_values(by=['Año', 'Mes'])
+        df["Fecha"] = df["Mes-Año"].apply(mes_anio_to_fecha)
+        df = df.sort_values("Fecha").drop(columns=["Fecha"])
 
-    # Llenar los datos en la hoja de Excel con formato de moneda
-    for fila_idx, mes in enumerate(meses_orden, start=2):  # Empezamos en la fila 2
-        fila = [mes] + [
-            df_ingresos.loc[(df_ingresos['Mes'] == mes) & (df_ingresos['Año'] == anio), 'Monto'].sum()
-            if not (anio == date.today().year and meses_orden.index(mes) >= date.today().month)
-            else ""  # Dejar vacío si es un mes futuro
-            for anio in años
-        ]
-        ws.append(fila)
-        
-        # Aplicar formato de moneda a las celdas de monto, excepto a las celdas vacías
-        for col_idx in range(2, len(años) + 2):  # Columnas de los montos (de B en adelante)
-            cell = ws.cell(row=fila_idx, column=col_idx)
-            if cell.value != "":  # Solo aplicar formato si no está vacío
+        # Escribir encabezados
+        columnas = ["Mes-Año"] + sorted(nombres_vendedores)
+        ws.append(columnas)
+
+        # Escribir los datos
+        for index, row in df.iterrows():
+            fila = [row["Mes-Año"]] + [row.get(nombre, 0) for nombre in sorted(nombres_vendedores)]
+            ws.append(fila)
+
+        # Aplicar formato de moneda
+        for row in ws.iter_rows(min_row=2, min_col=2, max_col=len(columnas)):
+            for cell in row:
                 cell.number_format = '"$"#,##0.00'
 
+        # Crear el gráfico
+        chart = LineChart()
+        chart.height = 15.3
+        chart.width = 30.5
+        chart.title = titulo
+        chart.title.overlay = False
+        chart.y_axis.title = titulo_eje_y
+        chart.y_axis.delete = False
+        chart.y_axis.scaling.min = 0
+        chart.y_axis.scaling.max = None
+        chart.x_axis.title = None
+        chart.legend = None
 
+        # Referencias
+        num_filas = ws.max_row
+        num_vendedores = len(nombres_vendedores)
 
-    # Crear el gráfico como en `grafico_resumen_ingresos(ws)`
-    chart = LineChart()
-    chart.height = 15.3
-    chart.width = 30.5
-    chart.title = titulo
-    chart.title.overlay = False
-    chart.y_axis.title = titulo_eje_y
-    chart.y_axis.delete = False  # Asegura que el eje no se elimine
-    chart.y_axis.scaling.min = 0
-    chart.y_axis.scaling.max = None  # Dejar que Excel determine el valor máximo adecuado
-    chart.x_axis.title = None
-    chart.legend = None
+        # Categorías (Mes-Año en columna A)
+        categorias = Reference(ws, min_col=1, min_row=2, max_row=num_filas)
 
-    # Referencias para los datos
-    data = Reference(ws, min_col=2, min_row=1, max_col=len(años)+1, max_row=13)
-    categorias = Reference(ws, min_col=1, min_row=2, max_row=13)
+        # Agregar cada serie por vendedor
+        for col_idx in range(2, 2 + num_vendedores):
+            nombre_vendedor = ws.cell(row=1, column=col_idx).value
+            serie = Series(
+                Reference(ws, min_col=col_idx, min_row=2, max_row=num_filas),
+                title=nombre_vendedor
+            )
+            serie.smooth = False
+            chart.append(serie)
 
-    # Agregar cada serie correctamente nombrada
-    for i, anio in enumerate(años):
-        serie = Series(Reference(ws, min_col=i+2, min_row=2, max_row=13), title=f"Ingresos del {anio}")
-        serie.smooth = False  
-        chart.append(serie)
+        chart.set_categories(categorias)
 
-    chart.set_categories(categorias)
+        # Ajuste de etiquetas
+        chart.dataLabels = DataLabelList()
+        chart.dataLabels.showVal = True
+        chart.dataLabels.showCatName = False
+        chart.dataLabels.showSerName = False
+        chart.dataLabels.dLblPos = 't'
+        chart.dataLabels.showLegendKey = False
 
-    # Ajuste de etiquetas para evitar superposiciones
-    chart.dataLabels = DataLabelList()
-    chart.dataLabels.showVal = True
-    chart.dataLabels.showCatName = False
-    chart.dataLabels.showSerName = False
-    chart.dataLabels.dLblPos = 't' 
-    chart.dataLabels.showLegendKey = False
+        # Tabla de datos
+        tabla = DataTable()
+        tabla.showHorzBorder = True
+        tabla.showVertBorder = True
+        tabla.showOutline = True
+        tabla.showKeys = True
+        chart.plot_area.dTable = tabla
 
-    # Agregar la tabla de datos como en `grafico_resumen_ingresos(ws)`
-    tabla = DataTable()
-    tabla.showHorzBorder = True
-    tabla.showVertBorder = True
-    tabla.showOutline = True
-    tabla.showKeys = True
-    chart.plot_area.dTable = tabla
+        # Agregar gráfico al Excel
+        ws.add_chart(chart, "K6")
+        ws.column_dimensions["J"].width = 0.1
+        ws.column_dimensions["AC"].width = 0.1
+        ws.row_dimensions[5].height = 2
 
-    ws.add_chart(chart, "K6")  # Posición del gráfico en la hoja
-    # Reducir el ancho de la columna J al mínimo
-    ws.column_dimensions["J"].width = 0.1
-    ws.column_dimensions["AC"].width = 0.1
+    else:
+        # Encabezados de la tabla
+        años = list(range(2019, 2026))  # Ajusta los años según sea necesario
+        ws.append(["Mes"] + años)
 
-    # Reducir la altura de la fila 5 al mínimo
-    ws.row_dimensions[5].height = 2
+        # Convertir datos a DataFrame
+        df_ingresos = pd.DataFrame(list(ingresos.items()), columns=['Mes', 'Monto'])
+        df_ingresos['Monto'] = df_ingresos['Monto'].astype(float)
 
+        # Extraer año y mes
+        df_ingresos['Año'] = df_ingresos['Mes'].str.extract(r'(\d{4})').astype(int)
+        df_ingresos['Mes'] = df_ingresos['Mes'].str.replace(r'\s+-\s+\d{4}', '', regex=True)
+
+        # Ordenar por año y mes
+        meses_orden = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SETIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
+        df_ingresos['Mes'] = pd.Categorical(df_ingresos['Mes'], categories=meses_orden, ordered=True)
+        df_ingresos = df_ingresos.sort_values(by=['Año', 'Mes'])
+
+        # Llenar los datos en la hoja de Excel con formato de moneda
+        for fila_idx, mes in enumerate(meses_orden, start=2):  # Empezamos en la fila 2
+            fila = [mes] + [
+                df_ingresos.loc[(df_ingresos['Mes'] == mes) & (df_ingresos['Año'] == anio), 'Monto'].sum()
+                if not (anio == date.today().year and meses_orden.index(mes) >= date.today().month)
+                else ""  # Dejar vacío si es un mes futuro
+                for anio in años
+            ]
+            ws.append(fila)
+            
+            # Aplicar formato de moneda a las celdas de monto, excepto a las celdas vacías
+            for col_idx in range(2, len(años) + 2):  # Columnas de los montos (de B en adelante)
+                cell = ws.cell(row=fila_idx, column=col_idx)
+                if cell.value != "":  # Solo aplicar formato si no está vacío
+                    cell.number_format = '"$"#,##0.00'
+
+        # Crear el gráfico como en `grafico_resumen_ingresos(ws)`
+        chart = LineChart()
+        chart.height = 15.3
+        chart.width = 30.5
+        chart.title = titulo
+        chart.title.overlay = False
+        chart.y_axis.title = titulo_eje_y
+        chart.y_axis.delete = False  # Asegura que el eje no se elimine
+        chart.y_axis.scaling.min = 0
+        chart.y_axis.scaling.max = None  # Dejar que Excel determine el valor máximo adecuado
+        chart.x_axis.title = None
+        chart.legend = None
+
+        # Referencias para los datos
+        data = Reference(ws, min_col=2, min_row=1, max_col=len(años)+1, max_row=13)
+        categorias = Reference(ws, min_col=1, min_row=2, max_row=13)
+
+        # Agregar cada serie correctamente nombrada
+        for i, anio in enumerate(años):
+            serie = Series(Reference(ws, min_col=i+2, min_row=2, max_row=13), title=f"Ingresos del {anio}")
+            serie.smooth = False  
+            chart.append(serie)
+
+        chart.set_categories(categorias)
+
+        # Ajuste de etiquetas para evitar superposiciones
+        chart.dataLabels = DataLabelList()
+        chart.dataLabels.showVal = True
+        chart.dataLabels.showCatName = False
+        chart.dataLabels.showSerName = False
+        chart.dataLabels.dLblPos = 't' 
+        chart.dataLabels.showLegendKey = False
+
+        # Agregar la tabla de datos como en `grafico_resumen_ingresos(ws)`
+        tabla = DataTable()
+        tabla.showHorzBorder = True
+        tabla.showVertBorder = True
+        tabla.showOutline = True
+        tabla.showKeys = True
+        chart.plot_area.dTable = tabla
+
+        ws.add_chart(chart, "K6")  # Posición del gráfico en la hoja
+        # Reducir el ancho de la columna J al mínimo
+        ws.column_dimensions["J"].width = 0.1
+        ws.column_dimensions["AC"].width = 0.1
+
+        # Reducir la altura de la fila 5 al mínimo
+        ws.row_dimensions[5].height = 2
 
     # Guardar en un archivo temporal
     excel_path = os.getcwd() + "/" + ruta_imagen + ".xlsx"
@@ -1763,10 +1861,10 @@ def ingresos_sistema_anterior():
     return ingresos
 
 
-def generar_pdf_con_grafico(ingresos, ruta_imagen, titulo, titulo_eje_y):
+def generar_pdf_con_grafico(ingresos, ruta_imagen, titulo, titulo_eje_y, tipo_grafico):
     # Generar Excel con el gráfico
-    excel_path = generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y)
-
+    excel_path = generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y, tipo_grafico)
+    
     # Convertir el gráfico de Excel a imagen
     img_path = os.getcwd() + "/" + ruta_imagen + ".png"
 
@@ -1810,7 +1908,7 @@ def resumen_ingresos():
         else:
             ingresos[f'{mes} - {anio}'] += (ingreso.monto / ingreso.tipo_cambio).quantize(Decimal('0.01'))
     
-    return generar_pdf_con_grafico(ingresos, 'reporte_ingresos', "RESUMEN DE INGRESOS GENERAL", "INGRESOS")
+    return generar_pdf_con_grafico(ingresos, 'reporte_ingresos', "RESUMEN DE INGRESOS GENERAL", "INGRESOS", 'ingresos')
 
 
 def resumen_ventas():
@@ -1843,4 +1941,51 @@ def resumen_ventas():
         else:
             ventas[f'{mes} - {anio}'] = ventas.get(f'{mes} - {anio}', Decimal('0.00')) - (nota.total / nota.tipo_cambio.tipo_cambio_venta)
 
-    return generar_pdf_con_grafico(ventas, 'reporte_ventas', "RESUMEN DE VENTAS GENERAL", "MONTO FACTURADO")
+    return generar_pdf_con_grafico(ventas, 'reporte_ventas', "RESUMEN DE VENTAS GENERAL", "MONTO FACTURADO", 'ventas')
+
+
+def resumen_comercial():
+    hoy = date.today()
+    fecha_filtrar = date(hoy.year-1, hoy.month, 1)
+    facturas = FacturaVenta.objects.filter(estado=4, fecha_emision__gte=fecha_filtrar)
+    boletas = BoletaVenta.objects.filter(estado=4, fecha_emision__gte=fecha_filtrar)
+    notas_credito = NotaCredito.objects.filter(estado=4, fecha_emision__gte=fecha_filtrar)
+    ventas = {}
+    
+    for factura in facturas:
+        mes = mes_en_letras(factura.fecha_emision.month)
+        anio = factura.fecha_emision.year
+        comercial = factura.confirmacion.cotizacion_venta.vendedor
+        if not ventas.get(f'{mes} - {anio}'):
+            ventas[f'{mes} - {anio}'] = {}
+        if factura.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) + factura.total
+        else:
+            ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) + (factura.total / factura.tipo_cambio.tipo_cambio_venta)
+
+    for boleta in boletas:
+        mes = mes_en_letras(boleta.fecha_emision.month)
+        anio = boleta.fecha_emision.year
+        comercial = boleta.confirmacion.cotizacion_venta.vendedor
+        if not ventas.get(f'{mes} - {anio}'):
+            ventas[f'{mes} - {anio}'] = {}
+        if boleta.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) + boleta.total
+        else:
+            ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) + (boleta.total / boleta.tipo_cambio.tipo_cambio_venta)
+
+    for nota in notas_credito:
+        mes = mes_en_letras(nota.fecha_emision.month)
+        anio = nota.fecha_emision.year
+        if not nota.documento:
+            continue
+        comercial = nota.documento.confirmacion.cotizacion_venta.vendedor
+        if not ventas.get(f'{mes} - {anio}'):
+            ventas[f'{mes} - {anio}'] = {}
+        if nota.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) - nota.total
+        else:
+            ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) - (nota.total / nota.tipo_cambio.tipo_cambio_venta)
+
+    print(ventas)
+    return generar_pdf_con_grafico(ventas, 'reporte_comercial', "RESUMEN DE VENTAS POR COMERCIAL", "MONTO FACTURADO", 'comercial')
