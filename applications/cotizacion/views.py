@@ -1513,6 +1513,7 @@ class CotizacionVentaConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
         error_cantidad_stock = False
         error_cantidad_sociedad = False
         error_tipo_cambio = False
+        error_estado = False
         context = {}
         context['titulo'] = 'Error de Confirmación'
         for detalle in self.get_object().CotizacionVentaDetalle_cotizacion_venta.all():
@@ -1523,12 +1524,19 @@ class CotizacionVentaConfirmarView(PermissionRequiredMixin, BSModalDeleteView):
                     error_cantidad_stock = True
             if sumar != detalle.cantidad:
                 error_cantidad_sociedad = True
+
+        if self.get_object().estado != 2:
+            error_estado = True
         
         if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
             error_tipo_cambio = True
 
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_estado:
+            context['texto'] = 'La cotización ya está confirmada. Actualiza la página.'
+            return render(request, 'includes/modal sin permiso.html', context)
 
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'
@@ -1788,6 +1796,7 @@ class CotizacionVentaConfirmarAnticipoView(PermissionRequiredMixin, BSModalDelet
     def dispatch(self, request, *args, **kwargs):
         error_cantidad_sociedad = False
         error_tipo_cambio = False
+        error_estado = False
         context = {}
         context['titulo'] = 'Error de Confirmación'
         for detalle in self.get_object().CotizacionVentaDetalle_cotizacion_venta.all():
@@ -1796,12 +1805,19 @@ class CotizacionVentaConfirmarAnticipoView(PermissionRequiredMixin, BSModalDelet
                 sumar += cotizacion_sociedad.cantidad
             if sumar != detalle.cantidad:
                 error_cantidad_sociedad = True
+
+        if self.get_object().estado != 2:
+            error_estado = True
         
         if len(TipoCambio.objects.filter(fecha=datetime.today()))==0:
             error_tipo_cambio = True
 
         if not self.has_permission():
             return render(request, 'includes/modal sin permiso.html')
+
+        if error_estado:
+            context['texto'] = 'La cotización ya está confirmada. Actualiza la página.'
+            return render(request, 'includes/modal sin permiso.html', context)
 
         if error_tipo_cambio:
             context['texto'] = 'Ingrese un tipo de cambio para hoy.'

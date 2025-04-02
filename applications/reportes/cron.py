@@ -18,14 +18,14 @@ def reportes_viernes():
     start = datetime.now()
     print("Generando reportes de viernes...")
     asunto = "Reporte de cobranza de deudores de la semana"
-    mensaje = f"Buenos días, se adjuntan los reportes correspondientes al {datetime.now().strftime('%d/%m/%Y')}\n\n- Reporte de cobranza\n- Resumen de Ingresos\n- Resumen de Ventas\n\nSaludos cordiales."
+    mensaje = f"Buenos días, se adjuntan los reportes correspondientes al {datetime.now().strftime('%d/%m/%Y')}\n\n- Reporte de cobranza\n- Resumen de Ingresos\n- Resumen de Ventas\n- Resumen de Ventas por comercial\n\nSaludos cordiales."
     email_remitente = EMAIL_REMITENTE
     correos_para = [
         'trobles@multiplay.com.pe',
-        # 'salvarez@multiplay.com.pe',
-        # 'fmaldonado@multiplay.com.pe',
-        # 'rpaniura@multiplay.com.pe',
-        # 'gzuniga@multiplay.com.pe',
+        'salvarez@multiplay.com.pe',
+        'fmaldonado@multiplay.com.pe',
+        'rpaniura@multiplay.com.pe',
+        'gzuniga@multiplay.com.pe',
     ]
     correo = EmailMultiAlternatives(subject=asunto, body=mensaje, from_email=email_remitente, to=correos_para)
 
@@ -67,8 +67,10 @@ def reportes_viernes():
     archivos = [
         "reporte_ingresos.png",
         "reporte_ventas.png",
+        "reporte_comercial.png",
         "reporte_ingresos.xlsx",
         "reporte_ventas.xlsx",
+        "reporte_comercial.xlsx",
         ]
     for archivo in archivos:
         try:

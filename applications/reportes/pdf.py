@@ -1987,5 +1987,4 @@ def resumen_comercial():
         else:
             ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) - (nota.total / nota.tipo_cambio.tipo_cambio_venta)
 
-    print(ventas)
     return generar_pdf_con_grafico(ventas, 'reporte_comercial', "RESUMEN DE VENTAS POR COMERCIAL", "MONTO FACTURADO", 'comercial')

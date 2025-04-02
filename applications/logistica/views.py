@@ -795,11 +795,19 @@ class NotaSalidaConcluirView(PermissionRequiredMixin, BSModalDeleteView):
     def dispatch(self, request, *args, **kwargs):
         context = {}
         error_series = False
+        error_estado = False
         context['titulo'] = 'Error de guardar'
         detalles = self.get_object().NotaSalidaDetalle_nota_salida.all()
         for detalle in detalles:
             if detalle.series_validar != detalle.cantidad_salida and detalle.producto.control_serie:
                 error_series = True
+
+        if self.get_object().estado != 1:
+            error_estado = True
+
+        if error_estado:
+            context['texto'] = 'La nota de salida no se encuentra en estado pendiente. Actualiza la página.'
+            return render(request, 'includes/modal sin permiso.html', context)
         
         if error_series:
             context['texto'] = 'La cantidad de series no coincide.'
@@ -1640,12 +1648,18 @@ class DespachoConcluirView(PermissionRequiredMixin, BSModalDeleteView):
         context = {}
         error_fecha = False
         error_imagenes = False
+        error_estado = False
         context['titulo'] = 'Error de guardar'
         if not self.get_object().fecha_despacho:
             error_fecha = True
         if not self.get_object().ImagenesDespacho_despacho.all():
             error_imagenes = True
+        if self.get_object().estado != 1:
+            error_estado = True
 
+        if error_estado:
+            context['texto'] = 'El despacho ya ha sido concluido. Actualiza la página.'
+            return render(request, 'includes/modal sin permiso.html', context)
         if error_fecha:
             context['texto'] = 'Ingrese una fecha de despacho.'
             return render(request, 'includes/modal sin permiso.html', context)
