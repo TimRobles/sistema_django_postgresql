@@ -3794,7 +3794,13 @@ class ReporteValorizacionStockPDF(TemplateView):
 
 class ReporteViernesView(TemplateView):
     def get(self, request, *args, **kwargs):
-        buf = resumen_ventas()
+        # ws = resumen_comercial()
+        # respuesta = HttpResponse(content_type='application/ms-excel')
+        # content = "attachment; filename = Reporte_Viernes.xlsx"
+        # respuesta['content-disposition'] = content
+        # ws.save(respuesta)
+        # return respuesta
+        buf = resumen_comercial()
         respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
         respuesta.headers['content-disposition']='inline; filename=Reporte_Viernes.pdf'
         return respuesta
