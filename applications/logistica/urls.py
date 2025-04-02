@@ -37,6 +37,7 @@ urlDespacho = [
     path('despacho/concluir/<pk>/', views.DespachoConcluirView.as_view(), name='despacho_concluir'),
     path('despacho/finalizar-sin-guia/<pk>/', views.DespachoFinalizarSinGuiaView.as_view(), name='despacho_finalizar_sin_guia'),
     path('despacho/anular/<pk>/', views.DespachoAnularView.as_view(), name='despacho_anular'),
+    path('despacho/corregir/<pk>/', views.DespachoCorregirView.as_view(), name='despacho_corregir'),
     path('despacho/detalle/<pk>/', views.DespachoDetailView.as_view(), name='despacho_detalle'),
     path('despacho/detalle-tabla/<pk>/', views.DespachoDetailTabla, name='despacho_detalle_tabla'),
     path('despacho/generar-guia/<pk>/', views.DespachoGenerarGuiaView.as_view(), name='despacho_generar_guia'),

@@ -568,6 +568,7 @@ MENSAJE_ANULAR_NOTA_SALIDA = 'Operación exitosa: La Nota de Salida fue anulada.
 MENSAJE_GENERAR_DESPACHO = 'Operación exitosa: El despacho fue generada.'
 MENSAJE_CONCLUIR_DESPACHO = 'Operación exitosa: El despacho fue concluido.'
 MENSAJE_ANULAR__DESPACHO = 'Operación exitosa: El despacho fue anulado.'
+MENSAJE_CORREGIR_DESPACHO = 'Operación exitosa: El despacho fue corregido.'
 MENSAJE_FINALIZAR_SIN_GUIA_DESPACHO = 'Operación exitosa: El despacho fue finalizado sin guia.'
 MENSAJE_GENERAR_NOTA_DEVOLUCION = 'Operación exitosa: La Nota de Devolución fue generada.'
 

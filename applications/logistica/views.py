@@ -1894,6 +1894,87 @@ class DespachoAnularView(PermissionRequiredMixin, BSModalUpdateView):
         return context
 
 
+class DespachoCorregirView(PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = ('logistica.delete_despacho')
+    model = Despacho
+    template_name = "includes/eliminar generico.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)
+
+    @transaction.atomic
+    def delete(self, request, *args, **kwargs):
+        sid = transaction.savepoint()
+        try:
+            if self.request.session['primero']:
+                self.object = self.get_object()
+                detalles = self.object.detalles
+                if self.object.nota_salida.solicitud_prestamo_materiales:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=133)  # Despacho por préstamo
+                else:
+                    movimiento_final = TipoMovimiento.objects.get(codigo=122)
+
+                for detalle in detalles:
+                    print(
+                        detalle.content_type,
+                        detalle.id_registro,
+                        detalle.cantidad_despachada,
+                        movimiento_final,
+                        movimiento_final.tipo_stock_inicial,
+                        -1,
+                        ContentType.objects.get_for_model(self.object),
+                        self.object.id,
+                        self.object.sociedad,
+                    )
+                    movimiento_uno = MovimientosAlmacen.objects.filter(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_despachada,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_inicial,
+                        signo_factor_multiplicador=-1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        sociedad=self.object.sociedad,
+                    )
+
+                    movimiento_dos = MovimientosAlmacen.objects.filter(
+                        content_type_producto=detalle.content_type,
+                        id_registro_producto=detalle.id_registro,
+                        cantidad=detalle.cantidad_despachada,
+                        tipo_movimiento=movimiento_final,
+                        tipo_stock=movimiento_final.tipo_stock_final,
+                        signo_factor_multiplicador=+1,
+                        content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
+                        id_registro_documento_proceso=self.object.id,
+                        sociedad=self.object.sociedad,
+                    )
+
+                    if len(movimiento_uno) > 1:
+                        movimiento_dos = movimiento_dos.exclude(id=movimiento_dos.first().id)
+                        movimiento_uno = movimiento_uno.exclude(id=movimiento_uno.first().id)
+                        for movimiento in movimiento_dos:
+                            movimiento.delete()
+                        for movimiento in movimiento_uno:
+                            movimiento.delete()
+                messages.success(request, MENSAJE_CORREGIR_DESPACHO)
+                self.request.session['primero'] = False
+        except Exception as ex:
+            transaction.savepoint_rollback(sid)
+            registrar_excepcion(self, ex, __file__)
+        return HttpResponseRedirect(reverse_lazy('logistica_app:despacho_detalle', kwargs={'pk': self.get_object().id}))
+
+    def get_context_data(self, **kwargs):
+        self.request.session['primero'] = True
+        context = super(DespachoCorregirView, self).get_context_data(**kwargs)
+        context['accion'] = "Corregir"
+        context['titulo'] = "Despacho"
+        context['dar_baja'] = "true"
+        return context
+
+
 class DespachoDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('logistica.view_despacho')
     model = Despacho
