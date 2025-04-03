@@ -38,6 +38,7 @@ class OrdenCompraProveedorForm(BSModalModelForm):
         fields=(
             'proveedor_temporal',
             'interlocutor_temporal',
+            'flete',
             )
         
     def __init__(self, *args, **kwargs):

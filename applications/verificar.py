@@ -7,9 +7,11 @@ from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovim
 from django.contrib.contenttypes.models import ContentType
 
 def verificar_confirmacion_total():
+    send_slack_verificar("Verficar confirmaciones iniciado...")
     materiales = Material.objects.all()
     for material in materiales:
         verificar_confirmacion(material.id)
+    send_slack_verificar("Verficar confirmaciones finalizado...")
 
 def verificar_confirmacion(id_producto):
     try:
