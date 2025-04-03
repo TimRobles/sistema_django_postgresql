@@ -1667,8 +1667,76 @@ def generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y, tipo_graf
     ws = wb.active
     ws.title = "Ingresos"
 
-    if tipo_grafico == "comercial":
-        # ingresos = {'MARZO - 2025': {<User: RossneryPaniura>: Decimal('3258.00'), <User: JaimePaima>: Decimal('904.20'), <User: DanielysPrincipal>: Decimal('5064.00'), <User: PaulChacon>: Decimal('851.00')}, 'FEBRERO - 2025': {<User: RossneryPaniura>: Decimal('27459.60'), <User: PaulChacon>: Decimal('12376.50'), <User: DanielysPrincipal>: Decimal('2283.21')}, 'ENERO - 2025': {<User: PaulChacon>: Decimal('7590.18'), <User: DanielysPrincipal>: Decimal('5852.25'), <User: RossneryPaniura>: Decimal('10080.20')}, 'DICIEMBRE - 2024': {<User: RossneryPaniura>: Decimal('38368.05'), <User: DanielysPrincipal>: Decimal('3012.60'), <User: PaulChacon>: Decimal('9552.73')}, 'NOVIEMBRE - 2024': {<User: PaulChacon>: Decimal('12559.00'), <User: RossneryPaniura>: Decimal('24678.30'), <User: DanielysPrincipal>: Decimal('3276.50')}, 'OCTUBRE - 2024': {<User: PaulChacon>: Decimal('17194.53'), <User: RossneryPaniura>: Decimal('27219.70'), <User: DanielysPrincipal>: Decimal('2054.20')}, 'SETIEMBRE - 2024': {<User: RossneryPaniura>: Decimal('22455.74'), <User: PaulChacon>: Decimal('16490.60'), <User: DanielysPrincipal>: Decimal('5022.60')}, 'AGOSTO - 2024': {<User: RossneryPaniura>: Decimal('41615.30'), <User: PaulChacon>: Decimal('10138.92'), <User: DanielysPrincipal>: Decimal('8950.41')}, 'JULIO - 2024': {<User: RossneryPaniura>: Decimal('31018.15'), <User: PaulChacon>: Decimal('8667.95'), <User: DanielysPrincipal>: Decimal('7687.14')}, 'JUNIO - 2024': {<User: RossneryPaniura>: Decimal('46529.92'), <User: PaulChacon>: Decimal('12339.04'), <User: DanielysPrincipal>: Decimal('6103.54')}, 'MAYO - 2024': {<User: RossneryPaniura>: Decimal('27759.65'), <User: PaulChacon>: Decimal('12626.20'), <User: DanielysPrincipal>: Decimal('6301.80'), <User: DianaSilva>: Decimal('813.80')}, 'ABRIL - 2024': {<User: PaulChacon>: Decimal('15451.55'), <User: RossneryPaniura>: Decimal('44683.90'), <User: DanielysPrincipal>: Decimal('7220.20'), <User: DennisMartinez>: Decimal('250.00')}}
+    if tipo_grafico == "tipo_venta":
+        # Preparar estructura de datos
+        filas = []
+        nombres_tipo_venta = set()
+
+        for mes_anio, tipo_venta in ingresos.items():
+            fila = {'Mes-Año': mes_anio}
+            for vendedor, monto in tipo_venta.items():
+                nombre = vendedor
+                fila[nombre] = float(monto)
+                nombres_tipo_venta.add(nombre)
+            filas.append(fila)
+
+        df = pd.DataFrame(filas).fillna(0)
+
+        df["Fecha"] = df["Mes-Año"].apply(mes_anio_to_fecha)
+        df = df.sort_values("Fecha").drop(columns=["Fecha"])
+
+        # Escribir encabezados
+        columnas = ["Mes-Año"] + sorted(nombres_tipo_venta)
+        columnas += ["Total", "CONTADO %", "CREDITO %"]
+        ws.append(columnas)
+
+        # Escribir los datos
+        for index, row in df.iterrows():
+            fila = [row["Mes-Año"]] + [row.get(nombre, 0) for nombre in sorted(nombres_tipo_venta)]
+            total = fila[1] + fila[2]
+            fila += [total, fila[1] / total if total > 0 else 0, fila[2] / total if total > 0 else 0]
+            ws.append(fila)
+
+        # Aplicar formato de moneda
+        for row in ws.iter_rows(min_row=2, min_col=2, max_col=4):
+            for cell in row:
+                cell.number_format = '"$"#,##0.00'
+        # Aplicar formato de porcentaje
+        for row in ws.iter_rows(min_row=2, min_col=5, max_col=6):
+            for cell in row:
+                cell.number_format = '0.00%'
+
+        # Crear el gráfico
+        chart = LineChart()
+        chart.height = 15.3
+        chart.width = 30.5
+        chart.title = titulo
+        chart.title.overlay = False
+        chart.y_axis.title = titulo_eje_y
+        chart.y_axis.delete = False
+        chart.y_axis.scaling.min = 0
+        chart.y_axis.scaling.max = None
+        chart.x_axis.title = None
+        chart.legend = None
+
+        # Referencias
+        num_filas = ws.max_row
+        num_vendedores = len(nombres_tipo_venta)
+
+        # Categorías (Mes-Año en columna A)
+        categorias = Reference(ws, min_col=1, min_row=2, max_row=num_filas)
+
+        # Agregar cada serie por vendedor
+        for col_idx in range(2, 2 + num_vendedores):
+            nombre_vendedor = ws.cell(row=1, column=col_idx).value
+            serie = Series(
+                Reference(ws, min_col=col_idx, min_row=2, max_row=num_filas),
+                title=nombre_vendedor
+            )
+            serie.smooth = False
+            chart.append(serie)
+
+    elif tipo_grafico == "comercial":
         # Preparar estructura de datos
         filas = []
         nombres_vendedores = set()
@@ -1730,30 +1798,6 @@ def generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y, tipo_graf
             serie.smooth = False
             chart.append(serie)
 
-        chart.set_categories(categorias)
-
-        # Ajuste de etiquetas
-        chart.dataLabels = DataLabelList()
-        chart.dataLabels.showVal = True
-        chart.dataLabels.showCatName = False
-        chart.dataLabels.showSerName = False
-        chart.dataLabels.dLblPos = 't'
-        chart.dataLabels.showLegendKey = False
-
-        # Tabla de datos
-        tabla = DataTable()
-        tabla.showHorzBorder = True
-        tabla.showVertBorder = True
-        tabla.showOutline = True
-        tabla.showKeys = True
-        chart.plot_area.dTable = tabla
-
-        # Agregar gráfico al Excel
-        ws.add_chart(chart, "K6")
-        ws.column_dimensions["J"].width = 0.1
-        ws.column_dimensions["AC"].width = 0.1
-        ws.row_dimensions[5].height = 2
-
     else:
         # Encabezados de la tabla
         años = list(range(2019, 2026))  # Ajusta los años según sea necesario
@@ -1811,35 +1855,37 @@ def generar_grafico_excel(ingresos, ruta_imagen, titulo, titulo_eje_y, tipo_graf
             serie.smooth = False  
             chart.append(serie)
 
-        chart.set_categories(categorias)
+    chart.set_categories(categorias)
 
-        # Ajuste de etiquetas para evitar superposiciones
-        chart.dataLabels = DataLabelList()
-        chart.dataLabels.showVal = True
-        chart.dataLabels.showCatName = False
-        chart.dataLabels.showSerName = False
-        chart.dataLabels.dLblPos = 't' 
-        chart.dataLabels.showLegendKey = False
+    # Ajuste de etiquetas para evitar superposiciones
+    chart.dataLabels = DataLabelList()
+    chart.dataLabels.showVal = True
+    chart.dataLabels.showCatName = False
+    chart.dataLabels.showSerName = False
+    chart.dataLabels.dLblPos = 't' 
+    chart.dataLabels.showLegendKey = False
 
-        # Agregar la tabla de datos como en `grafico_resumen_ingresos(ws)`
-        tabla = DataTable()
-        tabla.showHorzBorder = True
-        tabla.showVertBorder = True
-        tabla.showOutline = True
-        tabla.showKeys = True
-        chart.plot_area.dTable = tabla
+    # Agregar la tabla de datos como en `grafico_resumen_ingresos(ws)`
+    tabla = DataTable()
+    tabla.showHorzBorder = True
+    tabla.showVertBorder = True
+    tabla.showOutline = True
+    tabla.showKeys = True
+    chart.plot_area.dTable = tabla
 
-        ws.add_chart(chart, "K6")  # Posición del gráfico en la hoja
-        # Reducir el ancho de la columna J al mínimo
-        ws.column_dimensions["J"].width = 0.1
-        ws.column_dimensions["AC"].width = 0.1
+    ws.add_chart(chart, "K6")  # Posición del gráfico en la hoja
+    # Reducir el ancho de la columna J al mínimo
+    ws.column_dimensions["J"].width = 0.1
+    ws.column_dimensions["AC"].width = 0.1
 
-        # Reducir la altura de la fila 5 al mínimo
-        ws.row_dimensions[5].height = 2
+    # Reducir la altura de la fila 5 al mínimo
+    ws.row_dimensions[5].height = 2
 
     # Guardar en un archivo temporal
     excel_path = os.getcwd() + "/" + ruta_imagen + ".xlsx"
     ws.sheet_view.showGridLines = False  # Oculta las líneas de cuadrícula
+    if tipo_grafico == "tipo_venta":
+        return wb
     wb.save(excel_path)
 
     return excel_path
@@ -1988,3 +2034,35 @@ def resumen_comercial():
             ventas[f'{mes} - {anio}'][comercial] = ventas[f'{mes} - {anio}'].get(comercial, Decimal('0.00')) - (nota.total / nota.tipo_cambio.tipo_cambio_venta)
 
     return generar_pdf_con_grafico(ventas, 'reporte_comercial', "RESUMEN DE VENTAS POR COMERCIAL", "MONTO FACTURADO", 'comercial')
+
+
+def resumen_credito():
+    hoy = date.today()
+    fecha_filtrar = date(hoy.year-2, hoy.month, 1)
+    facturas = FacturaVenta.objects.filter(estado=4, fecha_emision__gte=fecha_filtrar)
+    boletas = BoletaVenta.objects.filter(estado=4, fecha_emision__gte=fecha_filtrar)
+    ventas = {}
+    
+    for factura in facturas:
+        mes = mes_en_letras(factura.fecha_emision.month)
+        anio = factura.fecha_emision.year
+        tipo_venta = factura.get_tipo_venta_display()
+        if not ventas.get(f'{mes} - {anio}'):
+            ventas[f'{mes} - {anio}'] = {}
+        if factura.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'][tipo_venta] = ventas[f'{mes} - {anio}'].get(tipo_venta, Decimal('0.00')) + factura.total
+        else:
+            ventas[f'{mes} - {anio}'][tipo_venta] = ventas[f'{mes} - {anio}'].get(tipo_venta, Decimal('0.00')) + (factura.total / factura.tipo_cambio.tipo_cambio_venta)
+
+    for boleta in boletas:
+        mes = mes_en_letras(boleta.fecha_emision.month)
+        anio = boleta.fecha_emision.year
+        tipo_venta = boleta.get_tipo_venta_display()
+        if not ventas.get(f'{mes} - {anio}'):
+            ventas[f'{mes} - {anio}'] = {}
+        if boleta.moneda.abreviatura == 'USD':
+            ventas[f'{mes} - {anio}'][tipo_venta] = ventas[f'{mes} - {anio}'].get(tipo_venta, Decimal('0.00')) + boleta.total
+        else:
+            ventas[f'{mes} - {anio}'][tipo_venta] = ventas[f'{mes} - {anio}'].get(tipo_venta, Decimal('0.00')) + (boleta.total / boleta.tipo_cambio.tipo_cambio_venta)
+
+    return generar_grafico_excel(ventas, 'reporte_credito', "RESUMEN DE VENTAS POR TIPO DE VENTA", "MONTO FACTURADO", 'tipo_venta')

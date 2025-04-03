@@ -53,6 +53,7 @@ from applications.reportes.pdf import (
     generarReporteVentasDepartamento, 
     reporte_cobranza,
     generarReportePrecioProductosDisponible,
+    resumen_credito,
     resumen_ventas,
     )
 from applications.movimiento_almacen.models import MovimientosAlmacen
@@ -3792,15 +3793,24 @@ class ReporteValorizacionStockPDF(TemplateView):
 
         return respuesta
 
+class ReporteCréditoView(PermissionRequiredMixin, TemplateView):
+    def get(self, request, *args, **kwargs):
+        wb = resumen_credito()
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename = Reporte_Crédito.xlsx"
+        respuesta['content-disposition'] = content
+        wb.save(respuesta)
+        return respuesta
+
 class ReporteViernesView(TemplateView):
     def get(self, request, *args, **kwargs):
-        # ws = resumen_comercial()
-        # respuesta = HttpResponse(content_type='application/ms-excel')
-        # content = "attachment; filename = Reporte_Viernes.xlsx"
-        # respuesta['content-disposition'] = content
-        # ws.save(respuesta)
-        # return respuesta
-        buf = resumen_comercial()
-        respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
-        respuesta.headers['content-disposition']='inline; filename=Reporte_Viernes.pdf'
+        wb = resumen_credito()
+        respuesta = HttpResponse(content_type='application/ms-excel')
+        content = "attachment; filename = Reporte_Viernes.xlsx"
+        respuesta['content-disposition'] = content
+        wb.save(respuesta)
         return respuesta
+        # buf = resumen_credito()
+        # respuesta = HttpResponse(buf.getvalue(), content_type='application/pdf')
+        # respuesta.headers['content-disposition']='inline; filename=Reporte_Viernes.pdf'
+        # return respuesta

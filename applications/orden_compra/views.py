@@ -489,7 +489,7 @@ class OrdenCompraRevertirEstadoView(PermissionRequiredMixin, BSModalDeleteView):
         sid = transaction.savepoint()
         try:
             obj = self.get_object()
-            obj.estado = 1
+            obj.estado = 5
             obj.save()
             messages.success(self.request, 'Se revirtió el estado de la orden de compra.')
         except Exception as ex:
