@@ -3793,7 +3793,7 @@ class ReporteValorizacionStockPDF(TemplateView):
 
         return respuesta
 
-class ReporteCréditoView(PermissionRequiredMixin, TemplateView):
+class ReporteCréditoView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         wb = resumen_credito()
         respuesta = HttpResponse(content_type='application/ms-excel')
