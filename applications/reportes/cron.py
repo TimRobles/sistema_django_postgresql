@@ -68,9 +68,11 @@ def reportes_viernes():
         "reporte_ingresos.png",
         "reporte_ventas.png",
         "reporte_comercial.png",
+        "reporte_credito.png",
         "reporte_ingresos.xlsx",
         "reporte_ventas.xlsx",
         "reporte_comercial.xlsx",
+        "reporte_credito.xlsx",
         ]
     for archivo in archivos:
         try:

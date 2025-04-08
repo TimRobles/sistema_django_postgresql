@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from unipath import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -81,6 +81,7 @@ LOCAL_APPS = (
     'applications.cambio_sociedad',
     'applications.soporte',
     'applications.notificaciones',
+    'applications.brevo',
 )
 
 THIRD_PARTY_APPS = (
@@ -189,3 +190,22 @@ DJANGORESIZED_DEFAULT_FORMAT_EXTENSIONS = {
     'PNG': ".png",
     }
 DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "brevo_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "brevo_webhook.log"),
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["brevo_file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
