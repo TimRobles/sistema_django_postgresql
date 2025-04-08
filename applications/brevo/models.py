@@ -2,16 +2,23 @@ from django.db import models
 
 class BrevoWebhookEvent(models.Model):
     EVENT_TYPES = [
-        ('request', 'Request'),
-        ('delivered', 'Delivered'),
-        ('opened', 'Opened'),
-        ('click', 'Click'),
-        ('bounce', 'Bounce'),
-        ('spam', 'Spam'),
-        ('blocked', 'Blocked'),
-        ('invalid_email', 'Invalid Email'),
-        ('sent', 'Sent'),
+        ("request", "Request (Enviado desde tu sistema)"),
+        ("delivered", "Delivered"),
+        ("hard_bounce", "Hard Bounce"),
+        ("soft_bounce", "Soft Bounce"),
+        ("blocked", "Blocked"),
+        ("spam", "Spam (Complaint)"),
+        ("invalid_email", "Invalid Email"),
+        ("deferred", "Deferred"),
+        ("click", "Click"),
+        ("opened", "Opened"),
+        ("unique_opened", "First Opening"),
+        ("unsubscribed", "Unsubscribed"),
+        ("error", "Error"),
+        ("proxy_open", "Loaded by Proxy"),
+        ("unique_proxy_open", "Unique proxy open"),
     ]
+
 
     event = models.CharField(max_length=50, choices=EVENT_TYPES)
     email = models.EmailField()  # Destinatario
