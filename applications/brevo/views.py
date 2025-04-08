@@ -29,8 +29,11 @@ def brevo_webhook_view(request):
                 reason=payload.get("reason"),
                 mirror_link=payload.get("mirror_link"),
                 tag=payload.get("tag"),
+                tags=payload.get("tags"),
+                user_agent=payload.get("user_agent"),
+                device_used=payload.get("device_used"),
+                link=payload.get("link"),
             )
-
 
             return JsonResponse({"status": "received"}, status=200)
 
