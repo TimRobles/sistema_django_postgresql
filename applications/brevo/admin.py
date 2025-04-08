@@ -22,3 +22,5 @@ class BrevoWebhookEventAdmin(admin.ModelAdmin):
     )
     list_filter = ('event',)
     search_fields = ('email',)
+
+admin.site.register(BrevoWebhookEvent, BrevoWebhookEventAdmin)
