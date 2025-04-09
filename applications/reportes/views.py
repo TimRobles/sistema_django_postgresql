@@ -187,7 +187,7 @@ class ReporteContador(TemplateView):
                     ON nncd.content_type_id='%s' AND mm.id=nncd.id_registro
                 WHERE dgsc.serie!='' AND nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
                 GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota) 
-                ORDER BY fecha_emision_nota, nro_comprobante ;''' % (DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['nota | notacredito'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], global_sociedad,global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_emision_nota, nro_comprobante ;''' % (get_content_type('nota | notacredito'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), get_content_type('material | material'), global_sociedad,global_fecha_inicio, global_fecha_fin, get_content_type('nota | notacredito'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), get_content_type('material | material'), global_sociedad,global_fecha_inicio, global_fecha_fin)
             query_info = NotaCredito.objects.raw(sql)
             
             info = []
@@ -240,7 +240,7 @@ class ReporteContador(TemplateView):
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
                 WHERE cvb.estado='3' and cvb.sociedad_id='%s'
-                GROUP BY cvb.sociedad_id, cvb.serie_comprobante_id, cvb.numero_boleta) ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+                GROUP BY cvb.sociedad_id, cvb.serie_comprobante_id, cvb.numero_boleta) ; ''' %(get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('comprobante_venta | boletaventa'), global_sociedad)
             query_info_anulados = FacturaVenta.objects.raw(sql_anuladas)
 
             info_anulados = []
@@ -326,7 +326,7 @@ class ReporteContador(TemplateView):
                     ON dgnr.content_type_id='%s' AND dgnr.id_registro=cvb.id AND dgnr.error=False AND dgnr.id=(select max(id) from datos_globales_nubefactrespuesta  where content_type_id='%s' AND id_registro=dgnr.id_registro AND dgnr.error=False)
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)
-                ORDER BY fecha_orden, nro_comprobante  ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_orden, nro_comprobante  ;''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('material | material'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, global_fecha_inicio, global_fecha_fin, get_content_type('comprobante_venta | boletaventa'), get_content_type('material | material'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info = FacturaVenta.objects.raw(sql)
 
             info = []
@@ -462,6 +462,7 @@ class ReporteContador(TemplateView):
 
 class ReporteVentasFacturadas(TemplateView):
     def get(self,request, *args,**kwargs):
+        print("REPORTES VENTAS FACTURADAS")
         global_sociedad = self.request.GET.get('filtro_sociedad')
         print("*******************************")
         print(global_sociedad)
@@ -497,7 +498,7 @@ class ReporteVentasFacturadas(TemplateView):
                 LEFT JOIN clientes_cliente cc
                     ON cc.id=nnc.cliente_id
                 WHERE nnc.sociedad_id='%s' AND '%s' <= nnc.fecha_emision AND nnc.fecha_emision <= '%s'
-                GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota ; ''' %(DICT_CONTENT_TYPE['nota | notacredito'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                GROUP BY nnc.sociedad_id, nnc.tipo_comprobante, nnc.serie_comprobante_id, nnc.numero_nota ; ''' %(get_content_type('nota | notacredito'), global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info = NotaCredito.objects.raw(sql)
             
             info = []
@@ -562,7 +563,7 @@ class ReporteVentasFacturadas(TemplateView):
                 LEFT JOIN datos_globales_seriescomprobante dgsc
                     ON dgsc.tipo_comprobante_id='%s' AND dgsc.id=cvb.serie_comprobante_id
                 WHERE cvb.estado='3' and cvb.sociedad_id='%s'
-                GROUP BY cvb.sociedad_id, cvb.serie_comprobante_id, cvb.numero_boleta) ; '''%(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+                GROUP BY cvb.sociedad_id, cvb.serie_comprobante_id, cvb.numero_boleta) ; '''%(get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('comprobante_venta | boletaventa'), global_sociedad)
             query_info_anulados = FacturaVenta.objects.raw(sql_anuladas)
 
             info_anulados = []
@@ -653,7 +654,7 @@ class ReporteVentasFacturadas(TemplateView):
                 WHERE cvb.sociedad_id='%s' AND cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY cliente_denominacion ASC, pagos DESC)
-                ORDER BY cliente_denominacion ASC, pagos DESC; '''%(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad,  DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+                ORDER BY cliente_denominacion ASC, pagos DESC; '''%(get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), get_content_type('cobranza | ingreso'), global_sociedad,  get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), get_content_type('cobranza | ingreso'), global_sociedad)
             query_info_pagos = FacturaVenta.objects.raw(sql_pagos)
 
             info = []
@@ -725,7 +726,7 @@ class ReporteVentasFacturadas(TemplateView):
                     ON cobc.deuda_id=cd.id
                 WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s' AND cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, global_fecha_inicio, global_fecha_fin, get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info_letras = FacturaVenta.objects.raw(sql_letras)
 
             info = []
@@ -785,7 +786,7 @@ class ReporteVentasFacturadas(TemplateView):
                     ON dgm.id=cn.moneda_id
                 WHERE cvb.sociedad_id='%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                ORDER BY 4) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+                ORDER BY 4) ; ''' % (get_content_type('cobranza | nota'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('cobranza | nota'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad)
             query_info = Nota.objects.raw(sql_cobranza_nota)
 
             info_cobranza_nota = []
@@ -853,15 +854,15 @@ class ReporteVentasFacturadas(TemplateView):
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
-                    DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
-                    DICT_CONTENT_TYPE['cotizacion | confirmacionventa'], 
-                    DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                    get_content_type('comprobante_venta | facturaventa'),
+                    get_content_type('cotizacion | confirmacionventa'),
+                    get_content_type('comprobante_despacho | guia'),
                     global_sociedad, 
                     global_fecha_inicio, 
                     global_fecha_fin, 
-                    DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],
-                    DICT_CONTENT_TYPE['cotizacion | confirmacionventa'],  
-                    DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                    get_content_type('comprobante_venta | boletaventa'),
+                    get_content_type('cotizacion | confirmacionventa'), 
+                    get_content_type('comprobante_despacho | guia'),
                     global_sociedad, 
                     global_fecha_inicio, 
                     global_fecha_fin
@@ -964,15 +965,15 @@ class ReporteVentasFacturadas(TemplateView):
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
-                    DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
-                    DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
-                    DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                    get_content_type('comprobante_venta | facturaventa'), 
+                    get_content_type('comprobante_venta | facturaventa'), 
+                    get_content_type('cobranza | ingreso'), 
                     global_sociedad, 
                     global_fecha_inicio, 
                     global_fecha_fin, 
-                    DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
-                    DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
-                    DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                    get_content_type('comprobante_venta | boletaventa'), 
+                    get_content_type('comprobante_venta | boletaventa'), 
+                    get_content_type('cobranza | ingreso'), 
                     global_sociedad, 
                     global_fecha_inicio, 
                     global_fecha_fin
@@ -1324,7 +1325,7 @@ class ReporteFacturasPendientes(TemplateView):
                 LEFT JOIN material_material mm
                     ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
                 WHERE cvb.estado='4'
-                GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta) ;'''%(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'],DICT_CONTENT_TYPE['material | material'],DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],DICT_CONTENT_TYPE['material | material'],)
+                GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta) ;'''%(get_content_type('comprobante_venta | facturaventa'), get_content_type('material | material'), get_content_type('comprobante_venta | boletaventa'), get_content_type('material | material'),)
             query_info = FacturaVenta.objects.raw(sql_productos)
 
             info = []
@@ -1398,7 +1399,7 @@ class ReporteFacturasPendientes(TemplateView):
                 WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND cd.id IS NOT NULL AND cvb.estado='4'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
                 ORDER BY cliente_denominacion ASC, letras ASC)
-                ORDER BY cliente_denominacion ASC, letras ASC ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'],DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+                ORDER BY cliente_denominacion ASC, letras ASC ; ''' %(get_content_type('comprobante_venta | facturaventa'),get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('comprobante_venta | boletaventa'),get_content_type('comprobante_venta | boletaventa'), global_sociedad)
             query_info = FacturaVenta.objects.raw(sql_letras)
 
             info = []
@@ -1459,7 +1460,7 @@ class ReporteFacturasPendientes(TemplateView):
                     ON dgm.id=cn.moneda_id
                 WHERE cvb.sociedad_id='%s'
                 GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-                ORDER BY 4) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+                ORDER BY 4) ; ''' % (get_content_type('cobranza | nota'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('cobranza | nota'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad)
             query_info = Nota.objects.raw(sql_cobranza_nota)
 
             info_cobranza_nota = []
@@ -1609,7 +1610,7 @@ class ReporteFacturasPendientes(TemplateView):
                         'PENDIENTE'
                     ) END) = 'PENDIENTE'
                 ORDER BY cliente_denominacion ASC, nro_comprobante ASC)
-                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, tuple(DICT_FACT_INVALIDAS[global_sociedad]), DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+                ORDER BY cliente_denominacion ASC, nro_comprobante ASC ''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), get_content_type('cobranza | ingreso'), global_sociedad, tuple(DICT_FACT_INVALIDAS[global_sociedad]), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), get_content_type('cobranza | ingreso'), global_sociedad)
             query_info = FacturaVenta.objects.raw(sql)
 
             info_general = []
@@ -1888,7 +1889,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
                     WHERE dgcbs.numero_cuenta='%s' AND '%s' <= ci.fecha AND ci.fecha <= '%s' AND cvb.id IS NOT NULL
                     GROUP BY ci.numero_operacion, dgcbs.banco_id, ci.cuenta_bancaria_id, ci.fecha
                     ORDER BY ci.fecha ASC )
-                    ORDER BY 2 ; ''' %(DICT_CONTENT_TYPE['cobranza | ingreso'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], nro_cuenta, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['cobranza | ingreso'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], nro_cuenta, global_fecha_inicio, global_fecha_fin)
+                    ORDER BY 2 ; ''' %(get_content_type('cobranza | ingreso'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), nro_cuenta, global_fecha_inicio, global_fecha_fin, get_content_type('cobranza | ingreso'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), nro_cuenta, global_fecha_inicio, global_fecha_fin)
                 query_info = Pago.objects.raw(sql)
 
                 info_depositos = []
@@ -2363,7 +2364,7 @@ class ReporteClientesProductos(TemplateView):
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s' AND cvb.estado='4'
                 GROUP BY cvb.cliente_id, cvbd.content_type_id, cvbd.id_registro
                 ORDER BY 3, 5)
-                ORDER BY 3, 5 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY 3, 5 ; ''' %(get_content_type('material | material'), global_sociedad, global_fecha_inicio, global_fecha_fin, get_content_type('material | material'), global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info = FacturaVentaDetalle.objects.raw(sql)
             
             info = []
@@ -2435,7 +2436,7 @@ class ReporteClientesProductos(TemplateView):
                 WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s' AND cvb.estado='4'
                 GROUP BY cvbd.content_type_id, cvbd.id_registro, cvb.cliente_id
                 ORDER BY 3, 5)
-                ORDER BY 3, 5 ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin, DICT_CONTENT_TYPE['material | material'], global_sociedad, global_fecha_inicio, global_fecha_fin)
+                ORDER BY 3, 5 ; ''' %(get_content_type('material | material'), global_sociedad, global_fecha_inicio, global_fecha_fin, get_content_type('material | material'), global_sociedad, global_fecha_inicio, global_fecha_fin)
             query_info = FacturaVentaDetalle.objects.raw(sql)
             
             info = []
@@ -2531,7 +2532,7 @@ class ReporteClientesProductos(TemplateView):
                 WHERE cvb.sociedad_id='%s' AND cvb.estado='4'
                 GROUP BY cvb.cliente_id, fecha_orden, cvbd.content_type_id, cvbd.id_registro
                 ORDER BY 2, 4, 6)
-                ORDER BY 2, 4, 6; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad, DICT_CONTENT_TYPE['material | material'], global_sociedad)
+                ORDER BY 2, 4, 6; ''' %(get_content_type('material | material'), global_sociedad, get_content_type('material | material'), global_sociedad)
             query_info = FacturaVentaDetalle.objects.raw(sql)
             
             info = []
@@ -2866,7 +2867,7 @@ class ReporteRotacion(TemplateView):
                 WHERE mam.content_type_producto_id='%s' AND mats.codigo IN (
                     3, 5, 36)
                 GROUP BY mm.id
-                ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'])
+                ORDER BY mm.descripcion_corta ; ''' %(get_content_type('material | material'))
             query_info = MovimientosAlmacen.objects.raw(sql_stock)
             
             info_stock = []
@@ -2896,7 +2897,7 @@ class ReporteRotacion(TemplateView):
                 LEFT JOIN material_material mm
                     ON mm.id=ocod.id_registro AND ocod.content_type_id='%s'
                 GROUP BY mm.id
-                ORDER BY fecha_orden DESC ; ''' %(DICT_CONTENT_TYPE['material | material'])
+                ORDER BY fecha_orden DESC ; ''' %(get_content_type('material | material'))
             query_info = ComprobanteCompraPIDetalle.objects.raw(sql_pedidos)
             
             info_pedidos = []
@@ -2936,7 +2937,7 @@ class ReporteRotacion(TemplateView):
                     ON mf.id=msf.familia_id
                 WHERE cvfd.created_at >= CURRENT_DATE - INTERVAL '6 months' AND cvf.estado = '4'
                 GROUP BY mm.id
-                ORDER BY familia_nombre;''' %(DICT_CONTENT_TYPE['material | material'])
+                ORDER BY familia_nombre;''' %(get_content_type('material | material'))
             query_info = FacturaVentaDetalle.objects.raw(sql_rotacion_6ultimos)
             
             info_rotacion_6ultimos = []
@@ -2987,7 +2988,7 @@ class ReporteRotacion(TemplateView):
                     ON mf.id=msf.familia_id
                 WHERE cvf.estado = '4' AND mm.id IS NOT NULL
                 GROUP BY mm.id
-                ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ; ''' %(DICT_CONTENT_TYPE['material | material'])
+                ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ; ''' %(get_content_type('material | material'))
             query_info = FacturaVentaDetalle.objects.raw(sql_rotacion)
             
             info_rotacion = []
@@ -3050,7 +3051,7 @@ class ReporteRotacion(TemplateView):
                         ON mf.id=msf.familia_id
                     WHERE mm.id='%s' AND cvfd.created_at>=CAST('%s' AS DATE) AND cvf.estado = '4'
                     GROUP BY mm.id
-                    ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ''' %(fecha_pedido, fecha_pedido, fecha_pedido, fecha_pedido, DICT_CONTENT_TYPE['material | material'], id_producto, fecha_pedido)
+                    ORDER BY familia_nombre, nombre_material_breve, nombre_material_venta ''' %(fecha_pedido, fecha_pedido, fecha_pedido, fecha_pedido, get_content_type('material | material'), id_producto, fecha_pedido)
                 return '(' + sql + ')\n'
                 # CONCAT(SUM(df.Cantidad), ' / ', ROUND(SUM(df.Cantidad)/(TIMESTAMPDIFF(DAY, '%s', CURDATE())/30),2))
 
@@ -3231,7 +3232,7 @@ class ReporteResumenStockProductosExcel(TemplateView):
                 WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
                     1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
                 GROUP BY mm.id
-                ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
+                ORDER BY mm.descripcion_corta ; ''' %(get_content_type('material | material'), global_sociedad)
             query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
 
             info = []
@@ -3363,7 +3364,7 @@ class ReporteResumenStockProductosPDF(TemplateView):
             WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
                 1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
             GROUP BY mm.id
-            ORDER BY mm.descripcion_corta ; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
+            ORDER BY mm.descripcion_corta ; ''' %(get_content_type('material | material'), global_sociedad)
         query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
 
         info = []
@@ -3383,10 +3384,9 @@ class ReporteResumenStockProductosPDF(TemplateView):
         fecha_hoy = datetime.now().strftime("%Y-%m-%d")
         fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
 
-        color = DICT_SOCIEDAD[global_sociedad].color
+        color = objeto_sociedad.color
+        abreviatura = objeto_sociedad.abreviatura
         #####
-        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
-        abreviatura = query_sociedad.abreviatura
         #####
         titulo = "Reporte Resumen de Stock Productos - " + abreviatura + " - " + FECHA_HOY
         vertical = False
@@ -3721,7 +3721,7 @@ class ReporteValorizacionStockPDF(TemplateView):
                 WHERE mam.sociedad_id='%s' AND mats.codigo NOT IN (
                     1, 2, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25)
                 GROUP BY mm.id, mm.descripcion_corta, subquery_precios.precio_minimo_venta_con_igv
-                ORDER BY mm.descripcion_corta; ''' %(DICT_CONTENT_TYPE['material | material'], global_sociedad)
+                ORDER BY mm.descripcion_corta; ''' %(get_content_type('material | material'), global_sociedad)
                 
         query_info = MovimientosAlmacen.objects.raw(sql_stock_productos)
 
@@ -3747,10 +3747,9 @@ class ReporteValorizacionStockPDF(TemplateView):
 
         objeto_sociedad = Sociedad.objects.get(id=global_sociedad)
 
-        color = DICT_SOCIEDAD[global_sociedad].color
+        color = objeto_sociedad.color
+        abreviatura = objeto_sociedad.abreviatura
         #####
-        query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
-        abreviatura = query_sociedad.abreviatura
         #####
         titulo = "Valorización de Stock - " + abreviatura + " - " + FECHA_HOY
         vertical = False

@@ -8,17 +8,13 @@ from applications.clientes.models import Cliente
 from applications.sociedad.models import Sociedad
 
 
-DICT_CONTENT_TYPE = {}
-query_content_type = ContentType.objects.all()
-for fila in query_content_type:
-    c_type = str(fila.app_label)+' | '+str(fila.model)
-    DICT_CONTENT_TYPE[c_type] = fila.id
-
-DICT_SOCIEDAD = {}
-query_sociedad = Sociedad.objects.all()
-for dato in query_sociedad:
-    c_id = str(dato.id)
-    DICT_SOCIEDAD[c_id] = dato
+def get_content_type(string):
+    app_label, model = string.split(' | ')
+    try:
+        content_type = ContentType.objects.get(app_label=app_label, model=model)
+        return content_type.id
+    except ContentType.DoesNotExist:
+        return None
 
 DICT_TIPO_NOTA_CREDITO = {
     '1' :"ANULACIÓN DE LA OPERACIÓN",
@@ -63,7 +59,10 @@ RELLENO_EXCEL = PatternFill(start_color='77DD77', end_color='77DD77', fill_type=
 def rellenoSociedad(id_sociedad):
     if id_sociedad != 'None':
         if id_sociedad:
-            color_sociedad = str(DICT_SOCIEDAD[id_sociedad].color)[1:]
+            try:
+                color_sociedad = str(Sociedad.objects.get(id=id_sociedad).color)[1:]
+            except:
+                color_sociedad = '77DD77'
             return PatternFill(start_color=color_sociedad, end_color=color_sociedad, fill_type='solid')
     else:
         return PatternFill(start_color='77DD77', end_color='77DD77', fill_type='solid')

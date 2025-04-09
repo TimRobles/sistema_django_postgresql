@@ -1,0 +1,56 @@
+<!-- brevo/templates/brevo/event_list.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Eventos de Brevo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100 p-4">
+  <h1 class="text-2xl font-bold mb-4">Historial de Eventos de Correo</h1>
+
+  <!-- Filtros -->
+  <form method="GET" class="mb-4">
+    <label>Destinatario: <input type="text" name="recipient" value="{{ recipient_filter }}" class="border p-1 rounded"></label>
+    <label>Desde: <input type="date" name="date_from" value="{{ date_from }}" class="border p-1 rounded"></label>
+    <label>Hasta: <input type="date" name="date_to" value="{{ date_to }}" class="border p-1 rounded"></label>
+    <button type="submit" class="bg-blue-500 text-white p-1 rounded">Filtrar</button>
+  </form>
+
+  <!-- Tabla de Eventos -->
+  <table class="min-w-full bg-white shadow-md rounded">
+    <thead>
+      <tr>
+        <th class="border px-4 py-2">ID</th>
+        <th class="border px-4 py-2">Fecha Envío</th>
+        <th class="border px-4 py-2">Remitente</th>
+        <th class="border px-4 py-2">Destinatario</th>
+        <th class="border px-4 py-2">Subject</th>
+        <th class="border px-4 py-2">Estatus</th>
+        <th class="border px-4 py-2">Contador de Aperturas</th>
+        <th class="border px-4 py-2">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in events_list %}
+      <tr>
+        <td class="border px-4 py-2">{{ item.message_id }}</td>
+        <td class="border px-4 py-2">{{ item.date|date:"Y-m-d H:i" }}</td>
+        <td class="border px-4 py-2">{{ item.sender }}</td>
+        <td class="border px-4 py-2">{{ item.recipient }}</td>
+        <td class="border px-4 py-2">{{ item.subject }}</td>
+        <td class="border px-4 py-2">{{ item.status }}</td>
+        <td class="border px-4 py-2">{{ item.open_count }}</td>
+        <td class="border px-4 py-2">
+          <a href="{% url 'brevo_event_detail' item.message_id %}" class="bg-green-500 text-white px-2 py-1 rounded">Detalles</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="border px-4 py-2 text-center">No se encontraron eventos.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

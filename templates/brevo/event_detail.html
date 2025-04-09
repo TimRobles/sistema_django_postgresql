@@ -1,0 +1,53 @@
+<!-- brevo/templates/brevo/event_detail.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle del Evento {{ message_id }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100 p-4">
+  <h1 class="text-2xl font-bold mb-4">Detalle del Evento para: {{ message_id }}</h1>
+
+  <a href="{% url 'brevo_event_list' %}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Volver al Listado</a>
+
+  <!-- Tabla de Detalle de Eventos -->
+  <table class="min-w-full bg-white shadow-md rounded">
+    <thead>
+      <tr>
+        <th class="border px-4 py-2">Fecha</th>
+        <th class="border px-4 py-2">Evento</th>
+        <th class="border px-4 py-2">Remitente</th>
+        <th class="border px-4 py-2">Destinatario</th>
+        <th class="border px-4 py-2">Subject</th>
+        <th class="border px-4 py-2">IP</th>
+        <th class="border px-4 py-2">Detalles</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+      <tr>
+        <td class="border px-4 py-2">{{ event.date|date:"Y-m-d H:i" }}</td>
+        <td class="border px-4 py-2">{{ event.event }}</td>
+        <td class="border px-4 py-2">{{ event.sender_email }}</td>
+        <td class="border px-4 py-2">{{ event.email }}</td>
+        <td class="border px-4 py-2">{{ event.subject }}</td>
+        <td class="border px-4 py-2">{{ event.sending_ip }}</td>
+        <td class="border px-4 py-2">
+          <!-- Puedes desplegar otros detalles, por ejemplo los JSON si es necesario -->
+          {% if event.tags %}
+            {{ event.tags }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="border px-4 py-2 text-center">No hay eventos para este mensaje.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

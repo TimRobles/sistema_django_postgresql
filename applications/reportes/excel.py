@@ -2269,7 +2269,7 @@ def ReporteResumenStockProductosCorregido(sede):
 ####################################################  REPORTE VENTAS FACTURADAS  ####################################################
 
 def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
-
+    print('ReporteVentasFacturadasCorregido')
     query_notas = NotaCredito.objects.filter(
         sociedad_id=sociedad.id,
         fecha_emision__gte=fecha_inicio,
@@ -2617,7 +2617,7 @@ def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
             ON dgm.id=cn.moneda_id
         WHERE cvb.sociedad_id='%s'
         GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-        ORDER BY 4) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], sociedad.id, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], sociedad.id)
+        ORDER BY 4) ; ''' % (get_content_type('cobranza | nota'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), sociedad.id, get_content_type('cobranza | nota'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), sociedad.id)
     query_info = Nota.objects.raw(sql_cobranza_nota)
 
     info_cobranza_nota = []
@@ -2696,15 +2696,15 @@ def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
             WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
             ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
-                DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
-                DICT_CONTENT_TYPE['cotizacion | confirmacionventa'], 
-                DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                get_content_type('comprobante_venta | facturaventa'),
+                get_content_type('cotizacion | confirmacionventa'),
+                get_content_type('comprobante_despacho | guia'),
                 sociedad, 
                 fecha_inicio, 
                 fecha_fin, 
-                DICT_CONTENT_TYPE['comprobante_venta | boletaventa'],
-                DICT_CONTENT_TYPE['cotizacion | confirmacionventa'],  
-                DICT_CONTENT_TYPE['comprobante_despacho | guia'], 
+                get_content_type('comprobante_venta | boletaventa'),
+                get_content_type('cotizacion | confirmacionventa'),
+                get_content_type('comprobante_despacho | guia'),
                 sociedad, 
                 fecha_inicio, 
                 fecha_fin
@@ -2807,15 +2807,15 @@ def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
             WHERE cvb.sociedad_id='%s' AND '%s' <= cvb.fecha_emision AND cvb.fecha_emision <= '%s'
             GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
             ORDER BY fecha_emision_comprobante ASC, nro_comprobante ASC) ; ''' %(
-                DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
-                DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], 
-                DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                get_content_type('comprobante_venta | facturaventa'),
+                get_content_type('comprobante_venta | facturaventa'),
+                get_content_type('cobranza | ingreso'),
                 sociedad, 
                 fecha_inicio, 
                 fecha_fin, 
-                DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
-                DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], 
-                DICT_CONTENT_TYPE['cobranza | ingreso'], 
+                get_content_type('comprobante_venta | boletaventa'),
+                get_content_type('comprobante_venta | boletaventa'),
+                get_content_type('cobranza | ingreso'),
                 sociedad, 
                 fecha_inicio, 
                 fecha_fin
@@ -3107,6 +3107,9 @@ def ReporteVentasFacturadasCorregido(sociedad, fecha_inicio, fecha_fin):
 
         grafico_resumen_ingresos(hoja)
 
+        return wb
+    
+    wb = reporte_ventas()
 
     return wb
 

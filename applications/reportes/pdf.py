@@ -19,7 +19,7 @@ from applications.material.funciones import malogrado, stock
 from applications.material.models import Material
 from applications.nota.models import NotaCredito
 from applications.pdf import *
-from applications.reportes.funciones import DICT_CONTENT_TYPE, DICT_SOCIEDAD, FECHA_HOY, StrToDate, formatoFechaTexto
+from applications.reportes.funciones import FECHA_HOY, StrToDate, formatoFechaTexto, get_content_type
 from applications import reportes
 from applications.sociedad.models import Sociedad
 from applications.variables import EMAIL_REMITENTE, MESES
@@ -253,7 +253,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
         LEFT JOIN material_material mm
             ON cvbd.content_type_id='%s' AND mm.id=cvbd.id_registro
         WHERE cvb.estado='4'
-        GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['material | material'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['material | material'])
+        GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta)''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('material | material'), get_content_type('comprobante_venta | boletaventa'), get_content_type('material | material'))
     query_productos = FacturaVenta.objects.raw(sql_productos)
     
     info = []
@@ -328,7 +328,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
         WHERE cvb.tipo_venta='2' AND cvb.sociedad_id='%s' AND cd.id IS NOT NULL AND cvb.estado='4'
         GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
         ORDER BY cliente_denominacion ASC, letras ASC)
-        ORDER BY cliente_denominacion ASC, letras ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)                                                               
+        ORDER BY cliente_denominacion ASC, letras ASC ;''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad)
     query_letras = FacturaVenta.objects.raw(sql_letras)
 
     info = []
@@ -407,7 +407,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
             ON dgm.id=cn.moneda_id
         WHERE cvb.sociedad_id='%s'
         GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-        ORDER BY 4) ; ''' % (DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+        ORDER BY 4) ; ''' % (get_content_type('cobranza | nota'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('cobranza | nota'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad)
     query_info = Nota.objects.raw(sql)
 
     info = []
@@ -518,7 +518,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
                 'PENDIENTE'
             ) END) = 'PENDIENTE'
         ORDER BY cliente_denominacion ASC, fecha_orden ASC)
-        ORDER BY cliente_denominacion ASC, fecha_orden ASC ; ''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente, tuple(DICT_FACT_INVALIDAS[global_sociedad]), DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, global_cliente)
+        ORDER BY cliente_denominacion ASC, fecha_orden ASC ; ''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), get_content_type('cobranza | ingreso'), global_sociedad, global_cliente, tuple(DICT_FACT_INVALIDAS[global_sociedad]), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), get_content_type('cobranza | ingreso'), global_sociedad, global_cliente)
     query_info = FacturaVenta.objects.raw(sql)
 
     list_general = []
@@ -604,7 +604,10 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
     fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
     fecha_invertida = datetime.now().strftime("%d-%m-%Y")
 
-    color = DICT_SOCIEDAD[global_sociedad].color
+    try:
+        color = Sociedad.objects.get(id=global_sociedad).color
+    except:
+        color = '#FFFFFF'
     #####
     # query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
     # abreviatura = query_sociedad.abreviatura
@@ -679,10 +682,10 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
     if TablaDatos != []:
         TablaDatos.append(["","","", "Deuda Total:", round(suma_deuda_total,2) ,"","","","","","",""])
 
-    # texto = '''Agradeceremos pueda realizar los pagos a nombre de <strong>%s</strong> y confirmarnos el pago en cualquiera de las siguientes cuentas:''' % DICT_SOCIEDAD[global_sociedad].razon_social
-    # list_texto.append(texto)
-
-    text = Paragraph('''Agradeceremos pueda realizar los pagos a nombre de <strong>%s</strong> y confirmarnos el pago en cualquiera de las siguientes cuentas:''' % DICT_SOCIEDAD[global_sociedad].razon_social)
+    try:
+        text = Paragraph('''Agradeceremos pueda realizar los pagos a nombre de <strong>%s</strong> y confirmarnos el pago en cualquiera de las siguientes cuentas:''' % Sociedad.objects.get(id=global_sociedad).razon_social)
+    except:
+        text = Paragraph('''Agradeceremos pueda realizar los pagos a nombre de <strong>%s</strong> y confirmarnos el pago en cualquiera de las siguientes cuentas:''' % "Multiplay")
     list_texto.append(text)
 
     sql_cuentas_bancarias = '''SELECT
@@ -774,7 +777,7 @@ def reporte_deuda(global_sociedad):
             ON dgm.id=cn.moneda_id
         WHERE cvb.sociedad_id='%s' AND cvb.tipo_venta='2'
         GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-        ORDER BY 4) ; ''' %(DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+        ORDER BY 4) ; ''' %(get_content_type('cobranza | nota'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('cobranza | nota'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad)
     query_info = Nota.objects.raw(sql_cobranza_nota)
 
     info_cobranza_nota = []
@@ -868,7 +871,7 @@ def reporte_deuda(global_sociedad):
             ) ELSE (
                 'PENDIENTE'
             ) END) = 'PENDIENTE'
-        ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+        ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC ;''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), get_content_type('cobranza | ingreso'), global_sociedad, get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), get_content_type('cobranza | ingreso'), global_sociedad)
     query_info = FacturaVenta.objects.raw(sql)
 
     list_cobranza = []
@@ -1103,7 +1106,7 @@ def generar_reporte_cobranza(global_sociedad, titulo):
             ON dgm.id=cn.moneda_id
         WHERE cvb.sociedad_id='%s' AND cvb.tipo_venta='2'
         GROUP BY cvb.sociedad_id, cvb.tipo_comprobante, cvb.serie_comprobante_id, cvb.numero_boleta
-        ORDER BY 4) ; ''' %(DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], global_sociedad, DICT_CONTENT_TYPE['cobranza | nota'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], global_sociedad)
+        ORDER BY 4) ; ''' %(get_content_type('cobranza | nota'), get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), global_sociedad, get_content_type('cobranza | nota'), get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), global_sociedad)
     query_info = Nota.objects.raw(sql_cobranza_nota)
 
     info_cobranza_nota = []
@@ -1197,7 +1200,7 @@ def generar_reporte_cobranza(global_sociedad, titulo):
             ) ELSE (
                 'PENDIENTE'
             ) END) = 'PENDIENTE'
-        ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC ;''' %(DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['comprobante_venta | facturaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad, DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['comprobante_venta | boletaventa'], DICT_CONTENT_TYPE['cobranza | ingreso'], global_sociedad)
+        ORDER BY cliente_denominacion ASC, fecha_emision_comprobante ASC ;''' %(get_content_type('comprobante_venta | facturaventa'), get_content_type('comprobante_venta | facturaventa'), get_content_type('cobranza | ingreso'), global_sociedad, get_content_type('comprobante_venta | boletaventa'), get_content_type('comprobante_venta | boletaventa'), get_content_type('cobranza | ingreso'), global_sociedad)
     query_info = FacturaVenta.objects.raw(sql)
 
     list_cobranza = []
@@ -1230,7 +1233,10 @@ def generar_reporte_cobranza(global_sociedad, titulo):
     fecha_hoy = datetime.now().strftime("%Y-%m-%d")
     fecha_texto = formatoFechaTexto(StrToDate(fecha_hoy))
 
-    color = DICT_SOCIEDAD[global_sociedad].color
+    try:
+        color = Sociedad.objects.get(id=global_sociedad).color
+    except:
+        color = '#FFFFFF'
     #####
     vertical = False
     alinear = 'right'
