@@ -10,6 +10,7 @@ from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 from applications.sociedad.models import Sociedad
+from applications.traslado_producto.utils import validar_recepcion_traslado
 
 from .models import (
     EnvioTrasladoProducto,
@@ -935,7 +936,12 @@ class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDelet
             registro_guardar(self.object, self.request)
             self.object.save()
 
-            self.object.envio_traslado_producto.estado = 3
+            #Validar que todos los items del envío estén recepcionados
+            if validar_recepcion_traslado(self.object.envio_traslado_producto):
+                self.object.envio_traslado_producto.estado = 3
+            else:
+                self.object.envio_traslado_producto.estado = 5
+
             registro_guardar(self.object.envio_traslado_producto, self.request)
             self.object.envio_traslado_producto.save()
 

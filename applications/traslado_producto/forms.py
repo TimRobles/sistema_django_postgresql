@@ -168,7 +168,7 @@ class RecepcionTrasladoProductoForm(BSModalModelForm):
 
     def __init__(self, *args, **kwargs):
         super(RecepcionTrasladoProductoForm, self).__init__(*args, **kwargs)   
-        self.fields['envio_traslado_producto'].queryset = EnvioTrasladoProducto.objects.filter(estado=2)
+        self.fields['envio_traslado_producto'].queryset = EnvioTrasladoProducto.objects.filter(estado__in=[2,5])
         self.fields['sede_destino'].queryset = Sede.objects.filter(estado=1)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

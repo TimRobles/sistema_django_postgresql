@@ -58,6 +58,14 @@ class EnvioTrasladoProducto(models.Model):
     def fecha(self):
         return self.fecha_traslado
 
+    @property
+    def detalle(self):
+        return self.EnvioTrasladoProductoDetalle_envio_traslado_producto.all()
+
+    @property
+    def detalle_recepcion(self):
+        return RecepcionTrasladoProductoDetalle.objects.filter(envio_traslado_producto_detalle__envio_traslado_producto=self)
+
     def __str__(self):
         if self.fecha_traslado:
             return "%s - %s - %s - %s" % (self.fecha_traslado.strftime('%d/%m/%Y'), numeroXn(self.numero_envio_traslado, 6), self.sede_origen, self.responsable)
