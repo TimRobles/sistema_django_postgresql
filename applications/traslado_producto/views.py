@@ -707,6 +707,16 @@ class RecepcionTrasladoProductoListView(PermissionRequiredMixin, ListView):
     template_name = "traslado_producto/recepcion/inicio.html"
     context_object_name = 'contexto_recepcion_traslado_producto'
 
+    def get_context_data(self, **kwargs):
+        context = super(RecepcionTrasladoProductoListView, self).get_context_data(**kwargs)
+        obj = self.get_queryset()
+        if "id_envio" in self.kwargs:
+            obj = obj.filter(envio_traslado_producto__id=self.kwargs.get('id_envio'))
+        context['contexto_recepcion_traslado_producto'] = obj
+        context['accion'] = "Recepción"
+        context['titulo'] = "Traslado Producto"
+        return context
+
 def RecepcionTrasladoProductoTabla(request):
     data = dict()
     if request.method == 'GET':
