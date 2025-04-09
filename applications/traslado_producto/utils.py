@@ -4,7 +4,9 @@ from decimal import Decimal
 def validar_recepcion_traslado(envio_traslado_producto):
     lista_envio = {}
     for detalle in envio_traslado_producto.detalle:
-        lista_envio[detalle.producto] = [detalle.cantidad_envio, Decimal(0)]
+        if not detalle.producto in lista_envio:
+            lista_envio[detalle.producto] = [Decimal(0), Decimal(0)]
+        lista_envio[detalle.producto][0] += detalle.cantidad_envio
     for detalle in envio_traslado_producto.detalle_recepcion:
         lista_envio[detalle.producto][1] += detalle.cantidad_recepcion
 
