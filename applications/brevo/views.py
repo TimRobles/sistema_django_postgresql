@@ -82,23 +82,23 @@ def event_list(request):
         # Actualizar el estatus según una jerarquía definida (se puede ajustar)
         # Definimos los niveles de cada tipo de evento (mayor número = peor estado)
         hierarchy = {
-            'error': 6,
-            'hard_bounce': 5,
-            'soft_bounce': 5,
-            'blocked': 5,
-            'complaint': 4,
-            'unsubscribed': 4,
-            'deferred': 3,
-            'delivered': 2,
-            'click': 2,
-            'opened': 1,
-            'unique_opened': 1,
+            'error': 9,
+            'hard_bounce': 8,
+            'soft_bounce': 8,
+            'blocked': 7,
+            'complaint': 6,
+            'unsubscribed': 6,
+            'deferred': 5,
+            'click': 4,
+            'opened': 3,
+            'unique_opened': 2,
+            'proxy_open': 2,
+            'delivered': 1,
             'request': 0,
-            'proxy_open': 1,
         }
         current_status = grouped[key]['status']
         if hierarchy.get(event.event, 0) > hierarchy.get(current_status, 0):
-            grouped[key]['status'] = event.event
+            grouped[key]['status'] = event.get_event_display()
 
     events_list = list(grouped.values())
 
