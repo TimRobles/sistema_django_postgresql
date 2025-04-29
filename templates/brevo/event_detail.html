@@ -28,7 +28,7 @@
       {% for event in events %}
       <tr>
         <td class="border px-4 py-2">{{ event.date|date:"Y-m-d H:i" }}</td>
-        <td class="border px-4 py-2">{{ event.event }}</td>
+        <td class="border px-4 py-2">{{ event.get_event_display }}</td>
         <td class="border px-4 py-2">{{ event.sender_email }}</td>
         <td class="border px-4 py-2">{{ event.email }}</td>
         <td class="border px-4 py-2">{{ event.subject }}</td>
