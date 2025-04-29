@@ -3757,7 +3757,7 @@ class ReporteValorizacionStockPDF(TemplateView):
         alinear = 'right'
         logo = [[objeto_sociedad.logo.url, alinear]]
         pie_pagina = objeto_sociedad.pie_pagina
-        list_texto = [f"La valorización de stock para {abreviatura} es $ {total_valorizado:,.3f} a la fecha {datetime.now().strftime("%Y-%m-%d")}"] 
+        list_texto = [f"La valorización de stock para {abreviatura} es $ {total_valorizado:,.3f} a la fecha {datetime.now().strftime('%Y-%m-%d')}"] 
         TablaEncabezado = [
             'COD. MAT',
             'DESCRIPCIÓN DEL MATERIAL',
