@@ -19,7 +19,7 @@ from applications.material.funciones import malogrado, stock
 from applications.material.models import Material
 from applications.nota.models import NotaCredito
 from applications.pdf import *
-from applications.reportes.funciones import FECHA_HOY, StrToDate, formatoFechaTexto, get_content_type
+from applications.reportes.funciones import StrToDate, formatoFechaTexto, get_content_type
 from applications import reportes
 from applications.sociedad.models import Sociedad
 from applications.variables import EMAIL_REMITENTE, MESES
@@ -612,7 +612,7 @@ def generar_reporte_deudas(global_sociedad, global_cliente, titulo):
     # query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
     # abreviatura = query_sociedad.abreviatura
     # #####
-    # titulo = "Reporte de Deudas - " + abreviatura + " - " + DICT_CLIENTE[global_cliente] + " - " + FECHA_HOY
+    # titulo = "Reporte de Deudas - " + abreviatura + " - " + DICT_CLIENTE[global_cliente] + " - " + datetime.now().strftime("%Y-%m-%d")
     vertical = False
     alinear = 'right'
     logo = [[objeto_sociedad.logo.url, alinear]]
@@ -952,7 +952,7 @@ def reporte_cobranza_deudor():
             data = reporte_deuda(global_sociedad = str(sociedad.id))
             envio_dict[str(sociedad.id)] = []
             for cliente in data[0]:
-                titulo = "Reporte de Deudas - " + FECHA_HOY
+                titulo = "Reporte de Deudas - " + datetime.now().strftime("%Y-%m-%d")
                 archivo = generar_reporte_deudas(global_sociedad = str(sociedad.id), global_cliente=str(cliente), titulo=titulo)
                 if isinstance(archivo, str):
                     print(f"Reporte para Sociedad {sociedad.id} y Cliente {cliente}: {archivo}")

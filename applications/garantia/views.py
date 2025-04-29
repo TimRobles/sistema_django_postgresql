@@ -401,7 +401,7 @@ class IngresoReclamoGarantiaGuardarView(PermissionRequiredMixin, BSModalDeleteVi
             ingreso_reclamo_garantia.estado = 2
             nro_ingreso_reclamo_garantia = IngresoReclamoGarantia.objects.all().aggregate(Count('nro_ingreso_reclamo_garantia'))['nro_ingreso_reclamo_garantia__count'] + 1
             ingreso_reclamo_garantia.nro_ingreso_reclamo_garantia = nro_ingreso_reclamo_garantia
-            ingreso_reclamo_garantia.fecha_ingreso = datetime. now()
+            ingreso_reclamo_garantia.fecha_ingreso = datetime.now()
             registro_guardar(ingreso_reclamo_garantia, self.request)
             ingreso_reclamo_garantia.save()
 

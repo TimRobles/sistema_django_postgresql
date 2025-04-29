@@ -748,7 +748,7 @@ class CotizacionVentaGuardarView(PermissionRequiredMixin, BSModalDeleteView):
             self.object.estado = 2
             numero_cotizacion = CotizacionVenta.objects.all().aggregate(Count('numero_cotizacion'))['numero_cotizacion__count'] + 1
             self.object.numero_cotizacion = numero_cotizacion
-            self.object.fecha_cotizacion = datetime. now()
+            self.object.fecha_cotizacion = datetime.now()
             self.object.fecha_validez = self.object.fecha_cotizacion + timedelta(7)
 
             registro_guardar(self.object, self.request)

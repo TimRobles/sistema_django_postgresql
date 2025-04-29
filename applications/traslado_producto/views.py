@@ -10,7 +10,7 @@ from applications.material.funciones import stock, ver_tipo_stock
 from applications.material.models import Material
 from applications.movimiento_almacen.models import MovimientosAlmacen, TipoMovimiento, TipoStock
 from applications.sociedad.models import Sociedad
-from applications.traslado_producto.utils import validar_recepcion_traslado
+from .utils import validar_recepcion_traslado
 
 from .models import (
     EnvioTrasladoProducto,
@@ -932,7 +932,7 @@ class RecepcionTrasladoProductoGuardarView(PermissionRequiredMixin, BSModalDelet
             numero_recepcion_traslado = RecepcionTrasladoProducto.objects.all().aggregate(Count('numero_recepcion_traslado'))['numero_recepcion_traslado__count'] + 1
             self.object.numero_recepcion_traslado = numero_recepcion_traslado
             self.object.estado = 3
-            self.object.fecha_recepcion = datetime. now()
+            self.object.fecha_recepcion = datetime.now()
             registro_guardar(self.object, self.request)
             self.object.save()
 

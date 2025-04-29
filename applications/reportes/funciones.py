@@ -96,9 +96,6 @@ def ajustarColumnasSheet(hoja):
     for col, value in dims.items():
         hoja.column_dimensions[col].width = value
 
-FECHA_HOY = datetime.now().strftime("%Y-%m-%d")
-fecha_doc = datetime.now().strftime("%d-%m-%Y")
-
 def formatearFecha3(fecha):
     # if fecha=="":
     if not fecha:

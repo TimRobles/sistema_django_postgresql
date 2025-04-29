@@ -216,7 +216,7 @@ class ReporteExcelMarcaVentas(TemplateView):
         else:
             abreviatura = 'MPL-MCA'
         wb = reporte_marca_ventas()
-        nombre_archivo = "Reporte Marca vs Ventas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Marca vs Ventas - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content

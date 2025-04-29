@@ -452,7 +452,7 @@ class ReporteContador(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_facturas_contador()
-        nombre_archivo = "Reporte Contador - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Contador - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -1274,7 +1274,7 @@ class ReporteVentasFacturadas(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_ventas()
-        nombre_archivo = "Reporte Ventas Facturadas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Ventas Facturadas - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -1759,7 +1759,7 @@ class ReporteFacturasPendientes(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_facturas_pendientes()
-        nombre_archivo = "Reporte Facturas Pendientes - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Facturas Pendientes - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -2299,7 +2299,7 @@ class ReporteDepositosCuentasBancarias(TemplateView):
         else:
             wb=reporte_depositos_cuentas_resumen()
             abreviatura = "MPL-MCA"
-        nombre_archivo = "Reporte Depositos Cuentas - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Depositos Cuentas - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -2749,7 +2749,7 @@ class ReporteClientesProductos(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=reporte_cliente_productos()
-        nombre_archivo = "Reporte Cliente vs Productos - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Cliente vs Productos - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -2773,7 +2773,7 @@ class ReporteDeudas(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         # #####
-        titulo = "Reporte de Deudas - " + abreviatura + " - " + DICT_CLIENTE[global_cliente] + " - " + FECHA_HOY
+        titulo = "Reporte de Deudas - " + abreviatura + " - " + DICT_CLIENTE[global_cliente] + " - " + datetime.now().strftime("%Y-%m-%d")
 
         buf = generar_reporte_deudas(global_sociedad, global_cliente, titulo)
         
@@ -2795,7 +2795,7 @@ class ReporteCobranza(TemplateView):
 
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
-        titulo = "Reporte de Cobranza - " + abreviatura + " - " + FECHA_HOY
+        titulo = "Reporte de Cobranza - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d")
         # DICT_FACTURAS_SORTEO = {
         #     '1000': [
         #         ],
@@ -3198,7 +3198,7 @@ class ReporteRotacion(TemplateView):
 
         abreviatura = "MPL-MCA"
         wb=reporte_rotacion()
-        nombre_archivo = "Reporte Rotacion - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Rotacion - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -3332,7 +3332,7 @@ class ReporteResumenStockProductosExcel(TemplateView):
         query_sociedad = Sociedad.objects.filter(id = int(global_sociedad))[0]
         abreviatura = query_sociedad.abreviatura
         wb=generar_reporte()
-        nombre_archivo = "Reporte Resumen Stock Productos - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+        nombre_archivo = "Reporte Resumen Stock Productos - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
         respuesta = HttpResponse(content_type='application/ms-excel')
         content = "attachment; filename ={0}".format(nombre_archivo)
         respuesta['content-disposition']= content
@@ -3388,7 +3388,7 @@ class ReporteResumenStockProductosPDF(TemplateView):
         abreviatura = objeto_sociedad.abreviatura
         #####
         #####
-        titulo = "Reporte Resumen de Stock Productos - " + abreviatura + " - " + FECHA_HOY
+        titulo = "Reporte Resumen de Stock Productos - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d")
         vertical = False
         alinear = 'right'
         logo = [[objeto_sociedad.logo.url, alinear]]
@@ -3433,6 +3433,7 @@ class ReportesCorregidosPdf(TemplateView):
 
     def post(self,request, *args,**kwargs):
         formulario = self.request.POST.get('formulario')
+        fecha_documentos = datetime.now().strftime("%d-%m-%Y")
         if formulario == 'formulario1':
             sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
             tipo = self.request.POST.get('tipo')
@@ -3473,13 +3474,13 @@ class ReportesCorregidosPdf(TemplateView):
         elif formulario == 'formulario3':
             sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
             cliente = Cliente.objects.get(id=self.request.POST.get('cliente'))
-            titulo = f'Reporte Deudas- {sociedad.abreviatura} - {cliente.razon_social} ~ ' + str(fecha_doc)
+            titulo = f'Reporte Deudas- {sociedad.abreviatura} - {cliente.razon_social} ~ ' + str(fecha_documentos)
 
             buf = generarReporteDeudasCorregido(titulo, vertical, logo, pie_pagina, sociedad, cliente, color)
 
         elif formulario == 'formulario4':
             sociedad = Sociedad.objects.get(id=self.request.POST.get('sociedad'))
-            titulo = f'Reporte Cobranza - {sociedad.abreviatura} ~ ' + str(fecha_doc)
+            titulo = f'Reporte Cobranza - {sociedad.abreviatura} ~ ' + str(fecha_documentos)
 
             buf = generarReporteCobranzaCorregido(titulo, vertical, logo, pie_pagina, sociedad, color)
             
@@ -3527,7 +3528,7 @@ class ReportesCRM(TemplateView):
             # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
             # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
             logo = [sociedad_MPL.logo.url]
-            titulo = 'Reporte Cliente CRM' + '_' + str(fecha_doc)
+            titulo = 'Reporte Cliente CRM' + '_' + str(fecha_documentos)
 
             wb = ReporteClienteCRMExcel()
 
@@ -3538,7 +3539,7 @@ class ReportesCRM(TemplateView):
             # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
             # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
             logo = [sociedad_MPL.logo.url]
-            titulo = 'Reporte Comportamiento Cliente' + '_' + str(fecha_doc)
+            titulo = 'Reporte Comportamiento Cliente' + '_' + str(fecha_documentos)
 
             wb = ReporteComportamientoCliente(cliente)
         
@@ -3658,9 +3659,9 @@ class ReportesCorregidosExcel(TemplateView):
 
             if self.request.POST.get('sede'):
                 sede = Sede.objects.get(id=self.request.POST.get('sede'))
-                titulo = f'Reporte Resumen Stock Productos {sede.nombre} ~ ' + str(fecha_doc)
+                titulo = f'Reporte Resumen Stock Productos {sede.nombre} ~ ' + str(fecha_documentos)
             else:
-                titulo = f'Reporte Resumen Stock Productos ~ General ~ ' + str(fecha_doc)
+                titulo = f'Reporte Resumen Stock Productos ~ General ~ ' + str(fecha_documentos)
 
             wb = ReporteResumenStockProductosCorregido(sede)
 
@@ -3751,12 +3752,12 @@ class ReporteValorizacionStockPDF(TemplateView):
         abreviatura = objeto_sociedad.abreviatura
         #####
         #####
-        titulo = "Valorización de Stock - " + abreviatura + " - " + FECHA_HOY
+        titulo = "Valorización de Stock - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d")
         vertical = False
         alinear = 'right'
         logo = [[objeto_sociedad.logo.url, alinear]]
         pie_pagina = objeto_sociedad.pie_pagina
-        list_texto = [f"La valorización de stock para {abreviatura} es $ {total_valorizado:,.3f} a la fecha {FECHA_HOY}"] 
+        list_texto = [f"La valorización de stock para {abreviatura} es $ {total_valorizado:,.3f} a la fecha {datetime.now().strftime("%Y-%m-%d")}"] 
         TablaEncabezado = [
             'COD. MAT',
             'DESCRIPCIÓN DEL MATERIAL',

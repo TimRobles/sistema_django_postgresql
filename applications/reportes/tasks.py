@@ -363,7 +363,7 @@
 #         abreviatura = query_sociedad.abreviatura
 #         wb = reporte_facturas_contador(global_sociedad, global_fecha_inicio, global_fecha_fin)
 
-#         nombre_archivo = "Reporte Contador - " + abreviatura + " - " + FECHA_HOY + ".xlsx"
+#         nombre_archivo = "Reporte Contador - " + abreviatura + " - " + datetime.now().strftime("%Y-%m-%d") + ".xlsx"
 #         respuesta = HttpResponse(content_type='application/ms-excel')
 #         content = "attachment; filename ={0}".format(nombre_archivo)
 #         respuesta['content-disposition'] = content
