@@ -3528,7 +3528,7 @@ class ReportesCRM(TemplateView):
             # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
             # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
             logo = [sociedad_MPL.logo.url]
-            titulo = 'Reporte Cliente CRM' + '_' + str(fecha_documentos)
+            titulo = 'Reporte Cliente CRM' + '_' + datetime.now().strftime("%d-%m-%Y")
 
             wb = ReporteClienteCRMExcel()
 
@@ -3539,7 +3539,7 @@ class ReportesCRM(TemplateView):
             # sociedad_MCA = Sociedad.objects.get(abreviatura='MCA')
             # logo = [sociedad_MPL.logo.url, sociedad_MCA.logo.url]
             logo = [sociedad_MPL.logo.url]
-            titulo = 'Reporte Comportamiento Cliente' + '_' + str(fecha_documentos)
+            titulo = 'Reporte Comportamiento Cliente' + '_' + datetime.now().strftime("%d-%m-%Y")
 
             wb = ReporteComportamientoCliente(cliente)
         
@@ -3659,9 +3659,9 @@ class ReportesCorregidosExcel(TemplateView):
 
             if self.request.POST.get('sede'):
                 sede = Sede.objects.get(id=self.request.POST.get('sede'))
-                titulo = f'Reporte Resumen Stock Productos {sede.nombre} ~ ' + str(fecha_documentos)
+                titulo = f'Reporte Resumen Stock Productos {sede.nombre} ~ ' + datetime.now().strftime("%d-%m-%Y")
             else:
-                titulo = f'Reporte Resumen Stock Productos ~ General ~ ' + str(fecha_documentos)
+                titulo = f'Reporte Resumen Stock Productos ~ General ~ ' + datetime.now().strftime("%d-%m-%Y")
 
             wb = ReporteResumenStockProductosCorregido(sede)
 

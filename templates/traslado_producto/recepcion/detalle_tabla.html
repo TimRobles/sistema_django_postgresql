@@ -71,6 +71,14 @@
                             Guardar Recepcion
                         </button>
                         {% endif %}
+                        <!-- recepcion_anular -->
+                        {% if recepcion_traslado_producto.estado == 3 %}
+                        <button data-form-url="{% url 'traslado_producto_app:recepcion_anular' recepcion_traslado_producto.id %}"
+                            data-table-url="{% url 'traslado_producto_app:recepcion_ver' recepcion_traslado_producto.id %}"
+                            class="delete btn btn-danger">
+                            Anular Recepcion
+                        {% endif %}
+                            
                     </td>
                 </tr>
                 <tr>

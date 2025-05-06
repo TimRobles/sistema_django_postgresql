@@ -50,6 +50,7 @@ urlpatterns = urlSeries + [
     path('recepcion/actualizar/<pk>/', views.RecepcionTrasladoProductoActualizarView.as_view(), name='recepcion_actualizar'),
     path('recepcion/observaciones/<pk>/', views.RecepcionTrasladoProductoObservacionesView.as_view(), name='recepcion_observaciones'),
     path('recepcion/guardar/<pk>/', views.RecepcionTrasladoProductoGuardarView.as_view(), name='recepcion_guardar'),
+    path('recepcion/anular/<pk>/', views.RecepcionTrasladoProductoAnularView.as_view(), name='recepcion_anular'),
 
     path('recepcion/agregar-material/<int:id_recepcion_traslado_producto>/', views.RecepcionTrasladoProductoMaterialDetalleView.as_view(), name='recepcion_agregar_material'),
     path('recepcion/actualizar-material/<pk>/', views.RecepcionTrasladoProductoActualizarMaterialDetalleView.as_view(), name='recepcion_actualizar_material'),

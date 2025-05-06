@@ -978,27 +978,29 @@ class RecepcionTrasladoProductoAnularView(PermissionRequiredMixin, BSModalDelete
         try:
             self.object = self.get_object()
             movimiento_final = TipoMovimiento.objects.get(codigo=140)  # Recepción por traslado
+            print(movimiento_final)
+            print(movimiento_final.tipo_stock_inicial)
+            print(movimiento_final.tipo_stock_final)
             for detalle in self.object.RecepcionTrasladoProductoDetalle_recepcion_traslado_producto.all():
+                print(detalle, detalle.cantidad_recepcion)
                 movimiento_dos = MovimientosAlmacen.objects.get(
                     content_type_producto=detalle.content_type,
                     id_registro_producto=detalle.id_registro,
                     cantidad=detalle.cantidad_recepcion,
                     tipo_movimiento=movimiento_final,
-                    tipo_stock=movimiento_final.tipo_stock_inicial,
-                    signo_factor_multiplicador=-1,
+                    tipo_stock=movimiento_final.tipo_stock_final,
+                    signo_factor_multiplicador=1,
                     content_type_documento_proceso=ContentType.objects.get_for_model(self.object),
                     id_registro_documento_proceso=self.object.id,
                     almacen=detalle.almacen_destino,
                     sociedad=self.object.sociedad,
                     movimiento_reversion=False,
-                    created_by=self.request.user,
-                    updated_by=self.request.user,
                 )
 
-            movimiento_uno = movimiento_dos.movimiento_anterior
+                movimiento_uno = movimiento_dos.movimiento_anterior
 
-            movimiento_dos.delete()
-            movimiento_uno.delete()
+                movimiento_dos.delete()
+                movimiento_uno.delete()
 
             self.object.estado = 4
             registro_guardar(self.object, self.request)
