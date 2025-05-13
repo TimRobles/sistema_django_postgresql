@@ -43,7 +43,7 @@ from django.http import HttpResponse
 
 from .variables import *
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from django.shortcuts import render
 

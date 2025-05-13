@@ -1,0 +1,53 @@
+{% load humanize %}
+<h4>Ventas</h4>
+<div class="row">
+    <div class="col">
+        <p>Top 10 Clientes</p>
+        <table class="table table-responsive">
+            <thead>
+                <tr>
+                    <th>Razón Social</th>
+                    <th class="text-end">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.0 }}</td>
+                    <td class="text-end text-nowrap">$ {{ cliente.1|intcomma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <p>Grafica de ventas</p>
+        <div class="chart-container">
+            <canvas id="bar-chart"></canvas>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                var ctx = document.getElementById('bar-chart').getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ grafica.labels|safe }},
+                        datasets: [{
+                            label: 'Ventas',
+                            data: {{ grafica.data|safe }},
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+        </div>
+    </div>
+</div>

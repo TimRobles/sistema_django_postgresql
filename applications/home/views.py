@@ -6,6 +6,9 @@ from applications.funciones import calculos_linea, consulta_distancia, consulta_
 from .forms import UserLoginForm
 from .forms import OlvideContrasenaForm
 from .forms import RecuperarContrasenaForm
+from applications.comprobante_venta.models import FacturaVenta, BoletaVenta
+#relativedelta
+from dateutil.relativedelta import relativedelta
 
 class InicioView(FormView):
     template_name = "home/inicio.html"
@@ -38,9 +41,105 @@ class PanelView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(PanelView, self).get_context_data(**kwargs)
+        User = get_user_model()
         group_permissions = self.request.user.get_all_permissions()
+        usuarios = User.objects.filter(DatosUsuario_usuario__es_ventas=True).order_by('username')
+        fecha_inicio = datetime.now() - timedelta(days=180)
+        fecha_fin = datetime.now()
         context['Permisos'] = group_permissions
+        context['usuarios'] = usuarios
+        context['fecha_inicio'] = fecha_inicio.strftime('%Y-%m-%d')
+        context['fecha_fin'] = fecha_fin.strftime('%Y-%m-%d')
+        data = DashboardView(self.request, self.request.user.id, fecha_inicio, fecha_fin)
+        for key, value in data.items():
+            context[key] = value
         return context
+    
+def DashboardView(request, id_usuario, fecha_inicio, fecha_fin):
+    if type(fecha_inicio) == str:
+        fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+    if type(fecha_fin) == str:
+        fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d')
+    ventas = []
+    grafica = {}
+    try:
+        facturas = FacturaVenta.objects.filter(
+            fecha_emision__gte=fecha_inicio,
+            fecha_emision__lte=fecha_fin,
+            confirmacion__cotizacion_venta__vendedor__id=id_usuario,
+            estado__in=['4'],
+        ).order_by('-fecha_emision')
+        for factura in facturas:
+            ventas.append(factura)
+        boletas = BoletaVenta.objects.filter(
+            fecha_emision__gte=fecha_inicio,
+            fecha_emision__lte=fecha_fin,
+            confirmacion__cotizacion_venta__vendedor__id=id_usuario,
+            estado__in=['4'],
+        ).order_by('-fecha_emision')
+        for boleta in boletas:
+            ventas.append(boleta)
+        
+        clientes = {}
+        for venta in ventas:
+            if venta.cliente.razon_social not in clientes:
+                clientes[venta.cliente.razon_social] = 0
+            clientes[venta.cliente.razon_social] += venta.total
+        clientes = sorted(clientes.items(), key=lambda x: x[1], reverse=True)[:10]
+        
+        if fecha_fin - fecha_inicio <= timedelta(days=30):
+            grafica['labels'] = []
+            grafica['data'] = []
+            cantidad_dias = (fecha_fin - fecha_inicio).days
+            for i in range(0, cantidad_dias + 1):
+                fecha = fecha_inicio + timedelta(days=i)
+                grafica['labels'].append(fecha.strftime('%d/%m'))
+                grafica['data'].append(0)
+            for venta in ventas:
+                fecha = venta.fecha_emision
+                index = (fecha - fecha_inicio.date()).days
+                if index >= 0 and index < 30:
+                    grafica['data'][index] += venta.total
+        else:
+            grafica['labels'] = []
+            grafica['data'] = []
+            cantidad_meses = (fecha_fin.year - fecha_inicio.year) * 12 + (fecha_fin.month - fecha_inicio.month)
+            for i in range(0, cantidad_meses + 1):
+                fecha = fecha_inicio.replace(day=1) + relativedelta(months=i)
+                grafica['labels'].append(fecha.strftime('%m/%Y'))
+                grafica['data'].append(0)
+            for venta in ventas:
+                fecha = venta.fecha_emision
+                index = (fecha.year - fecha_inicio.year) * 12 + (fecha.month - fecha_inicio.month)
+                if index >= 0 and index < cantidad_meses + 1:
+                    grafica['data'][index] += venta.total
+
+        for i in range(len(grafica['data'])):
+            grafica['data'][i] = str(round(grafica['data'][i], 2))
+    except Exception as e:
+        print("Error en DashboardView:", e)
+        grafica['labels'] = []
+        grafica['data'] = []
+        clientes = []
+    
+    context = {}
+    context['clientes'] = clientes
+    context['grafica'] = grafica
+    return context
+    
+def DashboardTabla(request, id_usuario):
+    data = dict()
+    if request.method == 'GET':
+        template = 'home/dashboard.html'
+        fecha_inicio = request.GET.get('fecha_inicio')
+        fecha_fin = request.GET.get('fecha_fin')
+        context = DashboardView(request, id_usuario, fecha_inicio, fecha_fin)
+        data['table'] = render_to_string(
+            template,
+            context,
+            request=request
+        )
+        return JsonResponse(data)
 
 class SinPermisoView(TemplateView):
     template_name = "403.html"

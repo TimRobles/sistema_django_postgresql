@@ -5,6 +5,7 @@ from applications.home.views import (
     ConsultaRucView,
     DistanciaGeoLocalizacion,
     PanelView,
+    DashboardTabla,
     InicioView,
     PruebaGeolocalizacion,
     UserLogoutView,
@@ -18,6 +19,7 @@ app_name = 'home_app'
 
 urlpatterns = [
     path('', PanelView.as_view(), name='home'),
+    path('dashboard_tabla/<int:id_usuario>/', DashboardTabla, name='dashboard_tabla'),
     path('consulta/', consulta, name='consulta'),
     path('login/', InicioView.as_view(), name='login'),
     path('logout/', UserLogoutView.as_view(), name='logout'),

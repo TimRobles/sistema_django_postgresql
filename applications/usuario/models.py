@@ -56,6 +56,8 @@ class DatosUsuario(models.Model):
     direccion = models.CharField('Dirección', max_length=254)
     recuperar_password = models.CharField('Recuperar password', max_length=10, blank=True, null=True)
     telefono_personal = PhoneNumberField('Teléfono Personal')
+    es_ventas = models.BooleanField('Es Ventas', default=False)
+    es_jefe_ventas = models.BooleanField('Es Jefe de Ventas', default=False)
 
     created_at = models.DateTimeField('Fecha de Creación', auto_now=False, auto_now_add=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT, blank=True, null=True, related_name='DatosUsuario_created_by', editable=False)
