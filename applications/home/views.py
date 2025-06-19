@@ -62,6 +62,8 @@ def DashboardView(request, id_usuario, fecha_inicio, fecha_fin):
         fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d')
     ventas = []
     grafica = {}
+    grafica_contado = {}
+    grafica_credito = {}
     try:
         facturas = FacturaVenta.objects.filter(
             fecha_emision__gte=fecha_inicio,
@@ -90,41 +92,75 @@ def DashboardView(request, id_usuario, fecha_inicio, fecha_fin):
         if fecha_fin - fecha_inicio <= timedelta(days=30):
             grafica['labels'] = []
             grafica['data'] = []
+            grafica_contado['labels'] = []
+            grafica_contado['data'] = []
+            grafica_credito['labels'] = []
+            grafica_credito['data'] = []
             cantidad_dias = (fecha_fin - fecha_inicio).days
             for i in range(0, cantidad_dias + 1):
                 fecha = fecha_inicio + timedelta(days=i)
                 grafica['labels'].append(fecha.strftime('%d/%m'))
                 grafica['data'].append(0)
+                grafica_contado['labels'].append(fecha.strftime('%d/%m'))
+                grafica_contado['data'].append(0)
+                grafica_credito['labels'].append(fecha.strftime('%d/%m'))
+                grafica_credito['data'].append(0)
             for venta in ventas:
                 fecha = venta.fecha_emision
                 index = (fecha - fecha_inicio.date()).days
                 if index >= 0 and index < 30:
                     grafica['data'][index] += venta.total
+                    if venta.credito:
+                        grafica_credito['data'][index] += venta.total
+                    else:
+                        grafica_contado['data'][index] += venta.total
         else:
             grafica['labels'] = []
             grafica['data'] = []
+            grafica_contado['labels'] = []
+            grafica_contado['data'] = []
+            grafica_credito['labels'] = []
+            grafica_credito['data'] = []
             cantidad_meses = (fecha_fin.year - fecha_inicio.year) * 12 + (fecha_fin.month - fecha_inicio.month)
             for i in range(0, cantidad_meses + 1):
                 fecha = fecha_inicio.replace(day=1) + relativedelta(months=i)
                 grafica['labels'].append(fecha.strftime('%m/%Y'))
                 grafica['data'].append(0)
+                grafica_contado['labels'].append(fecha.strftime('%m/%Y'))
+                grafica_contado['data'].append(0)
+                grafica_credito['labels'].append(fecha.strftime('%m/%Y'))
+                grafica_credito['data'].append(0)
             for venta in ventas:
                 fecha = venta.fecha_emision
                 index = (fecha.year - fecha_inicio.year) * 12 + (fecha.month - fecha_inicio.month)
                 if index >= 0 and index < cantidad_meses + 1:
                     grafica['data'][index] += venta.total
+                    if venta.credito:
+                        grafica_credito['data'][index] += venta.total
+                    else:
+                        grafica_contado['data'][index] += venta.total
 
         for i in range(len(grafica['data'])):
             grafica['data'][i] = str(round(grafica['data'][i], 2))
+        for i in range(len(grafica_contado['data'])):
+            grafica_contado['data'][i] = str(round(grafica_contado['data'][i], 2))
+        for i in range(len(grafica_credito['data'])):
+            grafica_credito['data'][i] = str(round(grafica_credito['data'][i], 2))
     except Exception as e:
         print("Error en DashboardView:", e)
         grafica['labels'] = []
         grafica['data'] = []
+        grafica_contado['labels'] = []
+        grafica_contado['data'] = []
+        grafica_credito['labels'] = []
+        grafica_credito['data'] = []
         clientes = []
     
     context = {}
     context['clientes'] = clientes
     context['grafica'] = grafica
+    context['grafica_contado'] = grafica_contado
+    context['grafica_credito'] = grafica_credito
     return context
     
 def DashboardTabla(request, id_usuario):

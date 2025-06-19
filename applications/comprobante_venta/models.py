@@ -137,6 +137,13 @@ class FacturaVenta(models.Model):
     def save(self, force_insert=None, force_update=None, using=None, update_fields=None):
         self.texto = "%s" % (self.retorno)
         return super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+    
+    @property
+    def credito(self):
+        if self.tipo_venta == 2:
+            return True
+        else:
+            return False
 
     def __str__(self):
         return "%s" % (self.texto)
@@ -354,6 +361,13 @@ class BoletaVenta(models.Model):
     def save(self, force_insert=None, force_update=None, using=None, update_fields=None):
         self.texto = "%s" % (self.retorno)
         return super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+    
+    @property
+    def credito(self):
+        if self.tipo_venta == 2:
+            return True
+        else:
+            return False
 
     def __str__(self):
         return "%s" % (self.texto)
