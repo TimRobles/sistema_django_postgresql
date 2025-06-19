@@ -53,5 +53,7 @@ urlpatterns = [
     
     path('anexo/registrar/<int:cliente_id>/', views.ClienteAnexoCreateView.as_view(), name='anexo_registrar'),
     path('anexo/baja/<pk>/', views.ClienteAnexoDarBajaView.as_view(), name='anexo_baja'),
+    path('exportar/clientes-contactos/', views.ExportarClientesExcelView.as_view(), name='exportar_clientes_contactos'),
+
     
 ] + urlCliente + urlInterlocutor + urlCorreo + urlRepresentante_Legal

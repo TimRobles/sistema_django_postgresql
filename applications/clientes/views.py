@@ -1200,3 +1200,102 @@ class ClienteAnexoDarBajaView(PermissionRequiredMixin, BSModalUpdateView):
         context['accion']="Dar Baja"
         context['titulo']="Anexo"
         return context
+    
+
+from .models import Cliente
+
+def ClienteContactosAPIView():
+    data = []
+
+    clientes = Cliente.objects.prefetch_related(
+        'CorreoCliente_cliente',
+        'ClienteInterlocutor_cliente__interlocutor__TelefonoInterlocutorCliente_interlocutor',
+        'ClienteInterlocutor_cliente__interlocutor__CorreoInterlocutorCliente_interlocutor',
+        'ClienteInterlocutor_cliente__tipo_interlocutor',
+    ).all()
+
+    for cliente in clientes:
+        cliente_data = {
+            "razon_social": cliente.razon_social,
+            "ruc": cliente.numero_documento,
+            "direccion": cliente.direccion_fiscal,
+            "correos_cliente": [c.correo for c in cliente.CorreoCliente_cliente.filter(estado=1)],
+            "interlocutores": [],
+        }
+
+        for ci in cliente.ClienteInterlocutor_cliente.filter(estado=1):
+            interlocutor = ci.interlocutor
+            interlocutor_data = {
+                "nombre": interlocutor.nombre_completo,
+                "tipo_interlocutor": ci.tipo_interlocutor.nombre,
+                "documento": interlocutor.numero_documento,
+                "correos": [c.correo for c in interlocutor.CorreoInterlocutorCliente_interlocutor.filter(estado=1)],
+                "telefonos": [str(t.numero) for t in interlocutor.TelefonoInterlocutorCliente_interlocutor.filter(estado=1)],
+            }
+            cliente_data["interlocutores"].append(interlocutor_data)
+
+        data.append(cliente_data)
+
+    return data
+
+
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+import datetime
+from django.views import View
+
+class ExportarClientesExcelView(View):
+    def get(self, request):
+        clientes = ClienteContactosAPIView()
+        
+        # Crear el workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Clientes y Contactos"
+
+        # Determinar la cantidad máxima de interlocutores
+        max_interlocutores = max([len(c["interlocutores"]) for c in clientes], default=0)
+
+        # Crear encabezados
+        headers = ["Razón Social", "RUC", "Dirección", "Correos Cliente"]
+        for i in range(1, max_interlocutores + 1):
+            headers.extend([
+                f"Nombre Interlocutor {i}",
+                f"Tipo Interlocutor {i}",
+                f"Correos Interlocutor {i}",
+                f"Teléfonos Interlocutor {i}"
+            ])
+        ws.append(headers)
+
+        # Agregar datos por fila
+        for cliente in clientes:
+            row = [
+                cliente["razon_social"],
+                cliente["ruc"],
+                cliente["direccion"],
+                ", ".join(cliente["correos_cliente"])
+            ]
+            for interlocutor in cliente["interlocutores"]:
+                row.extend([
+                    interlocutor["nombre"],
+                    interlocutor["tipo_interlocutor"],
+                    ", ".join(interlocutor["correos"]),
+                    ", ".join(interlocutor["telefonos"])
+                ])
+            # Rellenar con celdas vacías si hay menos interlocutores
+            while len(row) < len(headers):
+                row.append("")
+            ws.append(row)
+
+        # Ajustar el ancho de columnas automáticamente (opcional)
+        for col_idx, col in enumerate(ws.columns, 1):
+            max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+            ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 2
+
+        # Preparar la respuesta HTTP
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        filename = f"clientes_contactos_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        wb.save(response)
+        return response
