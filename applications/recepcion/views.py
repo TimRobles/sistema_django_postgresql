@@ -191,6 +191,7 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
         kwargs['filtro_nombre'] = self.request.GET.get('nombre')
         kwargs['filtro_fecha'] = self.request.GET.get('fecha_de')
         kwargs['filtro_fecha_dos'] = self.request.GET.get('fecha_hasta')
+        kwargs['filtro_total'] = self.request.GET.get('total')
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -199,6 +200,7 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
         filtro_nombre = self.request.GET.get('nombre')
         filtro_fecha = self.request.GET.get('fecha_de')
         filtro_fecha_dos = self.request.GET.get('fecha_hasta')
+        filtro_total = self.request.GET.get('total', False)
 
         contexto_filtro = []
 
@@ -240,10 +242,11 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
    
         objectsxpage =  30 # Show 30 objects per page.
 
-        if len(asistencias) > objectsxpage:
-            paginator = Paginator(asistencias, objectsxpage)
-            page_number = self.request.GET.get('page')
-            asistencias = paginator.get_page(page_number)
+        if not filtro_total:
+            if len(asistencias) > objectsxpage:
+                paginator = Paginator(asistencias, objectsxpage)
+                page_number = self.request.GET.get('page')
+                asistencias = paginator.get_page(page_number)
 
         context['contexto_pagina'] = asistencias
         return context

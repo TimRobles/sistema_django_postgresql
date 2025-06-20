@@ -100,17 +100,27 @@ class AsistenciaBuscarForm(forms.Form):
                 format = '%Y-%m-%d',
                 )
         )
+    #Total checkbox
+    total = forms.BooleanField(
+        required=False,
+        label='Total',
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
     def __init__(self, *args, **kwargs):     
         filtro_nombre = kwargs.pop('filtro_nombre')
         filtro_fecha = kwargs.pop('filtro_fecha')
         filtro_fecha_dos = kwargs.pop('filtro_fecha_dos')
+        filtro_total = kwargs.pop('filtro_total')
         super(AsistenciaBuscarForm, self).__init__(*args, **kwargs)
         self.fields['nombre'].initial = filtro_nombre
         self.fields['fecha_de'].initial = filtro_fecha
         self.fields['fecha_hasta'].initial = filtro_fecha_dos
+        self.fields['total'].initial = filtro_total
         
         for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control'
+            if visible.name != 'total':
+                visible.field.widget.attrs['class'] = 'form-control'
 
 class AsistenciaPersonalBuscarForm(forms.Form):
     nombre = forms.CharField(max_length=50, required=False)
