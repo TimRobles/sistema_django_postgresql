@@ -6,6 +6,7 @@ from django.conf import settings
 from applications.funciones import consulta_distancia, registrar_excepcion
 from applications.importaciones import *
 from applications.colaborador.models import DatosContratoHonorarios, DatosContratoPlanilla
+from openpyxl import Workbook
 
 from .forms import (
     VisitaForm,VisitaBuscarForm,
@@ -178,6 +179,55 @@ class VisitaRegistrarSalidaView(PermissionRequiredMixin, BSModalDeleteView):
         context['dar_baja'] = "true"
         context['item'] = self.object.nombre
         return context
+    
+
+def asistencias_filtrar(request, context):
+    asistencias = Asistencia.objects.all()
+    filtro_nombre = request.GET.get('nombre')
+    filtro_fecha = request.GET.get('fecha_de')
+    filtro_fecha_dos = request.GET.get('fecha_hasta')
+    filtro_total = request.GET.get('total', False)
+
+    contexto_filtro = []
+
+    if filtro_nombre:
+        condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
+        for palabra in filtro_nombre.split(" ")[1:]:
+            condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
+        asistencias = asistencias.filter(condicion)
+        contexto_filtro.append("nombre=" + filtro_nombre)
+
+    if filtro_fecha and filtro_fecha_dos:
+        fecha_inicio = datetime.strptime(filtro_fecha, "%Y-%m-%d").date()
+        fecha_fin = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date()
+
+        asistencias = asistencias.filter(fecha_registro__range=(fecha_inicio, fecha_fin))
+        contexto_filtro.append("fecha_registro_de: {} a {}".format(filtro_fecha, filtro_fecha_dos))
+
+    if filtro_total:
+        contexto_filtro.append("total=true")
+    
+    context['contexto_filtro'] = "&".join(contexto_filtro)
+
+    context['pagina_filtro'] = ""
+    if request.GET.get('page'):
+        if context['contexto_filtro']:
+            context['pagina_filtro'] = f'&page={request.GET.get("page")}'
+        else:
+            context['pagina_filtro'] = f'page={request.GET.get("page")}'
+    context['contexto_filtro'] = '?' + context['contexto_filtro']
+
+    objectsxpage =  30 # Show 30 objects per page.
+
+    if not filtro_total:
+        if len(asistencias) > objectsxpage:
+            paginator = Paginator(asistencias, objectsxpage)
+            page_number = request.GET.get('page')
+            asistencias = paginator.get_page(page_number)
+
+    context['contexto_pagina'] = asistencias
+
+    return asistencias, context
 
 
 class AsistenciaListView(PermissionRequiredMixin, FormView):
@@ -196,116 +246,15 @@ class AsistenciaListView(PermissionRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super(AsistenciaListView,self).get_context_data(**kwargs)
-        asistencias = Asistencia.objects.all()
-        filtro_nombre = self.request.GET.get('nombre')
-        filtro_fecha = self.request.GET.get('fecha_de')
-        filtro_fecha_dos = self.request.GET.get('fecha_hasta')
-        filtro_total = self.request.GET.get('total', False)
+        asistencias, context = asistencias_filtrar(self.request, context)
 
-        contexto_filtro = []
-
-        if filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
-            asistencias = asistencias.filter(condicion)
-            contexto_filtro.append("nombre=" + filtro_nombre)
-
-        # if filtro_fecha:
-        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-        #     asistencias = asistencias.filter(condicion)
-        #     contexto_filtro.append("fecha_registro=" + filtro_fecha)
-
-            
-        # if filtro_fecha_dos:
-        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date())
-        #     asistencias = asistencias.filter(condicion)
-        #     contexto_filtro.append("fecha_registro_dos=" + filtro_fecha_dos)
-        #     print(contexto_filtro)
-
-        if filtro_fecha and filtro_fecha_dos:
-            fecha_inicio = datetime.strptime(filtro_fecha, "%Y-%m-%d").date()
-            fecha_fin = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date()
-
-            asistencias = asistencias.filter(fecha_registro__range=(fecha_inicio, fecha_fin))
-            contexto_filtro.append("fecha_registro_de: {} a {}".format(filtro_fecha, filtro_fecha_dos))
-        
-        context['contexto_filtro'] = "&".join(contexto_filtro)
-
-        context['pagina_filtro'] = ""
-        if self.request.GET.get('page'):
-            if context['contexto_filtro']:
-                context['pagina_filtro'] = f'&page={self.request.GET.get("page")}'
-            else:
-                context['pagina_filtro'] = f'page={self.request.GET.get("page")}'
-        context['contexto_filtro'] = '?' + context['contexto_filtro']
-   
-        objectsxpage =  30 # Show 30 objects per page.
-
-        if not filtro_total:
-            if len(asistencias) > objectsxpage:
-                paginator = Paginator(asistencias, objectsxpage)
-                page_number = self.request.GET.get('page')
-                asistencias = paginator.get_page(page_number)
-
-        context['contexto_pagina'] = asistencias
         return context
 
 def AsistenciaTabla(request):
     data = dict()
     if request.method == 'GET':
         template = 'recepcion/asistencia/inicio_tabla.html'
-        context = {}
-        asistencias = Asistencia.objects.all()
-        filtro_nombre = request.GET.get('nombre')
-        filtro_fecha = request.GET.get('fecha_de')
-        filtro_fecha_dos = request.GET.get('fecha_hasta')
-
-        contexto_filtro = []
-
-        if filtro_nombre:
-            condicion = (Q(usuario__first_name__unaccent__icontains = filtro_nombre.split(" ")[0]) | Q(usuario__last_name__unaccent__icontains = filtro_nombre.split(" ")[0])) |Q(usuario__username__unaccent__icontains = filtro_nombre)
-            for palabra in filtro_nombre.split(" ")[1:]:
-                condicion &= (Q(usuario__first_name__unaccent__icontains = palabra) | Q(usuario__last_name__unaccent__icontains = palabra))
-            asistencias = asistencias.filter(condicion)
-            contexto_filtro.append("nombre=" + filtro_nombre)
-
-        # if filtro_fecha:
-        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha, "%Y-%m-%d").date())
-        #     asistencias = asistencias.filter(condicion)
-        #     contexto_filtro.append("fecha_registro=" + filtro_fecha)
-
-        # if filtro_fecha_dos:
-        #     condicion = Q(fecha_registro = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date())
-        #     asistencias = asistencias.filter(condicion)
-        #     contexto_filtro.append("fecha_registro_dos=" + filtro_fecha_dos)
-
-        if filtro_fecha and filtro_fecha_dos:
-            fecha_inicio = datetime.strptime(filtro_fecha, "%Y-%m-%d").date()
-            fecha_fin = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date()
-            asistencias = asistencias.filter(fecha_registro__range=(fecha_inicio, fecha_fin))
-            contexto_filtro.append("fecha_registro_de: {} a {}".format(filtro_fecha, filtro_fecha_dos))
-
-        context['contexto_filtro'] = "&".join(contexto_filtro)
-
-        context['pagina_filtro'] = ""
-        if request.GET.get('page'):
-            if context['contexto_filtro']:
-                context['pagina_filtro'] = f'&page={request.GET.get("page")}'
-            else:
-                context['pagina_filtro'] = f'page={request.GET.get("page")}'
-        context['contexto_filtro'] = '?' + context['contexto_filtro']
-
-
-        objectsxpage = 30 # Show 30 objects per page.
-
-        if len(asistencias) > objectsxpage:
-            paginator = Paginator(asistencias, objectsxpage)
-            page_number = request.GET.get('page')
-            asistencias = paginator.get_page(page_number)
-
-        context['contexto_pagina'] = asistencias
-
+        asistencias, context = asistencias_filtrar(request, context)
 
         data['table'] = render_to_string(
             template,
@@ -313,6 +262,43 @@ def AsistenciaTabla(request):
             request=request
         )
         return JsonResponse(data)
+    
+class AsistenciaExcelView(PermissionRequiredMixin, View):
+    permission_required = ('recepcion.view_asistencia')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            return render(request, 'includes/modal sin permiso.html')
+        return super().dispatch(request, *args, **kwargs)    
+
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="Asistencias %s.xlsx"' % (request.user.get_full_name())
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = 'Asistencias'
+
+        # Add headers
+        headers = ['Nombre', 'Sociedad', 'Sede', 'Hora de Ingreso', 'Hora de Salida', 'Fecha de Registro', 'Día']
+        worksheet.append(headers)
+
+        # Fetch asistencias data
+        asistencias, context = asistencias_filtrar(request, {})
+
+        for asistencia in asistencias:
+            row = [
+                asistencia.usuario.get_full_name(),
+                asistencia.sociedad.razon_social,
+                asistencia.sede.nombre if asistencia.sede else 'No especificada',
+                asistencia.hora_ingreso.strftime("%H:%M") if asistencia.hora_ingreso else 'No registrado',
+                asistencia.hora_salida.strftime("%H:%M") if asistencia.hora_salida else 'No registrado',
+                asistencia.fecha_registro.strftime("%Y-%m-%d") if asistencia.fecha_registro else 'No registrado',
+                asistencia.fecha_registro.strftime("%A") if asistencia.fecha_registro else 'No registrado'
+            ]
+            worksheet.append(row)
+
+        workbook.save(response)
+        return response
 
 class AsistenciaPersonalView(PermissionRequiredMixin, FormView):
     permission_required = ('recepcion.view_asistencia')

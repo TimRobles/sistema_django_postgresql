@@ -11,6 +11,7 @@ urlpatterns = [
 
     path('asistencia/', views.AsistenciaListView.as_view(), name='asistencia_inicio'),
     path('asistencia-tabla/', views.AsistenciaTabla, name='asistencia_tabla'),
+    path('asistencia-excel/', views.AsistenciaExcelView.as_view(), name='asistencia_excel'),
     
     path('asistencia-personal/', views.AsistenciaPersonalView.as_view(), name='asistencia_personal_inicio'),
     path('asistencia-personal-tabla/', views.AsistenciaPersonalTabla, name='asistencia_personal_tabla'),

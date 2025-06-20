@@ -29,6 +29,7 @@
             <div class="col-lg-4 my-auto">
                 <input class="btn btn-outline-dark" type="submit" value="Buscar">
                 <a class="btn btn-outline-dark" href="{% url 'recepcion_app:asistencia_inicio' %}">Limpiar</a>
+                <a class="btn btn-outline-dark" href="{% url 'recepcion_app:asistencia_excel' %}{{ contexto_filtro }}">Descargar Excel</a>
             </div>            
         </div>
     </form>
