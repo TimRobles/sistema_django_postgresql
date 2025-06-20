@@ -184,8 +184,8 @@ class VisitaRegistrarSalidaView(PermissionRequiredMixin, BSModalDeleteView):
 def asistencias_filtrar(request, context):
     asistencias = Asistencia.objects.all()
     filtro_nombre = request.GET.get('nombre')
-    filtro_fecha = request.GET.get('fecha_de')
-    filtro_fecha_dos = request.GET.get('fecha_hasta')
+    filtro_fecha_de = request.GET.get('fecha_de')
+    filtro_fecha_hasta = request.GET.get('fecha_hasta')
     filtro_total = request.GET.get('total', False)
 
     contexto_filtro = []
@@ -197,12 +197,13 @@ def asistencias_filtrar(request, context):
         asistencias = asistencias.filter(condicion)
         contexto_filtro.append("nombre=" + filtro_nombre)
 
-    if filtro_fecha and filtro_fecha_dos:
-        fecha_inicio = datetime.strptime(filtro_fecha, "%Y-%m-%d").date()
-        fecha_fin = datetime.strptime(filtro_fecha_dos, "%Y-%m-%d").date()
+    if filtro_fecha_de:
+        asistencias = asistencias.filter(fecha_registro__gte=datetime.strptime(filtro_fecha_de, "%Y-%m-%d").date())
+        contexto_filtro.append("fecha_de=" + filtro_fecha_de)
 
-        asistencias = asistencias.filter(fecha_registro__range=(fecha_inicio, fecha_fin))
-        contexto_filtro.append("fecha_registro_de: {} a {}".format(filtro_fecha, filtro_fecha_dos))
+    if filtro_fecha_hasta:
+        asistencias = asistencias.filter(fecha_registro__lte=datetime.strptime(filtro_fecha_hasta, "%Y-%m-%d").date())
+        contexto_filtro.append("fecha_hasta=" + filtro_fecha_hasta)
 
     if filtro_total:
         contexto_filtro.append("total=true")
