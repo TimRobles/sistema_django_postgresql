@@ -289,7 +289,8 @@ def actualizarTipoCambioSunat(fecha: date, request):
 
 def actualizarTotalTipoCambioSunat():
     tipo_cambios = TipoCambioSunat.objects.filter(
-        fecha = None,
+        tipo_cambio_venta = None,
+        fecha__gte = date(2019, 1, 1),  # Ajusta la fecha según sea necesario
     )
     if tipo_cambios.exists():
         for tipo_cambio in tipo_cambios:
