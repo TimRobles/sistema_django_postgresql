@@ -709,3 +709,5 @@ ESTADOS_COMPROBANTE_COMPRA_ACTIVO = (
 URL_MULTIPLAY = 'https://www.multiplay.com.pe/'
 
 CHOICE_VACIO = ((None, '-----------------'),)
+
+API_TOKEN = 'apis-token-16490.IlUrJGIDM4ro4muGoWIpD9j7u9dSNfnN' #TimRobles, debería ser ConsultaRucMP1

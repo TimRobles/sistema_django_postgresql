@@ -15,7 +15,7 @@ from django.contrib import messages
 from django.db import models
 import sys
 
-from applications.variables import SLACK_VERIFICAR_CHANNEL_URL
+from applications.variables import SLACK_VERIFICAR_CHANNEL_URL, API_TOKEN
 
 def numeroXn(numero, n):
     if numero:
@@ -31,7 +31,7 @@ def numero_str(numero, n):
 
 def consulta_ruc(ruc):
     sleep(2)
-    token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
+    token = API_TOKEN
     url = "https://api.apis.net.pe/v2/ruc?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
     r = requests.get(url + str(ruc), headers=headers)
@@ -84,7 +84,7 @@ def consulta_dni(dni):
 
 def consulta_dni2(dni):
     sleep(2)
-    token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
+    token = API_TOKEN
     url = "https://api.apis.net.pe/v2/dni?numero="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
     r = requests.get(url + str(dni), headers=headers)
@@ -120,10 +120,11 @@ def consulta_dni2(dni):
 
 def consulta_sunat_tipo_cambio(fecha: date):
     sleep(2)
-    token = "apis-token-1914.9jOkTIeoTyuru0Mpx4ulp40uAqojGAFP" #ConsultaRucMP1
+    token = API_TOKEN
     url = "https://api.apis.net.pe/v1/tipo-cambio-sunat?fecha="
     headers = {"Authorization" : "Bearer %s" % token, 'Accept':'application/json'}
     r = requests.get(f"{url}{fecha.year}-{numeroXn(fecha.month, 2)}-{numeroXn(fecha.day, 2)}", headers=headers)
+    print(f"Consulta tipo de cambio: {r.url}")
     data = r.json()
 
     return data
